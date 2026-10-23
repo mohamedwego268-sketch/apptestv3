@@ -37,6 +37,8 @@ export type PastelTone =
   | 'teal'
   | 'orange'
   | 'pink'
+  | 'cyan'
+  | 'lime'
   | 'slate';
 
 export const PASTEL_CARD_TONES: Record<
@@ -88,6 +90,16 @@ export const PASTEL_CARD_TONES: Record<
     badge: 'bg-pink-100 text-pink-900',
     iconBg: 'bg-white/90 border-pink-100',
   },
+  cyan: {
+    card: 'bg-cyan-50/85 border-cyan-200/80',
+    badge: 'bg-cyan-100 text-cyan-900',
+    iconBg: 'bg-white/90 border-cyan-100',
+  },
+  lime: {
+    card: 'bg-lime-50/85 border-lime-200/80',
+    badge: 'bg-lime-100 text-lime-900',
+    iconBg: 'bg-white/90 border-lime-100',
+  },
   slate: {
     card: 'bg-slate-50/90 border-slate-200/80',
     badge: 'bg-slate-200/90 text-slate-900',
@@ -109,8 +121,8 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
 }) => {
   const sizeClasses =
     size === 'sm'
-      ? 'min-h-[40px] px-4 py-2 rounded-2xl text-xs font-extrabold'
-      : 'min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold';
+      ? 'min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold'
+      : 'min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold';
   return (
     <button
       type="button"
@@ -143,11 +155,11 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
 
   return (
     <div
-      className="relative rounded-[24px] overflow-hidden border border-[var(--color-border)] select-none"
+      className="relative rounded-[20px] overflow-hidden border border-[var(--color-border)] select-none"
       style={{
         background: current.gradient,
         boxShadow:
-          '0 16px 32px -14px rgba(42, 36, 51, 0.14), inset 0 2px 4px rgba(255,255,255,0.85)',
+          '0 12px 26px -12px rgba(42, 36, 51, 0.12), inset 0 1px 3px rgba(255,255,255,0.85)',
       }}
       onTouchStart={(e) => setTouchStartX(e.touches[0]?.clientX ?? null)}
       onTouchEnd={(e) => {
@@ -165,36 +177,36 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-h-[184px]">
-        <div className="space-y-2 max-w-xl">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
+      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 min-h-[156px]">
+        <div className="space-y-1.5 max-w-xl">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
             {current.badge}
           </span>
-          <h2 className="text-lg sm:text-2xl font-extrabold text-[var(--color-text)] leading-snug">
+          <h2 className="text-base sm:text-xl font-extrabold text-[var(--color-text)] leading-snug">
             {current.title}
           </h2>
-          <div className="text-xs sm:text-sm font-semibold text-[var(--color-muted)]">
+          <div className="text-[11.5px] sm:text-xs font-semibold text-[var(--color-muted)]">
             {current.subtitle}
           </div>
-          <div className="pt-1 flex items-center gap-2.5">
+          <div className="pt-1 flex items-center gap-2">
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
+              className={`min-h-[38px] px-4 py-2 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
           </div>
         </div>
 
-        <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-22 h-22 sm:w-26 sm:h-26 rounded-3xl bg-white/80 backdrop-blur-xs border border-white shadow-sm">
-          <ThreeDIcon id={current.iconId} size={64} />
+        <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-white/80 backdrop-blur-xs border border-white shadow-sm">
+          <ThreeDIcon id={current.iconId} size={52} />
         </div>
       </div>
 
       {/* Pagination Dots & Prev/Next Controls */}
       {slides.length > 1 && (
-        <div className="px-5 pb-4 flex items-center justify-between gap-3">
+        <div className="px-4 pb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
             {slides.map((s, idx) => {
               const isCurrent = idx === activeIdx % slides.length;
@@ -206,10 +218,10 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
                   aria-selected={isCurrent}
                   aria-label={`${isEn ? 'Slide' : 'شريحة'} ${idx + 1}`}
                   onClick={() => setActiveIdx(idx)}
-                  className={`h-2.5 rounded-full transition-all ${
+                  className={`h-2 rounded-full transition-all ${
                     isCurrent
-                      ? 'w-7 bg-[var(--color-accent)]'
-                      : 'w-2.5 bg-[var(--color-text)]/25 hover:bg-[var(--color-text)]/40'
+                      ? 'w-6 bg-[var(--color-accent)]'
+                      : 'w-2 bg-[var(--color-text)]/25 hover:bg-[var(--color-text)]/40'
                   }`}
                 />
               );
@@ -221,7 +233,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-lg bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -229,7 +241,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-lg bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '›' : '‹'}
             </button>
@@ -268,29 +280,29 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 
   return (
     <div
-      className={`rounded-[24px] border ${toneClasses.card} px-3.5 py-3 sm:px-5 sm:py-3.5 shadow-2xs flex items-center justify-between gap-2.5`}
+      className={`rounded-[20px] border ${toneClasses.card} px-3 py-2.5 sm:px-4 sm:py-3 shadow-2xs flex items-center justify-between gap-2.5`}
     >
-      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[40px] px-3 py-1.5 rounded-2xl border border-[var(--color-border)] bg-white hover:border-[var(--color-accent)] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all shrink-0"
+          className="min-h-[36px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] bg-white hover:border-[var(--color-accent)] text-[var(--color-text)] text-[11.5px] font-extrabold flex items-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0"
         >
-          <span className="text-sm leading-none">{isEn ? '←' : '→'}</span>
+          <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
           <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
         </button>
 
-        <div className="w-10 h-10 rounded-2xl bg-white/95 border border-white shadow-2xs flex items-center justify-center shrink-0">
-          <ThreeDIcon id={iconId} size={26} />
+        <div className="w-9 h-9 rounded-xl bg-white/95 border border-white shadow-2xs flex items-center justify-center shrink-0">
+          <ThreeDIcon id={iconId} size={22} />
         </div>
 
         <div className="min-w-0 flex-1">
-          <h1 className="text-sm sm:text-lg font-extrabold text-[var(--color-text)] leading-tight">
+          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-tight">
             {title}
           </h1>
           {(subtitle || badge) && (
-            <div className="text-[11px] font-bold text-[var(--color-muted)] truncate mt-0.5">
+            <div className="text-[10.5px] font-bold text-[var(--color-muted)] truncate mt-0.5">
               {subtitle || badge}
             </div>
           )}
@@ -299,7 +311,7 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 
       {badge && (
         <span
-          className={`hidden sm:inline-flex px-2.5 py-1 rounded-xl text-[11px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
+          className={`hidden sm:inline-flex px-2 py-0.5 rounded-lg text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
         >
           {badge}
         </span>

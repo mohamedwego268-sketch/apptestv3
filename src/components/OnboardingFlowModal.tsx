@@ -54,7 +54,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 }) => {
   const isEn = language === 'en';
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
+  const [authMode, setAuthMode] = useState<'register' | 'login' | 'join_qr'>('register');
+  const [joinFamilyCode, setJoinFamilyCode] = useState<string>('FS-FAM-8824');
+  const [joinMemberRoleLabel, setJoinMemberRoleLabel] = useState<string>('الأم (Mother)');
 
   // Step 1: Account & OTP
   const [email, setEmail] = useState<string>('sara.mom@familyspace.demo');
@@ -190,18 +192,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
     >
-      <div className="w-full max-w-2xl rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-7 space-y-5 max-h-[92vh] overflow-y-auto shadow-2xl">
+      <div className="w-full max-w-2xl rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
         {/* Header & Step Progress */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
+        <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-[var(--color-border)]">
           <div>
-            <div className="text-xs font-extrabold text-[var(--color-role-text)]">
-              🚀 {isEn ? `Interactive Registration & Setup Wizard (Step ${step} of 4)` : `معالج التسجيل وإعداد الأسرة والمدينة (الخطوة ${step} من 4)`}
+            <div className="text-[11px] font-extrabold text-[var(--color-role-text)]">
+              🚀 {isEn ? `Interactive Registration & Family QR Setup (Step ${step} of 4)` : `معالج التسجيل وربط الأسرة عبر QR والمدينة (الخطوة ${step} من 4)`}
             </div>
-            <h2 id="onboarding-modal-title" className="text-lg sm:text-xl font-extrabold text-[var(--color-text)] mt-0.5">
+            <h2 id="onboarding-modal-title" className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
               {step === 1
                 ? isEn
-                  ? '1. Account Registration, Login & Phone Verification'
-                  : '١. إنشاء حساب جديد أو تسجيل الدخول وتوثيق الجوال'
+                  ? '1. Account Registration, Login & Family QR Link'
+                  : '١. إنشاء حساب أو تسجيل الدخول أو الربط برمز QR'
                 : step === 2
                 ? isEn
                   ? '2. Select Your Country & City (Location-Aware Ecosystem)'
@@ -219,7 +221,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label={isEn ? 'Close registration wizard' : 'إغلاق نافذة التسجيل'}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-control-muted)]"
+            className="px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-control-muted)]"
           >
             {isEn ? 'Close' : 'إغلاق'}
           </button>
@@ -228,7 +230,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         {/* Step Indicator Pills */}
         <div className="grid grid-cols-4 gap-2">
           {[
-            { num: 1, labelAr: '١. الحساب', labelEn: '1. Account' },
+            { num: 1, labelAr: '١. الحساب وQR', labelEn: '1. Account & QR' },
             { num: 2, labelAr: '٢. الدولة والمدينة', labelEn: '2. Location' },
             { num: 3, labelAr: '٣. ملف الوالد', labelEn: '3. Parent' },
             { num: 4, labelAr: '٤. ملف الطفل', labelEn: '4. Child' },
@@ -237,7 +239,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               key={s.num}
               type="button"
               onClick={() => setStep(s.num as 1 | 2 | 3 | 4)}
-              className={`py-2 px-2 rounded-xl text-xs font-extrabold text-center transition-colors ${
+              className={`py-1.5 px-2 rounded-xl text-xs font-extrabold text-center transition-colors ${
                 step === s.num
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
                   : step > s.num
@@ -251,19 +253,19 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         </div>
 
         {errorMsg && (
-          <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-xs font-bold text-red-800" role="alert">
+          <div className="rounded-xl border border-red-300 bg-red-50 px-3.5 py-2.5 text-xs font-bold text-red-800" role="alert">
             ⚠️ {errorMsg}
           </div>
         )}
 
-        {/* STEP 1: ACCOUNT REGISTRATION / LOGIN */}
+        {/* STEP 1: ACCOUNT REGISTRATION / LOGIN / QR FAMILY LINK */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div className="inline-flex p-1 rounded-xl bg-[var(--color-control-muted)]">
+          <div className="space-y-3.5">
+            <div className="flex flex-wrap gap-1 p-1 rounded-xl bg-[var(--color-control-muted)]">
               <button
                 type="button"
                 onClick={() => setAuthMode('register')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${
                   authMode === 'register'
                     ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-2xs'
                     : 'text-[var(--color-muted)]'
@@ -274,17 +276,67 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               <button
                 type="button"
                 onClick={() => setAuthMode('login')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-extrabold ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${
                   authMode === 'login'
                     ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-2xs'
                     : 'text-[var(--color-muted)]'
                 }`}
               >
-                {isEn ? 'Sign In to Existing Account' : 'تسجيل الدخول لحساب حالي'}
+                {isEn ? 'Sign In' : 'تسجيل الدخول'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('join_qr')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${
+                  authMode === 'join_qr'
+                    ? 'bg-teal-700 text-white shadow-2xs'
+                    : 'text-[var(--color-muted)]'
+                }`}
+              >
+                📲 {isEn ? 'Join Family via QR / Code' : 'الانضمام لأسرة عبر QR أو كود'}
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {authMode === 'join_qr' && (
+              <div className="rounded-2xl border border-teal-200 bg-teal-50/75 p-3.5 space-y-2.5">
+                <div className="text-xs font-extrabold text-teal-950">
+                  📲 {isEn ? 'Scan Partner QR Code or Enter Family Invite Code' : 'امسح رمز QR من هاتف الأب/الأم أو أدخل كود الأسرة اليدوي'}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[var(--color-text)] mb-1">
+                      {isEn ? 'Family Invite Code' : 'كود ربط الأسرة'}
+                    </label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={joinFamilyCode}
+                      onChange={(e) => setJoinFamilyCode(e.target.value)}
+                      className="w-full rounded-xl border border-teal-300 bg-white px-3 py-1.5 text-xs font-mono font-extrabold text-center"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-[var(--color-text)] mb-1">
+                      {isEn ? 'Your Family Role' : 'صفتك في الأسرة'}
+                    </label>
+                    <select
+                      value={joinMemberRoleLabel}
+                      onChange={(e) => setJoinMemberRoleLabel(e.target.value)}
+                      className="w-full rounded-xl border border-teal-300 bg-white px-3 py-1.5 text-xs font-bold"
+                    >
+                      <option value="الأم (Mother)">👩🏻‍💼 الأم (Mother)</option>
+                      <option value="الأب (Father)">👨🏻‍💼 الأب (Father)</option>
+                      <option value="الجدة (Grandmother)">👵🏻 الجدة (Grandmother)</option>
+                      <option value="الجد (Grandfather)">👴🏻 الجد (Grandfather)</option>
+                      <option value="العم / الخال (Uncle)">🧔🏻 العم / الخال (Uncle)</option>
+                      <option value="العمة / الخالة (Aunt)">👩🏻 العمة / الخالة (Aunt)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
                   {isEn ? 'Email Address' : 'البريد الإلكتروني المرتبط بالحساب'}
@@ -294,7 +346,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   dir="ltr"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
                 />
               </div>
               <div>
@@ -308,12 +360,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   dir="ltr"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs text-[var(--color-text)] tabular-nums"
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)] tabular-nums"
                 />
               </div>
             </div>
 
-            <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 space-y-2">
+            <div className="rounded-xl bg-[var(--color-control-muted)] p-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-bold text-[var(--color-text)]">
                   🔑 {isEn ? 'Simulated OTP Verification Code (Demo: 123456)' : 'رمز التحقق التجريبي عبر الجوال (الرمز: 123456)'}
@@ -328,7 +380,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 maxLength={6}
                 value={otpInput}
                 onChange={(e) => setOtpInput(e.target.value)}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2 text-sm font-mono font-bold text-[var(--color-text)] tracking-widest text-center"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-sm font-mono font-bold text-[var(--color-text)] tracking-widest text-center"
               />
             </div>
           </div>

@@ -1589,30 +1589,30 @@ export default function App() {
                     }}
                     aria-label={lang === 'en' ? 'Promotional Banners Carousel' : 'لافتات العروض والخدمات المتحركة'}
                   >
-                    <div className="p-5 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 min-h-[196px]">
-                      <div className="space-y-2.5 max-w-xl">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
+                    <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-h-[164px]">
+                      <div className="space-y-2 max-w-xl">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
                           {activeBanner.badge}
                         </span>
-                        <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-text)] leading-snug">
+                        <h1 className="text-lg sm:text-xl font-extrabold text-[var(--color-text)] leading-snug">
                           {activeBanner.title}
                         </h1>
-                        <div className="text-xs sm:text-sm font-semibold text-[var(--color-muted)]">
+                        <div className="text-xs font-semibold text-[var(--color-muted)]">
                           {activeBanner.subtitle}
                         </div>
-                        <div className="pt-1 flex items-center gap-2.5">
+                        <div className="pt-1 flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => navigateTo(activeBanner.targetPage)}
-                            className={`min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold shadow-sm active:scale-[0.98] transition-transform ${activeBanner.accentPill}`}
+                            className={`min-h-[38px] px-4 py-2 rounded-xl text-xs font-extrabold shadow-sm active:scale-[0.98] transition-transform ${activeBanner.accentPill}`}
                           >
                             {activeBanner.ctaLabel}
                           </button>
                         </div>
                       </div>
 
-                      <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white/75 backdrop-blur-xs border border-white shadow-sm">
-                        <ThreeDIcon id={activeBanner.iconId} size={68} />
+                      <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/75 backdrop-blur-xs border border-white shadow-sm">
+                        <ThreeDIcon id={activeBanner.iconId} size={58} />
                       </div>
                     </div>
 
@@ -1785,18 +1785,18 @@ export default function App() {
                       key={card.id}
                       type="button"
                       onClick={() => navigateTo(card.id)}
-                      className={`group min-h-[120px] sm:min-h-[132px] rounded-2xl border ${card.tint} bg-[var(--color-surface)] p-4 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md hover:border-[var(--color-accent)] active:scale-[0.98] transition-all`}
+                      className={`group min-h-[104px] sm:min-h-[114px] rounded-2xl border ${card.tint} bg-[var(--color-surface)] p-3.5 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md hover:border-[var(--color-accent)] active:scale-[0.98] transition-all`}
                     >
                       <div className="w-full flex items-start justify-between gap-2">
-                        <div className="w-12 h-12 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <ThreeDIcon id={card.iconId} size={38} />
+                        <div className="w-10 h-10 rounded-xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <ThreeDIcon id={card.iconId} size={32} />
                         </div>
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${card.badgeTint} tabular-nums`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${card.badgeTint} tabular-nums`}>
                           {card.badge}
                         </span>
                       </div>
-                      <div className="mt-3 w-full flex items-center justify-between gap-1">
-                        <span className="text-sm sm:text-base font-extrabold text-[var(--color-text)] truncate">
+                      <div className="mt-2.5 w-full flex items-center justify-between gap-1">
+                        <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
                           {card.title}
                         </span>
                         <span className="text-xs font-bold text-[var(--color-muted)] group-hover:text-[var(--color-accent)]">
@@ -2785,6 +2785,7 @@ export default function App() {
             <MediaPlatformSection
               savedMediaIds={state.savedMediaIds}
               language={state.language}
+              onShowToast={showToast}
               onToggleSaveMedia={(id) => {
                 setState((prev) => {
                   const exists = prev.savedMediaIds.includes(id);
@@ -2861,6 +2862,7 @@ export default function App() {
                 }))
               }
               onCompleteDemoCheckout={handleCompleteDemoCheckout}
+              onShowToast={showToast}
             />
           )}
 
@@ -3050,6 +3052,23 @@ export default function App() {
                     : status === 'revoked'
                     ? 'تم سحب الصلاحية وإيقاف الوصول فورًا'
                     : 'تم تحديث حالة الدعوة'
+                );
+              }}
+              onInstantJoinFamilyMember={(newMember) => {
+                setState((prev) => ({
+                  ...prev,
+                  family: [
+                    {
+                      ...newMember,
+                      id: Date.now() + Math.floor(Math.random() * 100),
+                    },
+                    ...prev.family,
+                  ],
+                }));
+                showToast(
+                  lang === 'en'
+                    ? `✓ Linked ${newMember.name} (${newMember.role}) to the Family Account!`
+                    : `✓ تم ربط «${newMember.name}» (${newMember.role}) بحساب الأسرة فورًا!`
                 );
               }}
             />

@@ -22,6 +22,18 @@ interface MediaPlatformSectionProps {
   language?: LanguageCode;
 }
 
+interface MediaCommentItem {
+  id: string;
+  authorAr: string;
+  authorEn: string;
+  roleAr: string;
+  roleEn: string;
+  textAr: string;
+  textEn: string;
+  timeAgoAr: string;
+  timeAgoEn: string;
+}
+
 interface ParentingReelItem {
   id: string;
   titleAr: string;
@@ -36,6 +48,7 @@ interface ParentingReelItem {
   duration: string;
   likesBase: number;
   savesBase: number;
+  sharesBase: number;
   captionAr: string;
   captionEn: string;
   keyTakeawaysAr: string[];
@@ -59,6 +72,7 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     duration: '0:45',
     likesBase: 1420,
     savesBase: 610,
+    sharesBase: 315,
     captionAr:
       'انزلي لمستوى نظره، سمّي شعوره بهدوء («أنا شايفة إنك زعلان عشان اللعبة خلصت»)، وخدي نفس عميق معاه لمدة 30 ثانية.',
     captionEn:
@@ -90,6 +104,7 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     duration: '0:52',
     likesBase: 2180,
     savesBase: 940,
+    sharesBase: 490,
     captionAr:
       'فرز المعكرونة الملونة، نقل الماء بإسفنجة، وتقشير الموز مع ماما يقوي عضلات اليد الدقيقة ويجهز الطفل للكتابة بمتعة.',
     captionEn:
@@ -121,6 +136,7 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     duration: '0:38',
     likesBase: 1890,
     savesBase: 820,
+    sharesBase: 410,
     captionAr:
       'إيقاف الشاشات قبل النوم بساعة، إضاءة دافئة خافتة، حمام دافئ سريع، وتهويدة صوتية بنفس الترتيب كل ليلة.',
     captionEn:
@@ -152,6 +168,7 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     duration: '0:49',
     likesBase: 1640,
     savesBase: 775,
+    sharesBase: 280,
     captionAr:
       'قسّمي اللانش بوكس لـ 4 أقسام صغيرة بألوان مبهجة: بروتين سهل الأكل + خضار مقرمش + فاكهة محببة + صنف واحد جديد بكمية صغيرة.',
     captionEn:
@@ -171,6 +188,46 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
   },
 ];
 
+const INITIAL_MEDIA_COMMENTS: Record<string, MediaCommentItem[]> = {
+  'reel-1': [
+    {
+      id: 'c-101',
+      authorAr: 'سارة (أم ليان)',
+      authorEn: 'Sara (Layan’s Mom)',
+      roleAr: 'أم لطفلين',
+      roleEn: 'Mom of 2',
+      textAr: 'جربت النزول لمستوى عين طفلي وقت الغضب وفرقت جدًا خلال يومين!',
+      textEn: 'Kneeling to eye level worked wonders with my toddler within two days!',
+      timeAgoAr: 'منذ ساعتين',
+      timeAgoEn: '2h ago',
+    },
+    {
+      id: 'c-102',
+      authorAr: 'أحمد (أبو آدم)',
+      authorEn: 'Ahmed (Adam’s Dad)',
+      roleAr: 'أب',
+      roleEn: 'Father',
+      textAr: 'نصيحة عملية ومختصرة جدًا، شكرًا د. نورهان.',
+      textEn: 'Very practical and concise tip, thank you Dr. Nourhan.',
+      timeAgoAr: 'منذ 5 ساعات',
+      timeAgoEn: '5h ago',
+    },
+  ],
+  'reel-2': [
+    {
+      id: 'c-201',
+      authorAr: 'نهى محمود',
+      authorEn: 'Noha Mahmoud',
+      roleAr: 'أم',
+      roleEn: 'Mother',
+      textAr: 'نشاط نقل الماء بالإسفنجة شغل ابني ٢٠ دقيقة كاملة بهدوء!',
+      textEn: 'The sponge water transfer kept my son happily focused for 20 minutes!',
+      timeAgoAr: 'منذ ٣ ساعات',
+      timeAgoEn: '3h ago',
+    },
+  ],
+};
+
 export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   catalog = MEDIA_CONTENT_CATALOG,
   savedMediaIds,
@@ -185,6 +242,16 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const [savedReelIds, setSavedReelIds] = useState<string[]>(['reel-2']);
   const [reelPlaying, setReelPlaying] = useState<boolean>(true);
   const [reelCategoryFilter] = useState<string>('all');
+  const [isFullScreenReel, setIsFullScreenReel] = useState<boolean>(false);
+
+  // Social Engagement State (Likes, Comments, Shares across Reels, Podcasts & Videos)
+  const [commentsByMediaKey, setCommentsByMediaKey] = useState<Record<string, MediaCommentItem[]>>(
+    INITIAL_MEDIA_COMMENTS
+  );
+  const [newCommentText, setNewCommentText] = useState<string>('');
+  const [showCommentsDrawerFor, setShowCommentsDrawerFor] = useState<string | null>('reel-1');
+  const [likedAudioIds, setLikedAudioIds] = useState<number[]>([105]);
+  const [shareCountBoost, setShareCountBoost] = useState<Record<string, number>>({});
 
   const [selectedType, setSelectedType] = useState<'all' | 'video' | 'audio' | 'article' | 'guide' | 'gallery' | 'saved'>('all');
   const [selectedTopic] = useState<'all' | MediaTopicCategory>('all');
@@ -192,15 +259,15 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeItem, setActiveItem] = useState<MediaContentItem | null>(null);
 
-  // Interactive Audio Player State
+  // Interactive Podcast & Audio Player State
   const audioItems = useMemo(() => catalog.filter((c) => c.type === 'audio' && c.audioConfig), [catalog]);
-  const [selectedAudioId] = useState<number>(audioItems[0]?.id || 105);
+  const [selectedAudioId, setSelectedAudioId] = useState<number>(audioItems[0]?.id || 105);
   const activeAudioItem = useMemo(
     () => audioItems.find((a) => a.id === selectedAudioId) || audioItems[0],
     [audioItems, selectedAudioId]
   );
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const [audioProgressSec, setAudioProgressSec] = useState(0);
+  const [audioProgressSec, setAudioProgressSec] = useState(14);
   const [audioSpeed, setAudioSpeed] = useState<0.75 | 1 | 1.25 | 1.5>(1);
   const [audioVolume] = useState(0.75);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -225,6 +292,43 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   }, [reelCategoryFilter]);
 
   const currentReel = filteredReels[activeReelIndex % Math.max(1, filteredReels.length)] || PARENTING_REELS_FEED[0];
+  const currentReelComments = commentsByMediaKey[currentReel.id] || [];
+
+  const handleAddComment = (mediaKey: string) => {
+    const trimmed = newCommentText.trim();
+    if (!trimmed) return;
+    const newEntry: MediaCommentItem = {
+      id: `c-${Date.now()}`,
+      authorAr: 'أنت (حساب الأسرة)',
+      authorEn: 'You (Family Account)',
+      roleAr: 'والد/والدة',
+      roleEn: 'Parent',
+      textAr: trimmed,
+      textEn: trimmed,
+      timeAgoAr: 'الآن',
+      timeAgoEn: 'Just now',
+    };
+    setCommentsByMediaKey((prev) => ({
+      ...prev,
+      [mediaKey]: [newEntry, ...(prev[mediaKey] || [])],
+    }));
+    setNewCommentText('');
+    onShowToast(
+      isEn ? '💬 Comment published to community media!' : '💬 تم نشر تعليقك بنجاح!'
+    );
+  };
+
+  const handleShareMedia = (mediaKey: string, title: string) => {
+    setShareCountBoost((prev) => ({ ...prev, [mediaKey]: (prev[mediaKey] || 0) + 1 }));
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(`https://familyspace.app/media/${mediaKey}`).catch(() => {});
+    }
+    onShowToast(
+      isEn
+        ? `📤 Shared "${title}" link with family!`
+        : `📤 تم نسخ ومشاركة رابط «${title}» مع العائلة!`
+    );
+  };
 
   const triggerGentleChime = (freqHz: number, vol: number) => {
     try {
@@ -308,29 +412,32 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const mediaBanners: BannerSlideItem[] = [
     {
       id: 'media-slide-reels',
-      badge: isEn ? '📱 Vertical Reels 9:16' : '📱 ريلز الأسرة القصيرة 9:16',
+      badge: isEn ? '📱 Full-Screen Reels 9:16' : '📱 ريلز الأسرة بملء الشاشة 9:16',
       title: isEn
-        ? '60-Second Parenting Reels from Specialists'
-        : 'فيديوهات ريلز تربوية سريعة من المتخصصين',
+        ? '60-Second Parenting Reels with Live Likes, Comments & Share'
+        : 'فيديوهات ريلز تربوية مع إعجاب وتعليقات ومشاركة فورية',
       subtitle: isEn
         ? 'Tantrums · Montessori · Sleep · Nutrition'
         : 'تهدئة الغضب · أنشطة مونتيسوري · النوم · التغذية',
-      ctaLabel: isEn ? 'Watch Vertical Reels' : 'شاهد الريلز الآن',
-      onCtaClick: () => setMediaViewMode('reels'),
+      ctaLabel: isEn ? 'Open Full-Screen Reels' : 'شاهد الريلز ملء الشاشة',
+      onCtaClick: () => {
+        setMediaViewMode('reels');
+        setIsFullScreenReel(true);
+      },
       iconId: 'video',
       gradient: 'linear-gradient(125deg, #eef2ff, #f5f3ff, #fdf2f8)',
       ctaVariant: 'indigo',
     },
     {
       id: 'media-slide-audio',
-      badge: isEn ? '🎵 Bedtime Lullabies' : '🎵 قصص وتهويدات قبل النوم',
+      badge: isEn ? '🎙️ Parenting Podcasts & Bedtime Audio' : '🎙️ بودكاست الأسرة والقصص الصوتية',
       title: isEn
-        ? 'Calming Audio Stories & Melodies for Deep Sleep'
-        : 'قصص صوتية وتهويدات هادئة لنوم عميق لطفلك',
+        ? 'Clean Podcast Player with Waveform & Sleep Lullabies'
+        : 'مشغل بودكاست وقصص صوتية حديث مع موجات صوتية وتهويدات',
       subtitle: isEn
         ? 'Screen-Free · Gentle Chimes · 0–8 Yrs'
         : 'بدون شاشات · نغمات مريحة · لعمر 0–8 سنوات',
-      ctaLabel: isEn ? 'Open Audio Studio' : 'شغّل القصص الصوتية',
+      ctaLabel: isEn ? 'Open Podcast Player' : 'شغّل البودكاست والقصص',
       onCtaClick: () => setMediaViewMode('audio'),
       iconId: 'audio',
       gradient: 'linear-gradient(125deg, #f5f3ff, #ede9fe, #e0f2fe)',
@@ -338,8 +445,184 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
     },
   ];
 
+  const renderReelPlayerCard = (fullScreenMode: boolean) => (
+    <div
+      className={`${
+        fullScreenMode
+          ? 'w-full max-w-[410px] h-[86vh] rounded-[30px]'
+          : 'rounded-[26px] min-h-[490px]'
+      } p-4 sm:p-5 text-white flex flex-col justify-between relative overflow-hidden shadow-xl border border-white/20`}
+      style={{ background: currentReel.gradientBg }}
+    >
+      {/* Top Bar */}
+      <div className="flex items-center justify-between gap-2 z-10">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold bg-black/35 backdrop-blur-xs px-3 py-1 rounded-full">
+          <span>🎬 {isEn ? currentReel.categoryEn : currentReel.categoryAr}</span>
+          <span>·</span>
+          <span dir="ltr" className="tabular-nums">{currentReel.duration}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setReelPlaying((p) => !p)}
+            className="px-2.5 py-1 rounded-full bg-white/20 hover:bg-white/30 text-[11px] font-extrabold backdrop-blur-xs"
+          >
+            {reelPlaying ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : isEn ? '▶ Play' : '▶ تشغيل'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsFullScreenReel((f) => !f)}
+            className="px-2.5 py-1 rounded-full bg-white text-slate-950 hover:bg-indigo-50 text-[11px] font-extrabold shadow-2xs"
+          >
+            {fullScreenMode
+              ? isEn
+                ? '✕ Exit Full Screen'
+                : '✕ إغلاق ملء الشاشة'
+              : isEn
+              ? '⛶ Full Screen'
+              : '⛶ ملء الشاشة'}
+          </button>
+        </div>
+      </div>
+
+      {/* Center Visual & Caption */}
+      <div className="my-auto py-4 text-center space-y-3 z-10">
+        <div className="mx-auto w-18 h-18 rounded-3xl bg-white/15 backdrop-blur-xs border border-white/25 flex items-center justify-center shadow-lg">
+          <ThreeDIcon id={currentReel.iconId} size={48} />
+        </div>
+        <div className="space-y-1.5 px-1">
+          <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-extrabold text-indigo-100">
+            👶 {currentReel.ageStage}
+          </span>
+          <h3 className="text-base sm:text-lg font-extrabold leading-snug">
+            {isEn ? currentReel.titleEn : currentReel.titleAr}
+          </h3>
+          <p className="text-xs text-white/90 leading-relaxed bg-black/35 backdrop-blur-xs rounded-2xl p-3">
+            {isEn ? currentReel.captionEn : currentReel.captionAr}
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Creator & Social Bar (Likes, Comments, Share, Save) */}
+      <div className="space-y-2.5 z-10 pt-2.5 border-t border-white/15">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-xs font-extrabold truncate">
+              {isEn ? currentReel.creatorNameEn : currentReel.creatorNameAr} · ✅
+            </div>
+            <div className="text-[10px] text-white/75 truncate">
+              {isEn ? currentReel.creatorRoleEn : currentReel.creatorRoleAr}
+            </div>
+          </div>
+
+          {/* Social Action Pills: Like, Comment, Share, Save */}
+          <div className="flex flex-wrap items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                const liked = likedReelIds.includes(currentReel.id);
+                setLikedReelIds((prev) =>
+                  liked ? prev.filter((id) => id !== currentReel.id) : [...prev, currentReel.id]
+                );
+              }}
+              aria-label={isEn ? 'Like Reel' : 'إعجاب بالريل'}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold backdrop-blur-xs cursor-pointer ${
+                likedReelIds.includes(currentReel.id)
+                  ? 'bg-rose-500 text-white'
+                  : 'bg-white/15 text-white hover:bg-white/25'
+              }`}
+            >
+              ♥{' '}
+              <span dir="ltr" className="tabular-nums">
+                {currentReel.likesBase + (likedReelIds.includes(currentReel.id) ? 1 : 0)}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowCommentsDrawerFor((prev) =>
+                  prev === currentReel.id ? null : currentReel.id
+                )
+              }
+              aria-label={isEn ? 'Comments' : 'التعليقات'}
+              className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-white/15 text-white hover:bg-white/25 backdrop-blur-xs cursor-pointer"
+            >
+              💬 <span dir="ltr" className="tabular-nums">{currentReelComments.length}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                handleShareMedia(
+                  currentReel.id,
+                  isEn ? currentReel.titleEn : currentReel.titleAr
+                )
+              }
+              aria-label={isEn ? 'Share Reel' : 'مشاركة الريل'}
+              className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-white/15 text-white hover:bg-white/25 backdrop-blur-xs cursor-pointer"
+            >
+              📤{' '}
+              <span dir="ltr" className="tabular-nums">
+                {currentReel.sharesBase + (shareCountBoost[currentReel.id] || 0)}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const saved = savedReelIds.includes(currentReel.id);
+                setSavedReelIds((prev) =>
+                  saved ? prev.filter((id) => id !== currentReel.id) : [...prev, currentReel.id]
+                );
+                onShowToast(
+                  saved
+                    ? isEn
+                      ? 'Removed Reel from saved list'
+                      : 'تمت إزالة الريل من المحفوظات'
+                    : isEn
+                    ? 'Saved Reel for quick reference'
+                    : 'تم حفظ الريل للرجوع إليه لاحقًا'
+                );
+              }}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold backdrop-blur-xs cursor-pointer ${
+                savedReelIds.includes(currentReel.id)
+                  ? 'bg-amber-400 text-slate-950'
+                  : 'bg-white/15 text-white hover:bg-white/25'
+              }`}
+            >
+              🌟
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() =>
+              setActiveReelIndex((i) => (i - 1 + filteredReels.length) % filteredReels.length)
+            }
+            className="flex-1 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold text-center"
+          >
+            ↑ {isEn ? 'Prev Reel' : 'الريل السابق'}
+          </button>
+          <span dir="ltr" className="text-xs font-bold tabular-nums px-2">
+            {(activeReelIndex % filteredReels.length) + 1} / {filteredReels.length}
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveReelIndex((i) => (i + 1) % filteredReels.length)}
+            className="flex-1 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-indigo-50 text-xs font-extrabold text-center"
+          >
+            ↓ {isEn ? 'Next Reel' : 'الريل التالي'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <section className="space-y-5" aria-label={isEn ? 'Media, Videos & Reels Hub' : 'مركز الميديا والريلز التربوية'}>
+    <section className="space-y-4" aria-label={isEn ? 'Media, Videos & Reels Hub' : 'مركز الميديا والريلز التربوية'}>
       {/* Swipeable Media Banners */}
       <SwipeableBannerCarousel
         slides={mediaBanners}
@@ -348,184 +631,174 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
       />
 
       {/* Mode Switcher Tabs */}
-      <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-indigo-50/90 border border-indigo-200/80 w-max max-w-full">
-        <button
-          type="button"
-          onClick={() => setMediaViewMode('reels')}
-          className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
-            mediaViewMode === 'reels'
-              ? 'bg-indigo-600 text-white shadow-2xs'
-              : 'text-indigo-950 hover:bg-indigo-100/70'
-          }`}
-        >
-          📱 {isEn ? 'Vertical Reels (9:16)' : 'ريلز الأسرة (9:16)'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMediaViewMode('library')}
-          className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
-            mediaViewMode === 'library'
-              ? 'bg-indigo-600 text-white shadow-2xs'
-              : 'text-indigo-950 hover:bg-indigo-100/70'
-          }`}
-        >
-          🎥 {isEn ? 'Videos & Guides' : 'الفيديو والأدلة'}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMediaViewMode('audio')}
-          className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
-            mediaViewMode === 'audio'
-              ? 'bg-indigo-600 text-white shadow-2xs'
-              : 'text-indigo-950 hover:bg-indigo-100/70'
-          }`}
-        >
-          🎵 {isEn ? 'Audio Lullabies' : 'القصص الصوتية'}
-        </button>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-indigo-50/90 border border-indigo-200/80">
+          <button
+            type="button"
+            onClick={() => setMediaViewMode('reels')}
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              mediaViewMode === 'reels'
+                ? 'bg-indigo-600 text-white shadow-2xs'
+                : 'text-indigo-950 hover:bg-indigo-100/70'
+            }`}
+          >
+            📱 {isEn ? 'Vertical Reels (9:16)' : 'ريلز الأسرة (9:16)'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMediaViewMode('audio')}
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              mediaViewMode === 'audio'
+                ? 'bg-indigo-600 text-white shadow-2xs'
+                : 'text-indigo-950 hover:bg-indigo-100/70'
+            }`}
+          >
+            🎙️ {isEn ? 'Podcasts & Audio Stories' : 'البودكاست والقصص الصوتية'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMediaViewMode('library')}
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              mediaViewMode === 'library'
+                ? 'bg-indigo-600 text-white shadow-2xs'
+                : 'text-indigo-950 hover:bg-indigo-100/70'
+            }`}
+          >
+            🎥 {isEn ? 'Videos & Guides' : 'الفيديو والأدلة'}
+          </button>
+        </div>
+
+        {mediaViewMode === 'reels' && (
+          <button
+            type="button"
+            onClick={() => setIsFullScreenReel(true)}
+            className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold shadow-2xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>⛶</span>
+            <span>{isEn ? 'Full-Screen Reels Player' : 'مشغل الريلز ملء الشاشة'}</span>
+          </button>
+        )}
       </div>
 
-      {/* MODE 1: VERTICAL SWIPEABLE REELS EXPERIENCE (9:16) */}
+      {/* FULL-SCREEN REELS MODAL OVERLAY */}
+      {isFullScreenReel && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-3"
+          role="dialog"
+          aria-modal="true"
+          aria-label={isEn ? 'Full Screen Reels Player' : 'مشغل الريلز بملء الشاشة'}
+        >
+          {renderReelPlayerCard(true)}
+        </div>
+      )}
+
+      {/* MODE 1: VERTICAL SWIPEABLE REELS EXPERIENCE (9:16) + SOCIAL COMMENTS */}
       {mediaViewMode === 'reels' && (
-        <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-5 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4 items-start">
           {/* Vertical 9:16 Reel Player Frame */}
-          <div
-            className="rounded-[28px] p-5 text-white flex flex-col justify-between min-h-[520px] relative overflow-hidden shadow-xl border border-white/15"
-            style={{ background: currentReel.gradientBg }}
-          >
-            <div className="flex items-center justify-between gap-2 z-10">
-              <div className="flex items-center gap-2 text-xs font-bold bg-black/30 backdrop-blur-xs px-3 py-1.5 rounded-full">
-                <span>🎬 {isEn ? currentReel.categoryEn : currentReel.categoryAr}</span>
-                <span>·</span>
-                <span dir="ltr" className="tabular-nums">{currentReel.duration}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setReelPlaying((p) => !p)}
-                className="px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-xs font-bold backdrop-blur-xs"
-              >
-                {reelPlaying ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : isEn ? '▶ Play' : '▶ تشغيل'}
-              </button>
-            </div>
+          {renderReelPlayerCard(false)}
 
-            <div className="my-auto py-6 text-center space-y-4 z-10">
-              <div className="mx-auto w-20 h-20 rounded-3xl bg-white/15 backdrop-blur-xs border border-white/25 flex items-center justify-center shadow-lg">
-                <ThreeDIcon id={currentReel.iconId} size={54} />
-              </div>
-              <div className="space-y-2 px-2">
-                <span className="text-[11px] font-bold text-indigo-200">
-                  👶 {currentReel.ageStage}
-                </span>
-                <h3 className="text-lg sm:text-xl font-extrabold leading-snug">
-                  {isEn ? currentReel.titleEn : currentReel.titleAr}
+          {/* Right Panel: Interactive Comments Section + Takeaways + All Reels Grid */}
+          <div className="space-y-4">
+            {/* Interactive Social Comments & Discussion Box */}
+            <div className="rounded-[22px] border border-rose-200/80 bg-rose-50/50 p-4 space-y-3 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="text-sm font-extrabold text-[var(--color-text)] flex items-center gap-1.5">
+                  <span>💬</span>
+                  <span>
+                    {isEn
+                      ? `Parents Comments & Reactions (${currentReelComments.length})`
+                      : `تعليقات وتفاعل الوالدين (${currentReelComments.length})`}
+                  </span>
                 </h3>
-                <p className="text-xs text-white/90 leading-relaxed bg-black/35 backdrop-blur-xs rounded-2xl p-3.5">
-                  {isEn ? currentReel.captionEn : currentReel.captionAr}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3 z-10 pt-2 border-t border-white/15">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className="text-xs font-extrabold">
-                    {isEn ? currentReel.creatorNameEn : currentReel.creatorNameAr} · ✅
-                  </div>
-                  <div className="text-[11px] text-white/75">
-                    {isEn ? currentReel.creatorRoleEn : currentReel.creatorRoleAr}
-                  </div>
-                </div>
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
-                    onClick={() => {
-                      const liked = likedReelIds.includes(currentReel.id);
-                      setLikedReelIds((prev) =>
-                        liked ? prev.filter((id) => id !== currentReel.id) : [...prev, currentReel.id]
-                      );
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-xs ${
-                      likedReelIds.includes(currentReel.id)
-                        ? 'bg-rose-500 text-white'
-                        : 'bg-white/15 text-white hover:bg-white/25'
-                    }`}
+                    onClick={() =>
+                      handleShareMedia(
+                        currentReel.id,
+                        isEn ? currentReel.titleEn : currentReel.titleAr
+                      )
+                    }
+                    className="px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-[11px] font-extrabold text-rose-900"
                   >
-                    ♥{' '}
-                    <span dir="ltr" className="tabular-nums">
-                      {currentReel.likesBase + (likedReelIds.includes(currentReel.id) ? 1 : 0)}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const saved = savedReelIds.includes(currentReel.id);
-                      setSavedReelIds((prev) =>
-                        saved ? prev.filter((id) => id !== currentReel.id) : [...prev, currentReel.id]
-                      );
-                      onShowToast(
-                        saved
-                          ? isEn
-                            ? 'Removed Reel from saved list'
-                            : 'تمت إزالة الريل من المحفوظات'
-                          : isEn
-                          ? 'Saved Reel for quick reference'
-                          : 'تم حفظ الريل للرجوع إليه لاحقًا'
-                      );
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-xs ${
-                      savedReelIds.includes(currentReel.id)
-                        ? 'bg-amber-400 text-slate-950'
-                        : 'bg-white/15 text-white hover:bg-white/25'
-                    }`}
-                  >
-                    🌟 {savedReelIds.includes(currentReel.id) ? (isEn ? 'Saved' : 'محفوظ') : isEn ? 'Save' : 'حفظ'}
+                    📤 {isEn ? 'Share Reel' : 'مشاركة الريل'}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveReelIndex(
-                      (i) => (i - 1 + filteredReels.length) % filteredReels.length
-                    )
+              {/* Add Comment Input Row */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddComment(currentReel.id);
+                  }}
+                  placeholder={
+                    isEn
+                      ? 'Write a comment or parenting question...'
+                      : 'أضف تعليقك أو تجربتك مع هذا الريل...'
                   }
-                  className="flex-1 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold text-center"
+                  className="flex-1 rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+                />
+                <PrimaryCtaButton
+                  variant="orange"
+                  size="sm"
+                  onClick={() => handleAddComment(currentReel.id)}
                 >
-                  ↑ {isEn ? 'Prev Reel' : 'الريل السابق'}
-                </button>
-                <span dir="ltr" className="text-xs font-bold tabular-nums px-2">
-                  {(activeReelIndex % filteredReels.length) + 1} / {filteredReels.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setActiveReelIndex((i) => (i + 1) % filteredReels.length)
-                  }
-                  className="flex-1 py-2 rounded-xl bg-white text-slate-900 hover:bg-indigo-50 text-xs font-extrabold text-center"
-                >
-                  ↓ {isEn ? 'Next Reel' : 'الريل التالي'}
-                </button>
+                  {isEn ? 'Post' : 'إرسال'}
+                </PrimaryCtaButton>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-2 max-h-44 overflow-y-auto pe-1">
+                {currentReelComments.length === 0 ? (
+                  <div className="text-xs font-semibold text-[var(--color-muted)] text-center py-2">
+                    {isEn ? 'Be the first to comment on this reel!' : 'كن أول من يشارك تعليقه على هذا الريل!'}
+                  </div>
+                ) : (
+                  currentReelComments.map((c) => (
+                    <div
+                      key={c.id}
+                      className="rounded-xl bg-white border border-rose-100 p-2.5 space-y-1 shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="font-extrabold text-[var(--color-text)]">
+                          {isEn ? c.authorEn : c.authorAr}{' '}
+                          <span className="text-[10px] font-bold text-rose-700">
+                            · {isEn ? c.roleEn : c.roleAr}
+                          </span>
+                        </span>
+                        <span className="text-[10px] font-semibold text-[var(--color-muted)]">
+                          {isEn ? c.timeAgoEn : c.timeAgoAr}
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-700">
+                        {isEn ? c.textEn : c.textAr}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Right Panel: Reel Takeaways + All Reels Grid Cards */}
-          <div className="space-y-4">
-            <div className="rounded-[24px] border border-indigo-200/80 bg-indigo-50/70 p-5 space-y-3 shadow-2xs">
+            {/* Quick Actionable Steps */}
+            <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/70 p-4 space-y-2.5 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-base font-extrabold text-[var(--color-text)]">
+                <h3 className="text-sm font-extrabold text-[var(--color-text)]">
                   💡 {isEn ? 'Quick Actionable Steps' : 'خطوات عملية سريعة'}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-lg bg-indigo-100 text-indigo-900 text-xs font-extrabold">
+                <span className="px-2 py-0.5 rounded-lg bg-indigo-100 text-indigo-900 text-[11px] font-extrabold">
                   {currentReel.ageStage}
                 </span>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {(isEn ? currentReel.keyTakeawaysEn : currentReel.keyTakeawaysAr).map((step, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl bg-white border border-indigo-100 p-3 text-xs font-bold text-slate-800 shadow-2xs"
+                    className="rounded-xl bg-white border border-indigo-100 p-2.5 text-xs font-bold text-slate-800 shadow-2xs"
                   >
                     {step}
                   </div>
@@ -533,32 +806,36 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3 shadow-2xs">
-              <h3 className="text-base font-extrabold text-[var(--color-text)]">
+            {/* All Reels Grid Cards */}
+            <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-2.5 shadow-2xs">
+              <h3 className="text-sm font-extrabold text-[var(--color-text)]">
                 🎞️ {isEn ? 'All Parenting Reels' : 'قائمة الريلز المختارة'}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {PARENTING_REELS_FEED.map((reel, idx) => {
                   const isCurrent = reel.id === currentReel.id;
                   return (
                     <button
                       key={reel.id}
                       type="button"
-                      onClick={() => setActiveReelIndex(idx)}
-                      className={`p-3.5 rounded-2xl border text-start transition-all flex items-start gap-3 ${
+                      onClick={() => {
+                        setActiveReelIndex(idx);
+                        setShowCommentsDrawerFor(reel.id);
+                      }}
+                      className={`p-3 rounded-xl border text-start transition-all flex items-start gap-2.5 ${
                         isCurrent
                           ? 'border-indigo-600 bg-indigo-50/80 shadow-2xs'
                           : 'border-[var(--color-border)] bg-[var(--color-control-bg)] hover:border-indigo-300'
                       }`}
                     >
-                      <div className="w-11 h-11 rounded-2xl bg-white shadow-2xs flex items-center justify-center shrink-0">
-                        <ThreeDIcon id={reel.iconId} size={28} />
+                      <div className="w-10 h-10 rounded-xl bg-white shadow-2xs flex items-center justify-center shrink-0">
+                        <ThreeDIcon id={reel.iconId} size={24} />
                       </div>
-                      <div className="min-w-0 flex-1 space-y-1">
+                      <div className="min-w-0 flex-1 space-y-0.5">
                         <div className="text-xs font-extrabold text-[var(--color-text)] line-clamp-2 leading-snug">
                           {isEn ? reel.titleEn : reel.titleAr}
                         </div>
-                        <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                        <div className="text-[10px] font-bold text-[var(--color-muted)]">
                           {isEn ? reel.creatorNameEn : reel.creatorNameAr} ·{' '}
                           <span dir="ltr" className="tabular-nums">{reel.duration}</span>
                         </div>
@@ -574,11 +851,11 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
 
       {/* MODE 2: VIDEO PLAYER & EDUCATIONAL GUIDES LIBRARY */}
       {mediaViewMode === 'library' && (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {activeVideoItem && activeVideoItem.videoConfig && (
-            <div className="rounded-[24px] border border-indigo-200/80 bg-indigo-50/60 p-5 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-5 items-center shadow-2xs">
+            <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/60 p-4 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-center shadow-2xs">
               <div
-                className="rounded-2xl p-5 text-white flex flex-col justify-between min-h-[220px]"
+                className="rounded-2xl p-4 text-white flex flex-col justify-between min-h-[210px]"
                 style={{
                   background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4c1d95 100%)',
                 }}
@@ -592,12 +869,12 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                   </span>
                 </div>
 
-                <div className="my-auto py-4 text-center space-y-2">
-                  <div className="text-base font-extrabold">
+                <div className="my-auto py-3 text-center space-y-2">
+                  <div className="text-sm sm:text-base font-extrabold">
                     {isEn ? activeVideoItem.titleEn : activeVideoItem.title}
                   </div>
                   {videoCaptionsOn && (
-                    <div className="mx-auto max-w-md rounded-xl bg-black/55 px-3.5 py-2 text-xs text-white leading-relaxed">
+                    <div className="mx-auto max-w-md rounded-xl bg-black/55 px-3 py-1.5 text-xs text-white leading-relaxed">
                       {
                         (isEn
                           ? activeVideoItem.videoConfig.captionsEn
@@ -630,7 +907,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => setVideoPlaying((p) => !p)}
-                      className="px-4 py-1.5 rounded-xl text-xs font-extrabold bg-white text-indigo-950"
+                      className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white text-indigo-950"
                     >
                       {videoPlaying ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : isEn ? '▶ Play Video' : '▶ تشغيل الفيديو'}
                     </button>
@@ -638,7 +915,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => setVideoCaptionsOn((c) => !c)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+                        className={`px-2 py-1 rounded-lg text-[11px] font-bold ${
                           videoCaptionsOn ? 'bg-indigo-500 text-white' : 'bg-white/15 text-white'
                         }`}
                       >
@@ -649,16 +926,28 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                         onClick={() =>
                           setVideoSpeed((s) => (s === 1 ? 1.25 : s === 1.25 ? 1.5 : 1))
                         }
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/15 text-white tabular-nums"
+                        className="px-2 py-1 rounded-lg text-[11px] font-bold bg-white/15 text-white tabular-nums"
                       >
                         <span dir="ltr">{videoSpeed}x</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleShareMedia(
+                            `video-${activeVideoItem.id}`,
+                            isEn ? activeVideoItem.titleEn : activeVideoItem.title
+                          )
+                        }
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/15 text-white"
+                      >
+                        📤 {isEn ? 'Share' : 'مشاركة'}
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <div className="text-xs font-extrabold text-indigo-900">
                   🎬 {isEn ? 'Select Educational Video' : 'اختر الفيديو التربوي'}
                 </div>
@@ -670,7 +959,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     setVideoPlaying(false);
                   }}
                   aria-label={isEn ? 'Select educational video' : 'اختيار الفيديو التربوي'}
-                  className="w-full rounded-2xl border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-xs font-extrabold text-[var(--color-text)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
                 >
                   {videoItems.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -686,9 +975,9 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           )}
 
           {/* Filter & Search Bar for Articles/Guides */}
-          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3 shadow-2xs">
+          <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2.5 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1">
                 {[
                   { id: 'all', label: isEn ? 'All Media' : 'الكل' },
                   { id: 'video', label: isEn ? '🎬 Videos' : '🎬 فيديوهات' },
@@ -699,7 +988,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setSelectedType(tab.id as typeof selectedType)}
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+                    className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
                       selectedType === tab.id
                         ? 'bg-indigo-600 text-white'
                         : 'bg-[var(--color-control-muted)] text-[var(--color-muted)]'
@@ -714,7 +1003,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 value={selectedStage}
                 onChange={(e) => setSelectedStage(e.target.value as AgeStage)}
                 aria-label={isEn ? 'Filter by child age' : 'تصفية حسب عمر الطفل'}
-                className="min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+                className="min-h-[34px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)]"
               >
                 <option value="all">{isEn ? 'All Ages (0–8 yrs)' : 'كل الأعمار (0–8)'}</option>
                 <option value="0-2">{isEn ? '0–2 Years' : '0–2 سنوات'}</option>
@@ -728,24 +1017,24 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isEn ? '🔍 Search videos and parenting guides...' : '🔍 ابحث في الفيديوهات والأدلة التربوية...'}
-              className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
             {filteredItems.map((item) => {
               const isSaved = savedMediaIds.includes(item.id);
               return (
                 <article
                   key={item.id}
-                  className="rounded-[24px] border border-indigo-200/80 bg-indigo-50/60 p-5 flex flex-col justify-between gap-4 shadow-2xs"
+                  className="rounded-[20px] border border-indigo-200/80 bg-indigo-50/60 p-4 flex flex-col justify-between gap-3 shadow-2xs"
                 >
-                  <div className="space-y-2">
-                    <div className="text-xs font-extrabold text-indigo-800">
+                  <div className="space-y-1.5">
+                    <div className="text-[11px] font-extrabold text-indigo-800">
                       {item.type === 'video' ? '🎬 ' : '📘 '}
                       {item.durationLabel} · 👶 {item.ageStage === 'all' ? '0–8' : item.ageStage}
                     </div>
-                    <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
+                    <h3 className="text-sm font-extrabold text-[var(--color-text)] leading-snug">
                       {isEn ? item.titleEn : item.title}
                     </h3>
                     <div className="text-xs font-semibold text-[var(--color-muted)] line-clamp-2">
@@ -753,7 +1042,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-3 border-t border-indigo-200/60">
+                  <div className="flex items-center justify-between gap-1.5 pt-2.5 border-t border-indigo-200/60">
                     <PrimaryCtaButton
                       variant="indigo"
                       size="sm"
@@ -761,13 +1050,27 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     >
                       {isEn ? 'Open Guide' : 'عرض التفاصيل'}
                     </PrimaryCtaButton>
-                    <button
-                      type="button"
-                      onClick={() => onToggleSaveMedia(item.id)}
-                      className="min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white"
-                    >
-                      {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleShareMedia(
+                            `guide-${item.id}`,
+                            isEn ? item.titleEn : item.title
+                          )
+                        }
+                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white"
+                      >
+                        📤
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onToggleSaveMedia(item.id)}
+                        className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white"
+                      >
+                        {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
@@ -776,16 +1079,44 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
         </div>
       )}
 
-      {/* MODE 3: BEDTIME AUDIO STORIES & LULLABIES STUDIO */}
+      {/* MODE 3: CLEAN MODERN PODCAST & BEDTIME AUDIO PLAYER */}
       {mediaViewMode === 'audio' && activeAudioItem && activeAudioItem.audioConfig && (
-        <div className="rounded-[24px] border border-purple-200/80 bg-purple-50/75 p-5 sm:p-6 space-y-4 shadow-2xs">
+        <div className="rounded-[24px] border border-purple-200/90 bg-gradient-to-br from-purple-50/90 via-white to-indigo-50/80 p-4 sm:p-5 space-y-4 shadow-2xs">
+          {/* Episode Selector Strip */}
+          {audioItems.length > 1 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {audioItems.map((ep) => (
+                <button
+                  key={ep.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedAudioId(ep.id);
+                    setAudioProgressSec(0);
+                    setAudioPlaying(false);
+                  }}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all ${
+                    ep.id === activeAudioItem.id
+                      ? 'border-purple-600 bg-purple-600 text-white'
+                      : 'border-purple-200 bg-white text-purple-950'
+                  }`}
+                >
+                  🎙️ {isEn ? ep.titleEn : ep.title}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Podcast Header + Waveform Visualizer */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white shadow-2xs flex items-center justify-center shrink-0">
-                <ThreeDIcon id="audio" size={34} />
+              <div className="w-14 h-14 rounded-2xl bg-purple-600 text-white shadow-sm flex items-center justify-center shrink-0">
+                <ThreeDIcon id="audio" size={38} />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
+                <span className="px-2 py-0.5 rounded-md bg-purple-100 text-purple-900 text-[10px] font-extrabold">
+                  {isEn ? 'FAMILY PODCAST & AUDIO STORY' : 'بودكاست الأسرة والقصص الصوتية'}
+                </span>
+                <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
                   {isEn ? activeAudioItem.titleEn : activeAudioItem.title}
                 </h3>
                 <div className="text-xs font-semibold text-[var(--color-muted)]">
@@ -793,56 +1124,144 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 </div>
               </div>
             </div>
-            <span dir="ltr" className="px-3 py-1 rounded-xl bg-white text-purple-900 text-xs font-extrabold tabular-nums shadow-2xs">
+            <span dir="ltr" className="px-3 py-1 rounded-xl bg-white border border-purple-200 text-purple-900 text-xs font-extrabold tabular-nums shadow-2xs">
               {formatSec(audioProgressSec)} / {formatSec(activeAudioItem.audioConfig.durationSeconds)}
             </span>
           </div>
 
-          <input
-            type="range"
-            min={0}
-            max={activeAudioItem.audioConfig.durationSeconds}
-            value={audioProgressSec}
-            onChange={(e) => setAudioProgressSec(Number(e.target.value))}
-            aria-label={isEn ? 'Audio timeline' : 'شريط تقدم القصة الصوتية'}
-            className="w-full accent-purple-600 cursor-pointer"
-          />
-
-          <div className="rounded-2xl bg-white border border-purple-100 p-4 text-xs font-semibold text-[var(--color-text)] leading-relaxed shadow-2xs">
-            {isEn ? activeAudioItem.audioConfig.transcriptEn : activeAudioItem.audioConfig.transcriptAr}
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <PrimaryCtaButton
-              variant="purple"
-              onClick={() => {
-                const nextState = !audioPlaying;
-                setAudioPlaying(nextState);
-                if (nextState) {
-                  triggerGentleChime(activeAudioItem.audioConfig?.melodyNotesHz[0] || 330, audioVolume);
+          {/* Modern Audio Waveform Bars */}
+          <div className="rounded-2xl bg-slate-900 p-3.5 space-y-2.5 text-white">
+            <div className="flex items-end justify-between gap-1 h-12 px-2" aria-hidden="true">
+              {[28, 52, 74, 42, 88, 64, 35, 92, 58, 44, 80, 62, 38, 76, 94, 50, 68, 40, 84, 55, 72, 48, 60, 34].map(
+                (barHeight, idx) => {
+                  const pct =
+                    (audioProgressSec / Math.max(1, activeAudioItem.audioConfig?.durationSeconds || 60)) *
+                    24;
+                  const isActiveBar = idx <= pct;
+                  return (
+                    <span
+                      key={idx}
+                      className={`flex-1 rounded-full transition-all ${
+                        isActiveBar ? 'bg-purple-400' : 'bg-slate-700'
+                      }`}
+                      style={{
+                        height: `${audioPlaying ? Math.max(22, (barHeight + idx * 7) % 95) : barHeight}%`,
+                      }}
+                    />
+                  );
                 }
-              }}
-            >
-              {audioPlaying ? (isEn ? '⏸ Pause Audio Story' : '⏸ إيقاف القصة الصوتية') : isEn ? '▶ Play Bedtime Story' : '▶ تشغيل القصة والتهويدة'}
-            </PrimaryCtaButton>
+              )}
+            </div>
 
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="font-bold text-[var(--color-muted)]">{isEn ? 'Speed:' : 'السرعة:'}</span>
-              {([0.75, 1, 1.25, 1.5] as const).map((spd) => (
+            <input
+              type="range"
+              min={0}
+              max={activeAudioItem.audioConfig.durationSeconds}
+              value={audioProgressSec}
+              onChange={(e) => setAudioProgressSec(Number(e.target.value))}
+              aria-label={isEn ? 'Audio timeline' : 'شريط تقدم القصة الصوتية'}
+              className="w-full accent-purple-400 cursor-pointer"
+            />
+
+            {/* Transport Controls: -15s, Play/Pause, +15s, Speed, Social */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <div className="flex items-center gap-1.5">
                 <button
-                  key={spd}
                   type="button"
-                  onClick={() => setAudioSpeed(spd)}
-                  className={`px-2.5 py-1 rounded-xl font-extrabold tabular-nums ${
-                    audioSpeed === spd
-                      ? 'bg-purple-700 text-white'
-                      : 'bg-white text-[var(--color-text)]'
+                  onClick={() => setAudioProgressSec((p) => Math.max(0, p - 15))}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold tabular-nums"
+                >
+                  ↺ 15s
+                </button>
+                <PrimaryCtaButton
+                  variant="purple"
+                  size="sm"
+                  onClick={() => {
+                    const nextState = !audioPlaying;
+                    setAudioPlaying(nextState);
+                    if (nextState) {
+                      triggerGentleChime(
+                        activeAudioItem.audioConfig?.melodyNotesHz[0] || 330,
+                        audioVolume
+                      );
+                    }
+                  }}
+                >
+                  {audioPlaying
+                    ? isEn
+                      ? '⏸ Pause Podcast'
+                      : '⏸ إيقاف مؤقت'
+                    : isEn
+                    ? '▶ Play Podcast'
+                    : '▶ تشغيل البودكاست'}
+                </PrimaryCtaButton>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAudioProgressSec((p) =>
+                      Math.min(activeAudioItem.audioConfig?.durationSeconds || 60, p + 15)
+                    )
+                  }
+                  className="px-2.5 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold tabular-nums"
+                >
+                  15s ↻
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {([0.75, 1, 1.25, 1.5] as const).map((spd) => (
+                  <button
+                    key={spd}
+                    type="button"
+                    onClick={() => setAudioSpeed(spd)}
+                    className={`px-2 py-1 rounded-lg text-[11px] font-extrabold tabular-nums ${
+                      audioSpeed === spd
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-white/15 text-slate-200'
+                    }`}
+                  >
+                    <span dir="ltr">{spd}x</span>
+                  </button>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const liked = likedAudioIds.includes(activeAudioItem.id);
+                    setLikedAudioIds((prev) =>
+                      liked
+                        ? prev.filter((id) => id !== activeAudioItem.id)
+                        : [...prev, activeAudioItem.id]
+                    );
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold ${
+                    likedAudioIds.includes(activeAudioItem.id)
+                      ? 'bg-rose-500 text-white'
+                      : 'bg-white/15 text-white'
                   }`}
                 >
-                  <span dir="ltr">{spd}x</span>
+                  ♥ {likedAudioIds.includes(activeAudioItem.id) ? 342 : 341}
                 </button>
-              ))}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleShareMedia(
+                      `podcast-${activeAudioItem.id}`,
+                      isEn ? activeAudioItem.titleEn : activeAudioItem.title
+                    )
+                  }
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-white/15 text-white"
+                >
+                  📤 {isEn ? 'Share' : 'مشاركة'}
+                </button>
+              </div>
             </div>
+          </div>
+
+          {/* Transcript Box */}
+          <div className="rounded-xl bg-white border border-purple-100 p-3.5 text-xs font-semibold text-[var(--color-text)] leading-relaxed shadow-2xs">
+            {isEn ? activeAudioItem.audioConfig.transcriptEn : activeAudioItem.audioConfig.transcriptAr}
           </div>
         </div>
       )}
@@ -854,9 +1273,9 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-xl rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 space-y-4 max-h-[85vh] overflow-y-auto shadow-xl">
+          <div className="w-full max-w-xl rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3.5 max-h-[85vh] overflow-y-auto shadow-xl">
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-lg font-extrabold text-[var(--color-text)]">
+              <h3 className="text-base font-extrabold text-[var(--color-text)]">
                 {isEn ? activeItem.titleEn : activeItem.title}
               </h3>
               <button
@@ -867,9 +1286,9 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 {isEn ? 'Close' : 'إغلاق'}
               </button>
             </div>
-            <div className="space-y-2.5 text-sm text-[var(--color-text)] leading-relaxed">
+            <div className="space-y-2 text-xs sm:text-sm text-[var(--color-text)] leading-relaxed">
               {(isEn && activeItem.bodyEn ? activeItem.bodyEn : activeItem.body).map((line, i) => (
-                <p key={i} className="rounded-2xl bg-indigo-50/70 border border-indigo-100 p-3.5">
+                <p key={i} className="rounded-xl bg-indigo-50/70 border border-indigo-100 p-3">
                   {line}
                 </p>
               ))}
