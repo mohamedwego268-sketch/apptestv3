@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   FAMILY SPACE — DESIGN SYSTEM v1.2 TOKENS
+   Preserves backward compatibility with prototype/index.html & DESIGN_SYSTEM_v1.1
+   while elevating typography, contrast, and responsive spacing.
+   ========================================================================== */
+:root {
+  --color-page: #faf6f3;
+  --color-surface: #ffffff;
+  --color-text: #1b222e;
+  --color-muted: #5a6472;
+  --color-border: #eadfe4;
+  --color-accent: #c24b7d;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #fdf0f6;
+  --color-rose: #fceaf2;
+  --color-rose-text: #9d3a64;
+  --color-aqua: #e4f6f8;
+  --color-aqua-text: #196875;
+  --color-lavender: #f3ecfa;
+  --color-lavender-text: #62418f;
+  --color-notice: #ebf7f9;
+  --color-notice-text: #1d5d68;
+  --color-hero-start: #fde8e2;
+  --color-hero-mid: #fbedf7;
+  --color-hero-end: #e5f2fc;
+  --color-shadow: rgba(30, 37, 48, 0.05);
+  --color-overlay: rgba(24, 28, 36, 0.58);
+  --color-toast: #1b222e;
+  --color-control-bg: #ffffff;
+  --color-control-muted: #f6eff2;
+  --color-icon-tint: #f4eef9;
+  --color-art-start: #fbe8e2;
+  --color-art-end: #e7f1fa;
+  --color-task-accent: #a63d6a;
+  --color-focus: #1d63b8;
+  --color-nav-bg: rgba(255, 255, 255, 0.96);
+  --color-role-soft: #fceaf2;
+  --color-role-text: #9d3a64;
+
+  --font-ui: 'Cairo', 'Plus Jakarta Sans', Tahoma, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-size-base: 15px;
+  --line-height-base: 1.68;
+  --radius-card: 20px;
+  --radius-control: 12px;
+  --radius-small: 8px;
+
+  /* Backward-compatible aliases */
+  --bg: var(--color-page);
+  --card: var(--color-surface);
+  --ink: var(--color-text);
+  --muted: var(--color-muted);
+  --line: var(--color-border);
+  --accent: var(--color-accent);
+  --soft: var(--color-accent-soft);
+}
+
+:root[data-theme="mom"] {
+  --color-accent: #c24b7d;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #fdf0f6;
+  --color-hero-start: #fde8e2;
+  --color-hero-mid: #fbedf7;
+  --color-hero-end: #e6f1fc;
+  --color-control-muted: #f7eef3;
+  --color-icon-tint: #f6effb;
+  --color-art-start: #fbe8e2;
+  --color-art-end: #ede8fb;
+  --color-task-accent: #a63d6a;
+  --color-nav-bg: rgba(255, 251, 253, 0.96);
+  --color-role-soft: #fceaf2;
+  --color-role-text: #9d3a64;
+}
+
+:root[data-theme="dad"] {
+  --color-accent: #187786;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #e8f6f8;
+  --color-hero-start: #e2f5f7;
+  --color-hero-mid: #edf9fa;
+  --color-hero-end: #e6effc;
+  --color-control-muted: #e8f4f6;
+  --color-icon-tint: #e8f6f8;
+  --color-art-start: #e3f4f6;
+  --color-art-end: #e6effc;
+  --color-task-accent: #187786;
+  --color-nav-bg: rgba(248, 253, 254, 0.96);
+  --color-role-soft: #e4f6f8;
+  --color-role-text: #16606c;
+}
+
+:root[data-theme="high-contrast"] {
+  --color-page: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #111111;
+  --color-muted: #383838;
+  --color-border: #555555;
+  --color-accent: #7a1c44;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #f5e4ec;
+  --color-hero-start: #f5e4ec;
+  --color-hero-mid: #f0f4f8;
+  --color-hero-end: #e6eef4;
+  --color-notice: #e6f3f5;
+  --color-notice-text: #0f3f47;
+  --color-role-soft: #f5e4ec;
+  --color-role-text: #631234;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-page);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(244, 114, 182, 0.08), transparent 28%),
+    radial-gradient(circle at 88% 14%, rgba(56, 189, 248, 0.08), transparent 30%),
+    radial-gradient(circle at 50% 90%, rgba(167, 139, 250, 0.06), transparent 34%);
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  overflow-wrap: break-word;
+}
+
+p {
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.ltr-inline {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #747775;
+  border-radius: 20px;
+  box-sizing: border-box;
+  color: #1f1f1f;
+  cursor: pointer;
+  font-family: 'Roboto', 'Plus Jakarta Sans', 'Cairo', arial, sans-serif;
+  font-size: 14px;
+  height: 40px;
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 14px;
+  position: relative;
+  text-align: center;
+  transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: auto;
+  max-width: 400px;
+  min-width: min-content;
+}
+
+.gsi-material-button .gsi-material-button-icon {
+  height: 20px;
+  margin-right: 10px;
+  margin-left: 4px;
+  min-width: 20px;
+  width: 20px;
+}
+
+.gsi-material-button .gsi-material-button-content-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  height: 100%;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+}
+
+.gsi-material-button .gsi-material-button-contents {
+  flex-grow: 1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+}
+
+.gsi-material-button:hover {
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  background-color: #f8fafd;
+}
+
