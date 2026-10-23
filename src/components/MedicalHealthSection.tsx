@@ -9,7 +9,12 @@ import {
   calculateChildAge,
   formatCurrency,
 } from '../domain/familySpaceCore';
-import { ThreeDChildAvatar, ThreeDIcon, ThreeDInteractiveScene } from './ThreeDVisuals';
+import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
+import {
+  BannerSlideItem,
+  PrimaryCtaButton,
+  SwipeableBannerCarousel,
+} from './DesignSystem';
 
 interface MedicalHealthSectionProps {
   kids: ChildProfile[];
@@ -81,57 +86,70 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
     setBookingNote('');
   };
 
+  const medicalBanners: BannerSlideItem[] = [
+    {
+      id: 'med-slide-doctors',
+      badge: isEn ? '🩺 Verified Pediatricians' : '🩺 أطباء وعيادات معتمدة',
+      title: isEn
+        ? `Top Pediatricians & Specialists in ${city}`
+        : `أفضل أطباء واستشاريي الأطفال في ${city}`,
+      subtitle: isEn
+        ? 'Instant Appointment Booking · Syncs with Family Calendar'
+        : 'حجز فوري للمواعيد · يضاف تلقائيًا لتقويم الأسرة',
+      ctaLabel: isEn ? 'Book Doctor Now' : 'احجز موعد طبيب الآن',
+      onCtaClick: () => {
+        setActiveTab('doctors');
+        if (filteredDoctors[0]) setBookingDoctor(filteredDoctors[0]);
+      },
+      iconId: 'health',
+      gradient: 'linear-gradient(125deg, #ecfdf5, #d1fae5, #e0f2fe)',
+      ctaVariant: 'emerald',
+    },
+    {
+      id: 'med-slide-vaccines',
+      badge: isEn ? '💉 Growth & Vaccinations' : '💉 التطعيمات ومتابعة النمو',
+      title: isEn
+        ? 'Child Growth Metrics & Vaccination Schedule (0–8 Yrs)'
+        : 'سجل التطعيمات وقياسات الطول والوزن لأطفالك',
+      subtitle: isEn
+        ? 'Height · Weight · Blood Type · Private Parent Notes'
+        : 'الطول · الوزن · فصيلة الدم · ملاحظات صحية خاصة',
+      ctaLabel: isEn ? 'Open Child Health Records' : 'عرض السجل الصحي للأطفال',
+      onCtaClick: () => setActiveTab('child_records'),
+      iconId: 'children',
+      gradient: 'linear-gradient(125deg, #f0fdfa, #ccfbf1, #ede9fe)',
+      ctaVariant: 'indigo',
+    },
+    {
+      id: 'med-slide-guides',
+      badge: isEn ? '📋 Peer-Reviewed Guides' : '📋 أدلة طبية ونفسية موثقة',
+      title: isEn
+        ? 'Quick Pediatric & Child Psychology Guides'
+        : 'إرشادات طبية ونفسية مراجعة علميًا للوالدين',
+      subtitle: isEn
+        ? 'Newborn Care · Fever · Speech · Positive Behavior'
+        : 'رعاية الرضع · التسنين · التخاطب · تعديل السلوك',
+      ctaLabel: isEn ? 'Browse Medical Guides' : 'تصفح الأدلة الطبية',
+      onCtaClick: () => setActiveTab('articles'),
+      iconId: 'star',
+      gradient: 'linear-gradient(125deg, #fffbeb, #fef3c7, #dcfce7)',
+      ctaVariant: 'orange',
+    },
+  ];
+
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Medical & Child Health Hub' : 'الركن الطبي وصحة الطفل'}>
-      {/* Distinct Clinical Emerald Hero Personality */}
-      <div
-        className="rounded-[24px] p-5 sm:p-7 border border-emerald-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
-        style={{
-          background: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 52%, #e0f2fe 100%)',
-          boxShadow: '0 16px 34px -14px rgba(13, 148, 136, 0.14)',
-        }}
-      >
-        <div className="space-y-2.5 max-w-2xl">
-          <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold text-teal-800">
-            <span>🩺 {isEn ? 'Dedicated Medical & Child Wellness Hub' : 'الركن الطبي المتخصص وصحة الطفل (0–8 سنوات)'}</span>
-            <span aria-hidden="true">·</span>
-            <span dir="ltr" className="tabular-nums">
-              {country === 'SA' ? '🇸🇦' : '🇪🇬'} {city}
-            </span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-            {isEn
-              ? 'Trusted Pediatricians, Vaccination Records & Evidence-Based Medical Guides'
-              : 'أطباء الأطفال، سجل التطعيمات والنمو، والدليل الطبي والنفسي الموثق'}
-          </h2>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            {isEn
-              ? 'Separated cleanly from entertainment media so parents can focus on verified pediatricians in your city, vaccination schedules, and peer-reviewed medical guidance.'
-              : 'قسم طبي مستقل ومفصول بالكامل عن الترفيه والفيديوهات، يجمع لكِ أطباء الأطفال والاستشاريين في مدينتك، سجل تطعيمات ونمو أطفالك، والمقالات الطبية المراجعة علميًا.'}
-          </p>
-
-          {/* Medical Disclaimer Strip */}
-          <div className="pt-1 text-xs font-semibold text-teal-900">
-            ⚕️{' '}
-            {isEn
-              ? 'Clinical Disclaimer: Information and directories are for family guidance and appointment coordination, not emergency medical diagnosis.'
-              : 'إخلاء مسؤولية طبي: المعلومات والأدلة هنا للتوعية وتنسيق المواعيد الأسرية ولا تغني عن الكشف الطبي المباشر أو الطوارئ.'}
-          </div>
-        </div>
-
-        <div className="w-full lg:w-auto shrink-0">
-          <ThreeDInteractiveScene
-            variant="health-hub"
-            title={isEn ? 'Verified Pediatric Care' : 'رعاية طبية ونفسية موثقة'}
-            subtitle={isEn ? `Local Providers in ${city}` : `أطباء وعيادات في ${city}`}
-          />
-        </div>
-      </div>
+    <section className="space-y-5" aria-label={isEn ? 'Medical & Child Health Hub' : 'الركن الطبي وصحة الطفل'}>
+      {/* Swipeable Medical Highlights Carousel */}
+      <SwipeableBannerCarousel
+        slides={medicalBanners}
+        language={language}
+        ariaLabel={isEn ? 'Medical Highlights Carousel' : 'لافتات الرعاية الطبية المتحركة'}
+      />
 
       {/* Segmented Navigation inside Medical Hub */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div
-          className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-teal-50/90 border border-teal-200/80"
+          className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/80"
           role="tablist"
         >
           <button
@@ -139,151 +157,143 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'doctors'}
             onClick={() => setActiveTab('doctors')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'doctors'
-                ? 'bg-teal-700 text-white shadow-xs'
-                : 'text-teal-900 hover:bg-teal-100/70'
+                ? 'bg-emerald-600 text-white shadow-2xs'
+                : 'text-emerald-950 hover:bg-emerald-100/70'
             }`}
           >
-            👩‍⚕️ {isEn ? `Doctors & Clinics (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
+            👩‍⚕️ {isEn ? `Doctors (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
           </button>
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'child_records'}
             onClick={() => setActiveTab('child_records')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'child_records'
-                ? 'bg-teal-700 text-white shadow-xs'
-                : 'text-teal-900 hover:bg-teal-100/70'
+                ? 'bg-emerald-600 text-white shadow-2xs'
+                : 'text-emerald-950 hover:bg-emerald-100/70'
             }`}
           >
-            💉 {isEn ? `Vaccinations & Growth (${kids.length})` : `سجل التطعيمات والنمو (${kids.length})`}
+            💉 {isEn ? `Vaccinations & Growth (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
           </button>
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'articles'}
             onClick={() => setActiveTab('articles')}
-            className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'articles'
-                ? 'bg-teal-700 text-white shadow-xs'
-                : 'text-teal-900 hover:bg-teal-100/70'
+                ? 'bg-emerald-600 text-white shadow-2xs'
+                : 'text-emerald-950 hover:bg-emerald-100/70'
             }`}
           >
-            📋 {isEn ? `Medical & Psychology Guides (${medicalArticles.length})` : `المقالات الطبية والنفسية (${medicalArticles.length})`}
+            📋 {isEn ? `Medical Guides (${medicalArticles.length})` : `الأدلة الطبية (${medicalArticles.length})`}
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setFilterByUserCity((prev) => !prev)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors whitespace-nowrap shrink-0 ${
-              filterByUserCity
-                ? 'bg-teal-700 text-white border-teal-700'
-                : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]'
-            }`}
-          >
-            📍 {isEn ? `Near My City (${city})` : `في مدينتي فقط (${city})`}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setFilterByUserCity((prev) => !prev)}
+          className={`min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border transition-colors whitespace-nowrap shrink-0 ${
+            filterByUserCity
+              ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+              : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]'
+          }`}
+        >
+          📍 {isEn ? `My City (${city})` : `في مدينتي (${city})`}
+        </button>
       </div>
 
       {/* TAB 1: DOCTORS, PEDIATRICIANS & PSYCHOLOGISTS DIRECTORY */}
       {activeTab === 'doctors' && (
         <div className="space-y-4">
-          <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shadow-2xs">
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 isEn
-                  ? 'Search pediatrician, speech therapist, child psychologist, or clinic...'
-                  : 'ابحث عن طبيب أطفال، أخصائي تخاطب، استشاري نفسي، أو عيادة...'
+                  ? '🔍 Search pediatrician, speech therapist, psychologist, or clinic...'
+                  : '🔍 ابحث عن طبيب أطفال، أخصائي تخاطب، استشاري نفسي، أو عيادة...'
               }
               aria-label={isEn ? 'Search doctors and clinics' : 'البحث في الأطباء والعيادات'}
-              className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-sm text-[var(--color-text)]"
+              className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
             />
             <select
               value={specialtyFilter}
               onChange={(e) => setSpecialtyFilter(e.target.value)}
               aria-label={isEn ? 'Filter by medical specialty' : 'تصفية حسب التخصص الطبي'}
-              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs font-bold text-[var(--color-text)]"
+              className="min-h-[42px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs font-extrabold text-[var(--color-text)]"
             >
-              <option value="all">{isEn ? 'All Specialties' : 'كل التخصصات الطبية والنفسية'}</option>
-              <option value="pediatrics">{isEn ? 'Pediatrics & Newborn Care' : 'طب الأطفال وحديثي الولادة'}</option>
-              <option value="psychology">{isEn ? 'Child Psychology & Speech Therapy' : 'الإرشاد النفسي والتخاطب وتعديل السلوك'}</option>
+              <option value="all">{isEn ? 'All Specialties' : 'كل التخصصات'}</option>
+              <option value="pediatrics">{isEn ? '🩺 Pediatrics & Growth' : '🩺 طب الأطفال والنمو'}</option>
+              <option value="psychology">{isEn ? '🧠 Psychology & Speech' : '🧠 إرشاد نفسي وتخاطب'}</option>
             </select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredDoctors.map((doc) => {
               const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
+              const isPediatrics = doc.category === 'doctor';
               return (
                 <article
                   key={doc.id}
-                  className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4 hover:border-teal-500 transition-colors"
+                  className={`rounded-[24px] border ${
+                    isPediatrics
+                      ? 'bg-emerald-50/80 border-emerald-200/80'
+                      : 'bg-teal-50/80 border-teal-200/80'
+                  } p-4 sm:p-5 flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md transition-all`}
                 >
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
-                          <ThreeDIcon id="health" size={32} />
-                        </div>
-                        <div>
-                          <div className="text-[11px] font-bold text-teal-800">
-                            {doc.category === 'doctor'
-                              ? isEn
-                                ? 'Pediatrics & Physical Growth'
-                                : 'طب الأطفال ومتابعة النمو'
-                              : isEn
-                              ? 'Child Psychology & Behavior'
-                              : 'إرشاد نفسي وتعديل سلوك'}
-                          </div>
-                          <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
-                            {isEn ? doc.nameEn : doc.name}
-                          </h3>
-                        </div>
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center justify-center shrink-0">
+                        <ThreeDIcon id="health" size={34} />
                       </div>
+                      <span dir="ltr" className="text-xs font-extrabold text-amber-800 tabular-nums">
+                        🌟 {doc.rating} ({doc.reviewCount || 120})
+                      </span>
                     </div>
 
-                    <p className="text-xs text-[var(--color-muted)] leading-relaxed">
-                      {isEn ? doc.descriptionEn : doc.description}
-                    </p>
-
-                    <div className="text-xs text-[var(--color-muted)] space-y-1 pt-1 border-t border-[var(--color-border)]">
-                      <div>
-                        <strong className="text-[var(--color-text)]">
-                          {isEn ? 'Location: ' : 'الموقع والمدينة: '}
-                        </strong>
-                        <span>{doc.city}</span>
+                    <div className="space-y-1">
+                      <div className="text-[11px] font-extrabold text-emerald-900">
+                        {isPediatrics
+                          ? isEn
+                            ? '🩺 Pediatrics & Growth'
+                            : '🩺 طب الأطفال والنمو'
+                          : isEn
+                          ? '🧠 Psychology & Speech'
+                          : '🧠 إرشاد نفسي وتخاطب'}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span>
-                          <strong className="text-[var(--color-text)]">
-                            {isEn ? 'Rating: ' : 'التقييم: '}
-                          </strong>
-                          <span dir="ltr" className="tabular-nums font-bold text-amber-700">
-                            🌟 {doc.rating} ({doc.reviewCount || 120})
-                          </span>
-                        </span>
-                        <span dir="ltr" className="font-extrabold text-teal-800 tabular-nums">
-                          {formatCurrency(fee, currency, language)}
-                        </span>
+                      <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
+                        {isEn ? doc.nameEn : doc.name}
+                      </h3>
+                      <div className="text-xs font-bold text-[var(--color-muted)]">
+                        📍 {doc.city} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2">
-                    <button
-                      type="button"
+                  <div className="pt-3 border-t border-emerald-200/60 space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-[var(--color-muted)]">
+                        {isEn ? 'Consultation Fee:' : 'قيمة الكشف:'}
+                      </span>
+                      <span dir="ltr" className="text-sm font-extrabold text-emerald-900 tabular-nums">
+                        {formatCurrency(fee, currency, language)}
+                      </span>
+                    </div>
+
+                    <PrimaryCtaButton
+                      variant="emerald"
+                      size="sm"
                       onClick={() => setBookingDoctor(doc)}
-                      className="flex-1 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-teal-700 text-white hover:bg-teal-800 transition-colors whitespace-nowrap"
+                      className="w-full"
                     >
-                      📅 {isEn ? 'Book Consultation (Demo)' : 'حجز موعد وتنسيق تقويم الأسرة'}
-                    </button>
+                      📅 {isEn ? 'Book Appointment' : 'احجز موعد الآن'}
+                    </PrimaryCtaButton>
                   </div>
                 </article>
               );
@@ -294,13 +304,13 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* TAB 2: CHILD VACCINATIONS, GROWTH & PRIVATE HEALTH RECORDS */}
       {activeTab === 'child_records' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {kids.map((kid) => {
             const age = calculateChildAge(kid.birth, language);
             return (
               <div
                 key={kid.id}
-                className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4"
+                className="rounded-[24px] border border-teal-200/80 bg-teal-50/70 p-5 space-y-4 shadow-2xs"
               >
                 <div className="flex items-center gap-3.5">
                   <ThreeDChildAvatar
@@ -316,32 +326,32 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                     <h3 className="text-lg font-extrabold text-[var(--color-text)]">
                       {kid.name}
                     </h3>
-                    <div className="text-xs text-[var(--color-muted)]">
+                    <div className="text-xs font-bold text-[var(--color-muted)]">
                       {age.label} · {age.stageTitle}
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2.5 text-center">
-                  <div className="rounded-xl bg-teal-50/70 border border-teal-200/60 p-3">
-                    <div className="text-[11px] text-teal-900 font-semibold">
-                      {isEn ? 'Height' : 'الطول'}
+                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
+                    <div className="text-[11px] text-teal-900 font-bold">
+                      📏 {isEn ? 'Height' : 'الطول'}
                     </div>
                     <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
                       {kid.growthHeightCm ? `${kid.growthHeightCm} cm` : '—'}
                     </div>
                   </div>
-                  <div className="rounded-xl bg-teal-50/70 border border-teal-200/60 p-3">
-                    <div className="text-[11px] text-teal-900 font-semibold">
-                      {isEn ? 'Weight' : 'الوزن'}
+                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
+                    <div className="text-[11px] text-teal-900 font-bold">
+                      ⚖️ {isEn ? 'Weight' : 'الوزن'}
                     </div>
                     <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
                       {kid.growthWeightKg ? `${kid.growthWeightKg} kg` : '—'}
                     </div>
                   </div>
-                  <div className="rounded-xl bg-teal-50/70 border border-teal-200/60 p-3">
-                    <div className="text-[11px] text-teal-900 font-semibold">
-                      {isEn ? 'Blood Type' : 'فصيلة الدم'}
+                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
+                    <div className="text-[11px] text-teal-900 font-bold">
+                      🩸 {isEn ? 'Blood' : 'الفصيلة'}
                     </div>
                     <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
                       {kid.bloodType || 'O+'}
@@ -349,23 +359,24 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 space-y-1.5 text-xs">
-                  <div className="font-extrabold text-[var(--color-text)]">
-                    💉 {isEn ? 'Vaccination Status & Next Dose' : 'حالة التطعيمات والجرعة القادمة'}
+                <div className="rounded-2xl bg-white/90 border border-teal-100 p-3.5 space-y-2 text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-extrabold text-[var(--color-text)]">
+                      💉 {isEn ? 'Vaccinations' : 'التطعيمات'}
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-800">
+                      ✅ {isEn ? 'Up to Date' : 'منتظمة'}
+                    </span>
                   </div>
-                  <p className="text-[var(--color-muted)] leading-relaxed">
+                  <div className="text-[var(--color-muted)] font-semibold">
                     {kid.vaccinationsNote ||
-                      (isEn
-                        ? 'Routine vaccinations up to date.'
-                        : 'التطعيمات الأساسية منتظمة وفق جدول وزارة الصحة.')}
-                  </p>
-                  <div className="pt-1 font-extrabold text-[var(--color-text)]">
-                    🔒 {isEn ? 'Private Parent Medical Notes' : 'ملاحظات صحية وحساسية (خاصة بالوالدين)'}
+                      (isEn ? 'Routine vaccinations up to date.' : 'التطعيمات الأساسية منتظمة.')}
                   </div>
-                  <p className="text-[var(--color-muted)] leading-relaxed">
-                    {kid.healthNotePrivate ||
-                      (isEn ? 'No allergies recorded.' : 'لا توجد حساسية مسجلة.')}
-                  </p>
+                  {kid.healthNotePrivate && (
+                    <div className="pt-1.5 border-t border-teal-100 text-[var(--color-muted)] font-semibold">
+                      🔒 {kid.healthNotePrivate}
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -381,33 +392,33 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             return (
               <article
                 key={article.id}
-                className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4"
+                className="rounded-[24px] border border-emerald-200/80 bg-emerald-50/75 p-5 flex flex-col justify-between gap-4 shadow-2xs"
               >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2 text-xs text-teal-800 font-bold">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 text-xs text-emerald-900 font-extrabold">
                     <span>
-                      🩺 {article.reviewerCredentialsAr || 'مراجع علميًا بواسطة استشاري طب الأطفال'}
+                      🩺 {article.reviewerCredentialsAr || 'مراجع علميًا'}
                     </span>
                     <span dir="ltr" className="tabular-nums">
-                      {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
+                      👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
                     </span>
                   </div>
                   <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
                     {isEn ? article.titleEn : article.title}
                   </h3>
-                  <p className="text-xs text-[var(--color-muted)] leading-relaxed">
+                  <div className="text-xs font-semibold text-[var(--color-muted)] line-clamp-2">
                     {isEn ? article.summaryEn : article.summary}
-                  </p>
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]">
-                  <button
-                    type="button"
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-emerald-200/60">
+                  <PrimaryCtaButton
+                    variant="emerald"
+                    size="sm"
                     onClick={() => setReadingArticle(article)}
-                    className="px-4 py-2 rounded-xl text-xs font-extrabold bg-teal-700 text-white hover:bg-teal-800 transition-colors"
                   >
-                    📖 {isEn ? 'Read Full Medical Guide' : 'قراءة الدليل الطبي كاملًا'}
-                  </button>
+                    📖 {isEn ? 'Open Guide' : 'قراءة الدليل'}
+                  </PrimaryCtaButton>
                   <button
                     type="button"
                     onClick={() => {
@@ -415,14 +426,14 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                       onShowToast(
                         isSaved
                           ? isEn
-                            ? 'Removed from saved medical guides'
-                            : 'تمت الإزالة من المحفوظات الطبية'
+                            ? 'Removed from saved guides'
+                            : 'تمت الإزالة من المحفوظات'
                           : isEn
-                          ? 'Saved to medical reference list'
+                          ? 'Saved to medical guides'
                           : 'تم الحفظ في مرجعك الطبي'
                       );
                     }}
-                    className="px-3 py-2 rounded-xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-text)]"
+                    className="min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                   >
                     {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
                   </button>
@@ -433,6 +444,12 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         </div>
       )}
 
+      {/* Compact Clinical Notice Strip */}
+      <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/60 px-4 py-2.5 text-xs font-bold text-emerald-950 flex items-center justify-between gap-2">
+        <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية'}</span>
+        <span>📍 {city}</span>
+      </div>
+
       {/* Doctor Appointment Booking Modal */}
       {bookingDoctor && (
         <div
@@ -442,34 +459,34 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         >
           <form
             onSubmit={handleConfirmBooking}
-            className="w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-xl"
+            className="w-full max-w-md rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-xl"
           >
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-base font-extrabold text-[var(--color-text)]">
-                🩺 {isEn ? 'Book Pediatric / Specialist Appointment' : 'حجز موعد طبي وإضافته لتقويم الأسرة'}
+                🩺 {isEn ? 'Book Doctor Appointment' : 'حجز موعد طبي وتنسيق التقويم'}
               </h3>
               <button
                 type="button"
                 onClick={() => setBookingDoctor(null)}
-                className="px-2.5 py-1 rounded-lg text-xs font-bold border border-[var(--color-border)]"
+                className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
               >
                 {isEn ? 'Close' : 'إغلاق'}
               </button>
             </div>
 
-            <div className="rounded-xl bg-teal-50 p-3 text-xs text-teal-950 space-y-1">
-              <div className="font-bold">{isEn ? bookingDoctor.nameEn : bookingDoctor.name}</div>
-              <div>{bookingDoctor.city}</div>
+            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-950 space-y-0.5">
+              <div className="font-extrabold">{isEn ? bookingDoctor.nameEn : bookingDoctor.name}</div>
+              <div className="font-semibold">📍 {bookingDoctor.city}</div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
                 {isEn ? 'Select Child' : 'الطفل'}
               </label>
               <select
                 value={bookingChildId}
                 onChange={(e) => setBookingChildId(Number(e.target.value))}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
               >
                 {kids.map((k) => (
                   <option key={k.id} value={k.id}>
@@ -481,7 +498,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
                   {isEn ? 'Preferred Date' : 'تاريخ الموعد'}
                 </label>
                 <input
@@ -489,31 +506,31 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   value={bookingDate}
                   onChange={(e) => setBookingDate(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
                   {isEn ? 'Time Slot' : 'الوقت المفضل'}
                 </label>
                 <input
                   type="text"
                   value={bookingTime}
                   onChange={(e) => setBookingTime(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                {isEn ? 'Symptoms or Consultation Note' : 'سبب الزيارة أو ملاحظات للطبيب'}
+              <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
+                {isEn ? 'Consultation Note' : 'ملاحظات سريعة للطبيب'}
               </label>
               <textarea
                 value={bookingNote}
                 onChange={(e) => setBookingNote(e.target.value)}
-                placeholder={isEn ? 'e.g., Routine checkup or vaccination...' : 'مثال: متابعة نمو دورية أو استشارة نوم...'}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3 text-xs text-[var(--color-text)] min-h-[70px]"
+                placeholder={isEn ? 'Routine checkup or vaccination...' : 'مثال: متابعة نمو دورية أو تطعيم...'}
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3 text-xs text-[var(--color-text)] min-h-[64px]"
               />
             </div>
 
@@ -521,16 +538,13 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setBookingDoctor(null)}
-                className="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--color-border)]"
+                className="min-h-[40px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)]"
               >
                 {isEn ? 'Cancel' : 'إلغاء'}
               </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-teal-700 text-white"
-              >
-                {isEn ? 'Confirm & Add to Family Calendar' : 'تأكيد الحجز وإضافته للتقويم'}
-              </button>
+              <PrimaryCtaButton type="submit" variant="emerald" size="sm">
+                {isEn ? 'Confirm Booking' : 'تأكيد الحجز بالتقويم'}
+              </PrimaryCtaButton>
             </div>
           </form>
         </div>
@@ -543,10 +557,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-xl rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 space-y-4 max-h-[85vh] overflow-y-auto shadow-xl">
+          <div className="w-full max-w-xl rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 space-y-4 max-h-[85vh] overflow-y-auto shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="text-xs font-bold text-teal-800">
+                <div className="text-xs font-extrabold text-emerald-800">
                   🩺 {readingArticle.reviewerCredentialsAr || 'دليل طبي ونفسي مراجع علميًا'}
                 </div>
                 <h3 className="text-lg font-extrabold text-[var(--color-text)] mt-1">
@@ -556,7 +570,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setReadingArticle(null)}
-                className="px-3 py-1 rounded-lg text-xs font-bold border border-[var(--color-border)]"
+                className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
               >
                 {isEn ? 'Close' : 'إغلاق'}
               </button>
@@ -565,7 +579,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             <div className="space-y-2.5 text-sm text-[var(--color-text)] leading-relaxed">
               {(isEn && readingArticle.bodyEn ? readingArticle.bodyEn : readingArticle.body).map(
                 (para, idx) => (
-                  <p key={idx} className="rounded-xl bg-[var(--color-control-muted)] p-3.5">
+                  <p key={idx} className="rounded-2xl bg-emerald-50/70 border border-emerald-100 p-3.5">
                     {para}
                   </p>
                 )

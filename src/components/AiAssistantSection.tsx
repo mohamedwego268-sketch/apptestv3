@@ -4,7 +4,14 @@ import {
   LanguageCode,
   calculateChildAge,
 } from '../domain/familySpaceCore';
-import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
+import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
+import {
+  BannerSlideItem,
+  PASTEL_CARD_TONES,
+  PastelTone,
+  PrimaryCtaButton,
+  SwipeableBannerCarousel,
+} from './DesignSystem';
 
 interface AiChatMessage {
   id: number;
@@ -34,7 +41,6 @@ interface AiAssistantSectionProps {
 export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   kids,
   parentName,
-  city,
   language,
   onAddSuggestedRoutineTask,
   onShowToast,
@@ -49,48 +55,82 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     {
       id: 1,
       sender: 'ai',
-      textAr: `أهلًا ${parentName} 👋 أنا المساعد الأسري الذكي (نموذج إرشادي تفاعلي). يمكنني تخصيص جداول النوم، الأنشطة المنزلية، والرد على تساؤلاتك التربوية حسب عمر ${selectedKid ? selectedKid.name : 'طفلك'} (${kidAge?.label || '2–5 سنوات'}).`,
-      textEn: `Hello ${parentName}! I am your Family Space AI Assistant (Interactive Demo). I tailor daily routines, developmental activities, and gentle parenting strategies for ${selectedKid ? selectedKid.name : 'your child'} (${kidAge?.label || '2–5 yrs'}).`,
+      textAr: `أهلًا ${parentName} 👋 أنا مساعد الذكاء الاصطناعي لـ ${selectedKid ? selectedKid.name : 'طفلك'} (${kidAge?.label || '2–5 سنوات'}). اختر بطاقة سريعة أو اكتب طلبك بالأسفل:`,
+      textEn: `Hello ${parentName}! I am your AI Parenting Agent for ${selectedKid ? selectedKid.name : 'your child'} (${kidAge?.label || '2–5 yrs'}). Tap a quick creation card or ask below:`,
       timestamp: '09:00 AM',
       structuredCard: {
-        badgeAr: `توصية مخصصة لعمر ${selectedKid?.name || 'الطفل'} (${kidAge?.stageCode || '2-5'} سنوات)`,
+        badgeAr: `خطة مخصصة لـ ${selectedKid?.name || 'الطفل'} (${kidAge?.stageCode || '2-5'} سنوات)`,
         badgeEn: `Tailored Plan for ${selectedKid?.name || 'Child'} (${kidAge?.stageCode || '2-5'} yrs)`,
         stepsAr: [
-          '١. تثبيت موعد الاستيقاظ والإفطار يمنح الطفل أمانًا وتوازنًا صباحيًا.',
-          '٢. تخصيص 15 دقيقة من اللعب التفاعلي المشترك بدون هاتف بعد العودة من الحضانة.',
-          '٣. بدء طقس الهدوء المسائي وخفض الإضاءة الساعة 08:00 مساءً.',
+          '١. تثبيت موعد الاستيقاظ والإفطار يمنح الطفل أمانًا صباحيًا.',
+          '٢. 15 دقيقة لعب تفاعلي مشترك بدون شاشات بعد الحضانة.',
+          '٣. بدء طقس الهدوء المسائي الساعة 08:00 مساءً.',
         ],
         stepsEn: [
-          '1. Consistent morning wake-up and breakfast anchors emotional security.',
+          '1. Consistent morning wake-up and breakfast anchors security.',
           '2. 15 minutes of screen-free parent-child play after nursery.',
           '3. Start the evening wind-down ritual at 08:00 PM.',
         ],
-        activityTipAr: 'نشاط اليوم المقترح: لعبة تطابق الذاكرة وتسمية المشاعر بالصور ثلاثية الأبعاد.',
-        activityTipEn: 'Today’s Activity: 3D Memory Match & Emotion Naming game.',
+        activityTipAr: 'نشاط مقترح: لعبة تطابق الذاكرة وتسمية المشاعر 3D.',
+        activityTipEn: 'Suggested Activity: 3D Memory Match & Emotion Naming.',
       },
     },
   ]);
 
-  const suggestedPrompts = [
+  const quickCreationCards: {
+    topic: string;
+    titleAr: string;
+    titleEn: string;
+    badgeAr: string;
+    badgeEn: string;
+    promptAr: string;
+    promptEn: string;
+    iconId: ThreeDIconId;
+    tone: PastelTone;
+  }[] = [
     {
-      labelAr: `🌙 خطة نوم مسائية مخصصة لـ ${selectedKid?.name || 'طفلي'}`,
-      labelEn: `🌙 Bedtime sleep routine for ${selectedKid?.name || 'my child'}`,
       topic: 'sleep',
+      titleAr: 'إنشاء روتين نوم هادئ',
+      titleEn: 'Create Bedtime Routine',
+      badgeAr: 'خطة 20 دقيقة',
+      badgeEn: '20-Min Plan',
+      promptAr: `🌙 خطة نوم مسائية مخصصة لـ ${selectedKid?.name || 'طفلي'}`,
+      promptEn: `🌙 Bedtime sleep routine for ${selectedKid?.name || 'my child'}`,
+      iconId: 'routine',
+      tone: 'purple',
     },
     {
-      labelAr: '🍎 كيف أتعامل مع انتقائية الطعام ورفض الخضار؟',
-      labelEn: '🍎 How to handle picky eating and refusing vegetables?',
       topic: 'food',
+      titleAr: 'حلول انتقائية الطعام',
+      titleEn: 'Picky Eating Solutions',
+      badgeAr: 'تغذية صحية',
+      badgeEn: 'Healthy Meals',
+      promptAr: '🍎 كيف أتعامل مع انتقائية الطعام ورفض الخضار؟',
+      promptEn: '🍎 How to handle picky eating and refusing vegetables?',
+      iconId: 'wishes',
+      tone: 'emerald',
     },
     {
-      labelAr: '💛 تهدئة نوبات الغضب والعناد بهدوء بدون صراخ',
-      labelEn: '💛 Calming tantrums without yelling',
       topic: 'behavior',
+      titleAr: 'تهدئة نوبات الغضب',
+      titleEn: 'Calm Tantrums Gently',
+      badgeAr: 'تربية إيجابية',
+      badgeEn: 'Co-Regulation',
+      promptAr: '💛 تهدئة نوبات الغضب والعناد بهدوء بدون صراخ',
+      promptEn: '💛 Calming tantrums without yelling',
+      iconId: 'children',
+      tone: 'rose',
     },
     {
-      labelAr: '🎨 اقترح 3 أنشطة منزلية لتنمية التركيز واللغة اليوم',
-      labelEn: '🎨 Suggest 3 home activities for focus and language today',
       topic: 'play',
+      titleAr: 'أنشطة مونتيسوري منزلية',
+      titleEn: 'Home Montessori Play',
+      badgeAr: 'بدون شاشات',
+      badgeEn: 'Zero Screens',
+      promptAr: '🎨 اقترح 3 أنشطة منزلية لتنمية التركيز واللغة اليوم',
+      promptEn: '🎨 Suggest 3 home activities for focus and language today',
+      iconId: 'games',
+      tone: 'amber',
     },
   ];
 
@@ -116,45 +156,45 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       ? {
           id: Date.now() + 1,
           sender: 'ai',
-          textAr: `بناءً على عمر ${selectedKid?.name || 'طفلك'} (${kidAge?.label || '3 سنوات'})، إليك خطة روتين النوم التدريجية في 3 خطوات عملية:`,
-          textEn: `Based on ${selectedKid?.name || 'your child'}'s age (${kidAge?.label || '3 yrs'}), here is a 3-step bedtime routine plan:`,
+          textAr: `خطة روتين النوم المخصصة لـ ${selectedKid?.name || 'طفلك'} (${kidAge?.label || '3 سنوات'}):`,
+          textEn: `Tailored 3-step bedtime routine for ${selectedKid?.name || 'your child'} (${kidAge?.label || '3 yrs'}):`,
           timestamp: nowStr,
           structuredCard: {
             badgeAr: 'خطة النوم المريحة (20 دقيقة قبل السرير)',
             badgeEn: 'Calm Bedtime Blueprint (20 mins before bed)',
             stepsAr: [
-              '١. الساعة 07:45 م: إيقاف الشاشات والألعاب الحركية وخفض إضاءة الغرفة.',
-              '٢. الساعة 08:00 م: حمام دافئ سريع واختيار بيجامة النوم مع الطفل.',
-              '٣. الساعة 08:15 م: تشغيل تهويدة «رحلة القمر الصغير» أو قراءة قصة قصيرة بصوت هادئ.',
+              '١. الساعة 07:45 م: إيقاف الشاشات وخفض إضاءة الغرفة.',
+              '٢. الساعة 08:00 م: حمام دافئ واختيار بيجامة النوم مع الطفل.',
+              '٣. الساعة 08:15 م: تشغيل تهويدة «رحلة القمر الصغير» أو قصة قصيرة.',
             ],
             stepsEn: [
               '1. 07:45 PM: Turn off screens and dim room lights.',
               '2. 08:00 PM: Warm bath and let the child choose pajamas.',
               '3. 08:15 PM: Play the Little Moon audio lullaby or read 1 short story.',
             ],
-            activityTipAr: 'يمكنك إضافة مهمة «طقس القراءة والهدوء المسائي 08:00 م» مباشرة لجدول الروتين بضغطة زر أدناه.',
-            activityTipEn: 'You can add "Evening Story & Wind-down 08:00 PM" directly to your Daily Routine below.',
+            activityTipAr: 'أضيفي المهمة مباشرة لجدول الروتين اليومي بضغطة زر بالأسفل.',
+            activityTipEn: 'Add this step directly to your Daily Routine below.',
           },
         }
       : isFood
       ? {
           id: Date.now() + 1,
           sender: 'ai',
-          textAr: `التعامل مع انتقائية الطعام في عمر (${kidAge?.label || '3 سنوات'}) يعتمد على التقسيم الذكي بدون ضغط:`,
-          textEn: `Handling picky eating at (${kidAge?.label || '3 yrs'}) works best with division of responsibility and zero pressure:`,
+          textAr: `استراتيجية الطبق المقسم الإيجابي لـ ${selectedKid?.name || 'طفلك'}:`,
+          textEn: `Positive Divided Plate strategy for ${selectedKid?.name || 'your child'}:`,
           timestamp: nowStr,
           structuredCard: {
             badgeAr: 'استراتيجية الطبق المقسم الإيجابي',
             badgeEn: 'Positive Divided Plate Strategy',
             stepsAr: [
-              '١. قدّمي صنفين يحبهما الطفل بجانب ملعقة واحدة صغيرة فقط من الصنف الجديد.',
-              '٢. أشركي الطفل في غسل الفاكهة أو ترتيب الطبق لزيادة فضوله لتذوقه.',
-              '٣. حددي وقت الوجبة بـ 20 دقيقة هادئة دون مساومة أو شاشات أثناء الأكل.',
+              '١. تقديم صنفين يحبهما الطفل بجانب ملعقة صغيرة من الصنف الجديد.',
+              '٢. إشراك الطفل في غسل الفاكهة أو ترتيب الطبق.',
+              '٣. تحديد وقت الوجبة بـ 20 دقيقة هادئة بدون شاشات.',
             ],
             stepsEn: [
               '1. Serve 2 familiar favorites alongside 1 tiny spoon of a new food.',
               '2. Let your child help wash fruit or arrange the plate.',
-              '3. Keep meals to 20 calm minutes without screens or bribery.',
+              '3. Keep meals to 20 calm minutes without screens.',
             ],
             activityTipAr: 'نشاط مقترح: لعبة تخمين ألوان الفواكه والخضروات قبل الغداء.',
             activityTipEn: 'Suggested game: Fruit & veggie color matching before lunch.',
@@ -164,8 +204,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       ? {
           id: Date.now() + 1,
           sender: 'ai',
-          textAr: `عندما يمر ${selectedKid?.name || 'الطفل'} بنوبة غضب أو عناد، الهدف الأول هو تهدئة الجهاز العصبي قبل التوجيه:`,
-          textEn: `When ${selectedKid?.name || 'your child'} experiences a tantrum, calm the nervous system before teaching:`,
+          textAr: `بروتوكول التهدئة والاحتواء السريع لـ ${selectedKid?.name || 'الطفل'}:`,
+          textEn: `Quick Co-Regulation protocol for ${selectedKid?.name || 'your child'}:`,
           timestamp: nowStr,
           structuredCard: {
             badgeAr: 'بروتوكول التهدئة والاحتواء (3 خطوات)',
@@ -173,38 +213,38 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
             stepsAr: [
               '١. النزول لمستوى نظر الطفل والتحدث بنبرة منخفضة وبطيئة.',
               '٢. تسمية الشعور: «أنا فاهمة إنك زعلان عشان وقت اللعب خلص».',
-              '٣. تقديم خيارين صغيرين: «تحب تشيل المكعبات الحمراء الأول ولا الزرقاء؟».',
+              '٣. تقديم خيارين صغيرين: «تشيل المكعبات الحمراء الأول ولا الزرقاء؟».',
             ],
             stepsEn: [
               '1. Get down to eye level and speak in a slow, low tone.',
               '2. Name the feeling: "I see you are upset play time ended."',
               '3. Offer two small choices: "Pick up red blocks or blue blocks first?"',
             ],
-            activityTipAr: 'تجنبي النقاش الطويل أثناء ذروة الانفعال؛ الاحتواء الهادئ يختصر مدة النوبة للنصف.',
-            activityTipEn: 'Avoid long lectures during peak emotion; calm presence cuts meltdown time in half.',
+            activityTipAr: 'الاحتواء الهادئ يختصر مدة نوبة الغضب للنصف.',
+            activityTipEn: 'Calm presence cuts meltdown time in half.',
           },
         }
       : {
           id: Date.now() + 1,
           sender: 'ai',
-          textAr: `إليك خطة أنشطة يومية مخصصة لـ ${selectedKid?.name || 'طفلك'} (${kidAge?.label || '2–5 سنوات'}) لتنمية التركيز واللغة والمهارات الحركية:`,
-          textEn: `Here is a customized daily activity plan for ${selectedKid?.name || 'your child'} (${kidAge?.label || '2–5 yrs'}) to build focus and language:`,
+          textAr: `خطة أنشطة يومية مخصصة لـ ${selectedKid?.name || 'طفلك'} (${kidAge?.label || '2–5 سنوات'}):`,
+          textEn: `Customized daily activity plan for ${selectedKid?.name || 'your child'} (${kidAge?.label || '2–5 yrs'}):`,
           timestamp: nowStr,
           structuredCard: {
             badgeAr: `خطة أنشطة وتنمية مهارات (${kidAge?.stageCode || '2-5'} سنوات)`,
             badgeEn: `Skill & Play Plan (${kidAge?.stageCode || '2-5'} yrs)`,
             stepsAr: [
-              '١. نشاط حركي ودقيق (10 دقائق): تصنيف المكعبات أو الأشكال حسب اللون والحجم.',
-              '٢. نشاط لغوي وخيالي (10 دقائق): حكي قصة قصيرة وترك الطفل يتوقع النهاية.',
-              '٣. نشاط تشاركي في ركن الألعاب 3D: جولة في لعبة تطابق الذاكرة والمفردات.',
+              '١. نشاط حركي (10 دقائق): تصنيف المكعبات حسب اللون والحجم.',
+              '٢. نشاط لغوي (10 دقائق): حكي قصة قصيرة وترك الطفل يتوقع النهاية.',
+              '٣. نشاط تشاركي: جولة في لعبة تطابق الذاكرة والمفردات 3D.',
             ],
             stepsEn: [
               '1. Fine motor (10m): Sort blocks or shapes by color and size.',
-              '2. Language & imagination (10m): Tell a short story and let your child invent the ending.',
-              '3. Co-play in 3D Games Hub: One round of 3D Memory & Vocabulary Match.',
+              '2. Language (10m): Tell a short story and let your child invent the ending.',
+              '3. Co-play: One round of 3D Memory & Vocabulary Match.',
             ],
-            activityTipAr: `الاهتمامات المسجلة لـ ${selectedKid?.name || 'الطفل'}: ${selectedKid?.interests || 'القصص والمكعبات'}.`,
-            activityTipEn: `Recorded interests for ${selectedKid?.name || 'child'}: ${selectedKid?.interests || 'Stories & blocks'}.`,
+            activityTipAr: `اهتمامات ${selectedKid?.name || 'الطفل'}: ${selectedKid?.interests || 'القصص والمكعبات'}.`,
+            activityTipEn: `Interests for ${selectedKid?.name || 'child'}: ${selectedKid?.interests || 'Stories & blocks'}.`,
           },
         };
 
@@ -212,30 +252,57 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     setInputPrompt('');
   };
 
-  return (
-    <section className="space-y-6" aria-label={isEn ? 'In-App AI Parenting Assistant' : 'المساعد الذكي للأسرة'}>
-      {/* Compact Violet-Fuchsia AI Agent Header */}
-      <div
-        className="rounded-[24px] p-4 sm:p-6 border border-purple-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4"
-        style={{
-          background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 52%, #fae8ff 100%)',
-          boxShadow: '0 16px 34px -14px rgba(124, 58, 237, 0.15)',
-        }}
-      >
-        <div className="space-y-1.5 max-w-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 text-xs font-extrabold text-purple-800 shadow-2xs">
-            ✨ {isEn ? 'Smart AI Parenting Agent' : 'مساعد الذكاء الاصطناعي للأسرة'}
-          </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
-            {isEn
-              ? 'Direct Chat, Daily Routines & Custom Child Plans'
-              : 'محادثة فورية وإنشاء خطط نوم وتغذية وأنشطة لطفلك'}
-          </h2>
-        </div>
+  const aiBanners: BannerSlideItem[] = [
+    {
+      id: 'ai-slide-routine',
+      badge: isEn ? '✨ Smart AI Parenting Agent' : '✨ مساعد الذكاء الاصطناعي للأسرة',
+      title: isEn
+        ? `Instant Plans & Routines for ${selectedKid?.name || 'Your Child'}`
+        : `تصميم خطط النوم والتغذية والروتين لـ ${selectedKid?.name || 'طفلك'}`,
+      subtitle: isEn
+        ? `Tailored for ${kidAge?.label || '0–8 Yrs'} · One-Tap Add to Daily Routine`
+        : `مخصص لعمر ${kidAge?.label || '0–8 سنوات'} · إضافة فورية للروتين اليومي`,
+      ctaLabel: isEn ? 'Generate Bedtime Plan' : 'أنشئ خطة نوم مسائية الآن',
+      onCtaClick: () =>
+        handleSendPrompt(
+          isEn
+            ? `🌙 Bedtime sleep routine for ${selectedKid?.name || 'my child'}`
+            : `🌙 خطة نوم مسائية مخصصة لـ ${selectedKid?.name || 'طفلي'}`,
+          'sleep'
+        ),
+      iconId: 'assistant',
+      gradient: 'linear-gradient(125deg, #f5f3ff, #ede9fe, #fae8ff)',
+      ctaVariant: 'purple',
+    },
+    {
+      id: 'ai-slide-play',
+      badge: isEn ? '🎨 Zero-Screen Play' : '🎨 أنشطة مونتيسوري بدون شاشات',
+      title: isEn
+        ? 'Generate 3 Custom Home Activities in Seconds'
+        : 'ابتكر 3 أنشطة منزلية لتنمية ذكاء وتركيز طفلك اليوم',
+      subtitle: isEn
+        ? 'Fine Motor · Language · Emotional Growth'
+        : 'مهارات حركية · حصيلة لغوية · ذكاء عاطفي',
+      ctaLabel: isEn ? 'Create Play Plan' : 'ابتكر خطة أنشطة اليوم',
+      onCtaClick: () =>
+        handleSendPrompt(
+          isEn
+            ? '🎨 Suggest 3 home activities for focus and language today'
+            : '🎨 اقترح 3 أنشطة منزلية لتنمية التركيز واللغة اليوم',
+          'play'
+        ),
+      iconId: 'games',
+      gradient: 'linear-gradient(125deg, #fffbeb, #fef3c7, #fce7f3)',
+      ctaVariant: 'orange',
+    },
+  ];
 
-        {/* Child Context Selector */}
-        {selectedKid && kidAge && (
-          <div className="rounded-2xl bg-white/95 border border-purple-200 p-3.5 flex items-center gap-3 shrink-0 shadow-xs">
+  return (
+    <section className="space-y-5" aria-label={isEn ? 'In-App AI Parenting Assistant' : 'المساعد الذكي للأسرة'}>
+      {/* Child Context Selector Bar */}
+      {selectedKid && kidAge && (
+        <div className="rounded-2xl border border-purple-200/80 bg-purple-50/75 px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
             <ThreeDChildAvatar
               name={selectedKid.name}
               gender={selectedKid.gender}
@@ -246,42 +313,74 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
               size="sm"
             />
             <div>
-              <label htmlFor="aiKidSelector" className="block text-[11px] font-bold text-purple-800">
-                {isEn ? 'Tailored for Child:' : 'تخصيص الإرشاد للطفل:'}
-              </label>
-              <select
-                id="aiKidSelector"
-                value={selectedKid.id}
-                onChange={(e) => setSelectedKidId(Number(e.target.value))}
-                className="text-xs font-extrabold text-slate-900 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
-              >
-                {kids.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {k.name} ({calculateChildAge(k.birth, language).label})
-                  </option>
-                ))}
-              </select>
+              <div className="text-xs font-extrabold text-purple-900">
+                ✨ {isEn ? 'Active Child Profile for AI Plans' : 'ملف الطفل النشط لتخصيص الإرشاد الذكي'}
+              </div>
+              <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                {selectedKid.name} · {kidAge.label}
+              </div>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Suggested Prompts Strip */}
-      <div className="flex flex-wrap items-center gap-2">
-        {suggestedPrompts.map((p, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => handleSendPrompt(isEn ? p.labelEn : p.labelAr, p.topic)}
-            className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-200 bg-purple-50/70 text-purple-950 hover:bg-purple-100 transition-colors"
+          <select
+            id="aiKidSelector"
+            aria-label={isEn ? 'Select child for AI guidance' : 'اختر الطفل لتخصيص المساعد الذكي'}
+            value={selectedKid.id}
+            onChange={(e) => setSelectedKidId(Number(e.target.value))}
+            className="min-h-[40px] rounded-xl border border-purple-200 bg-white px-3.5 py-1.5 text-xs font-extrabold text-slate-900 cursor-pointer shadow-2xs"
           >
-            {isEn ? p.labelEn : p.labelAr}
-          </button>
-        ))}
+            {kids.map((k) => (
+              <option key={k.id} value={k.id}>
+                {k.name} ({calculateChildAge(k.birth, language).label})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Swipeable AI Agent Banners */}
+      <SwipeableBannerCarousel
+        slides={aiBanners}
+        language={language}
+        ariaLabel={isEn ? 'AI Agent Modes Carousel' : 'لافتات مساعد الذكاء الاصطناعي'}
+      />
+
+      {/* 2-Column Grid Cards for Quick AI Creation (Matches Home Screen Grid Cards) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+        {quickCreationCards.map((card) => {
+          const tone = PASTEL_CARD_TONES[card.tone];
+          return (
+            <button
+              key={card.topic}
+              type="button"
+              onClick={() =>
+                handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
+              }
+              className={`group min-h-[116px] rounded-2xl border ${tone.card} bg-[var(--color-surface)] p-3.5 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md active:scale-[0.98] transition-all`}
+            >
+              <div className="w-full flex items-start justify-between gap-1.5">
+                <div className="w-11 h-11 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0">
+                  <ThreeDIcon id={card.iconId} size={32} />
+                </div>
+                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${tone.badge}`}>
+                  {isEn ? card.badgeEn : card.badgeAr}
+                </span>
+              </div>
+              <div className="mt-2.5 w-full flex items-center justify-between gap-1">
+                <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
+                  {isEn ? card.titleEn : card.titleAr}
+                </span>
+                <span className="text-xs font-extrabold text-[var(--color-muted)]">
+                  {isEn ? '→' : '←'}
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Conversational Thread + Structured Cards */}
-      <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
+      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-4 shadow-2xs">
         <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
           {messages.map((msg) => {
             const isParent = msg.sender === 'parent';
@@ -291,49 +390,50 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 className={`flex flex-col ${isParent ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[90%] sm:max-w-[82%] rounded-2xl p-4 space-y-3 ${
+                  className={`max-w-[92%] sm:max-w-[84%] rounded-2xl p-4 space-y-3 ${
                     isParent
                       ? 'bg-purple-700 text-white'
-                      : 'bg-[var(--color-control-muted)] text-[var(--color-text)] border border-purple-100'
+                      : 'bg-purple-50/70 text-[var(--color-text)] border border-purple-200/80'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-3 text-[11px] font-bold opacity-80">
+                  <div className="flex items-center justify-between gap-3 text-[11px] font-extrabold opacity-85">
                     <span>
                       {isParent
                         ? isEn
                           ? 'You (Parent)'
                           : 'أنت (ولي الأمر)'
                         : isEn
-                        ? '✨ Family Space AI Assistant (Demo)'
-                        : '✨ المساعد الذكي لمساحة الأسرة (عرض تجريبي)'}
+                        ? '✨ AI Parenting Agent'
+                        : '✨ مساعد الذكاء الاصطناعي'}
                     </span>
                     <span dir="ltr" className="tabular-nums">{msg.timestamp}</span>
                   </div>
 
-                  <p className="text-xs sm:text-sm leading-relaxed">
+                  <p className="text-xs sm:text-sm font-semibold leading-relaxed">
                     {isEn ? msg.textEn : msg.textAr}
                   </p>
 
                   {msg.structuredCard && (
-                    <div className="rounded-xl bg-[var(--color-surface)] text-[var(--color-text)] border border-purple-200/80 p-3.5 space-y-2.5">
-                      <div className="text-xs font-extrabold text-purple-800">
+                    <div className="rounded-2xl bg-white text-[var(--color-text)] border border-purple-200/90 p-3.5 space-y-2.5 shadow-2xs">
+                      <div className="text-xs font-extrabold text-purple-900">
                         📋 {isEn ? msg.structuredCard.badgeEn : msg.structuredCard.badgeAr}
                       </div>
-                      <div className="space-y-1.5 text-xs leading-relaxed">
+                      <div className="space-y-1.5 text-xs">
                         {(isEn ? msg.structuredCard.stepsEn : msg.structuredCard.stepsAr).map(
                           (step, i) => (
-                            <div key={i} className="rounded-lg bg-purple-50/50 px-3 py-2 font-medium">
+                            <div key={i} className="rounded-xl bg-purple-50/80 px-3 py-2 font-bold text-slate-800">
                               {step}
                             </div>
                           )
                         )}
                       </div>
-                      <div className="text-xs font-semibold text-emerald-800 pt-1">
+                      <div className="text-xs font-extrabold text-emerald-800 pt-0.5">
                         💡 {isEn ? msg.structuredCard.activityTipEn : msg.structuredCard.activityTipAr}
                       </div>
                       <div className="pt-1">
-                        <button
-                          type="button"
+                        <PrimaryCtaButton
+                          variant="purple"
+                          size="sm"
                           onClick={() => {
                             onAddSuggestedRoutineTask(
                               isEn
@@ -348,10 +448,9 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                                 : 'تمت إضافة المهمة المقترحة إلى جدول الروتين اليومي!'
                             );
                           }}
-                          className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-purple-700 text-white hover:bg-purple-800"
                         >
-                          + {isEn ? 'Add to Daily Routine' : 'إضافة خطوة للروتين اليومي'}
-                        </button>
+                          + {isEn ? 'Add to Daily Routine' : 'إضافة للروتين اليومي'}
+                        </PrimaryCtaButton>
                       </div>
                     </div>
                   )}
@@ -375,18 +474,18 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
             }}
             placeholder={
               isEn
-                ? `Ask about ${selectedKid?.name || 'your child'}'s sleep, nutrition, tantrums, or activities...`
-                : `اسألي المساعد الذكي عن نوم أو تغذية أو أنشطة ${selectedKid?.name || 'طفلك'}...`
+                ? `Ask AI Agent about ${selectedKid?.name || 'your child'}'s sleep, nutrition, or play...`
+                : `اكتب سؤالك لمساعد الذكاء الاصطناعي حول ${selectedKid?.name || 'طفلك'}...`
             }
-            className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm text-[var(--color-text)]"
+            className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
           />
-          <button
-            type="button"
+          <PrimaryCtaButton
+            variant="purple"
+            size="md"
             onClick={() => handleSendPrompt()}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-purple-700 text-white hover:bg-purple-800 whitespace-nowrap"
           >
             {isEn ? 'Ask AI ✨' : 'اسأل المساعد ✨'}
-          </button>
+          </PrimaryCtaButton>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
+import { PrimaryCtaButton } from './DesignSystem';
 
 interface ChatMessage {
   id: number;
@@ -187,47 +188,30 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
   };
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Internal Family & Provider Chat' : 'المحادثات الداخلية والرسائل'}>
-      {/* Crisp Royal Blue Messaging Personality Hero */}
-      <div
-        className="rounded-[24px] p-5 sm:p-6 border border-blue-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4"
-        style={{
-          background: 'linear-gradient(135deg, #eff6ff 0%, #e0f2fe 55%, #f0f9ff 100%)',
-          boxShadow: '0 16px 34px -14px rgba(37, 99, 235, 0.13)',
-        }}
-      >
-        <div className="space-y-2 max-w-2xl">
-          <div className="text-xs font-extrabold text-blue-800">
-            💬 {isEn ? 'Permission-Aware Internal Messaging (Demo)' : 'مركز المحادثات الداخلية المحمي بالصلاحيات (عرض تجريبي)'}
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-            {isEn
-              ? 'Direct Communication with Nursery Supervisors, Pediatric Clinics & Family'
-              : 'تواصل آمن ومباشر مع مشرفات الحضانة، عيادات الأطباء، وشريك الأسرة'}
-          </h2>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            {isEn
-              ? 'Each conversation respects your child-specific permissions so nursery or school staff only see updates for the child assigned to them.'
-              : 'تخضع كل محادثة لقواعد الخصوصية والصلاحيات المحددة لكل طفل، بحيث لا يرى مقدم الرعاية أو الحضانة إلا بيانات الطفل المصرح له به.'}
-          </p>
+    <section className="space-y-5" aria-label={isEn ? 'Internal Family & Provider Chat' : 'المحادثات الداخلية والرسائل'}>
+      {/* Category Filter Tabs Bar (Pastel Sky Strip — Less text, more visuals) */}
+      <div className="rounded-[24px] border border-sky-200/80 bg-sky-50/80 p-4 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-2.5 text-xs font-extrabold text-sky-950">
+          <span>💬 {isEn ? 'Direct Scoped Messaging' : 'تواصل مباشر محمي بالصلاحيات'}</span>
+          <span aria-hidden="true">·</span>
+          <span>🛡️ {isEn ? 'Child-Specific Access' : 'نطاق مخصص لكل طفل'}</span>
         </div>
 
-        {/* Category Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-white/90 border border-blue-200 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-white/90 border border-sky-200">
           {[
-            { id: 'all', labelAr: 'كل المحادثات', labelEn: 'All Chats' },
-            { id: 'nursery', labelAr: 'الحضانة والمدرسة', labelEn: 'Nursery & School' },
-            { id: 'doctor', labelAr: 'الأطباء والعيادات', labelEn: 'Doctors & Clinics' },
-            { id: 'family', labelAr: 'الأسرة', labelEn: 'Family' },
+            { id: 'all', labelAr: 'الكل', labelEn: 'All' },
+            { id: 'nursery', labelAr: '🏫 الحضانة', labelEn: '🏫 Nursery' },
+            { id: 'doctor', labelAr: '🩺 العيادات', labelEn: '🩺 Doctors' },
+            { id: 'family', labelAr: '👨‍👩‍👧‍👦 الأسرة', labelEn: '👨‍👩‍👧‍👦 Family' },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setCategoryFilter(tab.id as typeof categoryFilter)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
                 categoryFilter === tab.id
-                  ? 'bg-blue-700 text-white'
-                  : 'text-blue-950 hover:bg-blue-50'
+                  ? 'bg-blue-600 text-white shadow-2xs'
+                  : 'text-slate-700 hover:bg-sky-50'
               }`}
             >
               {isEn ? tab.labelEn : tab.labelAr}
@@ -239,9 +223,9 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       {/* Two-Column Messaging Workspace */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-stretch">
         {/* Conversation List */}
-        <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2">
+        <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2 shadow-2xs">
           <div className="px-2 py-1 text-xs font-extrabold text-[var(--color-muted)]">
-            {isEn ? 'Active Conversations' : 'قائمة المحادثات النشطة'}
+            {isEn ? 'Active Conversations' : 'المحادثات النشطة'}
           </div>
           {filteredThreads.map((thread) => {
             const isSelected = thread.id === activeThread?.id;
@@ -258,7 +242,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                 }}
                 className={`w-full p-3.5 rounded-2xl border text-start transition-colors space-y-1 ${
                   isSelected
-                    ? 'border-blue-600 bg-blue-50/70'
+                    ? 'border-blue-600 bg-sky-50/90 shadow-2xs'
                     : 'border-transparent hover:bg-[var(--color-control-muted)]'
                 }`}
               >
@@ -267,12 +251,12 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                     {isEn ? thread.participantNameEn : thread.participantNameAr}
                   </span>
                   {thread.unreadCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-blue-700 text-white text-[10px] font-extrabold tabular-nums">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-extrabold tabular-nums">
                       {thread.unreadCount}
                     </span>
                   )}
                 </div>
-                <div className="text-[11px] font-semibold text-blue-800 truncate">
+                <div className="text-[11px] font-bold text-blue-800 truncate">
                   🔒 {isEn ? `Scope: ${thread.scopedChildEn}` : `النطاق: ${thread.scopedChildAr}`}
                 </div>
                 {lastMsg && (
@@ -287,27 +271,27 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
 
         {/* Active Chat Screen */}
         {activeThread && (
-          <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between min-h-[470px] overflow-hidden">
+          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between min-h-[460px] overflow-hidden shadow-2xs">
             {/* Chat Header */}
-            <div className="p-4 border-b border-[var(--color-border)] bg-[var(--color-control-muted)]/50 flex flex-wrap items-center justify-between gap-2">
+            <div className="p-4 border-b border-[var(--color-border)] bg-sky-50/60 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
                   {isEn ? activeThread.participantNameEn : activeThread.participantNameAr}
                 </h3>
-                <div className="text-xs text-[var(--color-muted)]">
+                <div className="text-xs font-semibold text-[var(--color-muted)]">
                   {isEn ? activeThread.roleTitleEn : activeThread.roleTitleAr} ·{' '}
-                  <span className="text-emerald-700 font-semibold">
-                    {isEn ? activeThread.onlineStatusEn : activeThread.onlineStatusAr}
+                  <span className="text-emerald-700 font-bold">
+                    ● {isEn ? activeThread.onlineStatusEn : activeThread.onlineStatusAr}
                   </span>
                 </div>
               </div>
-              <div className="text-[11px] font-bold text-blue-900 bg-blue-100/80 px-3 py-1 rounded-xl">
-                🛡️ {isEn ? `Child Scope: ${activeThread.scopedChildEn}` : `نطاق الطفل المصرح به: ${activeThread.scopedChildAr}`}
+              <div className="text-[11px] font-extrabold text-blue-900 bg-white border border-sky-200 px-3 py-1 rounded-xl shadow-2xs">
+                🛡️ {isEn ? activeThread.scopedChildEn : activeThread.scopedChildAr}
               </div>
             </div>
 
             {/* Messages Viewport */}
-            <div className="p-4 space-y-3 flex-1 overflow-y-auto max-h-[340px]">
+            <div className="p-4 space-y-3 flex-1 overflow-y-auto max-h-[330px]">
               {activeThread.messages.map((msg) => {
                 const isMe = msg.sender === 'me';
                 return (
@@ -318,14 +302,14 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                     <div
                       className={`max-w-[82%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed ${
                         isMe
-                          ? 'bg-blue-700 text-white rounded-ee-xs'
-                          : 'bg-[var(--color-control-muted)] text-[var(--color-text)] rounded-es-xs'
+                          ? 'bg-blue-600 text-white rounded-ee-xs'
+                          : 'bg-sky-50/80 border border-sky-100 text-[var(--color-text)] rounded-es-xs'
                       }`}
                     >
-                      <div className="font-bold text-[11px] opacity-80 mb-0.5">
+                      <div className="font-extrabold text-[11px] opacity-80 mb-0.5">
                         {isEn ? msg.senderNameEn : msg.senderNameAr}
                       </div>
-                      <div>{isEn ? msg.textEn : msg.textAr}</div>
+                      <div className="font-medium">{isEn ? msg.textEn : msg.textAr}</div>
                     </div>
                     <span
                       dir="ltr"
@@ -343,14 +327,14 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
                   isEn ? 'Thank you for the update! 🌸' : 'شكرًا جزيلًا على المتابعة 🌸',
-                  isEn ? 'We are on our way for pickup 🚗' : 'نحن في الطريق للاستلام الآن 🚗',
-                  isEn ? 'Please share today’s meal note 🍎' : 'يرجى مشاركة ملاحظة وجبة الغداء اليوم 🍎',
+                  isEn ? 'On our way for pickup 🚗' : 'نحن في الطريق للاستلام الآن 🚗',
+                  isEn ? 'Share today’s meal note 🍎' : 'ملاحظة وجبة الغداء اليوم 🍎',
                 ].map((quick, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => handleSendMessage(quick)}
-                    className="px-3 py-1 rounded-xl text-[11px] font-semibold bg-[var(--color-control-muted)] text-[var(--color-text)] hover:bg-blue-50"
+                    className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-sky-50 border border-sky-200/70 text-sky-950 hover:bg-sky-100"
                   >
                     {quick}
                   </button>
@@ -370,18 +354,18 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                   }}
                   placeholder={
                     isEn
-                      ? 'Type a message to the provider or family member...'
-                      : 'اكتب رسالتك هنا (محادثة تجريبية محمية بالصلاحيات)...'
+                      ? 'Type a message...'
+                      : 'اكتب رسالتك هنا...'
                   }
-                  className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs sm:text-sm text-[var(--color-text)]"
+                  className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
                 />
-                <button
-                  type="button"
+                <PrimaryCtaButton
+                  variant="blue"
+                  size="md"
                   onClick={() => handleSendMessage()}
-                  className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-blue-700 text-white hover:bg-blue-800 whitespace-nowrap"
                 >
                   {isEn ? 'Send' : 'إرسال'}
-                </button>
+                </PrimaryCtaButton>
               </div>
             </div>
           </div>

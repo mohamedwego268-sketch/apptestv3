@@ -66,6 +66,11 @@ import {
   ThreeDIconId,
   ThreeDInteractiveScene,
 } from './components/ThreeDVisuals';
+import {
+  InnerScreenTopBar,
+  PrimaryCtaButton,
+  PASTEL_CARD_TONES,
+} from './components/DesignSystem';
 
 type PageId =
   | 'home'
@@ -1166,7 +1171,7 @@ export default function App() {
               id="open-onboarding-wizard-btn"
               type="button"
               onClick={() => setOnboardingModalOpen(true)}
-              className="px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold border border-[var(--color-accent)]/40 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)]"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-extrabold border border-[var(--color-accent)]/40 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)]"
             >
               📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}{' '}
               <span className="hidden md:inline">
@@ -1180,7 +1185,7 @@ export default function App() {
               type="button"
               onClick={handleToggleTopLanguage}
               aria-label={lang === 'ar' ? 'Switch language to English' : 'التبديل إلى اللغة العربية'}
-              className="px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)]"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)]"
             >
               🌐 {lang === 'ar' ? 'EN' : 'عربي'}
             </button>
@@ -1190,7 +1195,7 @@ export default function App() {
               type="button"
               onClick={() => navigateTo('notifications')}
               aria-label={t(lang, 'notifBtnLabel')}
-              className="px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1 whitespace-nowrap shrink-0"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1 whitespace-nowrap shrink-0"
             >
               <span>🔔</span>
               <span className="px-1.5 py-0.2 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-contrast)] text-[10px] tabular-nums">
@@ -1213,10 +1218,23 @@ export default function App() {
             <button
               type="button"
               onClick={() => setRoleModalOpen(true)}
-              className="px-2 py-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold border border-[var(--color-border)] bg-[var(--color-role-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-bold border border-[var(--color-border)] bg-[var(--color-role-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0"
             >
               🎨{' '}
-              <span>
+              <span className="sm:hidden">
+                {state.role === 'dad'
+                  ? lang === 'en'
+                    ? 'Dad'
+                    : 'الأب'
+                  : state.role === 'high-contrast'
+                  ? lang === 'en'
+                    ? 'Contrast'
+                    : 'تباين'
+                  : lang === 'en'
+                  ? 'Mom'
+                  : 'الأم'}
+              </span>
+              <span className="hidden sm:inline">
                 {state.role === 'dad'
                   ? lang === 'en'
                     ? 'Father — Aqua'
@@ -1278,6 +1296,152 @@ export default function App() {
 
         {/* Main Viewport */}
         <main className="min-w-0 space-y-6">
+          {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
+          {(() => {
+            const innerScreenMeta: Partial<
+              Record<
+                PageId,
+                {
+                  titleAr: string;
+                  titleEn: string;
+                  badgeAr: string;
+                  badgeEn: string;
+                  iconId: ThreeDIconId;
+                  tone: keyof typeof PASTEL_CARD_TONES;
+                  parentPage: PageId;
+                  parentLabelAr: string;
+                  parentLabelEn: string;
+                }
+              >
+            > = {
+              medical: {
+                titleAr: 'الرعاية الطبية',
+                titleEn: 'Medical Care',
+                badgeAr: 'أطباء وعيادات وتطعيمات',
+                badgeEn: 'Doctors, Clinics & Growth',
+                iconId: 'health',
+                tone: 'emerald',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              media: {
+                titleAr: 'الميديا والريلز 9:16',
+                titleEn: 'Educational Reels & Media',
+                badgeAr: 'فيديوهات وبطاقات بصرية',
+                badgeEn: 'Reels & Visual Guides',
+                iconId: 'video',
+                tone: 'indigo',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              chat: {
+                titleAr: 'المحادثات المباشرة',
+                titleEn: 'Direct Family & Expert Chat',
+                badgeAr: 'تواصل فوري آمن',
+                badgeEn: 'Direct Messaging',
+                iconId: 'shield',
+                tone: 'sky',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              children: {
+                titleAr: 'ملفات الأطفال 3D',
+                titleEn: '3D Child Profiles',
+                badgeAr: `${state.kids.length} ملفات مسجلة`,
+                badgeEn: `${state.kids.length} Profiles`,
+                iconId: 'children',
+                tone: 'teal',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              routine: {
+                titleAr: 'الروتين اليومي',
+                titleEn: 'Daily Routine',
+                badgeAr: `${completedTasksCount}/${state.tasks.length} مكتمل`,
+                badgeEn: `${completedTasksCount}/${state.tasks.length} Done`,
+                iconId: 'routine',
+                tone: 'orange',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              calendar: {
+                titleAr: 'التقويم والمواعيد',
+                titleEn: 'Family Calendar',
+                badgeAr: `${state.events.length} مواعيد`,
+                badgeEn: `${state.events.length} Events`,
+                iconId: 'calendar',
+                tone: 'cyan',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              wishes: {
+                titleAr: 'أمنيات الأطفال',
+                titleEn: 'Kids Wishes',
+                badgeAr: `${state.wishes.length} أمنيات`,
+                badgeEn: `${state.wishes.length} Wishes`,
+                iconId: 'wishes',
+                tone: 'pink',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              games: {
+                titleAr: 'ألعاب الأطفال 3D',
+                titleEn: '3D Kids Games',
+                badgeAr: 'ترفيه تعليمي آمن',
+                badgeEn: 'Safe Learning Play',
+                iconId: 'games',
+                tone: 'lime',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+              family: {
+                titleAr: 'العائلة والصلاحيات',
+                titleEn: 'Family & Permissions',
+                badgeAr: `${state.family.length} أفراد`,
+                badgeEn: `${state.family.length} Members`,
+                iconId: 'family',
+                tone: 'purple',
+                parentPage: 'settings',
+                parentLabelAr: 'رجوع للحساب',
+                parentLabelEn: 'Back',
+              },
+              notifications: {
+                titleAr: 'الإشعارات اليومية',
+                titleEn: 'Daily Notifications',
+                badgeAr: `${unreadNotifCount} غير مقروءة`,
+                badgeEn: `${unreadNotifCount} Unread`,
+                iconId: 'notifications',
+                tone: 'sky',
+                parentPage: 'home',
+                parentLabelAr: 'رجوع',
+                parentLabelEn: 'Back',
+              },
+            };
+
+            const currentInner = innerScreenMeta[activePage];
+            if (!currentInner) return null;
+
+            return (
+              <InnerScreenTopBar
+                title={lang === 'en' ? currentInner.titleEn : currentInner.titleAr}
+                badge={lang === 'en' ? currentInner.badgeEn : currentInner.badgeAr}
+                iconId={currentInner.iconId}
+                tone={currentInner.tone}
+                language={state.language}
+                backLabel={lang === 'en' ? currentInner.parentLabelEn : currentInner.parentLabelAr}
+                onBack={() => navigateTo(currentInner.parentPage)}
+              />
+            );
+          })()}
+
           {/* ================================================================
               PAGE 1: SUPER APP HOME (لافتات متحركة + شبكة بطاقات الخدمات 2 أعمدة)
               ================================================================ */}
@@ -1745,38 +1909,37 @@ export default function App() {
               ================================================================ */}
           {activePage === 'children' && (
             <section className="space-y-5" aria-label="ملفات الأطفال">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="rounded-[24px] border border-teal-200/80 bg-teal-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <ThreeDIcon id="children" size={38} />
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+                    <ThreeDIcon id="children" size={34} />
+                  </div>
                   <div>
-                    <h2 className="text-xl font-bold text-[var(--color-text)]">
-                      {lang === 'en'
-                        ? '3D Child Profiles, Real Photo Preservation & Growth (0–8 Yrs)'
-                        : 'ملفات الأطفال والهوية ثلاثية الأبعاد ومتابعة النمو (من أول يوم لحد 8 سنين)'}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-900">
+                        {lang === 'en' ? '0–8 Years' : 'من أول يوم حتى 8 سنوات'}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-text)]">
+                        {lang === 'en' ? '3D Avatar & Photo' : 'هوية 3D وصورة حقيقية'}
+                      </span>
+                    </div>
+                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-1">
+                      {lang === 'en' ? '3D Child Profiles & Growth' : 'ملفات الأطفال ومتابعة النمو'}
                     </h2>
-                    <p className="text-sm text-[var(--color-muted)]">
-                      {lang === 'en'
-                        ? 'Each child has a custom 3D character avatar (or preserved uploaded photograph), stage guidance, and private health records.'
-                        : 'لكل طفل شخصية ثلاثية الأبعاد مخصصة لعمره واهتماماته (مع الحفاظ على صورته الحقيقية عند رفعها) وسجل صحي خاص بالوالدين.'}
-                    </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={openAddChild}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap shrink-0"
-                >
-                  {lang === 'en' ? '+ Add Child Profile' : '+ إضافة طفل'}
-                </button>
+                <PrimaryCtaButton variant="teal" onClick={openAddChild}>
+                  {lang === 'en' ? '+ Add Child Profile' : '+ إضافة طفل جديد'}
+                </PrimaryCtaButton>
               </div>
 
               {state.kids.length === 0 ? (
-                <div className="rounded-[18px] border border-dashed border-[var(--color-border)] p-8 text-center text-sm text-[var(--color-muted)]">
-                  لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل» لإنشاء الملف الأول.
+                <div className="rounded-[24px] border border-dashed border-[var(--color-border)] p-8 text-center text-sm font-bold text-[var(--color-muted)]">
+                  لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل جديد» لإنشاء الملف الأول.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {state.kids.map((kid) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {state.kids.map((kid, idx) => {
                     const ageInfo = calculateChildAge(kid.birth, state.language);
                     const kidTasksCount = state.tasks.filter((tItem) => Number(tItem.kidId) === kid.id).length;
                     const kidEventsCount = state.events.filter((ev) => Number(ev.childId) === kid.id).length;
@@ -1784,11 +1947,12 @@ export default function App() {
                     const themeObj =
                       AVATAR_ACCESSORY_THEMES.find((th) => th.id === kid.avatarTheme) ||
                       AVATAR_ACCESSORY_THEMES[0];
+                    const cardTone = idx % 2 === 0 ? PASTEL_CARD_TONES.teal : PASTEL_CARD_TONES.rose;
 
                     return (
                       <div
                         key={kid.id}
-                        className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4"
+                        className={`rounded-[24px] border ${cardTone.card} p-5 shadow-2xs space-y-4`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3.5">
@@ -1805,17 +1969,16 @@ export default function App() {
                               <h3 className="text-lg font-extrabold text-[var(--color-text)]">
                                 {kid.name}
                               </h3>
-                              <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                                {ageInfo.label} · {kid.gender === 'girl' ? 'بنت — روز' : 'ولد — أكوا'}
-                                {kid.birth ? ` · الميلاد: ${kid.birth}` : ''}
-                              </div>
-                              <div className="mt-1 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]">
-                                <span>✨</span>
-                                <span>
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${cardTone.badge} tabular-nums`}>
+                                  {ageInfo.label}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-text)]">
+                                  ✨{' '}
                                   {kid.photoDataUrl && !kid.useIllustratedAvatar
                                     ? lang === 'en'
-                                      ? 'Real Uploaded Photo Active'
-                                      : 'صورة الطفل الحقيقية مفعّلة'
+                                      ? 'Real Photo'
+                                      : 'صورة حقيقية'
                                     : lang === 'en'
                                     ? themeObj.labelEn
                                     : themeObj.labelAr}
@@ -1825,68 +1988,59 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Age Stage & Developmental Guidance */}
-                        <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 space-y-1">
-                          <div className="text-xs font-bold text-[var(--color-text)]">
-                            📈 {ageInfo.stageTitle}
+                        {/* Compact Visual Tags for Growth & Linked Counts */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">الروتين</div>
+                            <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
+                              {kidTasksCount} مهام
+                            </div>
                           </div>
-                          <p className="text-xs text-[var(--color-muted)] leading-relaxed">
-                            {ageInfo.milestoneTip}
-                          </p>
+                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">المواعيد</div>
+                            <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
+                              {kidEventsCount} موعد
+                            </div>
+                          </div>
+                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">الأمنيات</div>
+                            <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
+                              {kidWishesCount} أمنية
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Details & Private Health Record */}
-                        <div className="space-y-1.5 text-xs">
-                          <div>
-                            <strong className="text-[var(--color-text)]">الاهتمامات والمهارات: </strong>
-                            <span className="text-[var(--color-muted)]">
-                              {kid.interests || 'لم تحدد بعد'}
-                            </span>
-                          </div>
-                          {(kid.growthHeightCm || kid.growthWeightKg) && (
-                            <div className="tabular-nums">
-                              <strong className="text-[var(--color-text)]">قياسات النمو: </strong>
-                              <span className="text-[var(--color-muted)]">
-                                {kid.growthHeightCm ? `الطول: ${kid.growthHeightCm} سم` : ''}
+                        {/* Stage & Health Compact Card */}
+                        <div className="rounded-2xl bg-white/85 border border-white p-3.5 space-y-1.5 text-xs">
+                          <div className="font-extrabold text-[var(--color-text)] flex items-center justify-between gap-2">
+                            <span>📈 {ageInfo.stageTitle}</span>
+                            {(kid.growthHeightCm || kid.growthWeightKg) && (
+                              <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-900 text-[10px] font-extrabold tabular-nums">
+                                {kid.growthHeightCm ? `${kid.growthHeightCm} سم` : ''}
                                 {kid.growthHeightCm && kid.growthWeightKg ? ' · ' : ''}
-                                {kid.growthWeightKg ? `الوزن: ${kid.growthWeightKg} كجم` : ''}
+                                {kid.growthWeightKg ? `${kid.growthWeightKg} كجم` : ''}
                               </span>
-                            </div>
-                          )}
-                          <div className="pt-1 text-[var(--color-muted)] tabular-nums">
-                            المهام المرتبطة: {kidTasksCount} · المواعيد: {kidEventsCount} · الأمنيات: {kidWishesCount}
+                            )}
+                          </div>
+                          <div className="text-[11px] font-semibold text-[var(--color-muted)]">
+                            🎯 {kid.interests || 'لم تحدد الاهتمامات بعد'} · 🔒 التطعيمات: {kid.vaccinationsNote || 'محدثة'}
                           </div>
                         </div>
 
-                        {/* Private Health Section */}
-                        <div className="rounded-xl border border-[var(--color-border)] p-3 text-xs space-y-1">
-                          <div className="font-bold text-[var(--color-text)]">
-                            🔒 السجل الصحي والتطعيمات (خاص بالوالدين افتراضيًا)
-                          </div>
-                          <div className="text-[var(--color-muted)]">
-                            التطعيمات: {kid.vaccinationsNote || 'لم تسجل ملاحظات تطعيم بعد'}
-                          </div>
-                          {kid.healthNotePrivate && (
-                            <div className="text-[var(--color-muted)]">
-                              ملاحظات صحية: {kid.healthNotePrivate}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="pt-2 border-t border-[var(--color-border)] flex items-center gap-2">
+                        <div className="pt-2 border-t border-black/5 flex items-center gap-2">
                           <button
                             type="button"
                             onClick={() => openEditChild(kid)}
-                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
+                            className="flex-1 min-h-[42px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] shadow-2xs"
                           >
-                            {lang === 'en' ? 'Edit 3D Profile / Photo' : 'تعديل الملف والهوية 3D'}
+                            {lang === 'en' ? '✏️ Edit 3D Profile / Photo' : '✏️ تعديل الملف والهوية 3D'}
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmDeleteChildId(kid.id)}
-                            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-red-700"
+                            className="min-h-[42px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-red-200 bg-white text-red-700"
                           >
-                            {lang === 'en' ? 'Delete Profile' : 'حذف الملف'}
+                            {lang === 'en' ? 'Delete' : 'حذف الملف'}
                           </button>
                         </div>
                       </div>
@@ -1902,55 +2056,47 @@ export default function App() {
               ================================================================ */}
           {activePage === 'routine' && (
             <section className="space-y-5" aria-label="الروتين اليومي">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold text-[var(--color-text)]">
-                    الروتين اليومي والأسبوعي للأسرة
-                  </h2>
-                  <p className="text-sm text-[var(--color-muted)]">
-                    نظّم مهام اليوم والأسبوع والشهر لكل طفل أو للأسرة بالكامل، وعلّم على المهمة بعد إنجازها.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleResetTasks}
-                    className="px-3.5 py-2 rounded-xl text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] whitespace-nowrap"
-                  >
-                    إعادة ضبط الإنجاز
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingTask(null);
-                      setTaskModalOpen(true);
-                    }}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap"
-                  >
-                    + إضافة مهمة
-                  </button>
-                </div>
-              </div>
-
-              {/* Smart Routine Reminders Summary & Alert Bar */}
+              {/* Top Action & Smart Reminders Pastel Card */}
               <div
-                className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-3.5"
+                className="rounded-[24px] border border-orange-200/80 bg-orange-50/85 p-4 sm:p-5 shadow-2xs space-y-4"
                 aria-label="تذكيرات الروتين اليومي"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5">
-                    <ThreeDIcon id="routine" size={36} />
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+                      <ThreeDIcon id="routine" size={34} />
+                    </div>
                     <div>
-                      <h3 className="text-sm font-extrabold text-[var(--color-text)]">
-                        تذكيرات المواعيد والمهام اليومية
-                      </h3>
-                      <p className="text-xs text-[var(--color-muted)]">
-                        تنبيه بصري فوري للمهام التي اقترب موعدها أو تجاوزت وقتها المحدد لليوم.
-                      </p>
+                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-orange-100 text-orange-900 tabular-nums">
+                        مكتمل: {completedTasksCount}/{state.tasks.length}
+                      </span>
+                      <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
+                        الروتين اليومي والتذكيرات الذكية
+                      </h2>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleResetTasks}
+                      className="min-h-[44px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] whitespace-nowrap"
+                    >
+                      إعادة ضبط الإنجاز
+                    </button>
+                    <PrimaryCtaButton
+                      variant="orange"
+                      onClick={() => {
+                        setEditingTask(null);
+                        setTaskModalOpen(true);
+                      }}
+                    >
+                      + إضافة مهمة
+                    </PrimaryCtaButton>
+                  </div>
+                </div>
 
-                  {/* Quick Reminder Status Filter Pills */}
+                {/* Quick Reminder Status Filter Pills */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-orange-200/60">
                   <div
                     className="flex flex-wrap items-center gap-1.5"
                     role="group"
@@ -1959,10 +2105,10 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setRoutineReminderFilter('all')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                      className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
                         routineReminderFilter === 'all'
                           ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] border-transparent'
-                          : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
+                          : 'border-[var(--color-border)] bg-white text-[var(--color-text)]'
                       }`}
                     >
                       الكل ({state.tasks.length})
@@ -1970,7 +2116,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setRoutineReminderFilter('overdue')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors tabular-nums ${
+                      className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors tabular-nums ${
                         routineReminderFilter === 'overdue'
                           ? 'bg-red-700 text-white border-red-700'
                           : 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100'
@@ -1981,7 +2127,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setRoutineReminderFilter('approaching')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors tabular-nums ${
+                      className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors tabular-nums ${
                         routineReminderFilter === 'approaching'
                           ? 'bg-amber-600 text-white border-amber-600'
                           : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
@@ -1990,36 +2136,27 @@ export default function App() {
                       🔔 اقترب موعدها ({routineRemindersSummary.approachingCount})
                     </button>
                   </div>
-                </div>
 
-                {/* Reminder Configuration Row (Lead Window + Time-of-Day Preview) */}
-                <div className="pt-2.5 border-t border-[var(--color-border)] flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label htmlFor="routineLeadWindow" className="text-[var(--color-muted)] font-semibold">
-                      التنبيه قبل الموعد بـ:
-                    </label>
+                  {/* Compact Reminder Controls */}
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     <select
                       id="routineLeadWindow"
+                      aria-label="التنبيه قبل الموعد بـ"
                       value={routineApproachingWindow}
                       onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
-                      className="rounded-lg border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text)]"
+                      className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
                     >
-                      <option value={30}>30 دقيقة</option>
-                      <option value={60}>60 دقيقة (ساعة)</option>
-                      <option value={90}>90 دقيقة (ساعة ونصف)</option>
-                      <option value={120}>120 دقيقة (ساعتين)</option>
+                      <option value={30}>تنبيه قبل 30 دقيقة</option>
+                      <option value={60}>تنبيه قبل 60 دقيقة</option>
+                      <option value={90}>تنبيه قبل 90 دقيقة</option>
+                      <option value={120}>تنبيه قبل 120 دقيقة</option>
                     </select>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <label htmlFor="routineRefTime" className="text-[var(--color-muted)] font-semibold">
-                      الوقت المرجعي لحساب التذكيرات:
-                    </label>
                     <select
                       id="routineRefTime"
+                      aria-label="الوقت المرجعي لحساب التذكيرات"
                       value={routineRefTimePreset}
                       onChange={(e) => setRoutineRefTimePreset(e.target.value)}
-                      className="rounded-lg border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1 text-xs font-semibold text-[var(--color-text)]"
+                      className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
                     >
                       <option value="live">الوقت الحالي تلقائيًا</option>
                       <option value="07:15">صباحًا (07:15 ص)</option>
@@ -2031,10 +2168,10 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
-                {/* Day / Week / Month Tabs */}
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 shadow-2xs space-y-4">
+                {/* Day / Week / Month Tabs & Filters */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-xl" role="tablist" aria-label="نطاق تكرار الروتين">
+                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="tablist" aria-label="نطاق تكرار الروتين">
                     {[
                       { id: 'all', label: 'كل الفترات' },
                       { id: 'daily', label: 'اليوم' },
@@ -2045,7 +2182,7 @@ export default function App() {
                         key={tab.id}
                         type="button"
                         onClick={() => setRoutineCadenceFilter(tab.id as typeof routineCadenceFilter)}
-                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+                        className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
                           routineCadenceFilter === tab.id
                             ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
                             : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -2056,22 +2193,13 @@ export default function App() {
                     ))}
                   </div>
 
-                  <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                    مكتمل: {completedTasksCount} من {state.tasks.length} · تذكيرات نشطة: {routineRemindersSummary.totalAlerts}
-                  </div>
-                </div>
-
-                {/* Child & Status Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="routineKidFilter" className="block text-xs text-[var(--color-muted)] mb-1">
-                      عرض مهام
-                    </label>
+                  <div className="flex flex-wrap items-center gap-2">
                     <select
                       id="routineKidFilter"
+                      aria-label="عرض مهام"
                       value={routineKidFilter}
                       onChange={(e) => setRoutineKidFilter(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                     >
                       <option value="all">كل الأطفال والأسرة</option>
                       {state.kids.map((k) => (
@@ -2080,17 +2208,12 @@ export default function App() {
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="routineStatusFilter" className="block text-xs text-[var(--color-muted)] mb-1">
-                      حالة المهمة
-                    </label>
                     <select
                       id="routineStatusFilter"
+                      aria-label="حالة المهمة"
                       value={routineStatusFilter}
                       onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                      className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                     >
                       <option value="all">كل الحالات</option>
                       <option value="open">غير مكتملة</option>
@@ -2099,13 +2222,13 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Tasks List with Visual Reminder Badges */}
+                {/* Tasks Grid Cards with Visual Reminder Badges */}
                 {filteredTasks.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm text-[var(--color-muted)]">
-                    لا توجد مهام مطابقة للتصفية الحالية. جرّب اختيارًا آخر أو أضف مهمة جديدة.
+                  <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
+                    لا توجد مهام مطابقة للتصفية الحالية.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[var(--color-border)]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {filteredTasks.map((task) => {
                       const assignedKid = task.kidId ? kidMap[String(task.kidId)] : null;
                       const reminder = getRoutineTaskReminder(
@@ -2117,25 +2240,27 @@ export default function App() {
                       return (
                         <div
                           key={task.id}
-                          className={`py-3.5 px-3 -mx-3 rounded-xl flex flex-wrap items-center justify-between gap-3 transition-colors ${
+                          className={`rounded-2xl border p-3.5 flex items-center justify-between gap-3 transition-all ${
                             reminder.status === 'overdue'
-                              ? 'bg-red-50/40'
+                              ? 'bg-red-50/75 border-red-200'
                               : reminder.status === 'approaching'
-                              ? 'bg-amber-50/40'
-                              : ''
+                              ? 'bg-amber-50/75 border-amber-200'
+                              : task.done
+                              ? 'bg-emerald-50/50 border-emerald-200/70'
+                              : 'bg-[var(--color-control-muted)]/55 border-[var(--color-border)]'
                           }`}
                         >
-                          <label className="flex items-start sm:items-center gap-3 min-w-0 flex-1 cursor-pointer">
+                          <label className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
                             <input
                               type="checkbox"
                               checked={task.done}
                               onChange={(e) => handleToggleTask(task.id, e.target.checked)}
-                              className="w-4 h-4 mt-1 sm:mt-0 accent-[var(--color-task-accent)] shrink-0"
+                              className="w-5 h-5 accent-[var(--color-task-accent)] shrink-0"
                             />
                             <div className="min-w-0 space-y-1">
-                              <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-1.5">
                                 <span
-                                  className={`text-sm font-bold ${
+                                  className={`text-sm font-extrabold truncate ${
                                     task.done
                                       ? 'line-through text-[var(--color-muted)]'
                                       : 'text-[var(--color-text)]'
@@ -2145,28 +2270,24 @@ export default function App() {
                                 </span>
                                 {renderReminderBadge(reminder)}
                               </div>
-                              <span className="text-xs text-[var(--color-muted)] block">
-                                {assignedKid ? assignedKid.name : 'مهمة أسرية'} · {task.category} · المسؤول: {task.owner} ·{' '}
-                                {task.cadence === 'weekly'
-                                  ? 'أسبوعي'
-                                  : task.cadence === 'monthly'
-                                  ? 'شهري'
-                                  : 'يومي'}
-                              </span>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)]">
+                                <span className="px-2 py-0.5 rounded-lg bg-white/90 text-[var(--color-text)]">
+                                  {assignedKid ? assignedKid.name : 'الأسرة'}
+                                </span>
+                                <span>· {task.category}</span>
+                                <span>· ⏰ {task.time || 'مرن'}</span>
+                              </div>
                             </div>
                           </label>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className="text-xs font-semibold text-[var(--color-muted)] tabular-nums px-2 py-1 rounded-lg bg-[var(--color-control-muted)]">
-                              ⏰ {task.time || 'بدون وقت'}
-                            </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               type="button"
                               onClick={() => {
                                 setEditingTask(task);
                                 setTaskModalOpen(true);
                               }}
-                              className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
+                              className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                             >
                               تعديل
                             </button>
@@ -2174,7 +2295,7 @@ export default function App() {
                               type="button"
                               onClick={() => handleDeleteTask(task.id)}
                               aria-label={`حذف المهمة ${task.name}`}
-                              className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-red-700"
+                              className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
                             >
                               ×
                             </button>
@@ -2193,35 +2314,61 @@ export default function App() {
               ================================================================ */}
           {activePage === 'calendar' && (
             <section className="space-y-5" aria-label="التقويم الأسري">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold text-[var(--color-text)]">
-                    التقويم الأسري والمواعيد (يدعم الميلادي والهجري)
-                  </h2>
-                  <p className="text-sm text-[var(--color-muted)]">
-                    نظّموا المواعيد العائلية والتطعيمات والأنشطة. التكرار والتذكير هنا وصف محلي داخل التطبيق فقط.
-                  </p>
+              <div className="rounded-[24px] border border-cyan-200/80 bg-cyan-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+                    <ThreeDIcon id="calendar" size={34} />
+                  </div>
+                  <div>
+                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-cyan-100 text-cyan-900 tabular-nums">
+                      📅 {todayFormatted.combined}
+                    </span>
+                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
+                      التقويم والمواعيد (ميلادي وهجري)
+                    </h2>
+                  </div>
                 </div>
-                <button
-                  type="button"
+                <PrimaryCtaButton
+                  variant="teal"
                   onClick={() => {
                     setEditingEvent(null);
                     setEventModalOpen(true);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap shrink-0"
                 >
-                  + إضافة حدث
-                </button>
+                  + إضافة حدث جديد
+                </PrimaryCtaButton>
               </div>
 
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 shadow-2xs space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
-                  <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                    <strong className="text-[var(--color-text)]">تاريخ اليوم: </strong>
-                    {todayFormatted.gregorian}
-                    {todayFormatted.hijri ? ` · ${todayFormatted.hijri}` : ''}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSetEventRange(0)}
+                      className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                    >
+                      اليوم
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSetEventRange(7)}
+                      className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                    >
+                      الأيام السبعة القادمة
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEventFrom('');
+                        setEventTo('');
+                      }}
+                      className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
+                    >
+                      كل الأحداث ({state.events.length})
+                    </button>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-xl" role="group" aria-label="نظام عرض التاريخ">
+
+                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="group" aria-label="نظام عرض التاريخ">
                     {[
                       { id: 'both', label: 'الميلادي والهجري' },
                       { id: 'gregorian', label: 'الميلادي' },
@@ -2236,7 +2383,7 @@ export default function App() {
                             calendarMode: mode.id as CalendarDisplayMode,
                           }))
                         }
-                        className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+                        className={`px-3 py-1 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
                           state.calendarMode === mode.id
                             ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
                             : 'text-[var(--color-muted)]'
@@ -2251,8 +2398,8 @@ export default function App() {
                 {/* Date Range Filter */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="eventFrom" className="block text-xs text-[var(--color-muted)] mb-1">
-                      عرض الأحداث من تاريخ
+                    <label htmlFor="eventFrom" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                      من تاريخ
                     </label>
                     <input
                       id="eventFrom"
@@ -2263,7 +2410,7 @@ export default function App() {
                     />
                   </div>
                   <div>
-                    <label htmlFor="eventTo" className="block text-xs text-[var(--color-muted)] mb-1">
+                    <label htmlFor="eventTo" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
                       إلى تاريخ
                     </label>
                     <input
@@ -2276,44 +2423,17 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSetEventRange(0)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
-                  >
-                    اليوم
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSetEventRange(7)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
-                  >
-                    الأيام السبعة القادمة
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEventFrom('');
-                      setEventTo('');
-                    }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
-                  >
-                    كل الأحداث
-                  </button>
-                </div>
-
-                {/* Events List */}
+                {/* Events Grid Cards */}
                 {isEventRangeReversed ? (
-                  <div className="rounded-xl border border-dashed border-amber-400 bg-amber-50 p-5 text-center text-xs text-amber-900" role="status">
+                  <div className="rounded-2xl border border-dashed border-amber-400 bg-amber-50 p-5 text-center text-xs font-bold text-amber-900" role="status">
                     تاريخ البداية بعد تاريخ النهاية. عدّل نطاق التاريخ لعرض الأحداث.
                   </div>
                 ) : filteredEvents.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm text-[var(--color-muted)]">
-                    لا توجد أحداث في هذه الفترة. أضف حدثًا جديدًا أو غيّر نطاق التاريخ.
+                  <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
+                    لا توجد أحداث في هذه الفترة.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[var(--color-border)]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                     {filteredEvents.map((ev) => {
                       const assignedKid = ev.childId ? kidMap[String(ev.childId)] : null;
                       const formattedDate = formatGregorianAndHijri(
@@ -2322,59 +2442,50 @@ export default function App() {
                         state.language,
                         state.calendarMode
                       );
+                      const isMedical = ev.type === 'موعد طبي' || ev.type === 'تطعيم';
                       return (
                         <div
                           key={ev.id}
-                          className="py-3.5 flex flex-wrap items-center justify-between gap-3"
+                          className={`rounded-[22px] border p-4 flex items-start justify-between gap-3 shadow-2xs ${
+                            isMedical
+                              ? 'bg-emerald-50/80 border-emerald-200/80'
+                              : 'bg-cyan-50/75 border-cyan-200/80'
+                          }`}
                         >
                           <div className="flex items-start gap-3 min-w-0">
                             <div
-                              className="w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0"
-                              style={{ background: 'var(--color-notice)' }}
+                              className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center text-xl shrink-0"
                               aria-hidden="true"
                             >
-                              {ev.type === 'موعد طبي' || ev.type === 'تطعيم'
-                                ? '🩺'
-                                : ev.type === 'عيد ميلاد'
-                                ? '🎂'
-                                : '📅'}
+                              {isMedical ? '🩺' : ev.type === 'عيد ميلاد' ? '🎂' : '📅'}
                             </div>
-                            <div className="min-w-0 space-y-0.5">
-                              <div className="font-bold text-sm text-[var(--color-text)]">
+                            <div className="min-w-0 space-y-1">
+                              <div className="font-extrabold text-sm text-[var(--color-text)]">
                                 {ev.title}
                               </div>
-                              <div className="text-xs text-[var(--color-muted)] tabular-nums">
+                              <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums">
                                 {formattedDate.combined}
-                                {ev.time ? ` · الساعة ${ev.time}` : ''} · {ev.type}
+                                {ev.time ? ` · ⏰ ${ev.time}` : ''}
                               </div>
-                              <div className="text-xs text-[var(--color-muted)]">
-                                {assignedKid ? `الطفل: ${assignedKid.name}` : 'الأسرة كلها'}
-                                {ev.repeat && ev.repeat !== 'none'
-                                  ? ` · يتكرر (${
-                                      ev.repeat === 'weekly'
-                                        ? 'أسبوعيًا - تسجيل وصفي'
-                                        : ev.repeat === 'monthly'
-                                        ? 'شهريًا - تسجيل وصفي'
-                                        : 'سنويًا - تسجيل وصفي'
-                                    })`
-                                  : ''}
+                              <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-text)]">
+                                  {ev.type}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-muted)]">
+                                  {assignedKid ? `👶 ${assignedKid.name}` : '👨‍👩‍👧‍👦 الأسرة'}
+                                </span>
                               </div>
-                              {ev.note && (
-                                <div className="text-xs text-[var(--color-muted)] pt-0.5">
-                                  ملاحظة: {ev.note}
-                                </div>
-                              )}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
                             <button
                               type="button"
                               onClick={() => {
                                 setEditingEvent(ev);
                                 setEventModalOpen(true);
                               }}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)]"
+                              className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                             >
                               تعديل
                             </button>
@@ -2382,7 +2493,7 @@ export default function App() {
                               type="button"
                               onClick={() => handleDeleteEvent(ev.id)}
                               aria-label={`حذف الحدث ${ev.title}`}
-                              className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-red-700"
+                              className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
                             >
                               حذف
                             </button>
@@ -2401,17 +2512,22 @@ export default function App() {
               ================================================================ */}
           {activePage === 'wishes' && (
             <section className="space-y-5" aria-label="الأمنيات والهدايا">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold text-[var(--color-text)]">
-                    أمنيات الأطفال وأهداف الادخار العائلي 🎁
-                  </h2>
-                  <p className="text-sm text-[var(--color-muted)]">
-                    سجّل أمنيات أطفالك واربطها بخطط واقعية ونسبة إنجاز، أو شاركها مع العائلة للإهداء.
-                  </p>
+              <div className="rounded-[24px] border border-pink-200/80 bg-pink-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+                    <ThreeDIcon id="wishes" size={34} />
+                  </div>
+                  <div>
+                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-pink-100 text-pink-900 tabular-nums">
+                      🎁 {state.wishes.length} أمنيات مسجلة
+                    </span>
+                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
+                      أمنيات الأطفال وأهداف الإهداء العائلي
+                    </h2>
+                  </div>
                 </div>
-                <button
-                  type="button"
+                <PrimaryCtaButton
+                  variant="orange"
                   onClick={() => {
                     if (!state.kids.length) {
                       showToast('أضف ملف طفل أولًا');
@@ -2420,17 +2536,16 @@ export default function App() {
                     setEditingWish(null);
                     setWishModalOpen(true);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap shrink-0"
                 >
                   + إضافة أمنية
-                </button>
+                </PrimaryCtaButton>
               </div>
 
-              <div className="flex flex-wrap items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-xl w-max max-w-full">
+              <div className="flex flex-wrap items-center gap-1.5 bg-[var(--color-control-muted)] p-1.5 rounded-2xl w-max max-w-full">
                 <button
                   type="button"
                   onClick={() => setWishKidTab('all')}
-                  className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                  className={`min-h-[38px] px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap ${
                     wishKidTab === 'all'
                       ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
                       : 'text-[var(--color-muted)]'
@@ -2443,7 +2558,7 @@ export default function App() {
                     key={k.id}
                     type="button"
                     onClick={() => setWishKidTab(String(k.id))}
-                    className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                    className={`min-h-[38px] px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap ${
                       wishKidTab === String(k.id)
                         ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
                         : 'text-[var(--color-muted)]'
@@ -2455,102 +2570,115 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
-                  <h3 className="text-base font-bold text-[var(--color-text)]">قائمة الأمنيات والأهداف</h3>
+                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {filteredWishes.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm text-[var(--color-muted)]">
+                    <div className="sm:col-span-2 rounded-[24px] border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
                       قائمة الأمنيات فارغة لهذا الاختيار.
                     </div>
                   ) : (
-                    <div className="divide-y divide-[var(--color-border)]">
-                      {filteredWishes.map((w) => {
-                        const kidObj = kidMap[String(w.kid)];
-                        const prog = w.progress ?? (w.reserved ? 100 : 40);
-                        return (
-                          <div key={w.id} className="py-4 space-y-2.5">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <div className="flex items-center gap-3 min-w-0">
-                                <div
-                                  className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-                                  style={{ background: 'var(--color-icon-tint)' }}
-                                  aria-hidden="true"
-                                >
-                                  {w.emoji || '🎁'}
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="font-bold text-sm text-[var(--color-text)]">
-                                    {w.name}
-                                  </div>
-                                  <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                                    {kidObj ? kidObj.name : 'الأسرة'} ·{' '}
-                                    {formatCurrency(w.price, w.currency || state.currency, state.language)} ·{' '}
-                                    {w.reserved ? 'محجوزة للإهداء ✅' : 'متاحة للإهداء'}
-                                  </div>
-                                </div>
+                    filteredWishes.map((w) => {
+                      const kidObj = kidMap[String(w.kid)];
+                      const prog = w.progress ?? (w.reserved ? 100 : 40);
+                      return (
+                        <div
+                          key={w.id}
+                          className="rounded-[24px] border border-pink-200/80 bg-pink-50/75 p-4 shadow-2xs flex flex-col justify-between gap-3"
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center text-2xl shrink-0"
+                                aria-hidden="true"
+                              >
+                                {w.emoji || '🎁'}
                               </div>
-
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateWishProgress(w.id, 15)}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] tabular-nums"
-                                >
-                                  +15%
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleWishReserve(w.id)}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)]"
-                                >
-                                  {w.reserved ? 'إلغاء الحجز' : 'حجز كهدية'}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingWish(w);
-                                    setWishModalOpen(true);
-                                  }}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)]"
-                                >
-                                  تعديل
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteWish(w.id)}
-                                  aria-label={`حذف الأمنية ${w.name}`}
-                                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-red-700"
-                                >
-                                  ×
-                                </button>
+                              <div className="min-w-0">
+                                <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
+                                  {w.name}
+                                </div>
+                                <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums mt-0.5">
+                                  {kidObj ? kidObj.name : 'الأسرة'} ·{' '}
+                                  {formatCurrency(w.price, w.currency || state.currency, state.language)}
+                                </div>
                               </div>
                             </div>
+                            <span
+                              className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold shrink-0 ${
+                                w.reserved
+                                  ? 'bg-emerald-100 text-emerald-900'
+                                  : 'bg-white/90 text-pink-900'
+                              }`}
+                            >
+                              {w.reserved ? 'محجوزة ✅' : 'متاحة'}
+                            </span>
+                          </div>
 
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between text-[11px] text-[var(--color-muted)] tabular-nums">
-                                <span>{w.goalType || 'خطة تحقيق الأمنية'}</span>
-                                <span className="font-bold text-[var(--color-text)]">{prog}%</span>
-                              </div>
-                              <div className="w-full h-2 rounded-full bg-[var(--color-control-muted)] overflow-hidden">
-                                <div
-                                  className="h-full rounded-full transition-all duration-200"
-                                  style={{
-                                    width: `${prog}%`,
-                                    backgroundColor: 'var(--color-accent)',
-                                  }}
-                                />
-                              </div>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between text-[11px] font-bold text-[var(--color-muted)] tabular-nums">
+                              <span>{w.goalType || 'خطة تحقيق الأمنية'}</span>
+                              <span className="font-extrabold text-[var(--color-text)]">{prog}%</span>
+                            </div>
+                            <div className="w-full h-2.5 rounded-full bg-white overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-200"
+                                style={{
+                                  width: `${prog}%`,
+                                  backgroundColor: 'var(--color-accent)',
+                                }}
+                              />
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+
+                          <div className="pt-2 border-t border-pink-200/60 flex flex-wrap items-center justify-between gap-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateWishProgress(w.id, 15)}
+                                className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] tabular-nums"
+                              >
+                                +15%
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleToggleWishReserve(w.id)}
+                                className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
+                              >
+                                {w.reserved ? 'إلغاء الحجز' : 'حجز كهدية'}
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingWish(w);
+                                  setWishModalOpen(true);
+                                }}
+                                className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
+                              >
+                                تعديل
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteWish(w.id)}
+                                aria-label={`حذف الأمنية ${w.name}`}
+                                className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
                   )}
                 </div>
 
-                {/* Gift Ideas */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
-                  <h3 className="text-base font-bold text-[var(--color-text)]">أفكار هدايا سريعة</h3>
-                  <div className="space-y-3">
+                {/* Gift Ideas Pastel Card */}
+                <div className="rounded-[24px] border border-amber-200/80 bg-amber-50/85 p-5 shadow-2xs space-y-3">
+                  <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                    💡 أفكار هدايا سريعة
+                  </h3>
+                  <div className="space-y-2.5">
                     {[
                       { emoji: '📚', title: 'مجموعة قصص مصورة', egp: 120, sar: 35 },
                       { emoji: '🧩', title: 'لعبة تركيب خشبية', egp: 280, sar: 75 },
@@ -2560,16 +2688,16 @@ export default function App() {
                       return (
                         <div
                           key={idea.title}
-                          className="rounded-xl border border-[var(--color-border)] p-3.5 flex items-center justify-between gap-3"
+                          className="rounded-2xl border border-white bg-white/90 p-3.5 flex items-center justify-between gap-3 shadow-2xs"
                         >
                           <div className="flex items-center gap-3">
                             <span className="text-2xl" aria-hidden="true">{idea.emoji}</span>
                             <div>
-                              <div className="text-sm font-bold text-[var(--color-text)]">
+                              <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                                 {idea.title}
                               </div>
-                              <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                                {formatCurrency(p, state.currency, state.language)} تقريبًا
+                              <div className="text-[11px] font-bold text-amber-900 tabular-nums">
+                                {formatCurrency(p, state.currency, state.language)}
                               </div>
                             </div>
                           </div>
@@ -2578,7 +2706,7 @@ export default function App() {
                             onClick={() =>
                               handleQuickAddWish(idea.title, idea.egp, idea.sar, idea.emoji)
                             }
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
+                            className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-600 text-white whitespace-nowrap"
                           >
                             + أضف
                           </button>
@@ -2932,15 +3060,21 @@ export default function App() {
               ================================================================ */}
           {activePage === 'settings' && (
             <section className="space-y-6" aria-label="الحساب والإعدادات">
-              {/* Profile Header Card */}
-              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 shadow-2xs space-y-5">
+              {/* Profile Hero Pastel Card */}
+              <div
+                className="rounded-[24px] border border-[var(--color-border)] p-5 sm:p-6 shadow-2xs space-y-5"
+                style={{
+                  background:
+                    'linear-gradient(125deg, var(--color-hero-start), var(--color-hero-mid), var(--color-hero-end))',
+                }}
+              >
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/30 flex items-center justify-center text-2xl shrink-0">
+                    <div className="w-16 h-16 rounded-3xl bg-white/85 border border-white shadow-sm flex items-center justify-center text-3xl shrink-0">
                       {state.role === 'dad' ? '👨🏻‍🍼' : '👩🏻‍🍼'}
                     </div>
                     <div>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--color-role-soft)] text-[var(--color-role-text)]">
+                      <span className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-extrabold bg-white/90 text-[var(--color-role-text)] shadow-2xs">
                         {state.role === 'dad'
                           ? lang === 'en'
                             ? 'Father Account'
@@ -2949,10 +3083,10 @@ export default function App() {
                           ? 'Mother Account'
                           : 'حساب الأم'}
                       </span>
-                      <h2 className="text-xl font-extrabold text-[var(--color-text)] mt-0.5">
+                      <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--color-text)] mt-1">
                         {state.parentName}
                       </h2>
-                      <div className="text-xs text-[var(--color-muted)] tabular-nums">
+                      <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums mt-0.5">
                         {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍{' '}
                         {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
                       </div>
@@ -2960,77 +3094,91 @@ export default function App() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
+                    <PrimaryCtaButton
+                      variant="orange"
                       onClick={() => setOnboardingModalOpen(true)}
-                      className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
                     >
                       {lang === 'en' ? '✨ Edit Account & City' : '✨ تحديث الحساب والمدينة'}
-                    </button>
+                    </PrimaryCtaButton>
                     <button
                       type="button"
                       onClick={() => navigateTo('family')}
-                      className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                      className="min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold border border-white bg-white/85 text-[var(--color-text)] shadow-2xs"
                     >
                       {lang === 'en' ? '👨‍👩‍👧‍👦 Family & Permissions' : '👨‍👩‍👧‍👦 العائلة والصلاحيات'}
                     </button>
                   </div>
                 </div>
 
-                {/* Quick Profile Stats & Shortcuts */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[var(--color-border)]">
+                {/* Quick Profile Pastel Grid Cards (Matching Home Screen Grid Cards) */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => navigateTo('children')}
-                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                    className="rounded-2xl bg-teal-50/90 border border-teal-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
                   >
-                    <div className="text-xs text-[var(--color-muted)]">
+                    <div className="flex items-center justify-between gap-2">
+                      <ThreeDIcon id="children" size={28} />
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-900 tabular-nums">
+                        {state.kids.length}
+                      </span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
                       {lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال'}
                     </div>
-                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
-                      {state.kids.length}
-                    </div>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => navigateTo('services')}
-                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                    className="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
                   >
-                    <div className="text-xs text-[var(--color-muted)]">
+                    <div className="flex items-center justify-between gap-2">
+                      <ThreeDIcon id="services" size={28} />
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-amber-100 text-amber-900 tabular-nums">
+                        {state.orders.length}
+                      </span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
                       {lang === 'en' ? 'Store Orders' : 'طلبات المتجر'}
                     </div>
-                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
-                      {state.orders.length}
-                    </div>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => navigateTo('notifications')}
-                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                    className="rounded-2xl bg-sky-50/90 border border-sky-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
                   >
-                    <div className="text-xs text-[var(--color-muted)]">
+                    <div className="flex items-center justify-between gap-2">
+                      <ThreeDIcon id="notifications" size={28} />
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-sky-100 text-sky-900 tabular-nums">
+                        {unreadNotifCount}
+                      </span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
                       {lang === 'en' ? 'Notifications' : 'الإشعارات اليومية'}
                     </div>
-                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
-                      {unreadNotifCount} {lang === 'en' ? 'Unread' : 'غير مقروءة'}
-                    </div>
                   </button>
+
                   <button
                     type="button"
                     onClick={() => setShowInnerSettings((prev) => !prev)}
-                    className="rounded-xl bg-[var(--color-accent-soft)] p-3 text-start border border-[var(--color-accent)]/30"
+                    className="rounded-2xl bg-purple-50/90 border border-purple-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
                   >
-                    <div className="text-xs font-bold text-[var(--color-role-text)]">
-                      ⚙️ {lang === 'en' ? 'App Settings' : 'الإعدادات داخل الحساب'}
+                    <div className="flex items-center justify-between gap-2">
+                      <ThreeDIcon id="settings" size={28} />
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-purple-100 text-purple-900">
+                        {showInnerSettings
+                          ? lang === 'en'
+                            ? 'Open'
+                            : 'مفتوحة'
+                          : lang === 'en'
+                          ? 'Show'
+                          : 'عرض'}
+                      </span>
                     </div>
-                    <div className="text-xs font-extrabold text-[var(--color-text)] mt-0.5">
-                      {showInnerSettings
-                        ? lang === 'en'
-                          ? 'Open'
-                          : 'مفتوحة الآن'
-                        : lang === 'en'
-                        ? 'Show Settings'
-                        : 'عرض الإعدادات'}
+                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
+                      ⚙️ {lang === 'en' ? 'App Settings' : 'الإعدادات'}
                     </div>
                   </button>
                 </div>
@@ -3038,328 +3186,329 @@ export default function App() {
 
               {/* Inner Settings Section inside Profile Screen */}
               {showInnerSettings && (
-                <div className="space-y-6" aria-label="الإعدادات داخل صفحة الحساب">
+                <div className="space-y-5" aria-label="الإعدادات داخل صفحة الحساب">
                   <div className="flex items-center justify-between gap-2 px-1">
-                    <h3 className="text-lg font-extrabold text-[var(--color-text)] flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] flex items-center gap-2">
                       <ThreeDIcon id="settings" size={26} />
                       <span>{lang === 'en' ? 'Settings (الإعدادات)' : 'الإعدادات وتخصيص الحساب'}</span>
                     </h3>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {/* 1. Experience & Interface Preferences */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
-                  <h3 className="text-base font-bold text-[var(--color-text)]">
-                    {lang === 'en' ? 'Experience, Theme & Calendar Display' : 'تخصيص التجربة والسمة البصرية والتقويم'}
-                  </h3>
+                    {/* 1. Experience & Interface Preferences */}
+                    <div className="rounded-[24px] border border-purple-200/80 bg-purple-50/75 p-5 shadow-2xs space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-base font-extrabold text-[var(--color-text)]">
+                          {lang === 'en' ? 'Theme, Language & Calendar' : 'السمة البصرية واللغة والتقويم'}
+                        </h3>
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-purple-100 text-purple-900">
+                          {lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
+                        </span>
+                      </div>
 
-                  <div>
-                    <label htmlFor="parentName" className="block text-xs text-[var(--color-muted)] mb-1">
-                      {lang === 'en' ? 'Parent / Family Display Name' : 'اسم ولي الأمر / الأسرة'}
-                    </label>
-                    <input
-                      id="parentName"
-                      type="text"
-                      maxLength={80}
-                      value={settingsParentName}
-                      onChange={(e) => setSettingsParentName(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="parentRole" className="block text-xs text-[var(--color-muted)] mb-1">
-                      {lang === 'en' ? 'Visual Theme & Parent Mode' : 'نوع التجربة والسمة البصرية'}
-                    </label>
-                    <select
-                      id="parentRole"
-                      value={settingsRole}
-                      onChange={(e) => setSettingsRole(e.target.value as ParentThemeRole)}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                    >
-                      <option value="mom">{lang === 'en' ? 'Mother Mode — Rose' : 'الأم — روز (Mother Mode)'}</option>
-                      <option value="dad">{lang === 'en' ? 'Father Mode — Aqua' : 'الأب — أكوا (Father Mode)'}</option>
-                      <option value="high-contrast">
-                        {lang === 'en' ? 'High Contrast — Readability' : 'تباين عالٍ — لسهولة القراءة (High Contrast)'}
-                      </option>
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label htmlFor="settingsLanguage" className="block text-xs text-[var(--color-muted)] mb-1">
-                        {lang === 'en' ? 'Interface Language' : 'لغة الواجهة (Interface Language)'}
-                      </label>
-                      <select
-                        id="settingsLanguage"
-                        value={settingsLanguage}
-                        onChange={(e) => setSettingsLanguage(e.target.value as LanguageCode)}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                      >
-                        <option value="ar">{t(lang, 'langAr')}</option>
-                        <option value="en">{t(lang, 'langEn')}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="settingsCalendarMode" className="block text-xs text-[var(--color-muted)] mb-1">
-                        {lang === 'en' ? 'Calendar Date Display' : 'نظام عرض التاريخ'}
-                      </label>
-                      <select
-                        id="settingsCalendarMode"
-                        value={settingsCalendarMode}
-                        onChange={(e) => setSettingsCalendarMode(e.target.value as CalendarDisplayMode)}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                      >
-                        <option value="both">{t(lang, 'calendarBoth')}</option>
-                        <option value="gregorian">{t(lang, 'calendarGregorian')}</option>
-                        <option value="hijri">{t(lang, 'calendarHijri')}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleSaveGeneralSettings}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
-                  >
-                    {lang === 'en' ? 'Save Experience Preferences' : 'حفظ تفضيلات التجربة واللغة'}
-                  </button>
-                </div>
-
-                {/* 2. Data Backup, Restore & Standalone Prototype Files */}
-                <div className="space-y-4">
-                  <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
-                    <h3 className="text-base font-bold text-[var(--color-text)]">
-                      {lang === 'en' ? 'JSON Data Backup & Restore' : 'النسخ الاحتياطي واستيراد البيانات (JSON)'}
-                    </h3>
-                    <p className="text-xs text-[var(--color-muted)] leading-relaxed">
-                      {lang === 'en'
-                        ? 'Your data is stored locally in this browser (`family-space-v1`). Export a JSON backup or restore a previous backup with automatic relational integrity checks.'
-                        : 'بياناتك محفوظة محليًا على هذا المتصفح (`family-space-v1`). يمكنك تصدير نسخة احتياطية بصيغة JSON أو استيراد نسخة سابقة مع التحقق الآلي من سلامة الروابط.'}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <button
-                        type="button"
-                        onClick={handleExportJson}
-                        className="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
-                      >
-                        {lang === 'en' ? '📥 Export JSON Backup' : '📥 تصدير نسخة JSON'}
-                      </button>
-
-                      <label className="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] cursor-pointer">
-                        {lang === 'en' ? '📤 Import JSON File' : '📤 استيراد ملف JSON'}
+                      <div>
+                        <label htmlFor="parentName" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                          {lang === 'en' ? 'Parent / Family Display Name' : 'اسم ولي الأمر / الأسرة'}
+                        </label>
                         <input
-                          type="file"
-                          accept="application/json,.json"
-                          onChange={handleImportJsonFile}
-                          className="sr-only"
+                          id="parentName"
+                          type="text"
+                          maxLength={80}
+                          value={settingsParentName}
+                          onChange={(e) => setSettingsParentName(e.target.value)}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
                         />
-                      </label>
+                      </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setConfirmResetModal(true)}
-                        className="px-4 py-2 rounded-xl text-xs font-bold border border-red-200 bg-red-50 text-red-800"
-                      >
-                        {lang === 'en' ? 'Reset Demo Data' : 'مسح وإعادة ضبط البيانات'}
-                      </button>
-                    </div>
+                      <div>
+                        <label htmlFor="parentRole" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                          {lang === 'en' ? 'Visual Theme & Parent Mode' : 'نوع التجربة والسمة البصرية'}
+                        </label>
+                        <select
+                          id="parentRole"
+                          value={settingsRole}
+                          onChange={(e) => setSettingsRole(e.target.value as ParentThemeRole)}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                        >
+                          <option value="mom">{lang === 'en' ? 'Mother Mode — Rose' : 'الأم — روز (Mother Mode)'}</option>
+                          <option value="dad">{lang === 'en' ? 'Father Mode — Aqua' : 'الأب — أكوا (Father Mode)'}</option>
+                          <option value="high-contrast">
+                            {lang === 'en' ? 'High Contrast — Readability' : 'تباين عالٍ — لسهولة القراءة (High Contrast)'}
+                          </option>
+                        </select>
+                      </div>
 
-                    <div className="pt-3 border-t border-[var(--color-border)] flex flex-wrap items-center gap-2">
-                      <a
-                        href="/prototype/index.html"
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)]"
-                      >
-                        {lang === 'en' ? 'Open Standalone prototype/index.html' : 'فتح prototype/index.html المستقل'}
-                      </a>
-                      <a
-                        href="/Family_Space_Project_Updated.zip"
-                        download="Family_Space_Project_Updated.zip"
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--color-accent-soft)] text-[var(--color-role-text)]"
-                      >
-                        {lang === 'en' ? 'Download Updated Project Package (ZIP)' : 'تنزيل حزمة المشروع المحدثة (ZIP)'}
-                      </a>
-                    </div>
-                  </div>
-
-                  {/* 3D Asset Manifest Registry */}
-                  <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-2">
-                    <div className="text-xs font-extrabold text-[var(--color-text)]">
-                      {lang === 'en'
-                        ? `🎨 3D Asset Manifest (${THREE_D_ASSET_MANIFEST.length} Asset Groups)`
-                        : `🎨 سجل الأصول ثلاثية الأبعاد (3D Asset Manifest — ${THREE_D_ASSET_MANIFEST.length} مجموعات)`}
-                    </div>
-                    <div className="space-y-1 text-[11px] text-[var(--color-muted)]">
-                      {THREE_D_ASSET_MANIFEST.map((entry) => (
-                        <div key={entry.id} className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-[var(--color-text)]">
-                            {lang === 'en' ? entry.titleEn : entry.titleAr}
-                          </span>
-                          <span className="text-emerald-800 font-bold">{entry.renderEngine}</span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label htmlFor="settingsLanguage" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                            {lang === 'en' ? 'Interface Language' : 'لغة الواجهة'}
+                          </label>
+                          <select
+                            id="settingsLanguage"
+                            value={settingsLanguage}
+                            onChange={(e) => setSettingsLanguage(e.target.value as LanguageCode)}
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                          >
+                            <option value="ar">{t(lang, 'langAr')}</option>
+                            <option value="en">{t(lang, 'langEn')}</option>
+                          </select>
                         </div>
-                      ))}
+
+                        <div>
+                          <label htmlFor="settingsCalendarMode" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                            {lang === 'en' ? 'Calendar Date Display' : 'نظام عرض التاريخ'}
+                          </label>
+                          <select
+                            id="settingsCalendarMode"
+                            value={settingsCalendarMode}
+                            onChange={(e) => setSettingsCalendarMode(e.target.value as CalendarDisplayMode)}
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                          >
+                            <option value="both">{t(lang, 'calendarBoth')}</option>
+                            <option value="gregorian">{t(lang, 'calendarGregorian')}</option>
+                            <option value="hijri">{t(lang, 'calendarHijri')}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <PrimaryCtaButton variant="purple" onClick={handleSaveGeneralSettings}>
+                        {lang === 'en' ? 'Save Experience Preferences' : 'حفظ تفضيلات التجربة واللغة'}
+                      </PrimaryCtaButton>
+                    </div>
+
+                    {/* 2. Data Backup, Restore & Standalone Prototype Files */}
+                    <div className="space-y-4">
+                      <div className="rounded-[24px] border border-emerald-200/80 bg-emerald-50/75 p-5 shadow-2xs space-y-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-base font-extrabold text-[var(--color-text)]">
+                            {lang === 'en' ? 'JSON Data Backup & Restore' : 'النسخ الاحتياطي واستيراد البيانات (JSON)'}
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-emerald-100 text-emerald-900">
+                            family-space-v1
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <button
+                            type="button"
+                            onClick={handleExportJson}
+                            className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] shadow-2xs"
+                          >
+                            {lang === 'en' ? '📥 Export JSON Backup' : '📥 تصدير نسخة JSON'}
+                          </button>
+
+                          <label className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] shadow-2xs cursor-pointer inline-flex items-center">
+                            {lang === 'en' ? '📤 Import JSON File' : '📤 استيراد ملف JSON'}
+                            <input
+                              type="file"
+                              accept="application/json,.json"
+                              onChange={handleImportJsonFile}
+                              className="sr-only"
+                            />
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => setConfirmResetModal(true)}
+                            className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-red-200 bg-white text-red-800"
+                          >
+                            {lang === 'en' ? 'Reset Demo Data' : 'مسح وإعادة ضبط البيانات'}
+                          </button>
+                        </div>
+
+                        <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center gap-2">
+                          <a
+                            href="/prototype/index.html"
+                            className="px-3 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
+                          >
+                            {lang === 'en' ? 'Open Standalone prototype/index.html' : 'فتح prototype/index.html المستقل'}
+                          </a>
+                          <a
+                            href="/Family_Space_Project_Updated.zip"
+                            download="Family_Space_Project_Updated.zip"
+                            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-emerald-900 border border-emerald-200"
+                          >
+                            {lang === 'en' ? 'Download Project Package (ZIP)' : 'تنزيل حزمة المشروع (ZIP)'}
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* 3D Asset Manifest Registry */}
+                      <div className="rounded-[24px] border border-sky-200/80 bg-sky-50/75 p-4 shadow-2xs space-y-2">
+                        <div className="text-xs font-extrabold text-[var(--color-text)]">
+                          {lang === 'en'
+                            ? `🎨 3D Asset Manifest (${THREE_D_ASSET_MANIFEST.length} Asset Groups)`
+                            : `🎨 سجل الأصول ثلاثية الأبعاد (${THREE_D_ASSET_MANIFEST.length} مجموعات)`}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
+                          {THREE_D_ASSET_MANIFEST.map((entry) => (
+                            <div
+                              key={entry.id}
+                              className="rounded-xl bg-white/85 px-2.5 py-1.5 flex items-center justify-between gap-2"
+                            >
+                              <span className="font-bold text-[var(--color-text)] truncate">
+                                {lang === 'en' ? entry.titleEn : entry.titleAr}
+                              </span>
+                              <span className="text-emerald-800 font-extrabold shrink-0">{entry.renderEngine}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* ==============================================================
-                  BOTTOM OF SETTINGS PAGE: COUNTRY, CURRENCY & VERIFIED PHONE
-                  (Requirement 11.B: Placed at the bottom of the Settings page)
-                  ============================================================== */}
-              <div
-                id="settings-international-bottom"
-                className="rounded-[20px] border-2 border-[var(--color-accent)] bg-[var(--color-surface)] p-5 sm:p-6 space-y-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <h3 className="text-base font-extrabold text-[var(--color-text)]">
-                      {lang === 'en'
-                        ? '🌍 Country, Calling Code, Currency & Verified Phone Settings'
-                        : '🌍 إعدادات الدولة، مفتاح الهاتف الدولي، العملة، وتوثيق الجوال (أسفل صفحة الإعدادات)'}
-                    </h3>
-                    <p className="text-xs text-[var(--color-muted)]">
-                      {lang === 'en'
-                        ? 'Changing your country or verified phone number requires OTP verification (Demo code: 123456) and updates local pricing & phone validation rules.'
-                        : 'تغيير الدولة أو رقم الهاتف الموثق يتطلب التحقق برمز OTP (الرمز التجريبي: 123456) ويحدّث العملة وقواعد التحقق من الأرقام.'}
-                    </p>
-                  </div>
-                  <span className="px-3 py-1 rounded-xl bg-[var(--color-control-muted)] text-xs font-bold text-[var(--color-text)] tabular-nums">
-                    {state.country === 'SA' ? '🇸🇦 +966 · SAR' : '🇪🇬 +20 · EGP'} · 📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <label htmlFor="settingsCountry" className="block text-xs font-semibold text-[var(--color-text)] mb-1">
-                      {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
-                    </label>
-                    <select
-                      id="settingsCountry"
-                      value={settingsCountry}
-                      onChange={(e) => handleCountryChangeInSettings(e.target.value as CountryCode)}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                    >
-                      <option value="EG">🇪🇬 {t(lang, 'countryEG')} (+20)</option>
-                      <option value="SA">🇸🇦 {t(lang, 'countrySA')} (+966)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="settingsCity" className="block text-xs font-semibold text-[var(--color-text)] mb-1">
-                      {lang === 'en' ? 'City / Governorate' : 'المدينة / المحافظة التابعة للدولة'}
-                    </label>
-                    <select
-                      id="settingsCity"
-                      value={settingsCity}
-                      onChange={(e) => setSettingsCity(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                    >
-                      {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem) => (
-                        <option key={cItem.id} value={cItem.id}>
-                          {lang === 'en' ? `${cItem.nameEn} (${cItem.regionEn})` : `${cItem.nameAr} (${cItem.regionAr})`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="settingsCurrency" className="block text-xs font-semibold text-[var(--color-text)] mb-1">
-                      {lang === 'en' ? 'Display Currency' : 'العملة المعتمدة للأسعار والمنتجات'}
-                    </label>
-                    <select
-                      id="settingsCurrency"
-                      value={settingsCurrency}
-                      onChange={(e) => {
-                        setSettingsCurrency(e.target.value as CurrencyCode);
-                        setCurrencySuggestionBanner(null);
-                      }}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                    >
-                      <option value="EGP">{t(lang, 'currencyEGP')}</option>
-                      <option value="SAR">{t(lang, 'currencySAR')}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="settingsPhoneInput" className="block text-xs font-semibold text-[var(--color-text)] mb-1">
-                      {lang === 'en'
-                        ? `Verified Parent Phone (${settingsCountry === 'SA' ? '+966' : '+20'})`
-                        : `رقم هاتف الحساب الموثق (${settingsCountry === 'SA' ? '+966' : '+20'})`}
-                    </label>
-                    <input
-                      id="settingsPhoneInput"
-                      type="tel"
-                      dir="ltr"
-                      value={settingsPhoneInput}
-                      onChange={(e) => setSettingsPhoneInput(e.target.value)}
-                      placeholder={settingsCountry === 'SA' ? '512345678' : '1012345678'}
-                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm tabular-nums"
-                    />
-                  </div>
-                </div>
-
-                {/* Suggested Currency Banner when Country switches */}
-                {currencySuggestionBanner && (
-                  <div className="rounded-xl bg-[var(--color-notice)] text-[var(--color-notice-text)] p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-                    <span>
-                      اخترت {settingsCountry === 'SA' ? 'السعودية' : 'مصر'}. هل ترغب في التبديل إلى العملة المقترحة ({currencySuggestionBanner})؟
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSettingsCurrency(currencySuggestionBanner);
-                        setCurrencySuggestionBanner(null);
-                      }}
-                      className="px-3 py-1 rounded-lg font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap"
-                    >
-                      نعم، اعتمد {currencySuggestionBanner}
-                    </button>
-                  </div>
-                )}
-
-                {settingsOtpStep && (
-                  <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <div className="text-amber-950 font-semibold">
-                      {lang === 'en'
-                        ? `🔐 Security Check: Enter simulated OTP code (${DEMO_OTP_CODE}) to confirm phone/country update:`
-                        : `🔐 تأكيد أمني: أدخل رمز التحقق OTP التجريبي (${DEMO_OTP_CODE}) لتأكيد تغيير الدولة أو رقم الهاتف:`}
-                    </div>
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={settingsOtpCode}
-                      onChange={(e) => setSettingsOtpCode(e.target.value)}
-                      placeholder="123456"
-                      maxLength={6}
-                      className="w-28 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-center font-bold tabular-nums"
-                    />
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                  <span className="text-xs text-[var(--color-muted)]">
-                    {lang === 'en'
-                      ? 'Format validation enforces Egyptian (+20 10/11/12/15) or Saudi (+966 5XXXXXXXX) mobile standards.'
-                      : 'يتم التحقق تلقائيًا من صيغة الهاتف المصري (+20) أو الجوال السعودي (+966) قبل الحفظ.'}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleSaveBottomInternationalAndPhone}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
+                  {/* ==============================================================
+                      BOTTOM OF SETTINGS PAGE: COUNTRY, CURRENCY & VERIFIED PHONE
+                      ============================================================== */}
+                  <div
+                    id="settings-international-bottom"
+                    className="rounded-[24px] border border-amber-200/80 bg-amber-50/85 p-5 sm:p-6 shadow-2xs space-y-4"
                   >
-                    {settingsOtpStep
-                      ? lang === 'en'
-                        ? 'Verify OTP & Save International Settings'
-                        : 'تأكيد رمز OTP وحفظ الدولة والمدينة والهاتف'
-                      : lang === 'en'
-                      ? 'Save Country, City, Currency & Phone'
-                      : 'حفظ إعدادات الدولة والمدينة والعملة والهاتف'}
-                  </button>
-                </div>
-              </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-amber-100 text-amber-900">
+                          OTP: {DEMO_OTP_CODE}
+                        </span>
+                        <h3 className="text-base font-extrabold text-[var(--color-text)] mt-1">
+                          {lang === 'en'
+                            ? '🌍 Country, Calling Code, Currency & Verified Phone'
+                            : '🌍 إعدادات الدولة، مفتاح الهاتف، العملة، وتوثيق الجوال'}
+                        </h3>
+                      </div>
+                      <span className="px-3 py-1.5 rounded-xl bg-white text-xs font-extrabold text-[var(--color-text)] tabular-nums shadow-2xs">
+                        {state.country === 'SA' ? '🇸🇦 +966 · SAR' : '🇪🇬 +20 · EGP'} · 📍{' '}
+                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                      <div>
+                        <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                          {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
+                        </label>
+                        <select
+                          id="settingsCountry"
+                          value={settingsCountry}
+                          onChange={(e) => handleCountryChangeInSettings(e.target.value as CountryCode)}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                        >
+                          <option value="EG">🇪🇬 {t(lang, 'countryEG')} (+20)</option>
+                          <option value="SA">🇸🇦 {t(lang, 'countrySA')} (+966)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                          {lang === 'en' ? 'City / Governorate' : 'المدينة / المحافظة'}
+                        </label>
+                        <select
+                          id="settingsCity"
+                          value={settingsCity}
+                          onChange={(e) => setSettingsCity(e.target.value)}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                        >
+                          {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem) => (
+                            <option key={cItem.id} value={cItem.id}>
+                              {lang === 'en' ? `${cItem.nameEn} (${cItem.regionEn})` : `${cItem.nameAr} (${cItem.regionAr})`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="settingsCurrency" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                          {lang === 'en' ? 'Display Currency' : 'العملة المعتمدة للأسعار'}
+                        </label>
+                        <select
+                          id="settingsCurrency"
+                          value={settingsCurrency}
+                          onChange={(e) => {
+                            setSettingsCurrency(e.target.value as CurrencyCode);
+                            setCurrencySuggestionBanner(null);
+                          }}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)]"
+                        >
+                          <option value="EGP">{t(lang, 'currencyEGP')}</option>
+                          <option value="SAR">{t(lang, 'currencySAR')}</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                          {lang === 'en'
+                            ? `Verified Phone (${settingsCountry === 'SA' ? '+966' : '+20'})`
+                            : `رقم هاتف الحساب الموثق (${settingsCountry === 'SA' ? '+966' : '+20'})`}
+                        </label>
+                        <input
+                          id="settingsPhoneInput"
+                          type="tel"
+                          dir="ltr"
+                          value={settingsPhoneInput}
+                          onChange={(e) => setSettingsPhoneInput(e.target.value)}
+                          placeholder={settingsCountry === 'SA' ? '512345678' : '1012345678'}
+                          className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-sm tabular-nums"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Suggested Currency Banner when Country switches */}
+                    {currencySuggestionBanner && (
+                      <div className="rounded-2xl bg-white p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
+                        <span>
+                          اخترت {settingsCountry === 'SA' ? 'السعودية' : 'مصر'}. هل ترغب في التبديل إلى العملة المقترحة ({currencySuggestionBanner})؟
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSettingsCurrency(currencySuggestionBanner);
+                            setCurrencySuggestionBanner(null);
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl font-extrabold bg-amber-600 text-white whitespace-nowrap"
+                        >
+                          نعم، اعتمد {currencySuggestionBanner}
+                        </button>
+                      </div>
+                    )}
+
+                    {settingsOtpStep && (
+                      <div className="rounded-2xl border border-amber-300 bg-white p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="text-amber-950 font-bold">
+                          {lang === 'en'
+                            ? `🔐 Enter OTP code (${DEMO_OTP_CODE}) to confirm update:`
+                            : `🔐 أدخل رمز التحقق OTP التجريبي (${DEMO_OTP_CODE}) لتأكيد التحديث:`}
+                        </div>
+                        <input
+                          type="text"
+                          dir="ltr"
+                          value={settingsOtpCode}
+                          onChange={(e) => setSettingsOtpCode(e.target.value)}
+                          placeholder="123456"
+                          maxLength={6}
+                          className="w-28 rounded-xl border border-amber-400 bg-amber-50 px-3 py-1.5 text-center font-extrabold tabular-nums"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                      <span className="text-xs font-bold text-amber-900">
+                        {lang === 'en'
+                          ? 'Supports Egyptian (+20) & Saudi (+966) mobile formats'
+                          : 'يدعم التحقق القياسي للهاتف المصري (+20) والسعودي (+966)'}
+                      </span>
+                      <PrimaryCtaButton
+                        variant="orange"
+                        onClick={handleSaveBottomInternationalAndPhone}
+                      >
+                        {settingsOtpStep
+                          ? lang === 'en'
+                            ? 'Verify OTP & Save Settings'
+                            : 'تأكيد رمز OTP وحفظ الدولة والهاتف'
+                          : lang === 'en'
+                          ? 'Save Country, City, Currency & Phone'
+                          : 'حفظ إعدادات الدولة والمدينة والعملة والهاتف'}
+                      </PrimaryCtaButton>
+                    </div>
+                  </div>
                 </div>
               )}
             </section>
@@ -3421,13 +3570,13 @@ export default function App() {
               <ThreeDIcon id="assistant" size={28} />
             </span>
             <span
-              className={`mt-1 text-[9.5px] font-extrabold leading-tight whitespace-nowrap ${
+              className={`mt-1 text-[10px] font-extrabold leading-normal text-center whitespace-nowrap ${
                 activePage === 'assistant'
                   ? 'text-[var(--color-accent)]'
                   : 'text-[var(--color-text)]'
               }`}
             >
-              {lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
+              {lang === 'en' ? 'AI Agent' : 'المساعد الذكي'}
             </span>
           </button>
         </div>

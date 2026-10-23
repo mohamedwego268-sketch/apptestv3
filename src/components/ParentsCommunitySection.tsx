@@ -1,6 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
-import { ThreeDIcon } from './ThreeDVisuals';
+import {
+  BannerSlideItem,
+  PASTEL_CARD_TONES,
+  PastelTone,
+  PrimaryCtaButton,
+  SwipeableBannerCarousel,
+} from './DesignSystem';
 
 interface CommunityComment {
   id: number;
@@ -36,6 +42,14 @@ interface CommunityPost {
   comments: CommunityComment[];
 }
 
+const TOPIC_TONE_MAP: Record<CommunityPost['topicId'], PastelTone> = {
+  nursery: 'indigo',
+  behavior: 'rose',
+  nutrition: 'emerald',
+  sleep: 'purple',
+  experiences: 'amber',
+};
+
 const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
   {
     id: 501,
@@ -51,9 +65,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     titleAr: 'تجربتي مع أول أسبوع حضانة لبنتي (3 سنوات) وكيف تغلبنا على قلق الانفصال',
     titleEn: 'Our first week of nursery at age 3 and how we overcame separation anxiety',
     bodyAr:
-      'كنت شايلة هم أول أسبوع في الحضانة جدًا، لكن تطبيق طقس الوداع القصير الواضح (حضن + وعد بالعودة بعد الغداء + اختيار لعبة صغيرة في الشنطة) فرق معانا من رابع يوم! حبيت أشارككم التجربة لو حد بيجهز طفله للحضانة الشهر ده.',
+      'تطبيق طقس الوداع القصير الواضح (حضن + وعد بالعودة بعد الغداء + اختيار لعبة صغيرة في الشنطة) فرق معانا من رابع يوم!',
     bodyEn:
-      'I was worried about our first week at nursery, but keeping a short, predictable goodbye ritual (hug + clear pickup promise after lunch) made a huge difference by day 4!',
+      'Keeping a short, predictable goodbye ritual (hug + clear pickup promise after lunch) made a huge difference by day 4!',
     timeAgoAr: 'منذ ساعتين',
     timeAgoEn: '2h ago',
     likes: 48,
@@ -67,7 +81,7 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         roleBadgeEn: '🩺 Verified Child Psychologist',
         isVerifiedExpert: true,
         textAr:
-          'تجربة رائعة يا نهى! ثبات موعد الاستلام وعدم التسلل دون وداع يبني ثقة الطفل في المكان وفي وعد الوالدين.',
+          'تجربة رائعة يا نهى! ثبات موعد الاستلام وعدم التسلل دون وداع يبني ثقة الطفل في المكان.',
         textEn:
           'Wonderful approach! Predictable pickup times and never sneaking away build lasting trust.',
         timeLabel: '1h ago',
@@ -98,9 +112,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     titleAr: 'سؤال للآباء والأمهات: كيف تنظمون وقت الشاشات في عطلة نهاية الأسبوع؟',
     titleEn: 'Question for parents: How do you structure screen time on weekends?',
     bodyAr:
-      'ريان عمره 5 سنوات ويحب الألعاب التفاعلية، اتفقنا في البيت على 30 دقيقة فقط بعد الغداء بشرط نلعب معاه لعبة حركية أو مكعبات بعدها. إيه البدائل اللي نجحت مع أطفالكم في نفس السن؟',
+      'اتفقنا في البيت على 30 دقيقة فقط بعد الغداء بشرط نلعب معاه لعبة حركية أو مكعبات بعدها. إيه البدائل اللي نجحت مع أطفالكم؟',
     bodyEn:
-      'Rayan is 5 and loves interactive games. We agreed on 30 minutes after lunch followed by physical play or building blocks. What alternatives worked well for your 5-year-olds?',
+      'We agreed on 30 minutes after lunch followed by physical play or building blocks. What alternatives worked well for your 5-year-olds?',
     timeAgoAr: 'منذ 5 ساعات',
     timeAgoEn: '5h ago',
     likes: 39,
@@ -113,9 +127,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         roleBadgeAr: 'أم ومستشارة تربوية',
         roleBadgeEn: 'Parent & Educator',
         textAr:
-          'استخدام مؤقت بصري (ساعة رملية أو منبه لطيف) قبل انتهاء الوقت بـ 5 دقائق يمنع الصدام وقت إغلاق الشاشة.',
+          'استخدام مؤقت بصري (ساعة رملية أو منبه لطيف) قبل انتهاء الوقت بـ 5 دقائق يمنع الصدام.',
         textEn:
-          'Using a visual timer 5 minutes before screen time ends prevents frustration when turning it off.',
+          'Using a visual timer 5 minutes before screen time ends prevents frustration.',
         timeLabel: '3h ago',
       },
     ],
@@ -134,9 +148,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     titleAr: 'أفكار فطور غني بالحديد والكالسيوم للرضع بعد عمر السنة',
     titleEn: 'Iron & calcium-rich breakfast ideas for toddlers after 12 months',
     bodyAr:
-      'شاركوني وصفات سريعة للفطور الصباحي بدون سكر مضاف، جربت الشوفان المطبوخ بالحليب مع التمر المهروس والسمسم المطحون وكانت ممتازة جدًا.',
+      'جربت الشوفان المطبوخ بالحليب مع التمر المهروس والسمسم المطحون بدون سكر مضاف وكانت ممتازة جدًا.',
     bodyEn:
-      'Share your quick no-added-sugar toddler breakfast recipes! Oats with mashed dates and ground sesame worked great for us.',
+      'Oats with mashed dates and ground sesame with zero added sugar worked great for us.',
     timeAgoAr: 'أمس',
     timeAgoEn: 'Yesterday',
     likes: 64,
@@ -258,55 +272,77 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     onShowToast(isEn ? 'Comment added' : 'تمت إضافة تعليقك');
   };
 
-  return (
-    <section className="space-y-6" aria-label={isEn ? 'Parents Community' : 'مجتمع الوالدين'}>
-      {/* Warm Coral-Amber Community Personality Hero */}
-      <div
-        className="rounded-[24px] p-5 sm:p-7 border border-orange-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
-        style={{
-          background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 52%, #fef3c7 100%)',
-          boxShadow: '0 16px 34px -14px rgba(234, 88, 12, 0.14)',
-        }}
-      >
-        <div className="space-y-2.5 max-w-2xl">
-          <div className="text-xs font-extrabold text-orange-800">
-            🤝 {isEn ? 'Safe & Moderated Parents Community (Demo)' : 'مجتمع الآباء والأمهات التفاعلي (بيئة آمنة ومعتدلة — عرض تجريبي)'}
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
-            {isEn
-              ? 'Share Real Parenting Experiences, Ask Questions & Learn from Specialists'
-              : 'تبادلوا الخبرات اليومية، اطرحوا الأسئلة، وتفاعلوا مع آباء وأمهات ومتخصصين'}
-          </h2>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            {isEn
-              ? 'Discover discussions grouped by child age and topic, react to helpful experiences, and get verified specialist commentary.'
-              : 'مساحة مجتمعية مخصصة للوالدين لمناقشة تجارب الحضانات، النوم، التغذية، وتعديل السلوك مع ردود موثقة من المتخصصين.'}
-          </p>
-        </div>
+  const communityBanners: BannerSlideItem[] = [
+    {
+      id: 'comm-slide-share',
+      badge: isEn ? '🤝 Safe Parents Community' : '🤝 مجتمع الآباء والأمهات',
+      title: isEn
+        ? 'Share Experiences & Get Verified Specialist Replies'
+        : 'شارك تجربتك اليومية واحصل على ردود الخبراء الموثقين',
+      subtitle: isEn
+        ? `${posts.length} Active Discussions · Grouped by Age (0–8 Yrs)`
+        : `${posts.length} نقاشات نشطة · مصنفة حسب عمر الطفل (0–8 سنوات)`,
+      ctaLabel: isEn ? '+ Publish Post or Question' : '+ انشر تجربة أو سؤال الآن',
+      onCtaClick: () => setComposerOpen(true),
+      iconId: 'star',
+      gradient: 'linear-gradient(125deg, #fff7ed, #ffedd5, #fde8ef)',
+      ctaVariant: 'orange',
+    },
+    {
+      id: 'comm-slide-nursery',
+      badge: isEn ? '🏫 Nursery & School Tips' : '🏫 تجارب الحضانات والمدارس',
+      title: isEn
+        ? 'How Parents Overcame First-Week Nursery Anxiety'
+        : 'كيف تغلب الآباء على قلق الأسبوع الأول في الحضانة؟',
+      subtitle: isEn
+        ? 'Real Parent Tips · Psychologist Reviewed'
+        : 'تجارب واقعية · نصائح استشاريين نفسيين',
+      ctaLabel: isEn ? 'Filter Nursery Topics' : 'استعرض تجارب الحضانات',
+      onCtaClick: () => setTopicFilter('nursery'),
+      iconId: 'children',
+      gradient: 'linear-gradient(125deg, #eef2ff, #e0e7ff, #fae8ff)',
+      ctaVariant: 'indigo',
+    },
+    {
+      id: 'comm-slide-nutrition',
+      badge: isEn ? '🍎 Nutrition & Sleep' : '🍎 التغذية والروتين اليومي',
+      title: isEn
+        ? 'Healthy Toddler Breakfasts & Calm Bedtime Routines'
+        : 'أفكار فطور صحية للرضع وروتين نوم هادئ بدون شاشات',
+      subtitle: isEn
+        ? 'No Added Sugar · Practical Daily Ideas'
+        : 'بدون سكر مضاف · وصفات مجربة من الأمهات',
+      ctaLabel: isEn ? 'Explore Nutrition Tips' : 'تصفح نقاشات التغذية',
+      onCtaClick: () => setTopicFilter('nutrition'),
+      iconId: 'routine',
+      gradient: 'linear-gradient(125deg, #ecfdf5, #d1fae5, #fef3c7)',
+      ctaVariant: 'emerald',
+    },
+  ];
 
-        <button
-          type="button"
-          onClick={() => setComposerOpen((v) => !v)}
-          className="px-5 py-3 rounded-2xl text-xs font-extrabold bg-orange-600 text-white hover:bg-orange-700 transition-colors whitespace-nowrap shrink-0 shadow-sm"
-        >
-          ✍️ {isEn ? '+ Publish Post or Ask a Question' : '+ انشر تجربة أو اطرح سؤالًا للوالدين'}
-        </button>
-      </div>
+  return (
+    <section className="space-y-5" aria-label={isEn ? 'Parents Community' : 'مجتمع الوالدين'}>
+      {/* Swipeable Community Banner Carousel */}
+      <SwipeableBannerCarousel
+        slides={communityBanners}
+        language={language}
+        ariaLabel={isEn ? 'Community Highlights Carousel' : 'لافتات مجتمع الآباء المتحركة'}
+      />
 
       {/* Post Composer Drawer */}
       {composerOpen && (
         <form
           onSubmit={handlePublishPost}
-          className="rounded-[22px] border-2 border-orange-300 bg-[var(--color-surface)] p-5 space-y-4"
+          className="rounded-[24px] border-2 border-orange-300 bg-[var(--color-surface)] p-5 space-y-4 shadow-md"
         >
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-base font-extrabold text-[var(--color-text)]">
-              ✍️ {isEn ? 'Create a Community Post or Question' : 'مشاركة جديدة في مجتمع الوالدين'}
+              ✍️ {isEn ? 'New Community Post or Question' : 'مشاركة جديدة في مجتمع الوالدين'}
             </h3>
             <button
               type="button"
               onClick={() => setComposerOpen(false)}
-              className="px-3 py-1 rounded-lg text-xs font-bold border border-[var(--color-border)]"
+              className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
             >
               {isEn ? 'Close' : 'إغلاق'}
             </button>
@@ -314,13 +350,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
                 {isEn ? 'Topic Category' : 'قسم النقاش'}
               </label>
               <select
                 value={newPostTopic}
                 onChange={(e) => setNewPostTopic(e.target.value as CommunityPost['topicId'])}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
               >
                 <option value="experiences">{isEn ? 'Parent Experiences' : 'تجارب الأمهات والآباء'}</option>
                 <option value="sleep">{isEn ? 'Sleep & Routine' : 'نوم الرضع والروتين'}</option>
@@ -330,13 +366,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
                 {isEn ? 'Child Age Stage' : 'المرحلة العمرية للطفل'}
               </label>
               <select
                 value={newPostAge}
                 onChange={(e) => setNewPostAge(e.target.value)}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
               >
                 <option value="0–2 سنوات">{isEn ? '0–2 Years' : 'من أول يوم لـ سنتين (0–2)'}</option>
                 <option value="2–5 سنوات">{isEn ? '2–5 Years' : 'من 2 إلى 5 سنوات'}</option>
@@ -346,7 +382,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+            <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
               {isEn ? 'Post Title / Question' : 'عنوان السؤال أو التجربة'}
             </label>
             <input
@@ -363,7 +399,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+            <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
               {isEn ? 'Details' : 'تفاصيل المشاركة'}
             </label>
             <textarea
@@ -374,45 +410,52 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                   ? 'Share context so other parents and specialists can help...'
                   : 'اكتب تفاصيل سؤالك أو تجربتك ليستفيد باقي الآباء والأمهات...'
               }
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3.5 text-sm text-[var(--color-text)] min-h-[90px]"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3.5 text-sm text-[var(--color-text)] min-h-[84px]"
             />
           </div>
 
           <div className="flex justify-end gap-2">
-            <button
-              type="submit"
-              className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-orange-600 text-white"
-            >
+            <PrimaryCtaButton type="submit" variant="orange" size="sm">
               {isEn ? 'Publish to Community' : 'نشر في المجتمع الآن'}
-            </button>
+            </PrimaryCtaButton>
           </div>
         </form>
       )}
 
-      {/* Topic Filter Bar & Search */}
-      <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {[
-            { id: 'all', labelAr: 'كل النقاشات', labelEn: 'All Discussions' },
-            { id: 'nursery', labelAr: 'الحضانات والمدارس', labelEn: 'Nurseries & Schools' },
-            { id: 'behavior', labelAr: 'السلوك والمشاعر', labelEn: 'Behavior & Emotions' },
-            { id: 'nutrition', labelAr: 'التغذية واللانش بوكس', labelEn: 'Child Nutrition' },
-            { id: 'sleep', labelAr: 'نوم الرضع والروتين', labelEn: 'Sleep & Routine' },
-            { id: 'experiences', labelAr: 'تجارب الأمهات والآباء', labelEn: 'Parent Experiences' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setTopicFilter(tab.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors whitespace-nowrap ${
-                topicFilter === tab.id
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              {isEn ? tab.labelEn : tab.labelAr}
-            </button>
-          ))}
+      {/* Topic Filter Bar, Search & Quick New Post Button */}
+      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'all', labelAr: 'الكل', labelEn: 'All' },
+              { id: 'nursery', labelAr: '🏫 الحضانات', labelEn: '🏫 Nurseries' },
+              { id: 'behavior', labelAr: '💛 السلوك', labelEn: '💛 Behavior' },
+              { id: 'nutrition', labelAr: '🍎 التغذية', labelEn: '🍎 Nutrition' },
+              { id: 'sleep', labelAr: '🌙 النوم', labelEn: '🌙 Sleep' },
+              { id: 'experiences', labelAr: '✨ التجارب', labelEn: '✨ Experiences' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setTopicFilter(tab.id)}
+                className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+                  topicFilter === tab.id
+                    ? 'bg-orange-600 text-white shadow-2xs'
+                    : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                }`}
+              >
+                {isEn ? tab.labelEn : tab.labelAr}
+              </button>
+            ))}
+          </div>
+
+          <PrimaryCtaButton
+            variant="orange"
+            size="sm"
+            onClick={() => setComposerOpen((v) => !v)}
+          >
+            ✍️ {isEn ? '+ New Post' : '+ مشاركة جديدة'}
+          </PrimaryCtaButton>
         </div>
 
         <input
@@ -421,58 +464,59 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={
             isEn
-              ? 'Search parent discussions, questions, or cities...'
-              : 'ابحث في نقاشات وتجارب الوالدين (مثلًا: حضانة، فطور، شاشات)...'
+              ? '🔍 Search parent discussions, questions, or cities...'
+              : '🔍 ابحث في نقاشات وتجارب الوالدين (حضانة، فطور، شاشات)...'
           }
-          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs text-[var(--color-text)]"
+          className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
         />
       </div>
 
-      {/* Community Feed */}
+      {/* Community Feed Cards with Soft Pastel Tints */}
       <div className="space-y-4">
         {filteredPosts.map((post) => {
           const isLiked = likedIds.includes(post.id);
           const isHelpful = helpfulIds.includes(post.id);
           const isExpanded = expandedPostId === post.id;
+          const tone = PASTEL_CARD_TONES[TOPIC_TONE_MAP[post.topicId] || 'amber'];
 
           return (
             <article
               key={post.id}
-              className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4"
+              className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] p-5 space-y-3.5 shadow-2xs`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-muted)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-900 font-extrabold flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-white border border-orange-200 text-orange-900 font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
                     {(isEn ? post.authorEn : post.authorAr).slice(0, 1)}
                   </div>
                   <div>
                     <div className="font-extrabold text-[var(--color-text)]">
                       {isEn ? post.authorEn : post.authorAr}
                     </div>
-                    <div className="text-[11px] text-[var(--color-muted)]">
-                      📍 {isEn ? post.authorCityEn : post.authorCityAr} ·{' '}
+                    <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                      📍 {isEn ? post.authorCityEn : post.authorCityAr} · 👶{' '}
                       {isEn ? post.childAgeLabelEn : post.childAgeLabelAr} ·{' '}
                       {isEn ? post.timeAgoEn : post.timeAgoAr}
                     </div>
                   </div>
                 </div>
 
-                <span className="text-xs font-bold text-orange-800">
+                <span className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold ${tone.badge}`}>
                   {isEn ? post.topicLabelEn : post.topicLabelAr}
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] leading-snug">
                   {isEn ? post.titleEn : post.titleAr}
                 </h3>
-                <p className="text-sm text-[var(--color-muted)] leading-relaxed">
+                <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed">
                   {isEn ? post.bodyEn : post.bodyAr}
                 </p>
               </div>
 
               {/* Reaction & Comment Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--color-border)]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--color-border)]/70">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
@@ -481,10 +525,10 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isLiked ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
                       isLiked
                         ? 'bg-orange-600 text-white border-orange-600'
-                        : 'bg-[var(--color-control-bg)] text-[var(--color-text)] border-[var(--color-border)]'
+                        : 'bg-white text-[var(--color-text)] border-[var(--color-border)]'
                     }`}
                   >
                     ❤️ {isEn ? 'Like' : 'أعجبني'} ·{' '}
@@ -500,13 +544,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isHelpful ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${
+                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
                       isHelpful
-                        ? 'bg-emerald-700 text-white border-emerald-700'
-                        : 'bg-[var(--color-control-bg)] text-[var(--color-text)] border-[var(--color-border)]'
+                        ? 'bg-emerald-600 text-white border-emerald-600'
+                        : 'bg-white text-[var(--color-text)] border-[var(--color-border)]'
                     }`}
                   >
-                    💡 {isEn ? 'Helpful Experience' : 'تجربة مفيدة'} ·{' '}
+                    💡 {isEn ? 'Helpful' : 'مفيد'} ·{' '}
                     <span dir="ltr" className="tabular-nums">
                       {post.helpfulCount + (isHelpful ? 1 : 0)}
                     </span>
@@ -516,28 +560,28 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 <button
                   type="button"
                   onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white border border-[var(--color-border)] text-[var(--color-text)]"
                 >
-                  💬 {isEn ? `Comments (${post.comments.length})` : `التعليقات والردود (${post.comments.length})`}
+                  💬 {isEn ? `Comments (${post.comments.length})` : `الردود (${post.comments.length})`}
                 </button>
               </div>
 
               {/* Comments Thread */}
               {isExpanded && (
-                <div className="pt-3 space-y-3 border-t border-[var(--color-border)]">
+                <div className="pt-3 space-y-2.5 border-t border-[var(--color-border)]/70">
                   {post.comments.map((c) => (
                     <div
                       key={c.id}
-                      className={`rounded-xl p-3.5 text-xs space-y-1 ${
+                      className={`rounded-2xl p-3.5 text-xs space-y-1 ${
                         c.isVerifiedExpert
-                          ? 'bg-emerald-50/80 border border-emerald-200'
-                          : 'bg-[var(--color-control-muted)]'
+                          ? 'bg-emerald-50/90 border border-emerald-200'
+                          : 'bg-white/90 border border-[var(--color-border)]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-extrabold text-[var(--color-text)]">
                           {isEn ? c.authorEn : c.authorAr}{' '}
-                          <span className="font-semibold text-emerald-800">
+                          <span className="font-bold text-emerald-800">
                             · {isEn ? c.roleBadgeEn : c.roleBadgeAr}
                           </span>
                         </span>
@@ -566,18 +610,18 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                       }}
                       placeholder={
                         isEn
-                          ? 'Write a supportive reply or share your tip...'
+                          ? 'Write a supportive reply...'
                           : 'اكتب تعليقًا داعمًا أو شارك تجربتك...'
                       }
-                      className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs text-[var(--color-text)]"
+                      className="flex-1 rounded-xl border border-[var(--color-border)] bg-white px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
                     />
-                    <button
-                      type="button"
+                    <PrimaryCtaButton
+                      variant="orange"
+                      size="sm"
                       onClick={() => handleAddComment(post.id)}
-                      className="px-4 py-2 rounded-xl text-xs font-extrabold bg-orange-600 text-white whitespace-nowrap"
                     >
                       {isEn ? 'Reply' : 'إرسال'}
-                    </button>
+                    </PrimaryCtaButton>
                   </div>
                 </div>
               )}

@@ -5,6 +5,7 @@ import {
   calculateChildAge,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
+import { PrimaryCtaButton } from './DesignSystem';
 
 interface InteractiveGamesSectionProps {
   kids: ChildProfile[];
@@ -34,7 +35,6 @@ const INITIAL_MEMORY_PAIRS = [
 
 function createDeck(): MemoryCard[] {
   const doubled = [...INITIAL_MEMORY_PAIRS, ...INITIAL_MEMORY_PAIRS];
-  // Deterministic-friendly shuffle on user action, initial ordered mix so it's immediately playable
   const order = [0, 3, 1, 5, 2, 4, 5, 0, 4, 2, 3, 1];
   return order.map((pairIdx, idx) => {
     const item = doubled[pairIdx];
@@ -168,8 +168,8 @@ const SHAPE_CHALLENGES: ShapeChallenge[] = [
 export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = ({
   kids,
   language,
-  onExitGamesToDashboard,
 }) => {
+  const isEn = language === 'en';
   const [selectedKidId, setSelectedKidId] = useState<number>(kids[0]?.id || 1);
   const [parentApprovedSession, setParentApprovedSession] = useState<boolean>(true);
   const [activeGame, setActiveGame] = useState<'memory' | 'shapes'>('memory');
@@ -238,18 +238,16 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
       setShapeScore((s) => s + 1);
       setShapeFeedback({
         type: 'correct',
-        message:
-          language === 'en'
-            ? '🌟 Wonderful! Correct 3D shape, color, and count!'
-            : '🌟 أحسنت! إجابة صحيحة للمجسم ثلاثي الأبعاد واللون والعدد!',
+        message: isEn
+          ? '🌟 Wonderful! Correct 3D shape, color, and count!'
+          : '🌟 أحسنت! إجابة صحيحة للمجسم ثلاثي الأبعاد واللون والعدد!',
       });
     } else {
       setShapeFeedback({
         type: 'try_again',
-        message:
-          language === 'en'
-            ? '💡 Look closely at the color and count, then try again!'
-            : '💡 ركّز في اللون والعدد وجرّب مرة أخرى بهدوء!',
+        message: isEn
+          ? '💡 Look closely at the color and count, then try again!'
+          : '💡 ركّز في اللون والعدد وجرّب مرة أخرى بهدوء!',
       });
     }
   };
@@ -261,35 +259,8 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
 
   return (
     <div className="space-y-5">
-      {/* Header & Parent Control Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <ThreeDIcon id="games" size={40} />
-          <div>
-            <h2 className="text-xl font-bold text-[var(--color-text)]">
-              {language === 'en'
-                ? 'Interactive 3D Children’s Learning Games'
-                : 'ركن الألعاب التعليمية التفاعلية ثلاثية الأبعاد (آمن وتحت إشراف الوالدين)'}
-            </h2>
-            <p className="text-sm text-[var(--color-muted)]">
-              {language === 'en'
-                ? 'Calm, non-addictive 3D cognitive activities designed for parent-child co-play without dark patterns or ads.'
-                : 'أنشطة ذهنية وبصرية هادئة ثلاثية الأبعاد مصممة للعب التشاركي بين الوالدين والطفل، خالية تمامًا من الإعلانات أو أنماط الإدمان.'}
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onExitGamesToDashboard}
-          className="px-4 py-2 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
-        >
-          {language === 'en' ? '← Exit Games to Parent Dashboard' : '← العودة للوحة تحكم الوالدين'}
-        </button>
-      </div>
-
-      {/* Parent Approval & Child Stage Selector Bar */}
-      <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-wrap items-center justify-between gap-4">
+      {/* Parent Approval & Child Stage Selector Bar (Pastel Card) */}
+      <div className="rounded-[24px] border border-emerald-200/80 bg-emerald-50/75 p-4 flex flex-wrap items-center justify-between gap-4 shadow-2xs">
         <div className="flex flex-wrap items-center gap-3">
           {activeKid && (
             <ThreeDChildAvatar
@@ -303,15 +274,15 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
             />
           )}
           <div>
-            <label htmlFor="gameChildSelector" className="block text-xs font-bold text-[var(--color-text)]">
-              {language === 'en' ? 'Active Child Profile:' : 'ملف الطفل المشارك في اللعب:'}
+            <label htmlFor="gameChildSelector" className="block text-xs font-extrabold text-[var(--color-text)]">
+              🎮 {isEn ? 'Active Child Player:' : 'ملف الطفل المشارك في اللعب:'}
             </label>
             <div className="flex items-center gap-2 mt-1">
               <select
                 id="gameChildSelector"
                 value={selectedKidId}
                 onChange={(e) => setSelectedKidId(Number(e.target.value))}
-                className="rounded-lg border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1 text-xs font-semibold text-[var(--color-text)]"
+                className="rounded-xl border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] shadow-2xs"
               >
                 {kids.map((k) => (
                   <option key={k.id} value={k.id}>
@@ -319,118 +290,118 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                   </option>
                 ))}
               </select>
-              {kidAge && (
-                <span className="text-xs text-[var(--color-muted)]">
-                  · {kidAge.stageTitle}
-                </span>
-              )}
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-control-muted)] text-xs font-semibold text-[var(--color-text)] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={parentApprovedSession}
-              onChange={(e) => setParentApprovedSession(e.target.checked)}
-              className="accent-[var(--color-accent)]"
-            />
-            <span>
-              {language === 'en'
-                ? 'Parent Co-Play Approval Active (15 min recommended)'
-                : 'موافقة الوالدين للجلسة نشطة (موصى بـ 15 دقيقة)'}
-            </span>
-          </label>
-        </div>
+        <label className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-emerald-200 text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs">
+          <input
+            type="checkbox"
+            checked={parentApprovedSession}
+            onChange={(e) => setParentApprovedSession(e.target.checked)}
+            className="accent-[var(--color-accent)]"
+          />
+          <span>
+            🛡️ {isEn ? 'Parent Co-Play Active (15m)' : 'إشراف الوالدين نشط (15 دقيقة)'}
+          </span>
+        </label>
       </div>
 
-      {/* Game Switcher Tabs */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* 2-Column Game Switcher Cards (Matches Home Screen Grid Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <button
           type="button"
           onClick={() => setActiveGame('memory')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`rounded-2xl border p-4 flex items-center justify-between gap-3 text-start transition-all ${
             activeGame === 'memory'
-              ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm'
-              : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
+              ? 'border-purple-500 bg-purple-50/90 shadow-sm'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)]'
           }`}
         >
-          {language === 'en'
-            ? '🧩 Game 1: 3D Memory & Vocabulary Match (Ages 2–8)'
-            : '🧩 اللعبة الأولى: تطابق الذاكرة والمفردات ثلاثية الأبعاد (٢–٨ سنوات)'}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white shadow-2xs flex items-center justify-center text-2xl shrink-0">
+              🧩
+            </div>
+            <div>
+              <div className="text-sm font-extrabold text-[var(--color-text)]">
+                {isEn ? '3D Memory & Vocabulary Match' : 'تطابق الذاكرة والمفردات 3D'}
+              </div>
+              <div className="text-xs font-bold text-[var(--color-muted)]">
+                👶 {isEn ? 'Ages 2–8 Years' : 'لعمر ٢–٨ سنوات'}
+              </div>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-xl bg-purple-100 text-purple-900 text-xs font-extrabold">
+            {matchedPairsCount}/{INITIAL_MEMORY_PAIRS.length}
+          </span>
         </button>
+
         <button
           type="button"
           onClick={() => setActiveGame('shapes')}
-          className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+          className={`rounded-2xl border p-4 flex items-center justify-between gap-3 text-start transition-all ${
             activeGame === 'shapes'
-              ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm'
-              : 'border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
+              ? 'border-amber-500 bg-amber-50/90 shadow-sm'
+              : 'border-[var(--color-border)] bg-[var(--color-surface)]'
           }`}
         >
-          {language === 'en'
-            ? '🎨 Game 2: 3D Shapes, Colors & Counting (Ages 0–8)'
-            : '🎨 اللعبة الثانية: اكتشاف المجسمات والألوان والعد 3D (٠–٨ سنوات)'}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-white shadow-2xs flex items-center justify-center text-2xl shrink-0">
+              🎨
+            </div>
+            <div>
+              <div className="text-sm font-extrabold text-[var(--color-text)]">
+                {isEn ? '3D Shapes, Colors & Counting' : 'اكتشاف المجسمات والألوان 3D'}
+              </div>
+              <div className="text-xs font-bold text-[var(--color-muted)]">
+                👶 {isEn ? 'Ages 0–8 Years' : 'لعمر ٠–٨ سنوات'}
+              </div>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 rounded-xl bg-amber-100 text-amber-900 text-xs font-extrabold">
+            ⭐ {shapeScore}
+          </span>
         </button>
       </div>
 
       {!parentApprovedSession ? (
-        <div className="rounded-[18px] border border-amber-200 bg-amber-50 p-6 text-center space-y-2">
-          <div className="text-base font-bold text-amber-900">
-            {language === 'en'
-              ? '🔒 Parent Session Approval Paused'
-              : '🔒 جلسة اللعب متوقفة مؤقتًا بأمر الوالدين'}
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 p-6 text-center space-y-2">
+          <div className="text-base font-extrabold text-amber-900">
+            🔒 {isEn ? 'Parent Session Paused' : 'جلسة اللعب متوقفة مؤقتًا بأمر الوالدين'}
           </div>
-          <p className="text-xs text-amber-800">
-            {language === 'en'
-              ? 'Check the Parent Co-Play Approval toggle above to resume the interactive 3D activity.'
-              : 'فعّل خيار «موافقة الوالدين للجلسة» في الشريط العلوي لبدء أو استكمال النشاط التفاعلي مع طفلك.'}
-          </p>
         </div>
       ) : activeGame === 'memory' ? (
         /* GAME 1: 3D MEMORY MATCHING */
-        <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
+        <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-[var(--color-text)]">
-                {language === 'en'
-                  ? '3D Tactile Memory & Bilingual Word Discovery'
-                  : 'بطاقات الذاكرة ثلاثية الأبعاد وتسمية الأشياء'}
-              </h3>
-              <p className="text-xs text-[var(--color-muted)]">
-                {language === 'en'
-                  ? 'Tap any two 3D tiles to flip and match identical objects while reading their names aloud with your child.'
-                  : 'اضغط على البطاقات ثلاثية الأبعاد لمطابقة كل زوج متشابه واقرأ اسم الشكل مع طفلك بصوت واضح.'}
-              </p>
+            <div className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+              🧩 {isEn ? 'Tap Two 3D Tiles to Match' : 'اضغط على بطاقتين متماثلتين للمطابقة'}
             </div>
-            <div className="flex items-center gap-3 text-xs font-bold tabular-nums">
-              <span className="px-3 py-1.5 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)]">
-                {language === 'en'
-                  ? `Matched: ${matchedPairsCount} / ${INITIAL_MEMORY_PAIRS.length}`
-                  : `الأزواج المكتشفة: ${matchedPairsCount} من ${INITIAL_MEMORY_PAIRS.length}`}
+            <div className="flex items-center gap-2 text-xs font-extrabold tabular-nums">
+              <span className="px-3 py-1.5 rounded-xl bg-purple-50 text-purple-900">
+                {isEn ? `Matched: ${matchedPairsCount}/${INITIAL_MEMORY_PAIRS.length}` : `الأزواج: ${matchedPairsCount}/${INITIAL_MEMORY_PAIRS.length}`}
               </span>
-              <span className="px-3 py-1.5 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)]">
-                {language === 'en' ? `Moves: ${moves}` : `المحاولات: ${moves}`}
+              <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900">
+                {isEn ? `Moves: ${moves}` : `المحاولات: ${moves}`}
               </span>
               <button
                 type="button"
                 onClick={handleResetMemoryGame}
-                className="px-3 py-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
+                className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[var(--color-border)] bg-white text-[var(--color-text)] font-extrabold"
               >
-                {language === 'en' ? '↻ Restart Game' : '↻ إعادة اللعب'}
+                ↻ {isEn ? 'Restart' : 'إعادة'}
               </button>
             </div>
           </div>
 
           {matchedPairsCount === INITIAL_MEMORY_PAIRS.length && (
             <div
-              className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-center text-sm font-bold text-emerald-900"
+              className="rounded-2xl border border-emerald-300 bg-emerald-50 p-4 text-center text-sm font-extrabold text-emerald-900"
               role="status"
             >
-              {language === 'en'
-                ? `🎉 Bravo ${activeKid?.name || ''}! You matched all 6 3D pairs in ${moves} moves!`
-                : `🎉 أحسنت يا ${activeKid?.name || 'بطل'}! أتممت مطابقة جميع البطاقات ثلاثية الأبعاد في ${moves} محاولة!`}
+              🎉 {isEn
+                ? `Bravo ${activeKid?.name || ''}! Matched all 6 pairs in ${moves} moves!`
+                : `أحسنت يا ${activeKid?.name || 'بطل'}! أتممت مطابقة جميع البطاقات في ${moves} محاولة!`}
             </div>
           )}
 
@@ -444,10 +415,10 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                   onClick={() => handleCardClick(idx)}
                   aria-label={
                     isRevealed
-                      ? language === 'en'
+                      ? isEn
                         ? card.labelEn
                         : card.labelAr
-                      : language === 'en'
+                      : isEn
                       ? `Hidden 3D Card ${idx + 1}`
                       : `بطاقة ثلاثية الأبعاد رقم ${idx + 1}`
                   }
@@ -458,13 +429,12 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                       : 'linear-gradient(145deg, #ffffff 0%, #f5ece6 100%)',
                     boxShadow: isRevealed
                       ? '0 10px 20px -6px rgba(38, 28, 46, 0.18), inset 0 2px 4px rgba(255,255,255,0.9)'
-                      : '0 8px 16px -6px rgba(38, 28, 46, 0.14), inset 0 2px 4px rgba(255,255,255,0.95), inset 0 -3px 6px rgba(0,0,0,0.06)',
+                      : '0 8px 16px -6px rgba(38, 28, 46, 0.14), inset 0 2px 4px rgba(255,255,255,0.95)',
                     border: card.matched
                       ? '2px solid #10b981'
                       : isRevealed
                       ? '2px solid var(--color-accent)'
                       : '1px solid var(--color-border)',
-                    transform: isRevealed ? 'perspective(600px) rotateY(0deg) translateY(-2px)' : 'perspective(600px)',
                   }}
                 >
                   {isRevealed ? (
@@ -473,17 +443,17 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                         {card.emoji}
                       </span>
                       <span className="text-xs font-extrabold text-slate-900">
-                        {language === 'en' ? card.labelEn : card.labelAr}
+                        {isEn ? card.labelEn : card.labelAr}
                       </span>
-                      <span className="text-[10px] text-slate-600">
-                        {language === 'en' ? card.labelAr : card.labelEn}
+                      <span className="text-[10px] font-bold text-slate-600">
+                        {isEn ? card.labelAr : card.labelEn}
                       </span>
                     </>
                   ) : (
                     <>
                       <ThreeDIcon id="star" size={30} />
-                      <span className="text-[11px] font-bold text-[var(--color-muted)] mt-1">
-                        {language === 'en' ? 'Tap to Flip 3D' : 'اضغط لكشف البطاقة'}
+                      <span className="text-[11px] font-extrabold text-[var(--color-muted)] mt-1">
+                        {isEn ? 'Tap to Flip' : 'اضغط للكشف'}
                       </span>
                     </>
                   )}
@@ -494,42 +464,29 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
         </div>
       ) : (
         /* GAME 2: 3D SHAPES, COLORS & COUNTING */
-        <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
+        <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-[var(--color-text)]">
-                {language === 'en'
-                  ? '3D Shapes, Colors & Counting Studio'
-                  : 'استوديو المجسمات والألوان والعد ثلاثي الأبعاد'}
-              </h3>
-              <p className="text-xs text-[var(--color-muted)]">
-                {language === 'en'
-                  ? 'Strengthen visual perception, counting, and bilingual shape recognition.'
-                  : 'لتقوية الإدراك البصري والعدّ والتمييز بين الأشكال ثلاثية الأبعاد باللغتين العربية والإنجليزية.'}
-              </p>
+            <div className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+              🎨 {isEn ? currentChallenge.questionEn : currentChallenge.questionAr}
             </div>
-            <div className="flex items-center gap-2 text-xs font-bold tabular-nums">
-              <span className="px-3 py-1.5 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)]">
-                {language === 'en' ? `⭐ Stars Earned: ${shapeScore}` : `⭐ النجوم المكتسبة: ${shapeScore}`}
+            <div className="flex items-center gap-2 text-xs font-extrabold tabular-nums">
+              <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-900">
+                ⭐ {shapeScore}
               </span>
-              <button
-                type="button"
+              <PrimaryCtaButton
+                variant="orange"
+                size="sm"
                 onClick={handleNextChallenge}
-                className="px-3 py-1.5 rounded-xl bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
               >
-                {language === 'en' ? 'Next Question →' : 'السؤال التالي ←'}
-              </button>
+                {isEn ? 'Next Question →' : 'السؤال التالي ←'}
+              </PrimaryCtaButton>
             </div>
-          </div>
-
-          <div className="rounded-2xl bg-[var(--color-control-muted)] p-4 text-base font-extrabold text-[var(--color-text)]">
-            {language === 'en' ? currentChallenge.questionEn : currentChallenge.questionAr}
           </div>
 
           {shapeFeedback && (
             <div
               role="status"
-              className={`rounded-xl p-3 text-xs font-bold ${
+              className={`rounded-2xl p-3.5 text-xs font-extrabold ${
                 shapeFeedback.type === 'correct'
                   ? 'bg-emerald-50 text-emerald-900 border border-emerald-300'
                   : 'bg-amber-50 text-amber-900 border border-amber-300'
@@ -545,11 +502,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                 key={opt.id}
                 type="button"
                 onClick={() => handleSelectShapeOption(opt.id)}
-                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col items-center justify-between gap-3 hover:border-[var(--color-accent)] transition-all cursor-pointer"
-                style={{
-                  boxShadow:
-                    '0 10px 22px -8px rgba(38, 28, 46, 0.14), inset 0 2px 4px rgba(255,255,255,0.9)',
-                }}
+                className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col items-center justify-between gap-3 hover:border-[var(--color-accent)] transition-all cursor-pointer shadow-2xs"
               >
                 <div className="flex items-center justify-center gap-2 min-h-[56px]">
                   {Array.from({ length: opt.count }).map((_, i) => (
@@ -573,10 +526,10 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                 </div>
                 <div className="text-center">
                   <div className="text-sm font-extrabold text-[var(--color-text)]">
-                    {language === 'en' ? opt.labelEn : opt.labelAr}
+                    {isEn ? opt.labelEn : opt.labelAr}
                   </div>
-                  <div className="text-xs text-[var(--color-muted)]">
-                    {language === 'en' ? opt.labelAr : opt.labelEn}
+                  <div className="text-xs font-bold text-[var(--color-muted)]">
+                    {isEn ? opt.labelAr : opt.labelEn}
                   </div>
                 </div>
               </button>
