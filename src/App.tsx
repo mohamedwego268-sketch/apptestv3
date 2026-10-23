@@ -1124,7 +1124,7 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden pb-20 lg:pb-8">
+    <div className="min-h-screen w-full overflow-x-hidden pb-24 lg:pb-8">
       {/* Top Bar Contract: Brand Wordmark + Primary Nav + Language/Notifications/Cart/Role Controls */}
       <header className="sticky top-0 z-30 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-xs">
         <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
@@ -1295,7 +1295,7 @@ export default function App() {
         </aside>
 
         {/* Main Viewport */}
-        <main className="min-w-0 space-y-6">
+        <main key={activePage} className="min-w-0 space-y-5 animate-page-enter">
           {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
           {(() => {
             const innerScreenMeta: Partial<
@@ -3336,19 +3336,28 @@ export default function App() {
                         </div>
 
                         <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center gap-2">
-                          <a
-                            href="/prototype/index.html"
-                            className="px-3 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
+                          <button
+                            type="button"
+                            onClick={() =>
+                              showToast(
+                                lang === 'en'
+                                  ? `✓ Local Storage Integrity Verified: ${state.kids.length} Kids, ${state.family.length} Family Members, ${state.tasks.length} Tasks.`
+                                  : `✓ تم فحص سلامة البيانات المحلية بنجاح: ${state.kids.length} أطفال، ${state.family.length} أفراد عائلة، و${state.tasks.length} مهام روتين.`
+                              )
+                            }
+                            className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] hover:border-[var(--color-accent)] active:scale-95 transition-all"
                           >
-                            {lang === 'en' ? 'Open Standalone prototype/index.html' : 'فتح prototype/index.html المستقل'}
-                          </a>
-                          <a
-                            href="/Family_Space_Project_Updated.zip"
-                            download="Family_Space_Project_Updated.zip"
-                            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-emerald-900 border border-emerald-200"
+                            {lang === 'en' ? '🔍 Verify Local Data Integrity' : '🔍 فحص سلامة البيانات المحلية'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleExportJson();
+                            }}
+                            className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs active:scale-95 transition-all"
                           >
-                            {lang === 'en' ? 'Download Project Package (ZIP)' : 'تنزيل حزمة المشروع (ZIP)'}
-                          </a>
+                            {lang === 'en' ? '📦 Download Full Family Snapshot' : '📦 تنزيل لقطة كاملة لبيانات الأسرة'}
+                          </button>
                         </div>
                       </div>
 
@@ -3536,98 +3545,152 @@ export default function App() {
       </div>
 
       {/* Super App Mobile Bottom Navigation Bar (Strictly 5 Elements with Central AI Agent FAB) */}
-      <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
-        aria-label="التنقل السفلي للموبايل"
-      >
-        {/* 1. Home (الرئيسية) */}
-        <button
-          type="button"
-          onClick={() => navigateTo('home')}
-          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
-            activePage === 'home'
-              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
-              : 'text-[var(--color-muted)]'
-          }`}
-        >
-          <ThreeDIcon id="home" size={22} />
-          <span className="truncate max-w-full">{lang === 'en' ? 'Home' : 'الرئيسية'}</span>
-        </button>
+      {(() => {
+        const isHomeBranch = [
+          'home',
+          'medical',
+          'media',
+          'chat',
+          'children',
+          'routine',
+          'calendar',
+          'wishes',
+          'games',
+          'notifications',
+        ].includes(activePage);
+        const isProfileBranch = activePage === 'settings' || activePage === 'family';
 
-        {/* 2. Store (المتجر) */}
-        <button
-          type="button"
-          onClick={() => navigateTo('services')}
-          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
-            activePage === 'services'
-              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
-              : 'text-[var(--color-muted)]'
-          }`}
-        >
-          <ThreeDIcon id="services" size={22} />
-          <span className="truncate max-w-full">{lang === 'en' ? 'Store' : 'المتجر'}</span>
-        </button>
-
-        {/* 3. Central Button (3rd out of 5): Prominent Floating FAB for AI Agent (مساعد الذكاء الاصطناعي) */}
-        <div className="flex flex-col items-center justify-end">
-          <button
-            type="button"
-            onClick={() => navigateTo('assistant')}
-            aria-label={lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
-            className="-mt-6 flex flex-col items-center justify-center group focus:outline-none"
+        return (
+          <nav
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
+            aria-label="التنقل السفلي للموبايل"
           >
-            <span
-              className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-[var(--color-surface)] transition-transform active:scale-95 ${
-                activePage === 'assistant'
-                  ? 'bg-[var(--color-accent)] ring-2 ring-[var(--color-accent)]'
-                  : 'bg-gradient-to-tr from-[var(--color-accent)] to-[#7c3aed]'
-              }`}
-              style={{
-                boxShadow: '0 10px 24px -4px rgba(124, 58, 237, 0.45)',
-              }}
-            >
-              <ThreeDIcon id="assistant" size={28} />
-            </span>
-            <span
-              className={`mt-1 text-[10px] font-extrabold leading-normal text-center whitespace-nowrap ${
-                activePage === 'assistant'
-                  ? 'text-[var(--color-accent)]'
-                  : 'text-[var(--color-text)]'
+            {/* 1. Home (الرئيسية) */}
+            <button
+              type="button"
+              onClick={() => navigateTo('home')}
+              aria-current={activePage === 'home' ? 'page' : undefined}
+              className={`relative min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-bold active:scale-95 transition-all ${
+                isHomeBranch
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
               }`}
             >
-              {lang === 'en' ? 'AI Agent' : 'المساعد الذكي'}
-            </span>
-          </button>
-        </div>
+              {isHomeBranch && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
+                />
+              )}
+              <ThreeDIcon id="home" size={21} />
+              <span className="truncate max-w-full">{lang === 'en' ? 'Home' : 'الرئيسية'}</span>
+            </button>
 
-        {/* 4. Community (المجتمع) */}
-        <button
-          type="button"
-          onClick={() => navigateTo('community')}
-          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
-            activePage === 'community'
-              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
-              : 'text-[var(--color-muted)]'
-          }`}
-        >
-          <ThreeDIcon id="star" size={22} />
-          <span className="truncate max-w-full">{lang === 'en' ? 'Community' : 'المجتمع'}</span>
-        </button>
+            {/* 2. Store (المتجر) */}
+            <button
+              type="button"
+              onClick={() => navigateTo('services')}
+              aria-current={activePage === 'services' ? 'page' : undefined}
+              className={`relative min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-bold active:scale-95 transition-all ${
+                activePage === 'services'
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {activePage === 'services' && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
+                />
+              )}
+              <div className="relative">
+                <ThreeDIcon id="services" size={21} />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-2 px-1 min-w-[15px] h-[15px] rounded-full bg-orange-600 text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums">
+                    {cartItemCount}
+                  </span>
+                )}
+              </div>
+              <span className="truncate max-w-full">{lang === 'en' ? 'Store' : 'المتجر'}</span>
+            </button>
 
-        {/* 5. Profile (الحساب — with Settings inside) */}
-        <button
-          type="button"
-          onClick={() => navigateTo('settings')}
-          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
-            activePage === 'settings'
-              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
-              : 'text-[var(--color-muted)]'
-          }`}
-        >
-          <ThreeDIcon id="settings" size={22} />
-          <span className="truncate max-w-full">{lang === 'en' ? 'Profile' : 'الحساب'}</span>
-        </button>
-      </nav>
+            {/* 3. Central Button (3rd out of 5): Prominent Floating FAB for AI Agent (مساعد الذكاء الاصطناعي) */}
+            <div className="flex flex-col items-center justify-end">
+              <button
+                type="button"
+                onClick={() => navigateTo('assistant')}
+                aria-current={activePage === 'assistant' ? 'page' : undefined}
+                aria-label={lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
+                className="-mt-6 flex flex-col items-center justify-center group focus:outline-none"
+              >
+                <span
+                  className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-[var(--color-surface)] transition-all active:scale-95 ${
+                    activePage === 'assistant'
+                      ? 'bg-[var(--color-accent)] ring-4 ring-[var(--color-accent-soft)] scale-105'
+                      : 'bg-gradient-to-tr from-[var(--color-accent)] via-[#7c3aed] to-[#ec4899] hover:scale-105'
+                  }`}
+                  style={{
+                    boxShadow: '0 10px 24px -4px rgba(124, 58, 237, 0.48)',
+                  }}
+                >
+                  <ThreeDIcon id="assistant" size={28} />
+                </span>
+                <span
+                  className={`mt-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-extrabold leading-tight text-center whitespace-nowrap transition-colors ${
+                    activePage === 'assistant'
+                      ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)]'
+                      : 'text-[var(--color-text)]'
+                  }`}
+                >
+                  {lang === 'en' ? 'AI Agent' : 'المساعد الذكي'}
+                </span>
+              </button>
+            </div>
+
+            {/* 4. Community (المجتمع) */}
+            <button
+              type="button"
+              onClick={() => navigateTo('community')}
+              aria-current={activePage === 'community' ? 'page' : undefined}
+              className={`relative min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-bold active:scale-95 transition-all ${
+                activePage === 'community'
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {activePage === 'community' && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
+                />
+              )}
+              <ThreeDIcon id="star" size={21} />
+              <span className="truncate max-w-full">{lang === 'en' ? 'Community' : 'المجتمع'}</span>
+            </button>
+
+            {/* 5. Profile (الحساب — with Settings inside) */}
+            <button
+              type="button"
+              onClick={() => navigateTo('settings')}
+              aria-current={activePage === 'settings' ? 'page' : undefined}
+              className={`relative min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10.5px] font-bold active:scale-95 transition-all ${
+                isProfileBranch
+                  ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
+                  : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+              }`}
+            >
+              {isProfileBranch && (
+                <span
+                  aria-hidden="true"
+                  className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
+                />
+              )}
+              <ThreeDIcon id="settings" size={21} />
+              <span className="truncate max-w-full">{lang === 'en' ? 'Profile' : 'الحساب'}</span>
+            </button>
+          </nav>
+        );
+      })()}
 
       {/* ====================================================================
           MODALS

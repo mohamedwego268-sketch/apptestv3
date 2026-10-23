@@ -11,7 +11,7 @@ export interface BannerSlideItem {
   onCtaClick: () => void;
   iconId: ThreeDIconId;
   gradient: string;
-  ctaVariant?: 'orange' | 'emerald' | 'purple' | 'indigo' | 'rose' | 'blue' | 'accent';
+  ctaVariant?: 'orange' | 'emerald' | 'purple' | 'indigo' | 'rose' | 'blue' | 'teal' | 'accent';
 }
 
 export const CTA_BUTTON_VARIANTS: Record<
@@ -24,6 +24,7 @@ export const CTA_BUTTON_VARIANTS: Record<
   indigo: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
   rose: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm',
   blue: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
+  teal: 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm',
   accent: 'bg-[var(--color-accent)] hover:opacity-95 text-[var(--color-accent-contrast)] shadow-sm',
 };
 
@@ -123,10 +124,11 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
     size === 'sm'
       ? 'min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold'
       : 'min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold';
+  const variantTone = CTA_BUTTON_VARIANTS[variant] || CTA_BUTTON_VARIANTS.orange;
   return (
     <button
       type="button"
-      className={`${sizeClasses} ${CTA_BUTTON_VARIANTS[variant]} active:scale-[0.98] transition-all inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${className}`}
+      className={`${sizeClasses} ${variantTone} active:scale-[0.98] transition-all inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${className}`}
       {...rest}
     >
       {children}
@@ -276,7 +278,7 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   rightSlot,
 }) => {
   const isEn = language === 'en';
-  const toneClasses = PASTEL_CARD_TONES[tone];
+  const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.slate;
 
   return (
     <div
