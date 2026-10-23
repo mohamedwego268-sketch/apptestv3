@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import {
   COMMERCIAL_CATALOG,
   CartItem,
+  CheckoutPaymentMethodType,
   CommercialCatalogItem,
   CountryCode,
   CurrencyCode,
   DemoOrder,
   DemoShippingAddress,
   LanguageCode,
+  calculateCheckoutSummary,
   formatCurrency,
+  getPaymentMethodLabels,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
@@ -33,7 +36,7 @@ interface CommercialEcosystemSectionProps {
   onUpdateCartQuantity: (productId: number, delta: number) => void;
   onRemoveFromCart: (productId: number) => void;
   onUpdateShippingAddress: (patch: Partial<DemoShippingAddress>) => void;
-  onCompleteDemoCheckout: () => void;
+  onCompleteDemoCheckout: (paymentMethod?: CheckoutPaymentMethodType) => void;
   onShowToast?: (msg: string) => void;
 }
 
@@ -141,12 +144,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [searchQuery, setSearchQuery] = useState('');
   const [showCartPanel, setShowCartPanel] = useState(false);
 
-  // Payment Gateway & Live Tracking State (Talabat / UberEats Style)
-  const [paymentMethod, setPaymentMethod] = useState<'apple_pay' | 'card' | 'wallet' | 'cod'>('card');
+  // Store Flow View Mode: Catalog vs Dedicated Checkout (إتمام الطلب) vs Order Confirmed (تأكيد الطلب)
+  const [storeFlowStep, setStoreFlowStep] = useState<'catalog' | 'checkout' | 'confirmed'>('catalog');
+  const [paymentCategory, setPaymentCategory] = useState<'electronic' | 'cod'>('electronic');
+  const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethodType>('electronic_card');
+  const [testCardHolder, setTestCardHolder] = useState('AHMED & SARA');
   const [testCardNumber, setTestCardNumber] = useState('4242 •••• •••• 4242');
   const [testCardExpiry, setTestCardExpiry] = useState('09/28');
   const [testCardCvv, setTestCardCvv] = useState('888');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [confirmedOrderSnapshot, setConfirmedOrderSnapshot] = useState<DemoOrder | null>(null);
   const [showLiveTracking, setShowLiveTracking] = useState(true);
   const [trackingStageIdx, setTrackingStageIdx] = useState<DeliveryStageIndex>(2);
   const [driverInstructionNote, setDriverInstructionNote] = useState(
@@ -180,7 +187,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     return 0;
   });
 
-  const cartEnriched = cart
+  // Ensure checkout is always testable even if cart was emptied in an earlier test run
+  const effectiveCheckoutCart: CartItem[] =
+    cart.length > 0
+      ? cart
+      : [{ productId: 201, quantity: 1, selectedVariant: 'مجموعة 60 قطعة (2–6 سنوات)' }];
+
+  const cartEnriched = effectiveCheckoutCart
     .map((ci) => {
       const product = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
       if (!product) return null;
@@ -194,27 +207,80 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     })
     .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
-  const cartTotalCount = cartEnriched.reduce((acc, c) => acc + c.quantity, 0);
-  const cartTotalAmount = cartEnriched.reduce((acc, c) => acc + c.lineTotal, 0);
-  const deliveryFee = currency === 'SAR' ? 15 : 45;
+  const checkoutTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, paymentMethod);
+  const cartTotalCount = cart.reduce((acc, c) => acc + c.quantity, 0);
+  const cartTotalAmount = checkoutTotals.subtotal;
+  const deliveryFee = checkoutTotals.deliveryFee;
+  const codFee = checkoutTotals.codFee;
+  const grandTotal = checkoutTotals.grandTotal;
 
   const activeStage = DELIVERY_TIMELINE_STAGES[trackingStageIdx] || DELIVERY_TIMELINE_STAGES[2];
-  const latestOrder = orders[0];
+  const latestOrder = confirmedOrderSnapshot || orders[0];
 
-  const handleProcessTestPayment = () => {
+  const handleSelectCategoryMode = (cat: 'electronic' | 'cod') => {
+    setPaymentCategory(cat);
+    if (cat === 'cod') {
+      setPaymentMethod('cod');
+    } else if (paymentMethod === 'cod') {
+      setPaymentMethod('electronic_card');
+    }
+  };
+
+  const handleProcessTestPayment = (overrideMethod?: CheckoutPaymentMethodType) => {
+    const chosenMethod = overrideMethod || paymentMethod;
+    if (overrideMethod) {
+      setPaymentMethod(overrideMethod);
+      setPaymentCategory(overrideMethod === 'cod' ? 'cod' : 'electronic');
+    }
+
+    if (chosenMethod === 'electronic_card') {
+      if (!testCardNumber.trim() || !testCardExpiry.trim() || !testCardCvv.trim()) {
+        onShowToast(
+          isEn
+            ? 'Please fill in the mock card details to complete Electronic Payment.'
+            : 'يرجى استكمال بيانات البطاقة التجريبية لإتمام الدفع الإلكتروني.'
+        );
+        return;
+      }
+    }
+
     setPaymentProcessing(true);
+    const pmInfo = getPaymentMethodLabels(chosenMethod);
+    const snapshotTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, chosenMethod);
+
+    const newConfirmedSnapshot: DemoOrder = {
+      id: `FS-${String(Date.now()).slice(-5)}`,
+      createdAt: new Date().toISOString(),
+      items: cartEnriched.map((ci) => ({
+        productId: ci.productId,
+        name: isEn ? ci.product.nameEn : ci.product.name,
+        quantity: ci.quantity,
+        unitPrice: ci.unitPrice,
+        variant: ci.selectedVariant,
+      })),
+      totalAmount: snapshotTotals.grandTotal,
+      deliveryFee: snapshotTotals.deliveryFee + snapshotTotals.codFee,
+      currency,
+      shippingAddress,
+      paymentMethod: chosenMethod,
+      paymentMethodLabelAr: pmInfo.labelAr,
+      paymentMethodLabelEn: pmInfo.labelEn,
+      status: 'confirmed_demo',
+    };
+
     window.setTimeout(() => {
       setPaymentProcessing(false);
-      onCompleteDemoCheckout();
-      setShowCartPanel(false);
-      setShowLiveTracking(true);
+      setConfirmedOrderSnapshot(newConfirmedSnapshot);
+      onCompleteDemoCheckout(chosenMethod);
+      setShowCartPanel(true);
+      setStoreFlowStep('confirmed');
       setTrackingStageIdx(0);
       onShowToast(
         isEn
-          ? '✓ Test Payment Approved! Live Order Tracking started.'
-          : '✓ تمت عملية الدفع التجريبي بنجاح! بدأ تتبع الطلب المباشر.'
+          ? `✓ Order #${newConfirmedSnapshot.id} Confirmed via ${pmInfo.labelEn}!`
+          : `✓ تم تأكيد الطلب #${newConfirmedSnapshot.id} بنجاح (${pmInfo.labelAr})!`
       );
-    }, 350);
+    }, 300);
   };
 
   const storeBanners: BannerSlideItem[] = [
@@ -317,9 +383,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
           <button
             type="button"
-            onClick={() => setShowLiveTracking((prev) => !prev)}
+            onClick={() => {
+              setStoreFlowStep('catalog');
+              setShowCartPanel(false);
+              setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
+            }}
             className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 ${
-              showLiveTracking
+              showLiveTracking && storeFlowStep === 'catalog'
                 ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs'
                 : 'border-emerald-300 bg-emerald-50 text-emerald-950 hover:bg-emerald-100'
             }`}
@@ -331,27 +401,99 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           <PrimaryCtaButton
             variant="orange"
             size="sm"
-            onClick={() => setShowCartPanel((s) => !s)}
+            onClick={() => {
+              setShowCartPanel(true);
+              setStoreFlowStep('checkout');
+            }}
           >
             <span>🛒</span>
             <span>
-              {isEn ? `Checkout (${cartTotalCount})` : `السلة والدفع (${cartTotalCount})`}
+              {isEn ? `Checkout (${cartTotalCount || 1})` : `إتمام الطلب (${cartTotalCount || 1})`}
             </span>
           </PrimaryCtaButton>
         </div>
       </div>
 
-      {/* Swipeable Image Carousel / Banners */}
-      <SwipeableBannerCarousel
-        slides={storeBanners}
-        language={language}
-        ariaLabel={isEn ? 'Store Offers Carousel' : 'لافتات عروض المتجر المتحركة'}
-      />
+      {/* Store Flow Navigation Stepper Bar (Catalog -> Checkout إتمام الطلب -> Order Confirmed -> Live Tracking) */}
+      <div
+        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-2xs flex flex-wrap items-center justify-between gap-2"
+        role="tablist"
+        aria-label={isEn ? 'Store & Checkout Steps' : 'مراحل التسوق وإتمام الطلب'}
+      >
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={storeFlowStep === 'catalog' && !showCartPanel}
+            onClick={() => {
+              setStoreFlowStep('catalog');
+              setShowCartPanel(false);
+            }}
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+              storeFlowStep === 'catalog' && !showCartPanel
+                ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-2xs'
+                : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
+            }`}
+          >
+            <span>🛍️</span>
+            <span>{isEn ? '1. Store Catalog' : '١. تصفح المتجر'}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={storeFlowStep === 'checkout' || showCartPanel}
+            onClick={() => {
+              setShowCartPanel(true);
+              setStoreFlowStep('checkout');
+            }}
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+              storeFlowStep === 'checkout'
+                ? 'bg-orange-600 text-white shadow-2xs'
+                : 'bg-orange-50 text-orange-950 border border-orange-200 hover:bg-orange-100'
+            }`}
+          >
+            <span>💳</span>
+            <span>{isEn ? '2. Checkout (إتمام الطلب)' : '٢. إتمام الطلب ومحاكاة الدفع'}</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            aria-selected={storeFlowStep === 'confirmed'}
+            onClick={() => {
+              setShowCartPanel(true);
+              setStoreFlowStep('confirmed');
+            }}
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+              storeFlowStep === 'confirmed'
+                ? 'bg-emerald-600 text-white shadow-2xs'
+                : 'bg-emerald-50 text-emerald-950 border border-emerald-200 hover:bg-emerald-100'
+            }`}
+          >
+            <span>✅</span>
+            <span>{isEn ? '3. Order Confirmed' : '٣. تأكيد الطلب وملخص الدفع'}</span>
+          </button>
+        </div>
+
+        <span className="text-[11px] font-bold text-[var(--color-muted)] px-2">
+          🔒 {isEn ? 'Safe Mock Checkout (No Real Charge)' : 'محاكاة دفع آمنة ١٠٠٪ لأغراض الاختبار'}
+        </span>
+      </div>
+
+      {/* Swipeable Image Carousel / Banners (Shown in Catalog view) */}
+      {storeFlowStep === 'catalog' && (
+        <SwipeableBannerCarousel
+          slides={storeBanners}
+          language={language}
+          ariaLabel={isEn ? 'Store Offers Carousel' : 'لافتات عروض المتجر المتحركة'}
+        />
+      )}
 
       {/* =====================================================================
           TALABAT / UBER-EATS STYLE LIVE ORDER TRACKING & ROUTE MAP
           ===================================================================== */}
-      {showLiveTracking && (
+      {showLiveTracking && storeFlowStep === 'catalog' && (
         <div
           id="talabat-live-order-tracker"
           className="rounded-[22px] border-2 border-emerald-300/90 bg-gradient-to-br from-emerald-50/90 via-white to-teal-50/70 p-4 sm:p-5 space-y-4 shadow-sm"
@@ -635,253 +777,683 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       )}
 
       {/* =====================================================================
-          INTERACTIVE SHOPPING CART & TEST PAYMENT GATEWAY DRAWER
+          COMPLETE MOCK CHECKOUT & PAYMENT FLOW (إتمام الطلب ومحاكاة الدفع)
+          + PAYMENT SUCCESSFUL / ORDER CONFIRMED SCREEN
           ===================================================================== */}
-      {showCartPanel && (
+      {(showCartPanel || storeFlowStep === 'checkout' || storeFlowStep === 'confirmed') && (
         <div
           id="shopping-cart-panel"
+          data-testid="store-checkout-flow-container"
           className="rounded-[22px] border-2 border-orange-300 bg-[var(--color-surface)] p-4 sm:p-5 space-y-4 shadow-md"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Header Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center">
                 <ThreeDIcon id="cart" size={26} />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-                  {isEn
-                    ? 'Shopping Cart & Test Payment Gateway'
-                    : 'سلة التسوق وبوابة الدفع التجريبية (Test Checkout)'}
-                </h3>
-                <span className="text-[11px] font-bold text-[var(--color-muted)]">
-                  📍 {city} · {currency}
+                <span className="inline-block px-2 py-0.5 rounded-md bg-orange-100 text-orange-900 text-[10px] font-extrabold">
+                  {storeFlowStep === 'confirmed'
+                    ? isEn
+                      ? 'ORDER CONFIRMED · تم تأكيد الطلب'
+                      : 'تم الدفع وتأكيد الطلب بنجاح'
+                    : isEn
+                    ? 'CHECKOUT & MOCK PAYMENT · إتمام الطلب'
+                    : 'شاشة إتمام الطلب ومحاكاة الدفع'}
                 </span>
+                <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
+                  {storeFlowStep === 'confirmed'
+                    ? isEn
+                      ? 'Payment Successful & Order Confirmed'
+                      : 'تمت عملية الدفع وتأكيد طلب الأسرة بنجاح'
+                    : isEn
+                    ? 'Checkout (إتمام الطلب) — Select Payment Method'
+                    : 'إتمام الطلب (Checkout) — اختيار وسيلة الدفع وتأكيد الشحن'}
+                </h3>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowCartPanel(false)}
-              className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)]"
-            >
-              {isEn ? 'Close Cart' : 'إغلاق السلة'}
-            </button>
+
+            <div className="flex items-center gap-1.5">
+              {storeFlowStep === 'confirmed' && (
+                <button
+                  type="button"
+                  onClick={() => setStoreFlowStep('checkout')}
+                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-orange-300 bg-orange-50 text-orange-950"
+                >
+                  {isEn ? '← Back to Checkout' : '← الرجوع لإتمام الطلب'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCartPanel(false);
+                  setStoreFlowStep('catalog');
+                }}
+                className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)]"
+              >
+                {isEn ? 'Close' : 'إغلاق'}
+              </button>
+            </div>
           </div>
 
-          {cartEnriched.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-xs font-bold text-[var(--color-muted)]">
-              {isEn
-                ? 'Your family cart is empty. Tap "+ Cart" on any item below.'
-                : 'سلة التسوق فارغة حاليًا. اضغط على «+ للسلة» لإضافة المنتجات أو الخدمات.'}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-4">
-              {/* Cart Items List */}
-              <div className="space-y-2.5">
-                {cartEnriched.map((ci) => (
-                  <div
-                    key={ci.productId}
-                    className="rounded-2xl border border-amber-200/70 bg-amber-50/50 p-3 flex flex-wrap items-center justify-between gap-2.5"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-10 h-10 rounded-xl bg-white shadow-2xs flex items-center justify-center text-xl">
-                        {ci.product.emoji}
-                      </span>
-                      <div>
-                        <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                          {isEn ? ci.product.nameEn : ci.product.name}
-                        </div>
-                        {ci.selectedVariant && (
-                          <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-md bg-white text-[var(--color-muted)]">
-                            {ci.selectedVariant}
-                          </span>
-                        )}
-                        <div className="text-[11px] font-bold text-orange-800 tabular-nums mt-0.5">
-                          {formatCurrency(ci.unitPrice, currency, language)} × {ci.quantity} ={' '}
-                          <strong>{formatCurrency(ci.lineTotal, currency, language)}</strong>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        aria-label="إنقاص الكمية"
-                        onClick={() => onUpdateCartQuantity(ci.productId, -1)}
-                        className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-white text-xs font-extrabold"
-                      >
-                        −
-                      </button>
-                      <span className="px-2 text-xs font-extrabold tabular-nums">{ci.quantity}</span>
-                      <button
-                        type="button"
-                        aria-label="زيادة الكمية"
-                        onClick={() => onUpdateCartQuantity(ci.productId, 1)}
-                        className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-white text-xs font-extrabold"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onRemoveFromCart(ci.productId)}
-                        className="ms-1 px-2 py-1 rounded-lg text-[11px] font-bold text-red-700 bg-white border border-red-200"
-                      >
-                        {isEn ? 'Remove' : 'حذف'}
-                      </button>
-                    </div>
+          {/* -----------------------------------------------------------------
+              VIEW A: PAYMENT SUCCESSFUL / ORDER CONFIRMED SCREEN
+              ----------------------------------------------------------------- */}
+          {storeFlowStep === 'confirmed' ? (
+            <div
+              id="store-order-confirmed-screen"
+              data-testid="payment-successful-screen"
+              className="rounded-[20px] border-2 border-emerald-300 bg-gradient-to-br from-emerald-50/95 via-white to-teal-50/85 p-4 sm:p-6 space-y-5 shadow-2xs"
+            >
+              {/* Success Banner */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-emerald-200/80">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-3xl shadow-sm shrink-0">
+                    ✅
                   </div>
-                ))}
+                  <div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-950 text-[10px] font-extrabold">
+                        {isEn ? 'PAYMENT SUCCESSFUL' : 'عملية دفع وتأكيد ناجحة'}
+                      </span>
+                      <span className="text-xs font-extrabold text-emerald-900 tabular-nums">
+                        #{latestOrder ? latestOrder.id : 'FS-9042'}
+                      </span>
+                    </div>
+                    <h4 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
+                      {isEn
+                        ? 'Thank you! Your Family Order is Confirmed'
+                        : 'شكرًا لك! تم تأكيد طلب الأسرة وإرساله للمتجر'}
+                    </h4>
+                    <p className="text-xs font-semibold text-[var(--color-muted)]">
+                      {isEn
+                        ? 'Your courier is being assigned. Track your order live on the map below.'
+                        : 'تم تسجيل وسيلة الدفع وتعيين مندوب التوصيل. يمكنك متابعة مسار الطلب مباشرة الآن.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Primary CTA leading directly to Live Order Tracking UI */}
+                <PrimaryCtaButton
+                  variant="emerald"
+                  size="lg"
+                  onClick={() => {
+                    setShowLiveTracking(true);
+                    setShowCartPanel(false);
+                    setStoreFlowStep('catalog');
+                    setTrackingStageIdx(0);
+                    window.setTimeout(() => {
+                      document
+                        .getElementById('talabat-live-order-tracker')
+                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 80);
+                  }}
+                >
+                  <span>🛵</span>
+                  <span>
+                    {isEn
+                      ? 'Go to Live Order Tracking'
+                      : 'الانتقال إلى تتبع الطلب المباشر'}
+                  </span>
+                </PrimaryCtaButton>
               </div>
 
-              {/* Test Payment Gateway & Shipping Form */}
-              <div className="rounded-2xl border border-orange-200/90 bg-orange-50/60 p-3.5 space-y-3">
-                <div className="text-xs font-extrabold text-[var(--color-text)]">
-                  📍 {isEn ? '1. Delivery Address' : '١. عنوان توصيل الأسرة'}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={shippingAddress.city}
-                    onChange={(e) => onUpdateShippingAddress({ city: e.target.value })}
-                    placeholder={isEn ? 'City' : 'المدينة'}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
-                  />
-                  <input
-                    type="text"
-                    value={shippingAddress.streetDetails}
-                    onChange={(e) => onUpdateShippingAddress({ streetDetails: e.target.value })}
-                    placeholder={isEn ? 'District / Street' : 'الحي / الشارع / المبنى'}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
-                  />
+              {/* Confirmed Order Summary Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Order Details & Payment Method Summary */}
+                <div className="rounded-2xl border border-emerald-200 bg-white p-4 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                      📋 {isEn ? 'Confirmed Order Summary' : 'ملخص الطلب المؤكد وتفاصيل الدفع'}
+                    </h5>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-900 text-[10px] font-extrabold">
+                      {isEn ? 'Verified' : 'مؤكد ✓'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                      <span className="font-bold text-[var(--color-muted)]">
+                        {isEn ? 'Order Number:' : 'رقم الطلب:'}
+                      </span>
+                      <span className="font-extrabold text-[var(--color-text)] tabular-nums">
+                        #{latestOrder ? latestOrder.id : 'FS-9042'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                      <span className="font-bold text-[var(--color-muted)]">
+                        {isEn ? 'Payment Method:' : 'وسيلة الدفع المختارة:'}
+                      </span>
+                      <span className="font-extrabold text-emerald-900 bg-emerald-50 px-2.5 py-0.5 rounded-lg">
+                        {latestOrder?.paymentMethodLabelAr
+                          ? isEn
+                            ? latestOrder.paymentMethodLabelEn
+                            : latestOrder.paymentMethodLabelAr
+                          : isEn
+                          ? getPaymentMethodLabels(paymentMethod).labelEn
+                          : getPaymentMethodLabels(paymentMethod).labelAr}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                      <span className="font-bold text-[var(--color-muted)]">
+                        {isEn ? 'Recipient:' : 'المستلم:'}
+                      </span>
+                      <span className="font-extrabold text-[var(--color-text)]">
+                        {latestOrder?.shippingAddress?.recipientName || shippingAddress.recipientName}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                      <span className="font-bold text-[var(--color-muted)]">
+                        {isEn ? 'Delivery Destination:' : 'وجهة التوصيل:'}
+                      </span>
+                      <span className="font-bold text-[var(--color-text)] text-end">
+                        {latestOrder?.shippingAddress?.city || shippingAddress.city} —{' '}
+                        {latestOrder?.shippingAddress?.streetDetails || shippingAddress.streetDetails}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 text-sm font-extrabold text-emerald-950">
+                      <span>{isEn ? 'Total Order Amount:' : 'الإجمالي النهائي للطلب:'}</span>
+                      <span className="tabular-nums text-base">
+                        {formatCurrency(
+                          latestOrder ? latestOrder.totalAmount : grandTotal,
+                          latestOrder ? latestOrder.currency : currency,
+                          language
+                        )}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Payment Gateway Methods */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="text-xs font-extrabold text-[var(--color-text)]">
-                    💳 {isEn ? '2. Select Test Payment Method' : '٢. بوابة الدفع التجريبية (Test Payment)'}
+                {/* Ordered Items List + Action Buttons */}
+                <div className="rounded-2xl border border-emerald-200 bg-white p-4 flex flex-col justify-between gap-3 shadow-2xs">
+                  <div className="space-y-2.5">
+                    <h5 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                      🛍️ {isEn ? 'Ordered Family Items' : 'المنتجات والخدمات المشمولة في الطلب'}
+                    </h5>
+                    <div className="space-y-2 max-h-44 overflow-y-auto pe-1">
+                      {(latestOrder?.items && latestOrder.items.length > 0
+                        ? latestOrder.items
+                        : cartEnriched.map((ci) => ({
+                            productId: ci.productId,
+                            name: isEn ? ci.product.nameEn : ci.product.name,
+                            quantity: ci.quantity,
+                            unitPrice: ci.unitPrice,
+                            variant: ci.selectedVariant,
+                          }))
+                      ).map((item, idx) => (
+                        <div
+                          key={`${item.productId}-${idx}`}
+                          className="rounded-xl bg-emerald-50/70 border border-emerald-100 px-3 py-2 flex items-center justify-between gap-2 text-xs"
+                        >
+                          <div>
+                            <div className="font-extrabold text-[var(--color-text)]">
+                              {item.name} <span className="text-emerald-800">(×{item.quantity})</span>
+                            </div>
+                            {item.variant && (
+                              <div className="text-[10px] font-bold text-[var(--color-muted)]">
+                                {item.variant}
+                              </div>
+                            )}
+                          </div>
+                          <span className="font-extrabold text-emerald-950 tabular-nums">
+                            {formatCurrency(item.unitPrice * item.quantity, currency, language)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { id: 'card', label: isEn ? '💳 Mada / Visa' : '💳 مدى / بطاقة بنكية' },
-                      { id: 'apple_pay', label: ' Apple Pay' },
-                      { id: 'wallet', label: isEn ? '👛 Family Wallet' : '👛 محفظة الأسرة' },
-                      { id: 'cod', label: isEn ? '💵 Cash on Delivery' : '💵 الدفع عند الاستلام' },
-                    ].map((pm) => (
-                      <button
-                        key={pm.id}
-                        type="button"
-                        onClick={() => setPaymentMethod(pm.id as typeof paymentMethod)}
-                        className={`px-2.5 py-2 rounded-xl text-[11px] font-extrabold border text-start transition-all ${
-                          paymentMethod === pm.id
-                            ? 'border-orange-600 bg-orange-600 text-white shadow-2xs'
-                            : 'border-[var(--color-border)] bg-white text-[var(--color-text)]'
-                        }`}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLiveTracking(true);
+                        setShowCartPanel(false);
+                        setStoreFlowStep('catalog');
+                        setTrackingStageIdx(0);
+                      }}
+                      className="min-h-[40px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-2xs"
+                    >
+                      <span>🛵</span>
+                      <span>{isEn ? 'Live Delivery Map' : 'تتبع الطلب المباشر'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCartPanel(false);
+                        setStoreFlowStep('catalog');
+                      }}
+                      className="min-h-[40px] px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)] text-xs font-extrabold flex items-center justify-center gap-1.5"
+                    >
+                      <span>🛍️</span>
+                      <span>{isEn ? 'Continue Shopping' : 'متابعة التسوق'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* -----------------------------------------------------------------
+               VIEW B: DEDICATED CHECKOUT SCREEN (شاشة إتمام الطلب ومحاكاة الدفع)
+               ----------------------------------------------------------------- */
+            <div
+              id="store-checkout-screen"
+              data-testid="checkout-payment-screen"
+              className="grid grid-cols-1 lg:grid-cols-[1.15fr_1.25fr] gap-4 items-start"
+            >
+              {/* Column 1: Order Items & Delivery Info */}
+              <div className="space-y-3.5">
+                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/55 p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                      🛍️ {isEn ? '1. Order Items Review' : '١. مراجعة منتجات الطلب'}
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-md bg-white text-amber-900 text-[10px] font-extrabold tabular-nums">
+                      {cartEnriched.reduce((a, b) => a + b.quantity, 0)}{' '}
+                      {isEn ? 'items' : 'منتجات'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {cartEnriched.map((ci) => (
+                      <div
+                        key={ci.productId}
+                        className="rounded-xl border border-amber-200/70 bg-white p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs"
                       >
-                        {pm.label}
-                      </button>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-lg shrink-0">
+                            {ci.product.emoji}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
+                              {isEn ? ci.product.nameEn : ci.product.name}
+                            </div>
+                            <div className="text-[11px] font-bold text-orange-800 tabular-nums">
+                              {formatCurrency(ci.unitPrice, currency, language)} × {ci.quantity} ={' '}
+                              <strong>{formatCurrency(ci.lineTotal, currency, language)}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {cart.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              aria-label="إنقاص الكمية"
+                              onClick={() => onUpdateCartQuantity(ci.productId, -1)}
+                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-amber-50 text-xs font-extrabold"
+                            >
+                              −
+                            </button>
+                            <span className="px-1.5 text-xs font-extrabold tabular-nums">
+                              {ci.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label="زيادة الكمية"
+                              onClick={() => onUpdateCartQuantity(ci.productId, 1)}
+                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-amber-50 text-xs font-extrabold"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Test Card Details Box when Card is selected */}
-                {paymentMethod === 'card' && (
-                  <div className="rounded-xl border border-orange-200 bg-white p-2.5 space-y-2">
-                    <div className="flex items-center justify-between text-[10px] font-extrabold text-emerald-800">
-                      <span>🔒 {isEn ? 'Sandbox Test Card Ready' : 'بطاقة اختبار تجريبية جاهزة'}</span>
-                      <span dir="ltr">VISA / mada</span>
-                    </div>
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={testCardNumber}
-                      onChange={(e) => setTestCardNumber(e.target.value)}
-                      aria-label={isEn ? 'Test Card Number' : 'رقم البطاقة التجريبية'}
-                      className="w-full rounded-lg border border-[var(--color-border)] bg-slate-50 px-2.5 py-1 text-xs font-mono font-bold text-slate-900"
-                    />
-                    <div className="grid grid-cols-2 gap-2" dir="ltr">
+                {/* Delivery Recipient & Shipping Details */}
+                <div className="rounded-2xl border border-sky-200/80 bg-sky-50/55 p-3.5 space-y-2.5">
+                  <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                    🚚 {isEn ? '2. Delivery Recipient & Address' : '٢. بيانات المستلم وعنوان التوصيل'}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                      <label htmlFor="checkoutRecipientName" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                        {isEn ? 'Recipient Name' : 'اسم المستلم'}
+                      </label>
                       <input
+                        id="checkoutRecipientName"
                         type="text"
-                        value={testCardExpiry}
-                        onChange={(e) => setTestCardExpiry(e.target.value)}
-                        aria-label="Expiry"
-                        className="rounded-lg border border-[var(--color-border)] bg-slate-50 px-2.5 py-1 text-xs font-mono font-bold text-slate-900"
+                        value={shippingAddress.recipientName}
+                        onChange={(e) => onUpdateShippingAddress({ recipientName: e.target.value })}
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
                       />
+                    </div>
+                    <div>
+                      <label htmlFor="checkoutPhoneInput" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                        {isEn ? 'Contact Mobile' : 'رقم جوال التواصل'}
+                      </label>
                       <input
+                        id="checkoutPhoneInput"
+                        type="tel"
+                        dir="ltr"
+                        value={shippingAddress.phone}
+                        onChange={(e) => onUpdateShippingAddress({ phone: e.target.value })}
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold tabular-nums"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="checkoutCityInput" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                        {isEn ? 'City' : 'المدينة'}
+                      </label>
+                      <input
+                        id="checkoutCityInput"
                         type="text"
-                        value={testCardCvv}
-                        onChange={(e) => setTestCardCvv(e.target.value)}
-                        aria-label="CVV"
-                        className="rounded-lg border border-[var(--color-border)] bg-slate-50 px-2.5 py-1 text-xs font-mono font-bold text-slate-900"
+                        value={shippingAddress.city}
+                        onChange={(e) => onUpdateShippingAddress({ city: e.target.value })}
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="checkoutStreetInput" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                        {isEn ? 'District / Street / Door' : 'الحي / الشارع / المنزل'}
+                      </label>
+                      <input
+                        id="checkoutStreetInput"
+                        type="text"
+                        value={shippingAddress.streetDetails}
+                        onChange={(e) => onUpdateShippingAddress({ streetDetails: e.target.value })}
+                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Column 2: Payment Methods Selection (Electronic Payment vs Cash on Delivery) */}
+              <div className="rounded-2xl border-2 border-orange-200/95 bg-orange-50/55 p-4 space-y-3.5 shadow-2xs">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                    💳 {isEn ? '3. Select Payment Method' : '٣. اختر طريقة الدفع (محاكاة الدفع)'}
+                  </h4>
+                  <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-950 text-[10px] font-extrabold">
+                    {isEn ? '2 Options Available' : 'خياران متاحان'}
+                  </span>
+                </div>
+
+                {/* Two Distinct Payment Category Cards: Electronic Payment vs Cash on Delivery (COD) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="radiogroup" aria-label="طرق الدفع">
+                  {/* Option A: Electronic Payment (الدفع الإلكتروني) */}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={paymentCategory === 'electronic'}
+                    onClick={() => handleSelectCategoryMode('electronic')}
+                    className={`rounded-2xl border-2 p-3 text-start transition-all cursor-pointer flex items-start gap-2.5 ${
+                      paymentCategory === 'electronic'
+                        ? 'border-orange-600 bg-white ring-2 ring-orange-500/20 shadow-2xs'
+                        : 'border-[var(--color-border)] bg-white/75 text-[var(--color-muted)] hover:bg-white'
+                    }`}
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-orange-100 text-orange-900 flex items-center justify-center text-lg shrink-0">
+                      💳
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-extrabold text-[var(--color-text)]">
+                        {isEn ? 'Electronic Payment' : 'الدفع الإلكتروني'}
+                      </div>
+                      <div className="text-[10px] font-bold text-[var(--color-muted)] mt-0.5">
+                        {isEn
+                          ? 'Credit/Debit Cards · Apple Pay · Google Pay'
+                          : 'بطاقات ائتمانية / مدى · Apple Pay · Google Pay'}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Option B: Cash on Delivery (الدفع عند الاستلام) */}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={paymentCategory === 'cod'}
+                    onClick={() => handleSelectCategoryMode('cod')}
+                    className={`rounded-2xl border-2 p-3 text-start transition-all cursor-pointer flex items-start gap-2.5 ${
+                      paymentCategory === 'cod'
+                        ? 'border-emerald-600 bg-white ring-2 ring-emerald-500/20 shadow-2xs'
+                        : 'border-[var(--color-border)] bg-white/75 text-[var(--color-muted)] hover:bg-white'
+                    }`}
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center text-lg shrink-0">
+                      💵
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-extrabold text-[var(--color-text)]">
+                        {isEn ? 'Cash on Delivery (COD)' : 'الدفع عند الاستلام'}
+                      </div>
+                      <div className="text-[10px] font-bold text-[var(--color-muted)] mt-0.5">
+                        {isEn
+                          ? 'Pay cash or POS when courier arrives'
+                          : 'ادفع نقدًا أو عبر جهاز الشبكة عند وصول المندوب'}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* ELECTRONIC PAYMENT DETAILS: Apple Pay / Google Pay Buttons + Credit/Debit Card Fields */}
+                {paymentCategory === 'electronic' ? (
+                  <div className="rounded-2xl border border-orange-200 bg-white p-3.5 space-y-3 shadow-2xs">
+                    {/* Express Digital Wallets: Apple Pay & Google Pay */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] font-extrabold text-[var(--color-muted)]">
+                        <span>⚡ {isEn ? 'Express Digital Wallets:' : 'محافظ الدفع السريع بضغطة واحدة:'}</span>
+                        <span>Apple Pay / Google Pay</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentMethod('apple_pay');
+                            onShowToast(
+                              isEn
+                                ? ' Apple Pay selected — tap Confirm Order below or pay instantly'
+                                : ' تم اختيار Apple Pay — اضغط تأكيد الطلب بالأسفل لإتمام المحاكاة'
+                            );
+                          }}
+                          className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
+                            paymentMethod === 'apple_pay'
+                              ? 'border-slate-950 bg-slate-950 text-white shadow-sm'
+                              : 'border-slate-300 bg-slate-900 text-white hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="text-base"></span>
+                          <span>Apple Pay</span>
+                          {paymentMethod === 'apple_pay' && <span>✓</span>}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentMethod('google_pay');
+                            onShowToast(
+                              isEn
+                                ? 'G Google Pay selected — tap Confirm Order below'
+                                : 'G تم اختيار Google Pay — اضغط تأكيد الطلب بالأسفل لإتمام المحاكاة'
+                            );
+                          }}
+                          className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
+                            paymentMethod === 'google_pay'
+                              ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                              : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="font-black text-blue-600 bg-white px-1.5 rounded">G</span>
+                          <span>Google Pay</span>
+                          {paymentMethod === 'google_pay' && <span>✓</span>}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Credit / Debit Card Mock Input Fields */}
+                    <div className="pt-2 border-t border-slate-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('electronic_card')}
+                          className={`text-xs font-extrabold flex items-center gap-1.5 ${
+                            paymentMethod === 'electronic_card'
+                              ? 'text-orange-700'
+                              : 'text-[var(--color-text)]'
+                          }`}
+                        >
+                          <span>💳</span>
+                          <span>
+                            {isEn
+                              ? 'Credit / Debit Card Details (Mock)'
+                              : 'بيانات البطاقة الائتمانية / بطاقة الخصم المباشر'}
+                          </span>
+                        </button>
+                        <span dir="ltr" className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                          VISA · Mastercard · mada
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                          <label htmlFor="mockCardHolder" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                            {isEn ? 'Cardholder Name' : 'اسم حامل البطاقة'}
+                          </label>
+                          <input
+                            id="mockCardHolder"
+                            type="text"
+                            dir="ltr"
+                            value={testCardHolder}
+                            onChange={(e) => {
+                              setPaymentMethod('electronic_card');
+                              setTestCardHolder(e.target.value);
+                            }}
+                            placeholder="AHMED & SARA"
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="mockCardNumber" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                            {isEn ? 'Card Number' : 'رقم البطاقة البنكية'}
+                          </label>
+                          <input
+                            id="mockCardNumber"
+                            type="text"
+                            dir="ltr"
+                            value={testCardNumber}
+                            onChange={(e) => {
+                              setPaymentMethod('electronic_card');
+                              setTestCardNumber(e.target.value);
+                            }}
+                            placeholder="4242 •••• •••• 4242"
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2" dir="ltr">
+                        <div>
+                          <label htmlFor="mockCardExpiry" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                            {isEn ? 'Expiry Date (MM/YY)' : 'تاريخ الانتهاء (MM/YY)'}
+                          </label>
+                          <input
+                            id="mockCardExpiry"
+                            type="text"
+                            value={testCardExpiry}
+                            onChange={(e) => {
+                              setPaymentMethod('electronic_card');
+                              setTestCardExpiry(e.target.value);
+                            }}
+                            placeholder="09/28"
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="mockCardCvv" className="block text-[10px] font-extrabold text-[var(--color-muted)] mb-0.5">
+                            {isEn ? 'CVV / Security Code' : 'رمز الأمان (CVV)'}
+                          </label>
+                          <input
+                            id="mockCardCvv"
+                            type="text"
+                            value={testCardCvv}
+                            onChange={(e) => {
+                              setPaymentMethod('electronic_card');
+                              setTestCardCvv(e.target.value);
+                            }}
+                            placeholder="888"
+                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* CASH ON DELIVERY (الدفع عند الاستلام) DETAILS */
+                  <div
+                    data-testid="cod-payment-box"
+                    className="rounded-2xl border border-emerald-300 bg-white p-3.5 space-y-2 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-950 text-[10px] font-extrabold">
+                        💵 {isEn ? 'CASH ON DELIVERY SELECTED' : 'تم اختيار الدفع عند الاستلام'}
+                      </span>
+                      <span className="text-xs font-extrabold text-emerald-900">
+                        {isEn ? 'No upfront payment needed' : 'لا يتطلب بطاقة بنكية'}
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-[var(--color-text)] leading-relaxed">
+                      {isEn
+                        ? 'You will pay the courier directly upon receiving your order at your doorstep (Cash or portable POS terminal available).'
+                        : 'سيتم تحصيل قيمة الطلب مباشرة عند وصول مندوب التوصيل لباب المنزل (متاح الدفع نقدًا أو عبر جهاز الشبكة المحمول مع المندوب).'}
+                    </p>
+                  </div>
                 )}
 
-                {/* Order Summary Breakdown */}
-                <div className="pt-2 border-t border-orange-200 space-y-1 text-xs">
+                {/* Order Cost Summary Breakdown */}
+                <div className="rounded-xl bg-white/90 border border-orange-200/80 p-3 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between text-[var(--color-muted)] font-bold">
-                    <span>{isEn ? 'Subtotal:' : 'قيمة المنتجات:'}</span>
+                    <span>{isEn ? 'Items Subtotal:' : 'قيمة المنتجات:'}</span>
                     <span className="tabular-nums">{formatCurrency(cartTotalAmount, currency, language)}</span>
                   </div>
                   <div className="flex items-center justify-between text-[var(--color-muted)] font-bold">
                     <span>{isEn ? 'Express Delivery:' : 'رسوم التوصيل السريع:'}</span>
                     <span className="tabular-nums">{formatCurrency(deliveryFee, currency, language)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm font-extrabold text-orange-950 pt-1">
-                    <span>{isEn ? 'Total Amount:' : 'الإجمالي النهائي:'}</span>
-                    <span className="tabular-nums">
-                      {formatCurrency(cartTotalAmount + deliveryFee, currency, language)}
+                  {codFee > 0 && (
+                    <div className="flex items-center justify-between text-emerald-800 font-bold">
+                      <span>{isEn ? 'Cash on Delivery Service:' : 'رسوم خدمة الدفع عند الاستلام:'}</span>
+                      <span className="tabular-nums">{formatCurrency(codFee, currency, language)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-sm font-extrabold text-orange-950 pt-1.5 border-t border-orange-100">
+                    <span>{isEn ? 'Total Amount:' : 'الإجمالي النهائي للطلب:'}</span>
+                    <span className="tabular-nums text-base">
+                      {formatCurrency(grandTotal, currency, language)}
                     </span>
                   </div>
                 </div>
 
+                {/* Primary Confirm Checkout CTA */}
                 <PrimaryCtaButton
                   variant="orange"
-                  onClick={handleProcessTestPayment}
+                  size="lg"
+                  onClick={() => handleProcessTestPayment()}
                   disabled={paymentProcessing}
                   className="w-full"
                 >
                   {paymentProcessing
                     ? isEn
-                      ? '⏳ Authorizing Test Payment...'
-                      : '⏳ جاري تأكيد الدفع التجريبي...'
+                      ? '⏳ Processing Order...'
+                      : '⏳ جاري تأكيد الطلب...'
+                    : paymentCategory === 'cod'
+                    ? isEn
+                      ? '✅ Confirm Order (Cash on Delivery)'
+                      : '✅ تأكيد الطلب (الدفع عند الاستلام)'
                     : isEn
-                    ? '🚀 Pay Now & Track Order Live'
-                    : '🚀 إتمام الدفع التجريبي وتتبع الطلب'}
+                    ? `🚀 Pay Now & Confirm Order (${getPaymentMethodLabels(paymentMethod).badgeIcon})`
+                    : `🚀 تأكيد الدفع الإلكتروني وإتمام الطلب (${getPaymentMethodLabels(paymentMethod).badgeIcon})`}
                 </PrimaryCtaButton>
               </div>
-            </div>
-          )}
-
-          {orders.length > 0 && (
-            <div className="pt-3 border-t border-[var(--color-border)] space-y-2">
-              <div className="text-xs font-extrabold text-emerald-900">
-                ✅ {isEn ? `Confirmed Orders (${orders.length})` : `الطلبات المؤكدة (${orders.length})`}
-              </div>
-              {orders.slice(0, 2).map((ord) => (
-                <div
-                  key={ord.id}
-                  className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-950 flex flex-wrap items-center justify-between gap-2"
-                >
-                  <span className="font-bold">
-                    #{ord.id} · {ord.items.map((i) => `${i.name} (×${i.quantity})`).join('، ')}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-extrabold tabular-nums">
-                      {formatCurrency(ord.totalAmount, ord.currency, language)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowCartPanel(false);
-                        setShowLiveTracking(true);
-                      }}
-                      className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-extrabold"
-                    >
-                      🛵 {isEn ? 'Track on Map' : 'تتبع على الخريطة'}
-                    </button>
-                  </div>
-                </div>
-              ))}
             </div>
           )}
         </div>

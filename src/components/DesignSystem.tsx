@@ -157,6 +157,8 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
 
   return (
     <div
+      data-banner-carousel="true"
+      data-banner-variant={current.ctaVariant || 'orange'}
       className="relative rounded-[20px] overflow-hidden border border-[var(--color-border)] select-none"
       style={{
         background: current.gradient,

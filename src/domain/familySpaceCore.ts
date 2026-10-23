@@ -195,13 +195,19 @@ export interface DemoShippingAddress {
   phone: string;
 }
 
+export type CheckoutPaymentMethodType = 'electronic_card' | 'apple_pay' | 'google_pay' | 'cod';
+
 export interface DemoOrder {
   id: string;
   createdAt: string;
   items: { productId: number; name: string; quantity: number; unitPrice: number; variant?: string }[];
   totalAmount: number;
+  deliveryFee?: number;
   currency: CurrencyCode;
   shippingAddress: DemoShippingAddress;
+  paymentMethod?: CheckoutPaymentMethodType;
+  paymentMethodLabelAr?: string;
+  paymentMethodLabelEn?: string;
   status: 'confirmed_demo';
 }
 
@@ -232,6 +238,7 @@ export interface FamilySpaceState {
   recentlyViewedProductIds: number[];
   shippingAddress: DemoShippingAddress;
   orders: DemoOrder[];
+  darkMode?: boolean;
 }
 
 export type MediaTopicCategory =
@@ -413,6 +420,7 @@ export const DEFAULT_SEED: FamilySpaceState = {
   currency: 'EGP',
   calendarMode: 'both',
   disputeFreezeActive: false,
+  darkMode: false,
   savedMediaIds: [101, 102],
   activeParentAccount: 'mother',
   parentAccounts: structuredClone(DEFAULT_PARENT_ACCOUNTS),
@@ -1306,6 +1314,9 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   if (typeof input.disputeFreezeActive === 'boolean') {
     base.disputeFreezeActive = input.disputeFreezeActive;
   }
+  if (typeof input.darkMode === 'boolean') {
+    base.darkMode = input.darkMode;
+  }
   if (Array.isArray(input.savedMediaIds)) {
     base.savedMediaIds = input.savedMediaIds
       .map((id) => Number(id))
@@ -2123,3 +2134,169 @@ export function generateThreeDailyNotifications(
 
   return items;
 }
+
+export function getPaymentMethodLabels(method: CheckoutPaymentMethodType): {
+  category: 'electronic' | 'cod';
+  labelAr: string;
+  labelEn: string;
+  badgeIcon: string;
+} {
+  switch (method) {
+    case 'apple_pay':
+      return {
+        category: 'electronic',
+        labelAr: 'الدفع الإلكتروني — Apple Pay',
+        labelEn: 'Electronic Payment — Apple Pay',
+        badgeIcon: '',
+      };
+    case 'google_pay':
+      return {
+        category: 'electronic',
+        labelAr: 'الدفع الإلكتروني — Google Pay',
+        labelEn: 'Electronic Payment — Google Pay',
+        badgeIcon: 'G',
+      };
+    case 'cod':
+      return {
+        category: 'cod',
+        labelAr: 'الدفع عند الاستلام (Cash on Delivery)',
+        labelEn: 'Cash on Delivery (COD)',
+        badgeIcon: '💵',
+      };
+    case 'electronic_card':
+    default:
+      return {
+        category: 'electronic',
+        labelAr: 'الدفع الإلكتروني — بطاقة ائتمان / خصم مباشر',
+        labelEn: 'Electronic Payment — Credit / Debit Card',
+        badgeIcon: '💳',
+      };
+  }
+}
+
+export function calculateCheckoutSummary(
+  cart: CartItem[],
+  currency: CurrencyCode,
+  paymentMethod: CheckoutPaymentMethodType
+): {
+  subtotal: number;
+  deliveryFee: number;
+  codFee: number;
+  grandTotal: number;
+  itemCount: number;
+} {
+  let subtotal = 0;
+  let itemCount = 0;
+  for (const ci of cart) {
+    const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
+    if (!prod) continue;
+    const unitPrice = currency === 'SAR' ? prod.priceSAR : prod.priceEGP;
+    subtotal += unitPrice * ci.quantity;
+    itemCount += ci.quantity;
+  }
+  const deliveryFee = itemCount > 0 ? (currency === 'SAR' ? 15 : 45) : 0;
+  const codFee = itemCount > 0 && paymentMethod === 'cod' ? (currency === 'SAR' ? 5 : 15) : 0;
+  return {
+    subtotal,
+    deliveryFee,
+    codFee,
+    grandTotal: subtotal + deliveryFee + codFee,
+    itemCount,
+  };
+}
+
+export interface DigitalContactChannel {
+  supportEmail: string;
+  careEmail: string;
+  hotlineShort: string;
+  customerServicePhonePrimary: string;
+  customerServicePhoneSecondary: string;
+  workingHoursAr: string;
+  workingHoursEn: string;
+  socialChannels: {
+    id: string;
+    nameAr: string;
+    nameEn: string;
+    handle: string;
+    icon: string;
+    tone: string;
+  }[];
+}
+
+/**
+ * Strictly Digital Contact Configuration — Zero Physical Address, Zero Map, Zero Location Details.
+ */
+export const STRICTLY_DIGITAL_CONTACT_CONFIG: DigitalContactChannel = {
+  supportEmail: 'support@familyspace.app',
+  careEmail: 'care@familyspace.app',
+  hotlineShort: '19988',
+  customerServicePhonePrimary: '+20 100 880 9900',
+  customerServicePhoneSecondary: '+966 800 124 9900',
+  workingHoursAr: 'دعم رقمي متواصل 24/7 عبر البريد والهاتف والقنوات الرسمية',
+  workingHoursEn: '24/7 Digital Customer Care via Email, Phone & Social Channels',
+  socialChannels: [
+    {
+      id: 'whatsapp',
+      nameAr: 'واتساب خدمة العملاء',
+      nameEn: 'WhatsApp Care',
+      handle: '@FamilySpaceCare',
+      icon: '💬',
+      tone: 'emerald',
+    },
+    {
+      id: 'instagram',
+      nameAr: 'إنستغرام',
+      nameEn: 'Instagram',
+      handle: '@familyspace.official',
+      icon: '📸',
+      tone: 'rose',
+    },
+    {
+      id: 'x_twitter',
+      nameAr: 'منصة X (تويتر)',
+      nameEn: 'X (Twitter)',
+      handle: '@FamilySpaceApp',
+      icon: '𝕏',
+      tone: 'sky',
+    },
+    {
+      id: 'facebook',
+      nameAr: 'فيسبوك',
+      nameEn: 'Facebook',
+      handle: '/FamilySpaceCommunity',
+      icon: '📘',
+      tone: 'indigo',
+    },
+    {
+      id: 'youtube',
+      nameAr: 'يوتيوب العائلة',
+      nameEn: 'YouTube Channels',
+      handle: '@FamilySpaceTV',
+      icon: '▶️',
+      tone: 'amber',
+    },
+    {
+      id: 'tiktok',
+      nameAr: 'تيك توك تربوي',
+      nameEn: 'Educational TikTok',
+      handle: '@familyspace.reels',
+      icon: '🎵',
+      tone: 'purple',
+    },
+  ],
+};
+
+export const DARK_MODE_PALETTE_TOKENS = {
+  pageBackground: '#131926',
+  surfaceBackground: '#1b2334',
+  elevatedControlBackground: '#243047',
+  textPrimary: '#f1f5f9',
+  textMuted: '#94a3b8',
+  borderSubtle: '#2b3852',
+} as const;
+
+export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
+  return darkMode === true ? 'dark' : 'light';
+}
+
+

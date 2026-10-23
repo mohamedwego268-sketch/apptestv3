@@ -43,6 +43,10 @@ import {
   generateThreeDailyNotifications,
   validatePhoneForCountry,
   COUNTRY_CITIES_MAP,
+  CheckoutPaymentMethodType,
+  getPaymentMethodLabels,
+  calculateCheckoutSummary,
+  resolveColorMode,
 } from './domain/familySpaceCore';
 import {
   AVATAR_ACCESSORY_THEMES,
@@ -60,6 +64,7 @@ import { CommercialEcosystemSection } from './components/CommercialEcosystemSect
 import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
 import { NotificationsCenterSection } from './components/NotificationsCenterSection';
 import { InteractiveGamesSection } from './components/InteractiveGamesSection';
+import { LegalAndContactSection } from './components/LegalAndContactSection';
 import {
   ThreeDChildAvatar,
   ThreeDIcon,
@@ -87,7 +92,10 @@ type PageId =
   | 'notifications'
   | 'assistant'
   | 'family'
-  | 'settings';
+  | 'settings'
+  | 'privacy'
+  | 'terms'
+  | 'contact';
 
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => {
@@ -204,9 +212,12 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [toastMsg]);
 
-  // Sync theme, direction, language, and localStorage
+  // Sync theme, color mode (light/dark), direction, language, and localStorage
   useEffect(() => {
+    const colorMode = resolveColorMode(state.darkMode);
     document.documentElement.dataset.theme = state.role || 'mom';
+    document.documentElement.dataset.colorMode = colorMode;
+    document.documentElement.classList.toggle('dark', colorMode === 'dark');
     document.documentElement.lang = state.language === 'en' ? 'en' : 'ar';
     document.documentElement.dir = state.language === 'en' ? 'ltr' : 'rtl';
     try {
@@ -284,6 +295,21 @@ export default function App() {
       nextLang === 'en'
         ? 'Language switched to English (LTR)'
         : 'تم التبديل إلى اللغة العربية (RTL)'
+    );
+  };
+
+  // Instant Global Light/Dark Mode Toggle
+  const handleToggleDarkMode = () => {
+    const nextDark = !state.darkMode;
+    setState((prev) => ({ ...prev, darkMode: nextDark }));
+    showToast(
+      nextDark
+        ? lang === 'en'
+          ? '🌙 Dark Mode enabled — Eye-friendly charcoal palette'
+          : '🌙 تم تفعيل الوضع الليلي المريح للعين'
+        : lang === 'en'
+        ? '☀️ Light Mode enabled — Soft pastel palette'
+        : '☀️ تم تفعيل الوضع النهاري'
     );
   };
 
@@ -697,9 +723,13 @@ export default function App() {
     }));
   };
 
-  const handleCompleteDemoCheckout = () => {
-    if (state.cart.length === 0) return;
-    const orderItems = state.cart
+  const handleCompleteDemoCheckout = (paymentMethod: CheckoutPaymentMethodType = 'electronic_card') => {
+    const sourceCart =
+      state.cart.length > 0
+        ? state.cart
+        : [{ productId: 201, quantity: 1, selectedVariant: 'مجموعة 60 قطعة (2–6 سنوات)' }];
+
+    const orderItems = sourceCart
       .map((ci) => {
         const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
         if (!prod) return null;
@@ -714,14 +744,19 @@ export default function App() {
       })
       .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
-    const totalAmount = orderItems.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+    const summary = calculateCheckoutSummary(sourceCart, state.currency, paymentMethod);
+    const pmInfo = getPaymentMethodLabels(paymentMethod);
     const newOrder = {
       id: `FS-${String(Date.now()).slice(-5)}`,
       createdAt: new Date().toISOString(),
       items: orderItems,
-      totalAmount,
+      totalAmount: summary.grandTotal,
+      deliveryFee: summary.deliveryFee + summary.codFee,
       currency: state.currency,
       shippingAddress: state.shippingAddress,
+      paymentMethod,
+      paymentMethodLabelAr: pmInfo.labelAr,
+      paymentMethodLabelEn: pmInfo.labelEn,
       status: 'confirmed_demo' as const,
     };
 
@@ -730,11 +765,6 @@ export default function App() {
       cart: [],
       orders: [newOrder, ...prev.orders],
     }));
-    showToast(
-      lang === 'en'
-        ? `✓ Demo Order #${newOrder.id} confirmed! (No real payment charged)`
-        : `✓ تم تأكيد الطلب التجريبي رقم #${newOrder.id} بنجاح (محاكاة بدون دفع فعلي)`
-    );
   };
 
   // Family Members & Permissions
@@ -1112,6 +1142,9 @@ export default function App() {
     { id: 'assistant', label: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', iconId: 'assistant' },
     { id: 'family', label: t(lang, 'navFamily'), shortLabel: lang === 'en' ? 'Family' : 'العائلة', iconId: 'family' },
     { id: 'settings', label: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات', shortLabel: lang === 'en' ? 'Profile' : 'الحساب', iconId: 'settings' },
+    { id: 'privacy', label: lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية', shortLabel: lang === 'en' ? 'Privacy' : 'الخصوصية', iconId: 'shield' },
+    { id: 'terms', label: lang === 'en' ? 'Terms & IP Rights' : 'الشروط وحقوق الملكية', shortLabel: lang === 'en' ? 'Terms & IP' : 'الشروط والملكية', iconId: 'star' },
+    { id: 'contact', label: lang === 'en' ? 'Contact Us' : 'تواصل معنا', shortLabel: lang === 'en' ? 'Contact' : 'تواصل معنا', iconId: 'notifications' },
   ];
 
   const childToDelete = useMemo(
@@ -1164,18 +1197,66 @@ export default function App() {
             })}
           </nav>
 
-          {/* Zone 3: Onboarding/City Wizard + Language Switcher + Notifications + Cart + Role Switcher */}
+          {/* Zone 3: Onboarding/Account Setup + Language Switcher + Notifications + Cart + Role Switcher */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Registration / Login / Country & City Setup Wizard Trigger */}
+            {/* Registration / Login / Account Setup Wizard Trigger (Hides city pin on strictly digital Contact page) */}
             <button
               id="open-onboarding-wizard-btn"
               type="button"
               onClick={() => setOnboardingModalOpen(true)}
               className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-extrabold border border-[var(--color-accent)]/40 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)]"
             >
-              📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}{' '}
+              {activePage === 'contact' ? (
+                <span>✨ {lang === 'en' ? 'Account Setup' : 'إعداد الحساب'}</span>
+              ) : (
+                <>
+                  📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}{' '}
+                  <span className="hidden md:inline">
+                    · {lang === 'en' ? 'Setup' : 'إعداد الحساب'}
+                  </span>
+                </>
+              )}
+            </button>
+
+            {/* Top Quick-Action Dark / Light Mode Toggle */}
+            <button
+              id="top-dark-mode-toggle"
+              type="button"
+              onClick={handleToggleDarkMode}
+              aria-pressed={Boolean(state.darkMode)}
+              aria-label={
+                state.darkMode
+                  ? lang === 'en'
+                    ? 'Switch to Light Mode'
+                    : 'التبديل إلى الوضع النهاري'
+                  : lang === 'en'
+                  ? 'Switch to Dark Mode'
+                  : 'التبديل إلى الوضع الليلي'
+              }
+              title={
+                state.darkMode
+                  ? lang === 'en'
+                    ? 'Light Mode'
+                    : 'الوضع النهاري'
+                  : lang === 'en'
+                  ? 'Dark Mode'
+                  : 'الوضع الليلي'
+              }
+              className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl text-[10.5px] sm:text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1 transition-all ${
+                state.darkMode
+                  ? 'border-indigo-400/60 bg-indigo-500/20 text-indigo-200 hover:border-indigo-300'
+                  : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)]'
+              }`}
+            >
+              <span aria-hidden="true">{state.darkMode ? '☀️' : '🌙'}</span>
               <span className="hidden md:inline">
-                · {lang === 'en' ? 'Setup' : 'إعداد الحساب'}
+                {state.darkMode
+                  ? lang === 'en'
+                    ? 'Light'
+                    : 'نهاري'
+                  : lang === 'en'
+                  ? 'Dark'
+                  : 'ليلي'}
               </span>
             </button>
 
@@ -1257,9 +1338,11 @@ export default function App() {
         {/* Sidebar Navigation with 3D Icon Family */}
         <aside className="hidden lg:block sticky top-20 rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-4 shadow-2xs">
           <div className="pb-3 border-b border-[var(--color-border)] space-y-2">
-            <div className="text-xs font-semibold text-[var(--color-muted)]">
-              {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
-            </div>
+            {activePage !== 'contact' && (
+              <div className="text-xs font-semibold text-[var(--color-muted)]">
+                {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
+              </div>
+            )}
             <div className="text-sm font-bold text-[var(--color-text)]">
               {lang === 'en' ? `Welcome, ${state.parentName} 👋` : `أهلًا ${state.parentName} 👋`}
             </div>
@@ -1268,7 +1351,7 @@ export default function App() {
               onClick={() => setOnboardingModalOpen(true)}
               className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors"
             >
-              {lang === 'en' ? '✨ Account & City Setup' : '✨ الحساب والدولة والمدينة'}
+              {lang === 'en' ? '✨ Account & Profile Setup' : '✨ إعدادات الحساب السريعة'}
             </button>
           </div>
 
@@ -1424,6 +1507,39 @@ export default function App() {
                 parentLabelAr: 'رجوع',
                 parentLabelEn: 'Back',
               },
+              privacy: {
+                titleAr: 'سياسة الخصوصية',
+                titleEn: 'Privacy Policy',
+                badgeAr: 'حماية بيانات الأسرة والطفل',
+                badgeEn: 'Family & Child Data Protection',
+                iconId: 'shield',
+                tone: 'teal',
+                parentPage: 'settings',
+                parentLabelAr: 'رجوع للحساب',
+                parentLabelEn: 'Back',
+              },
+              terms: {
+                titleAr: 'الشروط والأحكام وحقوق الملكية',
+                titleEn: 'Terms of Service & IP Rights',
+                badgeAr: 'السياسات وحقوق الملكية الفكرية',
+                badgeEn: 'Policies & Intellectual Property',
+                iconId: 'star',
+                tone: 'indigo',
+                parentPage: 'settings',
+                parentLabelAr: 'رجوع للحساب',
+                parentLabelEn: 'Back',
+              },
+              contact: {
+                titleAr: 'تواصل معنا',
+                titleEn: 'Contact Us',
+                badgeAr: 'قنوات الدعم الرقمي الرسمية',
+                badgeEn: 'Official Digital Support',
+                iconId: 'notifications',
+                tone: 'orange',
+                parentPage: 'settings',
+                parentLabelAr: 'رجوع للحساب',
+                parentLabelEn: 'Back',
+              },
             };
 
             const currentInner = innerScreenMeta[activePage];
@@ -1567,6 +1683,7 @@ export default function App() {
 
                 return (
                   <div
+                    data-banner-carousel="true"
                     className="relative rounded-[24px] overflow-hidden border border-[var(--color-border)] select-none"
                     style={{
                       background: activeBanner.gradient,
@@ -3203,6 +3320,79 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Dedicated Dark / Light Mode Accessibility Toggle Card in Profile (الحساب) */}
+              <div
+                id="profile-dark-mode-card"
+                className="rounded-[24px] border border-indigo-200/85 bg-indigo-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-100 shadow-2xs flex items-center justify-center text-2xl shrink-0">
+                    {state.darkMode ? '🌙' : '☀️'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                        {lang === 'en'
+                          ? 'Dark Mode (الوضع الليلي المريح للعين)'
+                          : 'الوضع الليلي المريح للعين (Dark Mode)'}
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-indigo-100 text-indigo-900">
+                        {state.darkMode
+                          ? lang === 'en'
+                            ? 'Active · Charcoal Slate'
+                            : 'مفعّل · رمادي داكن مريح'
+                          : lang === 'en'
+                          ? 'Light Mode · Pastel'
+                          : 'الوضع النهاري · باستيل'}
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5">
+                      {lang === 'en'
+                        ? 'Switches the entire app instantly to deep charcoal & slate-blue tones with soft pastel contrast.'
+                        : 'يُحوّل ألوان التطبيق فورًا إلى درجات الرمادي الفحمي والأزرق الداكن المريحة للعين مع الحفاظ على وضوح الأزرار.'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <button
+                    id="profile-dark-mode-switch"
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(state.darkMode)}
+                    aria-label={
+                      lang === 'en'
+                        ? 'Toggle Dark Mode'
+                        : 'تبديل الوضع الليلي والنهاري'
+                    }
+                    onClick={handleToggleDarkMode}
+                    className={`min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2.5 border shadow-2xs active:scale-95 transition-all ${
+                      state.darkMode
+                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-500'
+                        : 'bg-white hover:border-[var(--color-accent)] text-[var(--color-text)] border-[var(--color-border)]'
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`w-9 h-5 rounded-full p-0.5 flex items-center transition-colors ${
+                        state.darkMode ? 'bg-indigo-900/80 justify-end' : 'bg-slate-200 justify-start'
+                      }`}
+                    >
+                      <span className="w-4 h-4 rounded-full bg-white shadow-xs block" />
+                    </span>
+                    <span>
+                      {state.darkMode
+                        ? lang === 'en'
+                          ? '🌙 Dark Mode On (Switch to Light)'
+                          : '🌙 الوضع الليلي مفعّل (تبديل للنهاري)'
+                        : lang === 'en'
+                        ? '☀️ Enable Dark Mode'
+                        : '🌙 تفعيل الوضع الليلي'}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {/* Inner Settings Section inside Profile Screen */}
               {showInnerSettings && (
                 <div className="space-y-5" aria-label="الإعدادات داخل صفحة الحساب">
@@ -3539,8 +3729,174 @@ export default function App() {
                   </div>
                 </div>
               )}
+
+              {/* ==============================================================
+                  LEGAL POLICIES, INTELLECTUAL PROPERTY & DIGITAL CONTACT CARDS
+                  (السياسات وحقوق الملكية وتواصل معنا داخل شاشة الحساب)
+                  ============================================================== */}
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-2xs space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-950">
+                      {lang === 'en' ? 'POLICIES & DIGITAL CARE' : 'السياسات وحقوق الملكية والدعم الرقمي'}
+                    </span>
+                    <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
+                      {lang === 'en'
+                        ? 'Legal Policies, Intellectual Property & Contact Us'
+                        : 'سياسة الخصوصية، الشروط وحقوق الملكية، وتواصل معنا'}
+                    </h3>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* 1. Privacy Policy Card */}
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('privacy')}
+                    className="rounded-[20px] border border-teal-200/85 bg-teal-50/85 p-4 text-start shadow-2xs hover:shadow-sm active:scale-[0.98] transition-all flex flex-col justify-between gap-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="w-10 h-10 rounded-xl bg-white border border-teal-100 flex items-center justify-center text-lg shadow-2xs">
+                        🔒
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-teal-100 text-teal-900 text-[10px] font-extrabold">
+                        {lang === 'en' ? 'Privacy' : 'الخصوصية'}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                        {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
+                      </div>
+                      <div className="text-[11px] font-bold text-[var(--color-muted)] mt-0.5">
+                        {lang === 'en'
+                          ? 'Family & child data protection clauses'
+                          : 'ضوابط حماية بيانات الأسرة والطفل'}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 2. Terms of Service & IP Card */}
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('terms')}
+                    className="rounded-[20px] border border-indigo-200/85 bg-indigo-50/85 p-4 text-start shadow-2xs hover:shadow-sm active:scale-[0.98] transition-all flex flex-col justify-between gap-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="w-10 h-10 rounded-xl bg-white border border-indigo-100 flex items-center justify-center text-lg shadow-2xs">
+                        📜
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-900 text-[10px] font-extrabold">
+                        {lang === 'en' ? 'Terms & IP' : 'حقوق الملكية'}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                        {lang === 'en'
+                          ? 'Terms of Service & IP'
+                          : 'الشروط والأحكام وحقوق الملكية'}
+                      </div>
+                      <div className="text-[11px] font-bold text-[var(--color-muted)] mt-0.5">
+                        {lang === 'en'
+                          ? 'Terms of use & intellectual property rights'
+                          : 'شروط الاستخدام وحقوق الملكية الفكرية'}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 3. Contact Us (Strictly Digital) Card */}
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('contact')}
+                    className="rounded-[20px] border border-orange-200/85 bg-orange-50/85 p-4 text-start shadow-2xs hover:shadow-sm active:scale-[0.98] transition-all flex flex-col justify-between gap-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="w-10 h-10 rounded-xl bg-white border border-orange-100 flex items-center justify-center text-lg shadow-2xs">
+                        🎧
+                      </span>
+                      <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-900 text-[10px] font-extrabold">
+                        {lang === 'en' ? 'Digital 24/7' : 'تواصل رقمي'}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                        {lang === 'en' ? 'Contact Us' : 'تواصل معنا'}
+                      </div>
+                      <div className="text-[11px] font-bold text-[var(--color-muted)] mt-0.5">
+                        {lang === 'en'
+                          ? 'Support email, phone & social channels'
+                          : 'البريد، رقم خدمة العملاء، والتواصل الاجتماعي'}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </section>
           )}
+
+          {/* ================================================================
+              PAGES 13–15: LEGAL POLICIES (PRIVACY, TERMS & IP) & DIGITAL CONTACT US
+              ================================================================ */}
+          {(activePage === 'privacy' || activePage === 'terms' || activePage === 'contact') && (
+            <LegalAndContactSection
+              pageType={activePage}
+              language={state.language}
+              parentName={state.parentName}
+              onNavigateSubPage={(target) => navigateTo(target)}
+              onShowToast={showToast}
+            />
+          )}
+
+          {/* ================================================================
+              UNIFIED FOOTER AREA (Accessible Links to Privacy, Terms & IP, and Contact Us)
+              ================================================================ */}
+          <footer
+            className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs"
+            aria-label={lang === 'en' ? 'Policies & Support Footer' : 'تذييل السياسات والتواصل'}
+          >
+            <div className="flex items-center gap-2 text-[var(--color-muted)] font-bold">
+              <span>© 2026 {lang === 'en' ? 'Family Space' : 'مساحة الأسرة'}</span>
+              <span aria-hidden="true">·</span>
+              <span>{lang === 'en' ? 'All Rights Reserved' : 'جميع الحقوق محفوظة'}</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 font-extrabold">
+              <button
+                type="button"
+                onClick={() => navigateTo('privacy')}
+                className={`hover:underline transition-colors ${
+                  activePage === 'privacy'
+                    ? 'text-teal-700 underline'
+                    : 'text-[var(--color-text)]'
+                }`}
+              >
+                🔒 {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
+              </button>
+              <span aria-hidden="true" className="text-[var(--color-muted)]">·</span>
+              <button
+                type="button"
+                onClick={() => navigateTo('terms')}
+                className={`hover:underline transition-colors ${
+                  activePage === 'terms'
+                    ? 'text-indigo-700 underline'
+                    : 'text-[var(--color-text)]'
+                }`}
+              >
+                📜 {lang === 'en' ? 'Terms & IP Rights' : 'الشروط والأحكام وحقوق الملكية'}
+              </button>
+              <span aria-hidden="true" className="text-[var(--color-muted)]">·</span>
+              <button
+                type="button"
+                onClick={() => navigateTo('contact')}
+                className={`hover:underline transition-colors ${
+                  activePage === 'contact'
+                    ? 'text-orange-700 underline'
+                    : 'text-[var(--color-text)]'
+                }`}
+              >
+                🎧 {lang === 'en' ? 'Contact Us' : 'تواصل معنا'}
+              </button>
+            </div>
+          </footer>
         </main>
       </div>
 
@@ -3558,7 +3914,13 @@ export default function App() {
           'games',
           'notifications',
         ].includes(activePage);
-        const isProfileBranch = activePage === 'settings' || activePage === 'family';
+        const isProfileBranch = [
+          'settings',
+          'family',
+          'privacy',
+          'terms',
+          'contact',
+        ].includes(activePage);
 
         return (
           <nav
@@ -4782,13 +5144,30 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => {
-                  setState((prev) => ({ ...prev, role: 'high-contrast' }));
+                  setState((prev) => ({ ...prev, role: 'high-contrast', darkMode: false }));
                   setRoleModalOpen(false);
                   showToast('تم تفعيل وضع التباين العالي');
                 }}
                 className="p-3.5 rounded-xl border border-neutral-600 bg-white text-neutral-900 font-bold text-sm text-start"
               >
                 👁️ وضع التباين العالي (High Contrast Accessibility)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleToggleDarkMode();
+                  setRoleModalOpen(false);
+                }}
+                className="p-3.5 rounded-xl border border-indigo-400/50 bg-indigo-50 text-indigo-950 font-bold text-sm text-start flex items-center justify-between gap-2"
+              >
+                <span>
+                  {state.darkMode
+                    ? '☀️ التبديل إلى الوضع النهاري (Light Mode)'
+                    : '🌙 تفعيل الوضع الليلي المريح للعين (Dark Mode)'}
+                </span>
+                <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-indigo-100 text-indigo-900">
+                  {state.darkMode ? 'مفعّل' : 'إيقاف'}
+                </span>
               </button>
             </div>
           </div>

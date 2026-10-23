@@ -211,4 +211,58 @@ test('normalizeAppData normalizes city based on country and provides dependent c
   assert.equal(customCity.city, 'الإسكندرية');
 });
 
+test('calculateCheckoutSummary & getPaymentMethodLabels support Electronic Payment (Card, Apple Pay, Google Pay) and Cash on Delivery (COD)', async () => {
+  const { calculateCheckoutSummary, getPaymentMethodLabels } = await import('./familySpaceCore');
+  const cart = [{ productId: 201, quantity: 2 }];
+
+  const cardSummary = calculateCheckoutSummary(cart, 'EGP', 'electronic_card');
+  assert.ok(cardSummary.subtotal > 0);
+  assert.equal(cardSummary.deliveryFee, 45);
+  assert.equal(cardSummary.codFee, 0);
+  assert.equal(cardSummary.grandTotal, cardSummary.subtotal + 45);
+
+  const codSummary = calculateCheckoutSummary(cart, 'EGP', 'cod');
+  assert.equal(codSummary.codFee, 15);
+  assert.equal(codSummary.grandTotal, codSummary.subtotal + 45 + 15);
+
+  assert.equal(getPaymentMethodLabels('electronic_card').category, 'electronic');
+  assert.equal(getPaymentMethodLabels('apple_pay').category, 'electronic');
+  assert.equal(getPaymentMethodLabels('google_pay').category, 'electronic');
+  assert.equal(getPaymentMethodLabels('cod').category, 'cod');
+});
+
+test('STRICTLY_DIGITAL_CONTACT_CONFIG contains support email, phone, and social channels with zero physical address or map fields', async () => {
+  const { STRICTLY_DIGITAL_CONTACT_CONFIG } = await import('./familySpaceCore');
+  assert.ok(STRICTLY_DIGITAL_CONTACT_CONFIG.supportEmail.includes('@'));
+  assert.ok(STRICTLY_DIGITAL_CONTACT_CONFIG.hotlineShort.length > 0);
+  assert.ok(STRICTLY_DIGITAL_CONTACT_CONFIG.socialChannels.length >= 4);
+
+  const serialized = JSON.stringify(STRICTLY_DIGITAL_CONTACT_CONFIG);
+  assert.equal('address' in (STRICTLY_DIGITAL_CONTACT_CONFIG as Record<string, unknown>), false);
+  assert.equal('map' in (STRICTLY_DIGITAL_CONTACT_CONFIG as Record<string, unknown>), false);
+  assert.equal(serialized.includes('شارع'), false);
+  assert.equal(serialized.includes('مبنى'), false);
+});
+
+test('normalizeAppData & resolveColorMode persist Dark Mode state and enforce non-black charcoal-blue palette', async () => {
+  const { DARK_MODE_PALETTE_TOKENS, resolveColorMode } = await import('./familySpaceCore');
+
+  assert.equal(resolveColorMode(undefined), 'light');
+  assert.equal(resolveColorMode(false), 'light');
+  assert.equal(resolveColorMode(true), 'dark');
+
+  const defaultNormalized = normalizeAppData({});
+  assert.equal(defaultNormalized.darkMode, false);
+
+  const darkNormalized = normalizeAppData({ darkMode: true });
+  assert.equal(darkNormalized.darkMode, true);
+
+  // Ensure Dark Mode never uses pure black (#000000)
+  for (const hex of Object.values(DARK_MODE_PALETTE_TOKENS)) {
+    assert.notEqual(hex.toLowerCase(), '#000000');
+    assert.notEqual(hex.toLowerCase(), '#000');
+  }
+});
+
+
 
