@@ -60,7 +60,6 @@ import { CommercialEcosystemSection } from './components/CommercialEcosystemSect
 import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
 import { NotificationsCenterSection } from './components/NotificationsCenterSection';
 import { InteractiveGamesSection } from './components/InteractiveGamesSection';
-import { GoogleDriveSection } from './components/GoogleDriveSection';
 import {
   ThreeDChildAvatar,
   ThreeDIcon,
@@ -100,6 +99,9 @@ export default function App() {
 
   const [activePage, setActivePage] = useState<PageId>('home');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [activeBannerIdx, setActiveBannerIdx] = useState<number>(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [showInnerSettings, setShowInnerSettings] = useState<boolean>(true);
 
   // Routine filters & Reminders state
   const [routineKidFilter, setRoutineKidFilter] = useState<string>('all');
@@ -122,6 +124,14 @@ export default function App() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (activePage !== 'home') return;
+    const timer = setInterval(() => {
+      setActiveBannerIdx((prev) => (prev + 1) % 4);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [activePage]);
 
   // Calendar filters
   const [eventFrom, setEventFrom] = useState<string>('');
@@ -1094,9 +1104,9 @@ export default function App() {
     { id: 'games', label: t(lang, 'navGames'), shortLabel: lang === 'en' ? '3D Games' : 'الألعاب', iconId: 'games' },
     { id: 'services', label: t(lang, 'navServices'), shortLabel: lang === 'en' ? 'Store' : 'المتجر', iconId: 'services' },
     { id: 'notifications', label: t(lang, 'navNotifications'), shortLabel: lang === 'en' ? 'Alerts' : 'الإشعارات', iconId: 'notifications' },
-    { id: 'assistant', label: t(lang, 'navAssistant'), shortLabel: lang === 'en' ? 'AI Guide' : 'مساعد AI', iconId: 'assistant' },
+    { id: 'assistant', label: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', iconId: 'assistant' },
     { id: 'family', label: t(lang, 'navFamily'), shortLabel: lang === 'en' ? 'Family' : 'العائلة', iconId: 'family' },
-    { id: 'settings', label: t(lang, 'navSettings'), shortLabel: lang === 'en' ? 'Settings' : 'الإعدادات', iconId: 'settings' },
+    { id: 'settings', label: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات', shortLabel: lang === 'en' ? 'Profile' : 'الحساب', iconId: 'settings' },
   ];
 
   const childToDelete = useMemo(
@@ -1235,15 +1245,12 @@ export default function App() {
             <div className="text-sm font-bold text-[var(--color-text)]">
               {lang === 'en' ? `Welcome, ${state.parentName} 👋` : `أهلًا ${state.parentName} 👋`}
             </div>
-            <p className="text-[11px] text-[var(--color-muted)] leading-relaxed">
-              {t(lang, 'brandTagline')}
-            </p>
             <button
               type="button"
               onClick={() => setOnboardingModalOpen(true)}
-              className="w-full py-1.5 px-3 rounded-xl text-[11px] font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+              className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors"
             >
-              {lang === 'en' ? '✨ Account, Country & City Wizard' : '✨ معالج التسجيل والدولة والمدينة'}
+              {lang === 'en' ? '✨ Account & City Setup' : '✨ الحساب والدولة والمدينة'}
             </button>
           </div>
 
@@ -1267,495 +1274,469 @@ export default function App() {
               );
             })}
           </nav>
-
-          <div className="rounded-xl bg-[var(--color-notice)] text-[var(--color-notice-text)] p-3 text-[11px] leading-relaxed">
-            {t(lang, 'prototypeNotice')}
-          </div>
         </aside>
 
         {/* Main Viewport */}
         <main className="min-w-0 space-y-6">
           {/* ================================================================
-              PAGE 1: HOME DASHBOARD (الشاشة الرئيسية ثلاثية الأبعاد)
+              PAGE 1: SUPER APP HOME (لافتات متحركة + شبكة بطاقات الخدمات 2 أعمدة)
               ================================================================ */}
           {activePage === 'home' && (
             <section className="space-y-6" aria-label="الشاشة الرئيسية">
-              {/* 3D-First Hero Card */}
-              <div
-                className="rounded-[24px] p-5 sm:p-7 flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
-                style={{
-                  background:
-                    'linear-gradient(125deg, var(--color-hero-start), var(--color-hero-mid), var(--color-hero-end))',
-                  boxShadow:
-                    '0 18px 36px -14px rgba(42, 36, 51, 0.14), inset 0 2px 4px rgba(255,255,255,0.85)',
-                }}
-              >
-                <div className="space-y-3 max-w-2xl">
-                  <div className="text-xs font-bold text-[var(--color-role-text)]">
-                    {state.role === 'dad'
-                      ? t(lang, 'heroBadgeDad')
-                      : state.role === 'high-contrast'
-                      ? t(lang, 'heroBadgeContrast')
-                      : t(lang, 'heroBadgeMom')}{' '}
-                    · {lang === 'en' ? `Hello ${state.parentName}` : `صباح الخير ${state.parentName}`} · 📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-                  </div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-[var(--color-text)] leading-tight">
-                    {t(lang, 'heroHeadline')}
-                  </h1>
-                  <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-                    {t(lang, 'heroSub')}
-                  </p>
-                  {/* 6 Core Value Pillars */}
-                  <div className="pt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-[var(--color-text)]">
-                    <span>📅 {t(lang, 'pillar1')}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>🩺 {t(lang, 'pillar2')}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>📱 {t(lang, 'pillar3')}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>💬 {t(lang, 'pillar4')}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>🤖 {t(lang, 'pillar5')}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>🛍️ {t(lang, 'pillar6')}</span>
-                  </div>
-                  <div className="pt-2 flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setOnboardingModalOpen(true)}
-                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap shrink-0 shadow-xs"
-                    >
-                      {lang === 'en' ? '✨ Account & City Setup' : '✨ إعداد الحساب والدولة والمدينة'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('medical')}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-emerald-200 bg-emerald-50 text-emerald-900 whitespace-nowrap shrink-0"
-                    >
-                      🩺 {t(lang, 'navMedical')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('media')}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-indigo-200 bg-indigo-50 text-indigo-900 whitespace-nowrap shrink-0"
-                    >
-                      📱 {t(lang, 'navMedia')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('community')}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-amber-200 bg-amber-50 text-amber-900 whitespace-nowrap shrink-0"
-                    >
-                      💬 {t(lang, 'navCommunity')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('chat')}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-sky-200 bg-sky-50 text-sky-900 whitespace-nowrap shrink-0"
-                    >
-                      💭 {t(lang, 'navChat')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const el = document.getElementById('google-drive-integration-card');
-                        if (el) {
-                          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        } else {
-                          navigateTo('settings');
-                        }
-                      }}
-                      className="px-3.5 py-2.5 rounded-xl text-xs font-extrabold border border-violet-300 bg-violet-50 text-violet-900 whitespace-nowrap shrink-0"
-                    >
-                      ☁️ {lang === 'en' ? 'Google Drive Project Sync' : 'رفع المشروع ومزامنة الجلسة على Drive'}
-                    </button>
+              {/* Top Location & Quick Welcome Strip (No long paragraphs) */}
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-9 h-9 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center text-base shrink-0">
+                    📍
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
+                      {lang === 'en' ? `Delivering & Services in` : 'الخدمات والمتاجر في'}{' '}
+                      <span className="text-[var(--color-role-text)]">
+                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                      </span>{' '}
+                      ({state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'})
+                    </div>
+                    <div className="text-[11px] text-[var(--color-muted)] truncate">
+                      {lang === 'en' ? `Welcome, ${state.parentName}` : `أهلًا ${state.parentName}`} · {todayFormatted.combined}
+                    </div>
                   </div>
                 </div>
-
-                {/* Interactive 3D Family Scene */}
-                <div className="w-full md:w-auto shrink-0">
-                  <ThreeDInteractiveScene
-                    variant="hero-family"
-                    title={lang === 'en' ? 'Day 1 to 8 Years (3D)' : 'من أول يوم لحد 8 سنين (3D)'}
-                    subtitle={todayFormatted.combined}
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setOnboardingModalOpen(true)}
+                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] hover:bg-[var(--color-accent)] hover:text-white transition-colors shrink-0"
+                >
+                  {lang === 'en' ? 'Change City' : 'تغيير المدينة'}
+                </button>
               </div>
 
-              {/* 4 KPI Summary Strip with 3D Volumetric Icons */}
-              <div className="space-y-2.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-lg font-bold text-[var(--color-text)]">
-                    {t(lang, 'quickOverview')}
+              {/* Swipeable Image Carousel / Banners (لافتات متحركة) */}
+              {(() => {
+                const cityLabel = state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة');
+                const banners: {
+                  id: string;
+                  badge: string;
+                  title: string;
+                  subtitle: string;
+                  ctaLabel: string;
+                  targetPage: PageId;
+                  iconId: ThreeDIconId;
+                  gradient: string;
+                  accentPill: string;
+                }[] = [
+                  {
+                    id: 'banner-medical',
+                    badge: lang === 'en' ? '🩺 Pediatric Care' : '🩺 الرعاية الطبية المعتمدة',
+                    title:
+                      lang === 'en'
+                        ? `Top Pediatricians & Clinics in ${cityLabel}`
+                        : `أفضل أطباء وعيادات الأطفال في ${cityLabel}`,
+                    subtitle:
+                      lang === 'en'
+                        ? 'Instant booking · Growth & Vaccination tracking'
+                        : 'حجز فوري للمواعيد · متابعة النمو والتطعيمات',
+                    ctaLabel: lang === 'en' ? 'Book Doctor Now' : 'احجز موعد طبيب الآن',
+                    targetPage: 'medical',
+                    iconId: 'health',
+                    gradient:
+                      'linear-gradient(125deg, var(--color-hero-start), var(--color-hero-mid), #d8f3ec)',
+                    accentPill: 'bg-emerald-600 text-white',
+                  },
+                  {
+                    id: 'banner-ai',
+                    badge: lang === 'en' ? '✨ Smart AI Agent' : '✨ مساعد الذكاء الاصطناعي',
+                    title:
+                      lang === 'en'
+                        ? 'Direct AI Parenting Chat & Daily Routine Creator'
+                        : 'محادثة ذكية فورية وتصميم روتين يومي لطفلك',
+                    subtitle:
+                      lang === 'en'
+                        ? 'Tailored for ages Day 1 to 8 Years'
+                        : 'إرشادات مخصصة لعمر طفلك من أول يوم حتى 8 سنوات',
+                    ctaLabel: lang === 'en' ? 'Start AI Chat' : 'ابدأ المحادثة الذكية',
+                    targetPage: 'assistant',
+                    iconId: 'assistant',
+                    gradient:
+                      'linear-gradient(125deg, #f5ebff, var(--color-hero-start), #e5f4f9)',
+                    accentPill: 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]',
+                  },
+                  {
+                    id: 'banner-store',
+                    badge: lang === 'en' ? '🛍️ Family Super Store' : '🛍️ متجر الأسرة والخدمات',
+                    title:
+                      lang === 'en'
+                        ? `Montessori Toys, Supplies & Nurseries (${state.currency})`
+                        : `مستلزمات الأطفال وألعاب مونتيسوري والحضانات (${state.currency})`,
+                    subtitle:
+                      lang === 'en'
+                        ? `Fast local delivery in ${cityLabel}`
+                        : `توصيل سريع وعروض محلية في ${cityLabel}`,
+                    ctaLabel: lang === 'en' ? 'Shop Store' : 'تسوّق المتجر الآن',
+                    targetPage: 'services',
+                    iconId: 'services',
+                    gradient:
+                      'linear-gradient(125deg, #fff4e6, var(--color-hero-mid), #fde8ef)',
+                    accentPill: 'bg-amber-600 text-white',
+                  },
+                  {
+                    id: 'banner-media',
+                    badge: lang === 'en' ? '📱 Educational Reels 9:16' : '📱 الميديا والريلز التربوية',
+                    title:
+                      lang === 'en'
+                        ? 'Quick 60-Second Parenting Reels & Visual Guides'
+                        : 'فيديوهات ريلز قصيرة ونصائح بصرية سريعة للوالدين',
+                    subtitle:
+                      lang === 'en'
+                        ? 'Sleep · Nutrition · Positive Behavior · Play'
+                        : 'النوم · التغذية · تعديل السلوك · الأنشطة الحسية',
+                    ctaLabel: lang === 'en' ? 'Watch Reels' : 'شاهد الريلز الآن',
+                    targetPage: 'media',
+                    iconId: 'video',
+                    gradient:
+                      'linear-gradient(125deg, #e8f1ff, var(--color-hero-end), #f3e8ff)',
+                    accentPill: 'bg-indigo-600 text-white',
+                  },
+                ];
+
+                const activeBanner = banners[activeBannerIdx % banners.length];
+
+                return (
+                  <div
+                    className="relative rounded-[24px] overflow-hidden border border-[var(--color-border)] select-none"
+                    style={{
+                      background: activeBanner.gradient,
+                      boxShadow:
+                        '0 16px 32px -14px rgba(42, 36, 51, 0.14), inset 0 2px 4px rgba(255,255,255,0.85)',
+                    }}
+                    onTouchStart={(e) => setTouchStartX(e.touches[0]?.clientX ?? null)}
+                    onTouchEnd={(e) => {
+                      if (touchStartX === null) return;
+                      const endX = e.changedTouches[0]?.clientX ?? touchStartX;
+                      const diff = touchStartX - endX;
+                      if (Math.abs(diff) > 35) {
+                        if (diff > 0) {
+                          setActiveBannerIdx((prev) => (prev + 1) % banners.length);
+                        } else {
+                          setActiveBannerIdx((prev) => (prev - 1 + banners.length) % banners.length);
+                        }
+                      }
+                      setTouchStartX(null);
+                    }}
+                    aria-label={lang === 'en' ? 'Promotional Banners Carousel' : 'لافتات العروض والخدمات المتحركة'}
+                  >
+                    <div className="p-5 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 min-h-[196px]">
+                      <div className="space-y-2.5 max-w-xl">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
+                          {activeBanner.badge}
+                        </span>
+                        <h1 className="text-xl sm:text-2xl font-extrabold text-[var(--color-text)] leading-snug">
+                          {activeBanner.title}
+                        </h1>
+                        <div className="text-xs sm:text-sm font-semibold text-[var(--color-muted)]">
+                          {activeBanner.subtitle}
+                        </div>
+                        <div className="pt-1 flex items-center gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => navigateTo(activeBanner.targetPage)}
+                            className={`min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold shadow-sm active:scale-[0.98] transition-transform ${activeBanner.accentPill}`}
+                          >
+                            {activeBanner.ctaLabel}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white/75 backdrop-blur-xs border border-white shadow-sm">
+                        <ThreeDIcon id={activeBanner.iconId} size={68} />
+                      </div>
+                    </div>
+
+                    {/* Carousel Indicators & Prev/Next Controls */}
+                    <div className="px-5 pb-4 flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1.5" role="tablist" aria-label="شرائح اللافتات">
+                        {banners.map((b, idx) => {
+                          const isCurrent = idx === activeBannerIdx % banners.length;
+                          return (
+                            <button
+                              key={b.id}
+                              type="button"
+                              role="tab"
+                              aria-selected={isCurrent}
+                              aria-label={`${lang === 'en' ? 'Slide' : 'شريحة'} ${idx + 1}`}
+                              onClick={() => setActiveBannerIdx(idx)}
+                              className={`h-2.5 rounded-full transition-all ${
+                                isCurrent
+                                  ? 'w-7 bg-[var(--color-accent)]'
+                                  : 'w-2.5 bg-[var(--color-text)]/25 hover:bg-[var(--color-text)]/40'
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveBannerIdx((prev) => (prev - 1 + banners.length) % banners.length)
+                          }
+                          aria-label={lang === 'en' ? 'Previous Banner' : 'اللافتة السابقة'}
+                          className="w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+                        >
+                          {lang === 'en' ? '‹' : '›'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveBannerIdx((prev) => (prev + 1) % banners.length)}
+                          aria-label={lang === 'en' ? 'Next Banner' : 'اللافتة التالية'}
+                          className="w-8 h-8 rounded-xl bg-white/80 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+                        >
+                          {lang === 'en' ? '›' : '‹'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Main Service Buttons -> Modern 2-Column Super App Grid Cards */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
+                    {lang === 'en' ? 'Explore Services' : 'الخدمات والأقسام الرئيسية'}
                   </h2>
-                  <span className="text-xs text-[var(--color-muted)] tabular-nums">
-                    {todayFormatted.combined}
+                  <span className="text-xs font-bold text-[var(--color-muted)]">
+                    {lang === 'en' ? 'Tap a card to open' : 'اختر القسم للانتقال السريع'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('children')}
-                    className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex items-center gap-3.5 text-start hover:border-[var(--color-accent)] transition-colors"
-                  >
-                    <ThreeDIcon id="children" size={40} />
-                    <div>
-                      <strong className="block text-xl font-extrabold text-[var(--color-text)] tabular-nums">
-                        {state.kids.length}
-                      </strong>
-                      <span className="text-xs text-[var(--color-muted)]">{t(lang, 'metricKids')}</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('routine')}
-                    className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex items-center gap-3.5 text-start hover:border-[var(--color-accent)] transition-colors"
-                  >
-                    <ThreeDIcon id="routine" size={40} />
-                    <div>
-                      <strong className="block text-xl font-extrabold text-[var(--color-text)] tabular-nums">
-                        {completedTasksCount}/{state.tasks.length}
-                      </strong>
-                      <span className="text-xs text-[var(--color-muted)]">{t(lang, 'metricTasks')}</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('calendar')}
-                    className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex items-center gap-3.5 text-start hover:border-[var(--color-accent)] transition-colors"
-                  >
-                    <ThreeDIcon id="calendar" size={40} />
-                    <div>
-                      <strong className="block text-xl font-extrabold text-[var(--color-text)] tabular-nums">
-                        {state.events.length}
-                      </strong>
-                      <span className="text-xs text-[var(--color-muted)]">{t(lang, 'metricEvents')}</span>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('wishes')}
-                    className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex items-center gap-3.5 text-start hover:border-[var(--color-accent)] transition-colors"
-                  >
-                    <ThreeDIcon id="wishes" size={40} />
-                    <div>
-                      <strong className="block text-xl font-extrabold text-[var(--color-text)] tabular-nums">
-                        {state.wishes.length}
-                      </strong>
-                      <span className="text-xs text-[var(--color-muted)]">{t(lang, 'metricWishes')}</span>
-                    </div>
-                  </button>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                  {[
+                    {
+                      id: 'medical' as PageId,
+                      title: lang === 'en' ? 'Medical Care' : 'الرعاية الطبية',
+                      badge: lang === 'en' ? 'Doctors & Clinics' : 'أطباء وعيادات',
+                      iconId: 'health' as ThreeDIconId,
+                      tint: 'bg-emerald-50/90 border-emerald-200/80',
+                      badgeTint: 'bg-emerald-100 text-emerald-900',
+                    },
+                    {
+                      id: 'services' as PageId,
+                      title: lang === 'en' ? 'Family Store' : 'المتجر والخدمات',
+                      badge:
+                        cartItemCount > 0
+                          ? lang === 'en'
+                            ? `${cartItemCount} in Cart`
+                            : `${cartItemCount} في السلة`
+                          : lang === 'en'
+                          ? 'Products & Offers'
+                          : 'منتجات وحضانات',
+                      iconId: 'services' as ThreeDIconId,
+                      tint: 'bg-amber-50/90 border-amber-200/80',
+                      badgeTint: 'bg-amber-100 text-amber-900',
+                    },
+                    {
+                      id: 'community' as PageId,
+                      title: lang === 'en' ? 'Parents Community' : 'مجتمع الآباء',
+                      badge: lang === 'en' ? 'Discussions' : 'تجارب ونقاشات',
+                      iconId: 'star' as ThreeDIconId,
+                      tint: 'bg-rose-50/90 border-rose-200/80',
+                      badgeTint: 'bg-rose-100 text-rose-900',
+                    },
+                    {
+                      id: 'media' as PageId,
+                      title: lang === 'en' ? 'Media & Reels' : 'الميديا والريلز',
+                      badge: lang === 'en' ? '9:16 Videos' : 'فيديوهات 9:16',
+                      iconId: 'video' as ThreeDIconId,
+                      tint: 'bg-indigo-50/90 border-indigo-200/80',
+                      badgeTint: 'bg-indigo-100 text-indigo-900',
+                    },
+                    {
+                      id: 'assistant' as PageId,
+                      title: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي',
+                      badge: lang === 'en' ? 'Chat & Create' : 'محادثة وإنشاء',
+                      iconId: 'assistant' as ThreeDIconId,
+                      tint: 'bg-purple-50/90 border-purple-200/80',
+                      badgeTint: 'bg-purple-100 text-purple-900',
+                    },
+                    {
+                      id: 'chat' as PageId,
+                      title: lang === 'en' ? 'Internal Chat' : 'المحادثات',
+                      badge: lang === 'en' ? 'Direct Messages' : 'تواصل مباشر',
+                      iconId: 'shield' as ThreeDIconId,
+                      tint: 'bg-sky-50/90 border-sky-200/80',
+                      badgeTint: 'bg-sky-100 text-sky-900',
+                    },
+                    {
+                      id: 'children' as PageId,
+                      title: lang === 'en' ? 'Kids Profiles 3D' : 'ملفات الأطفال',
+                      badge: `${state.kids.length} ${lang === 'en' ? 'Profiles' : 'ملفات مسجلة'}`,
+                      iconId: 'children' as ThreeDIconId,
+                      tint: 'bg-teal-50/90 border-teal-200/80',
+                      badgeTint: 'bg-teal-100 text-teal-900',
+                    },
+                    {
+                      id: 'routine' as PageId,
+                      title: lang === 'en' ? 'Daily Routine' : 'الروتين اليومي',
+                      badge: `${completedTasksCount}/${state.tasks.length} ${lang === 'en' ? 'Done' : 'مكتمل'}`,
+                      iconId: 'routine' as ThreeDIconId,
+                      tint: 'bg-orange-50/90 border-orange-200/80',
+                      badgeTint: 'bg-orange-100 text-orange-900',
+                    },
+                    {
+                      id: 'calendar' as PageId,
+                      title: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد',
+                      badge: `${state.events.length} ${lang === 'en' ? 'Events' : 'مواعيد'}`,
+                      iconId: 'calendar' as ThreeDIconId,
+                      tint: 'bg-cyan-50/90 border-cyan-200/80',
+                      badgeTint: 'bg-cyan-100 text-cyan-900',
+                    },
+                    {
+                      id: 'wishes' as PageId,
+                      title: lang === 'en' ? 'Kids Wishes' : 'أمنيات الأطفال',
+                      badge: `${state.wishes.length} ${lang === 'en' ? 'Wishes' : 'أمنيات'}`,
+                      iconId: 'wishes' as ThreeDIconId,
+                      tint: 'bg-pink-50/90 border-pink-200/80',
+                      badgeTint: 'bg-pink-100 text-pink-900',
+                    },
+                    {
+                      id: 'games' as PageId,
+                      title: lang === 'en' ? '3D Kids Games' : 'ألعاب الأطفال 3D',
+                      badge: lang === 'en' ? 'Interactive' : 'ترفيه تعليمي',
+                      iconId: 'games' as ThreeDIconId,
+                      tint: 'bg-lime-50/90 border-lime-200/80',
+                      badgeTint: 'bg-lime-100 text-lime-900',
+                    },
+                    {
+                      id: 'settings' as PageId,
+                      title: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات',
+                      badge: lang === 'en' ? 'Account & Prefs' : 'إدارة الحساب',
+                      iconId: 'settings' as ThreeDIconId,
+                      tint: 'bg-slate-50/90 border-slate-200/80',
+                      badgeTint: 'bg-slate-200 text-slate-900',
+                    },
+                  ].map((card) => (
+                    <button
+                      key={card.id}
+                      type="button"
+                      onClick={() => navigateTo(card.id)}
+                      className={`group min-h-[120px] sm:min-h-[132px] rounded-2xl border ${card.tint} bg-[var(--color-surface)] p-4 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md hover:border-[var(--color-accent)] active:scale-[0.98] transition-all`}
+                    >
+                      <div className="w-full flex items-start justify-between gap-2">
+                        <div className="w-12 h-12 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <ThreeDIcon id={card.iconId} size={38} />
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${card.badgeTint} tabular-nums`}>
+                          {card.badge}
+                        </span>
+                      </div>
+                      <div className="mt-3 w-full flex items-center justify-between gap-1">
+                        <span className="text-sm sm:text-base font-extrabold text-[var(--color-text)] truncate">
+                          {card.title}
+                        </span>
+                        <span className="text-xs font-bold text-[var(--color-muted)] group-hover:text-[var(--color-accent)]">
+                          {lang === 'en' ? '→' : '←'}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Nearest Appointment & 3D Children Split Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-                {/* Nearest Appointment Card */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4">
+              {/* Compact Quick Cards: Children & Nearest Appointment */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+                {/* 3D Children Quick Strip */}
+                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-bold text-[var(--color-text)]">
+                    <h2 className="text-sm font-extrabold text-[var(--color-text)]">
+                      {t(lang, 'yourChildren')}
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('children')}
+                      className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                    >
+                      {t(lang, 'manageProfiles')}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {state.kids.map((kid) => {
+                      const ageInfo = calculateChildAge(kid.birth, state.language);
+                      return (
+                        <button
+                          key={kid.id}
+                          type="button"
+                          onClick={() => navigateTo('children')}
+                          className="rounded-2xl border border-[var(--color-border)] p-3 flex items-center gap-2.5 text-start hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
+                        >
+                          <ThreeDChildAvatar
+                            name={kid.name}
+                            gender={kid.gender}
+                            stageCode={ageInfo.stageCode}
+                            accessoryTheme={kid.avatarTheme || 'astronaut'}
+                            photoDataUrl={kid.photoDataUrl}
+                            useIllustratedAvatar={kid.useIllustratedAvatar}
+                            size="sm"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="font-extrabold text-xs sm:text-sm text-[var(--color-text)] truncate">
+                              {kid.name}
+                            </div>
+                            <div className="text-[11px] text-[var(--color-muted)] tabular-nums truncate">
+                              {ageInfo.label}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Nearest Appointment Compact Card */}
+                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col justify-between gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="text-sm font-extrabold text-[var(--color-text)]">
                       {t(lang, 'nearestAppointment')}
                     </h2>
                     <button
                       type="button"
                       onClick={() => navigateTo('calendar')}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
+                      className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
                       {t(lang, 'openCalendar')}
                     </button>
                   </div>
 
                   {nearestEvent ? (
-                    <div className="rounded-2xl bg-[var(--color-notice)] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <ThreeDIcon id="health" size={42} />
-                        <div>
-                          <div className="font-bold text-sm text-[var(--color-text)]">
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('calendar')}
+                      className="w-full rounded-2xl bg-[var(--color-notice)] p-3.5 flex items-center justify-between gap-3 text-start active:scale-[0.99] transition-transform"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ThreeDIcon id="health" size={38} />
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
                             {nearestEvent.title}
                           </div>
-                          <div className="text-xs text-[var(--color-notice-text)] tabular-nums mt-0.5">
-                            {formatGregorianAndHijri(nearestEvent.date, state.country, state.language, state.calendarMode).combined}
-                            {nearestEvent.time ? ` · ${nearestEvent.time}` : ''}
-                          </div>
-                          <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                            {nearestEvent.childId && kidMap[String(nearestEvent.childId)]
-                              ? `الطفل: ${kidMap[String(nearestEvent.childId)].name}`
-                              : 'الأسرة كلها'}{' '}
-                            · {nearestEvent.type}
+                          <div className="text-xs text-[var(--color-notice-text)] tabular-nums truncate mt-0.5">
+                            {nearestEvent.date} {nearestEvent.time ? `· ${nearestEvent.time}` : ''}
                           </div>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => navigateTo('calendar')}
-                        className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] whitespace-nowrap shrink-0"
-                      >
+                      <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shrink-0">
                         {t(lang, 'viewDetails')}
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                   ) : (
-                    <div className="rounded-xl border border-dashed border-[var(--color-border)] p-5 text-center text-xs text-[var(--color-muted)]">
+                    <div className="rounded-xl border border-dashed border-[var(--color-border)] p-4 text-center text-xs text-[var(--color-muted)]">
                       {t(lang, 'noUpcomingEvents')}
                     </div>
                   )}
                 </div>
-
-                {/* 3D Children Quick Cards */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-bold text-[var(--color-text)]">
-                      {t(lang, 'yourChildren')}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('children')}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
-                    >
-                      {t(lang, 'manageProfiles')}
-                    </button>
-                  </div>
-
-                  {state.kids.length === 0 ? (
-                    <div className="rounded-xl border border-dashed border-[var(--color-border)] p-5 text-center text-xs text-[var(--color-muted)]">
-                      لا توجد ملفات أطفال مسجلة بعد.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {state.kids.map((kid) => {
-                        const ageInfo = calculateChildAge(kid.birth, state.language);
-                        return (
-                          <div
-                            key={kid.id}
-                            className="rounded-2xl border border-[var(--color-border)] p-3.5 flex items-center gap-3"
-                          >
-                            <ThreeDChildAvatar
-                              name={kid.name}
-                              gender={kid.gender}
-                              stageCode={ageInfo.stageCode}
-                              accessoryTheme={kid.avatarTheme || 'astronaut'}
-                              photoDataUrl={kid.photoDataUrl}
-                              useIllustratedAvatar={kid.useIllustratedAvatar}
-                              size="md"
-                            />
-                            <div className="min-w-0 flex-1">
-                              <div className="font-bold text-sm text-[var(--color-text)] truncate">
-                                {kid.name}
-                              </div>
-                              <div className="text-xs text-[var(--color-muted)] tabular-nums">
-                                {ageInfo.label} · {kid.gender === 'girl' ? (lang === 'en' ? 'Girl' : 'بنت') : lang === 'en' ? 'Boy' : 'ولد'}
-                              </div>
-                              <div className="text-[11px] text-[var(--color-muted)] truncate mt-0.5">
-                                {kid.interests || 'بدون اهتمامات مسجلة'}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
               </div>
-
-              {/* Today's Routine Preview with Reminder Badges */}
-              <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base font-bold text-[var(--color-text)]">
-                    {t(lang, 'todayRoutine')}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('routine')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
-                  >
-                    {t(lang, 'viewAllRoutine')}
-                  </button>
-                </div>
-
-                <div className="divide-y divide-[var(--color-border)]">
-                  {state.tasks.slice(0, 5).map((task) => {
-                    const assignedKid = task.kidId ? kidMap[String(task.kidId)] : null;
-                    const reminder = getRoutineTaskReminder(
-                      task,
-                      effectiveNowMinutes,
-                      routineApproachingWindow,
-                      state.language
-                    );
-                    return (
-                      <label
-                        key={task.id}
-                        className="py-2.5 flex flex-wrap items-center justify-between gap-3 cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <input
-                            type="checkbox"
-                            checked={task.done}
-                            onChange={(e) => handleToggleTask(task.id, e.target.checked)}
-                            className="w-4 h-4 accent-[var(--color-task-accent)] shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span
-                                className={`text-sm font-semibold ${
-                                  task.done
-                                    ? 'line-through text-[var(--color-muted)]'
-                                    : 'text-[var(--color-text)]'
-                                }`}
-                              >
-                                {task.name}
-                              </span>
-                              {renderReminderBadge(reminder, true)}
-                            </div>
-                            <span className="text-xs text-[var(--color-muted)] block mt-0.5">
-                              {assignedKid ? assignedKid.name : 'الأسرة كلها'} · {task.category} · المسؤول: {task.owner}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-xs text-[var(--color-muted)] tabular-nums shrink-0">
-                          {task.time || 'مرن'}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Unified Ecosystem Previews: Media + Store + 3 Daily Notifications */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Media Preview */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-bold text-[var(--color-text)]">
-                      {t(lang, 'featuredMedia')}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('media')}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
-                    >
-                      {t(lang, 'exploreMedia')}
-                    </button>
-                  </div>
-                  <div className="space-y-2.5">
-                    {MEDIA_CONTENT_CATALOG.slice(0, 2).map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-xl border border-[var(--color-border)] p-3 flex items-center justify-between gap-2"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="text-xl shrink-0" aria-hidden="true">{item.emoji}</span>
-                          <div className="min-w-0">
-                            <div className="text-xs font-bold text-[var(--color-text)] truncate">
-                              {lang === 'en' ? item.titleEn : item.title}
-                            </div>
-                            <div className="text-[11px] text-[var(--color-muted)]">
-                              {item.durationLabel}
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setActiveMediaModal(item)}
-                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[var(--color-control-muted)] text-[var(--color-text)] shrink-0"
-                        >
-                          {lang === 'en' ? 'Open' : 'عرض'}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Store & Services Preview */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-bold text-[var(--color-text)]">
-                      {t(lang, 'featuredOffers')}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('services')}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
-                    >
-                      {t(lang, 'exploreStore')}
-                    </button>
-                  </div>
-                  <div className="space-y-2.5">
-                    {COMMERCIAL_CATALOG.slice(0, 2).map((item) => {
-                      const p = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
-                      return (
-                        <div
-                          key={item.id}
-                          className="rounded-xl border border-[var(--color-border)] p-3 flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="text-xl shrink-0" aria-hidden="true">{item.emoji}</span>
-                            <div className="min-w-0">
-                              <div className="text-xs font-bold text-[var(--color-text)] truncate">
-                                {lang === 'en' ? item.nameEn : item.name}
-                              </div>
-                              <div className="text-[11px] text-[var(--color-muted)] tabular-nums">
-                                {formatCurrency(p, state.currency, state.language)}
-                              </div>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedModalVariant(item.variants?.[0] || '');
-                              setActiveCommercialModal(item);
-                            }}
-                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[var(--color-control-muted)] text-[var(--color-text)] shrink-0"
-                          >
-                            {lang === 'en' ? 'View' : 'التفاصيل'}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 3 Daily Parenting Notifications Preview */}
-                <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-bold text-[var(--color-text)]">
-                      {lang === 'en' ? '3 Daily Parent Notifications' : 'إشعارات اليوم الثلاثة للوالدين'}
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('notifications')}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)] whitespace-nowrap"
-                    >
-                      {lang === 'en' ? 'Open Center' : 'المركز الكامل'}
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {activeParentNotifications.slice(0, 2).map((notif) => (
-                      <div
-                        key={notif.id}
-                        className="rounded-xl border border-[var(--color-border)] p-2.5 text-xs space-y-0.5"
-                      >
-                        <div className="font-bold text-[var(--color-text)] truncate">
-                          {lang === 'en' ? notif.titleEn : notif.titleAr}
-                        </div>
-                        <div className="text-[11px] text-[var(--color-muted)] line-clamp-2">
-                          {lang === 'en' ? notif.bodyEn : notif.bodyAr}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Google Drive Family Vault & Cloud Backup */}
-              <GoogleDriveSection
-                state={state}
-                language={state.language}
-                onRestoreFromDrive={(restoredState) => setState(restoredState)}
-                onShowToast={showToast}
-              />
             </section>
           )}
 
@@ -2947,24 +2928,125 @@ export default function App() {
           )}
 
           {/* ================================================================
-              PAGE 12: SETTINGS, DATA PORTABILITY & BOTTOM INTERNATIONAL SETTINGS
+              PAGE 12: PROFILE (الحساب) WITH SETTINGS (الإعدادات) INSIDE
               ================================================================ */}
           {activePage === 'settings' && (
-            <section className="space-y-6" aria-label="الإعدادات">
-              <div>
-                <h2 className="text-xl font-bold text-[var(--color-text)]">
-                  {lang === 'en'
-                    ? 'Settings, 3D Visual System, Data Portability & International Controls'
-                    : 'الإعدادات، الهوية البصرية 3D، النسخ الاحتياطي، وإعدادات الدولة والعملة'}
-                </h2>
-                <p className="text-sm text-[var(--color-muted)]">
-                  {lang === 'en'
-                    ? 'Customize Mother/Father theme, calendar display, JSON backups, and verify country/currency/phone at the bottom of this page.'
-                    : 'خصّص تجربة الأم أو الأب، التقويم، النسخ الاحتياطي الآمن، وإعدادات الدولة والعملة والهاتف الموثق في أسفل الصفحة.'}
-                </p>
+            <section className="space-y-6" aria-label="الحساب والإعدادات">
+              {/* Profile Header Card */}
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 shadow-2xs space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-16 h-16 rounded-2xl bg-[var(--color-accent-soft)] border border-[var(--color-accent)]/30 flex items-center justify-center text-2xl shrink-0">
+                      {state.role === 'dad' ? '👨🏻‍🍼' : '👩🏻‍🍼'}
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-[var(--color-role-soft)] text-[var(--color-role-text)]">
+                        {state.role === 'dad'
+                          ? lang === 'en'
+                            ? 'Father Account'
+                            : 'حساب الأب'
+                          : lang === 'en'
+                          ? 'Mother Account'
+                          : 'حساب الأم'}
+                      </span>
+                      <h2 className="text-xl font-extrabold text-[var(--color-text)] mt-0.5">
+                        {state.parentName}
+                      </h2>
+                      <div className="text-xs text-[var(--color-muted)] tabular-nums">
+                        {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍{' '}
+                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setOnboardingModalOpen(true)}
+                      className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
+                    >
+                      {lang === 'en' ? '✨ Edit Account & City' : '✨ تحديث الحساب والمدينة'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('family')}
+                      className="min-h-[44px] px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                    >
+                      {lang === 'en' ? '👨‍👩‍👧‍👦 Family & Permissions' : '👨‍👩‍👧‍👦 العائلة والصلاحيات'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Profile Stats & Shortcuts */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[var(--color-border)]">
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('children')}
+                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                  >
+                    <div className="text-xs text-[var(--color-muted)]">
+                      {lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال'}
+                    </div>
+                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
+                      {state.kids.length}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('services')}
+                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                  >
+                    <div className="text-xs text-[var(--color-muted)]">
+                      {lang === 'en' ? 'Store Orders' : 'طلبات المتجر'}
+                    </div>
+                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
+                      {state.orders.length}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('notifications')}
+                    className="rounded-xl bg-[var(--color-control-muted)] p-3 text-start hover:border-[var(--color-accent)] border border-transparent transition-colors"
+                  >
+                    <div className="text-xs text-[var(--color-muted)]">
+                      {lang === 'en' ? 'Notifications' : 'الإشعارات اليومية'}
+                    </div>
+                    <div className="text-base font-extrabold text-[var(--color-text)] tabular-nums mt-0.5">
+                      {unreadNotifCount} {lang === 'en' ? 'Unread' : 'غير مقروءة'}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowInnerSettings((prev) => !prev)}
+                    className="rounded-xl bg-[var(--color-accent-soft)] p-3 text-start border border-[var(--color-accent)]/30"
+                  >
+                    <div className="text-xs font-bold text-[var(--color-role-text)]">
+                      ⚙️ {lang === 'en' ? 'App Settings' : 'الإعدادات داخل الحساب'}
+                    </div>
+                    <div className="text-xs font-extrabold text-[var(--color-text)] mt-0.5">
+                      {showInnerSettings
+                        ? lang === 'en'
+                          ? 'Open'
+                          : 'مفتوحة الآن'
+                        : lang === 'en'
+                        ? 'Show Settings'
+                        : 'عرض الإعدادات'}
+                    </div>
+                  </button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Inner Settings Section inside Profile Screen */}
+              {showInnerSettings && (
+                <div className="space-y-6" aria-label="الإعدادات داخل صفحة الحساب">
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <h3 className="text-lg font-extrabold text-[var(--color-text)] flex items-center gap-2">
+                      <ThreeDIcon id="settings" size={26} />
+                      <span>{lang === 'en' ? 'Settings (الإعدادات)' : 'الإعدادات وتخصيص الحساب'}</span>
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {/* 1. Experience & Interface Preferences */}
                 <div className="rounded-[18px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4">
                   <h3 className="text-base font-bold text-[var(--color-text)]">
@@ -3123,14 +3205,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Google Drive Cloud Backup & Family Document Vault */}
-              <GoogleDriveSection
-                state={state}
-                language={state.language}
-                onRestoreFromDrive={(restoredState) => setState(restoredState)}
-                onShowToast={showToast}
-              />
-
               {/* ==============================================================
                   BOTTOM OF SETTINGS PAGE: COUNTRY, CURRENCY & VERIFIED PHONE
                   (Requirement 11.B: Placed at the bottom of the Settings page)
@@ -3286,37 +3360,105 @@ export default function App() {
                   </button>
                 </div>
               </div>
+                </div>
+              )}
             </section>
           )}
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation */}
+      {/* Super App Mobile Bottom Navigation Bar (Strictly 5 Elements with Central AI Agent FAB) */}
       <nav
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--color-border)] bg-[var(--color-nav-bg)] px-1 py-1.5 grid grid-cols-7 gap-0.5"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
         aria-label="التنقل السفلي للموبايل"
       >
-        {(['home', 'medical', 'media', 'community', 'chat', 'services', 'settings'] as PageId[]).map(
-          (pid) => {
-            const item = navItems.find((n) => n.id === pid)!;
-            const active = activePage === pid;
-            return (
-              <button
-                key={pid}
-                type="button"
-                onClick={() => navigateTo(pid)}
-                className={`px-0.5 py-1 rounded-xl flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold truncate ${
-                  active
-                    ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-bold'
-                    : 'text-[var(--color-muted)]'
-                }`}
-              >
-                <ThreeDIcon id={item.iconId} size={18} />
-                <span className="truncate max-w-full">{item.shortLabel}</span>
-              </button>
-            );
-          }
-        )}
+        {/* 1. Home (الرئيسية) */}
+        <button
+          type="button"
+          onClick={() => navigateTo('home')}
+          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
+            activePage === 'home'
+              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
+              : 'text-[var(--color-muted)]'
+          }`}
+        >
+          <ThreeDIcon id="home" size={22} />
+          <span className="truncate max-w-full">{lang === 'en' ? 'Home' : 'الرئيسية'}</span>
+        </button>
+
+        {/* 2. Store (المتجر) */}
+        <button
+          type="button"
+          onClick={() => navigateTo('services')}
+          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
+            activePage === 'services'
+              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
+              : 'text-[var(--color-muted)]'
+          }`}
+        >
+          <ThreeDIcon id="services" size={22} />
+          <span className="truncate max-w-full">{lang === 'en' ? 'Store' : 'المتجر'}</span>
+        </button>
+
+        {/* 3. Central Button (3rd out of 5): Prominent Floating FAB for AI Agent (مساعد الذكاء الاصطناعي) */}
+        <div className="flex flex-col items-center justify-end">
+          <button
+            type="button"
+            onClick={() => navigateTo('assistant')}
+            aria-label={lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
+            className="-mt-6 flex flex-col items-center justify-center group focus:outline-none"
+          >
+            <span
+              className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-[var(--color-surface)] transition-transform active:scale-95 ${
+                activePage === 'assistant'
+                  ? 'bg-[var(--color-accent)] ring-2 ring-[var(--color-accent)]'
+                  : 'bg-gradient-to-tr from-[var(--color-accent)] to-[#7c3aed]'
+              }`}
+              style={{
+                boxShadow: '0 10px 24px -4px rgba(124, 58, 237, 0.45)',
+              }}
+            >
+              <ThreeDIcon id="assistant" size={28} />
+            </span>
+            <span
+              className={`mt-1 text-[9.5px] font-extrabold leading-tight whitespace-nowrap ${
+                activePage === 'assistant'
+                  ? 'text-[var(--color-accent)]'
+                  : 'text-[var(--color-text)]'
+              }`}
+            >
+              {lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
+            </span>
+          </button>
+        </div>
+
+        {/* 4. Community (المجتمع) */}
+        <button
+          type="button"
+          onClick={() => navigateTo('community')}
+          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
+            activePage === 'community'
+              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
+              : 'text-[var(--color-muted)]'
+          }`}
+        >
+          <ThreeDIcon id="star" size={22} />
+          <span className="truncate max-w-full">{lang === 'en' ? 'Community' : 'المجتمع'}</span>
+        </button>
+
+        {/* 5. Profile (الحساب — with Settings inside) */}
+        <button
+          type="button"
+          onClick={() => navigateTo('settings')}
+          className={`min-h-[48px] py-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[11px] font-bold transition-colors ${
+            activePage === 'settings'
+              ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold'
+              : 'text-[var(--color-muted)]'
+          }`}
+        >
+          <ThreeDIcon id="settings" size={22} />
+          <span className="truncate max-w-full">{lang === 'en' ? 'Profile' : 'الحساب'}</span>
+        </button>
       </nav>
 
       {/* ====================================================================

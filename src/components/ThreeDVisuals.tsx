@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 
 export type ThreeDIconId =
@@ -32,7 +32,8 @@ interface ThreeDIconProps {
  * Every icon uses multi-stop radial lighting, inner specular highlight, and soft ambient shadow.
  */
 export const ThreeDIcon: React.FC<ThreeDIconProps> = ({ id, size = 28, className = '' }) => {
-  const uid = `tdi-${id}-${size}`;
+  const reactId = useId().replace(/:/g, '');
+  const uid = `tdi-${id}-${size}-${reactId}`;
   return (
     <svg
       width={size}

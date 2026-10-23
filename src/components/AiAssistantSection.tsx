@@ -214,28 +214,23 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
 
   return (
     <section className="space-y-6" aria-label={isEn ? 'In-App AI Parenting Assistant' : 'المساعد الذكي للأسرة'}>
-      {/* Distinct Violet-Fuchsia Intelligence Studio Hero */}
+      {/* Compact Violet-Fuchsia AI Agent Header */}
       <div
-        className="rounded-[24px] p-5 sm:p-7 border border-purple-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+        className="rounded-[24px] p-4 sm:p-6 border border-purple-200/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4"
         style={{
           background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 52%, #fae8ff 100%)',
           boxShadow: '0 16px 34px -14px rgba(124, 58, 237, 0.15)',
         }}
       >
-        <div className="space-y-2.5 max-w-2xl">
-          <div className="text-xs font-extrabold text-purple-800">
-            ✨ {isEn ? 'Personalized AI Parenting Assistant (Simulated Demo)' : 'المساعد الذكي للأسرة والتربية (محاكاة ذكاء اصطناعي تفاعلية للعرض التجريبي)'}
+        <div className="space-y-1.5 max-w-xl">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 text-xs font-extrabold text-purple-800 shadow-2xs">
+            ✨ {isEn ? 'Smart AI Parenting Agent' : 'مساعد الذكاء الاصطناعي للأسرة'}
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
             {isEn
-              ? 'Tailored Daily Guidance, Sleep Routines & Age-Specific Activities'
-              : 'إرشاد يومي مخصص لعمر طفلك، خطط نوم وتغذية، وأنشطة تنمية مهارات'}
+              ? 'Direct Chat, Daily Routines & Custom Child Plans'
+              : 'محادثة فورية وإنشاء خطط نوم وتغذية وأنشطة لطفلك'}
           </h2>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            {isEn
-              ? 'Select your child profile below to get structured action cards tailored to their exact age stage and interests. (Simulated frontend responses for demo review).'
-              : 'اختاري ملف الطفل بالأسفل ليقوم المساعد بتخصيص الخطط والأنشطة حسب عمره واهتماماته المسجلة. (الردود هنا محاكاة ذكية للعرض التجريبي ولا تمثل استشارة طبية).'}
-          </p>
         </div>
 
         {/* Child Context Selector */}
