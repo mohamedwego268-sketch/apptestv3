@@ -110,7 +110,7 @@ export const PASTEL_CARD_TONES: Record<
 
 interface PrimaryCtaButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: NonNullable<BannerSlideItem['ctaVariant']>;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
@@ -123,6 +123,8 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
   const sizeClasses =
     size === 'sm'
       ? 'min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold'
+      : size === 'lg'
+      ? 'min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold'
       : 'min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold';
   const variantTone = CTA_BUTTON_VARIANTS[variant] || CTA_BUTTON_VARIANTS.orange;
   return (
@@ -284,7 +286,8 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 
   return (
     <div
-      className={`rounded-[20px] border ${toneClasses.card} px-3 py-2.5 sm:px-4 sm:py-3 shadow-2xs flex items-center justify-between gap-2.5`}
+      data-sticky-topbar="true"
+      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[20px] border ${toneClasses.card} px-3 py-2.5 sm:px-4 sm:py-3 shadow-sm flex items-center justify-between gap-2.5 transition-all`}
     >
       <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
         <button
@@ -325,4 +328,263 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
     </div>
   );
 };
+
+interface SectionSkeletonLoaderProps {
+  section: 'services' | 'medical' | 'community';
+  language: LanguageCode;
+}
+
+export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
+  section,
+  language,
+}) => {
+  const isEn = language === 'en';
+  const sectionLabel =
+    section === 'services'
+      ? isEn
+        ? 'Fetching Family Store & Live Tracking...'
+        : 'جاري تحميل منتجات متجر الأسرة وتتبع التوصيل...'
+      : section === 'medical'
+      ? isEn
+        ? 'Fetching Verified Pediatricians & Records...'
+        : 'جاري تحميل قائمة الأطباء المعتمدين والسجلات الصحية...'
+      : isEn
+      ? 'Fetching Parents Community Discussions...'
+      : 'جاري تحميل أحدث نقاشات وتجارب مجتمع الوالدين...';
+
+  const cardCount = section === 'community' ? 4 : 6;
+
+  return (
+    <div
+      id={`skeleton-loader-${section}`}
+      data-testid="section-skeleton-loader"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      className="space-y-4 animate-page-enter"
+    >
+      {/* Top Status Strip Shimmer */}
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 flex items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-xl skeleton-shimmer shrink-0" />
+          <div className="space-y-1.5">
+            <div className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent)] animate-ping" />
+              <span>{sectionLabel}</span>
+            </div>
+            <div className="h-2.5 w-44 rounded-full skeleton-shimmer" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
+          <div className="h-8 w-24 rounded-xl skeleton-shimmer hidden sm:block" />
+        </div>
+      </div>
+
+      {/* Hero Carousel Shimmer Block */}
+      <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-2.5 w-full max-w-lg">
+            <div className="h-5 w-32 rounded-full skeleton-shimmer" />
+            <div className="h-6 w-3/4 rounded-xl skeleton-shimmer" />
+            <div className="h-4 w-2/3 rounded-lg skeleton-shimmer" />
+            <div className="pt-1">
+              <div className="h-9 w-36 rounded-xl skeleton-shimmer" />
+            </div>
+          </div>
+          <div className="w-20 h-20 rounded-2xl skeleton-shimmer shrink-0 self-center sm:self-auto" />
+        </div>
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-6 rounded-full skeleton-shimmer" />
+            <span className="h-2 w-2 rounded-full skeleton-shimmer" />
+            <span className="h-2 w-2 rounded-full skeleton-shimmer" />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-7 h-7 rounded-lg skeleton-shimmer" />
+            <span className="w-7 h-7 rounded-lg skeleton-shimmer" />
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Pills Bar Shimmer */}
+      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-24 rounded-xl skeleton-shimmer" />
+          <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
+          <div className="h-8 w-24 rounded-xl skeleton-shimmer" />
+        </div>
+        <div className="h-8 w-44 rounded-xl skeleton-shimmer" />
+      </div>
+
+      {/* Cards Grid Shimmer */}
+      <div
+        className={
+          section === 'community'
+            ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
+            : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5'
+        }
+      >
+        {Array.from({ length: cardCount }).map((_, idx) => (
+          <div
+            key={idx}
+            className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3 shadow-2xs"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0" />
+              <div className="space-y-1.5 flex-1">
+                <div className="h-4 w-3/4 rounded-lg skeleton-shimmer" />
+                <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
+              </div>
+              <div className="h-5 w-14 rounded-lg skeleton-shimmer shrink-0" />
+            </div>
+            <div className="space-y-2 pt-1">
+              <div className="h-3.5 w-full rounded-md skeleton-shimmer" />
+              <div className="h-3.5 w-5/6 rounded-md skeleton-shimmer" />
+            </div>
+            <div className="pt-2 border-t border-[var(--color-border)]/60 flex items-center justify-between gap-2">
+              <div className="h-5 w-20 rounded-lg skeleton-shimmer" />
+              <div className="flex items-center gap-1.5">
+                <div className="h-8 w-16 rounded-xl skeleton-shimmer" />
+                <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+interface FriendlyEmptyStateProps {
+  id?: string;
+  iconId?: ThreeDIconId;
+  emoji?: string;
+  title: string;
+  subtitle?: string;
+  tone?: PastelTone;
+  ctaLabel?: string;
+  onCtaClick?: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
+  secondaryCtaLabel?: string;
+  onSecondaryCtaClick?: () => void;
+}
+
+export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
+  id,
+  iconId = 'star',
+  emoji,
+  title,
+  subtitle,
+  tone = 'slate',
+  ctaLabel,
+  onCtaClick,
+  actionLabel,
+  onAction,
+  secondaryCtaLabel,
+  onSecondaryCtaClick,
+}) => {
+  const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.slate;
+  const resolvedCtaLabel = ctaLabel || actionLabel;
+  const resolvedOnCta = onCtaClick || onAction;
+
+  return (
+    <div
+      id={id}
+      data-testid="friendly-empty-state"
+      className={`rounded-[22px] border border-dashed ${toneClasses.card} p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-3 shadow-2xs animate-page-enter`}
+    >
+      <div className="relative flex items-center justify-center">
+        <div className="w-16 h-16 rounded-3xl bg-white/90 border border-white shadow-sm flex items-center justify-center">
+          {emoji ? (
+            <span className="text-3xl">{emoji}</span>
+          ) : (
+            <ThreeDIcon id={iconId} size={40} />
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-1 max-w-md">
+        <h4 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+          {title}
+        </h4>
+        {subtitle && (
+          <p className="text-xs font-semibold text-[var(--color-muted)] leading-relaxed">
+            {subtitle}
+          </p>
+        )}
+      </div>
+
+      {(resolvedCtaLabel || secondaryCtaLabel) && (
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+          {resolvedCtaLabel && resolvedOnCta && (
+            <PrimaryCtaButton variant="orange" size="sm" onClick={resolvedOnCta}>
+              {resolvedCtaLabel}
+            </PrimaryCtaButton>
+          )}
+          {secondaryCtaLabel && onSecondaryCtaClick && (
+            <button
+              type="button"
+              onClick={onSecondaryCtaClick}
+              className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] shadow-2xs hover:border-[var(--color-accent)] active:scale-95 transition-all"
+            >
+              {secondaryCtaLabel}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface GlobalToastSnackbarProps {
+  message: string | null;
+  onClose: () => void;
+  language: LanguageCode;
+}
+
+export const GlobalToastSnackbar: React.FC<GlobalToastSnackbarProps> = ({
+  message,
+  onClose,
+  language,
+}) => {
+  if (!message) return null;
+  const isEn = language === 'en';
+  const cleanMessage = message.replace(/^[✓✅]\s*/, '');
+
+  return (
+    <div
+      id="global-toast-snackbar"
+      data-testid="global-toast-snackbar"
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-20 lg:bottom-6 left-4 right-4 mx-auto max-w-md z-50 animate-toast-snackbar"
+    >
+      <div className="rounded-2xl bg-[var(--color-toast)]/95 backdrop-blur-md border border-white/15 text-white px-4 py-3 shadow-[0_16px_36px_-8px_rgba(15,23,42,0.45)] flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span
+            aria-hidden="true"
+            className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs"
+          >
+            <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]">
+              <path d="M3.5 8.5L6.5 11.5L12.5 4.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="text-xs font-extrabold leading-snug">{cleanMessage}</span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={isEn ? 'Dismiss notification' : 'إغلاق التنبيه'}
+          className="w-6 h-6 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center justify-center shrink-0"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  );
+};
+
 

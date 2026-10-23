@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FamilySpaceState,
   LanguageCode,
   ParentNotificationPrefs,
   generateThreeDailyNotifications,
+  getEmptyStateCopy,
 } from '../domain/familySpaceCore';
-import { PrimaryCtaButton } from './DesignSystem';
+import { FriendlyEmptyState, PrimaryCtaButton } from './DesignSystem';
 
 interface NotificationsCenterSectionProps {
   state: FamilySpaceState;
@@ -17,6 +18,7 @@ interface NotificationsCenterSectionProps {
   ) => void;
   onToggleReadNotification: (notifId: string) => void;
   onMarkAllRead: () => void;
+  onShowToast?: (msg: string) => void;
 }
 
 export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProps> = ({
@@ -26,13 +28,17 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
   onUpdateNotificationPrefs,
   onToggleReadNotification,
   onMarkAllRead,
+  onShowToast,
 }) => {
   const isEn = language === 'en';
+  const [isDismissedAll, setIsDismissedAll] = useState(false);
   const activeParent = state.activeParentAccount;
   const parentProfile = state.parentAccounts[activeParent];
   const prefs = parentProfile.notificationPrefs;
-  const notifications = generateThreeDailyNotifications(state, activeParent);
+  const rawNotifications = generateThreeDailyNotifications(state, activeParent);
+  const notifications = isDismissedAll ? [] : rawNotifications;
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const emptyNotifCopy = getEmptyStateCopy('notifications', language);
 
   return (
     <div className="space-y-5">
@@ -84,63 +90,112 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
                 🔔 {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
               </div>
             </div>
-            <PrimaryCtaButton
-              variant="orange"
-              size="sm"
-              onClick={onMarkAllRead}
-            >
-              ✓ {isEn ? 'Mark All Read' : 'تحديد الكل كمقروء'}
-            </PrimaryCtaButton>
-          </div>
-
-          <div className="space-y-3">
-            {notifications.map((notif) => {
-              const slotCardStyle =
-                notif.slot === 'morning'
-                  ? 'bg-amber-50/80 border-amber-200/80'
-                  : notif.slot === 'midday'
-                  ? 'bg-sky-50/80 border-sky-200/80'
-                  : 'bg-purple-50/80 border-purple-200/80';
-
-              return (
-                <div
-                  key={notif.id}
-                  className={`rounded-2xl border p-4 transition-all ${slotCardStyle} ${
-                    notif.read ? 'opacity-80' : 'shadow-2xs'
-                  }`}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                id="toggle-empty-notifications-btn"
+                type="button"
+                onClick={() => {
+                  const next = !isDismissedAll;
+                  setIsDismissedAll(next);
+                  onShowToast?.(
+                    next
+                      ? isEn
+                        ? 'Notifications cleared'
+                        : 'تم مسح قائمة الإشعارات مؤقتًا'
+                      : isEn
+                      ? 'Notifications restored'
+                      : 'تمت استعادة الإشعارات اليومية بنجاح'
+                  );
+                }}
+                className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
+              >
+                {isDismissedAll
+                  ? isEn
+                    ? '🔄 Restore Alerts'
+                    : '🔄 استعادة الإشعارات'
+                  : isEn
+                  ? '🗑️ Clear List'
+                  : '🗑️ مسح الإشعارات'}
+              </button>
+              {notifications.length > 0 && (
+                <PrimaryCtaButton
+                  variant="orange"
+                  size="sm"
+                  onClick={onMarkAllRead}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <span className="px-2.5 py-0.5 rounded-xl bg-white text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs">
-                      {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
-                    </span>
-                    <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--color-muted)] tabular-nums">
-                      <span>🕒 {notif.scheduledTime}</span>
-                      <button
-                        type="button"
-                        onClick={() => onToggleReadNotification(notif.id)}
-                        className="px-3 py-1 rounded-xl border border-[var(--color-border)] bg-white text-[11px] font-extrabold text-[var(--color-text)]"
-                      >
-                        {notif.read
-                          ? isEn
-                            ? 'Mark Unread'
-                            : 'كغير مقروء'
-                          : isEn
-                          ? 'Mark Read'
-                          : 'تم الاطلاع'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <h4 className="text-sm font-extrabold text-[var(--color-text)] mb-1">
-                    {isEn ? notif.titleEn : notif.titleAr}
-                  </h4>
-                  <p className="text-xs font-semibold text-[var(--color-muted)] leading-relaxed">
-                    {isEn ? notif.bodyEn : notif.bodyAr}
-                  </p>
-                </div>
-              );
-            })}
+                  ✓ {isEn ? 'Mark All Read' : 'تحديد الكل كمقروء'}
+                </PrimaryCtaButton>
+              )}
+            </div>
           </div>
+
+          {notifications.length === 0 ? (
+            <FriendlyEmptyState
+              id="empty-notifications-state"
+              iconId="notifications"
+              tone="amber"
+              title={emptyNotifCopy.title}
+              subtitle={emptyNotifCopy.subtitle}
+              actionLabel={emptyNotifCopy.actionLabel}
+              onAction={() => {
+                setIsDismissedAll(false);
+                onShowToast?.(
+                  isEn
+                    ? 'Daily notifications restored'
+                    : 'تمت استعادة الإشعارات اليومية بنجاح'
+                );
+              }}
+            />
+          ) : (
+            <div className="space-y-3">
+              {notifications.map((notif) => {
+                const slotCardStyle =
+                  notif.slot === 'morning'
+                    ? 'bg-amber-50/80 border-amber-200/80'
+                    : notif.slot === 'midday'
+                    ? 'bg-sky-50/80 border-sky-200/80'
+                    : 'bg-purple-50/80 border-purple-200/80';
+
+                return (
+                  <div
+                    key={notif.id}
+                    className={`rounded-2xl border p-4 transition-all ${slotCardStyle} ${
+                      notif.read ? 'opacity-80' : 'shadow-2xs'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="px-2.5 py-0.5 rounded-xl bg-white text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs">
+                        {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
+                      </span>
+                      <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--color-muted)] tabular-nums">
+                        <span>🕒 {notif.scheduledTime}</span>
+                        <button
+                          type="button"
+                          onClick={() => onToggleReadNotification(notif.id)}
+                          className="px-3 py-1 rounded-xl border border-[var(--color-border)] bg-white text-[11px] font-extrabold text-[var(--color-text)]"
+                        >
+                          {notif.read
+                            ? isEn
+                              ? 'Mark Unread'
+                              : 'كغير مقروء'
+                            : isEn
+                            ? 'Mark Read'
+                            : 'تم الاطلاع'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <h4 className="text-sm font-extrabold text-[var(--color-text)] mb-1">
+                      {isEn ? notif.titleEn : notif.titleAr}
+                    </h4>
+                    <p className="text-xs font-semibold text-[var(--color-muted)] leading-relaxed">
+                      {isEn ? notif.bodyEn : notif.bodyAr}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Per-Parent Preferences & Quiet Hours */}

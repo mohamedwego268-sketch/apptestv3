@@ -47,6 +47,8 @@ import {
   getPaymentMethodLabels,
   calculateCheckoutSummary,
   resolveColorMode,
+  SKELETON_LOAD_DURATION_MS,
+  shouldTriggerSkeletonForTab,
 } from './domain/familySpaceCore';
 import {
   AVATAR_ACCESSORY_THEMES,
@@ -72,9 +74,12 @@ import {
   ThreeDInteractiveScene,
 } from './components/ThreeDVisuals';
 import {
+  FriendlyEmptyState,
+  GlobalToastSnackbar,
   InnerScreenTopBar,
   PrimaryCtaButton,
   PASTEL_CARD_TONES,
+  SectionSkeletonLoader,
 } from './components/DesignSystem';
 
 type PageId =
@@ -111,10 +116,30 @@ export default function App() {
   });
 
   const [activePage, setActivePage] = useState<PageId>('home');
+  const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
+  const tabLoadingTimerRef = React.useRef<number | null>(null);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [activeBannerIdx, setActiveBannerIdx] = useState<number>(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [showInnerSettings, setShowInnerSettings] = useState<boolean>(true);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (tabLoadingTimerRef.current) {
+        window.clearTimeout(tabLoadingTimerRef.current);
+      }
+    };
+  }, []);
 
   // Routine filters & Reminders state
   const [routineKidFilter, setRoutineKidFilter] = useState<string>('all');
@@ -283,6 +308,19 @@ export default function App() {
   );
 
   const navigateTo = (page: PageId) => {
+    if (tabLoadingTimerRef.current) {
+      window.clearTimeout(tabLoadingTimerRef.current);
+      tabLoadingTimerRef.current = null;
+    }
+    if (shouldTriggerSkeletonForTab(page) && page !== activePage) {
+      setIsTabLoading(true);
+      tabLoadingTimerRef.current = window.setTimeout(() => {
+        setIsTabLoading(false);
+        tabLoadingTimerRef.current = null;
+      }, SKELETON_LOAD_DURATION_MS);
+    } else {
+      setIsTabLoading(false);
+    }
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -702,8 +740,8 @@ export default function App() {
     });
     showToast(
       lang === 'en'
-        ? `Added "${item.nameEn}" to your family cart`
-        : `تمت إضافة «${item.name}» إلى سلة التسوق`
+        ? `تمت الإضافة بنجاح — Added "${item.nameEn}" to your family cart`
+        : `تمت الإضافة بنجاح — أُضيف «${item.name}» إلى سلة التسوق`
     );
   };
 
@@ -888,7 +926,11 @@ export default function App() {
       language: settingsLanguage,
       calendarMode: settingsCalendarMode,
     }));
-    showToast('تم حفظ تفضيلات التجربة واللغة والتقويم');
+    showToast(
+      lang === 'en'
+        ? 'تم الحفظ بنجاح — Experience & language preferences saved'
+        : 'تمت الإضافة والحفظ بنجاح — تم حفظ تفضيلات التجربة واللغة والتقويم'
+    );
   };
 
   const handleSaveBottomInternationalAndPhone = () => {
@@ -1159,7 +1201,11 @@ export default function App() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden pb-24 lg:pb-8">
       {/* Top Bar Contract: Brand Wordmark + Primary Nav + Language/Notifications/Cart/Role Controls */}
-      <header className="sticky top-0 z-30 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-xs">
+      <header
+        id="main-sticky-header"
+        data-scrolled={isScrolled ? 'true' : 'false'}
+        className="sticky top-0 z-30 border-b border-[var(--color-border)] glass-sticky-header"
+      >
         <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
           {/* Zone 1: Single-line Brand Wordmark */}
           <button
@@ -1563,8 +1609,11 @@ export default function App() {
               ================================================================ */}
           {activePage === 'home' && (
             <section className="space-y-6" aria-label="الشاشة الرئيسية">
-              {/* Top Location & Quick Welcome Strip (No long paragraphs) */}
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 shadow-2xs">
+              {/* Sticky Glassmorphism Top Location & Quick Welcome Strip */}
+              <div
+                id="home-sticky-location-bar"
+                className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--color-border)] px-4 py-3 shadow-2xs transition-all"
+              >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span className="w-9 h-9 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center text-base shrink-0">
                     📍
@@ -2839,61 +2888,64 @@ export default function App() {
           {/* ================================================================
               PAGE 6A: MEDICAL & CHILD HEALTH HUB (الرعاية الطبية والأطباء)
               ================================================================ */}
-          {activePage === 'medical' && (
-            <MedicalHealthSection
-              kids={state.kids}
-              doctorsAndClinics={COMMERCIAL_CATALOG.filter(
-                (item) => item.category === 'doctor' || item.category === 'consultation'
-              )}
-              medicalArticles={MEDIA_CONTENT_CATALOG.filter(
-                (item) =>
-                  item.topic === 'health' ||
-                  item.topic === 'psychology' ||
-                  item.topic === 'milestones'
-              )}
-              country={state.country}
-              city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-              currency={state.currency}
-              language={state.language}
-              savedMediaIds={state.savedMediaIds}
-              onToggleSaveMedia={(id) => {
-                setState((prev) => {
-                  const exists = prev.savedMediaIds.includes(id);
-                  const next = exists
-                    ? prev.savedMediaIds.filter((x) => x !== id)
-                    : [...prev.savedMediaIds, id];
-                  return { ...prev, savedMediaIds: next };
-                });
-                showToast(
-                  lang === 'en' ? 'Updated saved medical guides' : 'تم تحديث قائمة الأدلة الطبية المحفوظة'
-                );
-              }}
-              onBookDoctorAppointment={(doctorName, childId, date, time, note) => {
-                setState((prev) => ({
-                  ...prev,
-                  events: [
-                    {
-                      id: Date.now() + Math.floor(Math.random() * 100),
-                      title: `${lang === 'en' ? 'Doctor Visit:' : 'موعد طبي:'} ${doctorName}`,
-                      date,
-                      time,
-                      type: 'موعد طبي',
-                      childId,
-                      repeat: 'none',
-                      note,
-                    },
-                    ...prev.events,
-                  ],
-                }));
-                showToast(
-                  lang === 'en'
-                    ? `✓ Appointment booked with ${doctorName} and added to Family Calendar!`
-                    : `✓ تم حجز الموعد مع «${doctorName}» وإضافته إلى التقويم الأسري!`
-                );
-              }}
-              onShowToast={showToast}
-            />
-          )}
+          {activePage === 'medical' &&
+            (isTabLoading ? (
+              <SectionSkeletonLoader section="medical" language={state.language} />
+            ) : (
+              <MedicalHealthSection
+                kids={state.kids}
+                doctorsAndClinics={COMMERCIAL_CATALOG.filter(
+                  (item) => item.category === 'doctor' || item.category === 'consultation'
+                )}
+                medicalArticles={MEDIA_CONTENT_CATALOG.filter(
+                  (item) =>
+                    item.topic === 'health' ||
+                    item.topic === 'psychology' ||
+                    item.topic === 'milestones'
+                )}
+                country={state.country}
+                city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                currency={state.currency}
+                language={state.language}
+                savedMediaIds={state.savedMediaIds}
+                onToggleSaveMedia={(id) => {
+                  setState((prev) => {
+                    const exists = prev.savedMediaIds.includes(id);
+                    const next = exists
+                      ? prev.savedMediaIds.filter((x) => x !== id)
+                      : [...prev.savedMediaIds, id];
+                    return { ...prev, savedMediaIds: next };
+                  });
+                  showToast(
+                    lang === 'en' ? 'Updated saved medical guides' : 'تم تحديث قائمة الأدلة الطبية المحفوظة'
+                  );
+                }}
+                onBookDoctorAppointment={(doctorName, childId, date, time, note) => {
+                  setState((prev) => ({
+                    ...prev,
+                    events: [
+                      {
+                        id: Date.now() + Math.floor(Math.random() * 100),
+                        title: `${lang === 'en' ? 'Doctor Visit:' : 'موعد طبي:'} ${doctorName}`,
+                        date,
+                        time,
+                        type: 'موعد طبي',
+                        childId,
+                        repeat: 'none',
+                        note,
+                      },
+                      ...prev.events,
+                    ],
+                  }));
+                  showToast(
+                    lang === 'en'
+                      ? `✓ Appointment booked with ${doctorName} and added to Family Calendar!`
+                      : `✓ تم حجز الموعد مع «${doctorName}» وإضافته إلى التقويم الأسري!`
+                  );
+                }}
+                onShowToast={showToast}
+              />
+            ))}
 
           {/* ================================================================
               PAGE 6B: MEDIA, VIDEOS & VERTICAL REELS 9:16 HUB (الميديا والريلز)
@@ -2920,14 +2972,17 @@ export default function App() {
           {/* ================================================================
               PAGE 6C: PARENTS' COMMUNITY (مجتمع الآباء والأمهات)
               ================================================================ */}
-          {activePage === 'community' && (
-            <ParentsCommunitySection
-              parentName={state.parentName}
-              city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-              language={state.language}
-              onShowToast={showToast}
-            />
-          )}
+          {activePage === 'community' &&
+            (isTabLoading ? (
+              <SectionSkeletonLoader section="community" language={state.language} />
+            ) : (
+              <ParentsCommunitySection
+                parentName={state.parentName}
+                city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                language={state.language}
+                onShowToast={showToast}
+              />
+            ))}
 
           {/* ================================================================
               PAGE 6D: INTERNAL CHAT & MESSAGING (المحادثات الداخلية)
@@ -2953,35 +3008,38 @@ export default function App() {
           {/* ================================================================
               PAGE 8: COMMERCIAL ECOSYSTEM — 3D STORE, CART & SERVICES
               ================================================================ */}
-          {activePage === 'services' && (
-            <CommercialEcosystemSection
-              country={state.country}
-              city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-              currency={state.currency}
-              language={state.language}
-              cart={state.cart}
-              shippingAddress={state.shippingAddress}
-              orders={state.orders}
-              onAddProductToWishes={(item) =>
-                handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
-              }
-              onInspectCommercialItem={(item) => {
-                setSelectedModalVariant(item.variants?.[0] || '');
-                setActiveCommercialModal(item);
-              }}
-              onAddToCart={handleAddToCart}
-              onUpdateCartQuantity={handleUpdateCartQuantity}
-              onRemoveFromCart={handleRemoveFromCart}
-              onUpdateShippingAddress={(patch) =>
-                setState((prev) => ({
-                  ...prev,
-                  shippingAddress: { ...prev.shippingAddress, ...patch },
-                }))
-              }
-              onCompleteDemoCheckout={handleCompleteDemoCheckout}
-              onShowToast={showToast}
-            />
-          )}
+          {activePage === 'services' &&
+            (isTabLoading ? (
+              <SectionSkeletonLoader section="services" language={state.language} />
+            ) : (
+              <CommercialEcosystemSection
+                country={state.country}
+                city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                currency={state.currency}
+                language={state.language}
+                cart={state.cart}
+                shippingAddress={state.shippingAddress}
+                orders={state.orders}
+                onAddProductToWishes={(item) =>
+                  handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
+                }
+                onInspectCommercialItem={(item) => {
+                  setSelectedModalVariant(item.variants?.[0] || '');
+                  setActiveCommercialModal(item);
+                }}
+                onAddToCart={handleAddToCart}
+                onUpdateCartQuantity={handleUpdateCartQuantity}
+                onRemoveFromCart={handleRemoveFromCart}
+                onUpdateShippingAddress={(patch) =>
+                  setState((prev) => ({
+                    ...prev,
+                    shippingAddress: { ...prev.shippingAddress, ...patch },
+                  }))
+                }
+                onCompleteDemoCheckout={handleCompleteDemoCheckout}
+                onShowToast={showToast}
+              />
+            ))}
 
           {/* ================================================================
               PAGE 9: THREE DAILY PARENTING NOTIFICATIONS CENTER
@@ -2993,6 +3051,7 @@ export default function App() {
               onSelectParentAccount={(pid) =>
                 setState((prev) => ({ ...prev, activeParentAccount: pid }))
               }
+              onShowToast={showToast}
               onUpdateNotificationPrefs={(pid, patch) => {
                 setState((prev) => ({
                   ...prev,
@@ -3184,10 +3243,11 @@ export default function App() {
                 }));
                 showToast(
                   lang === 'en'
-                    ? `✓ Linked ${newMember.name} (${newMember.role}) to the Family Account!`
-                    : `✓ تم ربط «${newMember.name}» (${newMember.role}) بحساب الأسرة فورًا!`
+                    ? `تمت الإضافة بنجاح — Linked ${newMember.name} (${newMember.role})!`
+                    : `تمت الإضافة بنجاح — تم ربط «${newMember.name}» (${newMember.role}) بحساب الأسرة!`
                 );
               }}
+              onShowToast={showToast}
             />
           )}
 
@@ -5406,16 +5466,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Toast Notification */}
-      {toastMsg && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-16 lg:bottom-6 left-4 right-4 mx-auto max-w-md z-50 rounded-xl bg-[var(--color-toast)] text-white px-4 py-3 text-xs font-semibold shadow-lg text-center"
-        >
-          {toastMsg}
-        </div>
-      )}
+      {/* Global Toast / Snackbar Micro-feedback */}
+      <GlobalToastSnackbar
+        message={toastMsg}
+        onClose={() => setToastMsg(null)}
+        language={state.language}
+      />
     </div>
   );
 }

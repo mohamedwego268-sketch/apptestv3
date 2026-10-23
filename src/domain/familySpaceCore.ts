@@ -2299,4 +2299,79 @@ export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
   return darkMode === true ? 'dark' : 'light';
 }
 
+export const SKELETON_TABS = ['services', 'medical', 'community'] as const;
+export type SkeletonTabId = (typeof SKELETON_TABS)[number];
+export const SKELETON_LOAD_DURATION_MS = 1100;
+
+export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonTabId {
+  return (SKELETON_TABS as readonly string[]).includes(pageId);
+}
+
+export function getEmptyStateCopy(
+  section: 'cart' | 'notifications' | 'chat' | 'chats' | 'community' | 'search',
+  lang: LanguageCode = 'ar'
+): { title: string; subtitle: string; ctaLabel: string; actionLabel: string } {
+  const isEn = lang === 'en';
+  switch (section) {
+    case 'cart': {
+      const ctaLabel = isEn ? 'Browse Store Catalog' : 'تصفح منتجات المتجر';
+      return {
+        title: isEn ? 'No items here yet — Your Cart is Empty' : 'لا توجد عناصر هنا بعد — سلة التسوق فارغة',
+        subtitle: isEn
+          ? 'Browse our curated family products, Montessori toys, and baby essentials to add items to your cart.'
+          : 'تصفح منتجات الأسرة وألعاب مونتيسوري ومستلزمات الأطفال لإضافة اختياراتك إلى السلة.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'notifications': {
+      const ctaLabel = isEn ? 'Restore Daily Notifications' : 'استعادة الإشعارات اليومية';
+      return {
+        title: isEn ? 'No items here yet — Notifications Cleared' : 'لا توجد عناصر هنا بعد — قائمة الإشعارات فارغة',
+        subtitle: isEn
+          ? 'You are all caught up! Restore daily parenting tips whenever you are ready.'
+          : 'لقد اطلعت على جميع التنبيهات! يمكنك استعادة الإشعارات اليومية الثلاثة في أي وقت.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'chat':
+    case 'chats': {
+      const ctaLabel = isEn ? 'Show All Conversations' : 'عرض جميع المحادثات النشطة';
+      return {
+        title: isEn ? 'No items here yet — No Active Chats' : 'لا توجد عناصر هنا بعد — لا توجد محادثات نشطة',
+        subtitle: isEn
+          ? 'Start or restore a direct conversation with your child’s nursery, pediatrician, or family members.'
+          : 'لا توجد رسائل في هذا التصنيف حاليًا. يمكنك استعادة المحادثات النشطة مع الحضانة أو العيادة أو الأسرة.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'community': {
+      const ctaLabel = isEn ? 'Show All Posts' : 'عرض كل المشاركات';
+      return {
+        title: isEn ? 'No items here yet — No Matching Posts' : 'لا توجد عناصر هنا بعد — لا توجد مشاركات مطابقة',
+        subtitle: isEn
+          ? 'Try clearing the search filter or share your own parenting experience with the community.'
+          : 'جرّب تغيير الفئة المختارة أو شارك تجربتك وسؤالك مع الآباء والأمهات.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'search':
+    default: {
+      const ctaLabel = isEn ? 'Reset Filters' : 'إعادة ضبط الفلاتر';
+      return {
+        title: isEn ? 'No items here yet' : 'لا توجد عناصر هنا بعد',
+        subtitle: isEn
+          ? 'Try adjusting your filters or adding a new item.'
+          : 'جرّب تعديل خيارات التصفية أو إضافة عنصر جديد.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+  }
+}
+
+
 

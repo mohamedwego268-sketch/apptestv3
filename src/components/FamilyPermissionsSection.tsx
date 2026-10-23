@@ -180,6 +180,7 @@ interface FamilyPermissionsSectionProps {
   onCreateInvitation: (invitation: Omit<FamilyInvitation, 'id' | 'createdAt'>) => void;
   onUpdateInvitationStatus: (invitationId: number, status: InvitationStatus) => void;
   onInstantJoinFamilyMember?: (member: Omit<FamilyMember, 'id'>) => void;
+  onShowToast?: (msg: string) => void;
 }
 
 /** Deterministic SVG QR Code generator for the Family Code */
@@ -249,6 +250,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   onCreateInvitation,
   onUpdateInvitationStatus,
   onInstantJoinFamilyMember,
+  onShowToast,
 }) => {
   const isEn = language === 'en';
   const [editingParent, setEditingParent] = useState<'mother' | 'father'>('mother');
@@ -286,11 +288,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
 
   const handleCopyText = (text: string, label: string) => {
     try {
-      navigator.clipboard?.writeText(text);
+      navigator.clipboard?.writeText(text)?.catch(() => {});
     } catch {
       // Fallback
     }
     setLinkCopiedMsg(label);
+    onShowToast?.(label);
     window.setTimeout(() => setLinkCopiedMsg(null), 2600);
   };
 
@@ -562,11 +565,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 </div>
                 <div className="flex items-center gap-1">
                   <button
+                    id="copy-family-code-btn"
                     type="button"
                     onClick={() =>
                       handleCopyText(
                         familyInviteCode,
-                        isEn ? '✅ Manual code copied!' : '✅ تم نسخ الكود اليدوي!'
+                        isEn ? 'تم نسخ الكود اليدوي بنجاح' : 'تم نسخ الكود اليدوي بنجاح'
                       )
                     }
                     className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 text-[11px] font-extrabold text-teal-900"
@@ -574,16 +578,23 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                     {isEn ? 'Copy Code' : 'نسخ الكود'}
                   </button>
                   <button
+                    id="generate-new-qr-btn"
                     type="button"
                     onClick={() => {
                       const next = `FS-FAM-${Math.floor(1000 + Math.random() * 9000)}`;
                       setFamilyInviteCode(next);
                       setManualCodeInput(next);
+                      const msg = isEn
+                        ? `تمت الإضافة بنجاح — Generated QR (${next})`
+                        : `تمت الإضافة بنجاح — تم توليد رمز QR جديد (${next})`;
+                      setLinkCopiedMsg(msg);
+                      onShowToast?.(msg);
                     }}
-                    className="px-2 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-extrabold"
+                    className="px-2.5 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-extrabold flex items-center gap-1"
                     title={isEn ? 'Generate new QR code' : 'توليد رمز QR جديد'}
                   >
-                    ↻
+                    <span>🔄</span>
+                    <span>{isEn ? 'New' : 'جديد'}</span>
                   </button>
                 </div>
               </div>
@@ -599,11 +610,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                   </div>
                 </div>
                 <button
+                  id="copy-invite-link-btn"
                   type="button"
                   onClick={() =>
                     handleCopyText(
                       inviteUrl,
-                      isEn ? '✅ Invite link copied!' : '✅ تم نسخ رابط الدعوة!'
+                      isEn ? 'تم نسخ الرابط بنجاح (Invite Link Copied)' : 'تم نسخ الرابط بنجاح — جاهز للمشاركة مع الأسرة'
                     )
                   }
                   className="px-2.5 py-1 rounded-lg bg-white border border-[var(--color-border)] text-[11px] font-extrabold text-[var(--color-text)] shrink-0"

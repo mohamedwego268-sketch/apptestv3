@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
 import {
   BannerSlideItem,
+  FriendlyEmptyState,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
@@ -472,6 +473,28 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       </div>
 
       {/* Community Feed Cards with Soft Pastel Tints */}
+      {filteredPosts.length === 0 ? (
+        <FriendlyEmptyState
+          id="empty-community-state"
+          iconId="star"
+          tone="purple"
+          title={
+            isEn
+              ? 'No items here yet — No matching discussions'
+              : 'لا توجد عناصر هنا بعد — لا توجد مشاركات مطابقة'
+          }
+          subtitle={
+            isEn
+              ? 'Try clearing the search box or start a new discussion with parents.'
+              : 'جرّب مسح كلمات البحث أو ابدأ نقاشًا جديدًا مع الآباء والأمهات.'
+          }
+          actionLabel={isEn ? 'Show All Discussions' : 'عرض كل النقاشات'}
+          onAction={() => {
+            setSearchQuery('');
+            setTopicFilter('all');
+          }}
+        />
+      ) : (
       <div className="space-y-4">
         {filteredPosts.map((post) => {
           const isLiked = likedIds.includes(post.id);
@@ -629,6 +652,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           );
         })}
       </div>
+      )}
     </section>
   );
 };

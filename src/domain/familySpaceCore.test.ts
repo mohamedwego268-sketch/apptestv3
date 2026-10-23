@@ -264,5 +264,27 @@ test('normalizeAppData & resolveColorMode persist Dark Mode state and enforce no
   }
 });
 
+test('shouldTriggerSkeletonForTab and getEmptyStateCopy support 1-2s Skeleton Shimmer tabs and Friendly Empty States', async () => {
+  const {
+    SKELETON_LOAD_DURATION_MS,
+    shouldTriggerSkeletonForTab,
+    getEmptyStateCopy,
+  } = await import('./familySpaceCore');
+
+  assert.ok(SKELETON_LOAD_DURATION_MS >= 1000 && SKELETON_LOAD_DURATION_MS <= 2000);
+  assert.equal(shouldTriggerSkeletonForTab('services'), true);
+  assert.equal(shouldTriggerSkeletonForTab('medical'), true);
+  assert.equal(shouldTriggerSkeletonForTab('community'), true);
+  assert.equal(shouldTriggerSkeletonForTab('home'), false);
+
+  const cartEmptyAr = getEmptyStateCopy('cart', 'ar');
+  assert.ok(cartEmptyAr.title.includes('لا توجد عناصر هنا بعد'));
+  const notifEmptyAr = getEmptyStateCopy('notifications', 'ar');
+  assert.ok(notifEmptyAr.title.includes('لا توجد عناصر هنا بعد'));
+  const chatEmptyAr = getEmptyStateCopy('chat', 'ar');
+  assert.ok(chatEmptyAr.title.includes('لا توجد عناصر هنا بعد'));
+});
+
+
 
 

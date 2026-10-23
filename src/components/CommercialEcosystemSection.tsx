@@ -11,11 +11,13 @@ import {
   LanguageCode,
   calculateCheckoutSummary,
   formatCurrency,
+  getEmptyStateCopy,
   getPaymentMethodLabels,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
+  FriendlyEmptyState,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
@@ -187,11 +189,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     return 0;
   });
 
-  // Ensure checkout is always testable even if cart was emptied in an earlier test run
-  const effectiveCheckoutCart: CartItem[] =
-    cart.length > 0
-      ? cart
-      : [{ productId: 201, quantity: 1, selectedVariant: 'مجموعة 60 قطعة (2–6 سنوات)' }];
+  const emptyCartCopy = getEmptyStateCopy('cart', language);
+
+  const effectiveCheckoutCart: CartItem[] = cart;
 
   const cartEnriched = effectiveCheckoutCart
     .map((ci) => {
@@ -210,9 +210,18 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const checkoutTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, paymentMethod);
   const cartTotalCount = cart.reduce((acc, c) => acc + c.quantity, 0);
   const cartTotalAmount = checkoutTotals.subtotal;
-  const deliveryFee = checkoutTotals.deliveryFee;
-  const codFee = checkoutTotals.codFee;
-  const grandTotal = checkoutTotals.grandTotal;
+  const deliveryFee = cart.length > 0 ? checkoutTotals.deliveryFee : 0;
+  const codFee = cart.length > 0 ? checkoutTotals.codFee : 0;
+  const grandTotal = cart.length > 0 ? checkoutTotals.grandTotal : 0;
+
+  const handleClearCartForEmptyState = () => {
+    cart.forEach((ci) => onRemoveFromCart(ci.productId));
+    onShowToast(
+      isEn
+        ? 'Shopping cart cleared — Empty state active'
+        : 'تم تفريغ سلة التسوق بنجاح'
+    );
+  };
 
   const activeStage = DELIVERY_TIMELINE_STAGES[trackingStageIdx] || DELIVERY_TIMELINE_STAGES[2];
   const latestOrder = confirmedOrderSnapshot || orders[0];
@@ -339,8 +348,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   return (
     <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
-      {/* Top Action Strip: City Filter + Live Order Tracking + Cart Button */}
-      <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 px-3.5 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2">
+      {/* Sticky Glassmorphism Top Action Strip: City Filter + Live Order Tracking + Cart Button */}
+      <div
+        id="store-sticky-subheader"
+        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/80 bg-amber-50/85 px-3.5 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2 transition-all"
+      >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-2xl bg-white shadow-2xs flex items-center justify-center shrink-0">
             <ThreeDIcon id="services" size={24} />
@@ -408,7 +420,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           >
             <span>🛒</span>
             <span>
-              {isEn ? `Checkout (${cartTotalCount || 1})` : `إتمام الطلب (${cartTotalCount || 1})`}
+              {isEn ? `Checkout (${cartTotalCount})` : `إتمام الطلب (${cartTotalCount})`}
             </span>
           </PrimaryCtaButton>
         </div>
@@ -815,6 +827,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
 
             <div className="flex items-center gap-1.5">
+              {storeFlowStep === 'checkout' && cart.length > 0 && (
+                <button
+                  id="clear-cart-empty-btn"
+                  type="button"
+                  onClick={handleClearCartForEmptyState}
+                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100 transition-colors"
+                >
+                  🗑️ {isEn ? 'Clear Cart' : 'تفريغ السلة'}
+                </button>
+              )}
               {storeFlowStep === 'confirmed' && (
                 <button
                   type="button"
@@ -1035,6 +1057,42 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          ) : cart.length === 0 ? (
+            /* -----------------------------------------------------------------
+               EMPTY CART STATE (سلة التسوق فارغة — لا توجد عناصر هنا بعد)
+               ----------------------------------------------------------------- */
+            <div className="space-y-3">
+              <FriendlyEmptyState
+                id="empty-cart-state"
+                iconId="cart"
+                tone="amber"
+                title={emptyCartCopy.title}
+                subtitle={emptyCartCopy.subtitle}
+                actionLabel={
+                  isEn
+                    ? '+ Add Demo Item to Cart'
+                    : '➕ إضافة منتج تجريبي للسلة'
+                }
+                onAction={() => {
+                  const demoItem = COMMERCIAL_CATALOG[0];
+                  if (demoItem) {
+                    onAddToCart(demoItem, demoItem.variants?.[0]);
+                  }
+                }}
+              />
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCartPanel(false);
+                    setStoreFlowStep('catalog');
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                >
+                  🛍️ {emptyCartCopy.actionLabel}
+                </button>
               </div>
             </div>
           ) : (
@@ -1564,11 +1622,29 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
       {/* Super App Product & Service Grid Cards (Compact Premium Feel) */}
       {filtered.length === 0 ? (
-        <div className="rounded-[22px] border border-dashed border-[var(--color-border)] p-8 text-center text-xs font-bold text-[var(--color-muted)]">
-          {isEn
-            ? 'No matching services or products found.'
-            : 'لا توجد نتائج مطابقة للبحث. جرّب اختيار فئة أخرى.'}
-        </div>
+        <FriendlyEmptyState
+          id="empty-store-filter-state"
+          iconId="services"
+          tone="amber"
+          title={
+            isEn
+              ? 'No items here yet — No matching products'
+              : 'لا توجد عناصر هنا بعد — لا توجد منتجات مطابقة للبحث'
+          }
+          subtitle={
+            isEn
+              ? 'Try clearing search filters or selecting another category from the store.'
+              : 'جرّب مسح كلمات البحث أو اختيار فئة أخرى لاستعراض منتجات وخدمات الأسرة.'
+          }
+          actionLabel={isEn ? 'Reset Store Filters' : 'إعادة ضبط فلاتر المتجر'}
+          onAction={() => {
+            setSearchQuery('');
+            setSegment('all');
+            setCategoryFilter('all');
+            setCollectionFilter('all');
+            setCityScopeFilter('all');
+          }}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {filtered.map((item) => {

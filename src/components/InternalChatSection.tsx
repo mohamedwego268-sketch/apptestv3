@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { LanguageCode } from '../domain/familySpaceCore';
-import { PrimaryCtaButton } from './DesignSystem';
+import { LanguageCode, getEmptyStateCopy } from '../domain/familySpaceCore';
+import { FriendlyEmptyState, PrimaryCtaButton } from './DesignSystem';
 
 interface ChatMessage {
   id: number;
@@ -134,13 +134,15 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
   const [activeThreadId, setActiveThreadId] = useState<string>('thread-nursery');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'doctor' | 'nursery' | 'family'>('all');
   const [messageInput, setMessageInput] = useState<string>('');
+  const [chatsArchived, setChatsArchived] = useState<boolean>(false);
+  const emptyChatCopy = getEmptyStateCopy('chats', language);
 
-  const filteredThreads = threads.filter(
-    (t) => categoryFilter === 'all' || t.category === categoryFilter
-  );
+  const filteredThreads = chatsArchived
+    ? []
+    : threads.filter((t) => categoryFilter === 'all' || t.category === categoryFilter);
 
   const activeThread =
-    threads.find((t) => t.id === activeThreadId) || filteredThreads[0] || threads[0];
+    filteredThreads.find((t) => t.id === activeThreadId) || filteredThreads[0] || null;
 
   const handleSendMessage = (customText?: string) => {
     const text = (customText ?? messageInput).trim();
@@ -217,16 +219,61 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
               {isEn ? tab.labelEn : tab.labelAr}
             </button>
           ))}
+          <button
+            id="toggle-empty-chats-btn"
+            type="button"
+            onClick={() => {
+              const next = !chatsArchived;
+              setChatsArchived(next);
+              onShowToast(
+                next
+                  ? isEn
+                    ? 'Conversations archived'
+                    : 'تمت أرشفة المحادثات مؤقتًا'
+                  : isEn
+                  ? 'Active conversations restored'
+                  : 'تمت استعادة المحادثات النشطة بنجاح'
+              );
+            }}
+            className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-sky-200 bg-sky-50 text-sky-900 hover:bg-sky-100 transition-colors whitespace-nowrap"
+          >
+            {chatsArchived
+              ? isEn
+                ? '💬 Show Chats'
+                : '💬 عرض المحادثات'
+              : isEn
+              ? '📥 Archive Chats'
+              : '📥 أرشفة المحادثات'}
+          </button>
         </div>
       </div>
 
-      {/* Two-Column Messaging Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-stretch">
-        {/* Conversation List */}
-        <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2 shadow-2xs">
-          <div className="px-2 py-1 text-xs font-extrabold text-[var(--color-muted)]">
-            {isEn ? 'Active Conversations' : 'المحادثات النشطة'}
-          </div>
+      {filteredThreads.length === 0 ? (
+        <FriendlyEmptyState
+          id="empty-chats-state"
+          iconId="shield"
+          tone="sky"
+          title={emptyChatCopy.title}
+          subtitle={emptyChatCopy.subtitle}
+          actionLabel={emptyChatCopy.actionLabel}
+          onAction={() => {
+            setChatsArchived(false);
+            setCategoryFilter('all');
+            onShowToast(
+              isEn
+                ? 'Active conversations restored'
+                : 'تمت استعادة المحادثات النشطة بنجاح'
+            );
+          }}
+        />
+      ) : (
+        /* Two-Column Messaging Workspace */
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-stretch">
+          {/* Conversation List */}
+          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2 shadow-2xs">
+            <div className="px-2 py-1 text-xs font-extrabold text-[var(--color-muted)]">
+              {isEn ? 'Active Conversations' : 'المحادثات النشطة'}
+            </div>
           {filteredThreads.map((thread) => {
             const isSelected = thread.id === activeThread?.id;
             const lastMsg = thread.messages[thread.messages.length - 1];
@@ -371,6 +418,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
           </div>
         )}
       </div>
+      )}
     </section>
   );
 };
