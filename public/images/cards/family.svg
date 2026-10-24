@@ -1,30 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
   <defs>
-    <linearGradient id="kidsBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f766e"/>
-      <stop offset="52%" stop-color="#0d9488"/>
-      <stop offset="100%" stop-color="#f43f5e"/>
+    <linearGradient id="famWarmBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8f4"/>
+      <stop offset="50%" stop-color="#ffe8d9"/>
+      <stop offset="100%" stop-color="#dff6f2"/>
     </linearGradient>
-    <radialGradient id="playGlow" cx="78%" cy="25%" r="55%">
-      <stop offset="0%" stop-color="#ccfbf1" stop-opacity="0.82"/>
-      <stop offset="55%" stop-color="#fde68a" stop-opacity="0.32"/>
-      <stop offset="100%" stop-color="#0f766e" stop-opacity="0"/>
+    <radialGradient id="famGlow" cx="76%" cy="24%" r="58%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.92"/>
+      <stop offset="50%" stop-color="#fed7aa" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#99f6e4" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="800" height="500" fill="url(#kidsBg)"/>
-  <rect width="800" height="500" fill="url(#playGlow)"/>
-  <circle cx="630" cy="140" r="85" fill="#ffffff" opacity="0.22"/>
-  <circle cx="490" cy="270" r="65" fill="#99f6e4" opacity="0.24"/>
-  <circle cx="210" cy="170" r="55" fill="#ffffff" opacity="0.16"/>
-  <!-- Sunlit Playroom Growth Chart & Stars -->
-  <g opacity="0.34" transform="translate(510, 75)">
-    <rect x="85" y="20" width="64" height="310" rx="16" fill="#ffffff"/>
-    <line x1="85" y1="70" x2="115" y2="70" stroke="#0f766e" stroke-width="6"/>
-    <line x1="85" y1="120" x2="125" y2="120" stroke="#0f766e" stroke-width="6"/>
-    <line x1="85" y1="170" x2="115" y2="170" stroke="#0f766e" stroke-width="6"/>
-    <line x1="85" y1="220" x2="125" y2="220" stroke="#0f766e" stroke-width="6"/>
-    <line x1="85" y1="270" x2="115" y2="270" stroke="#0f766e" stroke-width="6"/>
-    <circle cx="30" cy="95" r="24" fill="#fde68a"/>
-    <circle cx="195" cy="165" r="18" fill="#fecdd3"/>
+  <rect width="800" height="500" fill="url(#famWarmBg)"/>
+  <rect width="800" height="500" fill="url(#famGlow)"/>
+  <circle cx="630" cy="140" r="92" fill="#ffffff" opacity="0.65"/>
+  <circle cx="490" cy="270" r="68" fill="#ffedd5" opacity="0.58"/>
+  <circle cx="210" cy="170" r="60" fill="#ffffff" opacity="0.55"/>
+  <!-- Sunlit Playroom Growth Chart & Warm Coral Accents -->
+  <g opacity="0.58" transform="translate(505, 70)">
+    <rect x="85" y="20" width="68" height="315" rx="20" fill="#ffffff"/>
+    <line x1="85" y1="70" x2="118" y2="70" stroke="#ff8c61" stroke-width="6" stroke-linecap="round"/>
+    <line x1="85" y1="120" x2="128" y2="120" stroke="#ff8c61" stroke-width="6" stroke-linecap="round"/>
+    <line x1="85" y1="170" x2="118" y2="170" stroke="#ff8c61" stroke-width="6" stroke-linecap="round"/>
+    <line x1="85" y1="220" x2="128" y2="220" stroke="#ff8c61" stroke-width="6" stroke-linecap="round"/>
+    <line x1="85" y1="270" x2="118" y2="270" stroke="#ff8c61" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="30" cy="95" r="26" fill="#fdba74"/>
+    <circle cx="195" cy="165" r="20" fill="#ff8c61"/>
   </g>
 </svg>

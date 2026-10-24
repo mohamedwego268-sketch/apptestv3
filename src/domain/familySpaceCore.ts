@@ -114,6 +114,13 @@ export const BILINGUAL_SEED_DICTIONARY: Record<string, string> = {
   'مكة المكرمة': 'Makkah',
   'المدينة المنورة': 'Madinah',
   'الخبر': 'Khobar',
+  'الظهران': 'Dhahran',
+  'الطائف': 'Taif',
+  'تبوك': 'Tabuk',
+  'أبها': 'Abha',
+  'الشيخ زايد': 'Sheikh Zayed',
+  'الزقازيق': 'Zagazig',
+  'الإسماعيلية': 'Ismailia',
   'كل المدن': 'All Cities',
   'ماما (سارة)': 'Mom (Sara)',
   'بابا (أحمد)': 'Dad (Ahmed)',
@@ -758,26 +765,137 @@ export interface CityOption {
   regionAr: string;
   regionEn: string;
   providersCount: number;
+  lat: number;
+  lng: number;
 }
 
 export const COUNTRY_CITIES_MAP: Record<CountryCode, CityOption[]> = {
   EG: [
-    { id: 'القاهرة', nameAr: 'القاهرة الكبرى (التجمع / المعادي / مدينة نصر)', nameEn: 'Greater Cairo (New Cairo / Maadi / Nasr City)', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 42 },
-    { id: 'الشيخ زايد', nameAr: 'الشيخ زايد و6 أكتوبر', nameEn: 'Sheikh Zayed & 6th of October', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 28 },
-    { id: 'الإسكندرية', nameAr: 'الإسكندرية (سموحة / رشدي / كفر عبده)', nameEn: 'Alexandria (Smouha / Roushdy)', regionAr: 'محافظة الإسكندرية', regionEn: 'Alexandria Governorate', providersCount: 19 },
-    { id: 'المنصورة', nameAr: 'المنصورة والدلتا', nameEn: 'Mansoura & Delta', regionAr: 'محافظة الدقهلية', regionEn: 'Dakahlia Governorate', providersCount: 14 },
-    { id: 'طنطا', nameAr: 'طنطا والغربية', nameEn: 'Tanta & Gharbia', regionAr: 'محافظة الغربية', regionEn: 'Gharbia Governorate', providersCount: 11 },
-    { id: 'أسيوط', nameAr: 'أسيوط وصعيد مصر', nameEn: 'Assiut & Upper Egypt', regionAr: 'محافظة أسيوط', regionEn: 'Assiut Governorate', providersCount: 9 },
+    { id: 'القاهرة', nameAr: 'القاهرة', nameEn: 'Cairo', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 42, lat: 30.0444, lng: 31.2357 },
+    { id: 'القاهرة الجديدة', nameAr: 'القاهرة الجديدة (التجمع)', nameEn: 'New Cairo', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 31, lat: 30.0074, lng: 31.4913 },
+    { id: 'الجيزة', nameAr: 'الجيزة', nameEn: 'Giza', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 25, lat: 30.0131, lng: 31.2089 },
+    { id: 'الشيخ زايد', nameAr: 'الشيخ زايد و6 أكتوبر', nameEn: 'Sheikh Zayed & October', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 28, lat: 30.0449, lng: 30.9762 },
+    { id: 'الإسكندرية', nameAr: 'الإسكندرية', nameEn: 'Alexandria', regionAr: 'محافظة الإسكندرية', regionEn: 'Alexandria Governorate', providersCount: 22, lat: 31.2001, lng: 29.9187 },
+    { id: 'المنصورة', nameAr: 'المنصورة', nameEn: 'Mansoura', regionAr: 'محافظة الدقهلية', regionEn: 'Dakahlia Governorate', providersCount: 16, lat: 31.0409, lng: 31.3785 },
+    { id: 'طنطا', nameAr: 'طنطا', nameEn: 'Tanta', regionAr: 'محافظة الغربية', regionEn: 'Gharbia Governorate', providersCount: 13, lat: 30.7865, lng: 31.0004 },
+    { id: 'الزقازيق', nameAr: 'الزقازيق', nameEn: 'Zagazig', regionAr: 'محافظة الشرقية', regionEn: 'Sharqia Governorate', providersCount: 11, lat: 30.5877, lng: 31.5020 },
+    { id: 'الإسماعيلية', nameAr: 'الإسماعيلية', nameEn: 'Ismailia', regionAr: 'محافظة الإسماعيلية', regionEn: 'Ismailia Governorate', providersCount: 10, lat: 30.5965, lng: 32.2715 },
+    { id: 'أسيوط', nameAr: 'أسيوط', nameEn: 'Assiut', regionAr: 'محافظة أسيوط', regionEn: 'Assiut Governorate', providersCount: 9, lat: 27.1783, lng: 31.1859 },
   ],
   SA: [
-    { id: 'الرياض', nameAr: 'الرياض (العليا / الملقا / النرجس)', nameEn: 'Riyadh (Olaya / Al Malqa / Al Narjis)', regionAr: 'منطقة الرياض', regionEn: 'Riyadh Region', providersCount: 38 },
-    { id: 'جدة', nameAr: 'جدة (الروضة / الشاطئ / أبحر)', nameEn: 'Jeddah (Al Rawdah / Ash Shati)', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 26 },
-    { id: 'الدمام', nameAr: 'الدمام والخبر والظهران', nameEn: 'Dammam, Khobar & Dhahran', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 18 },
-    { id: 'المدينة المنورة', nameAr: 'المدينة المنورة', nameEn: 'Madinah', regionAr: 'منطقة المدينة المنورة', regionEn: 'Madinah Region', providersCount: 12 },
-    { id: 'مكة المكرمة', nameAr: 'مكة المكرمة', nameEn: 'Makkah', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 15 },
-    { id: 'أبها', nameAr: 'أبها وخميس مشيط', nameEn: 'Abha & Khamis Mushait', regionAr: 'منطقة عسير', regionEn: 'Asir Region', providersCount: 10 },
+    { id: 'الرياض', nameAr: 'الرياض', nameEn: 'Riyadh', regionAr: 'منطقة الرياض', regionEn: 'Riyadh Region', providersCount: 44, lat: 24.7136, lng: 46.6753 },
+    { id: 'جدة', nameAr: 'جدة', nameEn: 'Jeddah', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 32, lat: 21.4858, lng: 39.1925 },
+    { id: 'الدمام', nameAr: 'الدمام', nameEn: 'Dammam', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 21, lat: 26.4207, lng: 50.0888 },
+    { id: 'الخبر', nameAr: 'الخبر', nameEn: 'Khobar', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 19, lat: 26.2172, lng: 50.1971 },
+    { id: 'الظهران', nameAr: 'الظهران', nameEn: 'Dhahran', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 14, lat: 26.2361, lng: 50.0393 },
+    { id: 'مكة المكرمة', nameAr: 'مكة المكرمة', nameEn: 'Makkah', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 18, lat: 21.3891, lng: 39.8579 },
+    { id: 'المدينة المنورة', nameAr: 'المدينة المنورة', nameEn: 'Madinah', regionAr: 'منطقة المدينة المنورة', regionEn: 'Madinah Region', providersCount: 16, lat: 24.5247, lng: 39.5692 },
+    { id: 'الطائف', nameAr: 'الطائف', nameEn: 'Taif', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 12, lat: 21.2703, lng: 40.4158 },
+    { id: 'تبوك', nameAr: 'تبوك', nameEn: 'Tabuk', regionAr: 'منطقة تبوك', regionEn: 'Tabuk Region', providersCount: 10, lat: 28.3835, lng: 36.5662 },
+    { id: 'أبها', nameAr: 'أبها', nameEn: 'Abha', regionAr: 'منطقة عسير', regionEn: 'Asir Region', providersCount: 11, lat: 18.2164, lng: 42.5053 },
   ],
 };
+
+/**
+ * Calculates great-circle distance in kilometers between two GPS coordinates using Haversine formula.
+ */
+export function calculateDistanceKm(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number
+): number {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+/**
+ * Finds the nearest supported city & country in Saudi Arabia or Egypt given GPS coordinates.
+ */
+export function findNearestCityByCoords(
+  lat: number,
+  lng: number
+): { country: CountryCode; city: CityOption; distanceKm: number } {
+  let bestCountry: CountryCode = 'EG';
+  let bestCity: CityOption = COUNTRY_CITIES_MAP.EG[0];
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (const country of ['EG', 'SA'] as CountryCode[]) {
+    for (const cityOpt of COUNTRY_CITIES_MAP[country]) {
+      const dist = calculateDistanceKm(lat, lng, cityOpt.lat, cityOpt.lng);
+      if (dist < bestDistance) {
+        bestDistance = dist;
+        bestCountry = country;
+        bestCity = cityOpt;
+      }
+    }
+  }
+
+  return {
+    country: bestCountry,
+    city: bestCity,
+    distanceKm: bestDistance,
+  };
+}
+
+/**
+ * Sorts and enriches catalog items (clinics, nurseries, products) dynamically based on
+ * the selected city/governorate and optional GPS coordinates.
+ */
+export function sortCatalogByCityAndProximity(
+  items: CommercialCatalogItem[],
+  country: CountryCode,
+  selectedCity: string,
+  userCoords?: { lat: number; lng: number } | null
+): Array<CommercialCatalogItem & { isLocalMatch: boolean; estimatedDistanceKm: number }> {
+  const citiesForCountry = COUNTRY_CITIES_MAP[country] || [];
+  const activeCityObj =
+    citiesForCountry.find((c) => c.id === selectedCity) || citiesForCountry[0];
+
+  const baseLat = userCoords?.lat ?? activeCityObj?.lat ?? 30.0444;
+  const baseLng = userCoords?.lng ?? activeCityObj?.lng ?? 31.2357;
+
+  return items
+    .filter((item) => item.country === 'ALL' || item.country === country)
+    .map((item, idx) => {
+      const isLocalMatch =
+        Boolean(selectedCity) &&
+        (item.city.includes(selectedCity) ||
+          item.city.includes('مصر والسعودية') ||
+          item.city.includes('أونلاين'));
+
+      // Deterministic local offset around city center so nearby clinics/stores show realistic distances
+      const itemLatOffset = ((item.id * 17 + idx * 7) % 19 - 9) * 0.008;
+      const itemLngOffset = ((item.id * 13 + idx * 11) % 19 - 9) * 0.008;
+      const itemLat = (activeCityObj?.lat ?? baseLat) + (isLocalMatch ? itemLatOffset : itemLatOffset * 4.5);
+      const itemLng = (activeCityObj?.lng ?? baseLng) + (isLocalMatch ? itemLngOffset : itemLngOffset * 4.5);
+
+      const rawDist = calculateDistanceKm(baseLat, baseLng, itemLat, itemLng);
+      const estimatedDistanceKm = Math.max(0.6, Math.round(rawDist * 10) / 10);
+
+      return {
+        ...item,
+        isLocalMatch,
+        estimatedDistanceKm,
+      };
+    })
+    .sort((a, b) => {
+      if (a.isLocalMatch !== b.isLocalMatch) {
+        return a.isLocalMatch ? -1 : 1;
+      }
+      return a.estimatedDistanceKm - b.estimatedDistanceKm;
+    });
+}
 
 export const DEFAULT_SEED: FamilySpaceState = {
   role: 'mom',

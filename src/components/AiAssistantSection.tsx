@@ -5,12 +5,14 @@ import {
   calculateChildAge,
   locText,
 } from '../domain/familySpaceCore';
-import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
+import { getCardBackgroundSpec, CardBackgroundKey } from '../domain/cardBackgrounds';
+import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId, AiRobotHeadIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
+  SectionHeader,
   SwipeableBannerCarousel,
 } from './DesignSystem';
 
@@ -35,6 +37,7 @@ interface AiAssistantSectionProps {
   parentName: string;
   city: string;
   language: LanguageCode;
+  darkMode?: boolean;
   onAddSuggestedRoutineTask: (taskName: string, timeStr: string, kidId: number | null) => void;
   onShowToast: (msg: string) => void;
 }
@@ -43,6 +46,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   kids,
   parentName,
   language,
+  darkMode = false,
   onAddSuggestedRoutineTask,
   onShowToast,
 }) => {
@@ -91,6 +95,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     promptEn: string;
     iconId: ThreeDIconId;
     tone: PastelTone;
+    bgKey: CardBackgroundKey;
   }[] = [
     {
       topic: 'sleep',
@@ -102,6 +107,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       promptEn: `🌙 Bedtime sleep routine for ${displayKidName}`,
       iconId: 'routine',
       tone: 'purple',
+      bgKey: 'routine',
     },
     {
       topic: 'food',
@@ -113,6 +119,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       promptEn: '🍎 How to handle picky eating and refusing vegetables?',
       iconId: 'wishes',
       tone: 'emerald',
+      bgKey: 'medical',
     },
     {
       topic: 'behavior',
@@ -124,6 +131,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       promptEn: '💛 Calming tantrums without yelling',
       iconId: 'children',
       tone: 'rose',
+      bgKey: 'children',
     },
     {
       topic: 'play',
@@ -135,6 +143,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       promptEn: '🎨 Suggest 3 home activities for focus and language today',
       iconId: 'games',
       tone: 'amber',
+      bgKey: 'games',
     },
   ];
 
@@ -346,45 +355,67 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       <SwipeableBannerCarousel
         slides={aiBanners}
         language={language}
+        darkMode={darkMode}
         ariaLabel={isEn ? 'AI Agent Modes Carousel' : 'لافتات مساعد الذكاء الاصطناعي'}
       />
 
-      {/* 2-Column Grid Cards for Quick AI Creation (Matches Home Screen Grid Cards) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        {quickCreationCards.map((card) => {
-          const tone = PASTEL_CARD_TONES[card.tone];
-          return (
-            <button
-              key={card.topic}
-              type="button"
-              onClick={() =>
-                handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
-              }
-              className={`group min-h-[116px] rounded-2xl border ${tone.card} bg-[var(--color-surface)] p-4 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md active:scale-[0.98] transition-all`}
-            >
-              <div className="w-full flex items-start justify-between gap-1.5">
-                <div className="w-11 h-11 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0">
-                  <ThreeDIcon id={card.iconId} size={32} />
+      {/* Centered Section Header + 2-Column Image Background Cards for Quick AI Creation */}
+      <div className="space-y-4">
+        <SectionHeader
+          title={isEn ? 'Smart AI Parenting Blueprints' : 'الخطط التربوية السريعة بالذكاء الاصطناعي'}
+          subtitle={
+            isEn
+              ? 'Tap any card to generate an instant tailored plan for your child'
+              : 'اضغط على أي بطاقة لتوليد خطة مخصصة فورية لعمر طفلك'
+          }
+        />
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {quickCreationCards.map((card) => {
+            const bgSpec = getCardBackgroundSpec(card.bgKey, darkMode);
+            return (
+              <button
+                key={card.topic}
+                type="button"
+                onClick={() =>
+                  handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
+                }
+                style={{ backgroundImage: bgSpec.backgroundImageCss }}
+                className="image-bg-card group min-h-[126px] p-4 flex flex-col justify-between items-start text-start"
+              >
+                <div className="w-full flex items-start justify-between gap-1.5">
+                  <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0">
+                    <ThreeDIcon id={card.iconId} size={24} />
+                  </div>
+                  <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
+                    {isEn ? card.badgeEn : card.badgeAr}
+                  </span>
                 </div>
-                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${tone.badge}`}>
-                  {isEn ? card.badgeEn : card.badgeAr}
-                </span>
-              </div>
-              <div className="mt-2.5 w-full flex items-center justify-between gap-1">
-                <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
-                  {isEn ? card.titleEn : card.titleAr}
-                </span>
-                <span className="text-xs font-extrabold text-[var(--color-muted)]">
-                  {isEn ? '→' : '←'}
-                </span>
-              </div>
-            </button>
-          );
-        })}
+                <div className="mt-3 w-full flex items-center justify-between gap-1">
+                  <span className="image-card-title text-xs sm:text-sm font-extrabold truncate">
+                    {isEn ? card.titleEn : card.titleAr}
+                  </span>
+                  <span className="image-card-subtitle text-xs font-extrabold">
+                    {isEn ? '→' : '←'}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Conversational Thread + Structured Cards */}
       <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 space-y-4 shadow-2xs">
+        <SectionHeader
+          title={isEn ? 'Interactive AI Parenting Assistant' : 'محادثة المساعد الذكي للأسرة'}
+          subtitle={
+            isEn
+              ? `Tailored guidance for ${displayKidName} (${kidAge?.label || '2–5 yrs'})`
+              : `إرشاد ذكي مخصص لـ ${displayKidName} (${kidAge?.label || '2–5 سنوات'})`
+          }
+        />
+
         <div className="space-y-4 max-h-[460px] overflow-y-auto pe-1">
           {messages.map((msg) => {
             const isParent = msg.sender === 'parent';
@@ -397,18 +428,19 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                   className={`max-w-[92%] sm:max-w-[84%] rounded-2xl p-4 space-y-3 ${
                     isParent
                       ? 'bg-purple-700 text-white'
-                      : 'bg-purple-50/70 text-[var(--color-text)] border border-purple-200/80'
+                      : 'bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-3 text-[11px] font-extrabold opacity-85">
-                    <span>
+                  <div className="flex items-center justify-between gap-3 text-[11px] font-extrabold opacity-90">
+                    <span className="inline-flex items-center gap-1.5">
+                      {!isParent && <AiRobotHeadIcon size={20} />}
                       {isParent
                         ? isEn
                           ? 'You (Parent)'
                           : 'أنت (ولي الأمر)'
                         : isEn
-                        ? '✨ AI Parenting Agent'
-                        : '✨ مساعد الذكاء الاصطناعي'}
+                        ? 'AI Parenting Agent'
+                        : 'مساعد الذكاء الاصطناعي'}
                     </span>
                     <span dir="ltr" className="tabular-nums">{msg.timestamp}</span>
                   </div>

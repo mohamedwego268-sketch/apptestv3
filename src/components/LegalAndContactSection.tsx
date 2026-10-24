@@ -3,10 +3,12 @@ import {
   LanguageCode,
   STRICTLY_DIGITAL_CONTACT_CONFIG,
 } from '../domain/familySpaceCore';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
   PASTEL_CARD_TONES,
   PrimaryCtaButton,
+  SoftFilledIcon,
 } from './DesignSystem';
 
 export type LegalOrContactPageType = 'privacy' | 'terms' | 'contact';
@@ -15,6 +17,7 @@ interface LegalAndContactSectionProps {
   pageType: LegalOrContactPageType;
   language: LanguageCode;
   parentName: string;
+  darkMode?: boolean;
   onNavigateSubPage: (target: LegalOrContactPageType) => void;
   onShowToast?: (msg: string) => void;
 }
@@ -174,6 +177,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
   pageType,
   language,
   parentName,
+  darkMode = false,
   onNavigateSubPage,
   onShowToast = () => {},
 }) => {
@@ -293,33 +297,31 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           ===================================================================== */}
       {pageType === 'privacy' && (
         <div className="space-y-4" data-testid="privacy-policy-screen">
-          {/* Hero Card */}
-          <div className="rounded-[22px] border border-teal-200/90 bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/75 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-teal-100 shadow-2xs flex items-center justify-center shrink-0">
-                <ThreeDIcon id="shield" size={30} />
-              </div>
-              <div>
-                <span className="inline-block px-2.5 py-0.5 rounded-md bg-teal-100 text-teal-900 text-[10px] font-extrabold">
-                  {isEn ? 'PRIVACY & DATA PROTECTION' : 'حماية الخصوصية وأمان بيانات الأسرة'}
-                </span>
-                <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
-                  {isEn
-                    ? 'Privacy Policy — Family Space Super App'
-                    : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل'}
-                </h2>
-                <p className="text-[11px] font-semibold text-[var(--color-muted)]">
-                  {isEn
-                    ? 'Last updated: October 2026 · Structured Arabic placeholder clauses for beta testing'
-                    : 'آخر تحديث: أكتوبر ٢٠٢٦ · نص قياسي منظم لأغراض الفحص واستطلاع الرأي'}
-                </p>
-              </div>
+          {/* Hero Image Card */}
+          <div
+            className="image-bg-card rounded-[24px] p-5 sm:p-6 flex flex-col items-center justify-center text-center gap-3"
+            style={{ backgroundImage: getCardBackgroundSpec('privacy', darkMode).backgroundImageCss }}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+              <ThreeDIcon id="shield" size={30} />
             </div>
-
+            <span className="image-card-badge inline-block px-3 py-0.5 rounded-full text-[11px] font-extrabold">
+              {isEn ? 'PRIVACY & DATA PROTECTION' : 'حماية الخصوصية وأمان بيانات الأسرة'}
+            </span>
+            <h2 className="section-heading-centered image-card-title">
+              {isEn
+                ? 'Privacy Policy — Family Space Super App'
+                : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل'}
+            </h2>
+            <p className="image-card-subtitle text-xs font-semibold max-w-xl">
+              {isEn
+                ? 'Last updated: October 2026 · Structured Arabic placeholder clauses for beta testing'
+                : 'آخر تحديث: أكتوبر ٢٠٢٦ · نص قياسي منظم لأغراض الفحص واستطلاع الرأي'}
+            </p>
             <button
               type="button"
               onClick={() => onNavigateSubPage('terms')}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-teal-300 bg-white text-teal-950 hover:bg-teal-50 transition-colors"
+              className="min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold border border-white bg-white/90 text-slate-900 hover:bg-white transition-colors"
             >
               {isEn ? 'View Terms & IP →' : 'الشروط وحقوق الملكية ←'}
             </button>
@@ -371,33 +373,31 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           ===================================================================== */}
       {pageType === 'terms' && (
         <div className="space-y-4" data-testid="terms-ip-screen">
-          {/* Hero Card */}
-          <div className="rounded-[22px] border border-indigo-200/90 bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/75 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-100 shadow-2xs flex items-center justify-center shrink-0">
-                <ThreeDIcon id="star" size={30} />
-              </div>
-              <div>
-                <span className="inline-block px-2.5 py-0.5 rounded-md bg-indigo-100 text-indigo-900 text-[10px] font-extrabold">
-                  {isEn ? 'TERMS & INTELLECTUAL PROPERTY' : 'الشروط والأحكام وحقوق الملكية الفكرية'}
-                </span>
-                <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
-                  {isEn
-                    ? 'Terms of Service & Intellectual Property Rights'
-                    : 'الشروط والأحكام وحقوق الملكية الفكرية للمنصة'}
-                </h2>
-                <p className="text-[11px] font-semibold text-[var(--color-muted)]">
-                  {isEn
-                    ? 'All rights reserved © 2026 Family Space · Standard Arabic legal placeholder'
-                    : 'جميع الحقوق محفوظة © ٢٠٢٦ مساحة الأسرة · نص قانوني قياسي لمرحلة الاختبار'}
-                </p>
-              </div>
+          {/* Hero Image Card */}
+          <div
+            className="image-bg-card rounded-[24px] p-5 sm:p-6 flex flex-col items-center justify-center text-center gap-3"
+            style={{ backgroundImage: getCardBackgroundSpec('terms', darkMode).backgroundImageCss }}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+              <ThreeDIcon id="star" size={30} />
             </div>
-
+            <span className="image-card-badge inline-block px-3 py-0.5 rounded-full text-[11px] font-extrabold">
+              {isEn ? 'TERMS & INTELLECTUAL PROPERTY' : 'الشروط والأحكام وحقوق الملكية الفكرية'}
+            </span>
+            <h2 className="section-heading-centered image-card-title">
+              {isEn
+                ? 'Terms of Service & Intellectual Property Rights'
+                : 'الشروط والأحكام وحقوق الملكية الفكرية للمنصة'}
+            </h2>
+            <p className="image-card-subtitle text-xs font-semibold max-w-xl">
+              {isEn
+                ? 'All rights reserved © 2026 Family Space · Standard Arabic legal placeholder'
+                : 'جميع الحقوق محفوظة © ٢٠٢٦ مساحة الأسرة · نص قانوني قياسي لمرحلة الاختبار'}
+            </p>
             <button
               type="button"
               onClick={() => onNavigateSubPage('contact')}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-indigo-300 bg-white text-indigo-950 hover:bg-indigo-50 transition-colors"
+              className="min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold border border-white bg-white/90 text-slate-900 hover:bg-white transition-colors"
             >
               {isEn ? 'Digital Contact Us →' : 'تواصل معنا رقميًا ←'}
             </button>
@@ -449,28 +449,27 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           ===================================================================== */}
       {pageType === 'contact' && (
         <div className="space-y-4" data-testid="digital-contact-us-screen">
-          {/* Digital Contact Hero Banner */}
-          <div className="rounded-[22px] border border-orange-200/90 bg-gradient-to-br from-orange-50/90 via-white to-amber-50/75 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-orange-100 shadow-2xs flex items-center justify-center shrink-0">
-                <ThreeDIcon id="notifications" size={30} />
-              </div>
-              <div>
-                <span className="inline-block px-2.5 py-0.5 rounded-md bg-orange-100 text-orange-900 text-[10px] font-extrabold">
-                  {isEn ? 'DIGITAL CUSTOMER CARE 24/7' : 'مركز التواصل والدعم الرقمي ٢٤/٧'}
-                </span>
-                <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
-                  {isEn
-                    ? 'Contact Us — Digital Support & Social Channels'
-                    : 'تواصل معنا — البريد الإلكتروني وخدمة العملاء والقنوات الرقمية'}
-                </h2>
-                <p className="text-[11px] font-semibold text-[var(--color-muted)]">
-                  {isEn
-                    ? STRICTLY_DIGITAL_CONTACT_CONFIG.workingHoursEn
-                    : STRICTLY_DIGITAL_CONTACT_CONFIG.workingHoursAr}
-                </p>
-              </div>
+          {/* Digital Contact Hero Image Banner */}
+          <div
+            className="image-bg-card rounded-[24px] p-5 sm:p-6 flex flex-col items-center justify-center text-center gap-3"
+            style={{ backgroundImage: getCardBackgroundSpec('contact', darkMode).backgroundImageCss }}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
+              <SoftFilledIcon id="notifications" size={30} />
             </div>
+            <span className="image-card-badge inline-block px-3 py-0.5 rounded-full text-[11px] font-extrabold">
+              {isEn ? 'DIGITAL CUSTOMER CARE 24/7' : 'مركز التواصل والدعم الرقمي ٢٤/٧'}
+            </span>
+            <h2 className="section-heading-centered image-card-title">
+              {isEn
+                ? 'Contact Us — Digital Support & Social Channels'
+                : 'تواصل معنا — البريد الإلكتروني وخدمة العملاء والقنوات الرقمية'}
+            </h2>
+            <p className="image-card-subtitle text-xs font-semibold max-w-xl">
+              {isEn
+                ? STRICTLY_DIGITAL_CONTACT_CONFIG.workingHoursEn
+                : STRICTLY_DIGITAL_CONTACT_CONFIG.workingHoursAr}
+            </p>
           </div>
 
           {/* 1. Primary Digital Channels Grid: Support Email & Customer Service Phone Number */}

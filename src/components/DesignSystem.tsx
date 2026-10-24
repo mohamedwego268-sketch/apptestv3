@@ -1,6 +1,76 @@
 import React, { useState } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
-import { ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { AiRobotHeadIcon, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
+
+export { AiRobotHeadIcon };
+
+export interface SoftFilledIconProps {
+  id: ThreeDIconId;
+  size?: number;
+  boxSize?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+/**
+ * Standardized Soft-Filled Icon Box with uniform rounded corners, identical margins,
+ * and Warm Coral (#FF8C61) soft-filled SVG iconography.
+ */
+export const SoftFilledIcon: React.FC<SoftFilledIconProps> = ({
+  id,
+  size,
+  boxSize = 'md',
+  className = '',
+}) => {
+  const boxClasses =
+    boxSize === 'sm'
+      ? 'w-9 h-9 rounded-xl'
+      : boxSize === 'lg'
+      ? 'w-14 h-14 rounded-2xl'
+      : 'w-11 h-11 rounded-2xl';
+  const iconSize = size ?? (boxSize === 'sm' ? 22 : boxSize === 'lg' ? 36 : 26);
+
+  return (
+    <span
+      data-soft-icon-box={id}
+      className={`nekbar-soft-icon-box ${boxClasses} inline-flex items-center justify-center shrink-0 select-none ${className}`}
+    >
+      <ThreeDIcon id={id} size={iconSize} />
+    </span>
+  );
+};
+
+export interface SectionHeaderProps {
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  actionSlot?: React.ReactNode;
+  className?: string;
+}
+
+/**
+ * Standardized Centered & Bold Section Header with generous whitespace (breathing room).
+ */
+export const SectionHeader: React.FC<SectionHeaderProps> = ({
+  title,
+  subtitle,
+  badge,
+  actionSlot,
+  className = '',
+}) => {
+  return (
+    <div className={`section-heading-block ${className}`}>
+      {badge && (
+        <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] shadow-2xs">
+          {badge}
+        </span>
+      )}
+      <h2 className="section-heading-centered">{title}</h2>
+      {subtitle && <p className="section-subtitle-centered">{subtitle}</p>}
+      {actionSlot && <div className="pt-1 flex flex-wrap items-center justify-center gap-2">{actionSlot}</div>}
+    </div>
+  );
+};
 
 export interface BannerSlideItem {
   id: string;
@@ -18,13 +88,13 @@ export const CTA_BUTTON_VARIANTS: Record<
   NonNullable<BannerSlideItem['ctaVariant']>,
   string
 > = {
-  orange: 'bg-orange-600 hover:bg-orange-700 text-white shadow-sm',
-  emerald: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
-  purple: 'bg-purple-700 hover:bg-purple-800 text-white shadow-sm',
-  indigo: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
-  rose: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm',
-  blue: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
-  teal: 'bg-teal-600 hover:bg-teal-700 text-white shadow-sm',
+  orange: 'bg-[#FF8C61] hover:bg-[#e86a3d] text-white shadow-sm',
+  emerald: 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm',
+  purple: 'bg-[#0e7490] hover:bg-[#155e75] text-white shadow-sm',
+  indigo: 'bg-[#0e7490] hover:bg-[#155e75] text-white shadow-sm',
+  rose: 'bg-[#FF8C61] hover:bg-[#e86a3d] text-white shadow-sm',
+  blue: 'bg-[#0284c7] hover:bg-[#0369a1] text-white shadow-sm',
+  teal: 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm',
   accent: 'bg-[var(--color-accent)] hover:opacity-95 text-[var(--color-accent-contrast)] shadow-sm',
 };
 
@@ -47,29 +117,29 @@ export const PASTEL_CARD_TONES: Record<
   { card: string; badge: string; iconBg: string }
 > = {
   emerald: {
-    card: 'bg-emerald-50/75 border-emerald-200/45 shadow-[0_10px_28px_-14px_rgba(16,185,129,0.12)]',
-    badge: 'bg-emerald-100/90 text-emerald-900',
-    iconBg: 'bg-white/95 border-emerald-100/60',
+    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
+    badge: 'bg-teal-100/90 text-teal-900',
+    iconBg: 'bg-white/95 border-teal-100/60',
   },
   amber: {
-    card: 'bg-amber-50/75 border-amber-200/45 shadow-[0_10px_28px_-14px_rgba(245,158,11,0.12)]',
-    badge: 'bg-amber-100/90 text-amber-900',
-    iconBg: 'bg-white/95 border-amber-100/60',
+    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
+    badge: 'bg-orange-100/90 text-orange-900',
+    iconBg: 'bg-white/95 border-orange-100/60',
   },
   rose: {
-    card: 'bg-rose-50/75 border-rose-200/45 shadow-[0_10px_28px_-14px_rgba(244,63,94,0.12)]',
-    badge: 'bg-rose-100/90 text-rose-900',
-    iconBg: 'bg-white/95 border-rose-100/60',
+    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
+    badge: 'bg-orange-100/90 text-orange-900',
+    iconBg: 'bg-white/95 border-orange-100/60',
   },
   indigo: {
-    card: 'bg-indigo-50/75 border-indigo-200/45 shadow-[0_10px_28px_-14px_rgba(99,102,241,0.12)]',
-    badge: 'bg-indigo-100/90 text-indigo-900',
-    iconBg: 'bg-white/95 border-indigo-100/60',
+    card: 'bg-cyan-50/75 border-cyan-200/45 shadow-[0_10px_28px_-14px_rgba(14,116,144,0.12)]',
+    badge: 'bg-cyan-100/90 text-cyan-900',
+    iconBg: 'bg-white/95 border-cyan-100/60',
   },
   purple: {
-    card: 'bg-purple-50/75 border-purple-200/45 shadow-[0_10px_28px_-14px_rgba(147,51,234,0.12)]',
-    badge: 'bg-purple-100/90 text-purple-900',
-    iconBg: 'bg-white/95 border-purple-100/60',
+    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
+    badge: 'bg-teal-100/90 text-teal-900',
+    iconBg: 'bg-white/95 border-teal-100/60',
   },
   sky: {
     card: 'bg-sky-50/75 border-sky-200/45 shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)]',
@@ -82,14 +152,14 @@ export const PASTEL_CARD_TONES: Record<
     iconBg: 'bg-white/95 border-teal-100/60',
   },
   orange: {
-    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(249,115,22,0.12)]',
+    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
     badge: 'bg-orange-100/90 text-orange-900',
     iconBg: 'bg-white/95 border-orange-100/60',
   },
   pink: {
-    card: 'bg-pink-50/75 border-pink-200/45 shadow-[0_10px_28px_-14px_rgba(236,72,153,0.12)]',
-    badge: 'bg-pink-100/90 text-pink-900',
-    iconBg: 'bg-white/95 border-pink-100/60',
+    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
+    badge: 'bg-orange-100/90 text-orange-900',
+    iconBg: 'bg-white/95 border-orange-100/60',
   },
   cyan: {
     card: 'bg-cyan-50/75 border-cyan-200/45 shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)]',
@@ -97,9 +167,9 @@ export const PASTEL_CARD_TONES: Record<
     iconBg: 'bg-white/95 border-cyan-100/60',
   },
   lime: {
-    card: 'bg-lime-50/75 border-lime-200/45 shadow-[0_10px_28px_-14px_rgba(132,204,22,0.12)]',
-    badge: 'bg-lime-100/90 text-lime-900',
-    iconBg: 'bg-white/95 border-lime-100/60',
+    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
+    badge: 'bg-teal-100/90 text-teal-900',
+    iconBg: 'bg-white/95 border-teal-100/60',
   },
   slate: {
     card: 'bg-slate-50/85 border-slate-200/45 shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)]',
@@ -144,6 +214,27 @@ interface SwipeableBannerCarouselProps {
   ariaLabel?: string;
 }
 
+const ICON_TO_BG_KEY: Record<ThreeDIconId, string> = {
+  home: 'family',
+  children: 'children',
+  routine: 'routine',
+  calendar: 'calendar',
+  wishes: 'wishes',
+  media: 'media',
+  video: 'media',
+  audio: 'media',
+  games: 'games',
+  services: 'services',
+  cart: 'store',
+  notifications: 'notifications',
+  assistant: 'assistant',
+  family: 'family',
+  settings: 'settings',
+  health: 'medical',
+  shield: 'chat',
+  star: 'community',
+};
+
 export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = ({
   slides,
   language,
@@ -156,16 +247,16 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
   const current = slides[activeIdx % slides.length];
   const isEn = language === 'en';
   const btnTone = CTA_BUTTON_VARIANTS[current.ctaVariant || 'orange'];
+  const bgKey = ICON_TO_BG_KEY[current.iconId] || 'services';
+  const bgSpec = getCardBackgroundSpec(bgKey);
 
   return (
     <div
       data-banner-carousel="true"
       data-banner-variant={current.ctaVariant || 'orange'}
-      className="relative rounded-[20px] overflow-hidden border border-[var(--color-border)] select-none"
+      className="image-bg-card relative rounded-[24px] overflow-hidden select-none"
       style={{
-        background: current.gradient,
-        boxShadow:
-          '0 12px 26px -12px rgba(42, 36, 51, 0.12), inset 0 1px 3px rgba(255,255,255,0.85)',
+        backgroundImage: bgSpec.backgroundImageCss,
       }}
       onTouchStart={(e) => setTouchStartX(e.touches[0]?.clientX ?? null)}
       onTouchEnd={(e) => {
@@ -183,36 +274,36 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 min-h-[156px]">
-        <div className="space-y-1.5 max-w-xl">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-white/85 text-[var(--color-text)] shadow-2xs">
+      <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[168px] text-center sm:text-start">
+        <div className="space-y-2 max-w-xl flex flex-col items-center sm:items-start">
+          <span className="image-card-badge inline-flex items-center px-3 py-1 rounded-full text-[11px] font-extrabold">
             {current.badge}
           </span>
-          <h2 className="text-base sm:text-xl font-extrabold text-[var(--color-text)] leading-snug">
+          <h2 className="image-card-title text-lg sm:text-xl font-extrabold leading-snug">
             {current.title}
           </h2>
-          <div className="text-[11.5px] sm:text-xs font-semibold text-[var(--color-muted)]">
+          <div className="image-card-subtitle text-xs font-semibold">
             {current.subtitle}
           </div>
-          <div className="pt-1 flex items-center gap-2">
+          <div className="pt-1.5 flex items-center gap-2">
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[38px] px-4 py-2 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
+              className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
           </div>
         </div>
 
-        <div className="self-center sm:self-auto shrink-0 flex items-center justify-center w-18 h-18 sm:w-22 sm:h-22 rounded-2xl bg-white/80 backdrop-blur-xs border border-white shadow-sm">
-          <ThreeDIcon id={current.iconId} size={52} />
+        <div className="self-center shrink-0 flex items-center justify-center w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-white/85 backdrop-blur-xs border border-white/80 shadow-sm">
+          <ThreeDIcon id={current.iconId} size={48} />
         </div>
       </div>
 
       {/* Pagination Dots & Prev/Next Controls */}
       {slides.length > 1 && (
-        <div className="px-4 pb-3 flex items-center justify-between gap-3">
+        <div className="px-5 pb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
             {slides.map((s, idx) => {
               const isCurrent = idx === activeIdx % slides.length;
@@ -224,10 +315,10 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
                   aria-selected={isCurrent}
                   aria-label={`${isEn ? 'Slide' : 'شريحة'} ${idx + 1}`}
                   onClick={() => setActiveIdx(idx)}
-                  className={`h-2 rounded-full transition-all ${
+                  className={`h-2.5 rounded-full transition-all ${
                     isCurrent
-                      ? 'w-6 bg-[var(--color-accent)]'
-                      : 'w-2 bg-[var(--color-text)]/25 hover:bg-[var(--color-text)]/40'
+                      ? 'w-7 bg-[#FF8C61]'
+                      : 'w-2.5 bg-[var(--color-text)]/30 hover:bg-[var(--color-text)]/50'
                   }`}
                 />
               );
@@ -239,7 +330,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-7 h-7 rounded-lg bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -247,7 +338,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-7 h-7 rounded-lg bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '›' : '‹'}
             </button>
@@ -287,22 +378,20 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   return (
     <div
       data-sticky-topbar="true"
-      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[20px] border ${toneClasses.card} px-3 py-2.5 sm:px-4 sm:py-3 shadow-sm flex items-center justify-between gap-2.5 transition-all`}
+      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex items-center justify-between gap-3 transition-all`}
     >
-      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[36px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] bg-white hover:border-[var(--color-accent)] text-[var(--color-text)] text-[11.5px] font-extrabold flex items-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0"
+          className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] bg-white hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all shrink-0"
         >
           <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
           <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
         </button>
 
-        <div className="w-9 h-9 rounded-xl bg-white/95 border border-white shadow-2xs flex items-center justify-center shrink-0">
-          <ThreeDIcon id={iconId} size={22} />
-        </div>
+        <SoftFilledIcon id={iconId} boxSize="sm" />
 
         <div className="min-w-0 flex-1">
           <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-tight">
@@ -318,7 +407,7 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 
       {badge && (
         <span
-          className={`hidden sm:inline-flex px-2 py-0.5 rounded-lg text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
+          className={`hidden sm:inline-flex px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
         >
           {badge}
         </span>
@@ -474,7 +563,6 @@ interface FriendlyEmptyStateProps {
 export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
   id,
   iconId = 'star',
-  emoji,
   title,
   subtitle,
   tone = 'slate',
@@ -496,13 +584,7 @@ export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
       className={`rounded-[22px] border border-dashed ${toneClasses.card} p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-3 shadow-2xs animate-page-enter`}
     >
       <div className="relative flex items-center justify-center">
-        <div className="w-16 h-16 rounded-3xl bg-white/90 border border-white shadow-sm flex items-center justify-center">
-          {emoji ? (
-            <span className="text-3xl">{emoji}</span>
-          ) : (
-            <ThreeDIcon id={iconId} size={40} />
-          )}
-        </div>
+        <SoftFilledIcon id={iconId} boxSize="lg" />
       </div>
 
       <div className="space-y-1 max-w-md">
@@ -586,5 +668,3 @@ export const GlobalToastSnackbar: React.FC<GlobalToastSnackbarProps> = ({
     </div>
   );
 };
-
-

@@ -301,7 +301,46 @@ test('MOCK_BILINGUAL_USER & locText dynamically translate all mock data between 
   assert.equal(locText('مكتمل التطعيمات الأساسية حتى 3 سنوات', 'en'), 'Core vaccinations completed up to 3 years');
 });
 
+test('COUNTRY_CITIES_MAP, findNearestCityByCoords & sortCatalogByCityAndProximity support individual cities (Dammam, Khobar, Riyadh, Mansoura, Cairo) and GPS proximity sorting', async () => {
+  const {
+    COUNTRY_CITIES_MAP,
+    COMMERCIAL_CATALOG,
+    calculateDistanceKm,
+    findNearestCityByCoords,
+    sortCatalogByCityAndProximity,
+  } = await import('./familySpaceCore');
 
+  // Verify specific individual cities exist in SA and EG
+  const saIds = COUNTRY_CITIES_MAP.SA.map((c) => c.id);
+  assert.ok(saIds.includes('الدمام'));
+  assert.ok(saIds.includes('الخبر'));
+  assert.ok(saIds.includes('الرياض'));
+  assert.ok(saIds.includes('جدة'));
 
+  const egIds = COUNTRY_CITIES_MAP.EG.map((c) => c.id);
+  assert.ok(egIds.includes('المنصورة'));
+  assert.ok(egIds.includes('القاهرة'));
+  assert.ok(egIds.includes('الإسكندرية'));
 
+  // Verify GPS distance calculation and nearest city detection
+  const distZero = calculateDistanceKm(26.4207, 50.0888, 26.4207, 50.0888);
+  assert.equal(distZero, 0);
+
+  const nearestDammam = findNearestCityByCoords(26.42, 50.09);
+  assert.equal(nearestDammam.country, 'SA');
+  assert.equal(nearestDammam.city.id, 'الدمام');
+
+  const nearestMansoura = findNearestCityByCoords(31.04, 31.38);
+  assert.equal(nearestMansoura.country, 'EG');
+  assert.equal(nearestMansoura.city.id, 'المنصورة');
+
+  // Verify proximity sorting prioritizes exact city matches and provides estimatedDistanceKm
+  const sortedCairo = sortCatalogByCityAndProximity(COMMERCIAL_CATALOG, 'EG', 'القاهرة', {
+    lat: 30.0444,
+    lng: 31.2357,
+  });
+  assert.ok(sortedCairo.length > 0);
+  assert.equal(sortedCairo[0].isLocalMatch, true);
+  assert.ok(sortedCairo[0].estimatedDistanceKm > 0);
+});
 

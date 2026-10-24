@@ -536,7 +536,10 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                       <span className="text-2xl mb-0.5" aria-hidden="true">
                         {card.emoji}
                       </span>
-                      <span className="text-[11px] font-extrabold text-slate-900 line-clamp-1">
+                      <span
+                        data-keep-dark-text="true"
+                        className="text-[11px] font-extrabold text-slate-900 line-clamp-1"
+                      >
                         {isEn ? card.labelEn : card.labelAr}
                       </span>
                     </>
@@ -767,10 +770,16 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                   style={{ backgroundColor: tile.bgHex }}
                 >
                   <span className="text-3xl">{tile.emoji}</span>
-                  <span className="text-xs font-extrabold text-slate-900">
+                  <span
+                    data-keep-dark-text="true"
+                    className="text-xs font-extrabold text-slate-900"
+                  >
                     {isEn ? tile.titleEn : tile.titleAr}
                   </span>
-                  <span className="text-[10px] font-bold text-slate-600">
+                  <span
+                    data-keep-dark-text="true"
+                    className="text-[10px] font-bold text-slate-600"
+                  >
                     {isInRightPlace
                       ? isEn
                         ? '✓ In Place'

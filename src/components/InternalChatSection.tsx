@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LanguageCode, getEmptyStateCopy } from '../domain/familySpaceCore';
-import { FriendlyEmptyState, PrimaryCtaButton } from './DesignSystem';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { FriendlyEmptyState, PrimaryCtaButton, SoftFilledIcon } from './DesignSystem';
 
 interface ChatMessage {
   id: number;
@@ -122,11 +123,13 @@ const INITIAL_CHAT_THREADS: ChatThread[] = [
 
 interface InternalChatSectionProps {
   language: LanguageCode;
+  darkMode?: boolean;
   onShowToast: (msg: string) => void;
 }
 
 export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
   language,
+  darkMode = false,
   onShowToast,
 }) => {
   const isEn = language === 'en';
@@ -191,29 +194,36 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
 
   return (
     <section className="space-y-5" aria-label={isEn ? 'Internal Family & Provider Chat' : 'المحادثات الداخلية والرسائل'}>
-      {/* Category Filter Tabs Bar (Pastel Sky Strip — Less text, more visuals) */}
-      <div className="rounded-[24px] border border-sky-200/80 bg-sky-50/80 p-4 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-2.5 text-xs font-extrabold text-sky-950">
-          <span>💬 {isEn ? 'Direct Scoped Messaging' : 'تواصل مباشر محمي بالصلاحيات'}</span>
-          <span aria-hidden="true">·</span>
-          <span>🛡️ {isEn ? 'Child-Specific Access' : 'نطاق مخصص لكل طفل'}</span>
+      {/* Image Background Hero & Category Filter Tabs Bar */}
+      <div
+        className="image-bg-card rounded-[24px] p-5 space-y-4"
+        style={{ backgroundImage: getCardBackgroundSpec('chat', darkMode).backgroundImageCss }}
+      >
+        <div className="flex flex-col items-center justify-center text-center gap-2">
+          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
+            <SoftFilledIcon id="shield" size={24} />
+            <span>{isEn ? 'Direct Scoped Messaging · Child-Specific Access' : 'تواصل مباشر محمي بالصلاحيات · نطاق مخصص لكل طفل'}</span>
+          </span>
+          <h2 className="section-heading-centered image-card-title">
+            {isEn ? 'Family, Nursery & Doctor Chat' : 'المحادثات المباشرة للأسرة والعيادات والحضانة'}
+          </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-white/90 border border-sky-200">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-white/90 border border-white/80 max-w-2xl mx-auto">
           {[
             { id: 'all', labelAr: 'الكل', labelEn: 'All' },
-            { id: 'nursery', labelAr: '🏫 الحضانة', labelEn: '🏫 Nursery' },
-            { id: 'doctor', labelAr: '🩺 العيادات', labelEn: '🩺 Doctors' },
-            { id: 'family', labelAr: '👨‍👩‍👧‍👦 الأسرة', labelEn: '👨‍👩‍👧‍👦 Family' },
+            { id: 'nursery', labelAr: 'الحضانة', labelEn: 'Nursery' },
+            { id: 'doctor', labelAr: 'العيادات', labelEn: 'Doctors' },
+            { id: 'family', labelAr: 'الأسرة', labelEn: 'Family' },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setCategoryFilter(tab.id as typeof categoryFilter)}
-              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
                 categoryFilter === tab.id
-                  ? 'bg-blue-600 text-white shadow-2xs'
-                  : 'text-slate-700 hover:bg-sky-50'
+                  ? 'bg-[#FF8C61] text-white shadow-2xs'
+                  : 'text-slate-700 hover:bg-orange-50'
               }`}
             >
               {isEn ? tab.labelEn : tab.labelAr}
@@ -235,15 +245,15 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                   : 'تمت استعادة المحادثات النشطة بنجاح'
               );
             }}
-            className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-sky-200 bg-sky-50 text-sky-900 hover:bg-sky-100 transition-colors whitespace-nowrap"
+            className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-orange-200 bg-orange-50 text-orange-950 hover:bg-orange-100 transition-colors whitespace-nowrap"
           >
             {chatsArchived
               ? isEn
-                ? '💬 Show Chats'
-                : '💬 عرض المحادثات'
+                ? 'Show Chats'
+                : 'عرض المحادثات'
               : isEn
-              ? '📥 Archive Chats'
-              : '📥 أرشفة المحادثات'}
+              ? 'Archive Chats'
+              : 'أرشفة المحادثات'}
           </button>
         </div>
       </div>

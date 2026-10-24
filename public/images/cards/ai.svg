@@ -1,25 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
   <defs>
-    <linearGradient id="aiBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#312e81"/>
-      <stop offset="50%" stop-color="#0f766e"/>
-      <stop offset="100%" stop-color="#be185d"/>
+    <linearGradient id="aiWarmBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff8f4"/>
+      <stop offset="50%" stop-color="#ffe9db"/>
+      <stop offset="100%" stop-color="#ede9fe"/>
     </linearGradient>
-    <radialGradient id="aiGlow" cx="76%" cy="28%" r="55%">
-      <stop offset="0%" stop-color="#e0e7ff" stop-opacity="0.82"/>
-      <stop offset="50%" stop-color="#5eead4" stop-opacity="0.32"/>
-      <stop offset="100%" stop-color="#312e81" stop-opacity="0"/>
+    <radialGradient id="aiWarmGlow" cx="76%" cy="28%" r="58%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.94"/>
+      <stop offset="50%" stop-color="#fed7aa" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="800" height="500" fill="url(#aiBg)"/>
-  <rect width="800" height="500" fill="url(#aiGlow)"/>
-  <circle cx="615" cy="150" r="95" fill="#ffffff" opacity="0.2"/>
-  <circle cx="485" cy="285" r="70" fill="#a5f3fc" opacity="0.22"/>
-  <circle cx="240" cy="145" r="55" fill="#fbcfe8" opacity="0.18"/>
-  <!-- Subtle Ambient Study Nook & Sparkle Wave -->
-  <g opacity="0.35" transform="translate(460, 115)">
-    <circle cx="150" cy="120" r="72" fill="none" stroke="#ffffff" stroke-width="6" stroke-dasharray="18 10"/>
-    <circle cx="150" cy="120" r="42" fill="#ccfbf1" opacity="0.6"/>
-    <path d="M40 245 Q115 190 190 245 T310 235" fill="none" stroke="#fde68a" stroke-width="7" stroke-linecap="round"/>
+  <rect width="800" height="500" fill="url(#aiWarmBg)"/>
+  <rect width="800" height="500" fill="url(#aiWarmGlow)"/>
+  <circle cx="615" cy="150" r="96" fill="#ffffff" opacity="0.68"/>
+  <circle cx="485" cy="285" r="72" fill="#ffedd5" opacity="0.58"/>
+  <circle cx="240" cy="145" r="58" fill="#ffffff" opacity="0.56"/>
+  <!-- Warm Ambient AI Sparkle & Orbit Silhouette -->
+  <g opacity="0.58" transform="translate(460, 110)">
+    <circle cx="150" cy="120" r="74" fill="#ffffff" stroke="#ff8c61" stroke-width="6" stroke-dasharray="18 10"/>
+    <circle cx="150" cy="120" r="44" fill="#ffedd5"/>
+    <path d="M150 92 L157 113 L178 120 L157 127 L150 148 L143 127 L122 120 L143 113 Z" fill="#ff8c61"/>
+    <path d="M40 245 Q115 190 190 245 T310 235" fill="none" stroke="#ff8c61" stroke-width="7" stroke-linecap="round"/>
   </g>
 </svg>

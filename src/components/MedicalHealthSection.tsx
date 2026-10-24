@@ -27,6 +27,7 @@ interface MedicalHealthSectionProps {
   currency: CurrencyCode;
   language: LanguageCode;
   savedMediaIds: number[];
+  darkMode?: boolean;
   onToggleSaveMedia: (id: number) => void;
   onBookDoctorAppointment: (doctorName: string, childId: number | null, date: string, time: string, note: string) => void;
   onShowToast: (msg: string) => void;
@@ -41,6 +42,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   currency,
   language,
   savedMediaIds,
+  darkMode,
   onToggleSaveMedia,
   onBookDoctorAppointment,
   onShowToast,
@@ -241,7 +243,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             {filteredDoctors.map((doc) => {
               const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
               const isPediatrics = doc.category === 'doctor';
-              const docBgSpec = getCardBackgroundSpec('medical');
+              const docBgSpec = getCardBackgroundSpec('medical', darkMode);
               return (
                 <article
                   key={doc.id}
@@ -258,7 +260,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                       className="image-bg-card rounded-2xl p-4 min-h-[100px] flex flex-col justify-between gap-2"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                        <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
                           {isPediatrics
                             ? isEn
                               ? 'Pediatrics & Growth'
@@ -267,11 +269,11 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                             ? 'Psychology & Speech'
                             : 'إرشاد نفسي وتخاطب'}
                         </span>
-                        <span dir="ltr" className="text-xs font-extrabold text-amber-200 tabular-nums">
+                        <span dir="ltr" className="image-card-badge px-2 py-0.5 rounded-full text-xs font-extrabold text-amber-200 tabular-nums">
                           ★ {doc.rating} ({doc.reviewCount || 120})
                         </span>
                       </div>
-                      <h3 className="text-base font-extrabold text-white leading-snug">
+                      <h3 className="image-card-title text-base font-extrabold leading-snug">
                         {isEn ? doc.nameEn : doc.name}
                       </h3>
                     </div>

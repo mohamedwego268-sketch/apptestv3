@@ -7,7 +7,8 @@ import {
   getEmptyStateCopy,
   locText,
 } from '../domain/familySpaceCore';
-import { FriendlyEmptyState, PrimaryCtaButton } from './DesignSystem';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { FriendlyEmptyState, PrimaryCtaButton, SectionHeader, SoftFilledIcon } from './DesignSystem';
 
 interface NotificationsCenterSectionProps {
   state: FamilySpaceState;
@@ -43,36 +44,47 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
 
   return (
     <div className="space-y-5">
-      {/* Top Parent Switcher Strip */}
-      <div className="rounded-[24px] border border-amber-200/80 bg-amber-50/75 p-4 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-2 text-xs font-extrabold text-amber-950">
-          <span>🔔 {isEn ? '3 Daily Notifications Engine' : '٣ إشعارات يومية مخصصة'}</span>
-          <span aria-hidden="true">·</span>
-          <span>🌙 {prefs.quietHoursStart}–{prefs.quietHoursEnd}</span>
+      {/* Top Parent Switcher Image Background Hero Card */}
+      <div
+        className="image-bg-card rounded-[24px] p-5 space-y-4"
+        style={{ backgroundImage: getCardBackgroundSpec('notifications', state.darkMode).backgroundImageCss }}
+      >
+        <div className="flex flex-col items-center justify-center text-center gap-2">
+          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
+            <SoftFilledIcon id="notifications" size={24} />
+            <span>
+              {isEn ? '3 Daily Notifications Engine' : '٣ إشعارات يومية مخصصة'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
+            </span>
+          </span>
+          <h2 className="section-heading-centered image-card-title">
+            {isEn
+              ? `Today's Notifications — ${locText(parentProfile.fullName, language)}`
+              : `إشعارات اليوم — ${parentProfile.fullName}`}
+          </h2>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-white/90 p-1 rounded-2xl border border-amber-200">
+        <div className="flex items-center justify-center gap-1.5 bg-white/90 p-1.5 rounded-2xl border border-white max-w-sm mx-auto">
           <button
             type="button"
             onClick={() => onSelectParentAccount('mother')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
               activeParent === 'mother'
-                ? 'bg-orange-600 text-white shadow-2xs'
+                ? 'bg-[#FF8C61] text-white shadow-2xs'
                 : 'text-slate-700'
             }`}
           >
-            👩🏻 {isEn ? 'Mother (Sara)' : 'الأم (سارة)'}
+            {isEn ? 'Mother (Sara)' : 'الأم (سارة)'}
           </button>
           <button
             type="button"
             onClick={() => onSelectParentAccount('father')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
               activeParent === 'father'
-                ? 'bg-orange-600 text-white shadow-2xs'
+                ? 'bg-[#FF8C61] text-white shadow-2xs'
                 : 'text-slate-700'
             }`}
           >
-            👨🏻 {isEn ? 'Father (Ahmed)' : 'الأب (أحمد)'}
+            {isEn ? 'Father (Ahmed)' : 'الأب (أحمد)'}
           </button>
         </div>
       </div>
@@ -84,11 +96,11 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <div>
               <h3 className="text-base font-extrabold text-[var(--color-text)]">
                 {isEn
-                  ? `Today's Notifications — ${locText(parentProfile.fullName, language)}`
-                  : `إشعارات اليوم — ${parentProfile.fullName}`}
+                  ? `Daily Smart Alerts (${notifications.length})`
+                  : `تنبيهات اليوم الذكية (${notifications.length})`}
               </h3>
               <div className="text-xs font-bold text-[var(--color-muted)]">
-                🔔 {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
+                {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">

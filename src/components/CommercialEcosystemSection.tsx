@@ -42,6 +42,7 @@ interface CommercialEcosystemSectionProps {
   onUpdateShippingAddress: (patch: Partial<DemoShippingAddress>) => void;
   onCompleteDemoCheckout: (paymentMethod?: CheckoutPaymentMethodType) => void;
   onShowToast?: (msg: string) => void;
+  darkMode?: boolean;
 }
 
 const CATEGORY_TONE_MAP: Record<string, PastelTone> = {
@@ -136,6 +137,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   onUpdateShippingAddress,
   onCompleteDemoCheckout,
   onShowToast = () => {},
+  darkMode,
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
@@ -1635,7 +1637,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             { id: 'nursery', labelAr: 'حضانات ومدارس', labelEn: 'Nurseries' },
             { id: 'consultation', labelAr: 'استشارات تربوية', labelEn: 'Consultations' },
           ].map((cat) => {
-            const bgSpec = getCardBackgroundSpec(cat.id);
+            const bgSpec = getCardBackgroundSpec(cat.id, darkMode);
             const isSelected = categoryFilter === cat.id;
             return (
               <button
@@ -1651,7 +1653,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     : 'opacity-95 hover:opacity-100'
                 }`}
               >
-                <span className="text-white drop-shadow-xs tracking-wide">
+                <span className="image-card-title tracking-wide">
                   {isEn ? cat.labelEn : cat.labelAr}
                 </span>
               </button>
@@ -1678,7 +1680,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           >
             {COMMERCIAL_CATALOG.slice(0, 6).map((item) => {
               const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
-              const bgSpec = getCardBackgroundSpec(item.category);
+              const bgSpec = getCardBackgroundSpec(item.category, darkMode);
               return (
                 <div
                   key={`carousel-${item.id}`}
@@ -1687,29 +1689,32 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   className="image-bg-card w-[245px] sm:w-[265px] rounded-2xl p-4 flex flex-col justify-between gap-3.5"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                    <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
                       {locText(item.categoryLabel, language)}
                     </span>
-                    <span className="px-2 py-0.5 rounded-lg bg-amber-300/95 text-slate-950 text-[10px] font-extrabold tabular-nums">
+                    <span
+                      data-keep-dark-text="true"
+                      className="image-card-rating-pill px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums"
+                    >
                       ★ {item.rating}
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-sm font-extrabold text-white line-clamp-1">
+                    <div className="image-card-title text-sm font-extrabold line-clamp-1">
                       {isEn ? item.nameEn : item.name}
                     </div>
-                    <div className="text-[11px] font-semibold text-white/85">
+                    <div className="image-card-subtitle text-[11px] font-semibold">
                       {locText(item.city, language)}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/20">
+                  <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/25">
                     <strong className="text-xs font-extrabold text-amber-200 tabular-nums">
                       {formatCurrency(priceVal, currency, language)}
                     </strong>
                     <button
                       type="button"
                       onClick={() => onAddToCart(item, item.variants?.[0])}
-                      className="px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white text-slate-900 text-[11px] font-extrabold shadow-2xs"
+                      className="image-card-cta-pill px-3 py-1.5 rounded-xl text-[11px] font-extrabold shadow-2xs"
                     >
                       {isEn ? '+ Add' : '+ للسلة'}
                     </button>
@@ -1754,7 +1759,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             const displayTitle = isEn ? item.nameEn : item.name;
             const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
             const tone = PASTEL_CARD_TONES[toneKey];
-            const itemBgSpec = getCardBackgroundSpec(item.category);
+            const itemBgSpec = getCardBackgroundSpec(item.category, darkMode);
 
             return (
               <div
@@ -1770,11 +1775,14 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     className="image-bg-card rounded-2xl p-4 min-h-[96px] cursor-pointer flex flex-col justify-between gap-2"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                      <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
                         {locText(item.categoryLabel, language)}
                       </span>
                       {item.collectionTag && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-300/95 text-slate-950">
+                        <span
+                          data-keep-dark-text="true"
+                          className="image-card-rating-pill px-2 py-0.5 rounded-md text-[10px] font-extrabold"
+                        >
                           {item.collectionTag === 'bestseller'
                             ? isEn
                               ? 'Bestseller'
@@ -1795,7 +1803,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
 
                     <div className="flex items-end justify-between gap-2 pt-2">
-                      <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug line-clamp-2">
+                      <h3 className="image-card-title text-sm sm:text-base font-extrabold leading-snug line-clamp-2">
                         {displayTitle}
                       </h3>
                       <span className="text-[11px] font-extrabold text-amber-200 tabular-nums shrink-0">
