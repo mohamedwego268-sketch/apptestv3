@@ -647,7 +647,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     }
                     className={`rounded-2xl border ${toneObj.card} bg-white/95 p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-95 transition-all`}
                   >
-                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-extrabold ${toneObj.iconBox}`}>
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-extrabold ${toneObj.iconBg}`}>
                       {soc.icon}
                     </span>
                     <div className="text-xs font-extrabold text-[var(--color-text)] truncate max-w-full">

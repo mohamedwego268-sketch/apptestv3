@@ -238,8 +238,8 @@ test('STRICTLY_DIGITAL_CONTACT_CONFIG contains support email, phone, and social 
   assert.ok(STRICTLY_DIGITAL_CONTACT_CONFIG.socialChannels.length >= 4);
 
   const serialized = JSON.stringify(STRICTLY_DIGITAL_CONTACT_CONFIG);
-  assert.equal('address' in (STRICTLY_DIGITAL_CONTACT_CONFIG as Record<string, unknown>), false);
-  assert.equal('map' in (STRICTLY_DIGITAL_CONTACT_CONFIG as Record<string, unknown>), false);
+  assert.equal('address' in (STRICTLY_DIGITAL_CONTACT_CONFIG as unknown as Record<string, unknown>), false);
+  assert.equal('map' in (STRICTLY_DIGITAL_CONTACT_CONFIG as unknown as Record<string, unknown>), false);
   assert.equal(serialized.includes('شارع'), false);
   assert.equal(serialized.includes('مبنى'), false);
 });

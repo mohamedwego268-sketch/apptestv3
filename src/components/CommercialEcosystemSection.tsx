@@ -172,8 +172,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     if (collectionFilter !== 'all' && item.collectionTag !== collectionFilter) return false;
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
     if (cityScopeFilter === 'local' && item.kind === 'service') {
-      const loc = country === 'SA' ? item.locationSA : item.locationEG;
-      if (loc && !loc.includes(city)) return false;
+      const matchesCountry = item.country === 'ALL' || item.country === country;
+      const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن';
+      if (!matchesCountry || !matchesCity) return false;
     }
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();

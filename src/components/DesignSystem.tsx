@@ -41,7 +41,8 @@ export const SoftFilledIcon: React.FC<SoftFilledIconProps> = ({
 };
 
 export interface UnifiedBadgeProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  label?: React.ReactNode;
   tone?: PastelTone;
   iconId?: ThreeDIconId;
   className?: string;
@@ -52,18 +53,20 @@ export interface UnifiedBadgeProps {
  */
 export const UnifiedBadge: React.FC<UnifiedBadgeProps> = ({
   children,
+  label,
   tone = 'teal',
   iconId,
   className = '',
 }) => {
   const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.teal;
+  const content = children ?? label;
   return (
     <span
       data-unified-badge="true"
       className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold ${toneClasses.badge} shadow-2xs select-none ${className}`}
     >
       {iconId && <ThreeDIcon id={iconId} size={13} />}
-      <span>{children}</span>
+      <span>{content}</span>
     </span>
   );
 };
@@ -239,6 +242,7 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
 interface SwipeableBannerCarouselProps {
   slides: BannerSlideItem[];
   language: LanguageCode;
+  darkMode?: boolean;
   ariaLabel?: string;
   autoPlayMs?: number;
 }
@@ -262,6 +266,8 @@ const ICON_TO_BG_KEY: Record<ThreeDIconId, string> = {
   health: 'medical',
   shield: 'chat',
   star: 'community',
+  location: 'services',
+  sparkles: 'community',
 };
 
 export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = ({
@@ -661,6 +667,151 @@ export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
               {secondaryCtaLabel}
             </button>
           )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export interface CollapsibleSectionCardProps {
+  id?: string;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  badge?: React.ReactNode;
+  badgeLabel?: React.ReactNode;
+  badgeTone?: PastelTone;
+  icon?: React.ReactNode;
+  iconId?: ThreeDIconId;
+  defaultOpen?: boolean;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
+  headerAction?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+  headerClassName?: string;
+  bodyClassName?: string;
+  cardTone?: PastelTone;
+}
+
+/**
+ * Collapsible Section Card (Accordion) with smooth chevron arrow animation,
+ * accessible keyboard/click controls, and visual tone preservation.
+ */
+export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
+  id,
+  title,
+  subtitle,
+  badge,
+  badgeLabel,
+  badgeTone = 'teal',
+  icon,
+  iconId,
+  defaultOpen = false,
+  isOpen: controlledIsOpen,
+  onToggle,
+  headerAction,
+  children,
+  className = '',
+  headerClassName = '',
+  bodyClassName = '',
+  cardTone,
+}) => {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const isExpanded = controlledIsOpen !== undefined ? controlledIsOpen : internalOpen;
+
+  const handleToggle = () => {
+    const next = !isExpanded;
+    if (controlledIsOpen === undefined) {
+      setInternalOpen(next);
+    }
+    onToggle?.(next);
+  };
+
+  const cardToneClasses = cardTone
+    ? PASTEL_CARD_TONES[cardTone]?.card || ''
+    : 'bg-[var(--color-surface)] border-[var(--color-border)]';
+
+  const resolvedIcon = icon ?? (iconId ? <SoftFilledIcon id={iconId} size={18} boxSize="sm" /> : null);
+  const resolvedBadge = badge ?? (badgeLabel ? (typeof badgeLabel === 'string' ? <UnifiedBadge tone={badgeTone}>{badgeLabel}</UnifiedBadge> : badgeLabel) : null);
+
+  return (
+    <div
+      id={id}
+      data-collapsible-section="true"
+      data-expanded={isExpanded ? 'true' : 'false'}
+      className={`rounded-[24px] border shadow-2xs transition-all overflow-hidden ${cardToneClasses} ${className}`}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        aria-controls={id ? `${id}-content` : undefined}
+        onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
+        className={`w-full p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${headerClassName}`}
+      >
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {resolvedIcon && <div className="shrink-0">{resolvedIcon}</div>}
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] truncate">
+                {title}
+              </h3>
+              {resolvedBadge && (
+                typeof resolvedBadge === 'string' ? (
+                  <UnifiedBadge tone={badgeTone}>{resolvedBadge}</UnifiedBadge>
+                ) : (
+                  resolvedBadge
+                )
+              )}
+            </div>
+            {subtitle && (
+              <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5 leading-relaxed line-clamp-1">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {headerAction && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              {headerAction}
+            </div>
+          )}
+          <span
+            data-accordion-chevron="true"
+            aria-hidden="true"
+            className={`w-8 h-8 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)] flex items-center justify-center transition-transform duration-200 ${
+              isExpanded
+                ? 'rotate-180 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border-[var(--color-accent)]/30'
+                : 'rotate-0'
+            }`}
+          >
+            <svg
+              className="w-4 h-4 fill-none stroke-current stroke-[2.5]"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div
+          id={id ? `${id}-content` : undefined}
+          className={`p-4 sm:p-5 pt-0 border-t border-[var(--color-border)]/40 ${bodyClassName}`}
+        >
+          {children}
         </div>
       )}
     </div>

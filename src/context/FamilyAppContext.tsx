@@ -28,15 +28,16 @@ export type PageId =
 
 export interface FamilyAppContextValue {
   state: FamilySpaceState;
-  lang: LanguageCode;
-  isEn: boolean;
-  brandName: string;
-  parentProfileSpec: ParentProfileThemeSpec;
+  setState?: React.Dispatch<React.SetStateAction<FamilySpaceState>>;
+  lang?: LanguageCode;
+  isEn?: boolean;
+  brandName?: string;
+  parentProfileSpec?: ParentProfileThemeSpec;
   activePage: PageId;
   navigateTo: (page: PageId) => void;
-  setThemeRole: (role: ParentThemeRole) => void;
-  toggleDarkMode: () => void;
-  toggleLanguage: () => void;
+  setThemeRole?: (role: ParentThemeRole) => void;
+  toggleDarkMode?: () => void;
+  toggleLanguage?: () => void;
   showToast: (msg: string) => void;
 }
 

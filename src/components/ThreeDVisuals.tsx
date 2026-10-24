@@ -19,7 +19,9 @@ export type ThreeDIconId =
   | 'video'
   | 'cart'
   | 'shield'
-  | 'star';
+  | 'star'
+  | 'sparkles'
+  | 'location';
 
 interface ThreeDIconProps {
   id: ThreeDIconId;
@@ -483,6 +485,27 @@ export const ThreeDIcon: React.FC<ThreeDIconProps> = ({ id, size = 26, className
             d="M24 14.5L26.7 20.2L33 21.1L28.4 25.5L29.5 31.8L24 28.8L18.5 31.8L19.6 25.5L15 21.1L21.3 20.2L24 14.5Z"
             fill="#FFF7F4"
           />
+        </g>
+      )}
+
+      {id === 'sparkles' && (
+        <g>
+          <path
+            d="M24 12L26.5 19.5L34 22L26.5 24.5L24 32L21.5 24.5L14 22L21.5 19.5L24 12Z"
+            fill={`url(#${uid}-coral-main)`}
+          />
+          <circle cx="33" cy="15" r="2.5" fill={`url(#${uid}-coral-soft)`} />
+          <circle cx="15" cy="29" r="2" fill={`url(#${uid}-coral-soft)`} />
+        </g>
+      )}
+
+      {id === 'location' && (
+        <g>
+          <path
+            d="M24 11C18.5 11 14 15.5 14 21C14 28.5 24 37 24 37C24 37 34 28.5 34 21C34 15.5 29.5 11 24 11Z"
+            fill={`url(#${uid}-coral-main)`}
+          />
+          <circle cx="24" cy="21" r="4.2" fill="#FFF7F4" />
         </g>
       )}
     </svg>

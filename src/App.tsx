@@ -1255,26 +1255,30 @@ export default function App() {
       }}
     >
       <div className="min-h-screen w-full overflow-x-hidden pb-24 lg:pb-8">
-        {/* Top Bar Contract: Localized Single-Language Brand Wordmark (نكبر in AR / Nekbaar in EN) + Primary Nav + Minimal Theme/Lang/Profile Controls */}
+        {/* Top Bar Contract: Localized Single-Language Brand Wordmark (نكبر in AR / Nekbaar in EN) + Primary Nav + Perfectly Aligned Controls */}
         <header
           id="main-sticky-header"
           data-scrolled={isScrolled ? 'true' : 'false'}
-          className="sticky top-0 z-30 border-b border-[var(--color-border)] glass-sticky-header"
+          className="sticky top-0 z-30 border-b border-[var(--color-border)] glass-sticky-header transition-colors"
         >
-          <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+          <div className="max-w-[1280px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
             {/* Zone 1: Localized Official Brand Wordmark (Strictly 'نكبر' in AR or 'Nekbaar' in EN) */}
             <button
               type="button"
               onClick={() => navigateTo('home')}
-              className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-extrabold tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 text-start"
+              className="h-10 flex items-center gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none"
             >
-              <ThreeDIcon id="home" size={22} />
-              <span>{t(lang, 'brandName')}</span>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform">
+                <ThreeDIcon id="home" size={20} />
+              </div>
+              <span className="font-extrabold text-base sm:text-lg text-[var(--color-text)]">
+                {t(lang, 'brandName')}
+              </span>
             </button>
 
             {/* Zone 2: Primary Single-Line Nav Links (Desktop) */}
             <nav
-              className="hidden xl:flex items-center gap-3 text-xs font-bold text-[var(--color-muted)] min-w-0"
+              className="hidden xl:flex items-center gap-2.5 text-xs font-bold text-[var(--color-muted)] min-w-0"
               aria-label="التنقل الرئيسي"
             >
               {(['home', 'medical', 'media', 'community', 'chat', 'assistant', 'services'] as PageId[]).map(
@@ -1286,20 +1290,20 @@ export default function App() {
                       key={pid}
                       type="button"
                       onClick={() => navigateTo(pid)}
-                      className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
+                      className={`h-9 px-3 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                         isActive
-                          ? 'text-[var(--color-text)] border-[var(--color-accent)] font-extrabold'
-                          : 'border-transparent hover:text-[var(--color-text)]'
+                          ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
+                          : 'hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
                       }`}
                     >
-                      {item.shortLabel}
+                      <span>{item.shortLabel}</span>
                     </button>
                   );
                 }
               )}
             </nav>
 
-            {/* Zone 3: Zero-Clutter Minimal Sticky Controls (Dark Mode + Lang + Notifications + Color-Coded Parent Profile) */}
+            {/* Zone 3: Zero-Clutter Aligned Sticky Controls (Dark Mode + Lang + Notifications + Color-Coded Parent Profile) */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {/* Top Quick-Action Dark / Light Mode Toggle */}
               <button
@@ -1316,13 +1320,13 @@ export default function App() {
                     ? 'Switch to Dark Mode'
                     : 'التبديل إلى الوضع الليلي'
                 }
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all ${
+                className={`h-9 px-2.5 sm:px-3 rounded-xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs select-none ${
                   state.darkMode
                     ? 'border-teal-400/50 bg-teal-500/20 text-teal-200 hover:border-teal-300'
                     : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)]'
                 }`}
               >
-                <SoftFilledIcon id={state.darkMode ? 'sparkles' : 'star'} size={15} />
+                <span aria-hidden="true" className="text-sm leading-none">{state.darkMode ? '☀️' : '🌙'}</span>
                 <span className="hidden sm:inline">
                   {state.darkMode
                     ? lang === 'en'
@@ -1342,10 +1346,13 @@ export default function App() {
                 aria-label={
                   lang === 'ar' ? 'Switch language to English' : 'التبديل إلى اللغة العربية'
                 }
-                className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] flex items-center gap-1"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] flex items-center gap-1.5 transition-all shadow-2xs select-none"
               >
-                <SoftFilledIcon id="location" size={14} />
-                <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>
+                <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2 shrink-0" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+                <span>{lang === 'ar' ? 'English' : 'عربي'}</span>
               </button>
 
               {/* Notifications Bell */}
@@ -1353,10 +1360,13 @@ export default function App() {
                 type="button"
                 onClick={() => navigateTo('notifications')}
                 aria-label={t(lang, 'notifBtnLabel')}
-                className="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1.5 whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] transition-all shadow-2xs select-none"
               >
-                <SoftFilledIcon id="notifications" size={15} />
-                <span className="px-1.5 py-0.2 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-contrast)] text-[10px] tabular-nums">
+                <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2 shrink-0" viewBox="0 0 24 24">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h24s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                <span className="px-1.5 py-0.5 rounded-full bg-[var(--color-accent)] text-[var(--color-accent-contrast)] text-[10px] font-extrabold tabular-nums leading-none">
                   {unreadNotifCount}
                 </span>
               </button>
@@ -1375,10 +1385,12 @@ export default function App() {
                   color: parentProfileSpec.badgeTextCss,
                   borderColor: parentProfileSpec.badgeBorderCss,
                 }}
-                className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all"
+                className="h-9 px-2.5 sm:px-3 rounded-xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs select-none"
               >
-                <SoftFilledIcon id="family" size={15} />
-                <span className="hidden sm:inline">
+                <span aria-hidden="true" className="text-sm leading-none">
+                  {state.role === 'dad' ? '👨🏻‍🍼' : '👩🏻‍🍼'}
+                </span>
+                <span className="hidden sm:inline font-extrabold">
                   {lang === 'en' ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
                 </span>
               </button>

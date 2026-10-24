@@ -15,7 +15,7 @@ import { THREE_D_ASSET_MANIFEST } from '../domain/assetManifest3D';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { t } from '../domain/i18n';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
-import { PrimaryCtaButton, SoftFilledIcon, UnifiedBadge } from '../components/DesignSystem';
+import { PrimaryCtaButton, SoftFilledIcon, UnifiedBadge, CollapsibleSectionCard } from '../components/DesignSystem';
 
 export interface ProfileSettingsSectionProps {
   state: FamilySpaceState;
@@ -303,162 +303,169 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* 1. Experience & Interface Preferences */}
-            <div className="rounded-[24px] border border-purple-200/80 bg-purple-50/75 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-extrabold text-[var(--color-text)]">
-                  {lang === 'en' ? 'Theme, Language & Calendar' : 'السمة البصرية واللغة والتقويم'}
-                </h3>
-                <UnifiedBadge
-                  label={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
-                  tone="purple"
-                  iconId="settings"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="parentName" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                  {lang === 'en' ? 'Parent / Family Display Name' : 'اسم ولي الأمر / الأسرة'}
-                </label>
-                <input
-                  id="parentName"
-                  type="text"
-                  maxLength={80}
-                  value={settingsParentName}
-                  onChange={(e) => onChangeSettingsParentName(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="parentRole" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                  {lang === 'en' ? 'Visual Theme & Parent Mode' : 'نوع التجربة والسمة البصرية'}
-                </label>
-                <select
-                  id="parentRole"
-                  value={settingsRole}
-                  onChange={(e) => onChangeSettingsRole(e.target.value as ParentThemeRole)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                >
-                  <option value="mom">{lang === 'en' ? 'Mother Mode — Rose' : 'الأم — روز'}</option>
-                  <option value="dad">{lang === 'en' ? 'Father Mode — Aqua' : 'الأب — أكوا'}</option>
-                  <option value="high-contrast">
-                    {lang === 'en' ? 'High Contrast — Readability' : 'تباين عالٍ — لسهولة القراءة'}
-                  </option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <CollapsibleSectionCard
+              title={lang === 'en' ? 'Theme, Language & Calendar' : 'السمة البصرية واللغة والتقويم'}
+              subtitle={lang === 'en' ? 'Parent profile role, visual theme & language' : 'تخصيص وضع ولي الأمر والسمة البصرية ولغة العرض'}
+              iconId="settings"
+              badgeLabel={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
+              badgeTone="purple"
+              cardTone="purple"
+              defaultOpen={true}
+            >
+              <div className="space-y-4">
                 <div>
-                  <label htmlFor="settingsLanguage" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                    {lang === 'en' ? 'Interface Language' : 'لغة الواجهة'}
+                  <label htmlFor="parentName" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                    {lang === 'en' ? 'Parent / Family Display Name' : 'اسم ولي الأمر / الأسرة'}
                   </label>
-                  <select
-                    id="settingsLanguage"
-                    value={settingsLanguage}
-                    onChange={(e) => onChangeSettingsLanguage(e.target.value as LanguageCode)}
+                  <input
+                    id="parentName"
+                    type="text"
+                    maxLength={80}
+                    value={settingsParentName}
+                    onChange={(e) => onChangeSettingsParentName(e.target.value)}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                  >
-                    <option value="ar">{t(lang, 'langAr')}</option>
-                    <option value="en">{t(lang, 'langEn')}</option>
-                  </select>
+                  />
                 </div>
 
                 <div>
-                  <label htmlFor="settingsCalendarMode" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                    {lang === 'en' ? 'Calendar Date Display' : 'نظام عرض التاريخ'}
+                  <label htmlFor="parentRole" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                    {lang === 'en' ? 'Visual Theme & Parent Mode' : 'نوع التجربة والسمة البصرية'}
                   </label>
                   <select
-                    id="settingsCalendarMode"
-                    value={settingsCalendarMode}
-                    onChange={(e) => onChangeSettingsCalendarMode(e.target.value as CalendarDisplayMode)}
+                    id="parentRole"
+                    value={settingsRole}
+                    onChange={(e) => onChangeSettingsRole(e.target.value as ParentThemeRole)}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
                   >
-                    <option value="both">{t(lang, 'calendarBoth')}</option>
-                    <option value="gregorian">{t(lang, 'calendarGregorian')}</option>
-                    <option value="hijri">{t(lang, 'calendarHijri')}</option>
+                    <option value="mom">{lang === 'en' ? 'Mother Mode — Rose' : 'الأم — روز'}</option>
+                    <option value="dad">{lang === 'en' ? 'Father Mode — Aqua' : 'الأب — أكوا'}</option>
+                    <option value="high-contrast">
+                      {lang === 'en' ? 'High Contrast — Readability' : 'تباين عالٍ — لسهولة القراءة'}
+                    </option>
                   </select>
                 </div>
-              </div>
 
-              <PrimaryCtaButton variant="purple" onClick={onSaveGeneralSettings}>
-                {lang === 'en' ? 'Save Experience Preferences' : 'حفظ تفضيلات التجربة واللغة'}
-              </PrimaryCtaButton>
-            </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="settingsLanguage" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                      {lang === 'en' ? 'Interface Language' : 'لغة الواجهة'}
+                    </label>
+                    <select
+                      id="settingsLanguage"
+                      value={settingsLanguage}
+                      onChange={(e) => onChangeSettingsLanguage(e.target.value as LanguageCode)}
+                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                    >
+                      <option value="ar">{t(lang, 'langAr')}</option>
+                      <option value="en">{t(lang, 'langEn')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="settingsCalendarMode" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
+                      {lang === 'en' ? 'Calendar Date Display' : 'نظام عرض التاريخ'}
+                    </label>
+                    <select
+                      id="settingsCalendarMode"
+                      value={settingsCalendarMode}
+                      onChange={(e) => onChangeSettingsCalendarMode(e.target.value as CalendarDisplayMode)}
+                      className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                    >
+                      <option value="both">{t(lang, 'calendarBoth')}</option>
+                      <option value="gregorian">{t(lang, 'calendarGregorian')}</option>
+                      <option value="hijri">{t(lang, 'calendarHijri')}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <PrimaryCtaButton variant="purple" onClick={onSaveGeneralSettings}>
+                  {lang === 'en' ? 'Save Experience Preferences' : 'حفظ تفضيلات التجربة واللغة'}
+                </PrimaryCtaButton>
+              </div>
+            </CollapsibleSectionCard>
 
             {/* 2. Data Backup, Restore & 3D Asset Manifest */}
-            <div className="space-y-4">
-              <div className="rounded-[24px] border border-emerald-200/80 bg-emerald-50/75 p-5 shadow-2xs space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-base font-extrabold text-[var(--color-text)]">
-                    {lang === 'en' ? 'JSON Data Backup & Restore' : 'النسخ الاحتياطي واستيراد البيانات (JSON)'}
-                  </h3>
-                  <UnifiedBadge label="family-space-v1" tone="emerald" iconId="shield" />
+            <div className="space-y-5">
+              <CollapsibleSectionCard
+                id="settings-json-backup"
+                title={lang === 'en' ? 'JSON Data Backup & Restore' : 'النسخ الاحتياطي واستيراد البيانات (JSON)'}
+                subtitle={lang === 'en' ? 'Export or import your family profile locally' : 'تصدير أو استيراد ملف بيانات أسرتك محلياً'}
+                iconId="shield"
+                badgeLabel="family-space-v1"
+                badgeTone="emerald"
+                cardTone="emerald"
+                defaultOpen={false}
+              >
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={onExportJson}
+                      className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs inline-flex items-center gap-1.5"
+                    >
+                      <SoftFilledIcon id="shield" size={16} />
+                      <span>{lang === 'en' ? 'Export JSON Backup' : 'تصدير نسخة JSON'}</span>
+                    </button>
+
+                    <label className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs cursor-pointer inline-flex items-center gap-1.5">
+                      <SoftFilledIcon id="sparkles" size={16} />
+                      <span>{lang === 'en' ? 'Import JSON File' : 'استيراد ملف JSON'}</span>
+                      <input
+                        type="file"
+                        accept="application/json,.json"
+                        onChange={onImportJsonFile}
+                        className="sr-only"
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={onOpenConfirmResetModal}
+                      className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-red-200 bg-[var(--color-control-bg)] text-red-700"
+                    >
+                      {lang === 'en' ? 'Reset Demo Data' : 'مسح وإعادة ضبط البيانات'}
+                    </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onShowToast(
+                          lang === 'en'
+                            ? `✓ Local Storage Integrity Verified: ${state.kids.length} Kids, ${state.family.length} Family Members, ${state.tasks.length} Tasks.`
+                            : `✓ تم فحص سلامة البيانات المحلية بنجاح: ${state.kids.length} أطفال، ${state.family.length} أفراد عائلة، و${state.tasks.length} مهام روتين.`
+                        )
+                      }
+                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)] active:scale-95 transition-all"
+                    >
+                      {lang === 'en' ? 'Verify Local Data Integrity' : 'فحص سلامة البيانات المحلية'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onExportJson}
+                      className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs active:scale-95 transition-all"
+                    >
+                      {lang === 'en' ? 'Download Full Family Snapshot' : 'تنزيل لقطة كاملة لبيانات الأسرة'}
+                    </button>
+                  </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <button
-                    type="button"
-                    onClick={onExportJson}
-                    className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs inline-flex items-center gap-1.5"
-                  >
-                    <SoftFilledIcon id="shield" size={16} />
-                    <span>{lang === 'en' ? 'Export JSON Backup' : 'تصدير نسخة JSON'}</span>
-                  </button>
-
-                  <label className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs cursor-pointer inline-flex items-center gap-1.5">
-                    <SoftFilledIcon id="sparkles" size={16} />
-                    <span>{lang === 'en' ? 'Import JSON File' : 'استيراد ملف JSON'}</span>
-                    <input
-                      type="file"
-                      accept="application/json,.json"
-                      onChange={onImportJsonFile}
-                      className="sr-only"
-                    />
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={onOpenConfirmResetModal}
-                    className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-red-200 bg-[var(--color-control-bg)] text-red-700"
-                  >
-                    {lang === 'en' ? 'Reset Demo Data' : 'مسح وإعادة ضبط البيانات'}
-                  </button>
-                </div>
-
-                <div className="pt-3 border-t border-emerald-200/60 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onShowToast(
-                        lang === 'en'
-                          ? `✓ Local Storage Integrity Verified: ${state.kids.length} Kids, ${state.family.length} Family Members, ${state.tasks.length} Tasks.`
-                          : `✓ تم فحص سلامة البيانات المحلية بنجاح: ${state.kids.length} أطفال، ${state.family.length} أفراد عائلة، و${state.tasks.length} مهام روتين.`
-                      )
-                    }
-                    className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)] active:scale-95 transition-all"
-                  >
-                    {lang === 'en' ? 'Verify Local Data Integrity' : 'فحص سلامة البيانات المحلية'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onExportJson}
-                    className="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs active:scale-95 transition-all"
-                  >
-                    {lang === 'en' ? 'Download Full Family Snapshot' : 'تنزيل لقطة كاملة لبيانات الأسرة'}
-                  </button>
-                </div>
-              </div>
+              </CollapsibleSectionCard>
 
               {/* 3D Asset Manifest Registry */}
-              <div className="rounded-[24px] border border-sky-200/80 bg-sky-50/75 p-4 shadow-2xs space-y-2">
-                <div className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-2">
-                  <SoftFilledIcon id="games" size={18} />
-                  <span>
-                    {lang === 'en'
-                      ? `3D Asset Manifest (${THREE_D_ASSET_MANIFEST.length} Asset Groups)`
-                      : `سجل الأصول ثلاثية الأبعاد (${THREE_D_ASSET_MANIFEST.length} مجموعات)`}
-                  </span>
-                </div>
+              <CollapsibleSectionCard
+                title={
+                  lang === 'en'
+                    ? `3D Asset Manifest (${THREE_D_ASSET_MANIFEST.length} Groups)`
+                    : `سجل الأصول ثلاثية الأبعاد (${THREE_D_ASSET_MANIFEST.length} مجموعات)`
+                }
+                subtitle={lang === 'en' ? 'Registered Three.js and procedural assets' : 'الأصول البرمجية وثلاثية الأبعاد المسجلة'}
+                iconId="games"
+                badgeLabel="Three.js"
+                badgeTone="sky"
+                cardTone="sky"
+                defaultOpen={false}
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
                   {THREE_D_ASSET_MANIFEST.map((entry) => (
                     <div
@@ -472,183 +479,185 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     </div>
                   ))}
                 </div>
-              </div>
+              </CollapsibleSectionCard>
             </div>
           </div>
 
           {/* ==============================================================
               BOTTOM OF SETTINGS PAGE: COUNTRY, CURRENCY & VERIFIED PHONE
               ============================================================== */}
-          <div
+          <CollapsibleSectionCard
             id="settings-international-bottom"
-            className="rounded-[24px] border border-amber-200/80 bg-amber-50/85 p-5 sm:p-6 shadow-2xs space-y-4"
+            title={
+              lang === 'en'
+                ? 'Country, Calling Code, Currency & Verified Phone'
+                : 'إعدادات الدولة، مفتاح الهاتف، العملة، وتوثيق الجوال'
+            }
+            subtitle={
+              lang === 'en'
+                ? 'Region, international dial code, currency & OTP verified phone'
+                : 'تحديد الدولة، مفتاح الاتصال، العملة وتوثيق رقم الهاتف'
+            }
+            iconId="location"
+            badgeLabel={`${state.country === 'SA' ? '+966 · SAR' : '+20 · EGP'} · ${locText(
+              state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'),
+              lang
+            )}`}
+            badgeTone="amber"
+            cardTone="amber"
+            defaultOpen={true}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
                 <UnifiedBadge label={`OTP: ${DEMO_OTP_CODE}`} tone="amber" iconId="shield" />
-                <h3 className="text-base font-extrabold text-[var(--color-text)] mt-1.5 flex items-center gap-2">
-                  <SoftFilledIcon id="location" size={20} />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div>
+                  <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                    {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
+                  </label>
+                  <select
+                    id="settingsCountry"
+                    value={settingsCountry}
+                    onChange={(e) => onCountryChangeInSettings(e.target.value as CountryCode)}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  >
+                    <option value="EG">{t(lang, 'countryEG')} (+20)</option>
+                    <option value="SA">{t(lang, 'countrySA')} (+966)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                    {lang === 'en' ? 'City / Governorate' : 'المدينة / المحافظة'}
+                  </label>
+                  <select
+                    id="settingsCity"
+                    value={settingsCity}
+                    onChange={(e) => onChangeSettingsCity(e.target.value)}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  >
+                    {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem) => (
+                      <option key={cItem.id} value={cItem.id}>
+                        {lang === 'en' ? `${cItem.nameEn} (${cItem.regionEn})` : `${cItem.nameAr} (${cItem.regionAr})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="settingsCurrency" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                    {lang === 'en' ? 'Display Currency' : 'العملة المعتمدة للأسعار'}
+                  </label>
+                  <select
+                    id="settingsCurrency"
+                    value={settingsCurrency}
+                    onChange={(e) => onChangeSettingsCurrency(e.target.value as CurrencyCode)}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  >
+                    <option value="EGP">{t(lang, 'currencyEGP')}</option>
+                    <option value="SAR">{t(lang, 'currencySAR')}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                    {lang === 'en'
+                      ? `Verified Phone (${settingsCountry === 'SA' ? '+966' : '+20'})`
+                      : `رقم هاتف الحساب الموثق (${settingsCountry === 'SA' ? '+966' : '+20'})`}
+                  </label>
+                  <input
+                    id="settingsPhoneInput"
+                    type="tel"
+                    dir="ltr"
+                    value={settingsPhoneInput}
+                    onChange={(e) => onChangeSettingsPhoneInput(e.target.value)}
+                    placeholder={settingsCountry === 'SA' ? '512345678' : '1012345678'}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm tabular-nums text-[var(--color-text)]"
+                  />
+                </div>
+              </div>
+
+              {/* Suggested Currency Banner when Country switches */}
+              {currencySuggestionBanner && (
+                <div className="rounded-2xl bg-[var(--color-control-bg)] border border-[var(--color-border)] p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
                   <span>
                     {lang === 'en'
-                      ? 'Country, Calling Code, Currency & Verified Phone'
-                      : 'إعدادات الدولة، مفتاح الهاتف، العملة، وتوثيق الجوال'}
+                      ? `You selected ${settingsCountry === 'SA' ? 'Saudi Arabia' : 'Egypt'}. Switch to suggested currency (${currencySuggestionBanner})?`
+                      : `اخترت ${settingsCountry === 'SA' ? 'السعودية' : 'مصر'}. هل ترغب في التبديل إلى العملة المقترحة (${currencySuggestionBanner})؟`}
                   </span>
-                </h3>
-              </div>
-              <UnifiedBadge
-                label={`${state.country === 'SA' ? '+966 · SAR' : '+20 · EGP'} · ${locText(
-                  state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'),
-                  lang
-                )}`}
-                tone="teal"
-                iconId="location"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div>
-                <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                  {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
-                </label>
-                <select
-                  id="settingsCountry"
-                  value={settingsCountry}
-                  onChange={(e) => onCountryChangeInSettings(e.target.value as CountryCode)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                >
-                  <option value="EG">{t(lang, 'countryEG')} (+20)</option>
-                  <option value="SA">{t(lang, 'countrySA')} (+966)</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                  {lang === 'en' ? 'City / Governorate' : 'المدينة / المحافظة'}
-                </label>
-                <select
-                  id="settingsCity"
-                  value={settingsCity}
-                  onChange={(e) => onChangeSettingsCity(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                >
-                  {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem) => (
-                    <option key={cItem.id} value={cItem.id}>
-                      {lang === 'en' ? `${cItem.nameEn} (${cItem.regionEn})` : `${cItem.nameAr} (${cItem.regionAr})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="settingsCurrency" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                  {lang === 'en' ? 'Display Currency' : 'العملة المعتمدة للأسعار'}
-                </label>
-                <select
-                  id="settingsCurrency"
-                  value={settingsCurrency}
-                  onChange={(e) => onChangeSettingsCurrency(e.target.value as CurrencyCode)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
-                >
-                  <option value="EGP">{t(lang, 'currencyEGP')}</option>
-                  <option value="SAR">{t(lang, 'currencySAR')}</option>
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                  {lang === 'en'
-                    ? `Verified Phone (${settingsCountry === 'SA' ? '+966' : '+20'})`
-                    : `رقم هاتف الحساب الموثق (${settingsCountry === 'SA' ? '+966' : '+20'})`}
-                </label>
-                <input
-                  id="settingsPhoneInput"
-                  type="tel"
-                  dir="ltr"
-                  value={settingsPhoneInput}
-                  onChange={(e) => onChangeSettingsPhoneInput(e.target.value)}
-                  placeholder={settingsCountry === 'SA' ? '512345678' : '1012345678'}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm tabular-nums text-[var(--color-text)]"
-                />
-              </div>
-            </div>
-
-            {/* Suggested Currency Banner when Country switches */}
-            {currencySuggestionBanner && (
-              <div className="rounded-2xl bg-[var(--color-control-bg)] border border-[var(--color-border)] p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
-                <span>
-                  {lang === 'en'
-                    ? `You selected ${settingsCountry === 'SA' ? 'Saudi Arabia' : 'Egypt'}. Switch to suggested currency (${currencySuggestionBanner})?`
-                    : `اخترت ${settingsCountry === 'SA' ? 'السعودية' : 'مصر'}. هل ترغب في التبديل إلى العملة المقترحة (${currencySuggestionBanner})؟`}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onAcceptCurrencySuggestion(currencySuggestionBanner)}
-                  className="px-3.5 py-1.5 rounded-xl font-extrabold bg-amber-600 text-white whitespace-nowrap"
-                >
-                  {lang === 'en' ? `Yes, use ${currencySuggestionBanner}` : `نعم، اعتمد ${currencySuggestionBanner}`}
-                </button>
-              </div>
-            )}
-
-            {settingsOtpStep && (
-              <div className="rounded-2xl border border-amber-300 bg-[var(--color-control-bg)] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="text-[var(--color-text)] font-bold">
-                  {lang === 'en'
-                    ? `Enter OTP code (${DEMO_OTP_CODE}) to confirm update:`
-                    : `أدخل رمز التحقق OTP التجريبي (${DEMO_OTP_CODE}) لتأكيد التحديث:`}
+                  <button
+                    type="button"
+                    onClick={() => onAcceptCurrencySuggestion(currencySuggestionBanner)}
+                    className="px-3.5 py-1.5 rounded-xl font-extrabold bg-amber-600 text-white whitespace-nowrap"
+                  >
+                    {lang === 'en' ? `Yes, use ${currencySuggestionBanner}` : `نعم، اعتمد ${currencySuggestionBanner}`}
+                  </button>
                 </div>
-                <input
-                  type="text"
-                  dir="ltr"
-                  value={settingsOtpCode}
-                  onChange={(e) => onChangeSettingsOtpCode(e.target.value)}
-                  placeholder="123456"
-                  maxLength={6}
-                  className="w-28 rounded-xl border border-amber-400 bg-amber-50 px-3 py-1.5 text-center font-extrabold tabular-nums text-slate-900"
-                />
-              </div>
-            )}
+              )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-              <span className="text-xs font-bold text-[var(--color-muted)]">
-                {lang === 'en'
-                  ? 'Supports Egyptian (+20) & Saudi (+966) mobile formats'
-                  : 'يدعم التحقق القياسي للهاتف المصري (+20) والسعودي (+966)'}
-              </span>
-              <PrimaryCtaButton variant="orange" onClick={onSaveBottomInternationalAndPhone}>
-                {settingsOtpStep
-                  ? lang === 'en'
-                    ? 'Verify OTP & Save Settings'
-                    : 'تأكيد رمز OTP وحفظ الدولة والهاتف'
-                  : lang === 'en'
-                  ? 'Save Country, City, Currency & Phone'
-                  : 'حفظ إعدادات الدولة والمدينة والعملة والهاتف'}
-              </PrimaryCtaButton>
+              {settingsOtpStep && (
+                <div className="rounded-2xl border border-amber-300 bg-[var(--color-control-bg)] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="text-[var(--color-text)] font-bold">
+                    {lang === 'en'
+                      ? `Enter OTP code (${DEMO_OTP_CODE}) to confirm update:`
+                      : `أدخل رمز التحقق OTP التجريبي (${DEMO_OTP_CODE}) لتأكيد التحديث:`}
+                  </div>
+                  <input
+                    type="text"
+                    dir="ltr"
+                    value={settingsOtpCode}
+                    onChange={(e) => onChangeSettingsOtpCode(e.target.value)}
+                    placeholder="123456"
+                    maxLength={6}
+                    className="w-28 rounded-xl border border-amber-400 bg-amber-50 px-3 py-1.5 text-center font-extrabold tabular-nums text-slate-900"
+                  />
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <span className="text-xs font-bold text-[var(--color-muted)]">
+                  {lang === 'en'
+                    ? 'Supports Egyptian (+20) & Saudi (+966) mobile formats'
+                    : 'يدعم التحقق القياسي للهاتف المصري (+20) والسعودي (+966)'}
+                </span>
+                <PrimaryCtaButton variant="orange" onClick={onSaveBottomInternationalAndPhone}>
+                  {settingsOtpStep
+                    ? lang === 'en'
+                      ? 'Verify OTP & Save Settings'
+                      : 'تأكيد رمز OTP وحفظ الدولة والهاتف'
+                    : lang === 'en'
+                    ? 'Save Country, City, Currency & Phone'
+                    : 'حفظ إعدادات الدولة والمدينة والعملة والهاتف'}
+                </PrimaryCtaButton>
+              </div>
             </div>
-          </div>
+          </CollapsibleSectionCard>
         </div>
       )}
 
       {/* ==============================================================
           LEGAL POLICIES, INTELLECTUAL PROPERTY & DIGITAL CONTACT CARDS
           ============================================================== */}
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-2xs space-y-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <UnifiedBadge
-              label={lang === 'en' ? 'POLICIES & DIGITAL CARE' : 'السياسات وحقوق الملكية والدعم الرقمي'}
-              tone="teal"
-              iconId="shield"
-            />
-            <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-1">
-              {lang === 'en'
-                ? 'Legal Policies, Intellectual Property & Contact Us'
-                : 'سياسة الخصوصية، الشروط وحقوق الملكية، وتواصل معنا'}
-            </h3>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <CollapsibleSectionCard
+        title={
+          lang === 'en'
+            ? 'Legal Policies, Intellectual Property & Contact Us'
+            : 'سياسة الخصوصية، الشروط وحقوق الملكية، وتواصل معنا'
+        }
+        subtitle={
+          lang === 'en'
+            ? 'Terms, privacy protection clauses & 24/7 digital care'
+            : 'بنود حماية بيانات الطفل والأسرة، حقوق الملكية، وقنوات الدعم'
+        }
+        iconId="shield"
+        badgeLabel={lang === 'en' ? 'POLICIES & CARE' : 'السياسات والدعم'}
+        badgeTone="teal"
+        cardTone="teal"
+        defaultOpen={false}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           {/* 1. Privacy Policy Card */}
           <button
             type="button"
@@ -730,7 +739,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             </div>
           </button>
         </div>
-      </div>
+      </CollapsibleSectionCard>
     </section>
   );
 };
