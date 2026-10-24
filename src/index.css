@@ -59,37 +59,41 @@
 }
 
 :root[data-theme="mom"] {
-  --color-accent: #0d9488;
+  --color-accent: #e86a3d;
   --color-accent-contrast: #ffffff;
-  --color-accent-soft: #f0fdfa;
-  --color-hero-start: #f0fdfa;
-  --color-hero-mid: #fff7f3;
-  --color-hero-end: #ecfeff;
-  --color-control-muted: #f1f7f6;
-  --color-icon-tint: #fff3ed;
-  --color-art-start: #f0fdfa;
+  --color-accent-soft: #fff1f2;
+  --color-hero-start: #fff5f2;
+  --color-hero-mid: #fff1f2;
+  --color-hero-end: #fff7ed;
+  --color-control-muted: #fdf2f4;
+  --color-icon-tint: #fff1f2;
+  --color-art-start: #fff1f2;
   --color-art-end: #fff4ef;
-  --color-task-accent: #0f766e;
+  --color-task-accent: #be123c;
   --color-nav-bg: rgba(255, 255, 255, 0.96);
-  --color-role-soft: #f0fdfa;
-  --color-role-text: #0f766e;
+  --color-role-soft: #fff1f2;
+  --color-role-text: #be123c;
+  --color-parent-glow: rgba(255, 140, 97, 0.34);
+  --color-parent-border: rgba(232, 106, 61, 0.38);
 }
 
 :root[data-theme="dad"] {
-  --color-accent: #0e7490;
+  --color-accent: #0d9488;
   --color-accent-contrast: #ffffff;
-  --color-accent-soft: #ecfeff;
-  --color-hero-start: #ecfeff;
-  --color-hero-mid: #f0fdfa;
-  --color-hero-end: #f0f9ff;
+  --color-accent-soft: #e0f2fe;
+  --color-hero-start: #f0fdfa;
+  --color-hero-mid: #e0f2fe;
+  --color-hero-end: #ecfeff;
   --color-control-muted: #eef6f8;
-  --color-icon-tint: #ecfeff;
-  --color-art-start: #ecfeff;
+  --color-icon-tint: #e0f2fe;
+  --color-art-start: #e0f2fe;
   --color-art-end: #f0f9ff;
-  --color-task-accent: #0e7490;
+  --color-task-accent: #0369a1;
   --color-nav-bg: rgba(248, 253, 254, 0.96);
-  --color-role-soft: #ecfeff;
-  --color-role-text: #155e75;
+  --color-role-soft: #e0f2fe;
+  --color-role-text: #0369a1;
+  --color-parent-glow: rgba(14, 165, 233, 0.34);
+  --color-parent-border: rgba(13, 148, 136, 0.38);
 }
 
 :root[data-theme="high-contrast"] {
@@ -108,67 +112,74 @@
   --color-notice-text: #115e59;
   --color-role-soft: #ccfbf1;
   --color-role-text: #115e59;
+  --color-parent-glow: rgba(15, 118, 110, 0.28);
+  --color-parent-border: rgba(15, 118, 110, 0.45);
 }
 
 /* ==========================================================================
-   PREMIUM DARK MODE PALETTE (Deep Soft Charcoal & Calm Teal/Coral — No #000000)
+   IMMERSIVE DEEP CHARCOAL / MIDNIGHT TEAL DARK MODE (#0B131A)
+   With Subtle Luminous Card Border Glows & WCAG AA/AAA High Contrast
    ========================================================================== */
 :root[data-color-mode="dark"] {
-  --color-page: #131926;
-  --color-surface: #1b2334;
-  --color-heading: #ffffff;
-  --color-text: #f8fafc;
-  --color-muted: #cbd5e1;
-  --color-border: #28364e;
-  --color-accent: #0d9488;
-  --color-accent-contrast: #ffffff;
-  --color-accent-soft: rgba(20, 184, 166, 0.16);
-  --color-rose: rgba(255, 140, 97, 0.16);
-  --color-rose-text: #fed7aa;
-  --color-aqua: rgba(34, 211, 238, 0.15);
-  --color-aqua-text: #a5f3fc;
-  --color-lavender: rgba(56, 189, 248, 0.15);
-  --color-lavender-text: #bae6fd;
-  --color-notice: rgba(20, 184, 166, 0.15);
-  --color-notice-text: #99f6e4;
-  --color-hero-start: #172536;
-  --color-hero-mid: #1d283a;
-  --color-hero-end: #162a3a;
-  --color-shadow: rgba(10, 15, 26, 0.45);
-  --color-overlay: rgba(12, 17, 28, 0.76);
-  --color-toast: #243147;
-  --color-control-bg: #1e283b;
-  --color-control-muted: #243047;
-  --color-icon-tint: #233044;
-  --color-art-start: #1b2a3c;
-  --color-art-end: #1d2f42;
-  --color-task-accent: #2dd4bf;
-  --color-focus: #2dd4bf;
-  --color-nav-bg: rgba(27, 35, 52, 0.96);
-  --color-role-soft: rgba(20, 184, 166, 0.18);
-  --color-role-text: #5eead4;
+  --color-page: #0B131A;
+  --color-surface: #101D26;
+  --color-heading: #FFFFFF;
+  --color-text: #F8FAFC;
+  --color-muted: #CBD5E1;
+  --color-border: #1E3646;
+  --color-accent: #FF8C61;
+  --color-accent-contrast: #FFFFFF;
+  --color-accent-soft: rgba(255, 140, 97, 0.18);
+  --color-rose: rgba(251, 113, 133, 0.18);
+  --color-rose-text: #FECDD3;
+  --color-aqua: rgba(34, 211, 238, 0.16);
+  --color-aqua-text: #A5F3FC;
+  --color-lavender: rgba(56, 189, 248, 0.16);
+  --color-lavender-text: #BAE6FD;
+  --color-notice: rgba(20, 184, 166, 0.18);
+  --color-notice-text: #99F6E4;
+  --color-hero-start: #0F202B;
+  --color-hero-mid: #132532;
+  --color-hero-end: #0E1F2A;
+  --color-shadow: rgba(3, 8, 13, 0.65);
+  --color-overlay: rgba(6, 12, 18, 0.80);
+  --color-toast: #162834;
+  --color-control-bg: #142430;
+  --color-control-muted: #182C3A;
+  --color-icon-tint: #172B38;
+  --color-art-start: #122430;
+  --color-art-end: #152936;
+  --color-task-accent: #FDA4AF;
+  --color-focus: #2DD4BF;
+  --color-nav-bg: rgba(16, 29, 38, 0.95);
+  --color-role-soft: rgba(251, 113, 133, 0.20);
+  --color-role-text: #FDA4AF;
+  --color-parent-glow: rgba(255, 140, 97, 0.36);
+  --color-parent-border: rgba(255, 140, 97, 0.46);
 }
 
 :root[data-color-mode="dark"][data-theme="dad"] {
-  --color-accent: #0e7490;
-  --color-accent-contrast: #ffffff;
-  --color-accent-soft: rgba(34, 211, 238, 0.18);
-  --color-hero-start: #182b3a;
-  --color-hero-mid: #1d2d40;
-  --color-hero-end: #1c283d;
-  --color-control-muted: #212e43;
-  --color-icon-tint: #203146;
-  --color-task-accent: #38d9a9;
-  --color-role-soft: rgba(34, 211, 238, 0.2);
-  --color-role-text: #a5f3fc;
+  --color-accent: #14B8A6;
+  --color-accent-contrast: #FFFFFF;
+  --color-accent-soft: rgba(14, 165, 233, 0.20);
+  --color-hero-start: #0E212D;
+  --color-hero-mid: #112635;
+  --color-hero-end: #0D1E2A;
+  --color-control-muted: #162A38;
+  --color-icon-tint: #152937;
+  --color-task-accent: #7DD3FC;
+  --color-role-soft: rgba(14, 165, 233, 0.22);
+  --color-role-text: #7DD3FC;
+  --color-parent-glow: rgba(56, 189, 248, 0.36);
+  --color-parent-border: rgba(45, 212, 191, 0.46);
 }
 
 :root[data-color-mode="dark"] body {
   background-color: var(--color-page);
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(20, 184, 166, 0.08), transparent 34%),
-    radial-gradient(circle at 88% 14%, rgba(255, 140, 97, 0.07), transparent 34%),
-    radial-gradient(circle at 50% 90%, rgba(14, 116, 144, 0.08), transparent 38%);
+    radial-gradient(circle at 14% 8%, rgba(20, 184, 166, 0.11), transparent 36%),
+    radial-gradient(circle at 86% 14%, rgba(255, 140, 97, 0.09), transparent 36%),
+    radial-gradient(circle at 50% 92%, rgba(14, 165, 233, 0.10), transparent 40%);
   color: var(--color-text);
 }
 
@@ -200,12 +211,12 @@ label {
    Softens bright pastel backgrounds and inverts dark text for eye comfort
    ========================================================================== */
 :root[data-color-mode="dark"] [data-banner-carousel="true"]:not(.image-bg-card) {
-  background: linear-gradient(125deg, #1f2a40, #252b46, #1b3042) !important;
-  box-shadow: 0 14px 28px -12px rgba(8, 12, 22, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.07) !important;
-  border-color: #2f3e5c !important;
+  background: linear-gradient(125deg, #101D26, #142532, #0F202C) !important;
+  box-shadow: 0 16px 32px -12px rgba(4, 9, 14, 0.72), 0 0 18px -6px rgba(45, 212, 191, 0.22), inset 0 1px 2px rgba(255, 255, 255, 0.10) !important;
+  border-color: rgba(45, 212, 191, 0.36) !important;
 }
 
-/* White surfaces & controls become deep charcoal-slate */
+/* White surfaces & controls become deep midnight-teal surfaces */
 :root[data-color-mode="dark"] .bg-white,
 :root[data-color-mode="dark"] .bg-white\/95,
 :root[data-color-mode="dark"] .bg-white\/90,
@@ -216,12 +227,12 @@ label {
 :root[data-color-mode="dark"] .bg-white\/60,
 :root[data-color-mode="dark"] .bg-white\/50,
 :root[data-color-mode="dark"] .bg-white\/40 {
-  background-color: #1e273a !important;
+  background-color: #13232E !important;
   color: var(--color-text);
 }
 
 :root[data-color-mode="dark"] .border-white {
-  border-color: #2d3a54 !important;
+  border-color: #213C4E !important;
 }
 
 /* Pastel 50 Cards -> Low-opacity eye-friendly tinted dark surfaces */
@@ -873,12 +884,13 @@ textarea:focus-visible {
 }
 
 :root[data-color-mode="dark"] .glass-sticky-header {
-  background-color: rgba(27, 35, 52, 0.82);
+  background-color: rgba(11, 19, 26, 0.86);
+  border-color: rgba(45, 212, 191, 0.22);
 }
 
 :root[data-color-mode="dark"] .glass-sticky-header[data-scrolled="true"] {
-  background-color: rgba(23, 31, 47, 0.78);
-  box-shadow: 0 12px 30px -10px rgba(8, 12, 22, 0.58);
+  background-color: rgba(11, 19, 26, 0.92);
+  box-shadow: 0 12px 30px -10px rgba(3, 8, 13, 0.72), 0 1px 0 rgba(45, 212, 191, 0.18);
 }
 
 .glass-sticky-subheader {
@@ -888,7 +900,7 @@ textarea:focus-visible {
 }
 
 :root[data-color-mode="dark"] .glass-sticky-subheader {
-  background-color: rgba(27, 35, 52, 0.84) !important;
+  background-color: rgba(16, 29, 38, 0.88) !important;
 }
 
 @keyframes toastSlideUp {
@@ -940,8 +952,11 @@ textarea {
 }
 
 :root[data-color-mode="dark"] .soft-card-surface {
-  box-shadow: 0 14px 32px -12px rgba(8, 12, 22, 0.52);
-  border-color: color-mix(in srgb, var(--color-border) 65%, transparent);
+  border-color: rgba(56, 189, 248, 0.28) !important;
+  box-shadow:
+    0 16px 36px -12px rgba(2, 6, 11, 0.78),
+    0 0 22px -6px var(--color-parent-glow, rgba(45, 212, 191, 0.26)),
+    inset 0 1px 1px rgba(255, 255, 255, 0.09);
 }
 
 p, li {
@@ -953,11 +968,12 @@ h1, h2, h3, h4 {
 }
 
 /* ==========================================================================
-   NEKBAR GLOBAL DESIGN SYSTEM:
+   NEKBAAR GLOBAL DESIGN SYSTEM:
    1. IMAGE BACKGROUND CARDS + SOFT OVERLAYS (~30-40% Light / ~75-80% Dark)
    2. STANDARDIZED SOFT-FILLED WARM CORAL ICONOGRAPHY
    3. DYNAMIC AI ROBOT ASSISTANT FAB WITH PULSING GLOW
    4. CENTERED BOLD SECTION HEADERS WITH GENEROUS BREATHING ROOM
+   5. SUBTLE LUMINOUS DARK MODE CARD BORDER GLOWS
    ========================================================================== */
 .image-bg-card {
   position: relative;
@@ -968,7 +984,7 @@ h1, h2, h3, h4 {
   background-repeat: no-repeat;
   color: #0f172a !important;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.92), 0 2px 4px rgba(0, 0, 0, 0.14);
-  border: 1px solid rgba(255, 140, 97, 0.28) !important;
+  border: 1px solid var(--color-parent-border, rgba(255, 140, 97, 0.32)) !important;
   box-shadow: 0 12px 28px -12px rgba(30, 37, 48, 0.14);
   transition:
     transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -992,17 +1008,27 @@ h1, h2, h3, h4 {
 .image-bg-card:active,
 .image-bg-card:focus-visible {
   transform: scale(1.02);
-  border-color: rgba(255, 140, 97, 0.68) !important;
-  box-shadow: 0 18px 34px -10px rgba(255, 140, 97, 0.24);
+  border-color: rgba(255, 140, 97, 0.72) !important;
+  box-shadow: 0 18px 34px -10px var(--color-parent-glow, rgba(255, 140, 97, 0.28));
 }
 
 :root[data-color-mode="dark"] .image-bg-card {
   color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
-  border-color: rgba(255, 140, 97, 0.34) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--color-parent-border, rgba(255, 140, 97, 0.48)) !important;
   box-shadow:
-    0 16px 36px -10px rgba(4, 8, 16, 0.72),
-    inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    0 18px 38px -10px rgba(2, 6, 11, 0.82),
+    0 0 24px -5px var(--color-parent-glow, rgba(255, 140, 97, 0.34)),
+    inset 0 1px 1px rgba(255, 255, 255, 0.16);
+}
+
+:root[data-color-mode="dark"] .image-bg-card:hover,
+:root[data-color-mode="dark"] .image-bg-card:focus-visible {
+  border-color: rgba(56, 189, 248, 0.76) !important;
+  box-shadow:
+    0 20px 42px -8px rgba(2, 6, 11, 0.88),
+    0 0 28px -2px var(--color-parent-glow, rgba(56, 189, 248, 0.46)),
+    inset 0 1px 2px rgba(255, 255, 255, 0.22);
 }
 
 :root[data-color-mode="dark"] .image-bg-card h1,
@@ -1013,7 +1039,7 @@ h1, h2, h3, h4 {
 :root[data-color-mode="dark"] .image-bg-card span,
 :root[data-color-mode="dark"] .image-bg-card div,
 :root[data-color-mode="dark"] .image-bg-card strong {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .image-bg-card .image-card-badge {
@@ -1026,10 +1052,10 @@ h1, h2, h3, h4 {
 }
 
 :root[data-color-mode="dark"] .image-bg-card .image-card-badge {
-  background-color: rgba(8, 18, 30, 0.76) !important;
+  background-color: rgba(11, 19, 26, 0.82) !important;
   color: #f8fafc !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-  border-color: rgba(255, 140, 97, 0.42) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 140, 97, 0.48) !important;
 }
 
 .image-bg-card .image-card-title {
@@ -1039,7 +1065,7 @@ h1, h2, h3, h4 {
 
 :root[data-color-mode="dark"] .image-bg-card .image-card-title {
   color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .image-bg-card .image-card-subtitle {
@@ -1048,8 +1074,8 @@ h1, h2, h3, h4 {
 }
 
 :root[data-color-mode="dark"] .image-bg-card .image-card-subtitle {
-  color: #f1f5f9 !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45) !important;
+  color: #f8fafc !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .image-bg-card .image-card-rating-pill {
@@ -1069,8 +1095,8 @@ h1, h2, h3, h4 {
 :root[data-color-mode="dark"] .image-bg-card .image-card-cta-pill {
   background-color: #ff8c61 !important;
   color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4) !important;
-  border-color: rgba(255, 214, 196, 0.55) !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 214, 196, 0.6) !important;
 }
 
 /* Standardized Soft-Filled Icon Container */
@@ -1081,9 +1107,9 @@ h1, h2, h3, h4 {
 }
 
 :root[data-color-mode="dark"] .nekbar-soft-icon-box {
-  background-color: rgba(255, 140, 97, 0.14);
-  border-color: rgba(255, 140, 97, 0.34);
-  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.4);
+  background-color: rgba(255, 140, 97, 0.16);
+  border-color: rgba(255, 140, 97, 0.40);
+  box-shadow: 0 6px 14px -4px rgba(0, 0, 0, 0.45);
 }
 
 /* Dynamic AI Robot Assistant FAB Pulsing Glow Animation */
@@ -1143,5 +1169,6 @@ h1, h2, h3, h4 {
 }
 
 :root[data-color-mode="dark"] .glass-bottom-nav {
-  background-color: rgba(23, 31, 47, 0.90) !important;
+  background-color: rgba(16, 29, 38, 0.92) !important;
+  border-color: rgba(45, 212, 191, 0.25) !important;
 }

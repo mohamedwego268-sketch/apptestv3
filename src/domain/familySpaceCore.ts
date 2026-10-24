@@ -310,6 +310,8 @@ export const BILINGUAL_SEED_DICTIONARY: Record<string, string> = {
   'أحمد وسارة': 'Ahmed & Sara',
   'سارة (الأم)': 'Sara (Mother)',
   'أحمد (الأب)': 'Ahmed (Father)',
+  'بابا (أحمد)': 'Dad (Ahmed)',
+  'ماما (سارة)': 'Mom (Sara)',
   'أ. ريم — مشرفة حضانة خطوات صغيرة': 'Ms. Reem — Little Steps Nursery Supervisor',
   'مشرفة حضانة': 'Nursery Supervisor',
   'الحضانة والمدرسة': 'Nursery & School',
@@ -2773,13 +2775,94 @@ export const STRICTLY_DIGITAL_CONTACT_CONFIG: DigitalContactChannel = {
 };
 
 export const DARK_MODE_PALETTE_TOKENS = {
-  pageBackground: '#131926',
-  surfaceBackground: '#1b2334',
-  elevatedControlBackground: '#243047',
-  textPrimary: '#f1f5f9',
-  textMuted: '#94a3b8',
-  borderSubtle: '#2b3852',
+  pageBackground: '#0B131A',
+  surfaceBackground: '#101D26',
+  elevatedControlBackground: '#162834',
+  textPrimary: '#F8FAFC',
+  textMuted: '#CBD5E1',
+  borderSubtle: '#1E3646',
 } as const;
+
+export interface ParentProfileThemeSpec {
+  role: ParentThemeRole;
+  accountKey: 'mother' | 'father';
+  paletteFamily: 'coral-rose' | 'teal-slate';
+  displayNameAr: string;
+  displayNameEn: string;
+  greetingAr: string;
+  greetingEn: string;
+  roleBadgeAr: string;
+  roleBadgeEn: string;
+  accentHex: string;
+  secondaryAccentHex: string;
+  badgeBgCss: string;
+  badgeTextCss: string;
+  badgeBorderCss: string;
+  glowColorCss: string;
+}
+
+/**
+ * Returns the distinct visual & greeting specification for Father (Teal / Slate Blue)
+ * vs. Mother (Soft Coral / Warm Rose) across Light and Dark modes.
+ */
+export function getParentProfileThemeSpec(
+  role: ParentThemeRole,
+  parentName?: string,
+  darkMode?: boolean,
+  lang: LanguageCode = 'ar'
+): ParentProfileThemeSpec {
+  const isDad = role === 'dad';
+  const isDark = Boolean(darkMode);
+  const rawName = (parentName || '').trim();
+
+  const resolvedNameAr = isDad
+    ? rawName && rawName.includes('بابا')
+      ? rawName
+      : 'بابا (أحمد)'
+    : rawName && rawName.includes('ماما')
+    ? rawName
+    : 'ماما (سارة)';
+
+  const resolvedNameEn = isDad ? 'Dad (Ahmed)' : 'Mom (Sara)';
+
+  if (isDad) {
+    return {
+      role: 'dad',
+      accountKey: 'father',
+      paletteFamily: 'teal-slate',
+      displayNameAr: resolvedNameAr,
+      displayNameEn: resolvedNameEn,
+      greetingAr: `أهلاً بك، ${resolvedNameAr}`,
+      greetingEn: `Welcome, ${resolvedNameEn}`,
+      roleBadgeAr: 'حساب الأب · تيل وأزرق أردوازي',
+      roleBadgeEn: 'Father Profile · Teal & Slate Blue',
+      accentHex: isDark ? '#14B8A6' : '#0D9488',
+      secondaryAccentHex: isDark ? '#38BDF8' : '#0284C7',
+      badgeBgCss: isDark ? 'rgba(14, 165, 233, 0.22)' : '#E0F2FE',
+      badgeTextCss: isDark ? '#7DD3FC' : '#0369A1',
+      badgeBorderCss: isDark ? 'rgba(56, 189, 248, 0.52)' : 'rgba(2, 132, 199, 0.35)',
+      glowColorCss: isDark ? 'rgba(20, 184, 166, 0.36)' : 'rgba(13, 148, 136, 0.22)',
+    };
+  }
+
+  return {
+    role: role === 'high-contrast' ? 'high-contrast' : 'mom',
+    accountKey: 'mother',
+    paletteFamily: 'coral-rose',
+    displayNameAr: resolvedNameAr,
+    displayNameEn: resolvedNameEn,
+    greetingAr: `أهلاً بك، ${resolvedNameAr}`,
+    greetingEn: `Welcome, ${resolvedNameEn}`,
+    roleBadgeAr: 'حساب الأم · مرجاني دافئ ووردي ناعم',
+    roleBadgeEn: 'Mother Profile · Soft Coral & Warm Rose',
+    accentHex: isDark ? '#FF8C61' : '#E86A3D',
+    secondaryAccentHex: isDark ? '#FB7185' : '#E11D48',
+    badgeBgCss: isDark ? 'rgba(255, 140, 97, 0.22)' : '#FFF1F2',
+    badgeTextCss: isDark ? '#FDA4AF' : '#BE123C',
+    badgeBorderCss: isDark ? 'rgba(251, 113, 133, 0.52)' : 'rgba(225, 29, 72, 0.32)',
+    glowColorCss: isDark ? 'rgba(255, 140, 97, 0.38)' : 'rgba(232, 106, 61, 0.22)',
+  };
+}
 
 export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
   return darkMode === true ? 'dark' : 'light';

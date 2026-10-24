@@ -197,7 +197,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-[var(--color-border)]">
           <div>
             <div className="text-[11px] font-extrabold text-[var(--color-role-text)]">
-              🚀 {isEn ? `Interactive Registration & Family QR Setup (Step ${step} of 4)` : `معالج التسجيل وربط الأسرة عبر QR والمدينة (الخطوة ${step} من 4)`}
+              🚀 {isEn ? `Nekbaar - نكبر · Interactive Registration & QR Setup (Step ${step} of 4)` : `Nekbaar - نكبر · معالج التسجيل وربط الأسرة عبر QR (الخطوة ${step} من 4)`}
             </div>
             <h2 id="onboarding-modal-title" className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
               {step === 1
@@ -391,8 +391,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           <div className="space-y-4">
             <p className="text-xs text-[var(--color-muted)] leading-relaxed">
               {isEn
-                ? 'Choosing your country and city automatically personalizes local pediatricians, nurseries, stores, and currency across Family Space.'
-                : 'اختيار الدولة والمدينة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك السكنية.'}
+                ? 'Choosing your country and city automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar - نكبر.'
+                : 'اختيار الدولة والمدينة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل Nekbaar - نكبر.'}
             </p>
 
             {/* Country Cards */}
@@ -504,18 +504,22 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
             <div className="space-y-2">
               <label className="block text-xs font-bold text-[var(--color-text)]">
-                🎨 {isEn ? 'Select Parent Experience & Visual Theme' : 'اختر تجربة الوالدين والسمة البصرية'}
+                🎨 {isEn ? 'Select Parent Profile & Color-Coded Theme' : 'اختر ملف الوالدين والسمة اللونية المخصصة'}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {[
-                  { id: 'mom' as ParentThemeRole, titleAr: '🌸 تجربة الأم — روز', titleEn: '🌸 Mother Mode — Rose' },
-                  { id: 'dad' as ParentThemeRole, titleAr: '🌊 تجربة الأب — أكوا', titleEn: '🌊 Father Mode — Aqua' },
+                  { id: 'mom' as ParentThemeRole, titleAr: '🌸 حساب الأم (ماما سارة) — مرجاني ووردي دافئ', titleEn: '🌸 Mother Profile — Soft Coral & Warm Rose' },
+                  { id: 'dad' as ParentThemeRole, titleAr: '🌊 حساب الأب (بابا أحمد) — تيل وأزرق أردوازي', titleEn: '🌊 Father Profile — Teal & Slate Blue' },
                   { id: 'high-contrast' as ParentThemeRole, titleAr: '👁️ تباين عالٍ للقراءة', titleEn: '👁️ High Contrast' },
                 ].map((r) => (
                   <button
                     key={r.id}
                     type="button"
-                    onClick={() => setParentRole(r.id)}
+                    onClick={() => {
+                      setParentRole(r.id);
+                      if (r.id === 'dad') setParentName('بابا (أحمد)');
+                      if (r.id === 'mom') setParentName('ماما (سارة)');
+                    }}
                     className={`p-3.5 rounded-xl border text-xs font-extrabold text-center ${
                       parentRole === r.id
                         ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-text)]'

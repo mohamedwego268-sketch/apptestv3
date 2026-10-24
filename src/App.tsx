@@ -53,6 +53,7 @@ import {
   calculateDistanceKm,
   findNearestCityByCoords,
   sortCatalogByCityAndProximity,
+  getParentProfileThemeSpec,
 } from './domain/familySpaceCore';
 import {
   AVATAR_ACCESSORY_THEMES,
@@ -1285,24 +1286,50 @@ export default function App() {
     [confirmDeleteChildId, state]
   );
 
+  const parentProfileSpec = getParentProfileThemeSpec(
+    state.role,
+    state.parentName,
+    state.darkMode,
+    lang
+  );
+
+  const handleSelectParentProfile = (targetRole: 'mom' | 'dad') => {
+    const isDad = targetRole === 'dad';
+    const nextName = isDad ? 'بابا (أحمد)' : 'ماما (سارة)';
+    setState((prev) => ({
+      ...prev,
+      role: targetRole,
+      activeParentAccount: isDad ? 'father' : 'mother',
+      parentName: nextName,
+    }));
+    showToast(
+      isDad
+        ? lang === 'en'
+          ? 'Father Profile active — Teal & Slate Blue (Dad Ahmed)'
+          : 'تم تفعيل حساب الأب (بابا أحمد) — سمة التييل والأزرق الأردوازي'
+        : lang === 'en'
+        ? 'Mother Profile active — Soft Coral & Warm Rose (Mom Sara)'
+        : 'تم تفعيل حساب الأم (ماما سارة) — سمة المرجان الدافئ والوردي الناعم'
+    );
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden pb-24 lg:pb-8">
-      {/* Top Bar Contract: Brand Wordmark + Primary Nav + Language/Notifications/Cart/Role Controls */}
+      {/* Top Bar Contract: Brand Wordmark (Nekbaar - نكبر) + Primary Nav + Minimal Theme/Lang/Profile Controls */}
       <header
         id="main-sticky-header"
         data-scrolled={isScrolled ? 'true' : 'false'}
         className="sticky top-0 z-30 border-b border-[var(--color-border)] glass-sticky-header"
       >
         <div className="max-w-[1280px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
-          {/* Zone 1: Single-line Brand Wordmark */}
+          {/* Zone 1: Single-line Official Brand Wordmark (Nekbaar - نكبر) */}
           <button
             type="button"
             onClick={() => navigateTo('home')}
             className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-extrabold tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 text-start"
           >
             <ThreeDIcon id="home" size={22} />
-            <span className="hidden sm:inline">{t(lang, 'brandName')}</span>
-            <span className="sm:hidden">{lang === 'en' ? 'Family Space' : 'مساحة الأسرة'}</span>
+            <span>{t(lang, 'brandName')}</span>
           </button>
 
           {/* Zone 2: Primary Single-Line Nav Links (Desktop) */}
@@ -1330,50 +1357,8 @@ export default function App() {
             })}
           </nav>
 
-          {/* Zone 3: Minimal Sticky Controls (Precise City Select + GPS Trigger + Theme/Lang + Profile Drawer) */}
+          {/* Zone 3: Zero-Clutter Minimal Sticky Controls (Dark Mode + Lang + Notifications + Color-Coded Parent Profile) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Compact City/Governorate Dropdown in Sticky Header */}
-            {activePage !== 'contact' && (
-              <div className="hidden md:flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2 py-1">
-                <span className="text-xs" aria-hidden="true">📍</span>
-                <select
-                  id="header-city-select"
-                  aria-label={lang === 'en' ? 'Select City or Governorate' : 'اختر المدينة أو المحافظة'}
-                  value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
-                  onChange={(e) => handleSelectPreciseCity(e.target.value)}
-                  className="bg-transparent text-xs font-extrabold text-[var(--color-text)] focus:outline-none cursor-pointer pe-1"
-                >
-                  <optgroup label={lang === 'en' ? '🇸🇦 Saudi Arabia Cities' : '🇸🇦 مدن المملكة العربية السعودية'}>
-                    {COUNTRY_CITIES_MAP.SA.map((c) => (
-                      <option key={`hdr-sa-${c.id}`} value={`SA:${c.id}`}>
-                        {lang === 'en' ? c.nameEn : c.nameAr}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label={lang === 'en' ? '🇪🇬 Egypt Governorates & Cities' : '🇪🇬 مدن ومحافظات مصر'}>
-                    {COUNTRY_CITIES_MAP.EG.map((c) => (
-                      <option key={`hdr-eg-${c.id}`} value={`EG:${c.id}`}>
-                        {lang === 'en' ? c.nameEn : c.nameAr}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <button
-                  id="header-gps-trigger"
-                  type="button"
-                  onClick={handleUseCurrentLocation}
-                  title={lang === 'en' ? 'Use my current location (GPS)' : 'استخدم موقعي الحالي (GPS)'}
-                  className={`px-1.5 py-0.5 rounded-lg text-[10.5px] font-extrabold transition-colors ${
-                    geoStatus === 'active'
-                      ? 'bg-teal-600 text-white'
-                      : 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] hover:bg-[var(--color-accent)] hover:text-white'
-                  }`}
-                >
-                  {geoStatus === 'locating' ? '…' : 'GPS'}
-                </button>
-              </div>
-            )}
-
             {/* Top Quick-Action Dark / Light Mode Toggle */}
             <button
               id="top-dark-mode-toggle"
@@ -1431,16 +1416,24 @@ export default function App() {
               </span>
             </button>
 
-            {/* Clean Profile & Quick Controls Drawer Trigger */}
+            {/* Color-Coded Parent Profile Drawer Trigger (Father Teal/Slate Blue vs. Mother Soft Coral/Warm Rose) */}
             <button
               id="open-profile-drawer-btn"
               type="button"
+              data-parent-role={parentProfileSpec.role}
               onClick={() => setRoleModalOpen(true)}
               aria-label={lang === 'en' ? 'Open Profile & Quick Controls' : 'فتح درج الحساب والتحكم السريع'}
-              className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-role-soft)] text-[var(--color-role-text)] whitespace-nowrap shrink-0 flex items-center gap-1.5"
+              style={{
+                backgroundColor: parentProfileSpec.badgeBgCss,
+                color: parentProfileSpec.badgeTextCss,
+                borderColor: parentProfileSpec.badgeBorderCss,
+              }}
+              className="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all"
             >
-              <span>👤</span>
-              <span className="hidden sm:inline">{locText(state.parentName, lang)}</span>
+              <span aria-hidden="true">{state.role === 'dad' ? '👨🏻‍💼' : '👩🏻‍💼'}</span>
+              <span className="hidden sm:inline">
+                {lang === 'en' ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
+              </span>
             </button>
           </div>
         </div>
@@ -1450,23 +1443,20 @@ export default function App() {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-7 pt-6 pb-8 grid grid-cols-1 lg:grid-cols-[256px_1fr] gap-7 items-start">
         {/* Sidebar Navigation with 3D Icon Family */}
         <aside className="hidden lg:block sticky top-20 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 soft-card-surface">
-          <div className="pb-3.5 border-b border-[var(--color-border)] space-y-2">
-            {activePage !== 'contact' && (
-              <div className="text-xs font-semibold text-[var(--color-muted)]">
-                {state.country === 'SA'
-                  ? lang === 'en'
-                    ? '🇸🇦 Saudi Arabia'
-                    : '🇸🇦 السعودية'
-                  : lang === 'en'
-                  ? '🇪🇬 Egypt'
-                  : '🇪🇬 مصر'}{' '}
-                · 📍 {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)} · {state.currency}
-              </div>
-            )}
-            <div className="text-sm font-bold text-[var(--color-text)]">
-              {lang === 'en'
-                ? `Welcome, ${locText(state.parentName, lang)} 👋`
-                : `أهلًا ${locText(state.parentName, lang)} 👋`}
+          <div className="pb-3.5 border-b border-[var(--color-border)] space-y-2.5">
+            <div className="text-sm font-extrabold text-[var(--color-text)]">
+              {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
+            </div>
+            <div
+              style={{
+                backgroundColor: parentProfileSpec.badgeBgCss,
+                color: parentProfileSpec.badgeTextCss,
+                borderColor: parentProfileSpec.badgeBorderCss,
+              }}
+              className="px-2.5 py-1 rounded-xl border text-[11px] font-extrabold inline-flex items-center gap-1.5"
+            >
+              <span aria-hidden="true">{state.role === 'dad' ? '🌊' : '🌸'}</span>
+              <span>{lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}</span>
             </div>
             <button
               id="open-onboarding-wizard-btn"
@@ -1689,136 +1679,122 @@ export default function App() {
               ================================================================ */}
           {activePage === 'home' && (
             <section className="space-y-9" aria-label={lang === 'en' ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
-              {/* 1. VERY FIRST ELEMENT ON PAGE: Main Topic / Core Value Proposition Hero */}
+              {/* 1. VERY FIRST ELEMENT ON PAGE: Unobstructed Personalized Greeting & Core Value Proposition */}
               {(() => {
-                const cityLabel = locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang);
-                const heroBgSpec = getCardBackgroundSpec('family', state.darkMode);
+                const heroBgSpec = getCardBackgroundSpec(
+                  state.role === 'dad' ? 'medical' : 'family',
+                  state.darkMode
+                );
 
                 return (
                   <div
                     id="home-core-value-hero"
                     data-testid="home-core-value-hero"
-                    style={{ backgroundImage: heroBgSpec.backgroundImageCss }}
-                    className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col justify-between gap-6"
+                    data-parent-profile={parentProfileSpec.role}
+                    style={{
+                      backgroundImage: heroBgSpec.backgroundImageCss,
+                      borderColor: parentProfileSpec.badgeBorderCss,
+                    }}
+                    className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col justify-between gap-5"
                   >
-                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                      <div className="space-y-3 max-w-2xl">
+                    <div className="space-y-4 max-w-3xl">
+                      {/* Top Personalized Greeting Badge & Parent Profile Switcher (Zero City Clutter) */}
+                      <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold">
-                            {lang === 'en'
-                              ? `👋 Welcome, ${locText(state.parentName, lang)}`
-                              : `👋 أهلًا بك، ${locText(state.parentName, lang)}`}
+                          <span
+                            id="hero-parent-role-badge"
+                            style={{
+                              backgroundColor: parentProfileSpec.badgeBgCss,
+                              color: parentProfileSpec.badgeTextCss,
+                              borderColor: parentProfileSpec.badgeBorderCss,
+                            }}
+                            className="px-3.5 py-1 rounded-full text-xs font-extrabold border shadow-2xs inline-flex items-center gap-1.5"
+                          >
+                            <span aria-hidden="true">{state.role === 'dad' ? '🌊' : '🌸'}</span>
+                            <span>
+                              {lang === 'en'
+                                ? parentProfileSpec.roleBadgeEn
+                                : parentProfileSpec.roleBadgeAr}
+                            </span>
                           </span>
-                          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-bold">
-                            {lang === 'en' ? 'Nekbar · Family Super App' : 'نكبر · تطبيق الأسرة المتكامل'}
+                          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold">
+                            {t(lang, 'brandName')}
                           </span>
                         </div>
 
-                        <h1 className="image-card-title text-xl sm:text-3xl font-extrabold leading-tight">
-                          {lang === 'en'
-                            ? 'Everything Your Family Needs for Child Health, Daily Routines & Trusted Local Care'
-                            : 'كل ما تحتاجه أسرتك لصحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر القريبة منك'}
-                        </h1>
-
-                        <p className="image-card-subtitle text-xs sm:text-sm font-semibold leading-relaxed">
-                          {lang === 'en'
-                            ? `Personalized for ages Day 1 to 8 Years · Instant pediatric booking, smart AI routine planning, and verified family stores in ${cityLabel}.`
-                            : `تجربة هادئة ومخصصة لعمر طفلك من أول يوم حتى 8 سنوات · حجز أطباء معتمدين، مساعد ذكي للروتين، ومتجر متكامل في ${cityLabel}.`}
-                        </p>
-
-                        <div className="pt-1 flex flex-wrap items-center gap-2.5">
-                          <PrimaryCtaButton variant="teal" size="md" onClick={() => navigateTo('medical')}>
-                            {lang === 'en' ? '🩺 Book Pediatrician' : '🩺 احجز موعد طبيب'}
-                          </PrimaryCtaButton>
-                          <PrimaryCtaButton variant="orange" size="md" onClick={() => navigateTo('services')}>
-                            {lang === 'en' ? '🛍️ Explore Family Store' : '🛍️ تسوّق متجر الأسرة'}
-                          </PrimaryCtaButton>
+                        {/* Instant Parent Profile Switcher: Father (Teal/Slate Blue) vs. Mother (Soft Coral/Warm Rose) */}
+                        <div
+                          role="group"
+                          aria-label={lang === 'en' ? 'Switch Parent Profile' : 'التبديل بين حساب الأب وحساب الأم'}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-surface)]/90 backdrop-blur-md p-1 border border-[var(--color-border)] shadow-2xs"
+                        >
                           <button
+                            id="switch-parent-dad-btn"
                             type="button"
-                            onClick={() => navigateTo('assistant')}
-                            className="image-card-badge min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold hover:opacity-95 transition-opacity"
+                            onClick={() => handleSelectParentProfile('dad')}
+                            aria-pressed={state.role === 'dad'}
+                            className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all flex items-center gap-1 ${
+                              state.role === 'dad'
+                                ? 'bg-[#0d9488] text-white shadow-2xs'
+                                : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                            }`}
                           >
-                            {lang === 'en' ? '✨ Smart AI Assistant' : '✨ المساعد الذكي AI'}
+                            <span aria-hidden="true">👨🏻‍💼</span>
+                            <span>{lang === 'en' ? 'Dad (Ahmed)' : 'بابا (أحمد)'}</span>
+                          </button>
+                          <button
+                            id="switch-parent-mom-btn"
+                            type="button"
+                            onClick={() => handleSelectParentProfile('mom')}
+                            aria-pressed={state.role !== 'dad'}
+                            className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all flex items-center gap-1 ${
+                              state.role !== 'dad'
+                                ? 'bg-[#E86A3D] text-white shadow-2xs'
+                                : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                            }`}
+                          >
+                            <span aria-hidden="true">👩🏻‍💼</span>
+                            <span>{lang === 'en' ? 'Mom (Sara)' : 'ماما (سارة)'}</span>
                           </button>
                         </div>
                       </div>
 
-                      {/* Integrated Precise City/Governorate Filter & GPS Geolocation Card */}
-                      <div className="w-full lg:w-[340px] shrink-0 rounded-2xl bg-[var(--color-surface)]/92 backdrop-blur-md border border-[var(--color-border)] p-4 space-y-3 shadow-sm">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <SoftFilledIcon id="services" boxSize="sm" size={20} />
-                            <div>
-                              <div className="text-xs font-extrabold text-[var(--color-text)]">
-                                {lang === 'en' ? 'City & Nearby Filter' : 'المدينة والخدمات القريبة'}
-                              </div>
-                              <div className="text-[11px] font-semibold text-[var(--color-muted)]">
-                                {geoStatus === 'active'
-                                  ? lang === 'en'
-                                    ? '✓ Sorted by closest distance (km)'
-                                    : '✓ مرتبة تلقائيًا حسب الأقرب إليك'
-                                  : lang === 'en'
-                                  ? 'Select city or enable GPS'
-                                  : 'اختر مدينتك أو فعّل تحديد الموقع'}
-                              </div>
-                            </div>
-                          </div>
-                          <span className="px-2 py-0.5 rounded-lg text-[10.5px] font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)]">
-                            {state.currency}
-                          </span>
-                        </div>
-
-                        <div>
-                          <label htmlFor="home-city-filter-select" className="sr-only">
-                            {lang === 'en' ? 'Select City or Governorate' : 'اختر المدينة أو المحافظة'}
-                          </label>
-                          <select
-                            id="home-city-filter-select"
-                            value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
-                            onChange={(e) => handleSelectPreciseCity(e.target.value)}
-                            className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
-                          >
-                            <optgroup label={lang === 'en' ? '🇸🇦 Saudi Arabia (Cities)' : '🇸🇦 السعودية (المدن والمحافظات)'}>
-                              {COUNTRY_CITIES_MAP.SA.map((c) => (
-                                <option key={`sa-${c.id}`} value={`SA:${c.id}`}>
-                                  {lang === 'en' ? `${c.nameEn} — Saudi Arabia` : `${c.nameAr} — السعودية`}
-                                </option>
-                              ))}
-                            </optgroup>
-                            <optgroup label={lang === 'en' ? '🇪🇬 Egypt (Cities & Governorates)' : '🇪🇬 مصر (المدن والمحافظات)'}>
-                              {COUNTRY_CITIES_MAP.EG.map((c) => (
-                                <option key={`eg-${c.id}`} value={`EG:${c.id}`}>
-                                  {lang === 'en' ? `${c.nameEn} — Egypt` : `${c.nameAr} — مصر`}
-                                </option>
-                              ))}
-                            </optgroup>
-                          </select>
-                        </div>
-
-                        <button
-                          id="use-current-location-btn"
-                          type="button"
-                          onClick={handleUseCurrentLocation}
-                          className={`w-full min-h-[38px] px-3 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all ${
-                            geoStatus === 'active'
-                              ? 'bg-[#0d9488] text-white shadow-2xs'
-                              : 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[#0d9488] hover:text-white'
-                          }`}
+                      {/* Absolute First Main Topic Heading: Personalized Greeting */}
+                      <div className="space-y-2">
+                        <h1
+                          id="home-main-greeting-heading"
+                          className="image-card-title text-2xl sm:text-4xl font-extrabold leading-tight"
                         >
-                          <span aria-hidden="true">📍</span>
-                          <span>
-                            {geoStatus === 'locating'
-                              ? lang === 'en'
-                                ? 'Detecting GPS location...'
-                                : 'جاري تحديد موقعك الحالي...'
-                              : geoStatus === 'active'
-                              ? lang === 'en'
-                                ? `GPS Active · Near ${cityLabel}`
-                                : `مفعل · الأقرب في ${cityLabel}`
-                              : lang === 'en'
-                              ? 'Use my current location'
-                              : 'استخدم موقعي الحالي'}
-                          </span>
+                          {lang === 'en'
+                            ? `${parentProfileSpec.greetingEn} 👋`
+                            : `${parentProfileSpec.greetingAr} 👋`}
+                        </h1>
+                        <p className="image-card-title text-base sm:text-xl font-extrabold leading-snug">
+                          {lang === 'en'
+                            ? 'Nekbaar - نكبر · Everything Your Family Needs for Child Health, Daily Routines & Trusted Care'
+                            : 'Nekbaar - نكبر · كل ما تحتاجه أسرتك لصحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر الموثوقة'}
+                        </p>
+                      </div>
+
+                      <p className="image-card-subtitle text-xs sm:text-sm font-semibold leading-relaxed max-w-2xl">
+                        {lang === 'en'
+                          ? 'Personalized for ages Day 1 to 8 Years · Instant pediatric booking, smart AI routine planning, and verified family stores.'
+                          : 'تجربة هادئة ومخصصة لعمر طفلك من أول يوم حتى 8 سنوات · حجز أطباء معتمدين، مساعد ذكي للروتين، ومتجر متكامل لأسرتك.'}
+                      </p>
+
+                      <div className="pt-1 flex flex-wrap items-center gap-2.5">
+                        <PrimaryCtaButton variant="teal" size="md" onClick={() => navigateTo('medical')}>
+                          {lang === 'en' ? '🩺 Book Pediatrician' : '🩺 احجز موعد طبيب'}
+                        </PrimaryCtaButton>
+                        <PrimaryCtaButton variant="orange" size="md" onClick={() => navigateTo('services')}>
+                          {lang === 'en' ? '🛍️ Explore Family Store' : '🛍️ تسوّق متجر الأسرة'}
+                        </PrimaryCtaButton>
+                        <button
+                          type="button"
+                          onClick={() => navigateTo('assistant')}
+                          className="image-card-badge min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold hover:opacity-95 transition-opacity"
+                        >
+                          {lang === 'en' ? '✨ Smart AI Assistant' : '✨ المساعد الذكي AI'}
                         </button>
                       </div>
                     </div>
@@ -2046,12 +2022,60 @@ export default function App() {
                 {/* TAB 1: NEARBY SERVICES & STORE (Sorted dynamically by City & GPS Distance) */}
                 {homeFocusTab === 'nearby' && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-extrabold text-[var(--color-role-text)]">
-                        {lang === 'en'
-                          ? `Showing top nearby picks for ${locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}`
-                          : `أقرب المختارات والخدمات في ${locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}`}
-                      </span>
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--color-control-muted)] p-3 border border-[var(--color-border)]">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label htmlFor="home-city-filter-select" className="text-xs font-extrabold text-[var(--color-text)]">
+                          📍 {lang === 'en' ? 'City:' : 'المدينة:'}
+                        </label>
+                        <select
+                          id="home-city-filter-select"
+                          value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
+                          onChange={(e) => handleSelectPreciseCity(e.target.value)}
+                          className="min-h-[36px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
+                        >
+                          <optgroup label={lang === 'en' ? '🇸🇦 Saudi Arabia (Cities)' : '🇸🇦 السعودية (المدن والمحافظات)'}>
+                            {COUNTRY_CITIES_MAP.SA.map((c) => (
+                              <option key={`sa-${c.id}`} value={`SA:${c.id}`}>
+                                {lang === 'en' ? `${c.nameEn} — Saudi Arabia` : `${c.nameAr} — السعودية`}
+                              </option>
+                            ))}
+                          </optgroup>
+                          <optgroup label={lang === 'en' ? '🇪🇬 Egypt (Cities & Governorates)' : '🇪🇬 مصر (المدن والمحافظات)'}>
+                            {COUNTRY_CITIES_MAP.EG.map((c) => (
+                              <option key={`eg-${c.id}`} value={`EG:${c.id}`}>
+                                {lang === 'en' ? `${c.nameEn} — Egypt` : `${c.nameAr} — مصر`}
+                              </option>
+                            ))}
+                          </optgroup>
+                        </select>
+
+                        <button
+                          id="use-current-location-btn"
+                          type="button"
+                          onClick={handleUseCurrentLocation}
+                          className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                            geoStatus === 'active'
+                              ? 'bg-[#0d9488] text-white shadow-2xs'
+                              : 'bg-[var(--color-surface)] text-[var(--color-role-text)] border border-[var(--color-border)] hover:border-[var(--color-accent)]'
+                          }`}
+                        >
+                          <span aria-hidden="true">📍</span>
+                          <span>
+                            {geoStatus === 'locating'
+                              ? lang === 'en'
+                                ? 'Detecting GPS...'
+                                : 'جاري تحديد موقعك...'
+                              : geoStatus === 'active'
+                              ? lang === 'en'
+                                ? 'GPS Sorted (Closest)'
+                                : 'مرتب حسب الأقرب (GPS)'
+                              : lang === 'en'
+                              ? 'Use my current location'
+                              : 'استخدم موقعي الحالي'}
+                          </span>
+                        </button>
+                      </div>
+
                       <button
                         type="button"
                         onClick={() => navigateTo('services')}
@@ -3427,11 +3451,12 @@ export default function App() {
               ================================================================ */}
           {activePage === 'settings' && (
             <section className="space-y-6" aria-label="الحساب والإعدادات">
-              {/* Profile Hero Warm Image Card */}
+              {/* Profile Hero Warm Image Card with Father vs. Mother Visual Distinction */}
               <div
                 className="image-bg-card rounded-[24px] p-5 sm:p-6 space-y-5"
                 style={{
                   backgroundImage: getCardBackgroundSpec('settings', state.darkMode).backgroundImageCss,
+                  borderColor: parentProfileSpec.badgeBorderCss,
                 }}
               >
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -3440,19 +3465,21 @@ export default function App() {
                       <ThreeDIcon id="family" size={38} />
                     </div>
                     <div>
-                      <span className="image-card-badge inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-extrabold shadow-2xs">
-                        {state.role === 'dad'
-                          ? lang === 'en'
-                            ? 'Father Account'
-                            : 'حساب الأب'
-                          : lang === 'en'
-                          ? 'Mother Account'
-                          : 'حساب الأم'}
+                      <span
+                        style={{
+                          backgroundColor: parentProfileSpec.badgeBgCss,
+                          color: parentProfileSpec.badgeTextCss,
+                          borderColor: parentProfileSpec.badgeBorderCss,
+                        }}
+                        className="inline-flex items-center px-3 py-0.5 rounded-full text-[11px] font-extrabold border shadow-2xs"
+                      >
+                        {lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}
                       </span>
                       <h2 className="image-card-title text-xl sm:text-2xl font-extrabold mt-1">
-                        {locText(state.parentName, lang)}
+                        {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
                       </h2>
                       <div className="image-card-subtitle text-xs font-bold tabular-nums mt-0.5">
+                        {t(lang, 'brandName')} ·{' '}
                         {state.country === 'SA'
                           ? lang === 'en'
                             ? 'Saudi Arabia'
@@ -4077,7 +4104,7 @@ export default function App() {
             aria-label={lang === 'en' ? 'Policies & Support Footer' : 'تذييل السياسات والتواصل'}
           >
             <div className="flex items-center gap-2 text-[var(--color-muted)] font-bold">
-              <span>© 2026 {lang === 'en' ? 'Family Space' : 'مساحة الأسرة'}</span>
+              <span>© 2026 {t(lang, 'brandName')}</span>
               <span aria-hidden="true">·</span>
               <span>{lang === 'en' ? 'All Rights Reserved' : 'جميع الحقوق محفوظة'}</span>
             </div>
@@ -5379,38 +5406,68 @@ export default function App() {
               </button>
             </div>
 
+            {/* Relocated City / Governorate & GPS Filter inside Profile Drawer */}
+            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <label htmlFor="drawer-city-select" className="text-xs font-extrabold text-[var(--color-text)]">
+                  📍 {lang === 'en' ? 'City / Governorate & GPS' : 'المدينة والمحافظة وتحديد الموقع'}
+                </label>
+                <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)]">
+                  {state.currency}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  id="drawer-city-select"
+                  value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
+                  onChange={(e) => handleSelectPreciseCity(e.target.value)}
+                  className="flex-1 min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+                >
+                  <optgroup label={lang === 'en' ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية'}>
+                    {COUNTRY_CITIES_MAP.SA.map((c) => (
+                      <option key={`drw-sa-${c.id}`} value={`SA:${c.id}`}>
+                        {lang === 'en' ? c.nameEn : c.nameAr}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label={lang === 'en' ? '🇪🇬 Egypt' : '🇪🇬 مصر'}>
+                    {COUNTRY_CITIES_MAP.EG.map((c) => (
+                      <option key={`drw-eg-${c.id}`} value={`EG:${c.id}`}>
+                        {lang === 'en' ? c.nameEn : c.nameAr}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] text-white shrink-0"
+                >
+                  📍 GPS
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={() => {
-                  setState((prev) => ({
-                    ...prev,
-                    role: 'mom',
-                    activeParentAccount: 'mother',
-                    parentName: 'ماما (سارة)',
-                  }));
+                  handleSelectParentProfile('mom');
                   setRoleModalOpen(false);
-                  showToast(lang === 'en' ? 'Mother account enabled — Calm Teal & Coral' : 'تم تفعيل حساب الأم — سمة التييل والمرجان الهادئ');
                 }}
-                className="p-3.5 rounded-xl border border-teal-200 bg-teal-50 text-teal-900 font-bold text-xs sm:text-sm text-start"
+                className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-900 font-bold text-xs sm:text-sm text-start"
               >
-                👩🏻‍🍼 {lang === 'en' ? 'Mother Experience — Calm Teal & Coral (Sara)' : 'تجربة الأم — سمة التييل والمرجان الدافئ (حساب ماما سارة)'}
+                👩🏻‍🍼 {lang === 'en' ? 'Mother Profile — Soft Coral & Warm Rose (Mom Sara)' : 'حساب الأم (ماما سارة) — مرجاني دافئ ووردي ناعم'}
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setState((prev) => ({
-                    ...prev,
-                    role: 'dad',
-                    activeParentAccount: 'father',
-                    parentName: 'بابا (أحمد)',
-                  }));
+                  handleSelectParentProfile('dad');
                   setRoleModalOpen(false);
-                  showToast(lang === 'en' ? 'Father account enabled — Cyan-Blue' : 'تم تفعيل تجربة الأب — أكوا هادئ');
                 }}
-                className="p-3.5 rounded-xl border border-cyan-200 bg-cyan-50 text-cyan-900 font-bold text-xs sm:text-sm text-start"
+                className="p-3.5 rounded-xl border border-sky-200 bg-sky-50 text-sky-900 font-bold text-xs sm:text-sm text-start"
               >
-                👨🏻‍🍼 {lang === 'en' ? 'Father Experience — Soothing Cyan-Blue (Ahmed)' : 'تجربة الأب — سمة الأكوا الهادئ (حساب بابا أحمد)'}
+                👨🏻‍🍼 {lang === 'en' ? 'Father Profile — Calm Teal & Slate Blue (Dad Ahmed)' : 'حساب الأب (بابا أحمد) — تيل هادئ وأزرق أردوازي'}
               </button>
               <button
                 type="button"
@@ -5437,8 +5494,8 @@ export default function App() {
                       ? '☀️ Switch to Breathable Light Mode'
                       : '☀️ التبديل إلى الوضع النهاري المريح'
                     : lang === 'en'
-                    ? '🌙 Enable Deep Soft Charcoal Dark Mode'
-                    : '🌙 تفعيل الوضع الليلي المريح للعين'}
+                    ? '🌙 Enable Deep Midnight Teal Dark Mode (#0B131A)'
+                    : '🌙 تفعيل الوضع الليلي العميق (#0B131A)'}
                 </span>
                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-900">
                   {state.darkMode ? (lang === 'en' ? 'Active' : 'مفعّل') : (lang === 'en' ? 'Off' : 'إيقاف')}

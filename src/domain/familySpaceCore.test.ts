@@ -344,3 +344,25 @@ test('COUNTRY_CITIES_MAP, findNearestCityByCoords & sortCatalogByCityAndProximit
   assert.ok(sortedCairo[0].estimatedDistanceKm > 0);
 });
 
+test('Nekbaar - نكبر branding, #0B131A Midnight Teal Dark Mode tokens, and Father (Teal/Slate Blue) vs Mother (Soft Coral/Warm Rose) Parent Profile specs', async () => {
+  const { DARK_MODE_PALETTE_TOKENS, getParentProfileThemeSpec } = await import('./familySpaceCore');
+  const { t } = await import('./i18n');
+
+  assert.equal(t('ar', 'brandName'), 'Nekbaar - نكبر');
+  assert.equal(t('en', 'brandName'), 'Nekbaar - نكبر');
+
+  assert.equal(DARK_MODE_PALETTE_TOKENS.pageBackground, '#0B131A');
+  assert.equal(DARK_MODE_PALETTE_TOKENS.surfaceBackground, '#101D26');
+
+  const dadSpec = getParentProfileThemeSpec('dad', 'بابا (أحمد)', false, 'ar');
+  assert.equal(dadSpec.paletteFamily, 'teal-slate');
+  assert.equal(dadSpec.greetingAr, 'أهلاً بك، بابا (أحمد)');
+  assert.equal(dadSpec.greetingEn, 'Welcome, Dad (Ahmed)');
+
+  const momSpec = getParentProfileThemeSpec('mom', 'ماما (سارة)', false, 'ar');
+  assert.equal(momSpec.paletteFamily, 'coral-rose');
+  assert.equal(momSpec.greetingAr, 'أهلاً بك، ماما (سارة)');
+  assert.equal(momSpec.greetingEn, 'Welcome, Mom (Sara)');
+});
+
+
