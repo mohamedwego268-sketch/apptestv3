@@ -57,6 +57,7 @@ import {
   THREE_D_ASSET_MANIFEST,
 } from './domain/assetManifest3D';
 import { t } from './domain/i18n';
+import { getCardBackgroundSpec } from './domain/cardBackgrounds';
 import { MedicalHealthSection } from './components/MedicalHealthSection';
 import { MediaPlatformSection } from './components/MediaPlatformSection';
 import { ParentsCommunitySection } from './components/ParentsCommunitySection';
@@ -1840,30 +1841,31 @@ export default function App() {
                 );
               })()}
 
-              {/* Main Service Buttons -> Modern 2-Column Super App Grid Cards */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
-                    {lang === 'en' ? 'Explore Services' : 'الخدمات والأقسام الرئيسية'}
+              {/* Main Service Buttons -> Image Background Cards with Teal/Dark Linear-Gradient Overlay */}
+              <div className="space-y-4">
+                <div className="section-heading-block">
+                  <h2 className="section-heading-centered">
+                    {lang === 'en' ? 'Explore Services & Core Hubs' : 'الخدمات والأقسام الرئيسية'}
                   </h2>
-                  <span className="text-xs font-bold text-[var(--color-muted)]">
-                    {lang === 'en' ? 'Tap a card to open' : 'اختر القسم للانتقال السريع'}
-                  </span>
+                  <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)]">
+                    {lang === 'en'
+                      ? 'Tap any visual card below to open the dedicated family hub'
+                      : 'اختر القسم للانتقال السريع إلى خدمات الأسرة والطفل'}
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                   {[
                     {
                       id: 'medical' as PageId,
                       title: lang === 'en' ? 'Medical Care' : 'الرعاية الطبية',
+                      subtitle: lang === 'en' ? 'Pediatricians & Growth' : 'أطباء الأطفال والنمو',
                       badge: lang === 'en' ? 'Doctors & Clinics' : 'أطباء وعيادات',
-                      iconId: 'health' as ThreeDIconId,
-                      tint: 'bg-emerald-50/90 border-emerald-200/80',
-                      badgeTint: 'bg-emerald-100 text-emerald-900',
                     },
                     {
                       id: 'services' as PageId,
                       title: lang === 'en' ? 'Family Store' : 'المتجر والخدمات',
+                      subtitle: lang === 'en' ? 'Toys, Apparel & Nurseries' : 'ألعاب ومستلزمات وحضانات',
                       badge:
                         cartItemCount > 0
                           ? lang === 'en'
@@ -1872,123 +1874,109 @@ export default function App() {
                           : lang === 'en'
                           ? 'Products & Offers'
                           : 'منتجات وحضانات',
-                      iconId: 'services' as ThreeDIconId,
-                      tint: 'bg-amber-50/90 border-amber-200/80',
-                      badgeTint: 'bg-amber-100 text-amber-900',
                     },
                     {
                       id: 'community' as PageId,
                       title: lang === 'en' ? 'Parents Community' : 'مجتمع الآباء',
+                      subtitle: lang === 'en' ? 'Real Parent Experiences' : 'تجارب ونقاشات يومية',
                       badge: lang === 'en' ? 'Discussions' : 'تجارب ونقاشات',
-                      iconId: 'star' as ThreeDIconId,
-                      tint: 'bg-rose-50/90 border-rose-200/80',
-                      badgeTint: 'bg-rose-100 text-rose-900',
                     },
                     {
                       id: 'media' as PageId,
                       title: lang === 'en' ? 'Media & Reels' : 'الميديا والريلز',
+                      subtitle: lang === 'en' ? '60s Visual Parenting Tips' : 'نصائح بصرية سريعة',
                       badge: lang === 'en' ? '9:16 Videos' : 'فيديوهات 9:16',
-                      iconId: 'video' as ThreeDIconId,
-                      tint: 'bg-indigo-50/90 border-indigo-200/80',
-                      badgeTint: 'bg-indigo-100 text-indigo-900',
                     },
                     {
                       id: 'assistant' as PageId,
                       title: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي',
+                      subtitle: lang === 'en' ? 'Smart Routine & Advice' : 'إرشاد وتصميم روتين',
                       badge: lang === 'en' ? 'Chat & Create' : 'محادثة وإنشاء',
-                      iconId: 'assistant' as ThreeDIconId,
-                      tint: 'bg-purple-50/90 border-purple-200/80',
-                      badgeTint: 'bg-purple-100 text-purple-900',
                     },
                     {
                       id: 'chat' as PageId,
                       title: lang === 'en' ? 'Internal Chat' : 'المحادثات',
+                      subtitle: lang === 'en' ? 'Family & Specialist Chat' : 'تواصل عائلي واستشاري',
                       badge: lang === 'en' ? 'Direct Messages' : 'تواصل مباشر',
-                      iconId: 'shield' as ThreeDIconId,
-                      tint: 'bg-sky-50/90 border-sky-200/80',
-                      badgeTint: 'bg-sky-100 text-sky-900',
                     },
                     {
                       id: 'children' as PageId,
                       title: lang === 'en' ? 'Kids Profiles 3D' : 'ملفات الأطفال',
+                      subtitle: lang === 'en' ? '3D Identity & Milestones' : 'هوية 3D ومتابعة النمو',
                       badge: `${state.kids.length} ${lang === 'en' ? 'Profiles' : 'ملفات مسجلة'}`,
-                      iconId: 'children' as ThreeDIconId,
-                      tint: 'bg-teal-50/90 border-teal-200/80',
-                      badgeTint: 'bg-teal-100 text-teal-900',
                     },
                     {
                       id: 'routine' as PageId,
                       title: lang === 'en' ? 'Daily Routine' : 'الروتين اليومي',
+                      subtitle: lang === 'en' ? 'Habits & Smart Alerts' : 'مهام وتذكيرات ذكية',
                       badge: `${completedTasksCount}/${state.tasks.length} ${lang === 'en' ? 'Done' : 'مكتمل'}`,
-                      iconId: 'routine' as ThreeDIconId,
-                      tint: 'bg-orange-50/90 border-orange-200/80',
-                      badgeTint: 'bg-orange-100 text-orange-900',
                     },
                     {
                       id: 'calendar' as PageId,
                       title: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد',
+                      subtitle: lang === 'en' ? 'Gregorian & Hijri Sync' : 'تقويم ميلادي وهجري',
                       badge: `${state.events.length} ${lang === 'en' ? 'Events' : 'مواعيد'}`,
-                      iconId: 'calendar' as ThreeDIconId,
-                      tint: 'bg-cyan-50/90 border-cyan-200/80',
-                      badgeTint: 'bg-cyan-100 text-cyan-900',
                     },
                     {
                       id: 'wishes' as PageId,
                       title: lang === 'en' ? 'Kids Wishes' : 'أمنيات الأطفال',
+                      subtitle: lang === 'en' ? 'Family Gift Goals' : 'أهداف وهدايا الطفل',
                       badge: `${state.wishes.length} ${lang === 'en' ? 'Wishes' : 'أمنيات'}`,
-                      iconId: 'wishes' as ThreeDIconId,
-                      tint: 'bg-pink-50/90 border-pink-200/80',
-                      badgeTint: 'bg-pink-100 text-pink-900',
                     },
                     {
                       id: 'games' as PageId,
                       title: lang === 'en' ? '3D Kids Games' : 'ألعاب الأطفال 3D',
+                      subtitle: lang === 'en' ? 'Safe Educational Play' : 'لعب تعليمي آمن',
                       badge: lang === 'en' ? 'Interactive' : 'ترفيه تعليمي',
-                      iconId: 'games' as ThreeDIconId,
-                      tint: 'bg-lime-50/90 border-lime-200/80',
-                      badgeTint: 'bg-lime-100 text-lime-900',
                     },
                     {
                       id: 'settings' as PageId,
                       title: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات',
+                      subtitle: lang === 'en' ? 'Theme, City & Backup' : 'إدارة الحساب والمدينة',
                       badge: lang === 'en' ? 'Account & Prefs' : 'إدارة الحساب',
-                      iconId: 'settings' as ThreeDIconId,
-                      tint: 'bg-slate-50/90 border-slate-200/80',
-                      badgeTint: 'bg-slate-200 text-slate-900',
                     },
-                  ].map((card) => (
-                    <button
-                      key={card.id}
-                      type="button"
-                      onClick={() => navigateTo(card.id)}
-                      className={`group min-h-[104px] sm:min-h-[114px] rounded-2xl border ${card.tint} bg-[var(--color-surface)] p-3.5 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md hover:border-[var(--color-accent)] active:scale-[0.98] transition-all`}
-                    >
-                      <div className="w-full flex items-start justify-between gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <ThreeDIcon id={card.iconId} size={32} />
+                  ].map((card) => {
+                    const bgSpec = getCardBackgroundSpec(card.id);
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        data-image-card="true"
+                        onClick={() => navigateTo(card.id)}
+                        style={{ backgroundImage: bgSpec.backgroundImageCss }}
+                        className="image-bg-card group min-h-[124px] sm:min-h-[136px] rounded-[24px] p-4 sm:p-5 flex flex-col justify-between items-start text-start cursor-pointer"
+                      >
+                        <div className="w-full flex items-center justify-end">
+                          <span className="image-card-badge px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold tabular-nums">
+                            {card.badge}
+                          </span>
                         </div>
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${card.badgeTint} tabular-nums`}>
-                          {card.badge}
-                        </span>
-                      </div>
-                      <div className="mt-2.5 w-full flex items-center justify-between gap-1">
-                        <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
-                          {card.title}
-                        </span>
-                        <span className="text-xs font-bold text-[var(--color-muted)] group-hover:text-[var(--color-accent)]">
-                          {lang === 'en' ? '→' : '←'}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                        <div className="mt-4 w-full space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="image-card-title text-sm sm:text-base font-extrabold truncate">
+                              {card.title}
+                            </span>
+                            <span className="text-sm font-extrabold text-teal-200 group-hover:translate-x-0.5 transition-transform">
+                              {lang === 'en' ? '→' : '←'}
+                            </span>
+                          </div>
+                          <p className="image-card-subtitle text-[11px] font-semibold truncate">
+                            {card.subtitle}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Horizontal Scrollable Featured Store & Services Carousel (Decluttered Breathing Room) */}
-              <div className="space-y-3" data-testid="home-horizontal-carousel">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
-                    {lang === 'en' ? '✨ Featured Family Picks & Local Services' : '✨ مختارات المتجر والخدمات المحلية (سحب أفقي)'}
+              <div className="space-y-4" data-testid="home-horizontal-carousel">
+                <div className="section-heading-block">
+                  <h2 className="section-heading-centered">
+                    {lang === 'en'
+                      ? 'Featured Family Picks & Local Services'
+                      : 'مختارات المتجر والخدمات المحلية'}
                   </h2>
                   <button
                     type="button"
@@ -1999,47 +1987,53 @@ export default function App() {
                   </button>
                 </div>
 
-                <div className="horizontal-scroll-row">
+                <div className="horizontal-scroll-row py-1">
                   {COMMERCIAL_CATALOG.filter((item) => item.country === state.country || item.country === 'BOTH')
                     .slice(0, 6)
                     .map((item) => {
                       const price = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
+                      const itemBg = getCardBackgroundSpec(item.category);
                       return (
                         <div
                           key={`home-carousel-${item.id}`}
-                          className="w-[260px] sm:w-[285px] rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 soft-card-surface flex flex-col justify-between gap-3"
+                          className="w-[265px] sm:w-[290px] rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.02] active:scale-[1.02]"
                         >
-                          <div className="flex items-start gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center text-2xl shrink-0">
-                              {item.emoji}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <span className="text-[10px] font-bold text-[var(--color-muted)] block truncate">
-                                {locText(item.categoryLabel, lang)} · 📍 {locText(item.city, lang)}
+                          <div
+                            style={{ backgroundImage: itemBg.backgroundImageCss }}
+                            className="image-bg-card !rounded-none !border-0 p-4 min-h-[104px] flex flex-col justify-between"
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold truncate">
+                                {locText(item.categoryLabel, lang)}
                               </span>
-                              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] line-clamp-1 mt-0.5">
-                                {lang === 'en' ? item.nameEn : item.name}
-                              </h3>
-                              <div className="text-xs font-extrabold text-[var(--color-role-text)] tabular-nums mt-1">
-                                {formatCurrency(price, state.currency, state.language)}
-                              </div>
+                              <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums">
+                                📍 {locText(item.city, lang)}
+                              </span>
                             </div>
+                            <h3 className="image-card-title text-sm sm:text-base font-extrabold line-clamp-1 mt-2">
+                              {lang === 'en' ? item.nameEn : item.name}
+                            </h3>
                           </div>
-                          <div className="flex items-center gap-2 pt-1">
-                            <button
-                              type="button"
-                              onClick={() => handleAddToCart(item)}
-                              className="flex-1 min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] active:scale-95 transition-transform"
-                            >
-                              {lang === 'en' ? '+ Add to Cart' : '+ أضف للسلة'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => navigateTo('services')}
-                              className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
-                            >
-                              {lang === 'en' ? 'View' : 'عرض'}
-                            </button>
+                          <div className="p-4 flex items-center justify-between gap-2">
+                            <div className="text-sm font-extrabold text-[var(--color-role-text)] tabular-nums">
+                              {formatCurrency(price, state.currency, state.language)}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleAddToCart(item)}
+                                className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] active:scale-95 transition-transform"
+                              >
+                                {lang === 'en' ? '+ Add to Cart' : '+ أضف للسلة'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => navigateTo('services')}
+                                className="min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                              >
+                                {lang === 'en' ? 'View' : 'عرض'}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -2048,23 +2042,23 @@ export default function App() {
               </div>
 
               {/* Compact Quick Cards: Children & Nearest Appointment */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                 {/* 3D Children Quick Strip */}
-                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3.5 soft-card-surface">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 space-y-4 soft-card-surface">
+                  <div className="section-heading-block !my-1 !py-1">
+                    <h2 className="section-heading-centered !text-lg sm:!text-xl">
                       {t(lang, 'yourChildren')}
                     </h2>
                     <button
                       type="button"
                       onClick={() => navigateTo('children')}
-                      className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                      className="min-h-[36px] px-4 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
                       {t(lang, 'manageProfiles')}
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3.5">
                     {state.kids.map((kid) => {
                       const ageInfo = calculateChildAge(kid.birth, state.language);
                       const displayKidName = locText(kid.name, lang);
@@ -2073,7 +2067,7 @@ export default function App() {
                           key={kid.id}
                           type="button"
                           onClick={() => navigateTo('children')}
-                          className="rounded-2xl border border-[var(--color-border)] p-3.5 flex items-center gap-3 text-start hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
+                          className="rounded-2xl border border-[var(--color-border)] p-3.5 flex items-center gap-3 text-start hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[1.02] transition-all"
                         >
                           <ThreeDChildAvatar
                             name={displayKidName}
@@ -2099,15 +2093,15 @@ export default function App() {
                 </div>
 
                 {/* Nearest Appointment Compact Card */}
-                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-3.5 soft-card-surface">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 flex flex-col justify-between gap-4 soft-card-surface">
+                  <div className="section-heading-block !my-1 !py-1">
+                    <h2 className="section-heading-centered !text-lg sm:!text-xl">
                       {t(lang, 'nearestAppointment')}
                     </h2>
                     <button
                       type="button"
                       onClick={() => navigateTo('calendar')}
-                      className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                      className="min-h-[36px] px-4 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
                       {t(lang, 'openCalendar')}
                     </button>
@@ -2117,20 +2111,20 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => navigateTo('calendar')}
-                      className="w-full rounded-2xl bg-[var(--color-notice)] p-4 flex items-center justify-between gap-3 text-start active:scale-[0.99] transition-transform"
+                      style={{
+                        backgroundImage: getCardBackgroundSpec('calendar').backgroundImageCss,
+                      }}
+                      className="image-bg-card w-full rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-3 text-start"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <ThreeDIcon id="health" size={38} />
-                        <div className="min-w-0">
-                          <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
-                            {locText(nearestEvent.title, lang)}
-                          </div>
-                          <div className="text-xs text-[var(--color-notice-text)] tabular-nums truncate mt-0.5">
-                            {nearestEvent.date} {nearestEvent.time ? `· ${locText(nearestEvent.time, lang)}` : ''}
-                          </div>
+                      <div className="min-w-0">
+                        <div className="image-card-title font-extrabold text-sm sm:text-base truncate">
+                          {locText(nearestEvent.title, lang)}
+                        </div>
+                        <div className="image-card-subtitle text-xs tabular-nums truncate mt-1">
+                          {nearestEvent.date} {nearestEvent.time ? `· ${locText(nearestEvent.time, lang)}` : ''}
                         </div>
                       </div>
-                      <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shrink-0">
+                      <span className="image-card-badge px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0">
                         {t(lang, 'viewDetails')}
                       </span>
                     </button>
@@ -2149,25 +2143,21 @@ export default function App() {
               ================================================================ */}
           {activePage === 'children' && (
             <section className="space-y-6" aria-label={lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال'}>
-              <div className="rounded-[24px] border border-teal-200/80 bg-teal-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
-                    <ThreeDIcon id="children" size={34} />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-900">
-                        {lang === 'en' ? '0–8 Years' : 'من أول يوم حتى 8 سنوات'}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-text)]">
-                        {lang === 'en' ? '3D Avatar & Photo' : 'هوية 3D وصورة حقيقية'}
-                      </span>
-                    </div>
-                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-1">
-                      {lang === 'en' ? '3D Child Profiles & Growth' : 'ملفات الأطفال ومتابعة النمو'}
-                    </h2>
-                  </div>
+              <div
+                style={{ backgroundImage: getCardBackgroundSpec('children').backgroundImageCss }}
+                className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-4"
+              >
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold">
+                    {lang === 'en' ? '0–8 Years' : 'من أول يوم حتى 8 سنوات'}
+                  </span>
+                  <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold">
+                    {lang === 'en' ? '3D Avatar & Photo' : 'هوية 3D وصورة حقيقية'}
+                  </span>
                 </div>
+                <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center">
+                  {lang === 'en' ? '3D Child Profiles & Growth' : 'ملفات الأطفال ومتابعة النمو'}
+                </h2>
                 <PrimaryCtaButton variant="teal" onClick={openAddChild}>
                   {lang === 'en' ? '+ Add Child Profile' : '+ إضافة طفل جديد'}
                 </PrimaryCtaButton>
@@ -2311,21 +2301,14 @@ export default function App() {
                 className="rounded-[24px] border border-orange-200/80 bg-orange-50/85 p-5 sm:p-6 shadow-2xs space-y-4"
                 aria-label={lang === 'en' ? 'Daily Routine Reminders' : 'تذكيرات الروتين اليومي'}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
-                      <ThreeDIcon id="routine" size={34} />
-                    </div>
-                    <div>
-                      <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-orange-100 text-orange-900 tabular-nums">
-                        {lang === 'en' ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
-                      </span>
-                      <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                        {lang === 'en' ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
-                      </h2>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
+                <div className="flex flex-col items-center justify-center text-center gap-3 py-2">
+                  <span className="px-3 py-1 rounded-xl text-xs font-extrabold bg-orange-100 text-orange-900 tabular-nums">
+                    {lang === 'en' ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
+                  </span>
+                  <h2 className="section-heading-centered">
+                    {lang === 'en' ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
+                  </h2>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                     <button
                       type="button"
                       onClick={handleResetTasks}
@@ -2564,20 +2547,16 @@ export default function App() {
               ================================================================ */}
           {activePage === 'calendar' && (
             <section className="space-y-6" aria-label={lang === 'en' ? 'Family Calendar' : 'التقويم الأسري'}>
-              <div className="rounded-[24px] border border-cyan-200/80 bg-cyan-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
-                    <ThreeDIcon id="calendar" size={34} />
-                  </div>
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-cyan-100 text-cyan-900 tabular-nums">
-                      📅 {todayFormatted.combined}
-                    </span>
-                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                      {lang === 'en' ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
-                    </h2>
-                  </div>
-                </div>
+              <div
+                style={{ backgroundImage: getCardBackgroundSpec('calendar').backgroundImageCss }}
+                className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3"
+              >
+                <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold tabular-nums">
+                  {todayFormatted.combined}
+                </span>
+                <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center">
+                  {lang === 'en' ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
+                </h2>
                 <PrimaryCtaButton
                   variant="teal"
                   onClick={() => {
@@ -2764,20 +2743,16 @@ export default function App() {
               ================================================================ */}
           {activePage === 'wishes' && (
             <section className="space-y-6" aria-label={lang === 'en' ? 'Wishes & Gifts' : 'الأمنيات والهدايا'}>
-              <div className="rounded-[24px] border border-pink-200/80 bg-pink-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
-                    <ThreeDIcon id="wishes" size={34} />
-                  </div>
-                  <div>
-                    <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-pink-100 text-pink-900 tabular-nums">
-                      🎁 {state.wishes.length} {lang === 'en' ? 'Saved Wishes' : 'أمنيات مسجلة'}
-                    </span>
-                    <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                      {lang === 'en' ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
-                    </h2>
-                  </div>
-                </div>
+              <div
+                style={{ backgroundImage: getCardBackgroundSpec('wishes').backgroundImageCss }}
+                className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3"
+              >
+                <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold tabular-nums">
+                  {state.wishes.length} {lang === 'en' ? 'Saved Wishes' : 'أمنيات مسجلة'}
+                </span>
+                <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center">
+                  {lang === 'en' ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
+                </h2>
                 <PrimaryCtaButton
                   variant="orange"
                   onClick={() => {
@@ -3404,77 +3379,61 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Quick Profile Pastel Grid Cards (Matching Home Screen Grid Cards) */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('children')}
-                    className="rounded-2xl bg-teal-50/90 border border-teal-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <ThreeDIcon id="children" size={28} />
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-teal-100 text-teal-900 tabular-nums">
-                        {state.kids.length}
-                      </span>
-                    </div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
-                      {lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('services')}
-                    className="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <ThreeDIcon id="services" size={28} />
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-amber-100 text-amber-900 tabular-nums">
-                        {state.orders.length}
-                      </span>
-                    </div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
-                      {lang === 'en' ? 'Store Orders' : 'طلبات المتجر'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('notifications')}
-                    className="rounded-2xl bg-sky-50/90 border border-sky-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <ThreeDIcon id="notifications" size={28} />
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-sky-100 text-sky-900 tabular-nums">
-                        {unreadNotifCount}
-                      </span>
-                    </div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
-                      {lang === 'en' ? 'Notifications' : 'الإشعارات اليومية'}
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowInnerSettings((prev) => !prev)}
-                    className="rounded-2xl bg-purple-50/90 border border-purple-200/80 p-3.5 text-start shadow-2xs hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <ThreeDIcon id="settings" size={28} />
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-purple-100 text-purple-900">
-                        {showInnerSettings
-                          ? lang === 'en'
-                            ? 'Open'
-                            : 'مفتوحة'
-                          : lang === 'en'
-                          ? 'Show'
-                          : 'عرض'}
-                      </span>
-                    </div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-2">
-                      ⚙️ {lang === 'en' ? 'App Settings' : 'الإعدادات'}
-                    </div>
-                  </button>
+                {/* Quick Profile Image Background Grid Cards (Matching Home Screen Image Cards) */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-2">
+                  {[
+                    {
+                      key: 'children',
+                      onClick: () => navigateTo('children'),
+                      badge: String(state.kids.length),
+                      title: lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال',
+                    },
+                    {
+                      key: 'services',
+                      onClick: () => navigateTo('services'),
+                      badge: String(state.orders.length),
+                      title: lang === 'en' ? 'Store Orders' : 'طلبات المتجر',
+                    },
+                    {
+                      key: 'chat',
+                      onClick: () => navigateTo('notifications'),
+                      badge: String(unreadNotifCount),
+                      title: lang === 'en' ? 'Notifications' : 'الإشعارات اليومية',
+                    },
+                    {
+                      key: 'settings',
+                      onClick: () => setShowInnerSettings((prev) => !prev),
+                      badge: showInnerSettings
+                        ? lang === 'en'
+                          ? 'Open'
+                          : 'مفتوحة'
+                        : lang === 'en'
+                        ? 'Show'
+                        : 'عرض',
+                      title: lang === 'en' ? 'App Settings' : 'الإعدادات',
+                    },
+                  ].map((pCard) => {
+                    const spec = getCardBackgroundSpec(pCard.key);
+                    return (
+                      <button
+                        key={pCard.key}
+                        type="button"
+                        data-image-card="true"
+                        onClick={pCard.onClick}
+                        style={{ backgroundImage: spec.backgroundImageCss }}
+                        className="image-bg-card rounded-2xl p-4 text-start flex flex-col justify-between min-h-[104px]"
+                      >
+                        <div className="flex items-center justify-end">
+                          <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10.5px] font-extrabold tabular-nums">
+                            {pCard.badge}
+                          </span>
+                        </div>
+                        <div className="image-card-title text-xs sm:text-sm font-extrabold mt-3">
+                          {pCard.title}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -3554,10 +3513,9 @@ export default function App() {
               {/* Inner Settings Section inside Profile Screen */}
               {showInnerSettings && (
                 <div className="space-y-5" aria-label="الإعدادات داخل صفحة الحساب">
-                  <div className="flex items-center justify-between gap-2 px-1">
-                    <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] flex items-center gap-2">
-                      <ThreeDIcon id="settings" size={26} />
-                      <span>{lang === 'en' ? 'Settings (الإعدادات)' : 'الإعدادات وتخصيص الحساب'}</span>
+                  <div className="section-heading-block">
+                    <h3 className="section-heading-centered">
+                      {lang === 'en' ? 'Settings & Account Preferences' : 'الإعدادات وتخصيص الحساب'}
                     </h3>
                   </div>
 
@@ -4082,7 +4040,7 @@ export default function App() {
 
         return (
           <nav
-            className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
+            className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-[var(--color-border)] glass-bottom-nav px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.14)]"
             aria-label={lang === 'en' ? 'Mobile Bottom Navigation' : 'التنقل السفلي للموبايل'}
           >
             {/* 1. Home (الرئيسية) */}

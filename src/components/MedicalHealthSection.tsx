@@ -16,6 +16,7 @@ import {
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 
 interface MedicalHealthSectionProps {
   kids: ChildProfile[];
@@ -240,6 +241,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             {filteredDoctors.map((doc) => {
               const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
               const isPediatrics = doc.category === 'doctor';
+              const docBgSpec = getCardBackgroundSpec('medical');
               return (
                 <article
                   key={doc.id}
@@ -247,34 +249,35 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                     isPediatrics
                       ? 'bg-emerald-50/80 border-emerald-200/80'
                       : 'bg-teal-50/80 border-teal-200/80'
-                  } p-4 sm:p-5 flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md transition-all`}
+                  } p-4 sm:p-5 flex flex-col justify-between gap-4 shadow-2xs hover:scale-[1.02] active:scale-[1.02] hover:shadow-md transition-all`}
                 >
                   <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2.5">
-                      <div className="w-12 h-12 rounded-2xl bg-white border border-emerald-100 shadow-2xs flex items-center justify-center shrink-0">
-                        <ThreeDIcon id="health" size={34} />
+                    <div
+                      data-image-card="true"
+                      style={{ backgroundImage: docBgSpec.backgroundImageCss }}
+                      className="image-bg-card rounded-2xl p-4 min-h-[100px] flex flex-col justify-between gap-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                          {isPediatrics
+                            ? isEn
+                              ? 'Pediatrics & Growth'
+                              : 'طب الأطفال والنمو'
+                            : isEn
+                            ? 'Psychology & Speech'
+                            : 'إرشاد نفسي وتخاطب'}
+                        </span>
+                        <span dir="ltr" className="text-xs font-extrabold text-amber-200 tabular-nums">
+                          ★ {doc.rating} ({doc.reviewCount || 120})
+                        </span>
                       </div>
-                      <span dir="ltr" className="text-xs font-extrabold text-amber-800 tabular-nums">
-                        🌟 {doc.rating} ({doc.reviewCount || 120})
-                      </span>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="text-[11px] font-extrabold text-emerald-900">
-                        {isPediatrics
-                          ? isEn
-                            ? '🩺 Pediatrics & Growth'
-                            : '🩺 طب الأطفال والنمو'
-                          : isEn
-                          ? '🧠 Psychology & Speech'
-                          : '🧠 إرشاد نفسي وتخاطب'}
-                      </div>
-                      <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
+                      <h3 className="text-base font-extrabold text-white leading-snug">
                         {isEn ? doc.nameEn : doc.name}
                       </h3>
-                      <div className="text-xs font-bold text-[var(--color-muted)]">
-                        📍 {locText(doc.city, language)} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
-                      </div>
+                    </div>
+
+                    <div className="text-xs font-bold text-[var(--color-muted)]">
+                      📍 {locText(doc.city, language)} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
                     </div>
                   </div>
 

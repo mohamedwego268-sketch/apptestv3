@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#134e4a"/>
+      <stop offset="45%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="82%" cy="22%" r="55%">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#fde68a" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#0f766e" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bokeh" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#sun)"/>
+  <!-- Sunlit Clinic Window Rays -->
+  <polygon points="520,0 800,0 800,380 340,500" fill="#fef3c7" opacity="0.14"/>
+  <polygon points="620,0 800,0 800,240 480,500" fill="#ffffff" opacity="0.1"/>
+  <!-- Soft Depth-of-Field Bokeh -->
+  <circle cx="650" cy="120" r="90" fill="url(#bokeh)"/>
+  <circle cx="540" cy="280" r="65" fill="url(#bokeh)"/>
+  <circle cx="220" cy="140" r="55" fill="url(#bokeh)"/>
+  <circle cx="710" cy="340" r="75" fill="url(#bokeh)"/>
+  <!-- Subtle Pediatric Care Architectural Silhouette -->
+  <g opacity="0.28" transform="translate(460, 110)">
+    <rect x="40" y="30" width="220" height="260" rx="28" fill="#ffffff" opacity="0.25"/>
+    <circle cx="150" cy="125" r="54" fill="#ccfbf1" opacity="0.45"/>
+    <path d="M150 95 v60 M120 125 h60" stroke="#ffffff" stroke-width="14" stroke-linecap="round"/>
+    <path d="M75 225 Q115 185 155 225 T235 225" fill="none" stroke="#fef3c7" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <!-- Warm Plant Leaves Foreground Silhouette -->
+  <path d="M40 500 Q60 360 150 310 Q110 410 120 500 Z" fill="#042f2e" opacity="0.35"/>
+  <path d="M90 500 Q140 380 230 350 Q175 430 165 500 Z" fill="#115e59" opacity="0.3"/>
+</svg>

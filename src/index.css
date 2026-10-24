@@ -916,6 +916,83 @@ h1, h2, h3, h4 {
   line-height: 1.38;
 }
 
+/* ==========================================================================
+   RADICAL UI UPGRADE: IMAGE BACKGROUND CARDS, CENTERED BOLD HEADINGS,
+   AND SCALE(1.02) MICRO-INTERACTIONS
+   ========================================================================== */
+.image-bg-card {
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  box-shadow: 0 14px 32px -12px rgba(13, 48, 58, 0.32);
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms ease !important;
+  will-change: transform;
+}
 
+.image-bg-card:hover,
+.image-bg-card:active,
+.image-bg-card:focus-visible {
+  transform: scale(1.02);
+  border-color: rgba(153, 246, 228, 0.65) !important;
+  box-shadow: 0 20px 38px -10px rgba(13, 48, 58, 0.44);
+}
 
+:root[data-color-mode="dark"] .image-bg-card {
+  border-color: rgba(148, 163, 184, 0.26) !important;
+  box-shadow: 0 16px 36px -10px rgba(6, 10, 20, 0.62);
+}
 
+.image-bg-card .image-card-badge {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #f0fdfa !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+
+.image-bg-card .image-card-title {
+  color: #ffffff !important;
+  text-shadow: 0 2px 8px rgba(10, 22, 34, 0.45);
+}
+
+.image-bg-card .image-card-subtitle {
+  color: rgba(240, 253, 250, 0.9) !important;
+}
+
+.section-heading-block {
+  text-align: center;
+  margin-block: 1.5rem 1.25rem;
+  padding-block: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+.section-heading-centered {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--color-text);
+  margin-inline: auto;
+}
+
+.glass-bottom-nav {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(18px) saturate(185%);
+  -webkit-backdrop-filter: blur(18px) saturate(185%);
+}
+
+:root[data-color-mode="dark"] .glass-bottom-nav {
+  background-color: rgba(23, 31, 47, 0.84) !important;
+}

@@ -16,6 +16,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
+import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import {
   BannerSlideItem,
   FriendlyEmptyState,
@@ -1624,48 +1625,51 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
       {/* Horizontal Scrollable Category & Featured Picks Carousels (UI Decluttering & Breathing Room) */}
       <div className="space-y-4">
-        <div className="horizontal-scroll-row" role="region" aria-label={isEn ? 'Horizontal Category Carousel' : 'شريط الفئات الأفقي'}>
+        <div className="horizontal-scroll-row py-1" role="region" aria-label={isEn ? 'Horizontal Category Carousel' : 'شريط الفئات الأفقي'}>
           {[
-            { id: 'all', icon: '✨', labelAr: 'كل الفئات', labelEn: 'All Categories' },
-            { id: 'toys', icon: '🧸', labelAr: 'ألعاب مونتيسوري', labelEn: 'Montessori Toys' },
-            { id: 'clothing', icon: '👕', labelAr: 'ألبسة قطنية', labelEn: 'Cotton Apparel' },
-            { id: 'essentials', icon: '🍼', labelAr: 'مستلزمات الرضع', labelEn: 'Baby Essentials' },
-            { id: 'doctor', icon: '🩺', labelAr: 'أطباء وعيادات', labelEn: 'Doctors & Clinics' },
-            { id: 'nursery', icon: '🏫', labelAr: 'حضانات ومدارس', labelEn: 'Nurseries' },
-            { id: 'consultation', icon: '💬', labelAr: 'استشارات تربوية', labelEn: 'Consultations' },
-          ].map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setCategoryFilter(cat.id)}
-              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs font-extrabold transition-all flex items-center gap-2 whitespace-nowrap soft-card-surface ${
-                categoryFilter === cat.id
-                  ? 'bg-orange-600 text-white shadow-sm'
-                  : 'bg-[var(--color-surface)] border border-[var(--color-border)]/60 text-[var(--color-text)] hover:border-orange-300'
-              }`}
-            >
-              <span className="text-base">{cat.icon}</span>
-              <span>{isEn ? cat.labelEn : cat.labelAr}</span>
-            </button>
-          ))}
+            { id: 'all', labelAr: 'كل الفئات', labelEn: 'All Categories' },
+            { id: 'toys', labelAr: 'ألعاب مونتيسوري', labelEn: 'Montessori Toys' },
+            { id: 'clothing', labelAr: 'ألبسة قطنية', labelEn: 'Cotton Apparel' },
+            { id: 'essentials', labelAr: 'مستلزمات الرضع', labelEn: 'Baby Essentials' },
+            { id: 'doctor', labelAr: 'أطباء وعيادات', labelEn: 'Doctors & Clinics' },
+            { id: 'nursery', labelAr: 'حضانات ومدارس', labelEn: 'Nurseries' },
+            { id: 'consultation', labelAr: 'استشارات تربوية', labelEn: 'Consultations' },
+          ].map((cat) => {
+            const bgSpec = getCardBackgroundSpec(cat.id);
+            const isSelected = categoryFilter === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                data-image-card="true"
+                data-category-image-card={cat.id}
+                onClick={() => setCategoryFilter(cat.id)}
+                style={{ backgroundImage: bgSpec.backgroundImageCss }}
+                className={`image-bg-card min-h-[60px] min-w-[146px] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center text-center whitespace-nowrap ${
+                  isSelected
+                    ? 'ring-2 ring-amber-400 shadow-lg'
+                    : 'opacity-95 hover:opacity-100'
+                }`}
+              >
+                <span className="text-white drop-shadow-xs tracking-wide">
+                  {isEn ? cat.labelEn : cat.labelAr}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Horizontal Featured Bestsellers Carousel */}
-        <div className="rounded-[24px] border border-[var(--color-border)]/50 bg-[var(--color-surface)] p-4 sm:p-5 space-y-3 soft-card-surface">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-                🔥 {isEn ? 'Featured Picks Carousel' : 'مختارات الأسرة السريعة (تصفح أفقي)'}
-              </h3>
-              <p className="text-[11px] font-semibold text-[var(--color-muted)]">
-                {isEn
-                  ? 'Swipe horizontally to explore top-rated Montessori & family essentials'
-                  : 'اسحب أفقيًا لاستعراض أفضل منتجات وخدمات الأسرة المختارة'}
-              </p>
-            </div>
-            <span className="text-[11px] font-extrabold text-orange-700 bg-orange-50 px-2.5 py-1 rounded-xl">
-              {isEn ? '↔ Swipe' : '↔ تمرير أفقي'}
-            </span>
+        <div className="rounded-[24px] border border-[var(--color-border)]/50 bg-[var(--color-surface)] p-5 sm:p-6 space-y-4 soft-card-surface">
+          <div className="section-heading-block">
+            <h3 className="section-heading-centered">
+              {isEn ? 'Featured Picks Carousel' : 'مختارات الأسرة السريعة'}
+            </h3>
+            <p className="section-subtitle-centered">
+              {isEn
+                ? 'Swipe horizontally to explore top-rated Montessori & family essentials'
+                : 'اسحب أفقيًا لاستعراض أفضل منتجات وخدمات الأسرة المختارة'}
+            </p>
           </div>
 
           <div
@@ -1674,35 +1678,38 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           >
             {COMMERCIAL_CATALOG.slice(0, 6).map((item) => {
               const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
+              const bgSpec = getCardBackgroundSpec(item.category);
               return (
                 <div
                   key={`carousel-${item.id}`}
-                  className="w-[240px] sm:w-[260px] rounded-2xl border border-[var(--color-border)]/55 bg-[var(--color-page)]/65 p-4 flex flex-col justify-between gap-3 soft-card-surface"
+                  data-image-card="true"
+                  style={{ backgroundImage: bgSpec.backgroundImageCss }}
+                  className="image-bg-card w-[245px] sm:w-[265px] rounded-2xl p-4 flex flex-col justify-between gap-3.5"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="w-11 h-11 rounded-2xl bg-white shadow-2xs flex items-center justify-center text-2xl">
-                      {item.emoji}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                      {locText(item.categoryLabel, language)}
                     </span>
-                    <span className="px-2 py-0.5 rounded-lg bg-amber-100/90 text-amber-900 text-[10px] font-extrabold tabular-nums">
-                      🌟 {item.rating}
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-300/95 text-slate-950 text-[10px] font-extrabold tabular-nums">
+                      ★ {item.rating}
                     </span>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-xs font-extrabold text-[var(--color-text)] line-clamp-1">
+                    <div className="text-sm font-extrabold text-white line-clamp-1">
                       {isEn ? item.nameEn : item.name}
                     </div>
-                    <div className="text-[11px] font-semibold text-[var(--color-muted)]">
-                      {locText(item.categoryLabel, language)} · 📍 {locText(item.city, language)}
+                    <div className="text-[11px] font-semibold text-white/85">
+                      {locText(item.city, language)}
                     </div>
                   </div>
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/45">
-                    <strong className="text-xs font-extrabold text-[var(--color-text)] tabular-nums">
+                  <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/20">
+                    <strong className="text-xs font-extrabold text-amber-200 tabular-nums">
                       {formatCurrency(priceVal, currency, language)}
                     </strong>
                     <button
                       type="button"
                       onClick={() => onAddToCart(item, item.variants?.[0])}
-                      className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-extrabold shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-white/95 hover:bg-white text-slate-900 text-[11px] font-extrabold shadow-2xs"
                     >
                       {isEn ? '+ Add' : '+ للسلة'}
                     </button>
@@ -1747,54 +1754,58 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             const displayTitle = isEn ? item.nameEn : item.name;
             const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
             const tone = PASTEL_CARD_TONES[toneKey];
+            const itemBgSpec = getCardBackgroundSpec(item.category);
 
             return (
               <div
                 key={item.id}
-                className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4 soft-card-surface hover:shadow-md transition-all`}
+                className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4 soft-card-surface hover:scale-[1.02] active:scale-[1.02] hover:shadow-md transition-all`}
               >
                 <div className="space-y-3">
-                  {/* Top Visual Header: 3D Tactile Icon Box + Rating/Collection Tag */}
+                  {/* Top Visual Header: Image Background Header (No small boring icon box) */}
                   <div
                     onClick={() => onInspectCommercialItem(item)}
-                    className="rounded-2xl p-3.5 cursor-pointer relative overflow-hidden flex items-center justify-between gap-2.5 border border-white/80 bg-white/85 shadow-2xs"
+                    data-image-card="true"
+                    style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
+                    className="image-bg-card rounded-2xl p-4 min-h-[96px] cursor-pointer flex flex-col justify-between gap-2"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-[var(--color-accent-soft)]/60 flex items-center justify-center text-2xl shrink-0">
-                      {item.emoji}
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/25">
+                        {locText(item.categoryLabel, language)}
+                      </span>
                       {item.collectionTag && (
-                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${tone.badge}`}>
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-300/95 text-slate-950">
                           {item.collectionTag === 'bestseller'
                             ? isEn
-                              ? '🔥 Bestseller'
-                              : '🔥 الأكثر مبيعًا'
+                              ? 'Bestseller'
+                              : 'الأكثر مبيعًا'
                             : item.collectionTag === 'new'
                             ? isEn
-                              ? '✨ New'
-                              : '✨ جديد'
+                              ? 'New'
+                              : 'جديد'
                             : item.collectionTag === 'deal'
                             ? isEn
-                              ? '🏷️ Value Deal'
-                              : '🏷️ عرض توفير'
+                              ? 'Value Deal'
+                              : 'عرض توفير'
                             : isEn
-                            ? '⭐ Recommended'
-                            : '⭐ موصى به'}
+                            ? 'Recommended'
+                            : 'موصى به'}
                         </span>
                       )}
-                      <span className="text-[11px] font-extrabold text-amber-800 tabular-nums">
-                        🌟 {item.rating} ({item.reviewCount || 80})
+                    </div>
+
+                    <div className="flex items-end justify-between gap-2 pt-2">
+                      <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug line-clamp-2">
+                        {displayTitle}
+                      </h3>
+                      <span className="text-[11px] font-extrabold text-amber-200 tabular-nums shrink-0">
+                        ★ {item.rating} ({item.reviewCount || 80})
                       </span>
                     </div>
                   </div>
 
-                  {/* Title & Compact Visual Metadata Strip */}
+                  {/* Compact Visual Metadata Strip */}
                   <div className="space-y-1.5">
-                    <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] leading-snug line-clamp-2">
-                      {displayTitle}
-                    </h3>
-
                     <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)]">
                       <span>{locText(item.categoryLabel, language)}</span>
                       <span aria-hidden="true">·</span>
