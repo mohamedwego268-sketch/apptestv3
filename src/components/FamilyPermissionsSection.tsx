@@ -10,6 +10,7 @@ import {
   LanguageCode,
   ParentAccountProfile,
   getDefaultPermissions,
+  locText,
   validatePhoneForCountry,
 } from '../domain/familySpaceCore';
 import { PrimaryCtaButton } from './DesignSystem';
@@ -1085,7 +1086,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                     onChange={() => handleToggleInvitedKid(k.id)}
                     className="accent-[var(--color-accent)]"
                   />
-                  <span>{k.name}</span>
+                  <span>{locText(k.name, language)}</span>
                 </label>
               ))}
             </div>
@@ -1124,8 +1125,8 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 {invitations.map((inv) => {
                   const assignedNames = kids
                     .filter((k) => inv.assignedKidIds.includes(k.id))
-                    .map((k) => k.name)
-                    .join('، ');
+                    .map((k) => locText(k.name, language))
+                    .join(isEn ? ', ' : '، ');
                   const statusBadge =
                     inv.status === 'accepted'
                       ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
@@ -1140,7 +1141,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                            {inv.recipientName}
+                            {locText(inv.recipientName, language)}
                           </span>
                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold border ${statusBadge}`}>
                             {inv.status === 'pending'
@@ -1157,7 +1158,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                           </span>
                         </div>
                         <div className="text-[11px] font-semibold text-[var(--color-muted)] tabular-nums">
-                          {inv.roleLabel} · 👶 <strong className="text-[var(--color-text)]">{assignedNames || '—'}</strong> · ⏳ {inv.expiresAt}
+                          {locText(inv.roleLabel, language)} · 👶 <strong className="text-[var(--color-text)]">{assignedNames || '—'}</strong> · ⏳ {inv.expiresAt}
                         </div>
                       </div>
 
@@ -1220,8 +1221,8 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                   const assignedKidsLabel = person.assignedKidIds?.length
                     ? kids
                         .filter((k) => person.assignedKidIds?.includes(k.id))
-                        .map((k) => k.name)
-                        .join('، ')
+                        .map((k) => locText(k.name, language))
+                        .join(isEn ? ', ' : '، ')
                     : isEn
                     ? 'All Children'
                     : 'كل الأطفال';
@@ -1237,10 +1238,10 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                         </div>
                         <div className="min-w-0">
                           <div className="font-extrabold text-xs sm:text-sm text-[var(--color-text)]">
-                            {person.name}
+                            {locText(person.name, language)}
                           </div>
                           <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                            {person.role} · 👶 {assignedKidsLabel}
+                            {locText(person.role, language)} · 👶 {assignedKidsLabel}
                           </div>
                           <div className="text-[10.5px] font-bold text-teal-900 mt-0.5">
                             🔑 {activeScopes.length ? activeScopes.join(' · ') : isEn ? 'No permissions' : 'بدون صلاحيات'}

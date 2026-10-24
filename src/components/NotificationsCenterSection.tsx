@@ -5,6 +5,7 @@ import {
   ParentNotificationPrefs,
   generateThreeDailyNotifications,
   getEmptyStateCopy,
+  locText,
 } from '../domain/familySpaceCore';
 import { FriendlyEmptyState, PrimaryCtaButton } from './DesignSystem';
 
@@ -83,7 +84,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <div>
               <h3 className="text-base font-extrabold text-[var(--color-text)]">
                 {isEn
-                  ? `Today's Notifications — ${parentProfile.fullName}`
+                  ? `Today's Notifications — ${locText(parentProfile.fullName, language)}`
                   : `إشعارات اليوم — ${parentProfile.fullName}`}
               </h3>
               <div className="text-xs font-bold text-[var(--color-muted)]">

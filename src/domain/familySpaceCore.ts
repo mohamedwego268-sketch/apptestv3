@@ -20,6 +20,374 @@ export type CalendarDisplayMode = 'both' | 'gregorian' | 'hijri';
 export type TaskCadence = 'daily' | 'weekly' | 'monthly';
 export type AgeStage = '0-2' | '2-5' | '5-8' | 'all';
 
+export interface BilingualText {
+  ar: string;
+  en: string;
+}
+
+export interface BilingualUserProfile {
+  name: BilingualText;
+  role: BilingualText;
+  city: BilingualText;
+  children: Array<{
+    id: number;
+    name: BilingualText;
+    role: BilingualText;
+    ageLabel: BilingualText;
+    bloodType: string;
+    allergies: BilingualText[];
+    vaccinationsNote: BilingualText;
+    healthNotePrivate: BilingualText;
+    interests: BilingualText[];
+  }>;
+}
+
+export const MOCK_BILINGUAL_USER: BilingualUserProfile = {
+  name: { ar: 'أحمد وسارة', en: 'Ahmed & Sara' },
+  role: { ar: 'الأم / الأب', en: 'Mother / Father' },
+  city: { ar: 'القاهرة', en: 'Cairo' },
+  children: [
+    {
+      id: 1,
+      name: { ar: 'عز', en: 'Ezz' },
+      role: { ar: 'الابن الأكبر', en: 'Eldest Son' },
+      ageLabel: { ar: '3 سنوات و 9 أشهر', en: '3 yrs, 9 mos' },
+      bloodType: 'O+',
+      allergies: [{ ar: 'لا توجد حساسية معروفة', en: 'No known allergies' }],
+      vaccinationsNote: {
+        ar: 'مكتمل التطعيمات الأساسية حتى 3 سنوات',
+        en: 'Core vaccinations completed up to 3 years',
+      },
+      healthNotePrivate: {
+        ar: 'يتابع نمو اللغة والتركيز بشكل ممتاز مع طبيب الأطفال.',
+        en: 'Tracking language & focus milestones smoothly with the pediatrician.',
+      },
+      interests: [
+        { ar: 'المكعبات', en: 'Building Blocks' },
+        { ar: 'الديناصورات', en: 'Dinosaurs' },
+        { ar: 'الرسم', en: 'Drawing' },
+        { ar: 'السباحة', en: 'Swimming' },
+      ],
+    },
+    {
+      id: 2,
+      name: { ar: 'نور', en: 'Nour' },
+      role: { ar: 'الابنة الصغرى', en: 'Youngest Daughter' },
+      ageLabel: { ar: 'سنة و 8 أشهر', en: '1 yr, 8 mos' },
+      bloodType: 'A+',
+      allergies: [{ ar: 'حساسية خفيفة من الفراولة', en: 'Mild strawberry allergy' }],
+      vaccinationsNote: {
+        ar: 'تطعيم 18 شهر مكتمل بنجاح',
+        en: '18-month booster vaccination completed',
+      },
+      healthNotePrivate: {
+        ar: 'نوم مستقر ليلاً مع بداية نطق جمل قصيرة من كلمتين.',
+        en: 'Steady nighttime sleep and starting 2-word phrases.',
+      },
+      interests: [
+        { ar: 'الأناشيد الصوتية', en: 'Audio Rhymes' },
+        { ar: 'الألوان المائية', en: 'Watercolors' },
+        { ar: 'قصص الحيوانات', en: 'Animal Stories' },
+      ],
+    },
+  ],
+};
+
+export const BILINGUAL_SEED_DICTIONARY: Record<string, string> = {
+  // User & Family Names / Roles / Cities
+  'أحمد وسارة': 'Ahmed & Sara',
+  'أحمد': 'Ahmed',
+  'سارة': 'Sara',
+  'عز': 'Ezz',
+  'نور': 'Nour',
+  'ليلى': 'Layla',
+  'القاهرة': 'Cairo',
+  'القاهرة الجديدة': 'New Cairo',
+  'الرياض': 'Riyadh',
+  'الإسكندرية': 'Alexandria',
+  'جدة': 'Jeddah',
+  'الجيزة': 'Giza',
+  'المنصورة': 'Mansoura',
+  'طنطا': 'Tanta',
+  'أسيوط': 'Assiut',
+  'الدمام': 'Dammam',
+  'مكة المكرمة': 'Makkah',
+  'المدينة المنورة': 'Madinah',
+  'الخبر': 'Khobar',
+  'كل المدن': 'All Cities',
+  'ماما (سارة)': 'Mom (Sara)',
+  'بابا (أحمد)': 'Dad (Ahmed)',
+  'الأم (سارة)': 'Mother (Sara)',
+  'الأب (أحمد)': 'Father (Ahmed)',
+  'سارة المنيري': 'Sara El-Moneiry',
+  'أحمد الكيلاني': 'Ahmed El-Kilany',
+  'الأم': 'Mother',
+  'الأب': 'Father',
+  'مشترك (الأم والأب)': 'Shared (Mom & Dad)',
+  'الجدة (أم سارة)': 'Grandma (Sara’s Mom)',
+  'الجد (أبو أحمد)': 'Grandpa (Ahmed’s Dad)',
+  'الخالة مريم': 'Aunt Mariam',
+  'العم كريم': 'Uncle Karim',
+  'الجدة منى': 'Grandma Mona',
+  'الجدة منى (أم سارة)': 'Grandma Mona (Sara’s Mom)',
+  'الجد حسن (أبو أحمد)': 'Grandpa Hassan (Ahmed’s Dad)',
+  'الجدة': 'Grandmother',
+  'الجد': 'Grandfather',
+  'الخالة': 'Maternal Aunt',
+  'العم': 'Paternal Uncle',
+  'الخالة / العمة': 'Aunt',
+  'الجد / الجدة': 'Grandparent',
+  'مربية / مساعدة': 'Nanny / Caregiver',
+  'عائلة الأم': 'Mother’s Side',
+  'عائلة الأب': 'Father’s Side',
+  'مشترك': 'Shared',
+  'عائلة سارة وأحمد': 'Sara & Ahmed Family',
+  'المعادي - شارع 9، عمارة 14، الدور الثالث': 'Maadi - Street 9, Bldg 14, 3rd Floor',
+
+  // Child medical & interests
+  'تركيب المكعبات، قصص الفضاء، السباحة': 'Building blocks, space stories, swimming',
+  'الألوان المائية، الأناشيد الحركية، القطط': 'Watercolors, action rhymes, kittens',
+  'المكعبات، الرسم، القصص المصورة': 'Building blocks, drawing, picture books',
+  'الأناشيد، المكعبات الخشبية، اللعب الحسي': 'Songs, wooden blocks, sensory play',
+  'لا توجد حساسية معروفة': 'No known allergies',
+  'حساسية خفيفة من الفراولة': 'Mild strawberry allergy',
+  'مكتمل التطعيمات الأساسية حتى 3 سنوات': 'Core vaccinations completed up to 3 years',
+  'مكتمل حتى تطعيم ٤ سنوات + جرعة تنشيطية': 'Completed up to 4-year vaccines + booster',
+  'مكتمل حتى تطعيم ١٨ شهرًا — متبقي تطعيم سنتين': 'Completed up to 18-month vaccines — 2-yr due next',
+  'تطعيم 18 شهر مكتمل بنجاح': '18-month booster vaccination completed',
+  'يتابع نمو اللغة والتركيز بشكل ممتاز مع طبيب الأطفال.': 'Tracking language & focus milestones smoothly with the pediatrician.',
+  'نوم مستقر ليلاً مع بداية نطق جمل قصيرة من كلمتين.': 'Steady nighttime sleep and starting 2-word phrases.',
+  'لا توجد حساسية غذائية. يفضل المتابعة الدورية للأسنان.': 'No food allergies. Routine dental checkup recommended.',
+  'حساسية خفيفة من الفراولة الطازجة — يفضل الفواكه المطهية أو التفاح والموز.': 'Mild sensitivity to fresh strawberries — prefers apples & bananas.',
+  'المكعبات': 'Building Blocks',
+  'الديناصورات': 'Dinosaurs',
+  'الرسم': 'Drawing',
+  'السباحة': 'Swimming',
+  'الأناشيد الصوتية': 'Audio Rhymes',
+  'الألوان المائية': 'Watercolors',
+  'قصص الحيوانات': 'Animal Stories',
+
+  // Routine tasks
+  'ترتيب سرير عز وتجهيز ملابس الحضانة': 'Make Ezz’s bed & prepare nursery outfit',
+  'غسل الأسنان الصباحي مع أنشودة دقيقتين': 'Morning toothbrushing with 2-min song',
+  'قراءة قصة مصورة قبل القيلولة لنور': 'Read a picture story before Nour’s nap',
+  'جلسة بازل خشبي ومكعبات بدون شاشات (25 دقيقة)': 'Screen-free wooden puzzle & blocks (25 min)',
+  'تحضير وجبة فواكه مقطعة ومياه دافئة': 'Prepare sliced fruit snack & warm water',
+  'روتين الاستحمام الهادئ وتخفيت الإضاءة': 'Calm bath routine & dimmed lights',
+  'غسل الأسنان وتجهيز حقيبة الروضة': 'Brush teeth & pack kindergarten bag',
+  'وجبة فواكه موسمية ومياه كافية': 'Seasonal fruit snack & hydration',
+  'نشاط تلوين حر وتنمية العضلات الدقيقة (٢٠ دقيقة)': 'Free coloring & fine-motor play (20 min)',
+  'قراءة قصة ما قبل النوم بهدوء (بدون شاشات)': 'Calm bedtime story reading (screen-free)',
+  'مراجعة جدول تطعيمات الأسبوع وتحديث الوزن': 'Review weekly vaccination & weight log',
+  'العناية الصباحية': 'Morning Care',
+  'صحة ونظافة': 'Health & Hygiene',
+  'قراءة ولغة': 'Reading & Language',
+  'مهارات حركية': 'Motor Skills',
+  'تغذية صحية': 'Healthy Nutrition',
+  'روتين النوم': 'Bedtime Routine',
+  'صباحي': 'Morning',
+  'تغذية': 'Nutrition',
+  'مهارات': 'Skills',
+  'مسائي': 'Evening',
+  'صحي': 'Health',
+  'الأم': 'Mother',
+  'الأب': 'Father',
+  '07:30 ص': '07:30 AM',
+  '08:00 ص': '08:00 AM',
+  '01:00 م': '01:00 PM',
+  '01:30 م': '01:30 PM',
+  '04:30 م': '04:30 PM',
+  '05:00 م': '05:00 PM',
+  '06:30 م': '06:30 PM',
+  '07:45 م': '07:45 PM',
+  '08:00 م': '08:00 PM',
+  '10:00 ص': '10:00 AM',
+
+  // Calendar events & memories
+  'متابعة تطعيم وقياس النمو الدوري - عز': 'Routine growth check & vaccination follow-up - Ezz',
+  'نزهة عائلية في حديقة الأزهر مع الجد والجدة': 'Family picnic at Al-Azhar Park with Grandparents',
+  'ورشة تلوين وفنون حسية للأطفال': 'Sensory art & painting workshop for kids',
+  'أول يوم لعز في مرحلة التمهيدي (KG1)': 'Ezz’s first day in Pre-K (KG1)',
+  'عيد ميلاد نور الثاني مع العائلة': 'Nour’s 2nd birthday with the family',
+  'متابعة تطعيم ١٨ شهرًا لنور في عيادة الأطفال': 'Nour’s 18-month vaccination follow-up at pediatric clinic',
+  'نزهة عائلية في الحديقة مع الجد والجدة': 'Family park outing with Grandparents',
+  'عيد ميلاد عز الخامس': 'Ezz’s 5th Birthday Celebration',
+  'ذكرى أول خطوة لنور في حديقة المنزل': 'Memory: Nour’s first steps in the garden',
+  'أول يوم لعز في الروضة ورسم لوحة الشمس': 'Memory: Ezz’s first day at kindergarten & sun painting',
+  'صحة وتطعيم': 'Health & Vaccine',
+  'نشاط عائلي': 'Family Activity',
+  'مهارات وتعلم': 'Skills & Learning',
+  'ذكرى مميزة': 'Special Memory',
+  'مناسبة عائلية': 'Family Occasion',
+  'طبي': 'Medical',
+  'عائلي': 'Family',
+  'ميلاد': 'Birthday',
+  'ذكرى': 'Memory',
+  'إحضار دفتر التطعيمات وبطاقة المتابعة الصحية.': 'Bring vaccination booklet and health tracking card.',
+  'إحضار كتيب التطعيمات وقياس الطول والوزن.': 'Bring vaccination booklet and measure height & weight.',
+  'تحضير سلة فواكه وألعاب خارجية خفيفة.': 'Pack a fruit basket and light outdoor toys.',
+  'ألعاب حركية خفيفة وفواكه مقطعة.': 'Light outdoor games and sliced fruit.',
+  'ملابس قطنية مريحة قابلة للغسل بسهولة.': 'Comfortable, easily washable cotton clothes.',
+  'التقطنا صورة تذكارية أمام باب الفصل مع المعلمة.': 'Took a keepsake photo by the classroom door with the teacher.',
+  'كيكة فواكه منزلية بدون سكر مضاف وهدايا تعليمية.': 'Homemade sugar-free fruit cake and educational gifts.',
+  'احتفال عائلي هادئ وهدايا تعليمية.': 'Calm family celebration with educational gifts.',
+  'لحظة لا تُنسى مع ضحكة نور الجميلة.': 'An unforgettable moment with Nour’s bright smile.',
+  'كان متحمسًا جدًا وشارك أصدقاءه الألوان.': 'He was super excited and shared his colors with friends.',
+
+  // Wishes
+  'دراجة توازن خشبية لعز (بدون دواسات)': 'Wooden balance bike for Ezz (pedal-free)',
+  'مجموعة قصص قماشية تفاعلية لنور': 'Interactive cloth storybooks set for Nour',
+  'صندوق ادخار لرحلة البحر العائلية في الصيف': 'Family summer beach trip savings fund',
+  'طاولة أنشطة مونتيسوري مزدوجة للغرفة': 'Double Montessori activity table for kids room',
+  'مجموعة مكعبات خشبية مونتيسوري (١٠٠ قطعة)': 'Montessori Wooden Blocks Set (100 pcs)',
+  'موسوعة القصص المصورة قبل النوم': 'Illustrated Bedtime Stories Encyclopedia',
+  'دراجة توازن آمنة مع خوذة مبطنة': 'Safe Balance Bike with Padded Helmet',
+  'هدية عيد ميلاد': 'Birthday Gift',
+  'تطوير مهارات': 'Skill Building',
+  'ادخار عائلي': 'Family Savings',
+  'تجهيز غرفة الطفل': 'Room Setup',
+  'مهارات وهندسة': 'STEM & Motor Skills',
+  'قراءة ولغة': 'Reading & Language',
+  'نشاط حركي': 'Active Outdoor Play',
+
+  // Store Categories, Variants & Sellers
+  'ألعاب تعليمية': 'Educational Toys',
+  'عناية بالرضع': 'Baby Care',
+  'تجهيز الغرف': 'Nursery & Gear',
+  'كتب وقصص': 'Books & Stories',
+  'ملابس قطنية': 'Cotton Apparel',
+  'تغذية صحية': 'Healthy Feeding',
+  'منتجات الأطفال': 'Kids Products',
+  'ملابس وأحذية': 'Apparel & Shoes',
+  'ألعاب تنمية المهارات': 'Skill-Building Toys',
+  'حضانات ومدارس': 'Nurseries & Schools',
+  'أطباء ومختصون': 'Doctors & Specialists',
+  'تنظيم أعياد الميلاد': 'Birthday Planning',
+  'متجر مونتيسوري العرب': 'Arab Montessori Store',
+  'بيبي كير المعتمد': 'Certified BabyCare',
+  'دار الشروق للأطفال': 'Dar El Shorouk Kids',
+  'قطنيات النيل الطبيعية': 'Nile Organic Cottons',
+  'عالم الطفل الذكي': 'Smart Kid World',
+  'مجموعة كاملة (64 قطعة)': 'Full Set (64 pcs)',
+  'مجموعة أساسية (32 قطعة)': 'Starter Set (32 pcs)',
+  'لون خشب طبيعي': 'Natural Wood Tone',
+  'لون أبيض دافئ': 'Warm White Tone',
+  'مقاس 2-3 سنوات': 'Size 2-3 Years',
+  'مقاس 3-4 سنوات': 'Size 3-4 Years',
+  'مقاس 1-2 سنة': 'Size 1-2 Years',
+  'عبوة 500 مل': '500 ml Bottle',
+  'عبوة اقتصادية 2×500 مل': 'Value Pack 2×500 ml',
+  'اللون النعناعي': 'Mint Green',
+  'اللون الوردي الهادئ': 'Soft Blush Pink',
+  'اللون الرمادي الفاتح': 'Light Mist Gray',
+  'نسخة مصورة فاخرة': 'Deluxe Illustrated Edition',
+  'نسخة مع بطاقات تفاعلية': 'Edition + Flashcards',
+  'مقاس موحد': 'Standard Size',
+
+  // Media & Medical
+  '2–5 سنوات': '2–5 yrs',
+  '0–2 سنوات': '0–2 yrs',
+  '5–8 سنوات': '5–8 yrs',
+  '0–2 سنة': '0–2 yrs',
+  '3–6 سنوات': '3–6 yrs',
+  'جميع الأعمار': 'All Ages',
+  '0–8 سنوات': '0–8 yrs',
+  'د. مريم الكيلاني - استشاري طب الأطفال وعلم نفس النمو': 'Dr. Mariam El-Kilany - Consultant Pediatrician & Child Development',
+  'د. طارق المنصوري - أخصائي تغذية الأطفال والمناعة': 'Dr. Tarek El-Mansoury - Pediatric Nutrition & Immunity Specialist',
+  'أ. سلمى حجازي - أخصائية تخاطب وتعديل سلوك تربوي': 'Ms. Salma Hegazy - Speech & Positive Behavior Specialist',
+  'د. سلمى الكيلاني': 'Dr. Salma El-Kilany',
+  'د. طارق المنصور': 'Dr. Tarek El-Mansour',
+  'د. هدى الشربيني': 'Dr. Hoda El-Sherbiny',
+  'د. مازن العتيبي': 'Dr. Mazen Al-Otaibi',
+  'أحمد و سارة': 'Ahmed & Sara',
+  'أحمد وسارة': 'Ahmed & Sara',
+  'سارة (الأم)': 'Sara (Mother)',
+  'أحمد (الأب)': 'Ahmed (Father)',
+  'أ. ريم — مشرفة حضانة خطوات صغيرة': 'Ms. Reem — Little Steps Nursery Supervisor',
+  'مشرفة حضانة': 'Nursery Supervisor',
+  'الحضانة والمدرسة': 'Nursery & School',
+  'التجمع الخامس — الحي الثالث': 'Fifth Settlement — 3rd District',
+  'شارع التسعين الشمالي، فيلا 14 (عنوان تجريبي)': 'North 90th Street, Villa 14 (Demo Address)',
+  'موعد التطعيم - نور': 'Vaccination Appointment - Nour',
+  'اجتماع عائلي وتخطيط الأسبوع': 'Family Meeting & Weekly Planning',
+  'حصة السباحة - عز': 'Swimming Lesson - Ezz',
+  'المكعبات، السباحة، والسيارات': 'Building blocks, swimming & cars',
+  'مكتمل حتى سن 5 سنوات (جرعة تنشيطية قادمة)': 'Completed up to age 5 (booster due next)',
+  'لا توجد حساسية طعام مسجلة — سجل خاص بالوالدين': 'No food allergies recorded — Parent-private log',
+  'القصص المصورة، الألوان، والأناشيد': 'Picture books, colors & rhymes',
+  'متابعة تطعيمات سن 3 سنوات في الموعد القادم': '3-year vaccination follow-up at next appointment',
+  'حساسية خفيفة من الفراولة — سجل خاص بالوالدين': 'Mild strawberry sensitivity — Parent-private log',
+  'تناول الإفطار الصحي ووقت هادئ': 'Healthy breakfast & calm morning time',
+  'التحضير للمدرسة والحضانة': 'Prepare for school & nursery',
+  'وقت التعلم وتنمية المهارات': 'Learning & skill-building time',
+  'قراءة قصة قبل النوم': 'Read bedtime story',
+  'روتين النوم الهادئ': 'Calm bedtime routine',
+  'ترتيب ركن الألعاب والكتب الأسبوعي': 'Weekly toy & book corner tidy-up',
+  'قياس الطول والوزن الشهري': 'Monthly height & weight check',
+  '07:00 ص': '07:00 AM',
+  '04:00 م': '04:00 PM',
+  '07:00 م': '07:00 PM',
+  '09:00 م': '09:00 PM',
+  '11:00 ص': '11:00 AM',
+  '06:00 م': '06:00 PM',
+  'أكل وشرب': 'Meals & Hydration',
+  'روتين عام': 'General Routine',
+  'لعب وتعلم': 'Play & Learning',
+  'نوم': 'Sleep',
+  'صحة': 'Health',
+  'مكعبات تركيب هندسية ذكية': 'Smart Geometric Building Blocks',
+  'لعبة تعليمية': 'Educational Toy',
+  'مجموعة قصص مصورة قبل النوم': 'Bedtime Illustrated Story Set',
+  'هدية القراءة': 'Reading Gift',
+  'رحلة عائلية ترفيهية وعطلة شاطئية': 'Family Beach Trip & Getaway',
+  'إدخار العائلة': 'Family Savings',
+  'جهاز لوحي تعليمي برقابة أبوية': 'Parental-Controlled Learning Tablet',
+  'تطوير مهارات': 'Skill Development',
+  'تيتا منى': 'Grandma Mona',
+  'جدة الأم': 'Maternal Grandmother',
+  'عيلة الأم': 'Mother’s Family',
+  'عيلة الأب': 'Father’s Family',
+  'الأسرة الأساسية': 'Core Family',
+  'الأسرة': 'Family',
+  'مجموعة قصص مصورة': 'Illustrated Story Collection',
+  'لعبة تركيب خشبية': 'Wooden Puzzle Set',
+  'حقيبة ألوان مائية آمنة': 'Child-Safe Watercolor Kit',
+  'محدثة': 'Up to date',
+  'لم تحدد الاهتمامات بعد': 'No interests specified yet',
+  'مرن': 'Flexible',
+};
+
+export function locText(
+  val: string | BilingualText | undefined | null,
+  lang: LanguageCode,
+  enFallback?: string
+): string {
+  if (!val) return '';
+  if (typeof val === 'object' && 'ar' in val && 'en' in val) {
+    return lang === 'en' ? val.en : val.ar;
+  }
+  const str = String(val).trim();
+  if (lang === 'ar') return str;
+  if (enFallback) return enFallback;
+  if (BILINGUAL_SEED_DICTIONARY[str]) return BILINGUAL_SEED_DICTIONARY[str];
+  return str
+    .replace(/عز/g, 'Ezz')
+    .replace(/نور/g, 'Nour')
+    .replace(/سارة/g, 'Sara')
+    .replace(/أحمد/g, 'Ahmed')
+    .replace(/القاهرة الجديدة/g, 'New Cairo')
+    .replace(/القاهرة/g, 'Cairo')
+    .replace(/الرياض/g, 'Riyadh')
+    .replace(/الإسكندرية/g, 'Alexandria')
+    .replace(/جدة/g, 'Jeddah')
+    .replace(/\s+و\s+/g, ' & ')
+    .replace(/دقيقة/g, 'min')
+    .replace(/دقائق/g, 'mins')
+    .replace(/ثانية/g, 'sec')
+    .replace(/سنوات/g, 'yrs')
+    .replace(/سنة/g, 'yr');
+}
+
 export interface ChildProfile {
   id: number;
   name: string;

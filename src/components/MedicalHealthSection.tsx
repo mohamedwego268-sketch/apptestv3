@@ -8,6 +8,7 @@ import {
   MediaContentItem,
   calculateChildAge,
   formatCurrency,
+  locText,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
 import {
@@ -44,6 +45,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   onShowToast,
 }) => {
   const isEn = language === 'en';
+  const displayCity = locText(city, language);
   const [activeTab, setActiveTab] = useState<'doctors' | 'child_records' | 'articles'>('doctors');
   const [filterByUserCity, setFilterByUserCity] = useState<boolean>(false);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
@@ -91,7 +93,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       id: 'med-slide-doctors',
       badge: isEn ? '🩺 Verified Pediatricians' : '🩺 أطباء وعيادات معتمدة',
       title: isEn
-        ? `Top Pediatricians & Specialists in ${city}`
+        ? `Top Pediatricians & Specialists in ${displayCity}`
         : `أفضل أطباء واستشاريي الأطفال في ${city}`,
       subtitle: isEn
         ? 'Instant Appointment Booking · Syncs with Family Calendar'
@@ -202,7 +204,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]'
           }`}
         >
-          📍 {isEn ? `My City (${city})` : `في مدينتي (${city})`}
+          📍 {isEn ? `My City (${displayCity})` : `في مدينتي (${city})`}
         </button>
       </div>
 
@@ -271,7 +273,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                         {isEn ? doc.nameEn : doc.name}
                       </h3>
                       <div className="text-xs font-bold text-[var(--color-muted)]">
-                        📍 {doc.city} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
+                        📍 {locText(doc.city, language)} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
                       </div>
                     </div>
                   </div>
@@ -324,7 +326,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   />
                   <div>
                     <h3 className="text-lg font-extrabold text-[var(--color-text)]">
-                      {kid.name}
+                      {locText(kid.name, language)}
                     </h3>
                     <div className="text-xs font-bold text-[var(--color-muted)]">
                       {age.label} · {age.stageTitle}
@@ -369,12 +371,15 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                     </span>
                   </div>
                   <div className="text-[var(--color-muted)] font-semibold">
-                    {kid.vaccinationsNote ||
-                      (isEn ? 'Routine vaccinations up to date.' : 'التطعيمات الأساسية منتظمة.')}
+                    {kid.vaccinationsNote
+                      ? locText(kid.vaccinationsNote, language)
+                      : isEn
+                      ? 'Routine vaccinations up to date.'
+                      : 'التطعيمات الأساسية منتظمة.'}
                   </div>
                   {kid.healthNotePrivate && (
                     <div className="pt-1.5 border-t border-teal-100 text-[var(--color-muted)] font-semibold">
-                      🔒 {kid.healthNotePrivate}
+                      🔒 {locText(kid.healthNotePrivate, language)}
                     </div>
                   )}
                 </div>
@@ -397,7 +402,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2 text-xs text-emerald-900 font-extrabold">
                     <span>
-                      🩺 {article.reviewerCredentialsAr || 'مراجع علميًا'}
+                      🩺 {locText(article.reviewerCredentialsAr, language, 'Peer-Reviewed Specialist')}
                     </span>
                     <span dir="ltr" className="tabular-nums">
                       👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
@@ -447,7 +452,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       {/* Compact Clinical Notice Strip */}
       <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/60 px-4 py-2.5 text-xs font-bold text-emerald-950 flex items-center justify-between gap-2">
         <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية'}</span>
-        <span>📍 {city}</span>
+        <span>📍 {displayCity}</span>
       </div>
 
       {/* Doctor Appointment Booking Modal */}
@@ -476,7 +481,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
             <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs text-emerald-950 space-y-0.5">
               <div className="font-extrabold">{isEn ? bookingDoctor.nameEn : bookingDoctor.name}</div>
-              <div className="font-semibold">📍 {bookingDoctor.city}</div>
+              <div className="font-semibold">📍 {locText(bookingDoctor.city, language)}</div>
             </div>
 
             <div>
@@ -490,7 +495,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               >
                 {kids.map((k) => (
                   <option key={k.id} value={k.id}>
-                    {k.name}
+                    {locText(k.name, language)}
                   </option>
                 ))}
               </select>
@@ -561,7 +566,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs font-extrabold text-emerald-800">
-                  🩺 {readingArticle.reviewerCredentialsAr || 'دليل طبي ونفسي مراجع علميًا'}
+                  🩺 {locText(readingArticle.reviewerCredentialsAr, language, 'Peer-Reviewed Medical & Psychology Guide')}
                 </div>
                 <h3 className="text-lg font-extrabold text-[var(--color-text)] mt-1">
                   {isEn ? readingArticle.titleEn : readingArticle.title}

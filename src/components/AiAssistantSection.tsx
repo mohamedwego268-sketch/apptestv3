@@ -3,6 +3,7 @@ import {
   ChildProfile,
   LanguageCode,
   calculateChildAge,
+  locText,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
 import {
@@ -49,6 +50,9 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   const [selectedKidId, setSelectedKidId] = useState<number>(kids[0]?.id || 0);
   const selectedKid = kids.find((k) => k.id === selectedKidId) || kids[0];
   const kidAge = selectedKid ? calculateChildAge(selectedKid.birth, language) : null;
+  const displayParentName = locText(parentName, language);
+  const displayKidName = selectedKid ? locText(selectedKid.name, language) : isEn ? 'your child' : 'طفلك';
+  const displayKidInterests = selectedKid ? locText(selectedKid.interests, language) : isEn ? 'Stories & blocks' : 'القصص والمكعبات';
 
   const [inputPrompt, setInputPrompt] = useState<string>('');
   const [messages, setMessages] = useState<AiChatMessage[]>([
@@ -56,11 +60,11 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       id: 1,
       sender: 'ai',
       textAr: `أهلًا ${parentName} 👋 أنا مساعد الذكاء الاصطناعي لـ ${selectedKid ? selectedKid.name : 'طفلك'} (${kidAge?.label || '2–5 سنوات'}). اختر بطاقة سريعة أو اكتب طلبك بالأسفل:`,
-      textEn: `Hello ${parentName}! I am your AI Parenting Agent for ${selectedKid ? selectedKid.name : 'your child'} (${kidAge?.label || '2–5 yrs'}). Tap a quick creation card or ask below:`,
+      textEn: `Hello ${displayParentName}! I am your AI Parenting Agent for ${displayKidName} (${kidAge?.label || '2–5 yrs'}). Tap a quick creation card or ask below:`,
       timestamp: '09:00 AM',
       structuredCard: {
         badgeAr: `خطة مخصصة لـ ${selectedKid?.name || 'الطفل'} (${kidAge?.stageCode || '2-5'} سنوات)`,
-        badgeEn: `Tailored Plan for ${selectedKid?.name || 'Child'} (${kidAge?.stageCode || '2-5'} yrs)`,
+        badgeEn: `Tailored Plan for ${displayKidName} (${kidAge?.stageCode || '2-5'} yrs)`,
         stepsAr: [
           '١. تثبيت موعد الاستيقاظ والإفطار يمنح الطفل أمانًا صباحيًا.',
           '٢. 15 دقيقة لعب تفاعلي مشترك بدون شاشات بعد الحضانة.',
@@ -95,7 +99,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       badgeAr: 'خطة 20 دقيقة',
       badgeEn: '20-Min Plan',
       promptAr: `🌙 خطة نوم مسائية مخصصة لـ ${selectedKid?.name || 'طفلي'}`,
-      promptEn: `🌙 Bedtime sleep routine for ${selectedKid?.name || 'my child'}`,
+      promptEn: `🌙 Bedtime sleep routine for ${displayKidName}`,
       iconId: 'routine',
       tone: 'purple',
     },
@@ -244,7 +248,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
               '3. Co-play: One round of 3D Memory & Vocabulary Match.',
             ],
             activityTipAr: `اهتمامات ${selectedKid?.name || 'الطفل'}: ${selectedKid?.interests || 'القصص والمكعبات'}.`,
-            activityTipEn: `Interests for ${selectedKid?.name || 'child'}: ${selectedKid?.interests || 'Stories & blocks'}.`,
+            activityTipEn: `Interests for ${displayKidName}: ${displayKidInterests}.`,
           },
         };
 
@@ -257,7 +261,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       id: 'ai-slide-routine',
       badge: isEn ? '✨ Smart AI Parenting Agent' : '✨ مساعد الذكاء الاصطناعي للأسرة',
       title: isEn
-        ? `Instant Plans & Routines for ${selectedKid?.name || 'Your Child'}`
+        ? `Instant Plans & Routines for ${displayKidName}`
         : `تصميم خطط النوم والتغذية والروتين لـ ${selectedKid?.name || 'طفلك'}`,
       subtitle: isEn
         ? `Tailored for ${kidAge?.label || '0–8 Yrs'} · One-Tap Add to Daily Routine`
@@ -266,7 +270,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       onCtaClick: () =>
         handleSendPrompt(
           isEn
-            ? `🌙 Bedtime sleep routine for ${selectedKid?.name || 'my child'}`
+            ? `🌙 Bedtime sleep routine for ${displayKidName}`
             : `🌙 خطة نوم مسائية مخصصة لـ ${selectedKid?.name || 'طفلي'}`,
           'sleep'
         ),
@@ -317,7 +321,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 ✨ {isEn ? 'Active Child Profile for AI Plans' : 'ملف الطفل النشط لتخصيص الإرشاد الذكي'}
               </div>
               <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                {selectedKid.name} · {kidAge.label}
+                {displayKidName} · {kidAge.label}
               </div>
             </div>
           </div>
@@ -331,7 +335,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           >
             {kids.map((k) => (
               <option key={k.id} value={k.id}>
-                {k.name} ({calculateChildAge(k.birth, language).label})
+                {locText(k.name, language)} ({calculateChildAge(k.birth, language).label})
               </option>
             ))}
           </select>
@@ -356,7 +360,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
               onClick={() =>
                 handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
               }
-              className={`group min-h-[116px] rounded-2xl border ${tone.card} bg-[var(--color-surface)] p-3.5 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md active:scale-[0.98] transition-all`}
+              className={`group min-h-[116px] rounded-2xl border ${tone.card} bg-[var(--color-surface)] p-4 flex flex-col justify-between items-start text-start shadow-2xs hover:shadow-md active:scale-[0.98] transition-all`}
             >
               <div className="w-full flex items-start justify-between gap-1.5">
                 <div className="w-11 h-11 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0">
@@ -380,8 +384,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
       </div>
 
       {/* Conversational Thread + Structured Cards */}
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-4 shadow-2xs">
-        <div className="space-y-4 max-h-[460px] overflow-y-auto pr-1">
+      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 space-y-4 shadow-2xs">
+        <div className="space-y-4 max-h-[460px] overflow-y-auto pe-1">
           {messages.map((msg) => {
             const isParent = msg.sender === 'parent';
             return (
@@ -474,7 +478,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
             }}
             placeholder={
               isEn
-                ? `Ask AI Agent about ${selectedKid?.name || 'your child'}'s sleep, nutrition, or play...`
+                ? `Ask AI Agent about ${displayKidName}'s sleep, nutrition, or play...`
                 : `اكتب سؤالك لمساعد الذكاء الاصطناعي حول ${selectedKid?.name || 'طفلك'}...`
             }
             className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"

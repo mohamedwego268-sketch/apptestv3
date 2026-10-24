@@ -5,6 +5,7 @@ import {
   MediaTopicCategory,
   AgeStage,
   LanguageCode,
+  locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
@@ -492,7 +493,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
         </div>
         <div className="space-y-1.5 px-1">
           <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-extrabold text-indigo-100">
-            👶 {currentReel.ageStage}
+            👶 {locText(currentReel.ageStage, language)}
           </span>
           <h3 className="text-base sm:text-lg font-extrabold leading-snug">
             {isEn ? currentReel.titleEn : currentReel.titleAr}
@@ -1032,7 +1033,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                   <div className="space-y-1.5">
                     <div className="text-[11px] font-extrabold text-indigo-800">
                       {item.type === 'video' ? '🎬 ' : '📘 '}
-                      {item.durationLabel} · 👶 {item.ageStage === 'all' ? '0–8' : item.ageStage}
+                      {locText(item.durationLabel, language)} · 👶 {item.ageStage === 'all' ? '0–8' : item.ageStage}
                     </div>
                     <h3 className="text-sm font-extrabold text-[var(--color-text)] leading-snug">
                       {isEn ? item.titleEn : item.title}

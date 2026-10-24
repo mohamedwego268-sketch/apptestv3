@@ -285,6 +285,23 @@ test('shouldTriggerSkeletonForTab and getEmptyStateCopy support 1-2s Skeleton Sh
   assert.ok(chatEmptyAr.title.includes('لا توجد عناصر هنا بعد'));
 });
 
+test('MOCK_BILINGUAL_USER & locText dynamically translate all mock data between Arabic and English', async () => {
+  const { MOCK_BILINGUAL_USER, locText } = await import('./familySpaceCore');
+
+  assert.equal(locText(MOCK_BILINGUAL_USER.name, 'ar'), 'أحمد وسارة');
+  assert.equal(locText(MOCK_BILINGUAL_USER.name, 'en'), 'Ahmed & Sara');
+  assert.equal(locText(MOCK_BILINGUAL_USER.children[0].name, 'ar'), 'عز');
+  assert.equal(locText(MOCK_BILINGUAL_USER.children[0].name, 'en'), 'Ezz');
+  assert.equal(locText(MOCK_BILINGUAL_USER.children[1].name, 'ar'), 'نور');
+  assert.equal(locText(MOCK_BILINGUAL_USER.children[1].name, 'en'), 'Nour');
+
+  assert.equal(locText('عز', 'en'), 'Ezz');
+  assert.equal(locText('نور', 'en'), 'Nour');
+  assert.equal(locText('القاهرة', 'en'), 'Cairo');
+  assert.equal(locText('مكتمل التطعيمات الأساسية حتى 3 سنوات', 'en'), 'Core vaccinations completed up to 3 years');
+});
+
+
 
 
 

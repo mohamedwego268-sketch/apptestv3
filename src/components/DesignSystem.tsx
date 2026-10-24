@@ -47,64 +47,64 @@ export const PASTEL_CARD_TONES: Record<
   { card: string; badge: string; iconBg: string }
 > = {
   emerald: {
-    card: 'bg-emerald-50/85 border-emerald-200/80',
-    badge: 'bg-emerald-100 text-emerald-900',
-    iconBg: 'bg-white/90 border-emerald-100',
+    card: 'bg-emerald-50/75 border-emerald-200/45 shadow-[0_10px_28px_-14px_rgba(16,185,129,0.12)]',
+    badge: 'bg-emerald-100/90 text-emerald-900',
+    iconBg: 'bg-white/95 border-emerald-100/60',
   },
   amber: {
-    card: 'bg-amber-50/85 border-amber-200/80',
-    badge: 'bg-amber-100 text-amber-900',
-    iconBg: 'bg-white/90 border-amber-100',
+    card: 'bg-amber-50/75 border-amber-200/45 shadow-[0_10px_28px_-14px_rgba(245,158,11,0.12)]',
+    badge: 'bg-amber-100/90 text-amber-900',
+    iconBg: 'bg-white/95 border-amber-100/60',
   },
   rose: {
-    card: 'bg-rose-50/85 border-rose-200/80',
-    badge: 'bg-rose-100 text-rose-900',
-    iconBg: 'bg-white/90 border-rose-100',
+    card: 'bg-rose-50/75 border-rose-200/45 shadow-[0_10px_28px_-14px_rgba(244,63,94,0.12)]',
+    badge: 'bg-rose-100/90 text-rose-900',
+    iconBg: 'bg-white/95 border-rose-100/60',
   },
   indigo: {
-    card: 'bg-indigo-50/85 border-indigo-200/80',
-    badge: 'bg-indigo-100 text-indigo-900',
-    iconBg: 'bg-white/90 border-indigo-100',
+    card: 'bg-indigo-50/75 border-indigo-200/45 shadow-[0_10px_28px_-14px_rgba(99,102,241,0.12)]',
+    badge: 'bg-indigo-100/90 text-indigo-900',
+    iconBg: 'bg-white/95 border-indigo-100/60',
   },
   purple: {
-    card: 'bg-purple-50/85 border-purple-200/80',
-    badge: 'bg-purple-100 text-purple-900',
-    iconBg: 'bg-white/90 border-purple-100',
+    card: 'bg-purple-50/75 border-purple-200/45 shadow-[0_10px_28px_-14px_rgba(147,51,234,0.12)]',
+    badge: 'bg-purple-100/90 text-purple-900',
+    iconBg: 'bg-white/95 border-purple-100/60',
   },
   sky: {
-    card: 'bg-sky-50/85 border-sky-200/80',
-    badge: 'bg-sky-100 text-sky-900',
-    iconBg: 'bg-white/90 border-sky-100',
+    card: 'bg-sky-50/75 border-sky-200/45 shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)]',
+    badge: 'bg-sky-100/90 text-sky-900',
+    iconBg: 'bg-white/95 border-sky-100/60',
   },
   teal: {
-    card: 'bg-teal-50/85 border-teal-200/80',
-    badge: 'bg-teal-100 text-teal-900',
-    iconBg: 'bg-white/90 border-teal-100',
+    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(20,184,166,0.12)]',
+    badge: 'bg-teal-100/90 text-teal-900',
+    iconBg: 'bg-white/95 border-teal-100/60',
   },
   orange: {
-    card: 'bg-orange-50/85 border-orange-200/80',
-    badge: 'bg-orange-100 text-orange-900',
-    iconBg: 'bg-white/90 border-orange-100',
+    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(249,115,22,0.12)]',
+    badge: 'bg-orange-100/90 text-orange-900',
+    iconBg: 'bg-white/95 border-orange-100/60',
   },
   pink: {
-    card: 'bg-pink-50/85 border-pink-200/80',
-    badge: 'bg-pink-100 text-pink-900',
-    iconBg: 'bg-white/90 border-pink-100',
+    card: 'bg-pink-50/75 border-pink-200/45 shadow-[0_10px_28px_-14px_rgba(236,72,153,0.12)]',
+    badge: 'bg-pink-100/90 text-pink-900',
+    iconBg: 'bg-white/95 border-pink-100/60',
   },
   cyan: {
-    card: 'bg-cyan-50/85 border-cyan-200/80',
-    badge: 'bg-cyan-100 text-cyan-900',
-    iconBg: 'bg-white/90 border-cyan-100',
+    card: 'bg-cyan-50/75 border-cyan-200/45 shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)]',
+    badge: 'bg-cyan-100/90 text-cyan-900',
+    iconBg: 'bg-white/95 border-cyan-100/60',
   },
   lime: {
-    card: 'bg-lime-50/85 border-lime-200/80',
-    badge: 'bg-lime-100 text-lime-900',
-    iconBg: 'bg-white/90 border-lime-100',
+    card: 'bg-lime-50/75 border-lime-200/45 shadow-[0_10px_28px_-14px_rgba(132,204,22,0.12)]',
+    badge: 'bg-lime-100/90 text-lime-900',
+    iconBg: 'bg-white/95 border-lime-100/60',
   },
   slate: {
-    card: 'bg-slate-50/90 border-slate-200/80',
-    badge: 'bg-slate-200/90 text-slate-900',
-    iconBg: 'bg-white/90 border-slate-100',
+    card: 'bg-slate-50/85 border-slate-200/45 shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)]',
+    badge: 'bg-slate-200/80 text-slate-900',
+    iconBg: 'bg-white/95 border-slate-100/60',
   },
 };
 
@@ -559,7 +559,7 @@ export const GlobalToastSnackbar: React.FC<GlobalToastSnackbarProps> = ({
       data-testid="global-toast-snackbar"
       role="status"
       aria-live="polite"
-      className="fixed bottom-20 lg:bottom-6 left-4 right-4 mx-auto max-w-md z-50 animate-toast-snackbar"
+      className="fixed bottom-20 lg:bottom-6 inset-x-4 mx-auto max-w-md z-50 animate-toast-snackbar"
     >
       <div className="rounded-2xl bg-[var(--color-toast)]/95 backdrop-blur-md border border-white/15 text-white px-4 py-3 shadow-[0_16px_36px_-8px_rgba(15,23,42,0.45)] flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">

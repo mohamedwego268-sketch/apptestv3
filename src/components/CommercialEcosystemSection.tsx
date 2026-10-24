@@ -13,6 +13,7 @@ import {
   formatCurrency,
   getEmptyStateCopy,
   getPaymentMethodLabels,
+  locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
@@ -136,6 +137,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   onShowToast = () => {},
 }) => {
   const isEn = language === 'en';
+  const displayCity = locText(city, language);
   const [segment, setSegment] = useState<'all' | 'product' | 'service' | 'offer'>('all');
   const [collectionFilter, setCollectionFilter] = useState<
     'all' | 'bestseller' | 'new' | 'deal' | 'recommended'
@@ -300,7 +302,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         ? `Montessori Toys & Organic Baby Essentials (${currency})`
         : `ألعاب مونتيسوري ومستلزمات الطفل العضوية (${currency})`,
       subtitle: isEn
-        ? `Fast Delivery in ${city} · Live Courier Tracking`
+        ? `Fast Delivery in ${displayCity} · Live Courier Tracking`
         : `توصيل فوري في ${city} · تتبع المندوب مباشرة على الخريطة`,
       ctaLabel: isEn ? 'Shop Bestsellers Now' : 'تسوّق الأكثر مبيعًا الآن',
       onCtaClick: () => {
@@ -330,7 +332,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       id: 'store-slide-nurseries',
       badge: isEn ? '🏫 Verified Nurseries & Clinics' : '🏫 حضانات وعيادات موثقة',
       title: isEn
-        ? `Top Nurseries & Pediatric Services in ${city}`
+        ? `Top Nurseries & Pediatric Services in ${displayCity}`
         : `أفضل الحضانات والخدمات المعتمدة في ${city}`,
       subtitle: isEn
         ? 'Verified Ratings · Direct Booking · Local Directory'
@@ -347,11 +349,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   ];
 
   return (
-    <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
+    <section className="space-y-6" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
       {/* Sticky Glassmorphism Top Action Strip: City Filter + Live Order Tracking + Cart Button */}
       <div
         id="store-sticky-subheader"
-        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/80 bg-amber-50/85 px-3.5 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2 transition-all"
+        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/60 bg-amber-50/85 px-4 py-3 shadow-2xs flex flex-wrap items-center justify-between gap-2.5 transition-all"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-9 h-9 rounded-2xl bg-white shadow-2xs flex items-center justify-center shrink-0">
@@ -362,7 +364,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               {isEn ? 'Family Store & Express Delivery' : 'متجر الأسرة والتوصيل الفوري'}
             </div>
             <div className="text-[11px] font-bold text-[var(--color-muted)] truncate">
-              {country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍 {city} · {currency}
+              {country === 'SA' ? (isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية') : isEn ? '🇪🇬 Egypt' : '🇪🇬 مصر'} · 📍 {displayCity} · {currency}
             </div>
           </div>
         </div>
@@ -389,7 +391,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   : 'text-[var(--color-muted)]'
               }`}
             >
-              📍 {city}
+              📍 {displayCity}
             </button>
           </div>
 
@@ -616,10 +618,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <div className="rounded-2xl border border-emerald-200 bg-slate-900 text-white p-3 relative overflow-hidden min-h-[195px] flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2 z-10 text-[11px] font-bold">
                 <span className="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-xs text-emerald-300">
-                  🛰️ {isEn ? `Live Route · ${city}` : `خريطة التوصيل المباشرة · ${city}`}
+                  🛰️ {isEn ? `Live Route · ${displayCity}` : `خريطة التوصيل المباشرة · ${city}`}
                 </span>
                 <span className="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-xs text-white tabular-nums">
-                  📍 {shippingAddress.streetDetails || (isEn ? 'Family Home' : 'منزل الأسرة')}
+                  📍 {locText(shippingAddress.streetDetails, language) || (isEn ? 'Family Home' : 'منزل الأسرة')}
                 </span>
               </div>
 
@@ -964,7 +966,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         {isEn ? 'Recipient:' : 'المستلم:'}
                       </span>
                       <span className="font-extrabold text-[var(--color-text)]">
-                        {latestOrder?.shippingAddress?.recipientName || shippingAddress.recipientName}
+                        {locText(latestOrder?.shippingAddress?.recipientName || shippingAddress.recipientName, language)}
                       </span>
                     </div>
 
@@ -973,8 +975,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         {isEn ? 'Delivery Destination:' : 'وجهة التوصيل:'}
                       </span>
                       <span className="font-bold text-[var(--color-text)] text-end">
-                        {latestOrder?.shippingAddress?.city || shippingAddress.city} —{' '}
-                        {latestOrder?.shippingAddress?.streetDetails || shippingAddress.streetDetails}
+                        {locText(latestOrder?.shippingAddress?.city || shippingAddress.city, language)} —{' '}
+                        {locText(latestOrder?.shippingAddress?.streetDetails || shippingAddress.streetDetails, language)}
                       </span>
                     </div>
 
@@ -1620,7 +1622,99 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       </div>
 
-      {/* Super App Product & Service Grid Cards (Compact Premium Feel) */}
+      {/* Horizontal Scrollable Category & Featured Picks Carousels (UI Decluttering & Breathing Room) */}
+      <div className="space-y-4">
+        <div className="horizontal-scroll-row" role="region" aria-label={isEn ? 'Horizontal Category Carousel' : 'شريط الفئات الأفقي'}>
+          {[
+            { id: 'all', icon: '✨', labelAr: 'كل الفئات', labelEn: 'All Categories' },
+            { id: 'toys', icon: '🧸', labelAr: 'ألعاب مونتيسوري', labelEn: 'Montessori Toys' },
+            { id: 'clothing', icon: '👕', labelAr: 'ألبسة قطنية', labelEn: 'Cotton Apparel' },
+            { id: 'essentials', icon: '🍼', labelAr: 'مستلزمات الرضع', labelEn: 'Baby Essentials' },
+            { id: 'doctor', icon: '🩺', labelAr: 'أطباء وعيادات', labelEn: 'Doctors & Clinics' },
+            { id: 'nursery', icon: '🏫', labelAr: 'حضانات ومدارس', labelEn: 'Nurseries' },
+            { id: 'consultation', icon: '💬', labelAr: 'استشارات تربوية', labelEn: 'Consultations' },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setCategoryFilter(cat.id)}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs font-extrabold transition-all flex items-center gap-2 whitespace-nowrap soft-card-surface ${
+                categoryFilter === cat.id
+                  ? 'bg-orange-600 text-white shadow-sm'
+                  : 'bg-[var(--color-surface)] border border-[var(--color-border)]/60 text-[var(--color-text)] hover:border-orange-300'
+              }`}
+            >
+              <span className="text-base">{cat.icon}</span>
+              <span>{isEn ? cat.labelEn : cat.labelAr}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Horizontal Featured Bestsellers Carousel */}
+        <div className="rounded-[24px] border border-[var(--color-border)]/50 bg-[var(--color-surface)] p-4 sm:p-5 space-y-3 soft-card-surface">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                🔥 {isEn ? 'Featured Picks Carousel' : 'مختارات الأسرة السريعة (تصفح أفقي)'}
+              </h3>
+              <p className="text-[11px] font-semibold text-[var(--color-muted)]">
+                {isEn
+                  ? 'Swipe horizontally to explore top-rated Montessori & family essentials'
+                  : 'اسحب أفقيًا لاستعراض أفضل منتجات وخدمات الأسرة المختارة'}
+              </p>
+            </div>
+            <span className="text-[11px] font-extrabold text-orange-700 bg-orange-50 px-2.5 py-1 rounded-xl">
+              {isEn ? '↔ Swipe' : '↔ تمرير أفقي'}
+            </span>
+          </div>
+
+          <div
+            data-testid="store-horizontal-carousel"
+            className="horizontal-scroll-row pt-1"
+          >
+            {COMMERCIAL_CATALOG.slice(0, 6).map((item) => {
+              const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
+              return (
+                <div
+                  key={`carousel-${item.id}`}
+                  className="w-[240px] sm:w-[260px] rounded-2xl border border-[var(--color-border)]/55 bg-[var(--color-page)]/65 p-4 flex flex-col justify-between gap-3 soft-card-surface"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="w-11 h-11 rounded-2xl bg-white shadow-2xs flex items-center justify-center text-2xl">
+                      {item.emoji}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-100/90 text-amber-900 text-[10px] font-extrabold tabular-nums">
+                      🌟 {item.rating}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs font-extrabold text-[var(--color-text)] line-clamp-1">
+                      {isEn ? item.nameEn : item.name}
+                    </div>
+                    <div className="text-[11px] font-semibold text-[var(--color-muted)]">
+                      {locText(item.categoryLabel, language)} · 📍 {locText(item.city, language)}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/45">
+                    <strong className="text-xs font-extrabold text-[var(--color-text)] tabular-nums">
+                      {formatCurrency(priceVal, currency, language)}
+                    </strong>
+                    <button
+                      type="button"
+                      onClick={() => onAddToCart(item, item.variants?.[0])}
+                      className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-[11px] font-extrabold shadow-2xs"
+                    >
+                      {isEn ? '+ Add' : '+ للسلة'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Super App Product & Service Grid Cards (Spacious Breathing Room) */}
       {filtered.length === 0 ? (
         <FriendlyEmptyState
           id="empty-store-filter-state"
@@ -1646,7 +1740,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           }}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((item) => {
             const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
             const origVal = currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
@@ -1657,13 +1751,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             return (
               <div
                 key={item.id}
-                className={`rounded-[20px] border ${tone.card} bg-[var(--color-surface)] p-3.5 flex flex-col justify-between gap-3 shadow-2xs hover:shadow-md transition-all`}
+                className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-4 soft-card-surface hover:shadow-md transition-all`}
               >
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {/* Top Visual Header: 3D Tactile Icon Box + Rating/Collection Tag */}
                   <div
                     onClick={() => onInspectCommercialItem(item)}
-                    className="rounded-xl p-3 cursor-pointer relative overflow-hidden flex items-center justify-between gap-2.5 border border-white/80 bg-white/85 shadow-2xs"
+                    className="rounded-2xl p-3.5 cursor-pointer relative overflow-hidden flex items-center justify-between gap-2.5 border border-white/80 bg-white/85 shadow-2xs"
                   >
                     <div className="w-12 h-12 rounded-xl bg-[var(--color-accent-soft)]/60 flex items-center justify-center text-2xl shrink-0">
                       {item.emoji}
@@ -1696,15 +1790,15 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
 
                   {/* Title & Compact Visual Metadata Strip */}
-                  <div className="space-y-1">
-                    <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] leading-snug line-clamp-2">
+                  <div className="space-y-1.5">
+                    <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] leading-snug line-clamp-2">
                       {displayTitle}
                     </h3>
 
                     <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)]">
-                      <span>{item.categoryLabel}</span>
+                      <span>{locText(item.categoryLabel, language)}</span>
                       <span aria-hidden="true">·</span>
-                      <span>📍 {item.city}</span>
+                      <span>📍 {locText(item.city, language)}</span>
                       {item.deliveryEstimateAr && (
                         <>
                           <span aria-hidden="true">·</span>

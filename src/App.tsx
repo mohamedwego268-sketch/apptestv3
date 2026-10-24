@@ -49,6 +49,7 @@ import {
   resolveColorMode,
   SKELETON_LOAD_DURATION_MS,
   shouldTriggerSkeletonForTab,
+  locText,
 } from './domain/familySpaceCore';
 import {
   AVATAR_ACCESSORY_THEMES,
@@ -1256,7 +1257,7 @@ export default function App() {
                 <span>✨ {lang === 'en' ? 'Account Setup' : 'إعداد الحساب'}</span>
               ) : (
                 <>
-                  📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}{' '}
+                  📍 {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}{' '}
                   <span className="hidden md:inline">
                     · {lang === 'en' ? 'Setup' : 'إعداد الحساب'}
                   </span>
@@ -1380,28 +1381,37 @@ export default function App() {
       </header>
 
       {/* Main Workspace Container (Sidebar + Content Canvas) */}
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-5 grid grid-cols-1 lg:grid-cols-[248px_1fr] gap-6 items-start">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-7 pt-6 pb-8 grid grid-cols-1 lg:grid-cols-[256px_1fr] gap-7 items-start">
         {/* Sidebar Navigation with 3D Icon Family */}
-        <aside className="hidden lg:block sticky top-20 rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-4 shadow-2xs">
-          <div className="pb-3 border-b border-[var(--color-border)] space-y-2">
+        <aside className="hidden lg:block sticky top-20 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 soft-card-surface">
+          <div className="pb-3.5 border-b border-[var(--color-border)] space-y-2">
             {activePage !== 'contact' && (
               <div className="text-xs font-semibold text-[var(--color-muted)]">
-                {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍 {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
+                {state.country === 'SA'
+                  ? lang === 'en'
+                    ? '🇸🇦 Saudi Arabia'
+                    : '🇸🇦 السعودية'
+                  : lang === 'en'
+                  ? '🇪🇬 Egypt'
+                  : '🇪🇬 مصر'}{' '}
+                · 📍 {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)} · {state.currency}
               </div>
             )}
             <div className="text-sm font-bold text-[var(--color-text)]">
-              {lang === 'en' ? `Welcome, ${state.parentName} 👋` : `أهلًا ${state.parentName} 👋`}
+              {lang === 'en'
+                ? `Welcome, ${locText(state.parentName, lang)} 👋`
+                : `أهلًا ${locText(state.parentName, lang)} 👋`}
             </div>
             <button
               type="button"
               onClick={() => setOnboardingModalOpen(true)}
-              className="w-full py-2 px-3 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors"
+              className="w-full py-2.5 px-3 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors"
             >
               {lang === 'en' ? '✨ Account & Profile Setup' : '✨ إعدادات الحساب السريعة'}
             </button>
           </div>
 
-          <nav className="grid gap-1" aria-label="قائمة أقسام المنصة">
+          <nav className="grid gap-1.5" aria-label={lang === 'en' ? 'Platform navigation' : 'قائمة أقسام المنصة'}>
             {navItems.map((item) => {
               const active = activePage === item.id;
               return (
@@ -1409,7 +1419,7 @@ export default function App() {
                   key={item.id}
                   type="button"
                   onClick={() => navigateTo(item.id)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-start whitespace-nowrap ${
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors text-start whitespace-nowrap ${
                     active
                       ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
                       : 'text-[var(--color-muted)] hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
@@ -1424,7 +1434,7 @@ export default function App() {
         </aside>
 
         {/* Main Viewport */}
-        <main key={activePage} className="min-w-0 space-y-5 animate-page-enter">
+        <main key={activePage} className="min-w-0 space-y-7 animate-page-enter">
           {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
           {(() => {
             const innerScreenMeta: Partial<
@@ -1608,33 +1618,33 @@ export default function App() {
               PAGE 1: SUPER APP HOME (لافتات متحركة + شبكة بطاقات الخدمات 2 أعمدة)
               ================================================================ */}
           {activePage === 'home' && (
-            <section className="space-y-6" aria-label="الشاشة الرئيسية">
+            <section className="space-y-7" aria-label={lang === 'en' ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
               {/* Sticky Glassmorphism Top Location & Quick Welcome Strip */}
               <div
                 id="home-sticky-location-bar"
-                className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-[var(--color-border)] px-4 py-3 shadow-2xs transition-all"
+                className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--color-border)] px-5 py-3.5 shadow-2xs transition-all"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-9 h-9 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center text-base shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="w-10 h-10 rounded-xl bg-[var(--color-accent-soft)] flex items-center justify-center text-base shrink-0">
                     📍
                   </span>
                   <div className="min-w-0">
-                    <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
+                    <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
                       {lang === 'en' ? `Delivering & Services in` : 'الخدمات والمتاجر في'}{' '}
                       <span className="text-[var(--color-role-text)]">
-                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                        {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}
                       </span>{' '}
-                      ({state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'})
+                      ({state.country === 'SA' ? (lang === 'en' ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية') : (lang === 'en' ? '🇪🇬 Egypt' : '🇪🇬 مصر')})
                     </div>
-                    <div className="text-[11px] text-[var(--color-muted)] truncate">
-                      {lang === 'en' ? `Welcome, ${state.parentName}` : `أهلًا ${state.parentName}`} · {todayFormatted.combined}
+                    <div className="text-[11.5px] text-[var(--color-muted)] truncate mt-0.5">
+                      {lang === 'en' ? `Welcome, ${locText(state.parentName, lang)}` : `أهلًا ${locText(state.parentName, lang)}`} · {todayFormatted.combined}
                     </div>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOnboardingModalOpen(true)}
-                  className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] hover:bg-[var(--color-accent)] hover:text-white transition-colors shrink-0"
+                  className="min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] hover:bg-[var(--color-accent)] hover:text-white transition-colors shrink-0"
                 >
                   {lang === 'en' ? 'Change City' : 'تغيير المدينة'}
                 </button>
@@ -1642,7 +1652,7 @@ export default function App() {
 
               {/* Swipeable Image Carousel / Banners (لافتات متحركة) */}
               {(() => {
-                const cityLabel = state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة');
+                const cityLabel = locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang);
                 const banners: {
                   id: string;
                   badge: string;
@@ -1974,35 +1984,99 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Horizontal Scrollable Featured Store & Services Carousel (Decluttered Breathing Room) */}
+              <div className="space-y-3" data-testid="home-horizontal-carousel">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
+                    {lang === 'en' ? '✨ Featured Family Picks & Local Services' : '✨ مختارات المتجر والخدمات المحلية (سحب أفقي)'}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('services')}
+                    className="text-xs font-extrabold text-[var(--color-role-text)] hover:underline"
+                  >
+                    {lang === 'en' ? 'Explore All Store →' : 'عرض المتجر كاملًا ←'}
+                  </button>
+                </div>
+
+                <div className="horizontal-scroll-row">
+                  {COMMERCIAL_CATALOG.filter((item) => item.country === state.country || item.country === 'BOTH')
+                    .slice(0, 6)
+                    .map((item) => {
+                      const price = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
+                      return (
+                        <div
+                          key={`home-carousel-${item.id}`}
+                          className="w-[260px] sm:w-[285px] rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 soft-card-surface flex flex-col justify-between gap-3"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-[var(--color-accent-soft)] flex items-center justify-center text-2xl shrink-0">
+                              {item.emoji}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10px] font-bold text-[var(--color-muted)] block truncate">
+                                {locText(item.categoryLabel, lang)} · 📍 {locText(item.city, lang)}
+                              </span>
+                              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] line-clamp-1 mt-0.5">
+                                {lang === 'en' ? item.nameEn : item.name}
+                              </h3>
+                              <div className="text-xs font-extrabold text-[var(--color-role-text)] tabular-nums mt-1">
+                                {formatCurrency(price, state.currency, state.language)}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => handleAddToCart(item)}
+                              className="flex-1 min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] active:scale-95 transition-transform"
+                            >
+                              {lang === 'en' ? '+ Add to Cart' : '+ أضف للسلة'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigateTo('services')}
+                              className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                            >
+                              {lang === 'en' ? 'View' : 'عرض'}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+
               {/* Compact Quick Cards: Children & Nearest Appointment */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
                 {/* 3D Children Quick Strip */}
-                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3">
+                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3.5 soft-card-surface">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-extrabold text-[var(--color-text)]">
+                    <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
                       {t(lang, 'yourChildren')}
                     </h2>
                     <button
                       type="button"
                       onClick={() => navigateTo('children')}
-                      className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                      className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
                       {t(lang, 'manageProfiles')}
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-3">
                     {state.kids.map((kid) => {
                       const ageInfo = calculateChildAge(kid.birth, state.language);
+                      const displayKidName = locText(kid.name, lang);
                       return (
                         <button
                           key={kid.id}
                           type="button"
                           onClick={() => navigateTo('children')}
-                          className="rounded-2xl border border-[var(--color-border)] p-3 flex items-center gap-2.5 text-start hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
+                          className="rounded-2xl border border-[var(--color-border)] p-3.5 flex items-center gap-3 text-start hover:border-[var(--color-accent)] active:scale-[0.98] transition-all"
                         >
                           <ThreeDChildAvatar
-                            name={kid.name}
+                            name={displayKidName}
                             gender={kid.gender}
                             stageCode={ageInfo.stageCode}
                             accessoryTheme={kid.avatarTheme || 'astronaut'}
@@ -2012,7 +2086,7 @@ export default function App() {
                           />
                           <div className="min-w-0 flex-1">
                             <div className="font-extrabold text-xs sm:text-sm text-[var(--color-text)] truncate">
-                              {kid.name}
+                              {displayKidName}
                             </div>
                             <div className="text-[11px] text-[var(--color-muted)] tabular-nums truncate">
                               {ageInfo.label}
@@ -2025,15 +2099,15 @@ export default function App() {
                 </div>
 
                 {/* Nearest Appointment Compact Card */}
-                <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col justify-between gap-3">
+                <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 flex flex-col justify-between gap-3.5 soft-card-surface">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-sm font-extrabold text-[var(--color-text)]">
+                    <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
                       {t(lang, 'nearestAppointment')}
                     </h2>
                     <button
                       type="button"
                       onClick={() => navigateTo('calendar')}
-                      className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                      className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
                       {t(lang, 'openCalendar')}
                     </button>
@@ -2043,20 +2117,20 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => navigateTo('calendar')}
-                      className="w-full rounded-2xl bg-[var(--color-notice)] p-3.5 flex items-center justify-between gap-3 text-start active:scale-[0.99] transition-transform"
+                      className="w-full rounded-2xl bg-[var(--color-notice)] p-4 flex items-center justify-between gap-3 text-start active:scale-[0.99] transition-transform"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <ThreeDIcon id="health" size={38} />
                         <div className="min-w-0">
                           <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
-                            {nearestEvent.title}
+                            {locText(nearestEvent.title, lang)}
                           </div>
                           <div className="text-xs text-[var(--color-notice-text)] tabular-nums truncate mt-0.5">
-                            {nearestEvent.date} {nearestEvent.time ? `· ${nearestEvent.time}` : ''}
+                            {nearestEvent.date} {nearestEvent.time ? `· ${locText(nearestEvent.time, lang)}` : ''}
                           </div>
                         </div>
                       </div>
-                      <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shrink-0">
+                      <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shrink-0">
                         {t(lang, 'viewDetails')}
                       </span>
                     </button>
@@ -2074,9 +2148,9 @@ export default function App() {
               PAGE 2: CHILDREN PROFILES & 3D IDENTITY (إدارة الأطفال 3D)
               ================================================================ */}
           {activePage === 'children' && (
-            <section className="space-y-5" aria-label="ملفات الأطفال">
-              <div className="rounded-[24px] border border-teal-200/80 bg-teal-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+            <section className="space-y-6" aria-label={lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال'}>
+              <div className="rounded-[24px] border border-teal-200/80 bg-teal-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
                   <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
                     <ThreeDIcon id="children" size={34} />
                   </div>
@@ -2101,10 +2175,12 @@ export default function App() {
 
               {state.kids.length === 0 ? (
                 <div className="rounded-[24px] border border-dashed border-[var(--color-border)] p-8 text-center text-sm font-bold text-[var(--color-muted)]">
-                  لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل جديد» لإنشاء الملف الأول.
+                  {lang === 'en'
+                    ? 'No child profiles yet. Tap "+ Add Child Profile" to create the first profile.'
+                    : 'لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل جديد» لإنشاء الملف الأول.'}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {state.kids.map((kid, idx) => {
                     const ageInfo = calculateChildAge(kid.birth, state.language);
                     const kidTasksCount = state.tasks.filter((tItem) => Number(tItem.kidId) === kid.id).length;
@@ -2114,16 +2190,17 @@ export default function App() {
                       AVATAR_ACCESSORY_THEMES.find((th) => th.id === kid.avatarTheme) ||
                       AVATAR_ACCESSORY_THEMES[0];
                     const cardTone = idx % 2 === 0 ? PASTEL_CARD_TONES.teal : PASTEL_CARD_TONES.rose;
+                    const displayKidName = locText(kid.name, lang);
 
                     return (
                       <div
                         key={kid.id}
-                        className={`rounded-[24px] border ${cardTone.card} p-5 shadow-2xs space-y-4`}
+                        className={`rounded-[24px] border ${cardTone.card} p-5 sm:p-6 shadow-2xs space-y-4`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3.5">
                             <ThreeDChildAvatar
-                              name={kid.name}
+                              name={displayKidName}
                               gender={kid.gender}
                               stageCode={ageInfo.stageCode}
                               accessoryTheme={kid.avatarTheme || 'astronaut'}
@@ -2133,7 +2210,7 @@ export default function App() {
                             />
                             <div>
                               <h3 className="text-lg font-extrabold text-[var(--color-text)]">
-                                {kid.name}
+                                {displayKidName}
                               </h3>
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${cardTone.badge} tabular-nums`}>
@@ -2155,41 +2232,48 @@ export default function App() {
                         </div>
 
                         {/* Compact Visual Tags for Growth & Linked Counts */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
-                            <div className="text-[10px] font-bold text-[var(--color-muted)]">الروتين</div>
+                        <div className="grid grid-cols-3 gap-2.5">
+                          <div className="rounded-2xl bg-white/85 border border-white p-3 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">
+                              {lang === 'en' ? 'Routine' : 'الروتين'}
+                            </div>
                             <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
-                              {kidTasksCount} مهام
+                              {kidTasksCount} {lang === 'en' ? 'tasks' : 'مهام'}
                             </div>
                           </div>
-                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
-                            <div className="text-[10px] font-bold text-[var(--color-muted)]">المواعيد</div>
+                          <div className="rounded-2xl bg-white/85 border border-white p-3 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">
+                              {lang === 'en' ? 'Events' : 'المواعيد'}
+                            </div>
                             <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
-                              {kidEventsCount} موعد
+                              {kidEventsCount} {lang === 'en' ? 'events' : 'موعد'}
                             </div>
                           </div>
-                          <div className="rounded-2xl bg-white/85 border border-white p-2.5 text-center">
-                            <div className="text-[10px] font-bold text-[var(--color-muted)]">الأمنيات</div>
+                          <div className="rounded-2xl bg-white/85 border border-white p-3 text-center">
+                            <div className="text-[10px] font-bold text-[var(--color-muted)]">
+                              {lang === 'en' ? 'Wishes' : 'الأمنيات'}
+                            </div>
                             <div className="text-sm font-extrabold text-[var(--color-text)] tabular-nums">
-                              {kidWishesCount} أمنية
+                              {kidWishesCount} {lang === 'en' ? 'wishes' : 'أمنية'}
                             </div>
                           </div>
                         </div>
 
                         {/* Stage & Health Compact Card */}
-                        <div className="rounded-2xl bg-white/85 border border-white p-3.5 space-y-1.5 text-xs">
+                        <div className="rounded-2xl bg-white/85 border border-white p-4 space-y-1.5 text-xs">
                           <div className="font-extrabold text-[var(--color-text)] flex items-center justify-between gap-2">
                             <span>📈 {ageInfo.stageTitle}</span>
                             {(kid.growthHeightCm || kid.growthWeightKg) && (
                               <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-900 text-[10px] font-extrabold tabular-nums">
-                                {kid.growthHeightCm ? `${kid.growthHeightCm} سم` : ''}
+                                {kid.growthHeightCm ? `${kid.growthHeightCm} ${lang === 'en' ? 'cm' : 'سم'}` : ''}
                                 {kid.growthHeightCm && kid.growthWeightKg ? ' · ' : ''}
-                                {kid.growthWeightKg ? `${kid.growthWeightKg} كجم` : ''}
+                                {kid.growthWeightKg ? `${kid.growthWeightKg} ${lang === 'en' ? 'kg' : 'كجم'}` : ''}
                               </span>
                             )}
                           </div>
                           <div className="text-[11px] font-semibold text-[var(--color-muted)]">
-                            🎯 {kid.interests || 'لم تحدد الاهتمامات بعد'} · 🔒 التطعيمات: {kid.vaccinationsNote || 'محدثة'}
+                            🎯 {locText(kid.interests || 'لم تحدد الاهتمامات بعد', lang)} · 🔒 {lang === 'en' ? 'Vaccinations:' : 'التطعيمات:'}{' '}
+                            {locText(kid.vaccinationsNote || 'محدثة', lang)}
                           </div>
                         </div>
 
@@ -2221,11 +2305,11 @@ export default function App() {
               PAGE 3: DAILY ROUTINE (الروتين اليومي + التذكيرات)
               ================================================================ */}
           {activePage === 'routine' && (
-            <section className="space-y-5" aria-label="الروتين اليومي">
+            <section className="space-y-6" aria-label={lang === 'en' ? 'Daily Routine' : 'الروتين اليومي'}>
               {/* Top Action & Smart Reminders Pastel Card */}
               <div
-                className="rounded-[24px] border border-orange-200/80 bg-orange-50/85 p-4 sm:p-5 shadow-2xs space-y-4"
-                aria-label="تذكيرات الروتين اليومي"
+                className="rounded-[24px] border border-orange-200/80 bg-orange-50/85 p-5 sm:p-6 shadow-2xs space-y-4"
+                aria-label={lang === 'en' ? 'Daily Routine Reminders' : 'تذكيرات الروتين اليومي'}
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
@@ -2234,10 +2318,10 @@ export default function App() {
                     </div>
                     <div>
                       <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-orange-100 text-orange-900 tabular-nums">
-                        مكتمل: {completedTasksCount}/{state.tasks.length}
+                        {lang === 'en' ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
                       </span>
                       <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                        الروتين اليومي والتذكيرات الذكية
+                        {lang === 'en' ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
                       </h2>
                     </div>
                   </div>
@@ -2247,7 +2331,7 @@ export default function App() {
                       onClick={handleResetTasks}
                       className="min-h-[44px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] whitespace-nowrap"
                     >
-                      إعادة ضبط الإنجاز
+                      {lang === 'en' ? 'Reset Progress' : 'إعادة ضبط الإنجاز'}
                     </button>
                     <PrimaryCtaButton
                       variant="orange"
@@ -2256,7 +2340,7 @@ export default function App() {
                         setTaskModalOpen(true);
                       }}
                     >
-                      + إضافة مهمة
+                      {lang === 'en' ? '+ Add Task' : '+ إضافة مهمة'}
                     </PrimaryCtaButton>
                   </div>
                 </div>
@@ -2266,7 +2350,7 @@ export default function App() {
                   <div
                     className="flex flex-wrap items-center gap-1.5"
                     role="group"
-                    aria-label="تصفية حسب حالة التذكير"
+                    aria-label={lang === 'en' ? 'Filter by reminder status' : 'تصفية حسب حالة التذكير'}
                   >
                     <button
                       type="button"
@@ -2277,7 +2361,7 @@ export default function App() {
                           : 'border-[var(--color-border)] bg-white text-[var(--color-text)]'
                       }`}
                     >
-                      الكل ({state.tasks.length})
+                      {lang === 'en' ? `All (${state.tasks.length})` : `الكل (${state.tasks.length})`}
                     </button>
                     <button
                       type="button"
@@ -2288,7 +2372,7 @@ export default function App() {
                           : 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100'
                       }`}
                     >
-                      ⏰ تجاوزت الموعد ({routineRemindersSummary.overdueCount})
+                      ⏰ {lang === 'en' ? `Overdue (${routineRemindersSummary.overdueCount})` : `تجاوزت الموعد (${routineRemindersSummary.overdueCount})`}
                     </button>
                     <button
                       type="button"
@@ -2299,7 +2383,7 @@ export default function App() {
                           : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
                       }`}
                     >
-                      🔔 اقترب موعدها ({routineRemindersSummary.approachingCount})
+                      🔔 {lang === 'en' ? `Approaching (${routineRemindersSummary.approachingCount})` : `اقترب موعدها (${routineRemindersSummary.approachingCount})`}
                     </button>
                   </div>
 
@@ -2307,42 +2391,42 @@ export default function App() {
                   <div className="flex flex-wrap items-center gap-2 text-xs">
                     <select
                       id="routineLeadWindow"
-                      aria-label="التنبيه قبل الموعد بـ"
+                      aria-label={lang === 'en' ? 'Alert lead window' : 'التنبيه قبل الموعد بـ'}
                       value={routineApproachingWindow}
                       onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
                       className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
                     >
-                      <option value={30}>تنبيه قبل 30 دقيقة</option>
-                      <option value={60}>تنبيه قبل 60 دقيقة</option>
-                      <option value={90}>تنبيه قبل 90 دقيقة</option>
-                      <option value={120}>تنبيه قبل 120 دقيقة</option>
+                      <option value={30}>{lang === 'en' ? 'Alert 30m before' : 'تنبيه قبل 30 دقيقة'}</option>
+                      <option value={60}>{lang === 'en' ? 'Alert 60m before' : 'تنبيه قبل 60 دقيقة'}</option>
+                      <option value={90}>{lang === 'en' ? 'Alert 90m before' : 'تنبيه قبل 90 دقيقة'}</option>
+                      <option value={120}>{lang === 'en' ? 'Alert 120m before' : 'تنبيه قبل 120 دقيقة'}</option>
                     </select>
                     <select
                       id="routineRefTime"
-                      aria-label="الوقت المرجعي لحساب التذكيرات"
+                      aria-label={lang === 'en' ? 'Reference time' : 'الوقت المرجعي لحساب التذكيرات'}
                       value={routineRefTimePreset}
                       onChange={(e) => setRoutineRefTimePreset(e.target.value)}
                       className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
                     >
-                      <option value="live">الوقت الحالي تلقائيًا</option>
-                      <option value="07:15">صباحًا (07:15 ص)</option>
-                      <option value="15:45">عصرًا (03:45 م)</option>
-                      <option value="18:20">مساءً (06:20 م)</option>
-                      <option value="20:30">ليلًا (08:30 م)</option>
+                      <option value="live">{lang === 'en' ? 'Live Current Time' : 'الوقت الحالي تلقائيًا'}</option>
+                      <option value="07:15">{lang === 'en' ? 'Morning (07:15 AM)' : 'صباحًا (07:15 ص)'}</option>
+                      <option value="15:45">{lang === 'en' ? 'Afternoon (03:45 PM)' : 'عصرًا (03:45 م)'}</option>
+                      <option value="18:20">{lang === 'en' ? 'Evening (06:20 PM)' : 'مساءً (06:20 م)'}</option>
+                      <option value="20:30">{lang === 'en' ? 'Night (08:30 PM)' : 'ليلًا (08:30 م)'}</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 soft-card-surface space-y-5">
                 {/* Day / Week / Month Tabs & Filters */}
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="tablist" aria-label="نطاق تكرار الروتين">
+                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="tablist" aria-label={lang === 'en' ? 'Routine cadence' : 'نطاق تكرار الروتين'}>
                     {[
-                      { id: 'all', label: 'كل الفترات' },
-                      { id: 'daily', label: 'اليوم' },
-                      { id: 'weekly', label: 'الأسبوع' },
-                      { id: 'monthly', label: 'الشهر' },
+                      { id: 'all', label: lang === 'en' ? 'All Periods' : 'كل الفترات' },
+                      { id: 'daily', label: lang === 'en' ? 'Daily' : 'اليوم' },
+                      { id: 'weekly', label: lang === 'en' ? 'Weekly' : 'الأسبوع' },
+                      { id: 'monthly', label: lang === 'en' ? 'Monthly' : 'الشهر' },
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -2362,28 +2446,28 @@ export default function App() {
                   <div className="flex flex-wrap items-center gap-2">
                     <select
                       id="routineKidFilter"
-                      aria-label="عرض مهام"
+                      aria-label={lang === 'en' ? 'Filter by child' : 'عرض مهام'}
                       value={routineKidFilter}
                       onChange={(e) => setRoutineKidFilter(e.target.value)}
                       className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                     >
-                      <option value="all">كل الأطفال والأسرة</option>
+                      <option value="all">{lang === 'en' ? 'All Kids & Family' : 'كل الأطفال والأسرة'}</option>
                       {state.kids.map((k) => (
                         <option key={k.id} value={String(k.id)}>
-                          {k.name}
+                          {locText(k.name, lang)}
                         </option>
                       ))}
                     </select>
                     <select
                       id="routineStatusFilter"
-                      aria-label="حالة المهمة"
+                      aria-label={lang === 'en' ? 'Task status' : 'حالة المهمة'}
                       value={routineStatusFilter}
                       onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
                       className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
                     >
-                      <option value="all">كل الحالات</option>
-                      <option value="open">غير مكتملة</option>
-                      <option value="done">مكتملة</option>
+                      <option value="all">{lang === 'en' ? 'All Statuses' : 'كل الحالات'}</option>
+                      <option value="open">{lang === 'en' ? 'Open' : 'غير مكتملة'}</option>
+                      <option value="done">{lang === 'en' ? 'Completed' : 'مكتملة'}</option>
                     </select>
                   </div>
                 </div>
@@ -2391,10 +2475,10 @@ export default function App() {
                 {/* Tasks Grid Cards with Visual Reminder Badges */}
                 {filteredTasks.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
-                    لا توجد مهام مطابقة للتصفية الحالية.
+                    {lang === 'en' ? 'No tasks match the current filter.' : 'لا توجد مهام مطابقة للتصفية الحالية.'}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {filteredTasks.map((task) => {
                       const assignedKid = task.kidId ? kidMap[String(task.kidId)] : null;
                       const reminder = getRoutineTaskReminder(
@@ -2406,7 +2490,7 @@ export default function App() {
                       return (
                         <div
                           key={task.id}
-                          className={`rounded-2xl border p-3.5 flex items-center justify-between gap-3 transition-all ${
+                          className={`rounded-2xl border p-4 flex items-center justify-between gap-3 transition-all ${
                             reminder.status === 'overdue'
                               ? 'bg-red-50/75 border-red-200'
                               : reminder.status === 'approaching'
@@ -2432,16 +2516,16 @@ export default function App() {
                                       : 'text-[var(--color-text)]'
                                   }`}
                                 >
-                                  {task.name}
+                                  {locText(task.name, lang)}
                                 </span>
                                 {renderReminderBadge(reminder)}
                               </div>
                               <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)]">
                                 <span className="px-2 py-0.5 rounded-lg bg-white/90 text-[var(--color-text)]">
-                                  {assignedKid ? assignedKid.name : 'الأسرة'}
+                                  {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)}
                                 </span>
-                                <span>· {task.category}</span>
-                                <span>· ⏰ {task.time || 'مرن'}</span>
+                                <span>· {locText(task.category, lang)}</span>
+                                <span>· ⏰ {locText(task.time || 'مرن', lang)}</span>
                               </div>
                             </div>
                           </label>
@@ -2455,12 +2539,12 @@ export default function App() {
                               }}
                               className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                             >
-                              تعديل
+                              {lang === 'en' ? 'Edit' : 'تعديل'}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteTask(task.id)}
-                              aria-label={`حذف المهمة ${task.name}`}
+                              aria-label={`${lang === 'en' ? 'Delete task' : 'حذف المهمة'} ${locText(task.name, lang)}`}
                               className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
                             >
                               ×
@@ -2479,8 +2563,8 @@ export default function App() {
               PAGE 4: FAMILY CALENDAR (التقويم الأسري — ميلادي وهجري)
               ================================================================ */}
           {activePage === 'calendar' && (
-            <section className="space-y-5" aria-label="التقويم الأسري">
-              <div className="rounded-[24px] border border-cyan-200/80 bg-cyan-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <section className="space-y-6" aria-label={lang === 'en' ? 'Family Calendar' : 'التقويم الأسري'}>
+              <div className="rounded-[24px] border border-cyan-200/80 bg-cyan-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
                     <ThreeDIcon id="calendar" size={34} />
@@ -2490,7 +2574,7 @@ export default function App() {
                       📅 {todayFormatted.combined}
                     </span>
                     <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                      التقويم والمواعيد (ميلادي وهجري)
+                      {lang === 'en' ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
                     </h2>
                   </div>
                 </div>
@@ -2501,11 +2585,11 @@ export default function App() {
                     setEventModalOpen(true);
                   }}
                 >
-                  + إضافة حدث جديد
+                  {lang === 'en' ? '+ Add New Event' : '+ إضافة حدث جديد'}
                 </PrimaryCtaButton>
               </div>
 
-              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 soft-card-surface space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -2513,14 +2597,14 @@ export default function App() {
                       onClick={() => handleSetEventRange(0)}
                       className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
-                      اليوم
+                      {lang === 'en' ? 'Today' : 'اليوم'}
                     </button>
                     <button
                       type="button"
                       onClick={() => handleSetEventRange(7)}
                       className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
                     >
-                      الأيام السبعة القادمة
+                      {lang === 'en' ? 'Next 7 Days' : 'الأيام السبعة القادمة'}
                     </button>
                     <button
                       type="button"
@@ -2530,15 +2614,15 @@ export default function App() {
                       }}
                       className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
                     >
-                      كل الأحداث ({state.events.length})
+                      {lang === 'en' ? `All Events (${state.events.length})` : `كل الأحداث (${state.events.length})`}
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="group" aria-label="نظام عرض التاريخ">
+                  <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl" role="group" aria-label={lang === 'en' ? 'Date display mode' : 'نظام عرض التاريخ'}>
                     {[
-                      { id: 'both', label: 'الميلادي والهجري' },
-                      { id: 'gregorian', label: 'الميلادي' },
-                      { id: 'hijri', label: 'الهجري' },
+                      { id: 'both', label: lang === 'en' ? 'Gregorian & Hijri' : 'الميلادي والهجري' },
+                      { id: 'gregorian', label: lang === 'en' ? 'Gregorian' : 'الميلادي' },
+                      { id: 'hijri', label: lang === 'en' ? 'Hijri' : 'الهجري' },
                     ].map((mode) => (
                       <button
                         key={mode.id}
@@ -2562,10 +2646,10 @@ export default function App() {
                 </div>
 
                 {/* Date Range Filter */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="eventFrom" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                      من تاريخ
+                      {lang === 'en' ? 'From Date' : 'من تاريخ'}
                     </label>
                     <input
                       id="eventFrom"
@@ -2577,7 +2661,7 @@ export default function App() {
                   </div>
                   <div>
                     <label htmlFor="eventTo" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                      إلى تاريخ
+                      {lang === 'en' ? 'To Date' : 'إلى تاريخ'}
                     </label>
                     <input
                       id="eventTo"
@@ -2592,14 +2676,16 @@ export default function App() {
                 {/* Events Grid Cards */}
                 {isEventRangeReversed ? (
                   <div className="rounded-2xl border border-dashed border-amber-400 bg-amber-50 p-5 text-center text-xs font-bold text-amber-900" role="status">
-                    تاريخ البداية بعد تاريخ النهاية. عدّل نطاق التاريخ لعرض الأحداث.
+                    {lang === 'en'
+                      ? 'Start date is after end date. Adjust the range to view events.'
+                      : 'تاريخ البداية بعد تاريخ النهاية. عدّل نطاق التاريخ لعرض الأحداث.'}
                   </div>
                 ) : filteredEvents.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
-                    لا توجد أحداث في هذه الفترة.
+                    {lang === 'en' ? 'No events in this date range.' : 'لا توجد أحداث في هذه الفترة.'}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {filteredEvents.map((ev) => {
                       const assignedKid = ev.childId ? kidMap[String(ev.childId)] : null;
                       const formattedDate = formatGregorianAndHijri(
@@ -2612,7 +2698,7 @@ export default function App() {
                       return (
                         <div
                           key={ev.id}
-                          className={`rounded-[22px] border p-4 flex items-start justify-between gap-3 shadow-2xs ${
+                          className={`rounded-[22px] border p-4 sm:p-5 flex items-start justify-between gap-3 shadow-2xs ${
                             isMedical
                               ? 'bg-emerald-50/80 border-emerald-200/80'
                               : 'bg-cyan-50/75 border-cyan-200/80'
@@ -2627,18 +2713,18 @@ export default function App() {
                             </div>
                             <div className="min-w-0 space-y-1">
                               <div className="font-extrabold text-sm text-[var(--color-text)]">
-                                {ev.title}
+                                {locText(ev.title, lang)}
                               </div>
                               <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums">
                                 {formattedDate.combined}
-                                {ev.time ? ` · ⏰ ${ev.time}` : ''}
+                                {ev.time ? ` · ⏰ ${locText(ev.time, lang)}` : ''}
                               </div>
                               <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-text)]">
-                                  {ev.type}
+                                  {locText(ev.type, lang)}
                                 </span>
                                 <span className="px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-white/90 text-[var(--color-muted)]">
-                                  {assignedKid ? `👶 ${assignedKid.name}` : '👨‍👩‍👧‍👦 الأسرة'}
+                                  {assignedKid ? `👶 ${locText(assignedKid.name, lang)}` : `👨‍👩‍👧‍👦 ${locText('الأسرة', lang)}`}
                                 </span>
                               </div>
                             </div>
@@ -2653,15 +2739,15 @@ export default function App() {
                               }}
                               className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                             >
-                              تعديل
+                              {lang === 'en' ? 'Edit' : 'تعديل'}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleDeleteEvent(ev.id)}
-                              aria-label={`حذف الحدث ${ev.title}`}
+                              aria-label={`${lang === 'en' ? 'Delete event' : 'حذف الحدث'} ${locText(ev.title, lang)}`}
                               className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
                             >
-                              حذف
+                              {lang === 'en' ? 'Delete' : 'حذف'}
                             </button>
                           </div>
                         </div>
@@ -2677,18 +2763,18 @@ export default function App() {
               PAGE 5: WISHES & GOALS (الأمنيات والأحلام)
               ================================================================ */}
           {activePage === 'wishes' && (
-            <section className="space-y-5" aria-label="الأمنيات والهدايا">
-              <div className="rounded-[24px] border border-pink-200/80 bg-pink-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <section className="space-y-6" aria-label={lang === 'en' ? 'Wishes & Gifts' : 'الأمنيات والهدايا'}>
+              <div className="rounded-[24px] border border-pink-200/80 bg-pink-50/85 p-5 sm:p-6 shadow-2xs flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-white/90 border border-white shadow-2xs flex items-center justify-center shrink-0">
                     <ThreeDIcon id="wishes" size={34} />
                   </div>
                   <div>
                     <span className="px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-pink-100 text-pink-900 tabular-nums">
-                      🎁 {state.wishes.length} أمنيات مسجلة
+                      🎁 {state.wishes.length} {lang === 'en' ? 'Saved Wishes' : 'أمنيات مسجلة'}
                     </span>
                     <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
-                      أمنيات الأطفال وأهداف الإهداء العائلي
+                      {lang === 'en' ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
                     </h2>
                   </div>
                 </div>
@@ -2696,14 +2782,14 @@ export default function App() {
                   variant="orange"
                   onClick={() => {
                     if (!state.kids.length) {
-                      showToast('أضف ملف طفل أولًا');
+                      showToast(lang === 'en' ? 'Please add a child profile first' : 'أضف ملف طفل أولًا');
                       return;
                     }
                     setEditingWish(null);
                     setWishModalOpen(true);
                   }}
                 >
-                  + إضافة أمنية
+                  {lang === 'en' ? '+ Add Wish' : '+ إضافة أمنية'}
                 </PrimaryCtaButton>
               </div>
 
@@ -2717,7 +2803,7 @@ export default function App() {
                       : 'text-[var(--color-muted)]'
                   }`}
                 >
-                  كل الأطفال ({state.wishes.length})
+                  {lang === 'en' ? `All Kids (${state.wishes.length})` : `كل الأطفال (${state.wishes.length})`}
                 </button>
                 {state.kids.map((k) => (
                   <button
@@ -2730,16 +2816,16 @@ export default function App() {
                         : 'text-[var(--color-muted)]'
                     }`}
                   >
-                    {k.emoji} {k.name}
+                    {k.emoji} {locText(k.name, lang)}
                   </button>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {filteredWishes.length === 0 ? (
                     <div className="sm:col-span-2 rounded-[24px] border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
-                      قائمة الأمنيات فارغة لهذا الاختيار.
+                      {lang === 'en' ? 'No wishes found for this selection.' : 'قائمة الأمنيات فارغة لهذا الاختيار.'}
                     </div>
                   ) : (
                     filteredWishes.map((w) => {
@@ -2748,7 +2834,7 @@ export default function App() {
                       return (
                         <div
                           key={w.id}
-                          className="rounded-[24px] border border-pink-200/80 bg-pink-50/75 p-4 shadow-2xs flex flex-col justify-between gap-3"
+                          className="rounded-[24px] border border-pink-200/80 bg-pink-50/75 p-5 shadow-2xs flex flex-col justify-between gap-3.5"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
@@ -2760,10 +2846,10 @@ export default function App() {
                               </div>
                               <div className="min-w-0">
                                 <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
-                                  {w.name}
+                                  {locText(w.name, lang)}
                                 </div>
                                 <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums mt-0.5">
-                                  {kidObj ? kidObj.name : 'الأسرة'} ·{' '}
+                                  {kidObj ? locText(kidObj.name, lang) : locText('الأسرة', lang)} ·{' '}
                                   {formatCurrency(w.price, w.currency || state.currency, state.language)}
                                 </div>
                               </div>
@@ -2775,13 +2861,13 @@ export default function App() {
                                   : 'bg-white/90 text-pink-900'
                               }`}
                             >
-                              {w.reserved ? 'محجوزة ✅' : 'متاحة'}
+                              {w.reserved ? (lang === 'en' ? 'Reserved ✅' : 'محجوزة ✅') : (lang === 'en' ? 'Available' : 'متاحة')}
                             </span>
                           </div>
 
                           <div className="space-y-1.5">
                             <div className="flex items-center justify-between text-[11px] font-bold text-[var(--color-muted)] tabular-nums">
-                              <span>{w.goalType || 'خطة تحقيق الأمنية'}</span>
+                              <span>{locText(w.goalType || 'خطة تحقيق الأمنية', lang)}</span>
                               <span className="font-extrabold text-[var(--color-text)]">{prog}%</span>
                             </div>
                             <div className="w-full h-2.5 rounded-full bg-white overflow-hidden">
@@ -2809,7 +2895,13 @@ export default function App() {
                                 onClick={() => handleToggleWishReserve(w.id)}
                                 className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                               >
-                                {w.reserved ? 'إلغاء الحجز' : 'حجز كهدية'}
+                                {w.reserved
+                                  ? lang === 'en'
+                                    ? 'Unreserve'
+                                    : 'إلغاء الحجز'
+                                  : lang === 'en'
+                                  ? 'Reserve as Gift'
+                                  : 'حجز كهدية'}
                               </button>
                             </div>
                             <div className="flex items-center gap-1">
@@ -2821,12 +2913,12 @@ export default function App() {
                                 }}
                                 className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
                               >
-                                تعديل
+                                {lang === 'en' ? 'Edit' : 'تعديل'}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteWish(w.id)}
-                                aria-label={`حذف الأمنية ${w.name}`}
+                                aria-label={`${lang === 'en' ? 'Delete wish' : 'حذف الأمنية'} ${locText(w.name, lang)}`}
                                 className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
                               >
                                 ×
@@ -2842,7 +2934,7 @@ export default function App() {
                 {/* Gift Ideas Pastel Card */}
                 <div className="rounded-[24px] border border-amber-200/80 bg-amber-50/85 p-5 shadow-2xs space-y-3">
                   <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-                    💡 أفكار هدايا سريعة
+                    💡 {lang === 'en' ? 'Quick Gift Ideas' : 'أفكار هدايا سريعة'}
                   </h3>
                   <div className="space-y-2.5">
                     {[
@@ -2860,7 +2952,7 @@ export default function App() {
                             <span className="text-2xl" aria-hidden="true">{idea.emoji}</span>
                             <div>
                               <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                                {idea.title}
+                                {locText(idea.title, lang)}
                               </div>
                               <div className="text-[11px] font-bold text-amber-900 tabular-nums">
                                 {formatCurrency(p, state.currency, state.language)}
@@ -2874,7 +2966,7 @@ export default function App() {
                             }
                             className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-amber-600 text-white whitespace-nowrap"
                           >
-                            + أضف
+                            {lang === 'en' ? '+ Add' : '+ أضف'}
                           </button>
                         </div>
                       );
@@ -3280,11 +3372,17 @@ export default function App() {
                           : 'حساب الأم'}
                       </span>
                       <h2 className="text-xl sm:text-2xl font-extrabold text-[var(--color-text)] mt-1">
-                        {state.parentName}
+                        {locText(state.parentName, lang)}
                       </h2>
                       <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums mt-0.5">
-                        {state.country === 'SA' ? '🇸🇦 السعودية' : '🇪🇬 مصر'} · 📍{' '}
-                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')} · {state.currency}
+                        {state.country === 'SA'
+                          ? lang === 'en'
+                            ? '🇸🇦 Saudi Arabia'
+                            : '🇸🇦 السعودية'
+                          : lang === 'en'
+                          ? '🇪🇬 Egypt'
+                          : '🇪🇬 مصر'}{' '}
+                        · 📍 {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)} · {state.currency}
                       </div>
                     </div>
                   </div>
@@ -3655,7 +3753,7 @@ export default function App() {
                       </div>
                       <span className="px-3 py-1.5 rounded-xl bg-white text-xs font-extrabold text-[var(--color-text)] tabular-nums shadow-2xs">
                         {state.country === 'SA' ? '🇸🇦 +966 · SAR' : '🇪🇬 +20 · EGP'} · 📍{' '}
-                        {state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                        {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}
                       </span>
                     </div>
 
@@ -3984,8 +4082,8 @@ export default function App() {
 
         return (
           <nav
-            className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
-            aria-label="التنقل السفلي للموبايل"
+            className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur-md px-2 pt-1.5 pb-2 grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.12)]"
+            aria-label={lang === 'en' ? 'Mobile Bottom Navigation' : 'التنقل السفلي للموبايل'}
           >
             {/* 1. Home (الرئيسية) */}
             <button
@@ -4028,7 +4126,7 @@ export default function App() {
               <div className="relative">
                 <ThreeDIcon id="services" size={21} />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-2 px-1 min-w-[15px] h-[15px] rounded-full bg-orange-600 text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums">
+                  <span className="absolute -top-1 -end-2 px-1 min-w-[15px] h-[15px] rounded-full bg-orange-600 text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums">
                     {cartItemCount}
                   </span>
                 )}
@@ -5312,7 +5410,7 @@ export default function App() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs text-[var(--color-muted)]">
-                  {activeCommercialModal.categoryLabel} · {activeCommercialModal.city}
+                  {locText(activeCommercialModal.categoryLabel, lang)} · {locText(activeCommercialModal.city, lang)}
                 </div>
                 <h2 id="commercialModalTitle" className="text-xl font-bold text-[var(--color-text)] mt-1">
                   {activeCommercialModal.emoji} {lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}
@@ -5321,7 +5419,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveCommercialModal(null)}
-                aria-label="إغلاق"
+                aria-label={lang === 'en' ? 'Close' : 'إغلاق'}
                 className="px-3 py-1 rounded-lg bg-[var(--color-control-muted)] text-sm font-bold"
               >
                 ×
@@ -5352,7 +5450,7 @@ export default function App() {
                           : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)]'
                       }`}
                     >
-                      {v}
+                      {locText(v, lang)}
                     </button>
                   ))}
                 </div>
@@ -5378,17 +5476,17 @@ export default function App() {
 
             <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 text-xs space-y-1 tabular-nums">
               <div>
-                <strong>السعر في مصر: </strong>
+                <strong>{lang === 'en' ? 'Price in Egypt: ' : 'السعر في مصر: '}</strong>
                 {formatCurrency(activeCommercialModal.priceEGP, 'EGP', state.language)}
               </div>
               <div>
-                <strong>السعر في السعودية: </strong>
+                <strong>{lang === 'en' ? 'Price in Saudi Arabia: ' : 'السعر في السعودية: '}</strong>
                 {formatCurrency(activeCommercialModal.priceSAR, 'SAR', state.language)}
               </div>
               {activeCommercialModal.sellerName && (
                 <div>
-                  <strong>مقدم الخدمة / البائع: </strong>
-                  {activeCommercialModal.sellerName}
+                  <strong>{lang === 'en' ? 'Provider / Seller: ' : 'مقدم الخدمة / البائع: '}</strong>
+                  {locText(activeCommercialModal.sellerName, lang)}
                 </div>
               )}
             </div>
@@ -5424,7 +5522,7 @@ export default function App() {
                 onClick={() => setActiveCommercialModal(null)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--color-border)]"
               >
-                إغلاق
+                {lang === 'en' ? 'Close' : 'إغلاق'}
               </button>
             </div>
           </div>

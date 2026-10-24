@@ -41,9 +41,9 @@
 
   --font-ui: 'Cairo', 'Plus Jakarta Sans', Tahoma, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-size-base: 13.75px;
-  --line-height-base: 1.58;
-  --radius-card: 18px;
+  --font-size-base: 14px;
+  --line-height-base: 1.72;
+  --radius-card: 22px;
   --radius-control: 11px;
   --radius-small: 8px;
 
@@ -746,8 +746,8 @@ textarea:focus-visible {
 
 .gsi-material-button .gsi-material-button-icon {
   height: 20px;
-  margin-right: 10px;
-  margin-left: 4px;
+  margin-inline-end: 10px;
+  margin-inline-start: 4px;
   min-width: 20px;
   width: 20px;
 }
@@ -879,6 +879,43 @@ textarea {
   transition-duration: 220ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ==========================================================================
+   BREATHING ROOM, HORIZONTAL CAROUSELS & SOFT CARD ELEVATION
+   ========================================================================== */
+.horizontal-scroll-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.horizontal-scroll-row > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+.soft-card-surface {
+  box-shadow: 0 10px 28px -14px rgba(30, 37, 48, 0.08);
+  border-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+
+:root[data-color-mode="dark"] .soft-card-surface {
+  box-shadow: 0 14px 32px -12px rgba(8, 12, 22, 0.52);
+  border-color: color-mix(in srgb, var(--color-border) 65%, transparent);
+}
+
+p, li {
+  line-height: 1.75;
+}
+
+h1, h2, h3, h4 {
+  line-height: 1.38;
+}
+
 
 
 

@@ -3,6 +3,7 @@ import {
   ChildProfile,
   LanguageCode,
   calculateChildAge,
+  locText,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
 import { PrimaryCtaButton } from './DesignSystem';
@@ -344,7 +345,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
               >
                 {kids.map((k) => (
                   <option key={k.id} value={k.id}>
-                    {k.name} ({calculateChildAge(k.birth, language).label})
+                    {locText(k.name, language)} ({calculateChildAge(k.birth, language).label})
                   </option>
                 ))}
               </select>
