@@ -197,7 +197,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-[var(--color-border)]">
           <div>
             <div className="text-[11px] font-extrabold text-[var(--color-role-text)]">
-              🚀 {isEn ? `Nekbaar - نكبر · Interactive Registration & QR Setup (Step ${step} of 4)` : `Nekbaar - نكبر · معالج التسجيل وربط الأسرة عبر QR (الخطوة ${step} من 4)`}
+              🚀 {isEn ? `Nekbaar · Interactive Registration & QR Setup (Step ${step} of 4)` : `نكبر · معالج التسجيل وربط الأسرة عبر QR (الخطوة ${step} من 4)`}
             </div>
             <h2 id="onboarding-modal-title" className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
               {step === 1
@@ -391,8 +391,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           <div className="space-y-4">
             <p className="text-xs text-[var(--color-muted)] leading-relaxed">
               {isEn
-                ? 'Choosing your country and city automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar - نكبر.'
-                : 'اختيار الدولة والمدينة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل Nekbaar - نكبر.'}
+                ? 'Choosing your country and city automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar.'
+                : 'اختيار الدولة والمدينة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل نكبر.'}
             </p>
 
             {/* Country Cards */}

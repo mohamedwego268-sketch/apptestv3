@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { AiRobotHeadIcon, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
@@ -36,6 +36,34 @@ export const SoftFilledIcon: React.FC<SoftFilledIconProps> = ({
       className={`nekbar-soft-icon-box ${boxClasses} inline-flex items-center justify-center shrink-0 select-none ${className}`}
     >
       <ThreeDIcon id={id} size={iconSize} />
+    </span>
+  );
+};
+
+export interface UnifiedBadgeProps {
+  children: React.ReactNode;
+  tone?: PastelTone;
+  iconId?: ThreeDIconId;
+  className?: string;
+}
+
+/**
+ * Unified Tag & Badge component ensuring consistent typography, border radius, and soft-filled colors.
+ */
+export const UnifiedBadge: React.FC<UnifiedBadgeProps> = ({
+  children,
+  tone = 'teal',
+  iconId,
+  className = '',
+}) => {
+  const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.teal;
+  return (
+    <span
+      data-unified-badge="true"
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold ${toneClasses.badge} shadow-2xs select-none ${className}`}
+    >
+      {iconId && <ThreeDIcon id={iconId} size={13} />}
+      <span>{children}</span>
     </span>
   );
 };
@@ -212,6 +240,7 @@ interface SwipeableBannerCarouselProps {
   slides: BannerSlideItem[];
   language: LanguageCode;
   ariaLabel?: string;
+  autoPlayMs?: number;
 }
 
 const ICON_TO_BG_KEY: Record<ThreeDIconId, string> = {
@@ -239,9 +268,19 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
   slides,
   language,
   ariaLabel,
+  autoPlayMs = 4500,
 }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (slides.length <= 1 || isPaused || autoPlayMs <= 0) return;
+    const timer = window.setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % slides.length);
+    }, autoPlayMs);
+    return () => window.clearInterval(timer);
+  }, [slides.length, isPaused, autoPlayMs]);
 
   if (!slides.length) return null;
   const current = slides[activeIdx % slides.length];
@@ -253,13 +292,20 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
   return (
     <div
       data-banner-carousel="true"
+      data-autoplay-enabled="true"
       data-banner-variant={current.ctaVariant || 'orange'}
-      className="image-bg-card relative rounded-[24px] overflow-hidden select-none"
+      className="image-bg-card relative rounded-[24px] overflow-hidden select-none transition-all"
       style={{
         backgroundImage: bgSpec.backgroundImageCss,
       }}
-      onTouchStart={(e) => setTouchStartX(e.touches[0]?.clientX ?? null)}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={(e) => {
+        setIsPaused(true);
+        setTouchStartX(e.touches[0]?.clientX ?? null);
+      }}
       onTouchEnd={(e) => {
+        setIsPaused(false);
         if (touchStartX === null) return;
         const endX = e.changedTouches[0]?.clientX ?? touchStartX;
         const diff = touchStartX - endX;
@@ -274,36 +320,37 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[168px] text-center sm:text-start">
-        <div className="space-y-2 max-w-xl flex flex-col items-center sm:items-start">
-          <span className="image-card-badge inline-flex items-center px-3 py-1 rounded-full text-[11px] font-extrabold">
-            {current.badge}
+      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[148px] text-center sm:text-start">
+        <div className="space-y-1.5 max-w-xl flex flex-col items-center sm:items-start">
+          <span className="image-card-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold">
+            <ThreeDIcon id={current.iconId} size={14} />
+            <span>{current.badge}</span>
           </span>
-          <h2 className="image-card-title text-lg sm:text-xl font-extrabold leading-snug">
+          <h2 className="image-card-title text-base sm:text-lg font-extrabold leading-snug">
             {current.title}
           </h2>
-          <div className="image-card-subtitle text-xs font-semibold">
+          <div className="image-card-subtitle text-xs font-semibold leading-relaxed">
             {current.subtitle}
           </div>
-          <div className="pt-1.5 flex items-center gap-2">
+          <div className="pt-1 flex items-center gap-2">
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
+              className={`min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
           </div>
         </div>
 
-        <div className="self-center shrink-0 flex items-center justify-center w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-white/85 backdrop-blur-xs border border-white/80 shadow-sm">
-          <ThreeDIcon id={current.iconId} size={48} />
+        <div className="self-center shrink-0">
+          <SoftFilledIcon id={current.iconId} boxSize="lg" size={40} className="bg-white/90 border-white/80 shadow-sm" />
         </div>
       </div>
 
       {/* Pagination Dots & Prev/Next Controls */}
       {slides.length > 1 && (
-        <div className="px-5 pb-4 flex items-center justify-between gap-3">
+        <div className="px-4 sm:px-5 pb-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
             {slides.map((s, idx) => {
               const isCurrent = idx === activeIdx % slides.length;
@@ -330,7 +377,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -338,7 +385,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-8 h-8 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '›' : '‹'}
             </button>

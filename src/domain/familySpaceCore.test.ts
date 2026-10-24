@@ -344,12 +344,12 @@ test('COUNTRY_CITIES_MAP, findNearestCityByCoords & sortCatalogByCityAndProximit
   assert.ok(sortedCairo[0].estimatedDistanceKm > 0);
 });
 
-test('Nekbaar - نكبر branding, #0B131A Midnight Teal Dark Mode tokens, and Father (Teal/Slate Blue) vs Mother (Soft Coral/Warm Rose) Parent Profile specs', async () => {
+test('Localized brandName (نكبر in Arabic, Nekbaar in English), #0B131A Midnight Teal Dark Mode tokens, and Father vs Mother Parent Profile specs', async () => {
   const { DARK_MODE_PALETTE_TOKENS, getParentProfileThemeSpec } = await import('./familySpaceCore');
   const { t } = await import('./i18n');
 
-  assert.equal(t('ar', 'brandName'), 'Nekbaar - نكبر');
-  assert.equal(t('en', 'brandName'), 'Nekbaar - نكبر');
+  assert.equal(t('ar', 'brandName'), 'نكبر');
+  assert.equal(t('en', 'brandName'), 'Nekbaar');
 
   assert.equal(DARK_MODE_PALETTE_TOKENS.pageBackground, '#0B131A');
   assert.equal(DARK_MODE_PALETTE_TOKENS.surfaceBackground, '#101D26');

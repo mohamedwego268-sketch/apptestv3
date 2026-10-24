@@ -2,7 +2,7 @@ import { LanguageCode } from './familySpaceCore';
 
 export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
   ar: {
-    brandName: 'Nekbaar - نكبر',
+    brandName: 'نكبر',
     brandTagline: 'كل حاجة لطفلك في مكان واحد — من أول يوم لحد 8 سنين',
     navHome: 'الرئيسية',
     navChildren: 'إدارة الأطفال',
@@ -22,8 +22,8 @@ export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
     roleMom: 'ملف الأم — مرجاني دافئ',
     roleDad: 'ملف الأب — تيل وأزرق أردوازي',
     roleHighContrast: 'تباين عالٍ (سهولة قراءة)',
-    heroBadgeMom: 'ملف الأم · نكبر (Nekbaar)',
-    heroBadgeDad: 'ملف الأب · نكبر (Nekbaar)',
+    heroBadgeMom: 'ملف الأم · نكبر',
+    heroBadgeDad: 'ملف الأب · نكبر',
     heroBadgeContrast: 'وضع التباين العالي',
     heroHeadline: 'منصة متكاملة ثلاثية الأبعاد لإدارة حياة أسرتك… خطوة بخطوة',
     heroSub: 'مساعدك اليومي لتنظيم الروتين، حجز الأطباء، متابعة التطعيمات، استكشاف الريلز التربوية، مجتمع الآباء، المحادثات الآمنة، والتسوق الذكي من أول يوم لحد 8 سنين.',
@@ -72,7 +72,7 @@ export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
     notifBtnLabel: 'الإشعارات',
   },
   en: {
-    brandName: 'Nekbaar - نكبر',
+    brandName: 'Nekbaar',
     brandTagline: 'Everything for your child in one place — Day 1 to 8 years',
     navHome: 'Dashboard',
     navChildren: 'Children 3D',
@@ -92,8 +92,8 @@ export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
     roleMom: 'Mother Profile — Soft Coral & Rose',
     roleDad: 'Father Profile — Teal & Slate Blue',
     roleHighContrast: 'High Contrast Mode',
-    heroBadgeMom: 'Mother Profile · Nekbaar - نكبر',
-    heroBadgeDad: 'Father Profile · Nekbaar - نكبر',
+    heroBadgeMom: 'Mother Profile · Nekbaar',
+    heroBadgeDad: 'Father Profile · Nekbaar',
     heroBadgeContrast: 'High Contrast Mode',
     heroHeadline: 'Immersive 3D Platform to Manage Your Family Life',
     heroSub: 'Your daily companion for routines, pediatric doctors, vertical reels, parents community, secure family chat, AI parenting guidance, and shopping from Day 1 to 8 years.',

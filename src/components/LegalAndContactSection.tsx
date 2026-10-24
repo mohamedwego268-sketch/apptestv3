@@ -112,9 +112,9 @@ const TERMS_AND_IP_CLAUSES: PolicyClause[] = [
     titleAr: '١. الشروط والأحكام العامة لاستخدام المنصة (نص قياسي تجريبي)',
     titleEn: '1. General Terms & Conditions of Platform Use',
     bodyAr:
-      'هذا النص يمثل مسودة قياسية تجريبية (لوريم إيبسوم بالعربية) للشروط والأحكام الخاصة بتطبيق «مساحة الأسرة». باستخدامك لهذا النموذج التفاعلي، فإنك تقر بأن كافة عمليات الدفع والطلبات والحجوزات الطبية المعروضة هي محاكاة تجريبية مخصصة لاستطلاعات الرأي واختبار تجربة المستخدم.',
+      'هذا النص يمثل مسودة قياسية تجريبية (لوريم إيبسوم بالعربية) للشروط والأحكام الخاصة بتطبيق «نكبر». باستخدامك لهذا النموذج التفاعلي، فإنك تقر بأن كافة عمليات الدفع والطلبات والحجوزات الطبية المعروضة هي محاكاة تجريبية مخصصة لاستطلاعات الرأي واختبار تجربة المستخدم.',
     bodyEn:
-      'Standard placeholder text for Terms of Service. By using this interactive prototype, you acknowledge that all payments, orders, and bookings are simulated for user survey and testing purposes.',
+      'Standard placeholder text for Terms of Service on Nekbaar. By using this interactive prototype, you acknowledge that all payments, orders, and bookings are simulated for user survey and testing purposes.',
     bulletsAr: [
       'المحتوى الطبي والتربوي المعروض استرشادي وتوعوي ولا يغني عن استشارة الطبيب المختص.',
       'بوابة الدفع الإلكتروني والدفع عند الاستلام تعمل في وضع المحاكاة الآمنة (Sandbox).',
@@ -134,9 +134,9 @@ const TERMS_AND_IP_CLAUSES: PolicyClause[] = [
     titleAr: '٢. حقوق الملكية الفكرية والعلامات التجارية والتصميمات (IP Rights)',
     titleEn: '2. Intellectual Property, Trademarks & 3D Visual Assets',
     bodyAr:
-      'نص قياسي لحقوق الملكية الفكرية: جميع حقوق الملكية الفكرية والتصميمات البصرية، بما في ذلك الهوية البصرية، الأيقونات ثلاثية الأبعاد، نماذج الألعاب التفاعلية، مقاطع الريلز والبودكاست، وهيكلة النظام البرمجي محفوظة بالكامل لمنصة «مساحة الأسرة — Family Space».',
+      'نص قياسي لحقوق الملكية الفكرية: جميع حقوق الملكية الفكرية والتصميمات البصرية، بما في ذلك الهوية البصرية، الأيقونات ثلاثية الأبعاد، نماذج الألعاب التفاعلية، مقاطع الريلز والبودكاست، وهيكلة النظام البرمجي محفوظة بالكامل لمنصة «نكبر».',
     bodyEn:
-      'All intellectual property rights, including visual design systems, 3D icons, interactive kids games, media reels/podcasts, and software architecture are reserved to Family Space.',
+      'All intellectual property rights, including visual design systems, 3D icons, interactive kids games, media reels/podcasts, and software architecture are reserved to Nekbaar.',
     bulletsAr: [
       'يُحظر نسخ أو إعادة توزيع التصميمات أو الأصول البصرية ثلاثية الأبعاد دون إذن كتابي مسبق.',
       'العلامة التجارية والشعار وواجهة الاستخدام محمية بموجب قوانين حماية الملكية الفكرية.',
@@ -310,8 +310,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </span>
             <h2 className="section-heading-centered image-card-title">
               {isEn
-                ? 'Privacy Policy — Family Space Super App'
-                : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل'}
+                ? 'Privacy Policy — Nekbaar Super App'
+                : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل — نكبر'}
             </h2>
             <p className="image-card-subtitle text-xs font-semibold max-w-xl">
               {isEn
@@ -391,8 +391,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </h2>
             <p className="image-card-subtitle text-xs font-semibold max-w-xl">
               {isEn
-                ? 'All rights reserved © 2026 Family Space · Standard Arabic legal placeholder'
-                : 'جميع الحقوق محفوظة © ٢٠٢٦ مساحة الأسرة · نص قانوني قياسي لمرحلة الاختبار'}
+                ? 'All rights reserved © 2026 Nekbaar · Standard legal placeholder'
+                : 'جميع الحقوق محفوظة © ٢٠٢٦ نكبر · نص قانوني قياسي لمرحلة الاختبار'}
             </p>
             <button
               type="button"
@@ -620,8 +620,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                 </span>
                 <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-0.5">
                   {isEn
-                    ? 'Follow & Message Family Space on Social Media'
-                    : 'تابعنا وتواصل معنا عبر منصات التواصل الاجتماعي'}
+                    ? 'Follow & Message Nekbaar on Social Media'
+                    : 'تابع منصة نكبر وتواصل معنا عبر منصات التواصل الاجتماعي'}
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-purple-900">
