@@ -1172,3 +1172,56 @@ h1, h2, h3, h4 {
   background-color: rgba(16, 29, 38, 0.92) !important;
   border-color: rgba(45, 212, 191, 0.25) !important;
 }
+
+/* ==========================================================================
+   UNIVERSAL COLLAPSIBLE SECTION (ACCORDION) & REFINED BADGES v1.2
+   Ensures deep charcoal dark surfaces with 100% WCAG contrast and zero eye strain
+   ========================================================================== */
+[data-collapsible-section="true"] {
+  transition: all 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-color-mode="dark"] [data-collapsible-section="true"] {
+  background-color: #101D26 !important;
+  border-color: #1E3646 !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.6) !important;
+}
+
+:root[data-color-mode="dark"] [data-collapsible-section="true"] h3 {
+  color: #FFFFFF !important;
+}
+
+:root[data-color-mode="dark"] [data-collapsible-section="true"] p {
+  color: #CBD5E1 !important;
+}
+
+/* Refined Badges & Tags */
+[data-unified-badge="true"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  transition: all 180ms ease;
+}
+
+:root[data-color-mode="dark"] [data-unified-badge="true"] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Header Sticky Bar Polish & Dark Overhaul */
+#main-sticky-header {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+:root[data-color-mode="dark"] #main-sticky-header {
+  background-color: rgba(16, 29, 38, 0.95) !important;
+  border-bottom-color: #1E3646 !important;
+}
+

@@ -2,11 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
 import {
   BannerSlideItem,
+  CollapsibleSectionCard,
   FriendlyEmptyState,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
+  UnifiedBadge,
 } from './DesignSystem';
 
 interface CommunityComment {
@@ -330,25 +332,23 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         ariaLabel={isEn ? 'Community Highlights Carousel' : 'لافتات مجتمع الآباء المتحركة'}
       />
 
-      {/* Post Composer Drawer */}
-      {composerOpen && (
-        <form
-          onSubmit={handlePublishPost}
-          className="rounded-[24px] border-2 border-orange-300 bg-[var(--color-surface)] p-5 space-y-4 shadow-md"
-        >
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-extrabold text-[var(--color-text)]">
-              ✍️ {isEn ? 'New Community Post or Question' : 'مشاركة جديدة في مجتمع الوالدين'}
-            </h3>
-            <button
-              type="button"
-              onClick={() => setComposerOpen(false)}
-              className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
-            >
-              {isEn ? 'Close' : 'إغلاق'}
-            </button>
-          </div>
-
+      {/* Post Composer Collapsible Card */}
+      <CollapsibleSectionCard
+        id="community-post-composer-accordion"
+        title={isEn ? 'Share Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالك'}
+        subtitle={
+          isEn
+            ? 'Connect with parents and certified child specialists across Egypt & Saudi Arabia'
+            : 'تواصل مع الآباء واستشاريي رعاية الأطفال المعتمدين في مصر والسعودية'
+        }
+        iconId="star"
+        cardTone="amber"
+        badgeLabel={isEn ? 'Write Post' : 'إنشاء مشاركة'}
+        badgeTone="amber"
+        isOpen={composerOpen}
+        onToggle={(next) => setComposerOpen(next)}
+      >
+        <form onSubmit={handlePublishPost} className="space-y-4 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
@@ -416,16 +416,49 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           </div>
 
           <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setComposerOpen(false)}
+              className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-muted)]"
+            >
+              {isEn ? 'Cancel' : 'إلغاء'}
+            </button>
             <PrimaryCtaButton type="submit" variant="orange" size="sm">
               {isEn ? 'Publish to Community' : 'نشر في المجتمع الآن'}
             </PrimaryCtaButton>
           </div>
         </form>
-      )}
+      </CollapsibleSectionCard>
 
-      {/* Topic Filter Bar, Search & Quick New Post Button */}
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3 shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* Topic Filter Bar, Search & Quick Actions in Collapsible Card */}
+      <CollapsibleSectionCard
+        id="community-topic-filter-card"
+        title={isEn ? 'Explore Topics & Search Discussions' : 'تصفية الموضوعات وبحث النقاشات'}
+        subtitle={
+          isEn
+            ? `${filteredPosts.length} active discussions found`
+            : `${filteredPosts.length} نقاشات وتجارب معروضة`
+        }
+        iconId="children"
+        cardTone="teal"
+        badgeLabel={`${filteredPosts.length}`}
+        badgeTone="teal"
+        defaultOpen={true}
+        headerAction={
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setComposerOpen((prev) => !prev);
+            }}
+            className="min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold bg-[#FF8C61] hover:bg-[#e86a3d] text-white shadow-2xs transition-all flex items-center gap-1.5"
+          >
+            <span>✍️</span>
+            <span>{isEn ? 'New Post' : 'مشاركة جديدة'}</span>
+          </button>
+        }
+      >
+        <div className="space-y-3 pt-3">
           <div className="flex flex-wrap items-center gap-1.5">
             {[
               { id: 'all', labelAr: 'الكل', labelEn: 'All' },
@@ -439,9 +472,9 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 key={tab.id}
                 type="button"
                 onClick={() => setTopicFilter(tab.id)}
-                className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+                className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
                   topicFilter === tab.id
-                    ? 'bg-orange-600 text-white shadow-2xs'
+                    ? 'bg-[#0d9488] text-white shadow-2xs'
                     : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
@@ -450,27 +483,19 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             ))}
           </div>
 
-          <PrimaryCtaButton
-            variant="orange"
-            size="sm"
-            onClick={() => setComposerOpen((v) => !v)}
-          >
-            ✍️ {isEn ? '+ New Post' : '+ مشاركة جديدة'}
-          </PrimaryCtaButton>
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={
+              isEn
+                ? '🔍 Search parent discussions, questions, or cities...'
+                : '🔍 ابحث في نقاشات وتجارب الوالدين (حضانة، فطور، شاشات)...'
+            }
+            className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
+          />
         </div>
-
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={
-            isEn
-              ? '🔍 Search parent discussions, questions, or cities...'
-              : '🔍 ابحث في نقاشات وتجارب الوالدين (حضانة، فطور، شاشات)...'
-          }
-          className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
-        />
-      </div>
+      </CollapsibleSectionCard>
 
       {/* Community Feed Cards with Soft Pastel Tints */}
       {filteredPosts.length === 0 ? (

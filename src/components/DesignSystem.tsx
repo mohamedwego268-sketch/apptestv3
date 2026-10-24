@@ -5,6 +5,41 @@ import { AiRobotHeadIcon, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
 
 export { AiRobotHeadIcon };
 
+/**
+ * Canonical Design System Color Tokens for نكبر (Nekbaar).
+ * Light Mode: Crisp breathable white/light-gray (#F8FAFC, #FFFFFF) with high contrast text (#0B1926) and warm accents.
+ * Dark Mode: Deep Midnight Charcoal (#0B131A) canvas with deep slate-navy surfaces (#101D26, #142430), pristine borders (#1E3646),
+ * and WCAG AAA light text (#F8FAFC, #94A3B8).
+ */
+export const NEKBAAR_DESIGN_TOKENS = {
+  light: {
+    canvas: '#F8FAFC',
+    surface: '#FFFFFF',
+    surfaceSubtle: '#F1F5F9',
+    textPrimary: '#0B1926',
+    textMuted: '#64748B',
+    border: '#E2E8F0',
+    borderSubtle: '#F1F5F9',
+    brandTeal: '#0D9488',
+    brandCoral: '#FF8C61',
+    cardShadow: '0 10px 28px -14px rgba(15,23,42,0.08)',
+  },
+  dark: {
+    canvas: '#0B131A', // Deep Midnight Charcoal
+    surface: '#101D26', // Elevated Card Surface
+    surfaceElevated: '#142430', // Modal / Popover / Highlight
+    surfaceHover: '#182C3A',
+    textPrimary: '#F8FAFC', // WCAG AAA High Contrast
+    textMuted: '#94A3B8', // Soft slate readable secondary
+    border: '#1E3646', // Refined contrast border
+    borderSubtle: '#162834',
+    brandTeal: '#2DD4BF',
+    brandCoral: '#FF8C61',
+    cardShadow: '0 10px 28px -14px rgba(0,0,0,0.6)',
+  },
+} as const;
+
+
 export interface SoftFilledIconProps {
   id: ThreeDIconId;
   size?: number;
@@ -148,64 +183,64 @@ export const PASTEL_CARD_TONES: Record<
   { card: string; badge: string; iconBg: string }
 > = {
   emerald: {
-    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
-    badge: 'bg-teal-100/90 text-teal-900',
-    iconBg: 'bg-white/95 border-teal-100/60',
+    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
   },
   amber: {
-    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
-    badge: 'bg-orange-100/90 text-orange-900',
-    iconBg: 'bg-white/95 border-orange-100/60',
+    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#251B17] border-orange-100/60 dark:border-orange-700/40',
   },
   rose: {
-    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
-    badge: 'bg-orange-100/90 text-orange-900',
-    iconBg: 'bg-white/95 border-orange-100/60',
+    card: 'bg-orange-50/75 dark:bg-[#221619]/90 border-orange-200/45 dark:border-rose-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-rose-100/90 dark:bg-rose-950/60 text-rose-950 dark:text-rose-200 border border-rose-200/50 dark:border-rose-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#2A181C] border-rose-100/60 dark:border-rose-700/40',
   },
   indigo: {
-    card: 'bg-cyan-50/75 border-cyan-200/45 shadow-[0_10px_28px_-14px_rgba(14,116,144,0.12)]',
-    badge: 'bg-cyan-100/90 text-cyan-900',
-    iconBg: 'bg-white/95 border-cyan-100/60',
+    card: 'bg-cyan-50/75 dark:bg-[#101D2B]/90 border-cyan-200/45 dark:border-cyan-700/50 shadow-[0_10px_28px_-14px_rgba(14,116,144,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-cyan-100/90 dark:bg-cyan-950/60 text-cyan-950 dark:text-cyan-200 border border-cyan-200/50 dark:border-cyan-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#132333] border-cyan-100/60 dark:border-cyan-700/40',
   },
   purple: {
-    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
-    badge: 'bg-teal-100/90 text-teal-900',
-    iconBg: 'bg-white/95 border-teal-100/60',
+    card: 'bg-teal-50/75 dark:bg-[#121E2A]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#152535] border-teal-100/60 dark:border-teal-700/40',
   },
   sky: {
-    card: 'bg-sky-50/75 border-sky-200/45 shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)]',
-    badge: 'bg-sky-100/90 text-sky-900',
-    iconBg: 'bg-white/95 border-sky-100/60',
+    card: 'bg-sky-50/75 dark:bg-[#0E202E]/90 border-sky-200/45 dark:border-sky-700/50 shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-sky-100/90 dark:bg-sky-950/60 text-sky-950 dark:text-sky-200 border border-sky-200/50 dark:border-sky-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#122838] border-sky-100/60 dark:border-sky-700/40',
   },
   teal: {
-    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(20,184,166,0.12)]',
-    badge: 'bg-teal-100/90 text-teal-900',
-    iconBg: 'bg-white/95 border-teal-100/60',
+    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(20,184,166,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
   },
   orange: {
-    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
-    badge: 'bg-orange-100/90 text-orange-900',
-    iconBg: 'bg-white/95 border-orange-100/60',
+    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#261C18] border-orange-100/60 dark:border-orange-700/40',
   },
   pink: {
-    card: 'bg-orange-50/75 border-orange-200/45 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)]',
-    badge: 'bg-orange-100/90 text-orange-900',
-    iconBg: 'bg-white/95 border-orange-100/60',
+    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#261C18] border-orange-100/60 dark:border-orange-700/40',
   },
   cyan: {
-    card: 'bg-cyan-50/75 border-cyan-200/45 shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)]',
-    badge: 'bg-cyan-100/90 text-cyan-900',
-    iconBg: 'bg-white/95 border-cyan-100/60',
+    card: 'bg-cyan-50/75 dark:bg-[#0E202B]/90 border-cyan-200/45 dark:border-cyan-700/50 shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-cyan-100/90 dark:bg-cyan-950/60 text-cyan-950 dark:text-cyan-200 border border-cyan-200/50 dark:border-cyan-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#122835] border-cyan-100/60 dark:border-cyan-700/40',
   },
   lime: {
-    card: 'bg-teal-50/75 border-teal-200/45 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)]',
-    badge: 'bg-teal-100/90 text-teal-900',
-    iconBg: 'bg-white/95 border-teal-100/60',
+    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
   },
   slate: {
-    card: 'bg-slate-50/85 border-slate-200/45 shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)]',
-    badge: 'bg-slate-200/80 text-slate-900',
-    iconBg: 'bg-white/95 border-slate-100/60',
+    card: 'bg-slate-50/85 dark:bg-[#101D26]/90 border-slate-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
+    badge: 'bg-slate-200/80 dark:bg-slate-800/80 text-slate-900 dark:text-slate-200 border border-slate-300/50 dark:border-slate-700/60',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-slate-100/60 dark:border-[#1E3646]',
   },
 };
 
@@ -729,7 +764,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
 
   const cardToneClasses = cardTone
     ? PASTEL_CARD_TONES[cardTone]?.card || ''
-    : 'bg-[var(--color-surface)] border-[var(--color-border)]';
+    : 'bg-[var(--color-surface)] dark:bg-[#101D26] border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC]';
 
   const resolvedIcon = icon ?? (iconId ? <SoftFilledIcon id={iconId} size={18} boxSize="sm" /> : null);
   const resolvedBadge = badge ?? (badgeLabel ? (typeof badgeLabel === 'string' ? <UnifiedBadge tone={badgeTone}>{badgeLabel}</UnifiedBadge> : badgeLabel) : null);
