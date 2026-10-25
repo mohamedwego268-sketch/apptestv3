@@ -75,6 +75,7 @@ import { FamilyPermissionsSection } from './components/FamilyPermissionsSection'
 import { NotificationsCenterSection } from './components/NotificationsCenterSection';
 import { InteractiveGamesSection } from './components/InteractiveGamesSection';
 import { LegalAndContactSection } from './components/LegalAndContactSection';
+import { HeaderBar } from './components/HeaderBar';
 import {
   ThreeDIcon,
   ThreeDIconId,
@@ -1255,170 +1256,29 @@ export default function App() {
       }}
     >
       <div className="min-h-screen w-full overflow-x-hidden pb-24 lg:pb-8">
-        {/* Top Bar Contract: Localized Single-Language Brand Wordmark (نكبر in AR / Nekbaar in EN) + Primary Nav + Perfectly Aligned Controls */}
-        <header
-          id="main-sticky-header"
-          data-scrolled={isScrolled ? 'true' : 'false'}
-          className="sticky top-0 z-30 border-b border-[var(--color-border)] glass-sticky-header transition-colors"
-        >
-          <div className="max-w-[1280px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
-            {/* Zone 1: Localized Official Brand Wordmark (Strictly 'نكبر' in AR or 'Nekbaar' in EN) */}
-            <button
-              type="button"
-              onClick={() => navigateTo('home')}
-              className="h-10 flex items-center gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none"
-            >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform">
-                <ThreeDIcon id="home" size={20} />
-              </div>
-              <span className="font-extrabold text-base sm:text-lg text-[var(--color-text)]">
-                {t(lang, 'brandName')}
-              </span>
-            </button>
+        <HeaderBar
+          lang={lang}
+          brandName={t(lang, 'brandName')}
+          darkMode={Boolean(state.darkMode)}
+          unreadNotifCount={unreadNotifCount}
+          parentProfileSpec={{
+            role: parentProfileSpec.role,
+            displayNameAr: parentProfileSpec.displayNameAr,
+            displayNameEn: parentProfileSpec.displayNameEn,
+            badgeBgCss: parentProfileSpec.badgeBgCss,
+            badgeTextCss: parentProfileSpec.badgeTextCss,
+            badgeBorderCss: parentProfileSpec.badgeBorderCss,
+          }}
+          activePage={activePage}
+          navItems={navItems.map((n) => ({ id: n.id, shortLabel: n.shortLabel }))}
+          onNavigate={navigateTo}
+          onToggleDarkMode={handleToggleDarkMode}
+          onToggleLanguage={handleToggleTopLanguage}
+          onOpenProfileDrawer={() => setRoleModalOpen(true)}
+          isScrolled={isScrolled}
+        />
 
-            {/* Zone 2: Primary Single-Line Nav Links (Desktop) */}
-            <nav
-              className="hidden xl:flex items-center gap-2.5 text-xs font-bold text-[var(--color-muted)] min-w-0"
-              aria-label="التنقل الرئيسي"
-            >
-              {(['home', 'medical', 'media', 'community', 'chat', 'assistant', 'services'] as PageId[]).map(
-                (pid) => {
-                  const item = navItems.find((n) => n.id === pid)!;
-                  const isActive = activePage === pid;
-                  return (
-                    <button
-                      key={pid}
-                      type="button"
-                      onClick={() => navigateTo(pid)}
-                      className={`h-9 px-3 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-                        isActive
-                          ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
-                          : 'hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
-                      }`}
-                    >
-                      <span>{item.shortLabel}</span>
-                    </button>
-                  );
-                }
-              )}
-            </nav>
 
-            {/* Zone 3: Zero-Clutter Aligned Sticky Controls (Dark Mode + Lang + Notifications + Color-Coded Parent Profile) */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* Top Quick-Action Dark / Light Mode Toggle */}
-              <button
-                id="top-dark-mode-toggle"
-                type="button"
-                onClick={handleToggleDarkMode}
-                aria-pressed={Boolean(state.darkMode)}
-                aria-label={
-                  state.darkMode
-                    ? lang === 'en'
-                      ? 'Switch to Light Mode'
-                      : 'التبديل إلى الوضع النهاري'
-                    : lang === 'en'
-                    ? 'Switch to Dark Mode'
-                    : 'التبديل إلى الوضع الليلي'
-                }
-                className={`h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs select-none ${
-                  state.darkMode
-                    ? 'border-teal-500/50 bg-teal-500/20 text-teal-200 hover:border-teal-400'
-                    : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)]'
-                }`}
-              >
-                {state.darkMode ? (
-                  /* Sun SVG for Dark Mode */
-                  <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-amber-300" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" strokeLinecap="round" />
-                    <line x1="12" y1="21" x2="12" y2="23" strokeLinecap="round" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" strokeLinecap="round" />
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" strokeLinecap="round" />
-                    <line x1="1" y1="12" x2="3" y2="12" strokeLinecap="round" />
-                    <line x1="21" y1="12" x2="23" y2="12" strokeLinecap="round" />
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" strokeLinecap="round" />
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" strokeLinecap="round" />
-                  </svg>
-                ) : (
-                  /* Moon SVG for Light Mode */
-                  <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-slate-700" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                )}
-                <span className="hidden sm:inline">
-                  {state.darkMode
-                    ? lang === 'en'
-                      ? 'Light'
-                      : 'نهاري'
-                    : lang === 'en'
-                    ? 'Dark'
-                    : 'ليلي'}
-                </span>
-              </button>
-
-              {/* Top Language Switcher (AR <-> EN) */}
-              <button
-                id="top-language-switcher"
-                type="button"
-                onClick={handleToggleTopLanguage}
-                aria-label={
-                  lang === 'ar' ? 'Switch language to English' : 'التبديل إلى اللغة العربية'
-                }
-                className="h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] flex items-center gap-1.5 transition-all shadow-2xs select-none"
-              >
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-[#0d9488]" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="2" y1="12" x2="22" y2="12" />
-                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                </svg>
-                <span>{lang === 'ar' ? 'English' : 'عربي'}</span>
-              </button>
-
-              {/* Notifications Bell */}
-              <button
-                type="button"
-                onClick={() => navigateTo('notifications')}
-                aria-label={t(lang, 'notifBtnLabel')}
-                className="h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1.5 whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] transition-all shadow-2xs select-none"
-              >
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-[#FF8C61]" viewBox="0 0 24 24">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h24s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-                <span className="px-1.5 py-0.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-extrabold tabular-nums leading-none shadow-2xs">
-                  {unreadNotifCount}
-                </span>
-              </button>
-
-              {/* Color-Coded Parent Profile Drawer Trigger (Father Teal/Slate Blue vs. Mother Soft Coral/Warm Rose) */}
-              <button
-                id="open-profile-drawer-btn"
-                type="button"
-                data-parent-role={parentProfileSpec.role}
-                onClick={() => setRoleModalOpen(true)}
-                aria-label={
-                  lang === 'en' ? 'Open Profile & Quick Controls' : 'فتح درج الحساب والتحكم السريع'
-                }
-                style={{
-                  backgroundColor: parentProfileSpec.badgeBgCss,
-                  color: parentProfileSpec.badgeTextCss,
-                  borderColor: parentProfileSpec.badgeBorderCss,
-                }}
-                className="h-9 px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs select-none"
-              >
-                <span className="w-5 h-5 rounded-full bg-white/30 dark:bg-black/20 flex items-center justify-center shrink-0">
-                  <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                </span>
-                <span className="hidden sm:inline font-extrabold">
-                  {lang === 'en' ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
-                </span>
-              </button>
-            </div>
-          </div>
-        </header>
 
         {/* Main Workspace Container (Sidebar + Content Canvas) */}
         <div className="max-w-[1280px] mx-auto px-4 sm:px-7 pt-6 pb-8 grid grid-cols-1 lg:grid-cols-[256px_1fr] gap-7 items-start">

@@ -6,12 +6,12 @@
    while elevating typography, contrast, and responsive spacing.
    ========================================================================== */
 :root {
-  --color-page: #f7faf9;
+  --color-page: #F8FAFC;
   --color-surface: #ffffff;
-  --color-heading: #0f172a;
-  --color-text: #0f172a;
+  --color-heading: #0B131A;
+  --color-text: #0B131A;
   --color-muted: #475569;
-  --color-border: #dce8e6;
+  --color-border: #E2E8F0;
   --color-accent: #0d9488;
   --color-accent-contrast: #ffffff;
   --color-accent-soft: #f0fdfa;

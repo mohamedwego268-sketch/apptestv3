@@ -1870,17 +1870,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                 </div>
 
-                {/* Price + Standardized Super App Action Buttons */}
-                <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] space-y-2">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[10.5px] font-bold text-[var(--color-muted)]">
+                {/* Price + Minimalist Matching Icon Controls */}
+                <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-bold text-[var(--color-muted)]">
                       {item.kind === 'service'
                         ? isEn
-                          ? 'Fee:'
-                          : 'التكلفة:'
+                          ? 'Fee'
+                          : 'التكلفة'
                         : isEn
-                        ? 'Price:'
-                        : 'السعر:'}
+                        ? 'Price'
+                        : 'السعر'}
                     </span>
                     <div className="flex items-baseline gap-1.5 tabular-nums">
                       {origVal && (
@@ -1894,27 +1894,44 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {/* Minimalist Details Link Button */}
                     <button
                       type="button"
                       onClick={() => onInspectCommercialItem(item)}
-                      className="min-h-[34px] px-2 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] whitespace-nowrap active:scale-95 transition-transform"
+                      title={isEn ? 'Details' : 'التفاصيل'}
+                      aria-label={isEn ? 'Details' : 'التفاصيل'}
+                      className="h-8 px-2.5 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-300 active:scale-95 transition-all"
                     >
                       {isEn ? 'Details' : 'التفاصيل'}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => onAddToCart(item, item.variants?.[0])}
-                      className="min-h-[34px] px-2 py-1 rounded-xl text-xs font-extrabold bg-[#FF8C61] hover:bg-[#e86a3d] text-white shadow-2xs whitespace-nowrap active:scale-95 transition-transform"
-                    >
-                      {isEn ? '+ Cart' : '+ للسلة'}
-                    </button>
+
+                    {/* Wishlist / Heart Icon (Matching Warm Coral #FF8C61 Palette) */}
                     <button
                       type="button"
                       onClick={() => onAddProductToWishes(item)}
-                      className="min-h-[34px] px-2 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white/80 dark:bg-[#142430]/80 text-[var(--color-text)] whitespace-nowrap active:scale-95 transition-transform"
+                      title={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
+                      aria-label={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
+                      className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-orange-800/60 bg-orange-50/80 dark:bg-orange-950/40 text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white dark:hover:bg-[#FF8C61] dark:hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
                     >
-                      {isEn ? '+ Wish' : '+ أمنية'}
+                      <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </button>
+
+                    {/* Shopping Cart Icon (Matching Warm Teal Palette) */}
+                    <button
+                      type="button"
+                      onClick={() => onAddToCart(item, item.variants?.[0])}
+                      title={isEn ? 'Add to Cart' : 'أضف للسلة'}
+                      aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
+                      className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
+                    >
+                      <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                      </svg>
                     </button>
                   </div>
                 </div>
