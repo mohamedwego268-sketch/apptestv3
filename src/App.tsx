@@ -1530,6 +1530,13 @@ export default function App() {
                 onSelectPreciseCity={handleSelectPreciseCity}
                 onUseCurrentLocation={handleUseCurrentLocation}
                 onAddToCart={handleAddToCart}
+                onInspectCommercialItem={(item) => {
+                  setSelectedModalVariant(item.variants?.[0] || '');
+                  setActiveCommercialModal(item);
+                }}
+                onAddProductToWishes={(item) =>
+                  handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
+                }
               />
             )}
 

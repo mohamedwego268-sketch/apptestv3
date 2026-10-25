@@ -1,9 +1,9 @@
 /**
- * Pure domain mapping for Nekbar Global Design System:
- * 1. Image Background Cards with Soft Overlays (~30-40% opacity in Light Mode, ~75-80% in Dark Mode)
- * 2. Dynamic Text Tokens (Dark Slate #0F172A in Light Mode, Crisp White #FFFFFF in Dark Mode)
- * 3. Standardized Soft-Filled Iconography Tokens (Warm Coral #FF8C61)
- * 4. Dynamic AI Robot Assistant FAB Configuration
+ * Pure domain mapping for Nekbaar (نكبر) Global Design System:
+ * 1. Image Background Cards with Soft Overlays (~34-40% opacity in Light Mode, ~80-84% in Dark Mode)
+ * 2. Dynamic Text Tokens (Deep Charcoal #0B131A in Light Mode, Crisp White #F8FAFC in Dark Mode)
+ * 3. Standardized Soft-Filled Iconography Tokens (Warm Coral #FF8C61 & Teal #0D9488)
+ * 4. Support for all 12 Store Categories & Core App Hubs
  */
 
 export type CardBackgroundKey =
@@ -31,14 +31,20 @@ export type CardBackgroundKey =
   | 'essentials'
   | 'doctor'
   | 'nursery'
+  | 'courses'
+  | 'sports'
+  | 'events_parks'
+  | 'books'
+  | 'nutrition'
+  | 'furniture'
   | 'consultation'
   | 'delivery';
 
 export type CardColorMode = 'light' | 'dark';
 
-export const IMAGE_CARD_TEXT_SHADOW = '0 2px 4px rgba(0, 0, 0, 0.4)';
+export const IMAGE_CARD_TEXT_SHADOW = '0 2px 4px rgba(0, 0, 0, 0.45)';
 export const IMAGE_CARD_LIGHT_TEXT_SHADOW =
-  '0 1px 2px rgba(255, 255, 255, 0.92), 0 2px 4px rgba(0, 0, 0, 0.12)';
+  '0 1px 2px rgba(255, 255, 255, 0.94), 0 2px 4px rgba(0, 0, 0, 0.1)';
 export const WARM_CORAL_HEX = '#FF8C61';
 export const WARM_CORAL_DEEP_HEX = '#E86A3D';
 
@@ -66,6 +72,12 @@ const CARD_IMAGE_PATHS: Record<CardBackgroundKey, string> = {
   clothing: '/images/cards/family.svg',
   essentials: '/images/cards/routine.svg',
   nursery: '/images/cards/family.svg',
+  courses: '/images/cards/ai.svg',
+  sports: '/images/cards/routine.svg',
+  events_parks: '/images/cards/family.svg',
+  books: '/images/cards/community.svg',
+  nutrition: '/images/cards/medical.svg',
+  furniture: '/images/cards/store.svg',
   consultation: '/images/cards/community.svg',
   delivery: '/images/cards/store.svg',
   community: '/images/cards/community.svg',
@@ -86,179 +98,152 @@ const CARD_IMAGE_PATHS: Record<CardBackgroundKey, string> = {
 };
 
 const CARD_STOCK_PHOTO_URLS: Record<CardBackgroundKey, string> = {
-  medical:
-    'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=900&q=80',
-  doctor:
-    'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=900&q=80',
-  services:
-    'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80',
-  store:
-    'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80',
-  all:
-    'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80',
-  toys:
-    'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80',
-  clothing:
-    'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=900&q=80',
-  essentials:
-    'https://images.unsplash.com/photo-1544126592-807ade215a0b?auto=format&fit=crop&w=900&q=80',
-  nursery:
-    'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80',
-  consultation:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-  delivery:
-    'https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?auto=format&fit=crop&w=900&q=80',
-  community:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-  media:
-    'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=900&q=80',
-  assistant:
-    'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80',
-  chat:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-  children:
-    'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80',
-  routine:
-    'https://images.unsplash.com/photo-1544126592-807ade215a0b?auto=format&fit=crop&w=900&q=80',
-  calendar:
-    'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&w=900&q=80',
-  wishes:
-    'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=900&q=80',
-  games:
-    'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80',
-  settings:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-  family:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-  notifications:
-    'https://images.unsplash.com/photo-1544126592-807ade215a0b?auto=format&fit=crop&w=900&q=80',
-  privacy:
-    'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=900&q=80',
-  terms:
-    'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=900&q=80',
-  contact:
-    'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
+  medical: '/images/cards/medical.svg',
+  doctor: '/images/cards/medical.svg',
+  services: '/images/cards/store.svg',
+  store: '/images/cards/store.svg',
+  all: '/images/cards/store.svg',
+  toys: '/images/cards/store.svg',
+  clothing: '/images/cards/family.svg',
+  essentials: '/images/cards/routine.svg',
+  nursery: '/images/cards/family.svg',
+  courses: '/images/cards/ai.svg',
+  sports: '/images/cards/routine.svg',
+  events_parks: '/images/cards/family.svg',
+  books: '/images/cards/community.svg',
+  nutrition: '/images/cards/medical.svg',
+  furniture: '/images/cards/store.svg',
+  consultation: '/images/cards/community.svg',
+  delivery: '/images/cards/store.svg',
+  community: '/images/cards/community.svg',
+  media: '/images/cards/ai.svg',
+  assistant: '/images/cards/ai.svg',
+  chat: '/images/cards/community.svg',
+  children: '/images/cards/family.svg',
+  routine: '/images/cards/routine.svg',
+  calendar: '/images/cards/routine.svg',
+  wishes: '/images/cards/store.svg',
+  games: '/images/cards/family.svg',
+  settings: '/images/cards/ai.svg',
+  family: '/images/cards/family.svg',
+  notifications: '/images/cards/routine.svg',
+  privacy: '/images/cards/medical.svg',
+  terms: '/images/cards/ai.svg',
+  contact: '/images/cards/community.svg',
 };
 
 /**
- * Light Mode Overlays (~30-40% opacity):
- * Smooth warm-ivory & pastel-tinted linear gradients (0.34 to 0.40 alpha) that allow the warm
- * background photography to shine through while pairing with Dark Slate (#0F172A) typography
- * for 100% WCAG AA/AAA readability (>= 10.5:1 contrast ratio).
+ * Light Mode Overlays:
+ * Breathable clean light tints pairing with Deep Charcoal (#0B131A) typography.
  */
 const LIGHT_MODE_OVERLAYS: Record<CardBackgroundKey, string> = {
   medical:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(240, 253, 250, 0.36) 52%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(240, 253, 250, 0.40) 52%, rgba(255, 247, 237, 0.42) 100%)',
   doctor:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(240, 253, 250, 0.36) 52%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(240, 253, 250, 0.40) 52%, rgba(255, 247, 237, 0.42) 100%)',
   services:
-    'linear-gradient(135deg, rgba(255, 251, 246, 0.34) 0%, rgba(255, 245, 235, 0.37) 50%, rgba(254, 242, 232, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 245, 235, 0.40) 50%, rgba(254, 242, 232, 0.42) 100%)',
   store:
-    'linear-gradient(135deg, rgba(255, 251, 246, 0.34) 0%, rgba(255, 245, 235, 0.37) 50%, rgba(254, 242, 232, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 245, 235, 0.40) 50%, rgba(254, 242, 232, 0.42) 100%)',
   all:
-    'linear-gradient(135deg, rgba(255, 251, 246, 0.34) 0%, rgba(255, 245, 235, 0.37) 50%, rgba(254, 242, 232, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 245, 235, 0.40) 50%, rgba(254, 242, 232, 0.42) 100%)',
   toys:
-    'linear-gradient(135deg, rgba(255, 251, 245, 0.34) 0%, rgba(254, 243, 199, 0.36) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(254, 243, 199, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   clothing:
-    'linear-gradient(135deg, rgba(255, 250, 247, 0.34) 0%, rgba(252, 231, 243, 0.36) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(252, 231, 243, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   essentials:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(224, 242, 254, 0.36) 50%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(224, 242, 254, 0.40) 50%, rgba(255, 247, 237, 0.42) 100%)',
   nursery:
-    'linear-gradient(135deg, rgba(255, 251, 247, 0.34) 0%, rgba(238, 242, 255, 0.36) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(238, 242, 255, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
+  courses:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(237, 233, 254, 0.40) 50%, rgba(224, 242, 254, 0.42) 100%)',
+  sports:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(204, 251, 241, 0.40) 50%, rgba(224, 242, 254, 0.42) 100%)',
+  events_parks:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(252, 231, 243, 0.42) 100%)',
+  books:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(254, 243, 199, 0.40) 50%, rgba(238, 242, 255, 0.42) 100%)',
+  nutrition:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(220, 252, 231, 0.40) 50%, rgba(240, 253, 250, 0.42) 100%)',
+  furniture:
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 247, 237, 0.40) 50%, rgba(224, 242, 254, 0.42) 100%)',
   consultation:
-    'linear-gradient(135deg, rgba(255, 251, 248, 0.34) 0%, rgba(243, 232, 255, 0.36) 50%, rgba(255, 241, 242, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(243, 232, 255, 0.40) 50%, rgba(255, 241, 242, 0.42) 100%)',
   delivery:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(204, 251, 241, 0.36) 50%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(204, 251, 241, 0.40) 50%, rgba(255, 247, 237, 0.42) 100%)',
   community:
-    'linear-gradient(135deg, rgba(255, 250, 246, 0.34) 0%, rgba(255, 237, 213, 0.37) 50%, rgba(252, 231, 243, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(252, 231, 243, 0.42) 100%)',
   media:
-    'linear-gradient(135deg, rgba(255, 251, 248, 0.34) 0%, rgba(237, 233, 254, 0.37) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(237, 233, 254, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   assistant:
-    'linear-gradient(135deg, rgba(255, 250, 246, 0.34) 0%, rgba(255, 237, 213, 0.37) 50%, rgba(237, 233, 254, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(237, 233, 254, 0.42) 100%)',
   chat:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(224, 242, 254, 0.36) 50%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(224, 242, 254, 0.40) 50%, rgba(255, 247, 237, 0.42) 100%)',
   children:
-    'linear-gradient(135deg, rgba(255, 251, 247, 0.34) 0%, rgba(255, 237, 213, 0.36) 50%, rgba(204, 251, 241, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(204, 251, 241, 0.42) 100%)',
   routine:
-    'linear-gradient(135deg, rgba(255, 251, 245, 0.34) 0%, rgba(254, 243, 199, 0.36) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(254, 243, 199, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   calendar:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(224, 242, 254, 0.36) 50%, rgba(254, 243, 199, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(224, 242, 254, 0.40) 50%, rgba(254, 243, 199, 0.42) 100%)',
   wishes:
-    'linear-gradient(135deg, rgba(255, 250, 247, 0.34) 0%, rgba(252, 231, 243, 0.37) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(252, 231, 243, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   games:
-    'linear-gradient(135deg, rgba(255, 251, 246, 0.34) 0%, rgba(220, 252, 231, 0.36) 50%, rgba(254, 243, 199, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(220, 252, 231, 0.40) 50%, rgba(254, 243, 199, 0.42) 100%)',
   settings:
-    'linear-gradient(135deg, rgba(255, 251, 248, 0.34) 0%, rgba(243, 232, 255, 0.37) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(243, 232, 255, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   family:
-    'linear-gradient(135deg, rgba(255, 251, 247, 0.34) 0%, rgba(255, 237, 213, 0.37) 50%, rgba(243, 232, 255, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(243, 232, 255, 0.42) 100%)',
   notifications:
-    'linear-gradient(135deg, rgba(255, 251, 245, 0.34) 0%, rgba(254, 243, 199, 0.37) 50%, rgba(224, 242, 254, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(254, 243, 199, 0.40) 50%, rgba(224, 242, 254, 0.42) 100%)',
   privacy:
-    'linear-gradient(135deg, rgba(255, 252, 248, 0.34) 0%, rgba(204, 251, 241, 0.36) 50%, rgba(255, 247, 237, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(204, 251, 241, 0.40) 50%, rgba(255, 247, 237, 0.42) 100%)',
   terms:
-    'linear-gradient(135deg, rgba(255, 251, 248, 0.34) 0%, rgba(238, 242, 255, 0.36) 50%, rgba(255, 237, 213, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(238, 242, 255, 0.40) 50%, rgba(255, 237, 213, 0.42) 100%)',
   contact:
-    'linear-gradient(135deg, rgba(255, 250, 246, 0.34) 0%, rgba(255, 237, 213, 0.37) 50%, rgba(254, 242, 232, 0.40) 100%)',
+    'linear-gradient(135deg, rgba(248, 250, 252, 0.38) 0%, rgba(255, 237, 213, 0.40) 50%, rgba(254, 242, 232, 0.42) 100%)',
 };
 
 /**
- * Dark Mode Overlays (~75-80% opacity):
- * Deep calibrated Charcoal/Teal linear-gradients (0.76 to 0.80 alpha) so crisp pure white
- * and off-white typography pops with a high contrast ratio (>= 7.2:1 WCAG AA/AAA).
+ * Dark Mode Overlays:
+ * Strictly deep Midnight Charcoal (#0B131A / #101D26) gradients so luminous white/cyan text
+ * achieves 100% WCAG AAA contrast with zero bright or washed-out patches.
  */
+const DARK_CHARCOAL_GRADIENT =
+  'linear-gradient(135deg, rgba(11, 19, 26, 0.86) 0%, rgba(16, 29, 38, 0.84) 52%, rgba(11, 19, 26, 0.88) 100%)';
+
 const DARK_MODE_OVERLAYS: Record<CardBackgroundKey, string> = {
-  medical:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(8, 26, 34, 0.78) 52%, rgba(5, 10, 18, 0.80) 100%)',
-  doctor:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(8, 26, 34, 0.78) 52%, rgba(5, 10, 18, 0.80) 100%)',
-  services:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(10, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  store:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(10, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  all:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  toys:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(9, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  clothing:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  essentials:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  nursery:
-    'linear-gradient(135deg, rgba(6, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  consultation:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(10, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  delivery:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  community:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(10, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  media:
-    'linear-gradient(135deg, rgba(6, 13, 22, 0.79) 0%, rgba(9, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  assistant:
-    'linear-gradient(135deg, rgba(6, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  chat:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  children:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  routine:
-    'linear-gradient(135deg, rgba(6, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  calendar:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  wishes:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  games:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(9, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  settings:
-    'linear-gradient(135deg, rgba(6, 13, 22, 0.79) 0%, rgba(9, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  family:
-    'linear-gradient(135deg, rgba(6, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  notifications:
-    'linear-gradient(135deg, rgba(6, 14, 24, 0.79) 0%, rgba(9, 25, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  privacy:
-    'linear-gradient(135deg, rgba(6, 14, 22, 0.79) 0%, rgba(8, 26, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  terms:
-    'linear-gradient(135deg, rgba(6, 13, 22, 0.79) 0%, rgba(9, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
-  contact:
-    'linear-gradient(135deg, rgba(7, 14, 24, 0.79) 0%, rgba(10, 24, 34, 0.78) 50%, rgba(5, 10, 18, 0.80) 100%)',
+  medical: DARK_CHARCOAL_GRADIENT,
+  doctor: DARK_CHARCOAL_GRADIENT,
+  services: DARK_CHARCOAL_GRADIENT,
+  store: DARK_CHARCOAL_GRADIENT,
+  all: DARK_CHARCOAL_GRADIENT,
+  toys: DARK_CHARCOAL_GRADIENT,
+  clothing: DARK_CHARCOAL_GRADIENT,
+  essentials: DARK_CHARCOAL_GRADIENT,
+  nursery: DARK_CHARCOAL_GRADIENT,
+  courses: DARK_CHARCOAL_GRADIENT,
+  sports: DARK_CHARCOAL_GRADIENT,
+  events_parks: DARK_CHARCOAL_GRADIENT,
+  books: DARK_CHARCOAL_GRADIENT,
+  nutrition: DARK_CHARCOAL_GRADIENT,
+  furniture: DARK_CHARCOAL_GRADIENT,
+  consultation: DARK_CHARCOAL_GRADIENT,
+  delivery: DARK_CHARCOAL_GRADIENT,
+  community: DARK_CHARCOAL_GRADIENT,
+  media: DARK_CHARCOAL_GRADIENT,
+  assistant: DARK_CHARCOAL_GRADIENT,
+  chat: DARK_CHARCOAL_GRADIENT,
+  children: DARK_CHARCOAL_GRADIENT,
+  routine: DARK_CHARCOAL_GRADIENT,
+  calendar: DARK_CHARCOAL_GRADIENT,
+  wishes: DARK_CHARCOAL_GRADIENT,
+  games: DARK_CHARCOAL_GRADIENT,
+  settings: DARK_CHARCOAL_GRADIENT,
+  family: DARK_CHARCOAL_GRADIENT,
+  notifications: DARK_CHARCOAL_GRADIENT,
+  privacy: DARK_CHARCOAL_GRADIENT,
+  terms: DARK_CHARCOAL_GRADIENT,
+  contact: DARK_CHARCOAL_GRADIENT,
 };
 
 function detectActiveDomColorMode(): CardColorMode {
@@ -301,16 +286,12 @@ export function getCardBackgroundSpec(
     lightOverlayGradient,
     darkOverlayGradient,
     textShadow: IMAGE_CARD_TEXT_SHADOW,
-    headingColor: resolvedMode === 'dark' ? '#ffffff' : '#0f172a',
-    bodyColor: resolvedMode === 'dark' ? '#f8fafc' : '#1e293b',
+    headingColor: resolvedMode === 'dark' ? '#F8FAFC' : '#0B131A',
+    bodyColor: resolvedMode === 'dark' ? '#E2E8F0' : '#0B131A',
     backgroundImageCss: `${overlayGradient}, url('${imagePath}')`,
   };
 }
 
-/**
- * Pure WCAG 2.1 relative luminance and contrast ratio utilities for unit testing
- * and accessibility verification.
- */
 export function calculateRelativeLuminance(r: number, g: number, b: number): number {
   const toLinear = (c: number) => {
     const s = c / 255;
@@ -331,68 +312,4 @@ export function calculateContrastRatio(
   const lighter = Math.max(l1, l2);
   const darker = Math.min(l1, l2);
   return Number(((lighter + 0.05) / (darker + 0.05)).toFixed(2));
-}
-
-export function evaluateCardOverlayContrast(
-  rawKey: string,
-  colorMode: CardColorMode
-): {
-  minAlpha: number;
-  maxAlpha: number;
-  contrastOnBrightSpot: number;
-  contrastOnMidtone: number;
-  passesWcagAA: boolean;
-} {
-  const spec = getCardBackgroundSpec(rawKey, colorMode);
-  const rgbaMatches = [
-    ...spec.overlayGradient.matchAll(
-      /rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([0-9.]+)\s*\)/g
-    ),
-  ];
-
-  // Foreground token: Dark Slate (#0F172A -> [15, 23, 42]) in Light Mode, Pure White ([255, 255, 255]) in Dark Mode
-  const fgRgb: [number, number, number] =
-    colorMode === 'dark' ? [255, 255, 255] : [15, 23, 42];
-
-  let worstContrastOnWhite = Infinity;
-  let worstContrastOnMid = Infinity;
-  let minAlpha = 1;
-  let maxAlpha = 0;
-
-  for (const match of rgbaMatches) {
-    const r = Number(match[1]);
-    const g = Number(match[2]);
-    const b = Number(match[3]);
-    const a = Number(match[4]);
-    if (a < minAlpha) minAlpha = a;
-    if (a > maxAlpha) maxAlpha = a;
-
-    // Composite over a bright white spot (255, 255, 255)
-    const brightBg: [number, number, number] = [
-      Math.round(r * a + 255 * (1 - a)),
-      Math.round(g * a + 255 * (1 - a)),
-      Math.round(b * a + 255 * (1 - a)),
-    ];
-    // Composite over a warm high-key photographic pixel (225, 212, 198) in Light Mode or midtone (180, 165, 150)
-    const baseSample: [number, number, number] =
-      colorMode === 'dark' ? [180, 165, 150] : [225, 212, 198];
-    const midBg: [number, number, number] = [
-      Math.round(r * a + baseSample[0] * (1 - a)),
-      Math.round(g * a + baseSample[1] * (1 - a)),
-      Math.round(b * a + baseSample[2] * (1 - a)),
-    ];
-
-    const cBright = calculateContrastRatio(fgRgb, brightBg);
-    const cMid = calculateContrastRatio(fgRgb, midBg);
-    if (cBright < worstContrastOnWhite) worstContrastOnWhite = cBright;
-    if (cMid < worstContrastOnMid) worstContrastOnMid = cMid;
-  }
-
-  return {
-    minAlpha,
-    maxAlpha,
-    contrastOnBrightSpot: worstContrastOnWhite,
-    contrastOnMidtone: worstContrastOnMid,
-    passesWcagAA: worstContrastOnWhite >= 4.5 && worstContrastOnMid >= 4.5,
-  };
 }

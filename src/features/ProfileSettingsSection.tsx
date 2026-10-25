@@ -139,19 +139,19 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
           <div className="flex flex-wrap items-center gap-2">
             <PrimaryCtaButton variant="orange" onClick={onOpenOnboardingModal}>
-              {lang === 'en' ? 'Edit Account & City' : 'تحديث الحساب والمدينة'}
+              {lang === 'en' ? 'Edit Account & City' : 'عدّل بيانات الحساب والمدينة'}
             </PrimaryCtaButton>
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
-              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
+              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
             >
-              {lang === 'en' ? 'Family & Permissions' : 'العائلة والصلاحيات'}
+              {lang === 'en' ? 'Family & Permissions' : 'العيلة والصلاحيات'}
             </button>
             <button
               type="button"
               onClick={onToggleShowInnerSettings}
-              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
+              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
             >
               {showInnerSettings
                 ? lang === 'en'
@@ -159,7 +159,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                   : 'إخفاء الإعدادات'
                 : lang === 'en'
                 ? 'App Settings'
-                : 'الإعدادات'}
+                : 'إعدادات الحساب'}
             </button>
           </div>
         </div>
@@ -168,10 +168,10 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
       {/* Dedicated Dark / Light Mode Accessibility Toggle Card in Profile (الحساب) */}
       <div
         id="profile-dark-mode-card"
-        className="rounded-[24px] border border-indigo-200/85 bg-indigo-50/85 p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4"
+        className="rounded-[24px] border border-indigo-200/85 dark:border-[#1E3646] bg-indigo-50/85 dark:bg-[#101D26] p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4"
       >
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--color-control-bg)] border border-[var(--color-border)] shadow-2xs flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
             <SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={24} />
           </div>
           <div className="min-w-0">
@@ -179,17 +179,17 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
                 {lang === 'en'
                   ? 'Dark Mode — Deep Midnight Charcoal'
-                  : 'الوضع الليلي العميق المريح للعين'}
+                  : 'الوضع الليلي الهادي والمريح للعين'}
               </h3>
               <UnifiedBadge
                 label={
                   state.darkMode
                     ? lang === 'en'
                       ? 'Active · Midnight Charcoal'
-                      : 'مفعّل · فحمي ليلي'
+                      : 'شغال · ليلي فحمي'
                     : lang === 'en'
                     ? 'Light Mode · Pastel'
-                    : 'الوضع النهاري · باستيل'
+                    : 'الوضع النهاري · فاتح'
                 }
                 tone="indigo"
                 iconId="settings"
@@ -198,7 +198,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5">
               {lang === 'en'
                 ? 'Switches the entire app instantly to deep midnight charcoal tones (#0B131A) with high-contrast legible text.'
-                : 'يُحوّل ألوان التطبيق فورًا إلى درجات الرمادي الفحمي والأزرق الليلي العميق (#0B131A) مع تباين نصي فائق الوضوح.'}
+                : 'بيحول ألوان التطبيق كله للرمادي الفحمي الغامق (#0B131A) عشان يريح عينك بليل ويوفر البطارية.'}
             </p>
           </div>
         </div>
@@ -233,10 +233,10 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               {state.darkMode
                 ? lang === 'en'
                   ? 'Dark Mode On (Switch to Light)'
-                  : 'الوضع الليلي مفعّل (تبديل للنهاري)'
+                  : 'الوضع الليلي شغال (حوّل للنهاري)'
                 : lang === 'en'
                 ? 'Enable Dark Mode'
-                : 'تفعيل الوضع الليلي'}
+                : 'شغّل الوضع الليلي'}
             </span>
           </button>
         </div>

@@ -49,10 +49,16 @@ interface CommercialEcosystemSectionProps {
 
 const CATEGORY_TONE_MAP: Record<string, PastelTone> = {
   toys: 'amber',
+  nursery: 'indigo',
+  doctor: 'emerald',
   clothing: 'rose',
   essentials: 'sky',
-  doctor: 'emerald',
-  nursery: 'indigo',
+  courses: 'purple',
+  sports: 'teal',
+  events_parks: 'orange',
+  books: 'cyan',
+  nutrition: 'lime',
+  furniture: 'pink',
   consultation: 'purple',
   delivery: 'teal',
 };
@@ -174,64 +180,148 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   const STORE_CATEGORY_SECTIONS = [
     {
-      id: 'nursery',
-      titleAr: 'الحضانات والمدارس والأكاديميات',
-      titleEn: 'Schools, Nurseries & Academies',
-      subtitleAr: 'حضانات مونتيسوري، مدارس دولية، وأكاديميات تنمية المهارات المعتمدة',
-      subtitleEn: 'Verified Montessori nurseries, international preschools & skill academies',
-      badgeAr: 'حضانات ومدارس',
-      badgeEn: 'Schools & Nurseries',
-      emoji: '🏫',
-      bgKey: 'nursery',
-      matchCategories: ['nursery'],
-    },
-    {
-      id: 'clothing',
-      titleAr: 'الألبسة وأزياء الأطفال القطنية',
-      titleEn: 'Apparel & Organic Kids Fashion',
-      subtitleAr: 'أطقم قطنية عضوية، ملابس نوم ناعمة، وأحذية طبية مرنة للخطوات الأولى',
-      subtitleEn: '100% organic cotton sets, cozy sleepwear & ergonomic toddler footwear',
-      badgeAr: 'ألبسة وأزياء',
-      badgeEn: 'Apparel & Fashion',
-      emoji: '👕',
-      bgKey: 'clothing',
-      matchCategories: ['clothing'],
-    },
-    {
       id: 'toys',
-      titleAr: 'الترفيه والألعاب التعليمية (Montessori & STEM)',
-      titleEn: 'Entertainment & Educational Toys',
-      subtitleAr: 'ألعاب خشبية تفاعلية، مختبرات علوم وفضاء، ودراجات توازن آمنة بدون شاشات',
+      titleAr: '🧸 ألعاب مونتيسوري وتنمية الذكاء',
+      titleEn: '🧸 Montessori & STEM Educational Toys',
+      subtitleAr: 'ألعاب خشبية آمنة، بازل، ومكعبات ذكية تنمي خيال طفلك من غير شاشات',
       subtitleEn: 'Interactive wooden Montessori sets, 3D STEM kits & safe balance bikes',
-      badgeAr: 'ترفيه وألعاب',
-      badgeEn: 'Toys & Entertainment',
+      badgeAr: '🧸 ألعاب مونتيسوري',
+      badgeEn: '🧸 Montessori Toys',
       emoji: '🧸',
       bgKey: 'toys',
       matchCategories: ['toys'],
     },
     {
+      id: 'nursery',
+      titleAr: '📚 حضانات ومدارس معتمدة',
+      titleEn: '📚 Verified Nurseries & Preschools',
+      subtitleAr: 'أفضل حضانات المونتيسوري والمدارس الدولية القريبة من بيتك بتقييمات حقيقية',
+      subtitleEn: 'Verified Montessori nurseries, international preschools & skill academies',
+      badgeAr: '📚 حضانات ومدارس',
+      badgeEn: '📚 Nurseries & Schools',
+      emoji: '📚',
+      bgKey: 'nursery',
+      matchCategories: ['nursery'],
+    },
+    {
+      id: 'doctor',
+      titleAr: '🩺 أطباء أطفال وعيادات متخصصة',
+      titleEn: '🩺 Pediatricians & Specialist Clinics',
+      subtitleAr: 'نخبة استشاريي طب الأطفال، حديثي الولادة، التغذية، والأسنان بحجز فوري',
+      subtitleEn: 'Top pediatricians, neonatologists, nutritionists & dental clinics',
+      badgeAr: '🩺 أطباء أطفال',
+      badgeEn: '🩺 Pediatricians',
+      emoji: '🩺',
+      bgKey: 'doctor',
+      matchCategories: ['doctor'],
+    },
+    {
+      id: 'clothing',
+      titleAr: '👗 ألبسة قطنية وأزياء أطفال',
+      titleEn: '👗 100% Organic Cotton Kids Apparel',
+      subtitleAr: 'أطقم قطن مصري ١٠٠٪ ناعمة على بشرة طفلك، بيجامات، وأحذية طبية لأول خطوة',
+      subtitleEn: '100% organic cotton sets, cozy sleepwear & ergonomic toddler footwear',
+      badgeAr: '👗 ألبسة قطنية',
+      badgeEn: '👗 Cotton Apparel',
+      emoji: '👗',
+      bgKey: 'clothing',
+      matchCategories: ['clothing'],
+    },
+    {
       id: 'essentials',
-      titleAr: 'مستلزمات الرضع والعناية اليومية',
-      titleEn: 'Daily Baby Care & Essentials',
-      subtitleAr: 'باقات التوفير الشهرية، حقائب التنظيم الذكية، وأدوات الطعام السيليكون الطبي',
-      subtitleEn: 'Monthly family value bundles, smart organizer bags & silicone feeding sets',
-      badgeAr: 'مستلزمات يومية',
-      badgeEn: 'Baby Essentials',
+      titleAr: '🍼 مستلزمات عائلية وعناية يومية',
+      titleEn: '🍼 Family & Daily Baby Essentials',
+      subtitleAr: 'عربيات أطفال، كراسي سيارة، ببرونات، ومنتجات عناية طبيعية لبشرة البيبي',
+      subtitleEn: 'Strollers, car seats, sterilizers & daily natural baby care bundles',
+      badgeAr: '🍼 مستلزمات عائلية',
+      badgeEn: '🍼 Family Essentials',
       emoji: '🍼',
       bgKey: 'essentials',
       matchCategories: ['essentials'],
     },
     {
+      id: 'courses',
+      titleAr: '🎨 كورسات أطفال وتنمية مهارات',
+      titleEn: '🎨 Kids Courses & Skill Academies',
+      subtitleAr: 'كورسات برمجة، روبوتيكس، رسم، فينيكس، وحساب ذهني بطريقة ممتعة',
+      subtitleEn: 'Coding, robotics, art workshops, phonics & mental math for kids',
+      badgeAr: '🎨 كورسات أطفال',
+      badgeEn: '🎨 Kids Courses',
+      emoji: '🎨',
+      bgKey: 'courses',
+      matchCategories: ['courses'],
+    },
+    {
+      id: 'sports',
+      titleAr: '⚽ ملاعب وأنشطة رياضية',
+      titleEn: '⚽ Sports Academies & Active Play',
+      subtitleAr: 'أكاديميات سباحة، كرة قدم، جمباز، كاراتيه، وتنس لتفريغ طاقة الأبطال',
+      subtitleEn: 'Swimming, football, gymnastics, karate & tennis academies',
+      badgeAr: '⚽ ملاعب وأنشطة',
+      badgeEn: '⚽ Sports & Play',
+      emoji: '⚽',
+      bgKey: 'sports',
+      matchCategories: ['sports'],
+    },
+    {
+      id: 'events_parks',
+      titleAr: '🎪 ملاهي وأعياد ميلاد وخروجات',
+      titleEn: '🎪 Playgrounds, Parks & Birthday Parties',
+      subtitleAr: 'أحلى أماكن الخروج العائلية، كيدز إيريا آمنة، وتنظيم أعياد ميلاد مبهجة',
+      subtitleEn: 'Safe indoor play areas, edutainment parks & full birthday packages',
+      badgeAr: '🎪 ملاهي وأعياد ميلاد',
+      badgeEn: '🎪 Parks & Birthdays',
+      emoji: '🎪',
+      bgKey: 'events_parks',
+      matchCategories: ['events_parks'],
+    },
+    {
+      id: 'books',
+      titleAr: '📖 قصص وكتب أطفال تفاعلية',
+      titleEn: '📖 Interactive Storybooks & Reading',
+      subtitleAr: 'قصص قبل النوم، كتب قماشية وتفاعلية، وموسوعات علمية مصورة بالعربي والإنجليزي',
+      subtitleEn: 'Bedtime stories, pop-up books, emotional intelligence tales & encyclopedias',
+      badgeAr: '📖 قصص وكتب',
+      badgeEn: '📖 Books & Stories',
+      emoji: '📖',
+      bgKey: 'books',
+      matchCategories: ['books'],
+    },
+    {
+      id: 'nutrition',
+      titleAr: '🍱 تغذية صحية ولانش بوكس',
+      titleEn: '🍱 Healthy Kids Nutrition & Lunchbox',
+      subtitleAr: 'وجبات صحية طازجة، سناكس فواكه طبيعية بدون سكر، وأدوات لانش بوكس مبهجة',
+      subtitleEn: 'Fresh organic meals, zero-sugar fruit snacks & thermal lunchboxes',
+      badgeAr: '🍱 تغذية صحية',
+      badgeEn: '🍱 Healthy Nutrition',
+      emoji: '🍱',
+      bgKey: 'nutrition',
+      matchCategories: ['nutrition'],
+    },
+    {
+      id: 'furniture',
+      titleAr: '🪑 أثاث غرف الأطفال ومونتيسوري',
+      titleEn: '🪑 Kids Room & Montessori Furniture',
+      subtitleAr: 'سراير مونتيسوري أرضية، مكاتب مذاكرة مريحة، ووحدات تخزين ألعاب آمنة',
+      subtitleEn: 'Montessori floor beds, ergonomic study desks & safe toy organizers',
+      badgeAr: '🪑 أثاث غرف الأطفال',
+      badgeEn: '🪑 Kids Furniture',
+      emoji: '🪑',
+      bgKey: 'furniture',
+      matchCategories: ['furniture'],
+    },
+    {
       id: 'services',
-      titleAr: 'العيادات والاستشارات والتوصيل السريع',
-      titleEn: 'Clinics, Consultations & Express Delivery',
-      subtitleAr: 'عيادات طب الأطفال والنمو، الإرشاد الأسري والتربوي، وخدمات التوصيل الفوري',
-      subtitleEn: 'Pediatric growth clinics, family counseling & same-day express delivery',
-      badgeAr: 'عيادات وخدمات',
-      badgeEn: 'Clinics & Services',
-      emoji: '🩺',
-      bgKey: 'doctor',
-      matchCategories: ['doctor', 'consultation', 'delivery'],
+      titleAr: '👩‍⚕️ استشارات تربوية وتوصيل سريع',
+      titleEn: '👩‍⚕️ Parenting Consultations & Express Delivery',
+      subtitleAr: 'جلسات إرشاد تربوي وتخاطب أونلاين، وخدمات توصيل فوري لمستلزمات الأسرة',
+      subtitleEn: 'Online parenting & speech consultations and express family delivery',
+      badgeAr: '👩‍⚕️ استشارات وتوصيل',
+      badgeEn: '👩‍⚕️ Consultations',
+      emoji: '👩‍⚕️',
+      bgKey: 'consultation',
+      matchCategories: ['consultation', 'delivery'],
     },
   ] as const;
 
@@ -252,6 +342,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
     const tone = PASTEL_CARD_TONES[toneKey];
     const itemBgSpec = getCardBackgroundSpec(item.category, darkMode);
+    const revCount = item.reviewCount || 142;
 
     return (
       <div
@@ -259,17 +350,25 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[232px] sm:w-[256px] shrink-0'
+            ? 'w-[242px] sm:w-[264px] shrink-0'
             : 'w-full'
         } rounded-[20px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface hover:scale-[1.01] active:scale-[0.99] transition-all`}
       >
         <div className="space-y-2">
-          {/* Compact Visual Header */}
+          {/* Compact Visual Header (Clickable to open full details modal) */}
           <div
             onClick={() => onInspectCommercialItem(item)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onInspectCommercialItem(item);
+              }
+            }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card rounded-xl p-2.5 sm:p-3 min-h-[78px] sm:min-h-[86px] cursor-pointer flex flex-col justify-between gap-1.5"
+            className="image-bg-card rounded-xl p-2.5 sm:p-3 min-h-[86px] sm:min-h-[94px] cursor-pointer flex flex-col justify-between gap-1.5"
           >
             <div className="flex items-center justify-between gap-1.5">
               <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-extrabold truncate">
@@ -277,9 +376,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </span>
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-1.5 py-0.5 rounded-md text-[9px] sm:text-[9.5px] font-extrabold tabular-nums shrink-0"
+                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1"
               >
-                ★ {item.rating}
+                <span>⭐ {item.rating}</span>
+                <span className="opacity-85">({revCount})</span>
               </span>
             </div>
 
@@ -290,23 +390,35 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
           </div>
 
-          {/* Compact Metadata Strip */}
-          <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-[var(--color-muted)]">
-            <span className="truncate">📍 {locText(item.city, language)}</span>
-            {item.deliveryEstimateAr && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
-                  🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
-                </span>
-              </>
-            )}
+          {/* Compact Metadata Strip + Interactive Details Link */}
+          <div className="flex items-center justify-between gap-1.5 text-[10px] font-bold text-[var(--color-muted)]">
+            <div className="flex items-center gap-1 min-w-0 truncate">
+              <span className="truncate">📍 {locText(item.city, language)}</span>
+              {item.deliveryEstimateAr && (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
+                    🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
+                  </span>
+                </>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => onInspectCommercialItem(item)}
+              className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
+            >
+              {isEn ? 'View Details' : 'شوف التفاصيل'}
+            </button>
           </div>
         </div>
 
         {/* Price + Universal Minimalist Action Icons (Wishlist Heart + Shopping Cart) */}
         <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5">
-          <div className="flex flex-col min-w-0">
+          <div
+            onClick={() => onInspectCommercialItem(item)}
+            className="flex flex-col min-w-0 cursor-pointer"
+          >
             <div className="flex items-baseline gap-1 tabular-nums">
               {origVal && (
                 <span className="text-[10px] line-through text-[var(--color-muted)]">
@@ -324,9 +436,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => onAddProductToWishes(item)}
-              title={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
-              aria-label={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
-              className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
+              title={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
+              aria-label={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
+              className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                 <path
@@ -347,7 +459,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               onClick={() => onAddToCart(item, item.variants?.[0])}
               title={isEn ? 'Add to Cart' : 'أضف للسلة'}
               aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
-              className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
+              className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                 <path

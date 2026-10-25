@@ -56,46 +56,46 @@ const TOPIC_TONE_MAP: Record<CommunityPost['topicId'], PastelTone> = {
 const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
   {
     id: 501,
-    authorAr: 'نهى محمود (أم عمر وليلى)',
+    authorAr: 'نهى محمود (ماما عمر وليلى)',
     authorEn: 'Noha Mahmoud (Mom of Omar & Laila)',
     authorCityAr: 'القاهرة الجديدة',
     authorCityEn: 'New Cairo',
-    childAgeLabelAr: '3 سنوات و 5 سنوات',
+    childAgeLabelAr: '3 سنين و 5 سنين',
     childAgeLabelEn: '3 yrs & 5 yrs',
     topicId: 'nursery',
     topicLabelAr: 'الحضانات والمدارس',
     topicLabelEn: 'Nurseries & Schools',
-    titleAr: 'تجربتي مع أول أسبوع حضانة لبنتي (3 سنوات) وكيف تغلبنا على قلق الانفصال',
+    titleAr: 'تجربتي مع أول أسبوع حضانة لبنتي (3 سنين) وإزاي عدينا عياط الصبح بسهولة',
     titleEn: 'Our first week of nursery at age 3 and how we overcame separation anxiety',
     bodyAr:
-      'تطبيق طقس الوداع القصير الواضح (حضن + وعد بالعودة بعد الغداء + اختيار لعبة صغيرة في الشنطة) فرق معانا من رابع يوم!',
+      'يا جماعة، حركة الوداع السريع الواضح (حضن كبير + وعد إني هاجي آخدها بعد الغدا علطول + تاخد معاها دبدوب صغير في الشنطة) فرقت معانا جدًا من رابع يوم وبطلت عياط خالص!',
     bodyEn:
       'Keeping a short, predictable goodbye ritual (hug + clear pickup promise after lunch) made a huge difference by day 4!',
-    timeAgoAr: 'منذ ساعتين',
+    timeAgoAr: 'من ساعتين',
     timeAgoEn: '2h ago',
-    likes: 48,
-    helpfulCount: 31,
+    likes: 84,
+    helpfulCount: 62,
     comments: [
       {
         id: 1,
         authorAr: 'د. سلمى الكيلاني',
         authorEn: 'Dr. Salma El-Kilany',
-        roleBadgeAr: '🩺 استشاري تربوي ونفسي معتمد (موثّق)',
+        roleBadgeAr: '🩺 استشاري تربوي ونفسي أطفال (موثّق)',
         roleBadgeEn: '🩺 Verified Child Psychologist',
         isVerifiedExpert: true,
         textAr:
-          'تجربة رائعة يا نهى! ثبات موعد الاستلام وعدم التسلل دون وداع يبني ثقة الطفل في المكان.',
+          'برافو عليكي يا نهى! ثبات ميعاد الاستلام وإننا منمشيش من ورا الطفل في الخباثة بيبني أمان وثقة كبيرة جدًا في المكان.',
         textEn:
           'Wonderful approach! Predictable pickup times and never sneaking away build lasting trust.',
         timeLabel: '1h ago',
       },
       {
         id: 2,
-        authorAr: 'أحمد سامي (أب لزين)',
+        authorAr: 'أحمد سامي (بابا زين)',
         authorEn: 'Ahmed Samy (Dad of Zain)',
         roleBadgeAr: 'ولي أمر',
         roleBadgeEn: 'Parent',
-        textAr: 'شكرًا جدًا على المشاركة، بدأنا نطبق نفس الخطوة مع زين وفرقت معاه فعلًا.',
+        textAr: 'شكرًا جدًا على النصيحة دي، جربناها النهاردة مع زين وفرقت معاه فعلًا على الباب.',
         textEn: 'Thank you for sharing! We tried the same step with Zain and it really helped.',
         timeLabel: '35m ago',
       },
@@ -103,34 +103,35 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: 502,
-    authorAr: 'خالد العتيبي (أبو ريان)',
-    authorEn: 'Khaled Al-Otaibi (Dad of Rayan)',
-    authorCityAr: 'الرياض',
-    authorCityEn: 'Riyadh',
-    childAgeLabelAr: '5 سنوات',
+    authorAr: 'كريم الشافعي (بابا آدم)',
+    authorEn: 'Karim El-Shafei (Dad of Adam)',
+    authorCityAr: 'الشيخ زايد',
+    authorCityEn: 'Sheikh Zayed',
+    childAgeLabelAr: '5 سنين',
     childAgeLabelEn: '5 yrs',
     topicId: 'behavior',
     topicLabelAr: 'السلوك والمشاعر',
     topicLabelEn: 'Behavior & Emotions',
-    titleAr: 'سؤال للآباء والأمهات: كيف تنظمون وقت الشاشات في عطلة نهاية الأسبوع؟',
+    titleAr: 'سؤال لكل الباباهات والماميز: بتنظموا وقت التابلت والشاشات إزاي في الويك إند؟',
     titleEn: 'Question for parents: How do you structure screen time on weekends?',
     bodyAr:
-      'اتفقنا في البيت على 30 دقيقة فقط بعد الغداء بشرط نلعب معاه لعبة حركية أو مكعبات بعدها. إيه البدائل اللي نجحت مع أطفالكم؟',
+      'اتفقنا في البيت على نص ساعة بس بعد الغدا بشرط نلعب بعدها بازل أو ننزل نركب العجلة في النادي. إيه الأفكار والبدائل اللي نجحت مع ولادكم من غير خناق؟',
     bodyEn:
       'We agreed on 30 minutes after lunch followed by physical play or building blocks. What alternatives worked well for your 5-year-olds?',
-    timeAgoAr: 'منذ 5 ساعات',
-    timeAgoEn: '5h ago',
-    likes: 39,
-    helpfulCount: 27,
+    timeAgoAr: 'من 4 ساعات',
+    timeAgoEn: '4h ago',
+    likes: 73,
+    helpfulCount: 51,
     comments: [
       {
         id: 3,
-        authorAr: 'سارة المنيري',
+        authorAr: 'أ. سارة المنيري',
         authorEn: 'Sara El-Moneiry',
-        roleBadgeAr: 'أم ومستشارة تربوية',
-        roleBadgeEn: 'Parent & Educator',
+        roleBadgeAr: '🩺 أخصائية تعديل سلوك ومونتيسوري (موثّق)',
+        roleBadgeEn: '🩺 Verified Montessori Educator',
+        isVerifiedExpert: true,
         textAr:
-          'استخدام مؤقت بصري (ساعة رملية أو منبه لطيف) قبل انتهاء الوقت بـ 5 دقائق يمنع الصدام.',
+          'استخدام تايمر مرئي (ساعة رملية أو منبه لطيف) وتنبيه الطفل قبل ما الوقت يخلص بـ 5 دقايق بيمنع نوبات الغضب وقت قفل الشاشة.',
         textEn:
           'Using a visual timer 5 minutes before screen time ends prevents frustration.',
         timeLabel: '3h ago',
@@ -139,25 +140,120 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: 503,
-    authorAr: 'ياسمين فؤاد (أم ليان)',
+    authorAr: 'ياسمين فؤاد (ماما ليان)',
     authorEn: 'Yasmine Fouad (Mom of Layan)',
     authorCityAr: 'الإسكندرية',
     authorCityEn: 'Alexandria',
-    childAgeLabelAr: '14 شهرًا',
+    childAgeLabelAr: 'سنة وشهرين',
     childAgeLabelEn: '14 months',
     topicId: 'nutrition',
     topicLabelAr: 'التغذية واللانش بوكس',
     topicLabelEn: 'Child Nutrition',
-    titleAr: 'أفكار فطور غني بالحديد والكالسيوم للرضع بعد عمر السنة',
+    titleAr: 'أفكار فطار سريعة ومليانة حديد وكالسيوم للبيبي بعد سن السنة',
     titleEn: 'Iron & calcium-rich breakfast ideas for toddlers after 12 months',
     bodyAr:
-      'جربت الشوفان المطبوخ بالحليب مع التمر المهروس والسمسم المطحون بدون سكر مضاف وكانت ممتازة جدًا.',
+      'جربت الشوفان المطبوخ باللبن مع التمر المهروس ومعلقة سمسم مطحون وموزة من غير أي سكر مضاف، وليان حبتها جدًا وشبعتها طول الصبح!',
     bodyEn:
       'Oats with mashed dates and ground sesame with zero added sugar worked great for us.',
-    timeAgoAr: 'أمس',
+    timeAgoAr: 'من 6 ساعات',
+    timeAgoEn: '6h ago',
+    likes: 96,
+    helpfulCount: 79,
+    comments: [
+      {
+        id: 4,
+        authorAr: 'د. هبة عبد الرحمن',
+        authorEn: 'Dr. Heba Abdelrahman',
+        roleBadgeAr: '🩺 استشاري تغذية أطفال (موثّق)',
+        roleBadgeEn: '🩺 Verified Pediatric Nutritionist',
+        isVerifiedExpert: true,
+        textAr:
+          'اختيار هايل يا ياسمين! السمسم المطحون مع التمر مصدر ممتاز للكالسيوم والحديد، وممكن تضيفي رشة قرفة خفيفة تفتح الشهية.',
+        textEn: 'Great choice! Ground sesame with dates is rich in calcium and iron.',
+        timeLabel: '4h ago',
+      },
+    ],
+  },
+  {
+    id: 504,
+    authorAr: 'مروة عادل (ماما يونس)',
+    authorEn: 'Marwa Adel (Mom of Younis)',
+    authorCityAr: 'المعادي',
+    authorCityEn: 'Maadi',
+    childAgeLabelAr: 'سنتين ونص',
+    childAgeLabelEn: '2.5 yrs',
+    topicId: 'sleep',
+    topicLabelAr: 'نوم الرضع والروتين',
+    topicLabelEn: 'Sleep & Routine',
+    titleAr: 'إزاي ثبتنا ميعاد النوم الساعة 8 ونص بليل وودعنا السهر!',
+    titleEn: 'How we fixed our 8:30 PM bedtime routine and said goodbye to late nights',
+    bodyAr:
+      'السر كله كان في تثبيت ٣ خطوات هادية كل يوم: حمام دافي، إضاءة صفرا خفيفة في الأوضة، وحدوتة مصورة من غير موبايل خالص قبل النوم بساعة.',
+    bodyEn:
+      'The secret was a consistent 3-step wind-down: warm bath, dim warm lighting, and a picture book with zero screens an hour before bed.',
+    timeAgoAr: 'امبارح',
     timeAgoEn: 'Yesterday',
-    likes: 64,
-    helpfulCount: 52,
+    likes: 112,
+    helpfulCount: 94,
+    comments: [
+      {
+        id: 5,
+        authorAr: 'د. طارق النجار',
+        authorEn: 'Dr. Tarek El-Naggar',
+        roleBadgeAr: '🩺 استشاري طب الأطفال وحديثي الولادة (موثّق)',
+        roleBadgeEn: '🩺 Verified Pediatrician',
+        isVerifiedExpert: true,
+        textAr:
+          'روتين النوم المبكر بيفرق جدًا في إفراز هرمون النمو والتركيز وتقوية المناعة. استمروا على نفس التوقيت حتى في الإجازات.',
+        textEn: 'Early bedtime routines significantly boost growth hormone and immunity.',
+        timeLabel: '20h ago',
+      },
+    ],
+  },
+  {
+    id: 505,
+    authorAr: 'محمود درويش (بابا فريدة وعلي)',
+    authorEn: 'Mahmoud Darwish (Dad of Farida & Ali)',
+    authorCityAr: 'مصر الجديدة',
+    authorCityEn: 'Heliopolis',
+    childAgeLabelAr: '4 سنين وسنة',
+    childAgeLabelEn: '4 yrs & 1 yr',
+    topicId: 'behavior',
+    topicLabelAr: 'السلوك والمشاعر',
+    topicLabelEn: 'Behavior & Emotions',
+    titleAr: 'التعامل مع غيرة الطفل الكبير بعد وصول البيبي الجديد للبيت',
+    titleEn: 'Handling older sibling jealousy after welcoming a new baby',
+    bodyAr:
+      'خصصنا كل يوم نص ساعة اسمها "وقت فريدة الخاص" مع بابا أو ماما لوحدها من غير البيبي، وخليناها تختار لبس أخوها الصغير.. الغيرة قلت جدًا وبقت تحبه وتساعدنا.',
+    bodyEn:
+      'Dedicating 30 minutes of special 1-on-1 time every day for our older daughter reduced jealousy dramatically.',
+    timeAgoAr: 'من يومين',
+    timeAgoEn: '2d ago',
+    likes: 68,
+    helpfulCount: 55,
+    comments: [],
+  },
+  {
+    id: 506,
+    authorAr: 'رانيا الشربيني (ماما سليم)',
+    authorEn: 'Rania El-Sherbiny (Mom of Selim)',
+    authorCityAr: 'المنصورة',
+    authorCityEn: 'Mansoura',
+    childAgeLabelAr: 'سنتين',
+    childAgeLabelEn: '2 yrs',
+    topicId: 'experiences',
+    topicLabelAr: 'تجارب الأمهات والآباء',
+    topicLabelEn: 'Parent Experiences',
+    titleAr: 'ألعاب مونتيسوري الخشب غيرت تركيز ابني وتفاعله في الكلام',
+    titleEn: 'Wooden Montessori toys transformed my toddler’s focus and speech',
+    bodyAr:
+      'لما قللنا الكرتون وجبنا بازل الحروف والأشكال الخشبية وبقينا نقعد نلعب ونسمي كل شكل سوا كل يوم ربع ساعة، حصيلة الكلمات عند سليم زادت بشكل ملحوظ في شهر واحد.',
+    bodyEn:
+      'Replacing cartoons with wooden shape puzzles and naming objects together for 15 minutes daily boosted his vocabulary in just one month.',
+    timeAgoAr: 'من 3 أيام',
+    timeAgoEn: '3d ago',
+    likes: 91,
+    helpfulCount: 74,
     comments: [],
   },
 ];
@@ -530,11 +626,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           return (
             <article
               key={post.id}
-              className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] p-5 space-y-3.5 shadow-2xs`}
+              className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-5 space-y-3.5 shadow-2xs`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-muted)]">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-white border border-orange-200 text-orange-900 font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
+                  <div className="w-10 h-10 rounded-2xl bg-[var(--color-control-bg)] dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] text-orange-900 dark:text-[#FDBA74] font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
                     {(isEn ? post.authorEn : post.authorAr).slice(0, 1)}
                   </div>
                   <div>
@@ -564,7 +660,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </div>
 
               {/* Reaction & Comment Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--color-border)]/70">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--color-border)]/70 dark:border-[#1E3646]">
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
@@ -573,13 +669,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isLiked ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
+                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors cursor-pointer ${
                       isLiked
-                        ? 'bg-orange-600 text-white border-orange-600'
-                        : 'bg-white text-[var(--color-text)] border-[var(--color-border)]'
+                        ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
+                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
                     }`}
                   >
-                    ❤️ {isEn ? 'Like' : 'أعجبني'} ·{' '}
+                    ❤️ {isEn ? 'Like' : 'عجبني'} ·{' '}
                     <span dir="ltr" className="tabular-nums">
                       {post.likes + (isLiked ? 1 : 0)}
                     </span>
@@ -592,13 +688,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isHelpful ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
+                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors cursor-pointer ${
                       isHelpful
-                        ? 'bg-emerald-600 text-white border-emerald-600'
-                        : 'bg-white text-[var(--color-text)] border-[var(--color-border)]'
+                        ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
                     }`}
                   >
-                    💡 {isEn ? 'Helpful' : 'مفيد'} ·{' '}
+                    💡 {isEn ? 'Helpful' : 'مفيد جدًا'} ·{' '}
                     <span dir="ltr" className="tabular-nums">
                       {post.helpfulCount + (isHelpful ? 1 : 0)}
                     </span>
@@ -608,28 +704,28 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 <button
                   type="button"
                   onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
-                  className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white border border-[var(--color-border)] text-[var(--color-text)]"
+                  className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] cursor-pointer"
                 >
-                  💬 {isEn ? `Comments (${post.comments.length})` : `الردود (${post.comments.length})`}
+                  💬 {isEn ? `Comments (${post.comments.length})` : `التعليقات والردود (${post.comments.length})`}
                 </button>
               </div>
 
               {/* Comments Thread */}
               {isExpanded && (
-                <div className="pt-3 space-y-2.5 border-t border-[var(--color-border)]/70">
+                <div className="pt-3 space-y-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646]">
                   {post.comments.map((c) => (
                     <div
                       key={c.id}
                       className={`rounded-2xl p-3.5 text-xs space-y-1 ${
                         c.isVerifiedExpert
-                          ? 'bg-emerald-50/90 border border-emerald-200'
-                          : 'bg-white/90 border border-[var(--color-border)]'
+                          ? 'bg-emerald-50/90 dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646]'
+                          : 'bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-extrabold text-[var(--color-text)]">
                           {isEn ? c.authorEn : c.authorAr}{' '}
-                          <span className="font-bold text-emerald-800">
+                          <span className="font-bold text-emerald-800 dark:text-[#2DD4BF]">
                             · {isEn ? c.roleBadgeEn : c.roleBadgeAr}
                           </span>
                         </span>
@@ -659,16 +755,16 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                       placeholder={
                         isEn
                           ? 'Write a supportive reply...'
-                          : 'اكتب تعليقًا داعمًا أو شارك تجربتك...'
+                          : 'اكتب رد أو شاركنا تجربتك...'
                       }
-                      className="flex-1 rounded-xl border border-[var(--color-border)] bg-white px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
+                      className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
                     />
                     <PrimaryCtaButton
                       variant="orange"
                       size="sm"
                       onClick={() => handleAddComment(post.id)}
                     >
-                      {isEn ? 'Reply' : 'إرسال'}
+                      {isEn ? 'Reply' : 'ابعت الرد'}
                     </PrimaryCtaButton>
                   </div>
                 </div>

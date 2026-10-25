@@ -39,6 +39,8 @@ export interface HomeDashboardSectionProps {
   onSelectPreciseCity: (combinedValue: string) => void;
   onUseCurrentLocation: () => void;
   onAddToCart: (item: CommercialCatalogItem) => void;
+  onInspectCommercialItem?: (item: CommercialCatalogItem) => void;
+  onAddProductToWishes?: (item: CommercialCatalogItem) => void;
 }
 
 export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
@@ -56,13 +58,20 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onSelectPreciseCity,
   onUseCurrentLocation,
   onAddToCart,
+  onInspectCommercialItem,
+  onAddProductToWishes,
 }) => {
   const [showAllHomeHubs, setShowAllHomeHubs] = useState<boolean>(false);
   const [homeFocusTab, setHomeFocusTab] = useState<'nearby' | 'children' | 'schedule'>('nearby');
   const [homeWishlistIds, setHomeWishlistIds] = useState<number[]>([]);
 
-  const toggleHomeWishlist = (id: number) => {
-    setHomeWishlistIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  const toggleHomeWishlist = (item: CommercialCatalogItem) => {
+    setHomeWishlistIds((prev) =>
+      prev.includes(item.id) ? prev.filter((x) => x !== item.id) : [...prev, item.id]
+    );
+    if (onAddProductToWishes) {
+      onAddProductToWishes(item);
+    }
   };
 
   const isEn = lang === 'en';
@@ -245,24 +254,24 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <p className="image-card-title text-base sm:text-xl font-extrabold leading-snug">
               {isEn
                 ? `${brandName} · Everything Your Family Needs for Child Health, Daily Routines & Trusted Care`
-                : `${brandName} · كل ما تحتاجه أسرتك لصحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر الموثوقة`}
+                : `${brandName} · كل اللي عيلتك محتاجاه لصحة طفلك، روتينه اليومي، وأشطر الدكاترة والحضانات والمتاجر الموثوقة`}
             </p>
           </div>
 
           <p className="image-card-subtitle text-xs sm:text-sm font-semibold leading-relaxed max-w-2xl">
             {isEn
               ? 'Personalized for ages Day 1 to 8 Years · Instant pediatric booking, smart AI routine planning, and verified family stores.'
-              : 'تجربة هادئة ومخصصة لعمر طفلك من أول يوم حتى 8 سنوات · حجز أطباء معتمدين، مساعد ذكي للروتين، ومتجر متكامل لأسرتك.'}
+              : 'تجربة هادية ومظبوطة على سن طفلك من أول يوم لحد 8 سنين · حجز دكاترة أطفال معتمدين، مساعد ذكي للروتين، ومتجر متكامل لبيتك.'}
           </p>
 
           <div className="pt-1 flex flex-wrap items-center gap-2.5">
             <PrimaryCtaButton variant="teal" size="md" onClick={() => navigateTo('medical')}>
               <ThreeDIcon id="health" size={16} />
-              <span>{isEn ? 'Book Pediatrician' : 'احجز موعد طبيب'}</span>
+              <span>{isEn ? 'Book Pediatrician' : 'احجز دكتور أطفال'}</span>
             </PrimaryCtaButton>
             <PrimaryCtaButton variant="orange" size="md" onClick={() => navigateTo('services')}>
               <ThreeDIcon id="services" size={16} />
-              <span>{isEn ? 'Explore Family Store' : 'تسوّق متجر الأسرة'}</span>
+              <span>{isEn ? 'Explore Family Store' : 'اتسوق من متجر الأسرة'}</span>
             </PrimaryCtaButton>
             <button
               type="button"
@@ -270,7 +279,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               className="image-card-badge min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold hover:opacity-95 transition-opacity inline-flex items-center gap-1.5"
             >
               <ThreeDIcon id="assistant" size={15} />
-              <span>{isEn ? 'Smart AI Assistant' : 'المساعد الذكي AI'}</span>
+              <span>{isEn ? 'Smart AI Assistant' : 'اسأل المساعد الذكي AI'}</span>
             </button>
           </div>
         </div>
@@ -280,12 +289,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <div className="space-y-5">
         <div className="section-heading-block">
           <h2 className="section-heading-centered">
-            {isEn ? 'Core Family Hubs' : 'الأقسام والخدمات الرئيسية'}
+            {isEn ? 'Quick Family Picks' : 'مختارات الأسرة السريعة'}
           </h2>
           <p className="section-subtitle-centered">
             {isEn
               ? 'Focused access to your essential daily family services'
-              : 'وصول سريع ومرتب لأهم خدمات الأسرة والطفل بدون تشتيت'}
+              : 'كل خدمات البيت وأطفالك في مكان واحد سريع ومنظم من غير زحمة'}
           </p>
         </div>
 
@@ -595,41 +604,81 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   const price = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
                   const itemBg = getCardBackgroundSpec(item.category, state.darkMode);
                   const isWishlisted = homeWishlistIds.includes(item.id);
+                  const revCount = item.reviewCount || 142;
                   return (
                     <div
                       key={`home-carousel-${item.id}`}
-                      className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.01]"
+                      className="rounded-[20px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.01]"
                     >
                       <div
+                        onClick={() =>
+                          onInspectCommercialItem
+                            ? onInspectCommercialItem(item)
+                            : navigateTo('services')
+                        }
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (onInspectCommercialItem) {
+                              onInspectCommercialItem(item);
+                            } else {
+                              navigateTo('services');
+                            }
+                          }
+                        }}
                         style={{ backgroundImage: itemBg.backgroundImageCss }}
-                        className="image-bg-card !rounded-none !border-0 p-3.5 min-h-[96px] flex flex-col justify-between"
+                        className="image-bg-card !rounded-none !border-0 p-3.5 min-h-[104px] flex flex-col justify-between cursor-pointer"
                       >
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between gap-1.5">
                           <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold truncate">
-                            {locText(item.categoryLabel, lang)}
+                            {item.emoji} {locText(item.categoryLabel, lang)}
                           </span>
-                          <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums">
-                            {locText(item.city, lang)} · {item.estimatedDistanceKm}{' '}
-                            {isEn ? 'km' : 'كم'}
+                          <span
+                            data-keep-dark-text="true"
+                            className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1"
+                          >
+                            <span>⭐ {item.rating}</span>
+                            <span className="opacity-85">({revCount})</span>
                           </span>
                         </div>
-                        <h3 className="image-card-title text-xs sm:text-sm font-extrabold line-clamp-1 mt-2">
-                          {isEn ? item.nameEn : item.name}
-                        </h3>
+                        <div className="mt-2 space-y-1">
+                          <h3 className="image-card-title text-xs sm:text-sm font-extrabold line-clamp-1">
+                            {isEn ? item.nameEn : item.name}
+                          </h3>
+                          <div className="flex items-center justify-between gap-2 text-[10px] font-bold">
+                            <span className="image-card-subtitle truncate">
+                              📍 {locText(item.city, lang)} · {item.estimatedDistanceKm}{' '}
+                              {isEn ? 'km' : 'كم'}
+                            </span>
+                            <span className="image-card-badge px-2 py-0.5 rounded-md text-[9.5px] font-extrabold shrink-0">
+                              {isEn ? 'View Details' : 'شوف التفاصيل'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                       <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
-                        <div className="text-sm font-extrabold text-[var(--color-role-text)] tabular-nums">
+                        <div
+                          onClick={() =>
+                            onInspectCommercialItem
+                              ? onInspectCommercialItem(item)
+                              : navigateTo('services')
+                          }
+                          className="text-sm font-extrabold text-[var(--color-role-text)] tabular-nums cursor-pointer"
+                        >
                           {formatCurrency(price, state.currency, state.language)}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => toggleHomeWishlist(item.id)}
+                            onClick={() => toggleHomeWishlist(item)}
+                            title={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
                             aria-label={isEn ? 'Toggle Wishlist' : 'إضافة للمفضلة'}
-                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 ${
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                               isWishlisted
-                                ? 'bg-[#FFF0ED] dark:bg-[#FF8C61]/20 border-[#FF8C61] text-[#FF8C61]'
-                                : 'bg-[var(--color-control-bg)] border-[var(--color-border)] text-[var(--color-muted)] hover:text-[#FF8C61] hover:border-[#FF8C61]/50'
+                                ? 'bg-[#FFF0ED] dark:bg-[#142430] border-[#FF8C61] text-[#FF8C61]'
+                                : 'bg-[var(--color-control-bg)] dark:bg-[#142430] border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] hover:text-[#FF8C61] hover:border-[#FF8C61]/50'
                             }`}
                           >
                             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -647,8 +696,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                           <button
                             type="button"
                             onClick={() => onAddToCart(item)}
+                            title={isEn ? 'Add to Cart' : 'أضف للسلة'}
                             aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
-                            className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95"
+                            className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
                           >
                             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                               <path
