@@ -1150,41 +1150,66 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               </button>
             </div>
 
-            {/* Relocated City / Governorate & GPS Filter inside Profile Drawer */}
-            <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3.5 space-y-2.5">
+            {/* Relocated Hierarchical Country & Governorate/Region + GPS Filter inside Profile Drawer */}
+            <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-2.5 soft-card-surface">
               <div className="flex items-center justify-between gap-2">
-                <label htmlFor="drawer-city-select" className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-1.5">
+                <label
+                  htmlFor="drawer-city-select"
+                  className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-1.5"
+                >
                   <SoftFilledIcon id="location" size={16} />
-                  <span>{lang === 'en' ? 'City / Governorate & GPS' : 'المدينة والمحافظة وتحديد الموقع'}</span>
+                  <span>
+                    {lang === 'en'
+                      ? 'Country & Governorate / Region'
+                      : 'الدولة والمحافظة / المنطقة'}
+                  </span>
                 </label>
                 <UnifiedBadge label={state.currency} tone="teal" />
               </div>
+
+              {/* Country Switcher */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
+                  className={`py-1.5 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    state.country === 'EG'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                  }`}
+                >
+                  {lang === 'en' ? '🇪🇬 Egypt (27 Govs)' : '🇪🇬 مصر (٢٧ محافظة)'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                  className={`py-1.5 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    state.country === 'SA'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                  }`}
+                >
+                  {lang === 'en' ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية'}
+                </button>
+              </div>
+
               <div className="flex items-center gap-2">
                 <select
                   id="drawer-city-select"
                   value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
                   onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="flex-1 min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+                  className="flex-1 min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-2.5 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
                 >
-                  <optgroup label={lang === 'en' ? 'Saudi Arabia' : 'السعودية'}>
-                    {COUNTRY_CITIES_MAP.SA.map((c) => (
-                      <option key={`drw-sa-${c.id}`} value={`SA:${c.id}`}>
-                        {lang === 'en' ? c.nameEn : c.nameAr}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label={lang === 'en' ? 'Egypt' : 'مصر'}>
-                    {COUNTRY_CITIES_MAP.EG.map((c) => (
-                      <option key={`drw-eg-${c.id}`} value={`EG:${c.id}`}>
-                        {lang === 'en' ? c.nameEn : c.nameAr}
-                      </option>
-                    ))}
-                  </optgroup>
+                  {(COUNTRY_CITIES_MAP[state.country] || []).map((c, idx) => (
+                    <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
+                      {lang === 'en' ? `${idx + 1}. ${c.nameEn}` : `${idx + 1}. ${c.nameAr}`}
+                    </option>
+                  ))}
                 </select>
                 <button
                   type="button"
                   onClick={onUseCurrentLocation}
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] text-white shrink-0 flex items-center gap-1"
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] text-white shrink-0 flex items-center gap-1 cursor-pointer"
                 >
                   <SoftFilledIcon id="location" size={15} />
                   <span>GPS</span>
@@ -1330,8 +1355,27 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="commercialModalTitle"
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[20px] bg-[var(--color-surface)] p-6 space-y-4 border border-[var(--color-border)]"
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[20px] bg-[var(--color-surface)] dark:bg-[#101D26] p-6 space-y-4 border border-[var(--color-border)] dark:border-[#1E3646]"
           >
+            {activeCommercialModal.imageUrl && (
+              <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-[#142430]">
+                <img
+                  src={activeCommercialModal.imageUrl}
+                  alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">
+                    {activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#FBBF24] border border-[#1E3646] tabular-nums">
+                    ⭐ {activeCommercialModal.rating} ({activeCommercialModal.reviewCount || 142})
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs text-[var(--color-muted)]">

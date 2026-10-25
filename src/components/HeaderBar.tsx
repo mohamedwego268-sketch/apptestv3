@@ -22,12 +22,14 @@ export interface HeaderBarProps {
   brandName: string;
   darkMode: boolean;
   unreadNotifCount: number;
+  openTasksCount?: number;
   parentProfileSpec: HeaderBarProfileSpec;
   activePage: PageId;
   navItems?: HeaderBarNavOption[];
   onNavigate: (pageId: PageId) => void;
   onToggleDarkMode: () => void;
   onToggleLanguage: () => void;
+  onOpenSmartPlanner?: () => void;
   onOpenProfileDrawer: () => void;
   isScrolled?: boolean;
 }
@@ -37,7 +39,7 @@ export interface HeaderBarProps {
  * Clean flexbox layout with zero overlapping elements:
  * 1. Brand Wordmark strictly renders "نكبر" in Arabic and "Nekbaar" in English.
  * 2. Primary desktop navigation bar.
- * 3. Uniform soft-filled SVG control buttons (Theme, Language, Notifications, Profile) sharing
+ * 3. Uniform soft-filled SVG control buttons (Theme, Language, Calendar & To-Do, Notifications, Profile) sharing
  *    identical h-9 height, rounded-2xl geometry, and harmonious borders.
  * 4. Dynamic Notification Badge that displays unread counter cleanly side-by-side with the bell icon
  *    and hides seamlessly when unreadNotifCount === 0 without distorting the icon or button layout.
@@ -47,12 +49,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   brandName,
   darkMode,
   unreadNotifCount,
+  openTasksCount = 0,
   parentProfileSpec,
   activePage,
   navItems = [],
   onNavigate,
   onToggleDarkMode,
   onToggleLanguage,
+  onOpenSmartPlanner,
   onOpenProfileDrawer,
   isScrolled = false,
 }) => {
@@ -70,7 +74,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const primaryNavItems = navItems.filter((item) => defaultPrimaryNavIds.includes(item.id));
 
   const sharedControlBtnClass =
-    'h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none';
+    'h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
 
   return (
     <header
@@ -84,7 +88,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           type="button"
           onClick={() => onNavigate('home')}
           aria-label={isEn ? 'Nekbaar Home' : 'رئيسية نكبر'}
-          className="h-10 flex items-center gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none"
+          className="h-10 flex items-center gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
         >
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
             <ThreeDIcon id="home" size={20} />
@@ -107,7 +111,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => onNavigate(item.id)}
-                  className={`h-9 px-3 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                  className={`h-9 px-3 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     isActive
                       ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
                       : 'hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
@@ -120,7 +124,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </nav>
         )}
 
-        {/* Zone 3: Standardized Aligned Controls (Theme + Language + Notifications + Profile) */}
+        {/* Zone 3: Standardized Aligned Controls (Theme + Language + Calendar/To-Do + Notifications + Profile) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* 1. Theme Toggle Button (Soft-Filled Sun / Moon SVG) */}
           <button
@@ -196,6 +200,57 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               <path d="M12 2.5a14.5 14.5 0 0 1 3.8 9.5 14.5 14.5 0 0 1-3.8 9.5 14.5 14.5 0 0 1-3.8-9.5 14.5 14.5 0 0 1 3.8-9.5z" />
             </svg>
             <span>{isEn ? 'عربي' : 'English'}</span>
+          </button>
+
+          {/* 3. Family Calendar & To-Do List Button ("مفكرة العيلة الذكية") */}
+          <button
+            id="top-calendar-todo-btn"
+            type="button"
+            onClick={() => {
+              if (onOpenSmartPlanner) {
+                onOpenSmartPlanner();
+              } else {
+                onNavigate('calendar');
+              }
+            }}
+            aria-label={
+              isEn
+                ? 'Open Family Calendar & To-Do List'
+                : 'فتح مفكرة العيلة الذكية وقائمة المهام'
+            }
+            className={`${sharedControlBtnClass} ${
+              activePage === 'calendar' || activePage === 'routine'
+                ? 'border-[#0d9488] dark:border-[#38BDF8]'
+                : ''
+            }`}
+          >
+            <svg
+              className="w-4 h-4 shrink-0 text-[#0d9488] dark:text-[#38BDF8]"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              fillOpacity="0.18"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect x="3" y="4" width="18" height="17" rx="3" />
+              <line x1="8" y1="2.5" x2="8" y2="6" strokeLinecap="round" />
+              <line x1="16" y1="2.5" x2="16" y2="6" strokeLinecap="round" />
+              <line x1="3" y1="9.5" x2="21" y2="9.5" />
+              <path
+                d="M9.5 14.5l1.8 1.8 3.5-3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="hidden sm:inline">{isEn ? 'Planner' : 'المفكرة'}</span>
+            {openTasksCount > 0 && (
+              <span
+                data-testid="header-planner-badge"
+                className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#0d9488] dark:bg-[#38BDF8] text-white dark:text-[#0B131A] text-[10px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+              >
+                {openTasksCount}
+              </span>
+            )}
           </button>
 
           {/* 3. Notifications Bell Button (Non-Overlapping Inline Counter Pill) */}

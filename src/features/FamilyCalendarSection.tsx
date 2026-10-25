@@ -6,10 +6,17 @@ import {
   FamilySpaceState,
   LanguageCode,
   formatGregorianAndHijri,
+  getEmptyStateCopy,
   locText,
 } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
-import { PrimaryCtaButton, SoftFilledIcon, UnifiedBadge } from '../components/DesignSystem';
+import {
+  FriendlyEmptyState,
+  MasterPatternCard,
+  PrimaryCtaButton,
+  SoftFilledIcon,
+  UnifiedBadge,
+} from '../components/DesignSystem';
 
 export interface FamilyCalendarSectionProps {
   state: FamilySpaceState;
@@ -47,38 +54,41 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
   onDeleteEvent,
 }) => {
   const isEn = lang === 'en';
+  const emptyCalendarCopy = getEmptyStateCopy('calendar', lang);
 
   return (
     <section className="space-y-6" aria-label={isEn ? 'Family Calendar' : 'التقويم الأسري'}>
       <div
         style={{ backgroundImage: getCardBackgroundSpec('calendar', state.darkMode).backgroundImageCss }}
-        className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3"
+        className="image-bg-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3 shadow-md"
       >
-        <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold tabular-nums">
-          {todayFormattedCombined}
-        </span>
-        <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center">
-          {isEn ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
-        </h2>
-        <PrimaryCtaButton variant="teal" onClick={onOpenAddEvent}>
-          {isEn ? '+ Add New Event' : '+ إضافة حدث جديد'}
-        </PrimaryCtaButton>
+        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-5 max-w-xl w-full flex flex-col items-center justify-center gap-2.5">
+          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold tabular-nums">
+            {todayFormattedCombined}
+          </span>
+          <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center leading-snug">
+            {isEn ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
+          </h2>
+          <PrimaryCtaButton variant="teal" onClick={onOpenAddEvent}>
+            {isEn ? '+ Add New Event' : '+ إضافة حدث جديد'}
+          </PrimaryCtaButton>
+        </div>
       </div>
 
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 soft-card-surface space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]">
+      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => onSetEventRange(0)}
-              className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? 'Today' : 'اليوم'}
             </button>
             <button
               type="button"
               onClick={() => onSetEventRange(7)}
-              className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? 'Next 7 Days' : 'الأيام السبعة القادمة'}
             </button>
@@ -88,14 +98,14 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
                 setEventFrom('');
                 setEventTo('');
               }}
-              className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? `All Events (${state.events.length})` : `كل الأحداث (${state.events.length})`}
             </button>
           </div>
 
           <div
-            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl"
+            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 rounded-2xl border border-transparent dark:border-[#1E3646]"
             role="group"
             aria-label={isEn ? 'Date display mode' : 'نظام عرض التاريخ'}
           >
@@ -108,10 +118,10 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
                 key={mode.id}
                 type="button"
                 onClick={() => onChangeCalendarMode(mode.id as CalendarDisplayMode)}
-                className={`px-3 py-1 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
+                className={`px-3 py-1 text-xs font-extrabold rounded-xl transition-all duration-300 ease-in-out whitespace-nowrap shrink-0 cursor-pointer ${
                   state.calendarMode === mode.id
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
-                    : 'text-[var(--color-muted)]'
+                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-xs'
+                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
                 {mode.label}
@@ -131,7 +141,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               type="date"
               value={eventFrom}
               onChange={(e) => setEventFrom(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+              className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-sm text-[var(--color-text)]"
             />
           </div>
           <div>
@@ -143,7 +153,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               type="date"
               value={eventTo}
               onChange={(e) => setEventTo(e.target.value)}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+              className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-sm text-[var(--color-text)]"
             />
           </div>
         </div>
@@ -151,7 +161,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
         {/* Events Grid Cards with Standardized SoftFilledIcon & UnifiedBadge */}
         {isEventRangeReversed ? (
           <div
-            className="rounded-2xl border border-dashed border-amber-400 bg-amber-50 p-5 text-center text-xs font-bold text-amber-900"
+            className="rounded-2xl border border-dashed border-amber-400 dark:border-[#1E3646] bg-amber-50 dark:bg-[#142430] p-5 text-center text-xs font-bold text-amber-900 dark:text-[#FDBA74]"
             role="status"
           >
             {isEn
@@ -159,9 +169,20 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               : 'تاريخ البداية بعد تاريخ النهاية. عدّل نطاق التاريخ لعرض الأحداث.'}
           </div>
         ) : filteredEvents.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
-            {isEn ? 'No events in this date range.' : 'لا توجد أحداث في هذه الفترة.'}
-          </div>
+          <FriendlyEmptyState
+            id="empty-calendar-state"
+            iconId="calendar"
+            tone="sky"
+            title={emptyCalendarCopy.title}
+            subtitle={emptyCalendarCopy.subtitle}
+            actionLabel={emptyCalendarCopy.actionLabel}
+            onAction={onOpenAddEvent}
+            secondaryCtaLabel={isEn ? 'Show All Events' : 'عرض كل الأحداث'}
+            onSecondaryCtaClick={() => {
+              setEventFrom('');
+              setEventTo('');
+            }}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredEvents.map((ev) => {
@@ -176,53 +197,57 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               const iconId = isMedical ? 'health' : ev.type === 'عيد ميلاد' ? 'wishes' : 'calendar';
 
               return (
-                <div
+                <MasterPatternCard
                   key={ev.id}
-                  className={`rounded-[22px] border p-4 sm:p-5 flex items-start justify-between gap-3 shadow-2xs ${
-                    isMedical
-                      ? 'bg-emerald-50/80 border-emerald-200/80'
-                      : 'bg-cyan-50/75 border-cyan-200/80'
-                  }`}
-                >
-                  <div className="flex items-start gap-3 min-w-0">
-                    <SoftFilledIcon id={iconId} boxSize="md" />
-                    <div className="min-w-0 space-y-1">
-                      <div className="font-extrabold text-sm text-[var(--color-text)]">
-                        {locText(ev.title, lang)}
-                      </div>
-                      <div className="text-xs font-bold text-[var(--color-muted)] tabular-nums">
-                        {formattedDate.combined}
-                        {ev.time ? ` · ${locText(ev.time, lang)}` : ''}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                        <UnifiedBadge tone={isMedical ? 'emerald' : 'sky'} iconId={iconId}>
-                          {locText(ev.type, lang)}
-                        </UnifiedBadge>
-                        <UnifiedBadge tone="teal" iconId={assignedKid ? 'children' : 'family'}>
-                          {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)}
-                        </UnifiedBadge>
-                      </div>
+                  tone={isMedical ? 'emerald' : 'sky'}
+                  categoryKey={isMedical ? 'medical' : 'calendar'}
+                  itemIdOrIndex={ev.id}
+                  darkMode={state.darkMode}
+                  onThumbnailClick={() => onOpenEditEvent(ev)}
+                  topLeftBadge={locText(ev.type, lang)}
+                  topRightBadge={
+                    <span>
+                      📅 {ev.date}
+                    </span>
+                  }
+                  titlePrefixSlot={<SoftFilledIcon id={iconId} size={18} />}
+                  title={locText(ev.title, lang)}
+                  metaLeft={
+                    <span>
+                      🗓️ {formattedDate.combined}
+                      {ev.time ? ` · ${locText(ev.time, lang)}` : ''}
+                    </span>
+                  }
+                  metaRightAction={
+                    <UnifiedBadge tone="teal" iconId={assignedKid ? 'children' : 'family'}>
+                      {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)}
+                    </UnifiedBadge>
+                  }
+                  footerLeft={
+                    <UnifiedBadge tone={isMedical ? 'emerald' : 'sky'} iconId={iconId}>
+                      {locText(ev.type, lang)}
+                    </UnifiedBadge>
+                  }
+                  footerRight={
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onOpenEditEvent(ev)}
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                      >
+                        {isEn ? 'Edit' : 'تعديل'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteEvent(ev.id)}
+                        aria-label={`${isEn ? 'Delete event' : 'حذف الحدث'} ${locText(ev.title, lang)}`}
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-red-700 dark:text-rose-400 transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                      >
+                        {isEn ? 'Delete' : 'حذف'}
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onOpenEditEvent(ev)}
-                      className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
-                    >
-                      {isEn ? 'Edit' : 'تعديل'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteEvent(ev.id)}
-                      aria-label={`${isEn ? 'Delete event' : 'حذف الحدث'} ${locText(ev.title, lang)}`}
-                      className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
-                    >
-                      {isEn ? 'Delete' : 'حذف'}
-                    </button>
-                  </div>
-                </div>
+                  }
+                />
               );
             })}
           </div>

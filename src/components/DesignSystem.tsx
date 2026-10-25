@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
-import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { getCardBackgroundSpec, getProductUnsplashImageUrl } from '../domain/cardBackgrounds';
 import { AiRobotHeadIcon, ThreeDIcon, ThreeDIconId } from './ThreeDVisuals';
 
 export { AiRobotHeadIcon };
@@ -16,8 +16,8 @@ export const NEKBAAR_DESIGN_TOKENS = {
     canvas: '#F8FAFC',
     surface: '#FFFFFF',
     surfaceSubtle: '#F1F5F9',
-    textPrimary: '#0B1926',
-    textMuted: '#64748B',
+    textPrimary: '#0B131A',
+    textMuted: '#475569',
     border: '#E2E8F0',
     borderSubtle: '#F1F5F9',
     brandTeal: '#0D9488',
@@ -29,13 +29,14 @@ export const NEKBAAR_DESIGN_TOKENS = {
     surface: '#101D26', // Elevated Card Surface
     surfaceElevated: '#142430', // Modal / Popover / Highlight
     surfaceHover: '#182C3A',
-    textPrimary: '#F8FAFC', // WCAG AAA High Contrast
-    textMuted: '#94A3B8', // Soft slate readable secondary
+    textPrimary: '#F8FAFC', // WCAG AAA High Contrast White
+    textCyan: '#A5F3FC', // Luminous Cyan Accent Text
+    textMuted: '#CBD5E1', // Readable secondary slate
     border: '#1E3646', // Refined contrast border
     borderSubtle: '#162834',
     brandTeal: '#2DD4BF',
     brandCoral: '#FF8C61',
-    cardShadow: '0 10px 28px -14px rgba(0,0,0,0.6)',
+    cardShadow: '0 10px 28px -14px rgba(0,0,0,0.65)',
   },
 } as const;
 
@@ -258,15 +259,15 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
 }) => {
   const sizeClasses =
     size === 'sm'
-      ? 'min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold'
+      ? 'min-h-[38px] px-4 py-1.5 rounded-xl text-[11.5px] font-extrabold tracking-tight'
       : size === 'lg'
-      ? 'min-h-[44px] px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold'
-      : 'min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold';
+      ? 'min-h-[46px] px-5.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold tracking-tight'
+      : 'min-h-[42px] px-4.5 py-2 rounded-xl text-xs font-extrabold tracking-tight';
   const variantTone = CTA_BUTTON_VARIANTS[variant] || CTA_BUTTON_VARIANTS.orange;
   return (
     <button
       type="button"
-      className={`${sizeClasses} ${variantTone} active:scale-[0.98] transition-all inline-flex items-center justify-center gap-1.5 whitespace-nowrap ${className}`}
+      className={`${sizeClasses} ${variantTone} hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${className}`}
       {...rest}
     >
       {children}
@@ -360,7 +361,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       data-banner-carousel="true"
       data-autoplay-enabled="true"
       data-banner-variant={current.ctaVariant || 'orange'}
-      className="image-bg-card relative rounded-[24px] overflow-hidden select-none transition-all"
+      className="image-bg-card relative rounded-3xl overflow-hidden select-none transition-all duration-300 ease-in-out shadow-md"
       style={{
         backgroundImage: bgSpec.backgroundImageCss,
       }}
@@ -386,8 +387,8 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[148px] text-center sm:text-start">
-        <div className="space-y-1.5 max-w-xl flex flex-col items-center sm:items-start">
+      <div className="p-4 sm:p-5.5 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[160px] text-center sm:text-start">
+        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-4.5 space-y-2 max-w-xl w-full flex flex-col items-center sm:items-start transition-all duration-300 ease-in-out">
           <span className="image-card-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold">
             <ThreeDIcon id={current.iconId} size={14} />
             <span>{current.badge}</span>
@@ -402,7 +403,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold active:scale-[0.98] transition-transform ${btnTone}`}
+              className={`min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out cursor-pointer ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
@@ -410,13 +411,18 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
         </div>
 
         <div className="self-center shrink-0">
-          <SoftFilledIcon id={current.iconId} boxSize="lg" size={40} className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-sm" />
+          <SoftFilledIcon
+            id={current.iconId}
+            boxSize="lg"
+            size={40}
+            className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-sm rounded-2xl transition-transform duration-300 ease-in-out hover:scale-105"
+          />
         </div>
       </div>
 
       {/* Pagination Dots & Prev/Next Controls */}
       {slides.length > 1 && (
-        <div className="px-4 sm:px-5 pb-3.5 flex items-center justify-between gap-3">
+        <div className="px-4 sm:px-5.5 pb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
             {slides.map((s, idx) => {
               const isCurrent = idx === activeIdx % slides.length;
@@ -428,7 +434,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
                   aria-selected={isCurrent}
                   aria-label={`${isEn ? 'Slide' : 'شريحة'} ${idx + 1}`}
                   onClick={() => setActiveIdx(idx)}
-                  className={`h-2.5 rounded-full transition-all ${
+                  className={`h-2.5 rounded-full transition-all duration-300 ease-in-out cursor-pointer ${
                     isCurrent
                       ? 'w-7 bg-[#FF8C61]'
                       : 'w-2.5 bg-[var(--color-text)]/30 hover:bg-[var(--color-text)]/50'
@@ -443,7 +449,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -451,7 +457,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? '›' : '‹'}
             </button>
@@ -491,14 +497,14 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   return (
     <div
       data-sticky-topbar="true"
-      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex items-center justify-between gap-3 transition-all`}
+      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex items-center justify-between gap-3 transition-all duration-300 ease-in-out`}
     >
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] bg-white hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all shrink-0"
+          className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
         >
           <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
           <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
@@ -545,14 +551,14 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
     section === 'services'
       ? isEn
         ? 'Fetching Family Store & Live Tracking...'
-        : 'جاري تحميل منتجات متجر الأسرة وتتبع التوصيل...'
+        : 'ثواني يا بابا.. بنجهزلك منتجات متجر الأسرة وخريطة التوصيل المباشر...'
       : section === 'medical'
       ? isEn
         ? 'Fetching Verified Pediatricians & Records...'
-        : 'جاري تحميل قائمة الأطباء المعتمدين والسجلات الصحية...'
+        : 'ثواني يا بابا.. بنحمل أشطر دكاترة الأطفال وسجل متابعة النمو...'
       : isEn
       ? 'Fetching Parents Community Discussions...'
-      : 'جاري تحميل أحدث نقاشات وتجارب مجتمع الوالدين...';
+      : 'ثواني يا بابا.. بنجهزلك أحدث تجارب ونقاشات أمهات وآباء نكبر...';
 
   const cardCount = section === 'community' ? 4 : 6;
 
@@ -566,15 +572,15 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
       className="space-y-4 animate-page-enter"
     >
       {/* Top Status Strip Shimmer */}
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 flex items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-xl skeleton-shimmer shrink-0" />
+      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-3.5 flex items-center justify-between gap-3 shadow-2xs">
+        <div className="flex items-center gap-3">
+          <span className="w-9 h-9 rounded-xl skeleton-shimmer shrink-0" />
           <div className="space-y-1.5">
             <div className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent)] animate-ping" />
               <span>{sectionLabel}</span>
             </div>
-            <div className="h-2.5 w-44 rounded-full skeleton-shimmer" />
+            <div className="h-2.5 w-48 rounded-full skeleton-shimmer" />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -584,7 +590,7 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
       </div>
 
       {/* Hero Carousel Shimmer Block */}
-      <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
+      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-4 shadow-2xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-2.5 w-full max-w-lg">
             <div className="h-5 w-32 rounded-full skeleton-shimmer" />
@@ -610,7 +616,7 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
       </div>
 
       {/* Filter Pills Bar Shimmer */}
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
         <div className="flex items-center gap-2">
           <div className="h-8 w-24 rounded-xl skeleton-shimmer" />
           <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
@@ -624,31 +630,27 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
         className={
           section === 'community'
             ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
-            : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5'
+            : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
         }
       >
         {Array.from({ length: cardCount }).map((_, idx) => (
           <div
             key={idx}
-            className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-3 shadow-2xs"
+            className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 space-y-3 shadow-2xs"
           >
+            <div className="h-28 w-full rounded-xl skeleton-shimmer" />
             <div className="flex items-center justify-between gap-3">
-              <div className="w-12 h-12 rounded-xl skeleton-shimmer shrink-0" />
               <div className="space-y-1.5 flex-1">
                 <div className="h-4 w-3/4 rounded-lg skeleton-shimmer" />
                 <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
               </div>
               <div className="h-5 w-14 rounded-lg skeleton-shimmer shrink-0" />
             </div>
-            <div className="space-y-2 pt-1">
-              <div className="h-3.5 w-full rounded-md skeleton-shimmer" />
-              <div className="h-3.5 w-5/6 rounded-md skeleton-shimmer" />
-            </div>
-            <div className="pt-2 border-t border-[var(--color-border)]/60 flex items-center justify-between gap-2">
+            <div className="pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex items-center justify-between gap-2">
               <div className="h-5 w-20 rounded-lg skeleton-shimmer" />
               <div className="flex items-center gap-1.5">
-                <div className="h-8 w-16 rounded-xl skeleton-shimmer" />
-                <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
+                <div className="h-8 w-8 rounded-xl skeleton-shimmer" />
+                <div className="h-8 w-8 rounded-xl skeleton-shimmer" />
               </div>
             </div>
           </div>
@@ -694,14 +696,14 @@ export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
     <div
       id={id}
       data-testid="friendly-empty-state"
-      className={`rounded-[22px] border border-dashed ${toneClasses.card} p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-3 shadow-2xs animate-page-enter`}
+      className={`soft-card-surface rounded-3xl border border-dashed ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-6 sm:p-8 text-center flex flex-col items-center justify-center gap-3.5 shadow-2xs animate-page-enter transition-all duration-300 ease-in-out`}
     >
-      <div className="relative flex items-center justify-center">
+      <div className="relative flex items-center justify-center transition-transform duration-300 ease-in-out hover:scale-105">
         <SoftFilledIcon id={iconId} boxSize="lg" />
       </div>
 
-      <div className="space-y-1 max-w-md">
-        <h4 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+      <div className="space-y-1.5 max-w-md">
+        <h4 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] leading-snug">
           {title}
         </h4>
         {subtitle && (
@@ -712,7 +714,7 @@ export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
       </div>
 
       {(resolvedCtaLabel || secondaryCtaLabel) && (
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
           {resolvedCtaLabel && resolvedOnCta && (
             <PrimaryCtaButton variant="orange" size="sm" onClick={resolvedOnCta}>
               {resolvedCtaLabel}
@@ -722,7 +724,7 @@ export const FriendlyEmptyState: React.FC<FriendlyEmptyStateProps> = ({
             <button
               type="button"
               onClick={onSecondaryCtaClick}
-              className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)] shadow-2xs hover:border-[var(--color-accent)] active:scale-95 transition-all"
+              className="min-h-[38px] px-4 py-1.5 rounded-xl text-[11.5px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs hover:border-[var(--color-accent)] active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
             >
               {secondaryCtaLabel}
             </button>
@@ -799,7 +801,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
       id={id}
       data-collapsible-section="true"
       data-expanded={isExpanded ? 'true' : 'false'}
-      className={`rounded-[24px] border shadow-2xs transition-all overflow-hidden ${cardToneClasses} ${className}`}
+      className={`soft-card-surface rounded-3xl border shadow-sm transition-all duration-300 ease-in-out overflow-hidden bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] ${cardToneClasses} ${className}`}
     >
       <div
         role="button"
@@ -813,7 +815,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
             handleToggle();
           }
         }}
-        className={`w-full p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors ${headerClassName}`}
+        className={`w-full p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all duration-300 ease-in-out ${headerClassName}`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {resolvedIcon && <div className="shrink-0">{resolvedIcon}</div>}
@@ -850,7 +852,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
           <span
             data-accordion-chevron="true"
             aria-hidden="true"
-            className={`w-8 h-8 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)] flex items-center justify-center transition-transform duration-200 ${
+            className={`w-8 h-8 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)] flex items-center justify-center transition-transform duration-300 ease-in-out ${
               isExpanded
                 ? 'rotate-180 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border-[var(--color-accent)]/30'
                 : 'rotate-0'
@@ -918,7 +920,7 @@ export const GlobalToastSnackbar: React.FC<GlobalToastSnackbarProps> = ({
           type="button"
           onClick={onClose}
           aria-label={isEn ? 'Dismiss notification' : 'إغلاق التنبيه'}
-          className="w-6 h-6 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center justify-center shrink-0"
+          className="w-6 h-6 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold flex items-center justify-center shrink-0 transition-all duration-300 ease-in-out cursor-pointer"
         >
           ×
         </button>
@@ -926,3 +928,194 @@ export const GlobalToastSnackbar: React.FC<GlobalToastSnackbarProps> = ({
     </div>
   );
 };
+
+export interface MasterPatternCardProps {
+  id?: string;
+  testId?: string;
+  tone?: PastelTone;
+  categoryKey?: string;
+  customImageUrl?: string;
+  itemIdOrIndex?: number;
+  darkMode?: boolean;
+  topLeftBadge: React.ReactNode;
+  topRightBadge?: React.ReactNode;
+  title: React.ReactNode;
+  titlePrefixSlot?: React.ReactNode;
+  titleRightSlot?: React.ReactNode;
+  metaLeft?: React.ReactNode;
+  metaRightAction?: React.ReactNode;
+  bodyContent?: React.ReactNode;
+  footerLeft?: React.ReactNode;
+  footerRight?: React.ReactNode;
+  children?: React.ReactNode;
+  onThumbnailClick?: () => void;
+  className?: string;
+  thumbnailClassName?: string;
+}
+
+/**
+ * Canonical Master Surface Card Component for نكبر (Nekbaar).
+ * Propagates the Store Product Card reference architecture universally:
+ * - Clean soft-surface outer container (`rounded-3xl p-3 sm:p-3.5 soft-card-surface`)
+ * - Structured top image thumbnail (`rounded-2xl p-2.5 sm:p-3`) with stock photo, directional gradient scrim,
+ *   category badge (`image-card-badge`), rating/metric badge (`image-card-rating-pill`), and frosted title bar (`image-card-glass-panel`)
+ * - Structured metadata row (`📍 Location · Details`)
+ * - Hairline-divided footer (`pt-2.5 border-t`) for price/status and interactive action buttons.
+ */
+export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
+  id,
+  testId,
+  tone = 'teal',
+  categoryKey = 'store',
+  customImageUrl,
+  itemIdOrIndex = 0,
+  darkMode,
+  topLeftBadge,
+  topRightBadge,
+  title,
+  titlePrefixSlot,
+  titleRightSlot,
+  metaLeft,
+  metaRightAction,
+  bodyContent,
+  footerLeft,
+  footerRight,
+  children,
+  onThumbnailClick,
+  className = '',
+  thumbnailClassName = '',
+}) => {
+  const [domDark, setDomDark] = useState<boolean>(() =>
+    typeof document !== 'undefined'
+      ? document.documentElement.getAttribute('data-color-mode') === 'dark' ||
+        document.documentElement.classList.contains('dark')
+      : false
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || darkMode !== undefined) return;
+    const syncDomMode = () => {
+      setDomDark(
+        document.documentElement.getAttribute('data-color-mode') === 'dark' ||
+          document.documentElement.classList.contains('dark')
+      );
+    };
+    syncDomMode();
+    const obs = new MutationObserver(syncDomMode);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-color-mode', 'class'],
+    });
+    return () => obs.disconnect();
+  }, [darkMode]);
+
+  const isDark = darkMode !== undefined ? darkMode : domDark;
+  const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.teal;
+  const resolvedStockUrl = customImageUrl || getProductUnsplashImageUrl(categoryKey, itemIdOrIndex);
+  const bgSpec = getCardBackgroundSpec(categoryKey, isDark, resolvedStockUrl);
+
+  return (
+    <article
+      id={id}
+      data-testid={testId}
+      data-master-card="true"
+      className={`rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group ${className}`}
+    >
+      <div className="space-y-2.5">
+        {/* Structured Top Image Thumbnail */}
+        <div
+          onClick={onThumbnailClick}
+          role={onThumbnailClick ? 'button' : undefined}
+          tabIndex={onThumbnailClick ? 0 : undefined}
+          onKeyDown={
+            onThumbnailClick
+              ? (e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onThumbnailClick();
+                  }
+                }
+              : undefined
+          }
+          data-image-card="true"
+          style={{ backgroundImage: bgSpec.backgroundImageCss }}
+          className={`image-bg-card relative overflow-hidden rounded-2xl p-2.5 sm:p-3 min-h-[120px] sm:min-h-[130px] flex flex-col justify-between gap-2 shadow-xs ${
+            onThumbnailClick ? 'cursor-pointer' : ''
+          } ${thumbnailClassName}`}
+        >
+          <img
+            src={resolvedStockUrl}
+            alt={typeof title === 'string' ? title : ''}
+            loading="lazy"
+            onError={(e) => {
+              const target = e.currentTarget;
+              if (target.src !== bgSpec.imagePath) {
+                target.src = bgSpec.imagePath;
+              }
+            }}
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 dark:opacity-80 group-hover:scale-105 transition-transform duration-500"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: isDark
+                ? 'linear-gradient(to top, rgba(11, 19, 26, 0.95) 0%, rgba(16, 29, 38, 0.62) 52%, rgba(11, 19, 26, 0.28) 100%)'
+                : 'linear-gradient(to top, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.65) 50%, rgba(255, 255, 255, 0.22) 100%)',
+            }}
+          />
+
+          <div className="relative z-10 flex items-center justify-between gap-1.5">
+            <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
+              {topLeftBadge}
+            </span>
+            {topRightBadge && (
+              <span
+                data-keep-dark-text="true"
+                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1 shadow-2xs"
+              >
+                {topRightBadge}
+              </span>
+            )}
+          </div>
+
+          <div className="relative z-10 image-card-glass-panel rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              {titlePrefixSlot && <div className="shrink-0">{titlePrefixSlot}</div>}
+              <h3 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
+                {title}
+              </h3>
+            </div>
+            {titleRightSlot && <div className="shrink-0">{titleRightSlot}</div>}
+          </div>
+        </div>
+
+        {/* Compact Metadata Strip */}
+        {(metaLeft || metaRightAction) && (
+          <div className="flex items-center justify-between gap-1.5 text-[10.5px] font-bold text-[var(--color-muted)] px-0.5">
+            <div className="flex items-center gap-1 min-w-0 truncate">{metaLeft}</div>
+            {metaRightAction && <div className="shrink-0">{metaRightAction}</div>}
+          </div>
+        )}
+
+        {/* Optional Body Content */}
+        {bodyContent && (
+          <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed px-0.5">
+            {bodyContent}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Price/Metric + Action Buttons */}
+      {(footerLeft || footerRight) && (
+        <div className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0">{footerLeft}</div>
+          <div className="flex items-center gap-1.5 shrink-0">{footerRight}</div>
+        </div>
+      )}
+
+      {children}
+    </article>
+  );
+};
+

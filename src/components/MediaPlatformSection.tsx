@@ -10,6 +10,7 @@ import {
 import { ThreeDIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
+  MasterPatternCard,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
@@ -1022,28 +1023,48 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredItems.map((item) => {
               const isSaved = savedMediaIds.includes(item.id);
               return (
-                <article
+                <MasterPatternCard
                   key={item.id}
-                  className="rounded-[20px] border border-indigo-200/80 bg-indigo-50/60 p-4 flex flex-col justify-between gap-3 shadow-2xs"
-                >
-                  <div className="space-y-1.5">
-                    <div className="text-[11px] font-extrabold text-indigo-800">
+                  tone="indigo"
+                  categoryKey="media"
+                  itemIdOrIndex={item.id}
+                  onThumbnailClick={() => setActiveItem(item)}
+                  topLeftBadge={
+                    <span>
                       {item.type === 'video' ? '🎬 ' : '📘 '}
-                      {locText(item.durationLabel, language)} · 👶 {item.ageStage === 'all' ? '0–8' : item.ageStage}
-                    </div>
-                    <h3 className="text-sm font-extrabold text-[var(--color-text)] leading-snug">
-                      {isEn ? item.titleEn : item.title}
-                    </h3>
-                    <div className="text-xs font-semibold text-[var(--color-muted)] line-clamp-2">
+                      {locText(item.durationLabel, language)}
+                    </span>
+                  }
+                  topRightBadge={
+                    <span>
+                      👶 {item.ageStage === 'all' ? '0–8' : item.ageStage}
+                    </span>
+                  }
+                  title={isEn ? item.titleEn : item.title}
+                  metaLeft={
+                    <span>
+                      {locText(item.reviewerCredentialsAr, language, 'Parenting Guide')}
+                    </span>
+                  }
+                  metaRightAction={
+                    <button
+                      type="button"
+                      onClick={() => setActiveItem(item)}
+                      className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                    >
+                      {isEn ? 'Read More' : 'اقرأ المزيد'}
+                    </button>
+                  }
+                  bodyContent={
+                    <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] line-clamp-2">
                       {isEn ? item.summaryEn : item.summary}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-1.5 pt-2.5 border-t border-indigo-200/60">
+                    </p>
+                  }
+                  footerLeft={
                     <PrimaryCtaButton
                       variant="indigo"
                       size="sm"
@@ -1051,6 +1072,8 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     >
                       {isEn ? 'Open Guide' : 'عرض التفاصيل'}
                     </PrimaryCtaButton>
+                  }
+                  footerRight={
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
@@ -1060,20 +1083,20 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                             isEn ? item.titleEn : item.title
                           )
                         }
-                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white"
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                       >
                         📤
                       </button>
                       <button
                         type="button"
                         onClick={() => onToggleSaveMedia(item.id)}
-                        className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-white"
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                       >
                         {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
                       </button>
                     </div>
-                  </div>
-                </article>
+                  }
+                />
               );
             })}
           </div>

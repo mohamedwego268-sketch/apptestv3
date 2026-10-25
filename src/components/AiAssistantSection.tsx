@@ -9,6 +9,7 @@ import { getCardBackgroundSpec, CardBackgroundKey } from '../domain/cardBackgrou
 import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId, AiRobotHeadIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
+  MasterPatternCard,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
@@ -370,43 +371,51 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           }
         />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {quickCreationCards.map((card) => {
-            const bgSpec = getCardBackgroundSpec(card.bgKey, darkMode);
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickCreationCards.map((card, idx) => {
             return (
-              <button
+              <MasterPatternCard
                 key={card.topic}
-                type="button"
-                onClick={() =>
+                tone={card.tone}
+                categoryKey={card.bgKey}
+                itemIdOrIndex={idx + 1}
+                darkMode={darkMode}
+                onThumbnailClick={() =>
                   handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
                 }
-                style={{ backgroundImage: bgSpec.backgroundImageCss }}
-                className="image-bg-card group min-h-[126px] p-4 flex flex-col justify-between items-start text-start"
-              >
-                <div className="w-full flex items-start justify-between gap-1.5">
-                  <div className="w-10 h-10 rounded-2xl bg-white/90 shadow-2xs flex items-center justify-center shrink-0">
-                    <ThreeDIcon id={card.iconId} size={24} />
-                  </div>
-                  <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                    {isEn ? card.badgeEn : card.badgeAr}
+                topLeftBadge={isEn ? card.badgeEn : card.badgeAr}
+                topRightBadge={<span>✨ AI</span>}
+                titlePrefixSlot={<ThreeDIcon id={card.iconId} size={20} />}
+                title={isEn ? card.titleEn : card.titleAr}
+                metaLeft={
+                  <span>
+                    👶 {displayKidName}
                   </span>
-                </div>
-                <div className="mt-3 w-full flex items-center justify-between gap-1">
-                  <span className="image-card-title text-xs sm:text-sm font-extrabold truncate">
-                    {isEn ? card.titleEn : card.titleAr}
+                }
+                footerLeft={
+                  <span className="text-[11px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                    {isEn ? 'Instant Blueprint' : 'خطة فورية'}
                   </span>
-                  <span className="image-card-subtitle text-xs font-extrabold">
-                    {isEn ? '→' : '←'}
-                  </span>
-                </div>
-              </button>
+                }
+                footerRight={
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSendPrompt(isEn ? card.promptEn : card.promptAr, card.topic)
+                    }
+                    className="min-h-[32px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-[var(--color-accent)] text-white shadow-2xs active:scale-95 transition-all cursor-pointer"
+                  >
+                    {isEn ? 'Generate →' : 'ابتكر الخطة ←'}
+                  </button>
+                }
+              />
             );
           })}
         </div>
       </div>
 
       {/* Conversational Thread + Structured Cards */}
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 space-y-4 shadow-2xs">
+      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 shadow-2xs soft-card-surface">
         <SectionHeader
           title={isEn ? 'Interactive AI Parenting Assistant' : 'محادثة المساعد الذكي للأسرة'}
           subtitle={

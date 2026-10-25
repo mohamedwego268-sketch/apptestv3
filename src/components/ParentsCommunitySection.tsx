@@ -4,6 +4,7 @@ import {
   BannerSlideItem,
   CollapsibleSectionCard,
   FriendlyEmptyState,
+  MasterPatternCard,
   PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
@@ -616,52 +617,57 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           }}
         />
       ) : (
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filteredPosts.map((post) => {
           const isLiked = likedIds.includes(post.id);
           const isHelpful = helpfulIds.includes(post.id);
           const isExpanded = expandedPostId === post.id;
-          const tone = PASTEL_CARD_TONES[TOPIC_TONE_MAP[post.topicId] || 'amber'];
+          const postToneKey = TOPIC_TONE_MAP[post.topicId] || 'amber';
+          const postCategoryKey =
+            post.topicId === 'nursery'
+              ? 'nursery'
+              : post.topicId === 'nutrition'
+              ? 'nutrition'
+              : 'consultation';
 
           return (
-            <article
+            <MasterPatternCard
               key={post.id}
-              className={`rounded-[24px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-5 space-y-3.5 shadow-2xs`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-muted)]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-[var(--color-control-bg)] dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] text-orange-900 dark:text-[#FDBA74] font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
-                    {(isEn ? post.authorEn : post.authorAr).slice(0, 1)}
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-[var(--color-text)]">
-                      {isEn ? post.authorEn : post.authorAr}
-                    </div>
-                    <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                      📍 {isEn ? post.authorCityEn : post.authorCityAr} · 👶{' '}
-                      {isEn ? post.childAgeLabelEn : post.childAgeLabelAr} ·{' '}
-                      {isEn ? post.timeAgoEn : post.timeAgoAr}
-                    </div>
-                  </div>
-                </div>
-
-                <span className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold ${tone.badge}`}>
-                  {isEn ? post.topicLabelEn : post.topicLabelAr}
+              tone={postToneKey}
+              categoryKey={postCategoryKey}
+              itemIdOrIndex={post.id}
+              onThumbnailClick={() => setExpandedPostId(isExpanded ? null : post.id)}
+              topLeftBadge={isEn ? post.topicLabelEn : post.topicLabelAr}
+              topRightBadge={
+                <span>
+                  💡 {post.helpfulCount + (isHelpful ? 1 : 0)} {isEn ? 'Helpful' : 'مفيد'}
                 </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] leading-snug">
-                  {isEn ? post.titleEn : post.titleAr}
-                </h3>
-                <p className="text-xs sm:text-sm text-[var(--color-muted)] leading-relaxed">
+              }
+              titlePrefixSlot={
+                <div className="w-7 h-7 rounded-xl bg-white/95 dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] text-orange-900 dark:text-[#FDBA74] text-xs font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
+                  {(isEn ? post.authorEn : post.authorAr).slice(0, 1)}
+                </div>
+              }
+              title={isEn ? post.titleEn : post.titleAr}
+              metaLeft={
+                <span>
+                  📍 {isEn ? post.authorCityEn : post.authorCityAr} · 👶{' '}
+                  {isEn ? post.childAgeLabelEn : post.childAgeLabelAr} ·{' '}
+                  {isEn ? post.timeAgoEn : post.timeAgoAr}
+                </span>
+              }
+              metaRightAction={
+                <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                  {isEn ? post.authorEn : post.authorAr}
+                </span>
+              }
+              bodyContent={
+                <p className="text-xs text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold leading-relaxed">
                   {isEn ? post.bodyEn : post.bodyAr}
                 </p>
-              </div>
-
-              {/* Reaction & Comment Actions */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--color-border)]/70 dark:border-[#1E3646]">
-                <div className="flex flex-wrap items-center gap-2">
+              }
+              footerLeft={
+                <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"
                     onClick={() =>
@@ -669,10 +675,10 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isLiked ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors cursor-pointer ${
+                    className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
                       isLiked
                         ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
-                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
                     }`}
                   >
                     ❤️ {isEn ? 'Like' : 'عجبني'} ·{' '}
@@ -688,10 +694,10 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isHelpful ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors cursor-pointer ${
+                    className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
                       isHelpful
                         ? 'bg-[#0d9488] text-white border-[#0d9488]'
-                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                        : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
                     }`}
                   >
                     💡 {isEn ? 'Helpful' : 'مفيد جدًا'} ·{' '}
@@ -700,40 +706,41 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                     </span>
                   </button>
                 </div>
-
+              }
+              footerRight={
                 <button
                   type="button"
                   onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
-                  className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] cursor-pointer"
+                  className="min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
                 >
                   💬 {isEn ? `Comments (${post.comments.length})` : `التعليقات والردود (${post.comments.length})`}
                 </button>
-              </div>
-
+              }
+            >
               {/* Comments Thread */}
               {isExpanded && (
-                <div className="pt-3 space-y-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646]">
+                <div className="pt-2.5 space-y-2 border-t border-black/5 dark:border-[#1E3646]">
                   {post.comments.map((c) => (
                     <div
                       key={c.id}
-                      className={`rounded-2xl p-3.5 text-xs space-y-1 ${
+                      className={`rounded-2xl p-3 text-xs space-y-1 ${
                         c.isVerifiedExpert
                           ? 'bg-emerald-50/90 dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646]'
                           : 'bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646]'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-extrabold text-[var(--color-text)]">
+                        <span className="font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
                           {isEn ? c.authorEn : c.authorAr}{' '}
                           <span className="font-bold text-emerald-800 dark:text-[#2DD4BF]">
                             · {isEn ? c.roleBadgeEn : c.roleBadgeAr}
                           </span>
                         </span>
-                        <span dir="ltr" className="text-[11px] text-[var(--color-muted)] tabular-nums">
+                        <span dir="ltr" className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8] tabular-nums">
                           {c.timeLabel}
                         </span>
                       </div>
-                      <p className="text-[var(--color-text)] leading-relaxed">
+                      <p className="text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
                         {isEn ? c.textEn : c.textAr}
                       </p>
                     </div>
@@ -757,7 +764,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                           ? 'Write a supportive reply...'
                           : 'اكتب رد أو شاركنا تجربتك...'
                       }
-                      className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
+                      className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
                     />
                     <PrimaryCtaButton
                       variant="orange"
@@ -769,7 +776,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                   </div>
                 </div>
               )}
-            </article>
+            </MasterPatternCard>
           );
         })}
       </div>

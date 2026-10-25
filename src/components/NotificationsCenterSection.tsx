@@ -8,7 +8,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
-import { FriendlyEmptyState, PrimaryCtaButton, SectionHeader, SoftFilledIcon } from './DesignSystem';
+import { FriendlyEmptyState, MasterPatternCard, PrimaryCtaButton, SectionHeader, SoftFilledIcon } from './DesignSystem';
 
 interface NotificationsCenterSectionProps {
   state: FamilySpaceState;
@@ -63,28 +63,28 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
           </h2>
         </div>
 
-        <div className="flex items-center justify-center gap-1.5 bg-white/90 p-1.5 rounded-2xl border border-white max-w-sm mx-auto">
+        <div className="flex items-center justify-center gap-1.5 bg-[var(--color-surface)]/95 dark:bg-[#142430] p-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] max-w-sm mx-auto">
           <button
             type="button"
             onClick={() => onSelectParentAccount('mother')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
               activeParent === 'mother'
                 ? 'bg-[#FF8C61] text-white shadow-2xs'
-                : 'text-slate-700'
+                : 'text-[var(--color-text)]'
             }`}
           >
-            {isEn ? 'Mother (Sara)' : 'الأم (سارة)'}
+            {isEn ? 'Mother (Sara)' : 'ماما (سارة)'}
           </button>
           <button
             type="button"
             onClick={() => onSelectParentAccount('father')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
               activeParent === 'father'
-                ? 'bg-[#FF8C61] text-white shadow-2xs'
-                : 'text-slate-700'
+                ? 'bg-[#0d9488] text-white shadow-2xs'
+                : 'text-[var(--color-text)]'
             }`}
           >
-            {isEn ? 'Father (Ahmed)' : 'الأب (أحمد)'}
+            {isEn ? 'Father (Ahmed)' : 'بابا (أحمد)'}
           </button>
         </div>
       </div>
@@ -163,58 +163,67 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
               }}
             />
           ) : (
-            <div className="space-y-3">
-              {notifications.map((notif) => {
-                const slotCardStyle =
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {notifications.map((notif, idx) => {
+                const slotTone =
                   notif.slot === 'morning'
-                    ? 'bg-amber-50/75 dark:bg-[#142430] border-amber-200/75 dark:border-[#1E3646]'
+                    ? 'amber'
                     : notif.slot === 'midday'
-                    ? 'bg-sky-50/75 dark:bg-[#142430] border-sky-200/75 dark:border-[#1E3646]'
-                    : 'bg-teal-50/75 dark:bg-[#142430] border-teal-200/75 dark:border-[#1E3646]';
+                    ? 'sky'
+                    : 'teal';
 
                 return (
-                  <div
+                  <MasterPatternCard
                     key={notif.id}
-                    className={`rounded-2xl border p-4 transition-all ${slotCardStyle} ${
-                      notif.read ? 'opacity-85' : 'shadow-2xs'
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-2.5 py-0.5 rounded-xl bg-white dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs">
-                          {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
-                        </span>
-                        {notif.read && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 text-[10px] font-extrabold">
-                            ✓ {isEn ? 'Read' : 'مقروء'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--color-muted)] tabular-nums">
-                        <span>🕒 {notif.scheduledTime}</span>
-                        <button
-                          type="button"
-                          onClick={() => onToggleReadNotification(notif.id)}
-                          className="px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-[11px] font-extrabold text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
-                        >
-                          {notif.read
-                            ? isEn
-                              ? 'Mark Unread'
-                              : 'كغير مقروء'
-                            : isEn
-                            ? 'Mark Read'
-                            : 'تم الاطلاع'}
-                        </button>
-                      </div>
-                    </div>
-
-                    <h4 className="text-sm font-extrabold text-[var(--color-text)] mb-1">
-                      {isEn ? notif.titleEn : notif.titleAr}
-                    </h4>
-                    <p className="text-xs font-semibold text-[var(--color-muted)] leading-relaxed">
-                      {isEn ? notif.bodyEn : notif.bodyAr}
-                    </p>
-                  </div>
+                    tone={slotTone}
+                    categoryKey="notifications"
+                    itemIdOrIndex={idx + 1}
+                    darkMode={state.darkMode}
+                    onThumbnailClick={() => onToggleReadNotification(notif.id)}
+                    topLeftBadge={isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
+                    topRightBadge={
+                      <span>
+                        🕒 {notif.scheduledTime}
+                      </span>
+                    }
+                    title={isEn ? notif.titleEn : notif.titleAr}
+                    metaLeft={
+                      <span>
+                        {notif.read
+                          ? isEn
+                            ? '✓ Read Notification'
+                            : '✓ تم الاطلاع على التنبيه'
+                          : isEn
+                          ? '● Unread Smart Alert'
+                          : '● تنبيه ذكي جديد'}
+                      </span>
+                    }
+                    bodyContent={
+                      <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+                        {isEn ? notif.bodyEn : notif.bodyAr}
+                      </p>
+                    }
+                    footerLeft={
+                      <span className="text-[11px] font-extrabold text-[var(--color-muted)] dark:text-[#A5F3FC]">
+                        {isEn ? parentProfile.fullName : parentProfile.fullName}
+                      </span>
+                    }
+                    footerRight={
+                      <button
+                        type="button"
+                        onClick={() => onToggleReadNotification(notif.id)}
+                        className="min-h-[34px] px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] transition-colors cursor-pointer"
+                      >
+                        {notif.read
+                          ? isEn
+                            ? 'Mark Unread'
+                            : 'كغير مقروء'
+                          : isEn
+                          ? 'Mark Read'
+                          : 'تم الاطلاع'}
+                      </button>
+                    }
+                  />
                 );
               })}
             </div>

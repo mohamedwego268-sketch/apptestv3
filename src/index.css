@@ -216,8 +216,7 @@ label {
    ========================================================================== */
 :root[data-color-mode="dark"] [data-banner-carousel="true"] {
   background-color: #101D26 !important;
-  background-image: linear-gradient(135deg, #101D26 0%, #142430 52%, #0B131A 100%) !important;
-  box-shadow: 0 16px 32px -12px rgba(4, 9, 14, 0.72), 0 0 18px -6px rgba(45, 212, 191, 0.22) !important;
+  box-shadow: 0 18px 36px -12px rgba(4, 9, 14, 0.78), 0 0 20px -6px rgba(45, 212, 191, 0.22) !important;
   border-color: #1E3646 !important;
 }
 
@@ -831,9 +830,17 @@ a,
 select,
 input,
 textarea {
-  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
-  transition-duration: 220ms;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity, filter;
+  transition-duration: 300ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 /* ==========================================================================
@@ -842,8 +849,9 @@ textarea {
 .horizontal-scroll-row {
   display: flex;
   overflow-x: auto;
-  gap: 0.85rem;
-  padding-bottom: 0.5rem;
+  gap: 0.95rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.65rem;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
@@ -856,13 +864,25 @@ textarea {
 }
 
 .soft-card-surface {
-  box-shadow: 0 10px 28px -14px rgba(30, 37, 48, 0.08);
-  border-color: color-mix(in srgb, var(--color-border) 55%, transparent);
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  box-shadow:
+    0 12px 30px -14px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  border-color: color-mix(in srgb, var(--color-border) 75%, transparent);
+  transition:
+    transform 300ms ease-in-out,
+    box-shadow 300ms ease-in-out,
+    border-color 300ms ease-in-out,
+    background-color 300ms ease-in-out;
 }
 
-:root[data-color-mode="dark"] .soft-card-surface {
+:root[data-color-mode="dark"] .soft-card-surface,
+html.dark .soft-card-surface {
   background-color: #101D26 !important;
   border-color: #1E3646 !important;
+  color: #F8FAFC !important;
   box-shadow:
     0 16px 36px -12px rgba(2, 6, 11, 0.78),
     0 0 22px -6px var(--color-parent-glow, rgba(45, 212, 191, 0.22)),
@@ -871,10 +891,12 @@ textarea {
 
 p, li {
   line-height: 1.75;
+  letter-spacing: -0.005em;
 }
 
 h1, h2, h3, h4 {
   line-height: 1.38;
+  letter-spacing: -0.015em;
 }
 
 /* ==========================================================================
@@ -897,9 +919,9 @@ h1, h2, h3, h4 {
   border: 1px solid var(--color-parent-border, rgba(255, 140, 97, 0.32)) !important;
   box-shadow: 0 12px 28px -12px rgba(30, 37, 48, 0.14);
   transition:
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 240ms ease !important;
+    transform 300ms ease-in-out,
+    box-shadow 300ms ease-in-out,
+    border-color 300ms ease-in-out !important;
   will-change: transform;
 }
 
@@ -924,9 +946,8 @@ h1, h2, h3, h4 {
 
 :root[data-color-mode="dark"] .image-bg-card {
   background-color: #101D26 !important;
-  background-image: linear-gradient(135deg, #101D26 0%, #142430 52%, #0B131A 100%) !important;
   color: #F8FAFC !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
   border: 1px solid #1E3646 !important;
   box-shadow:
     0 16px 36px -10px rgba(2, 6, 11, 0.82),
@@ -951,7 +972,24 @@ h1, h2, h3, h4 {
 :root[data-color-mode="dark"] .image-bg-card span,
 :root[data-color-mode="dark"] .image-bg-card div,
 :root[data-color-mode="dark"] .image-bg-card strong {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+/* Soft Glassmorphic Container for Title & Description Blocks inside Image Cards */
+.image-card-glass-panel {
+  background-color: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px) saturate(155%);
+  -webkit-backdrop-filter: blur(10px) saturate(155%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px -8px rgba(15, 23, 42, 0.12);
+}
+
+:root[data-color-mode="dark"] .image-card-glass-panel {
+  background-color: rgba(11, 19, 26, 0.78) !important;
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(45, 212, 191, 0.22) !important;
+  box-shadow: 0 10px 24px -8px rgba(2, 6, 11, 0.72);
 }
 
 .image-bg-card .image-card-badge {
@@ -964,7 +1002,9 @@ h1, h2, h3, h4 {
 }
 
 :root[data-color-mode="dark"] .image-bg-card .image-card-badge {
-  background-color: #142430 !important;
+  background-color: rgba(16, 29, 38, 0.88) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #A5F3FC !important;
   text-shadow: none !important;
   border: 1px solid #1E3646 !important;

@@ -13,10 +13,12 @@ import {
 import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
+  MasterPatternCard,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { ChildGrowthChart } from './ChildGrowthChart';
 
 interface MedicalHealthSectionProps {
   kids: ChildProfile[];
@@ -154,7 +156,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       {/* Segmented Navigation inside Medical Hub */}
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div
-          className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/80"
+          className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646]"
           role="tablist"
         >
           <button
@@ -165,10 +167,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'doctors'
                 ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 hover:bg-emerald-100/70'
+                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            👩‍⚕️ {isEn ? `Doctors (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
+            👩‍⚕️ {isEn ? `Doctors (${filteredDoctors.length})` : `دكاترة وعيادات (${filteredDoctors.length})`}
           </button>
           <button
             type="button"
@@ -178,7 +180,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'child_records'
                 ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 hover:bg-emerald-100/70'
+                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
             💉 {isEn ? `Vaccinations & Growth (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
@@ -191,10 +193,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
               activeTab === 'articles'
                 ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 hover:bg-emerald-100/70'
+                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            📋 {isEn ? `Medical Guides (${medicalArticles.length})` : `الأدلة الطبية (${medicalArticles.length})`}
+            📋 {isEn ? `Medical Guides (${medicalArticles.length})` : `أدلة طبية سريعة (${medicalArticles.length})`}
           </button>
         </div>
 
@@ -204,10 +206,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
           className={`min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border transition-colors whitespace-nowrap shrink-0 ${
             filterByUserCity
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-              : 'bg-[var(--color-surface)] text-[var(--color-text)] border-[var(--color-border)]'
+              : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
           }`}
         >
-          📍 {isEn ? `My City (${displayCity})` : `في مدينتي (${city})`}
+          📍 {isEn ? `My City (${displayCity})` : `الأقرب في (${city})`}
         </button>
       </div>
 
@@ -243,66 +245,63 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             {filteredDoctors.map((doc) => {
               const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
               const isPediatrics = doc.category === 'doctor';
-              const docBgSpec = getCardBackgroundSpec('medical', darkMode);
               return (
-                <article
+                <MasterPatternCard
                   key={doc.id}
-                  className={`rounded-[24px] border ${
+                  tone={isPediatrics ? 'emerald' : 'teal'}
+                  categoryKey="doctor"
+                  itemIdOrIndex={doc.id}
+                  darkMode={darkMode}
+                  onThumbnailClick={() => setBookingDoctor(doc)}
+                  topLeftBadge={
                     isPediatrics
-                      ? 'bg-emerald-50/80 border-emerald-200/80'
-                      : 'bg-teal-50/80 border-teal-200/80'
-                  } p-4 sm:p-5 flex flex-col justify-between gap-4 shadow-2xs hover:scale-[1.02] active:scale-[1.02] hover:shadow-md transition-all`}
-                >
-                  <div className="space-y-3">
-                    <div
-                      data-image-card="true"
-                      style={{ backgroundImage: docBgSpec.backgroundImageCss }}
-                      className="image-bg-card rounded-2xl p-4 min-h-[100px] flex flex-col justify-between gap-2"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                          {isPediatrics
-                            ? isEn
-                              ? 'Pediatrics & Growth'
-                              : 'طب الأطفال والنمو'
-                            : isEn
-                            ? 'Psychology & Speech'
-                            : 'إرشاد نفسي وتخاطب'}
-                        </span>
-                        <span dir="ltr" className="image-card-badge px-2 py-0.5 rounded-full text-xs font-extrabold text-amber-200 tabular-nums">
-                          ★ {doc.rating} ({doc.reviewCount || 120})
-                        </span>
-                      </div>
-                      <h3 className="image-card-title text-base font-extrabold leading-snug">
-                        {isEn ? doc.nameEn : doc.name}
-                      </h3>
-                    </div>
-
-                    <div className="text-xs font-bold text-[var(--color-muted)]">
+                      ? isEn
+                        ? 'Pediatrics & Growth'
+                        : 'طب الأطفال والنمو'
+                      : isEn
+                      ? 'Psychology & Speech'
+                      : 'إرشاد نفسي وتخاطب'
+                  }
+                  topRightBadge={
+                    <span>
+                      ⭐ {doc.rating} ({doc.reviewCount || 142})
+                    </span>
+                  }
+                  title={isEn ? doc.nameEn : doc.name}
+                  metaLeft={
+                    <span>
                       📍 {locText(doc.city, language)} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-emerald-200/60 space-y-2.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-[var(--color-muted)]">
-                        {isEn ? 'Consultation Fee:' : 'قيمة الكشف:'}
+                    </span>
+                  }
+                  metaRightAction={
+                    <button
+                      type="button"
+                      onClick={() => setBookingDoctor(doc)}
+                      className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                    >
+                      {isEn ? 'View Details' : 'شوف التفاصيل'}
+                    </button>
+                  }
+                  footerLeft={
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                        {isEn ? 'Consultation Fee:' : 'سعر الكشف / الجلسة:'}
                       </span>
-                      <span dir="ltr" className="text-sm font-extrabold text-emerald-900 tabular-nums">
+                      <span dir="ltr" className="text-sm font-extrabold text-emerald-900 dark:text-[#A5F3FC] tabular-nums">
                         {formatCurrency(fee, currency, language)}
                       </span>
                     </div>
-
+                  }
+                  footerRight={
                     <PrimaryCtaButton
                       variant="emerald"
                       size="sm"
                       onClick={() => setBookingDoctor(doc)}
-                      className="w-full"
                     >
-                      📅 {isEn ? 'Book Appointment' : 'احجز موعد الآن'}
+                      📅 {isEn ? 'Book Appointment' : 'احجز ميعاد الكشف'}
                     </PrimaryCtaButton>
-                  </div>
-                </article>
+                  }
+                />
               );
             })}
           </div>
@@ -311,86 +310,103 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* TAB 2: CHILD VACCINATIONS, GROWTH & PRIVATE HEALTH RECORDS */}
       {activeTab === 'child_records' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {kids.map((kid) => {
-            const age = calculateChildAge(kid.birth, language);
-            return (
-              <div
-                key={kid.id}
-                className="rounded-[24px] border border-teal-200/80 bg-teal-50/70 p-5 space-y-4 shadow-2xs"
-              >
-                <div className="flex items-center gap-3.5">
-                  <ThreeDChildAvatar
-                    name={kid.name}
-                    gender={kid.gender}
-                    stageCode={age.stageCode}
-                    accessoryTheme={kid.avatarTheme || 'astronaut'}
-                    photoDataUrl={kid.photoDataUrl}
-                    useIllustratedAvatar={kid.useIllustratedAvatar}
-                    size="md"
-                  />
-                  <div>
-                    <h3 className="text-lg font-extrabold text-[var(--color-text)]">
-                      {locText(kid.name, language)}
-                    </h3>
-                    <div className="text-xs font-bold text-[var(--color-muted)]">
-                      {age.label} · {age.stageTitle}
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-5">
+          {kids.length > 0 && (
+            <ChildGrowthChart
+              kids={kids}
+              language={language}
+              darkMode={Boolean(darkMode)}
+            />
+          )}
 
-                <div className="grid grid-cols-3 gap-2.5 text-center">
-                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
-                    <div className="text-[11px] text-teal-900 font-bold">
-                      📏 {isEn ? 'Height' : 'الطول'}
-                    </div>
-                    <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
-                      {kid.growthHeightCm ? `${kid.growthHeightCm} cm` : '—'}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
-                    <div className="text-[11px] text-teal-900 font-bold">
-                      ⚖️ {isEn ? 'Weight' : 'الوزن'}
-                    </div>
-                    <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
-                      {kid.growthWeightKg ? `${kid.growthWeightKg} kg` : '—'}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl bg-white/90 border border-teal-100 p-3 shadow-2xs">
-                    <div className="text-[11px] text-teal-900 font-bold">
-                      🩸 {isEn ? 'Blood' : 'الفصيلة'}
-                    </div>
-                    <div dir="ltr" className="text-base font-extrabold text-teal-950 tabular-nums mt-0.5">
-                      {kid.bloodType || 'O+'}
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {kids.map((kid) => {
+              const age = calculateChildAge(kid.birth, language);
+              return (
+                <MasterPatternCard
+                  key={kid.id}
+                  tone="teal"
+                  categoryKey="medical"
+                  itemIdOrIndex={kid.id}
+                  darkMode={darkMode}
+                  topLeftBadge={age.label}
+                  topRightBadge={
+                    <span>
+                      ✅ {isEn ? 'Up to Date' : 'تطعيمات منتظمة'}
+                    </span>
+                  }
+                  titlePrefixSlot={
+                    <ThreeDChildAvatar
+                      name={kid.name}
+                      gender={kid.gender}
+                      stageCode={age.stageCode}
+                      accessoryTheme={kid.avatarTheme || 'astronaut'}
+                      photoDataUrl={kid.photoDataUrl}
+                      useIllustratedAvatar={kid.useIllustratedAvatar}
+                      size="sm"
+                    />
+                  }
+                  title={locText(kid.name, language)}
+                  metaLeft={
+                    <span>
+                      👶 {age.stageTitle} · 🩸 {kid.bloodType || 'O+'}
+                    </span>
+                  }
+                  bodyContent={
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-teal-100 dark:border-[#1E3646] p-2 shadow-2xs">
+                          <div className="text-[10px] text-teal-900 dark:text-[#94A3B8] font-bold">
+                            📏 {isEn ? 'Height' : 'الطول'}
+                          </div>
+                          <div dir="ltr" className="text-xs sm:text-sm font-extrabold text-teal-950 dark:text-[#2DD4BF] tabular-nums mt-0.5">
+                            {kid.growthHeightCm ? `${kid.growthHeightCm} cm` : '—'}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-teal-100 dark:border-[#1E3646] p-2 shadow-2xs">
+                          <div className="text-[10px] text-teal-900 dark:text-[#94A3B8] font-bold">
+                            ⚖️ {isEn ? 'Weight' : 'الوزن'}
+                          </div>
+                          <div dir="ltr" className="text-xs sm:text-sm font-extrabold text-teal-950 dark:text-[#FB923C] tabular-nums mt-0.5">
+                            {kid.growthWeightKg ? `${kid.growthWeightKg} kg` : '—'}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-teal-100 dark:border-[#1E3646] p-2 shadow-2xs">
+                          <div className="text-[10px] text-teal-900 dark:text-[#94A3B8] font-bold">
+                            🩸 {isEn ? 'Blood' : 'الفصيلة'}
+                          </div>
+                          <div dir="ltr" className="text-xs sm:text-sm font-extrabold text-teal-950 dark:text-[#F8FAFC] tabular-nums mt-0.5">
+                            {kid.bloodType || 'O+'}
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="rounded-2xl bg-white/90 border border-teal-100 p-3.5 space-y-2 text-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-extrabold text-[var(--color-text)]">
-                      💉 {isEn ? 'Vaccinations' : 'التطعيمات'}
-                    </span>
-                    <span className="text-[11px] font-bold text-emerald-800">
-                      ✅ {isEn ? 'Up to Date' : 'منتظمة'}
-                    </span>
-                  </div>
-                  <div className="text-[var(--color-muted)] font-semibold">
-                    {kid.vaccinationsNote
-                      ? locText(kid.vaccinationsNote, language)
-                      : isEn
-                      ? 'Routine vaccinations up to date.'
-                      : 'التطعيمات الأساسية منتظمة.'}
-                  </div>
-                  {kid.healthNotePrivate && (
-                    <div className="pt-1.5 border-t border-teal-100 text-[var(--color-muted)] font-semibold">
-                      🔒 {locText(kid.healthNotePrivate, language)}
+                      <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-teal-100 dark:border-[#1E3646] p-2.5 space-y-1 text-xs">
+                        <div className="text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold">
+                          💉{' '}
+                          {kid.vaccinationsNote
+                            ? locText(kid.vaccinationsNote, language)
+                            : isEn
+                            ? 'Routine vaccinations up to date.'
+                            : 'التطعيمات الأساسية منتظمة.'}
+                        </div>
+                        {kid.healthNotePrivate && (
+                          <div className="pt-1 border-t border-teal-100 dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold">
+                            🔒 {locText(kid.healthNotePrivate, language)}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                  }
+                  footerLeft={
+                    <span className="text-xs font-extrabold text-emerald-900 dark:text-[#A5F3FC]">
+                      💉 {isEn ? 'Vaccinations: Up to Date' : 'سجل التطعيمات: منتظمة'}
+                    </span>
+                  }
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
@@ -400,28 +416,40 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
           {medicalArticles.map((article) => {
             const isSaved = savedMediaIds.includes(article.id);
             return (
-              <article
+              <MasterPatternCard
                 key={article.id}
-                className="rounded-[24px] border border-emerald-200/80 bg-emerald-50/75 p-5 flex flex-col justify-between gap-4 shadow-2xs"
-              >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2 text-xs text-emerald-900 font-extrabold">
-                    <span>
-                      🩺 {locText(article.reviewerCredentialsAr, language, 'Peer-Reviewed Specialist')}
-                    </span>
-                    <span dir="ltr" className="tabular-nums">
-                      👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-extrabold text-[var(--color-text)] leading-snug">
-                    {isEn ? article.titleEn : article.title}
-                  </h3>
-                  <div className="text-xs font-semibold text-[var(--color-muted)] line-clamp-2">
+                tone="emerald"
+                categoryKey="medical"
+                itemIdOrIndex={article.id}
+                darkMode={darkMode}
+                onThumbnailClick={() => setReadingArticle(article)}
+                topLeftBadge={locText(article.reviewerCredentialsAr, language, 'Peer-Reviewed Specialist')}
+                topRightBadge={
+                  <span>
+                    👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
+                  </span>
+                }
+                title={isEn ? article.titleEn : article.title}
+                metaLeft={
+                  <span>
+                    🩺 {locText(article.durationLabel, language)} · 📍 {displayCity}
+                  </span>
+                }
+                metaRightAction={
+                  <button
+                    type="button"
+                    onClick={() => setReadingArticle(article)}
+                    className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                  >
+                    {isEn ? 'Read Now' : 'اقرأ الآن'}
+                  </button>
+                }
+                bodyContent={
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] line-clamp-2">
                     {isEn ? article.summaryEn : article.summary}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-emerald-200/60">
+                  </p>
+                }
+                footerLeft={
                   <PrimaryCtaButton
                     variant="emerald"
                     size="sm"
@@ -429,6 +457,8 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   >
                     📖 {isEn ? 'Open Guide' : 'قراءة الدليل'}
                   </PrimaryCtaButton>
+                }
+                footerRight={
                   <button
                     type="button"
                     onClick={() => {
@@ -443,19 +473,19 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                           : 'تم الحفظ في مرجعك الطبي'
                       );
                     }}
-                    className="min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
+                    className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                   >
                     {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
                   </button>
-                </div>
-              </article>
+                }
+              />
             );
           })}
         </div>
       )}
 
       {/* Compact Clinical Notice Strip */}
-      <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/60 px-4 py-2.5 text-xs font-bold text-emerald-950 flex items-center justify-between gap-2">
+      <div className="rounded-2xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/60 dark:bg-[#101D26] px-4 py-2.5 text-xs font-bold text-emerald-950 dark:text-[#A5F3FC] flex items-center justify-between gap-2 soft-card-surface">
         <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية'}</span>
         <span>📍 {displayCity}</span>
       </div>

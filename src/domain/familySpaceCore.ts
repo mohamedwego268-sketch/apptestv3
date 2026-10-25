@@ -11,6 +11,7 @@
  */
 
 import { AvatarAccessoryTheme } from './assetManifest3D';
+import { getProductUnsplashImageUrl } from './cardBackgrounds';
 
 export type ParentThemeRole = 'mom' | 'dad' | 'high-contrast';
 export type CountryCode = 'EG' | 'SA';
@@ -107,20 +108,52 @@ export const BILINGUAL_SEED_DICTIONARY: Record<string, string> = {
   'الإسكندرية': 'Alexandria',
   'جدة': 'Jeddah',
   'الجيزة': 'Giza',
+  'الدقهلية': 'Dakahlia',
+  'الشرقية': 'Sharqia',
+  'القليوبية': 'Qalyubia',
+  'البحيرة': 'Beheira',
+  'الغربية': 'Gharbia',
+  'المنوفية': 'Monufia',
+  'المنيا': 'Minya',
+  'سوهاج': 'Sohag',
+  'أسيوط': 'Assiut',
+  'بني سويف': 'Beni Suef',
+  'الفيوم': 'Faiyum',
+  'قنا': 'Qena',
+  'الأقصر': 'Luxor',
+  'كفر الشيخ': 'Kafr El Sheikh',
+  'أسوان': 'Aswan',
+  'دمياط': 'Damietta',
+  'الإسماعيلية': 'Ismailia',
+  'السويس': 'Suez',
+  'بورسعيد': 'Port Said',
+  'مطروح': 'Matrouh',
+  'شمال سيناء': 'North Sinai',
+  'جنوب سيناء': 'South Sinai',
+  'الوادي الجديد': 'New Valley',
+  'البحر الأحمر': 'Red Sea',
   'المنصورة': 'Mansoura',
   'طنطا': 'Tanta',
-  'أسيوط': 'Assiut',
   'الدمام': 'Dammam',
   'مكة المكرمة': 'Makkah',
   'المدينة المنورة': 'Madinah',
+  'الشرقية (الدمام, الخبر, الظهران, الجبيل, الأحساء, القطيف)': 'Eastern Province (Dammam, Khobar, Dhahran, Jubail, Al-Ahsa, Qatif)',
+  'القصيم (بريدة, عنيزة)': 'Al-Qassim (Buraidah, Unaizah)',
+  'عسير (أبها, خميس مشيط)': 'Asir (Abha, Khamis Mushait)',
+  'تبوك': 'Tabuk',
+  'حائل': 'Hail',
+  'جازان': 'Jazan',
+  'نجران': 'Najran',
+  'الباحة': 'Al-Baha',
+  'الجوف': 'Al-Jouf',
+  'الحدود الشمالية (عرعر, رفحاء)': 'Northern Borders (Arar, Rafha)',
+  'الطائف': 'Taif',
+  'ينبع': 'Yanbu',
   'الخبر': 'Khobar',
   'الظهران': 'Dhahran',
-  'الطائف': 'Taif',
-  'تبوك': 'Tabuk',
   'أبها': 'Abha',
   'الشيخ زايد': 'Sheikh Zayed',
   'الزقازيق': 'Zagazig',
-  'الإسماعيلية': 'Ismailia',
   'كل المدن': 'All Cities',
   'ماما (سارة)': 'Mom (Sara)',
   'بابا (أحمد)': 'Dad (Ahmed)',
@@ -777,32 +810,56 @@ export interface CityOption {
   providersCount: number;
   lat: number;
   lng: number;
+  subCitiesAr?: string[];
+  subCitiesEn?: string[];
 }
 
 export const COUNTRY_CITIES_MAP: Record<CountryCode, CityOption[]> = {
   EG: [
-    { id: 'القاهرة', nameAr: 'القاهرة', nameEn: 'Cairo', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 42, lat: 30.0444, lng: 31.2357 },
-    { id: 'القاهرة الجديدة', nameAr: 'القاهرة الجديدة (التجمع)', nameEn: 'New Cairo', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 31, lat: 30.0074, lng: 31.4913 },
-    { id: 'الجيزة', nameAr: 'الجيزة', nameEn: 'Giza', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 25, lat: 30.0131, lng: 31.2089 },
-    { id: 'الشيخ زايد', nameAr: 'الشيخ زايد و6 أكتوبر', nameEn: 'Sheikh Zayed & October', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 28, lat: 30.0449, lng: 30.9762 },
-    { id: 'الإسكندرية', nameAr: 'الإسكندرية', nameEn: 'Alexandria', regionAr: 'محافظة الإسكندرية', regionEn: 'Alexandria Governorate', providersCount: 22, lat: 31.2001, lng: 29.9187 },
-    { id: 'المنصورة', nameAr: 'المنصورة', nameEn: 'Mansoura', regionAr: 'محافظة الدقهلية', regionEn: 'Dakahlia Governorate', providersCount: 16, lat: 31.0409, lng: 31.3785 },
-    { id: 'طنطا', nameAr: 'طنطا', nameEn: 'Tanta', regionAr: 'محافظة الغربية', regionEn: 'Gharbia Governorate', providersCount: 13, lat: 30.7865, lng: 31.0004 },
-    { id: 'الزقازيق', nameAr: 'الزقازيق', nameEn: 'Zagazig', regionAr: 'محافظة الشرقية', regionEn: 'Sharqia Governorate', providersCount: 11, lat: 30.5877, lng: 31.5020 },
-    { id: 'الإسماعيلية', nameAr: 'الإسماعيلية', nameEn: 'Ismailia', regionAr: 'محافظة الإسماعيلية', regionEn: 'Ismailia Governorate', providersCount: 10, lat: 30.5965, lng: 32.2715 },
-    { id: 'أسيوط', nameAr: 'أسيوط', nameEn: 'Assiut', regionAr: 'محافظة أسيوط', regionEn: 'Assiut Governorate', providersCount: 9, lat: 27.1783, lng: 31.1859 },
+    { id: 'القاهرة', nameAr: 'القاهرة', nameEn: 'Cairo', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 48, lat: 30.0444, lng: 31.2357, subCitiesAr: ['القاهرة الجديدة', 'المعادي', 'مدينة نصر', 'مصر الجديدة', 'الزمالك'], subCitiesEn: ['New Cairo', 'Maadi', 'Nasr City', 'Heliopolis', 'Zamalek'] },
+    { id: 'الإسكندرية', nameAr: 'الإسكندرية', nameEn: 'Alexandria', regionAr: 'محافظة الإسكندرية', regionEn: 'Alexandria Governorate', providersCount: 34, lat: 31.2001, lng: 29.9187, subCitiesAr: ['سموحة', 'سيدي جابر', 'رشدي', 'برج العرب'], subCitiesEn: ['Smouha', 'Sidi Gaber', 'Roushdy', 'Borg El Arab'] },
+    { id: 'الجيزة', nameAr: 'الجيزة', nameEn: 'Giza', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 38, lat: 30.0131, lng: 31.2089, subCitiesAr: ['الشيخ زايد', '6 أكتوبر', 'الدقي', 'المهندسين'], subCitiesEn: ['Sheikh Zayed', '6th of October', 'Dokki', 'Mohandessin'] },
+    { id: 'الدقهلية', nameAr: 'الدقهلية', nameEn: 'Dakahlia', regionAr: 'محافظة الدقهلية (المنصورة)', regionEn: 'Dakahlia Governorate', providersCount: 22, lat: 31.0409, lng: 31.3785, subCitiesAr: ['المنصورة', 'طلخا', 'ميت غمر'], subCitiesEn: ['Mansoura', 'Talkha', 'Mit Ghamr'] },
+    { id: 'الشرقية', nameAr: 'الشرقية', nameEn: 'Sharqia', regionAr: 'محافظة الشرقية (الزقازيق)', regionEn: 'Sharqia Governorate', providersCount: 20, lat: 30.5877, lng: 31.5020, subCitiesAr: ['الزقازيق', 'العاشر من رمضان'], subCitiesEn: ['Zagazig', '10th of Ramadan'] },
+    { id: 'القليوبية', nameAr: 'القليوبية', nameEn: 'Qalyubia', regionAr: 'محافظة القليوبية (بنها)', regionEn: 'Qalyubia Governorate', providersCount: 18, lat: 30.4660, lng: 31.1848, subCitiesAr: ['بنها', 'العبور', 'شبرا الخيمة'], subCitiesEn: ['Banha', 'Obour City', 'Shubra El Kheima'] },
+    { id: 'البحيرة', nameAr: 'البحيرة', nameEn: 'Beheira', regionAr: 'محافظة البحيرة (دمنهور)', regionEn: 'Beheira Governorate', providersCount: 15, lat: 31.0341, lng: 30.4682 },
+    { id: 'الغربية', nameAr: 'الغربية', nameEn: 'Gharbia', regionAr: 'محافظة الغربية (طنطا)', regionEn: 'Gharbia Governorate', providersCount: 19, lat: 30.7865, lng: 31.0004, subCitiesAr: ['طنطا', 'المحلة الكبرى'], subCitiesEn: ['Tanta', 'El Mahalla El Kubra'] },
+    { id: 'المنوفية', nameAr: 'المنوفية', nameEn: 'Monufia', regionAr: 'محافظة المنوفية (شبين الكوم)', regionEn: 'Monufia Governorate', providersCount: 14, lat: 30.5503, lng: 31.0106 },
+    { id: 'المنيا', nameAr: 'المنيا', nameEn: 'Minya', regionAr: 'محافظة المنيا', regionEn: 'Minya Governorate', providersCount: 14, lat: 28.1099, lng: 30.7503 },
+    { id: 'سوهاج', nameAr: 'سوهاج', nameEn: 'Sohag', regionAr: 'محافظة سوهاج', regionEn: 'Sohag Governorate', providersCount: 13, lat: 26.5591, lng: 31.6957 },
+    { id: 'أسيوط', nameAr: 'أسيوط', nameEn: 'Assiut', regionAr: 'محافظة أسيوط', regionEn: 'Assiut Governorate', providersCount: 16, lat: 27.1783, lng: 31.1859 },
+    { id: 'بني سويف', nameAr: 'بني سويف', nameEn: 'Beni Suef', regionAr: 'محافظة بني سويف', regionEn: 'Beni Suef Governorate', providersCount: 12, lat: 29.0661, lng: 31.0994 },
+    { id: 'الفيوم', nameAr: 'الفيوم', nameEn: 'Faiyum', regionAr: 'محافظة الفيوم', regionEn: 'Faiyum Governorate', providersCount: 12, lat: 29.3084, lng: 30.8428 },
+    { id: 'قنا', nameAr: 'قنا', nameEn: 'Qena', regionAr: 'محافظة قنا', regionEn: 'Qena Governorate', providersCount: 11, lat: 26.1551, lng: 32.7160 },
+    { id: 'كفر الشيخ', nameAr: 'كفر الشيخ', nameEn: 'Kafr El Sheikh', regionAr: 'محافظة كفر الشيخ', regionEn: 'Kafr El Sheikh Governorate', providersCount: 12, lat: 31.1107, lng: 30.9388 },
+    { id: 'الأقصر', nameAr: 'الأقصر', nameEn: 'Luxor', regionAr: 'محافظة الأقصر', regionEn: 'Luxor Governorate', providersCount: 11, lat: 25.6872, lng: 32.6396 },
+    { id: 'أسوان', nameAr: 'أسوان', nameEn: 'Aswan', regionAr: 'محافظة أسوان', regionEn: 'Aswan Governorate', providersCount: 11, lat: 24.0889, lng: 32.8998 },
+    { id: 'دمياط', nameAr: 'دمياط', nameEn: 'Damietta', regionAr: 'محافظة دمياط', regionEn: 'Damietta Governorate', providersCount: 13, lat: 31.4175, lng: 31.8144 },
+    { id: 'الإسماعيلية', nameAr: 'الإسماعيلية', nameEn: 'Ismailia', regionAr: 'محافظة الإسماعيلية', regionEn: 'Ismailia Governorate', providersCount: 14, lat: 30.5965, lng: 32.2715 },
+    { id: 'السويس', nameAr: 'السويس', nameEn: 'Suez', regionAr: 'محافظة السويس', regionEn: 'Suez Governorate', providersCount: 12, lat: 29.9668, lng: 32.5498 },
+    { id: 'بورسعيد', nameAr: 'بورسعيد', nameEn: 'Port Said', regionAr: 'محافظة بورسعيد', regionEn: 'Port Said Governorate', providersCount: 14, lat: 31.2653, lng: 32.3019 },
+    { id: 'مطروح', nameAr: 'مطروح', nameEn: 'Matrouh', regionAr: 'محافظة مطروح', regionEn: 'Matrouh Governorate', providersCount: 9, lat: 31.3543, lng: 27.2373 },
+    { id: 'شمال سيناء', nameAr: 'شمال سيناء', nameEn: 'North Sinai', regionAr: 'محافظة شمال سيناء (العريش)', regionEn: 'North Sinai Governorate', providersCount: 8, lat: 31.1321, lng: 33.8033 },
+    { id: 'جنوب سيناء', nameAr: 'جنوب سيناء', nameEn: 'South Sinai', regionAr: 'محافظة جنوب سيناء (شرم الشيخ)', regionEn: 'South Sinai Governorate', providersCount: 10, lat: 27.9158, lng: 34.3300 },
+    { id: 'الوادي الجديد', nameAr: 'الوادي الجديد', nameEn: 'New Valley', regionAr: 'محافظة الوادي الجديد', regionEn: 'New Valley Governorate', providersCount: 7, lat: 25.4390, lng: 30.5586 },
+    { id: 'البحر الأحمر', nameAr: 'البحر الأحمر', nameEn: 'Red Sea', regionAr: 'محافظة البحر الأحمر (الغردقة)', regionEn: 'Red Sea Governorate', providersCount: 12, lat: 27.2579, lng: 33.8116 },
   ],
   SA: [
-    { id: 'الرياض', nameAr: 'الرياض', nameEn: 'Riyadh', regionAr: 'منطقة الرياض', regionEn: 'Riyadh Region', providersCount: 44, lat: 24.7136, lng: 46.6753 },
-    { id: 'جدة', nameAr: 'جدة', nameEn: 'Jeddah', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 32, lat: 21.4858, lng: 39.1925 },
-    { id: 'الدمام', nameAr: 'الدمام', nameEn: 'Dammam', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 21, lat: 26.4207, lng: 50.0888 },
-    { id: 'الخبر', nameAr: 'الخبر', nameEn: 'Khobar', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 19, lat: 26.2172, lng: 50.1971 },
-    { id: 'الظهران', nameAr: 'الظهران', nameEn: 'Dhahran', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 14, lat: 26.2361, lng: 50.0393 },
-    { id: 'مكة المكرمة', nameAr: 'مكة المكرمة', nameEn: 'Makkah', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 18, lat: 21.3891, lng: 39.8579 },
-    { id: 'المدينة المنورة', nameAr: 'المدينة المنورة', nameEn: 'Madinah', regionAr: 'منطقة المدينة المنورة', regionEn: 'Madinah Region', providersCount: 16, lat: 24.5247, lng: 39.5692 },
-    { id: 'الطائف', nameAr: 'الطائف', nameEn: 'Taif', regionAr: 'منطقة مكة المكرمة', regionEn: 'Makkah Region', providersCount: 12, lat: 21.2703, lng: 40.4158 },
-    { id: 'تبوك', nameAr: 'تبوك', nameEn: 'Tabuk', regionAr: 'منطقة تبوك', regionEn: 'Tabuk Region', providersCount: 10, lat: 28.3835, lng: 36.5662 },
-    { id: 'أبها', nameAr: 'أبها', nameEn: 'Abha', regionAr: 'منطقة عسير', regionEn: 'Asir Region', providersCount: 11, lat: 18.2164, lng: 42.5053 },
+    { id: 'الرياض', nameAr: 'الرياض', nameEn: 'Riyadh', regionAr: 'منطقة الرياض', regionEn: 'Riyadh Region', providersCount: 46, lat: 24.7136, lng: 46.6753, subCitiesAr: ['الرياض', 'الدرعية', 'الخرج'], subCitiesEn: ['Riyadh', 'Diriyah', 'Al-Kharj'] },
+    { id: 'مكة المكرمة', nameAr: 'مكة المكرمة', nameEn: 'Makkah', regionAr: 'منطقة مكة المكرمة (مكة، جدة)', regionEn: 'Makkah Region (Makkah, Jeddah)', providersCount: 38, lat: 21.3891, lng: 39.8579, subCitiesAr: ['مكة المكرمة', 'جدة', 'رابغ'], subCitiesEn: ['Makkah', 'Jeddah', 'Rabigh'] },
+    { id: 'المدينة المنورة', nameAr: 'المدينة المنورة', nameEn: 'Madinah', regionAr: 'منطقة المدينة المنورة', regionEn: 'Madinah Region', providersCount: 24, lat: 24.5247, lng: 39.5692 },
+    { id: 'الشرقية (الدمام, الخبر, الظهران, الجبيل, الأحساء, القطيف)', nameAr: 'الشرقية (الدمام, الخبر, الظهران, الجبيل, الأحساء, القطيف)', nameEn: 'Eastern Province (Dammam, Khobar, Dhahran, Jubail, Al-Ahsa, Qatif)', regionAr: 'المنطقة الشرقية', regionEn: 'Eastern Province', providersCount: 36, lat: 26.4207, lng: 50.0888, subCitiesAr: ['الدمام', 'الخبر', 'الظهران', 'الجبيل', 'الأحساء', 'القطيف'], subCitiesEn: ['Dammam', 'Khobar', 'Dhahran', 'Jubail', 'Al-Ahsa', 'Qatif'] },
+    { id: 'القصيم (بريدة, عنيزة)', nameAr: 'القصيم (بريدة, عنيزة)', nameEn: 'Al-Qassim (Buraidah, Unaizah)', regionAr: 'منطقة القصيم', regionEn: 'Al-Qassim Region', providersCount: 19, lat: 26.3260, lng: 43.9750, subCitiesAr: ['بريدة', 'عنيزة', 'الرس'], subCitiesEn: ['Buraidah', 'Unaizah', 'Ar Rass'] },
+    { id: 'عسير (أبها, خميس مشيط)', nameAr: 'عسير (أبها, خميس مشيط)', nameEn: 'Asir (Abha, Khamis Mushait)', regionAr: 'منطقة عسير', regionEn: 'Asir Region', providersCount: 18, lat: 18.2164, lng: 42.5053, subCitiesAr: ['أبها', 'خميس مشيط', 'بيشة'], subCitiesEn: ['Abha', 'Khamis Mushait', 'Bisha'] },
+    { id: 'تبوك', nameAr: 'تبوك', nameEn: 'Tabuk', regionAr: 'منطقة تبوك', regionEn: 'Tabuk Region', providersCount: 14, lat: 28.3835, lng: 36.5662 },
+    { id: 'حائل', nameAr: 'حائل', nameEn: 'Hail', regionAr: 'منطقة حائل', regionEn: 'Hail Region', providersCount: 12, lat: 27.5114, lng: 41.7208 },
+    { id: 'جازان', nameAr: 'جازان', nameEn: 'Jazan', regionAr: 'منطقة جازان', regionEn: 'Jazan Region', providersCount: 13, lat: 16.8892, lng: 42.5511 },
+    { id: 'نجران', nameAr: 'نجران', nameEn: 'Najran', regionAr: 'منطقة نجران', regionEn: 'Najran Region', providersCount: 11, lat: 17.4924, lng: 44.1277 },
+    { id: 'الباحة', nameAr: 'الباحة', nameEn: 'Al-Baha', regionAr: 'منطقة الباحة', regionEn: 'Al-Baha Region', providersCount: 10, lat: 20.0129, lng: 41.4677 },
+    { id: 'الجوف', nameAr: 'الجوف', nameEn: 'Al-Jouf', regionAr: 'منطقة الجوف (سكاكا)', regionEn: 'Al-Jouf Region', providersCount: 10, lat: 29.9697, lng: 40.2064 },
+    { id: 'الحدود الشمالية (عرعر, رفحاء)', nameAr: 'الحدود الشمالية (عرعر, رفحاء)', nameEn: 'Northern Borders (Arar, Rafha)', regionAr: 'منطقة الحدود الشمالية', regionEn: 'Northern Borders Region', providersCount: 9, lat: 30.9753, lng: 41.0381, subCitiesAr: ['عرعر', 'رفحاء', 'طريف'], subCitiesEn: ['Arar', 'Rafha', 'Turaif'] },
+    { id: 'الطائف', nameAr: 'الطائف', nameEn: 'Taif', regionAr: 'محافظة الطائف', regionEn: 'Taif Governorate', providersCount: 16, lat: 21.2703, lng: 40.4158 },
+    { id: 'ينبع', nameAr: 'ينبع', nameEn: 'Yanbu', regionAr: 'محافظة ينبع', regionEn: 'Yanbu Governorate', providersCount: 14, lat: 24.0895, lng: 38.0618 },
   ],
 };
 
@@ -3656,13 +3713,18 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
 ];
 
 function buildCompleteCommercialCatalog(): CommercialCatalogItem[] {
-  const result: CommercialCatalogItem[] = [...BASE_COMMERCIAL_SEED];
+  const result: CommercialCatalogItem[] = BASE_COMMERCIAL_SEED.map((seedItem, idx) => ({
+    ...seedItem,
+    imageUrl: seedItem.imageUrl || getProductUnsplashImageUrl(seedItem.category, idx),
+  }));
   let nextId = 208;
 
   for (const group of CATEGORY_CATALOG_BLUEPRINTS) {
+    let itemIdx = 1;
     for (const entry of group.items) {
+      const currentId = nextId++;
       result.push({
-        id: nextId++,
+        id: currentId,
         name: entry.nameAr,
         nameEn: entry.nameEn,
         kind: group.kind,
@@ -3680,6 +3742,7 @@ function buildCompleteCommercialCatalog(): CommercialCatalogItem[] {
         description: entry.descAr,
         descriptionEn: entry.descEn,
         emoji: group.emoji,
+        imageUrl: getProductUnsplashImageUrl(group.category, itemIdx++),
         ageStage: entry.age,
         collectionTag: entry.tag,
         variants: entry.variants,
@@ -4881,64 +4944,122 @@ export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonT
 }
 
 export function getEmptyStateCopy(
-  section: 'cart' | 'notifications' | 'chat' | 'chats' | 'community' | 'search',
+  section:
+    | 'cart'
+    | 'wishes'
+    | 'routine'
+    | 'calendar'
+    | 'notifications'
+    | 'chat'
+    | 'chats'
+    | 'community'
+    | 'search',
   lang: LanguageCode = 'ar'
 ): { title: string; subtitle: string; ctaLabel: string; actionLabel: string } {
   const isEn = lang === 'en';
   switch (section) {
     case 'cart': {
-      const ctaLabel = isEn ? 'Browse Store Catalog' : 'تصفح منتجات المتجر';
+      const ctaLabel = isEn ? 'Browse Store Catalog' : 'يلا نتسوق من المتجر';
       return {
-        title: isEn ? 'No items here yet — Your Cart is Empty' : 'لا توجد عناصر هنا بعد — سلة التسوق فارغة',
+        title: isEn
+          ? 'No items here yet — Your Cart is Empty'
+          : 'السلة فاضية يا بابا، يلا نختار شوية حاجات تفيد ولادنا',
         subtitle: isEn
           ? 'Browse our curated family products, Montessori toys, and baby essentials to add items to your cart.'
-          : 'تصفح منتجات الأسرة وألعاب مونتيسوري ومستلزمات الأطفال لإضافة اختياراتك إلى السلة.',
+          : 'جمعنالك أحلى ألعاب مونتيسوري، هدوم قطن ١٠٠٪، ومستلزمات العناية بأطفالك.. اختار اللي يعجبك بضغطة واحدة!',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'wishes': {
+      const ctaLabel = isEn ? '+ Add New Wish' : '+ ضيف أمنية جديدة';
+      return {
+        title: isEn
+          ? 'No wishes here yet — Wishlist is Empty'
+          : 'قائمة الأمنيات لسه فاضية يا بابا، يلا نختار شوية حاجات تفرح ولادنا',
+        subtitle: isEn
+          ? 'Save gift ideas, educational toys, and family goals so everyone can celebrate together.'
+          : 'سجل هدايا وأمنيات أطفالك هنا عشان تتابع تحقيقها خطوة بخطوة أو تشاركها مع العيلة.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'routine': {
+      const ctaLabel = isEn ? '+ Add Routine Task' : '+ ضيف مهمة لروتين النهاردة';
+      return {
+        title: isEn
+          ? 'No tasks match this filter yet'
+          : 'مفيش مهام هنا دلوقتي يا بابا، يلا ننظم روتين النهاردة مع ولادنا',
+        subtitle: isEn
+          ? 'Add a new daily habit or clear the current filter to view all family routine tasks.'
+          : 'تقدر تضيف مهمة جديدة بسهولة أو تغير الفلتر عشان تشوف كل مهام الروتين اليومي.',
+        ctaLabel,
+        actionLabel: ctaLabel,
+      };
+    }
+    case 'calendar': {
+      const ctaLabel = isEn ? '+ Add Family Event' : '+ ضيف ميعاد أو خروجة جديدة';
+      return {
+        title: isEn
+          ? 'No events scheduled in this period'
+          : 'الجدول رايق ومفيش مواعيد في الفترة دي يا بابا',
+        subtitle: isEn
+          ? 'Schedule pediatric checkups, school events, or family outings in Gregorian & Hijri.'
+          : 'سجل مواعيد التطعيمات، متابعات الدكتور، أو خروجات العيلة بالتقويم الميلادي والهجري.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'notifications': {
-      const ctaLabel = isEn ? 'Restore Daily Notifications' : 'استعادة الإشعارات اليومية';
+      const ctaLabel = isEn ? 'Restore Daily Notifications' : 'استرجاع تنبيهات اليوم';
       return {
-        title: isEn ? 'No items here yet — Notifications Cleared' : 'لا توجد عناصر هنا بعد — قائمة الإشعارات فارغة',
+        title: isEn
+          ? 'No items here yet — Notifications Cleared'
+          : 'كله تمام يا بابا — مفيش إشعارات جديدة دلوقتي',
         subtitle: isEn
           ? 'You are all caught up! Restore daily parenting tips whenever you are ready.'
-          : 'لقد اطلعت على جميع التنبيهات! يمكنك استعادة الإشعارات اليومية الثلاثة في أي وقت.',
+          : 'إنت متابع كل حاجة أول بأول! تقدر تسترجع همسات وتنبيهات اليوم التلاتة في أي وقت.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'chat':
     case 'chats': {
-      const ctaLabel = isEn ? 'Show All Conversations' : 'عرض جميع المحادثات النشطة';
+      const ctaLabel = isEn ? 'Show All Conversations' : 'عرض كل المحادثات النشطة';
       return {
-        title: isEn ? 'No items here yet — No Active Chats' : 'لا توجد عناصر هنا بعد — لا توجد محادثات نشطة',
+        title: isEn
+          ? 'No items here yet — No Active Chats'
+          : 'مفيش محادثات في القسم ده دلوقتي يا بابا',
         subtitle: isEn
           ? 'Start or restore a direct conversation with your child’s nursery, pediatrician, or family members.'
-          : 'لا توجد رسائل في هذا التصنيف حاليًا. يمكنك استعادة المحادثات النشطة مع الحضانة أو العيادة أو الأسرة.',
+          : 'تقدر تبدأ محادثة فورية مع دكتور الأطفال، الحضانة، أو أفراد العيلة بضغطة زر.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'community': {
-      const ctaLabel = isEn ? 'Show All Posts' : 'عرض كل المشاركات';
+      const ctaLabel = isEn ? 'Show All Posts' : 'عرض كل تجارب الأمهات والآباء';
       return {
-        title: isEn ? 'No items here yet — No Matching Posts' : 'لا توجد عناصر هنا بعد — لا توجد مشاركات مطابقة',
+        title: isEn
+          ? 'No items here yet — No Matching Posts'
+          : 'مفيش منشورات مطابقة للبحث ده يا بابا',
         subtitle: isEn
           ? 'Try clearing the search filter or share your own parenting experience with the community.'
-          : 'جرّب تغيير الفئة المختارة أو شارك تجربتك وسؤالك مع الآباء والأمهات.',
+          : 'جرّب تغير التصنيف أو شاركنا سؤالك وتجربتك مع مجتمع أمهات وآباء نكبر.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'search':
     default: {
-      const ctaLabel = isEn ? 'Reset Filters' : 'إعادة ضبط الفلاتر';
+      const ctaLabel = isEn ? 'Reset Filters' : 'عرض كل الأقسام من تاني';
       return {
-        title: isEn ? 'No items here yet' : 'لا توجد عناصر هنا بعد',
+        title: isEn
+          ? 'No items here yet'
+          : 'ملقيناش نتايج مطابقة لبحثك يا بابا، يلا نجرب كلمة تانية',
         subtitle: isEn
           ? 'Try adjusting your filters or adding a new item.'
-          : 'جرّب تعديل خيارات التصفية أو إضافة عنصر جديد.',
+          : 'جرّب تمسح الفلتر الحالي أو تتصفح كل أقسام المتجر والخدمات المختارة لولادنا.',
         ctaLabel,
         actionLabel: ctaLabel,
       };

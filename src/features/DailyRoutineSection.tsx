@@ -6,11 +6,18 @@ import {
   RoutineTask,
   TaskCadence,
   TaskReminderInfo,
+  getEmptyStateCopy,
   getRoutineTaskReminder,
   locText,
 } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
-import { PrimaryCtaButton, SoftFilledIcon, UnifiedBadge } from '../components/DesignSystem';
+import {
+  FriendlyEmptyState,
+  MasterPatternCard,
+  PrimaryCtaButton,
+  SoftFilledIcon,
+  UnifiedBadge,
+} from '../components/DesignSystem';
 
 export interface DailyRoutineSectionProps {
   state: FamilySpaceState;
@@ -68,18 +75,19 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
   onDeleteTask,
 }) => {
   const isEn = lang === 'en';
+  const emptyRoutineCopy = getEmptyStateCopy('routine', lang);
 
   return (
     <section className="space-y-6" aria-label={isEn ? 'Daily Routine' : 'الروتين اليومي'}>
       {/* Top Action & Smart Reminders Warm Image Card */}
       <div
-        className="image-bg-card rounded-[24px] p-5 sm:p-6 space-y-4"
+        className="image-bg-card rounded-3xl p-5 sm:p-6 space-y-4 shadow-md"
         style={{
           backgroundImage: getCardBackgroundSpec('routine', state.darkMode).backgroundImageCss,
         }}
         aria-label={isEn ? 'Daily Routine Reminders' : 'تذكيرات الروتين اليومي'}
       >
-        <div className="flex flex-col items-center justify-center text-center gap-3 py-2">
+        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center gap-3">
           <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold tabular-nums">
             {isEn ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
           </span>
@@ -90,7 +98,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <button
               type="button"
               onClick={onResetTasks}
-              className="min-h-[44px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border border-white bg-white/90 text-slate-900 whitespace-nowrap"
+              className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-white/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] whitespace-nowrap transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? 'Reset Progress' : 'إعادة ضبط الإنجاز'}
             </button>
@@ -101,7 +109,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         </div>
 
         {/* Quick Reminder Status Filter Pills */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/50">
+        <div className="image-card-glass-panel rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3">
           <div
             className="flex flex-wrap items-center gap-1.5"
             role="group"
@@ -110,10 +118,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <button
               type="button"
               onClick={() => setRoutineReminderFilter('all')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors ${
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out cursor-pointer ${
                 routineReminderFilter === 'all'
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] border-transparent'
-                  : 'border-[var(--color-border)] bg-white text-[var(--color-text)]'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)]'
               }`}
             >
               {isEn ? `All (${state.tasks.length})` : `الكل (${state.tasks.length})`}
@@ -121,10 +129,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <button
               type="button"
               onClick={() => setRoutineReminderFilter('overdue')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors tabular-nums ${
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
                 routineReminderFilter === 'overdue'
                   ? 'bg-red-700 text-white border-red-700'
-                  : 'bg-red-50 text-red-800 border-red-200 hover:bg-red-100'
+                  : 'bg-red-50 dark:bg-[#142430] text-red-800 dark:text-rose-300 border-red-200 dark:border-[#1E3646] hover:bg-red-100'
               }`}
             >
               {isEn
@@ -134,10 +142,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <button
               type="button"
               onClick={() => setRoutineReminderFilter('approaching')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-colors tabular-nums ${
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
                 routineReminderFilter === 'approaching'
                   ? 'bg-amber-600 text-white border-amber-600'
-                  : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                  : 'bg-amber-50 dark:bg-[#142430] text-amber-900 dark:text-amber-300 border-amber-300 dark:border-[#1E3646] hover:bg-amber-100'
               }`}
             >
               {isEn
@@ -153,7 +161,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               aria-label={isEn ? 'Alert lead window' : 'التنبيه قبل الموعد بـ'}
               value={routineApproachingWindow}
               onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
-              className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
+              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
             >
               <option value={30}>{isEn ? 'Alert 30m before' : 'تنبيه قبل 30 دقيقة'}</option>
               <option value={60}>{isEn ? 'Alert 60m before' : 'تنبيه قبل 60 دقيقة'}</option>
@@ -165,7 +173,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               aria-label={isEn ? 'Reference time' : 'الوقت المرجعي لحساب التذكيرات'}
               value={routineRefTimePreset}
               onChange={(e) => setRoutineRefTimePreset(e.target.value)}
-              className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
+              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
             >
               <option value="live">{isEn ? 'Live Current Time' : 'الوقت الحالي تلقائيًا'}</option>
               <option value="07:15">{isEn ? 'Morning (07:15 AM)' : 'صباحًا (07:15 ص)'}</option>
@@ -177,11 +185,11 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         </div>
       </div>
 
-      <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-6 soft-card-surface space-y-5">
+      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface space-y-5">
         {/* Day / Week / Month Tabs & Filters */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
-            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-2xl"
+            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 rounded-2xl border border-transparent dark:border-[#1E3646]"
             role="tablist"
             aria-label={isEn ? 'Routine cadence' : 'نطاق تكرار الروتين'}
           >
@@ -195,9 +203,9 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setRoutineCadenceFilter(tab.id as 'all' | TaskCadence)}
-                className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
+                className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-all duration-300 ease-in-out whitespace-nowrap shrink-0 cursor-pointer ${
                   routineCadenceFilter === tab.id
-                    ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-xs'
+                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-xs'
                     : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
@@ -212,7 +220,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               aria-label={isEn ? 'Filter by child' : 'عرض مهام'}
               value={routineKidFilter}
               onChange={(e) => setRoutineKidFilter(e.target.value)}
-              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
             >
               <option value="all">{isEn ? 'All Kids & Family' : 'كل الأطفال والأسرة'}</option>
               {state.kids.map((k) => (
@@ -226,7 +234,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               aria-label={isEn ? 'Task status' : 'حالة المهمة'}
               value={routineStatusFilter}
               onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
-              className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
             >
               <option value="all">{isEn ? 'All Statuses' : 'كل الحالات'}</option>
               <option value="open">{isEn ? 'Open' : 'غير مكتملة'}</option>
@@ -237,9 +245,22 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
 
         {/* Tasks Grid Cards with Standardized SoftFilledIcon & Visual Reminder Badges */}
         {filteredTasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-sm font-bold text-[var(--color-muted)]">
-            {isEn ? 'No tasks match the current filter.' : 'لا توجد مهام مطابقة للتصفية الحالية.'}
-          </div>
+          <FriendlyEmptyState
+            id="empty-routine-state"
+            iconId="routine"
+            tone="teal"
+            title={emptyRoutineCopy.title}
+            subtitle={emptyRoutineCopy.subtitle}
+            actionLabel={emptyRoutineCopy.actionLabel}
+            onAction={onOpenAddTask}
+            secondaryCtaLabel={isEn ? 'Show All Tasks' : 'عرض كل مهام الروتين'}
+            onSecondaryCtaClick={() => {
+              setRoutineReminderFilter('all');
+              setRoutineCadenceFilter('all');
+              setRoutineKidFilter('all');
+              setRoutineStatusFilter('all');
+            }}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTasks.map((task) => {
@@ -250,68 +271,83 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                 routineApproachingWindow,
                 state.language
               );
+              const taskTone =
+                reminder.status === 'overdue'
+                  ? 'rose'
+                  : reminder.status === 'approaching'
+                  ? 'amber'
+                  : task.done
+                  ? 'emerald'
+                  : 'teal';
+
               return (
-                <div
+                <MasterPatternCard
                   key={task.id}
-                  className={`rounded-2xl border p-4 flex items-center justify-between gap-3 transition-all ${
-                    reminder.status === 'overdue'
-                      ? 'bg-red-50/75 border-red-200'
-                      : reminder.status === 'approaching'
-                      ? 'bg-amber-50/75 border-amber-200'
-                      : task.done
-                      ? 'bg-emerald-50/50 border-emerald-200/70'
-                      : 'bg-[var(--color-control-muted)]/55 border-[var(--color-border)]'
-                  }`}
-                >
-                  <label className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer">
+                  tone={taskTone}
+                  categoryKey="routine"
+                  itemIdOrIndex={task.id}
+                  darkMode={state.darkMode}
+                  onThumbnailClick={() => onToggleTask(task.id, !task.done)}
+                  topLeftBadge={locText(task.category, lang)}
+                  topRightBadge={
+                    <span>
+                      🕒 {locText(task.time || 'مرن', lang)}
+                    </span>
+                  }
+                  titlePrefixSlot={
                     <input
                       type="checkbox"
                       checked={task.done}
-                      onChange={(e) => onToggleTask(task.id, e.target.checked)}
-                      className="w-5 h-5 accent-[var(--color-task-accent)] shrink-0"
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        onToggleTask(task.id, e.target.checked);
+                      }}
+                      className="w-4 h-4 accent-[var(--color-task-accent)] shrink-0 cursor-pointer"
                     />
-                    <SoftFilledIcon id={task.done ? 'star' : 'routine'} boxSize="sm" />
-                    <div className="min-w-0 space-y-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span
-                          className={`text-sm font-extrabold truncate ${
-                            task.done
-                              ? 'line-through text-[var(--color-muted)]'
-                              : 'text-[var(--color-text)]'
-                          }`}
-                        >
-                          {locText(task.name, lang)}
-                        </span>
-                        {renderReminderBadge(reminder)}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)]">
-                        <UnifiedBadge tone="teal" iconId="children">
-                          {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)}
-                        </UnifiedBadge>
-                        <span>· {locText(task.category, lang)}</span>
-                        <span>· {locText(task.time || 'مرن', lang)}</span>
-                      </div>
+                  }
+                  title={
+                    <span className={task.done ? 'line-through opacity-75' : ''}>
+                      {locText(task.name, lang)}
+                    </span>
+                  }
+                  metaLeft={
+                    <span>
+                      👶 {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)} ·{' '}
+                      {locText(task.category, lang)}
+                    </span>
+                  }
+                  metaRightAction={renderReminderBadge(reminder)}
+                  footerLeft={
+                    <UnifiedBadge tone="teal" iconId={task.done ? 'star' : 'routine'}>
+                      {task.done
+                        ? isEn
+                          ? 'Completed ✓'
+                          : 'مكتملة ✓'
+                        : isEn
+                        ? 'Pending Task'
+                        : 'قيد التنفيذ'}
+                    </UnifiedBadge>
+                  }
+                  footerRight={
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onOpenEditTask(task)}
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                      >
+                        {isEn ? 'Edit' : 'تعديل'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDeleteTask(task.id)}
+                        aria-label={`${isEn ? 'Delete task' : 'حذف المهمة'} ${locText(task.name, lang)}`}
+                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-red-700 dark:text-rose-400 transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                      >
+                        ×
+                      </button>
                     </div>
-                  </label>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => onOpenEditTask(task)}
-                      className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-white text-[var(--color-text)]"
-                    >
-                      {isEn ? 'Edit' : 'تعديل'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDeleteTask(task.id)}
-                      aria-label={`${isEn ? 'Delete task' : 'حذف المهمة'} ${locText(task.name, lang)}`}
-                      className="min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 bg-white text-red-700"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
+                  }
+                />
               );
             })}
           </div>

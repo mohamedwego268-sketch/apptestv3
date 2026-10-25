@@ -12,10 +12,11 @@ import {
   locText,
   sortCatalogByCityAndProximity,
 } from '../domain/familySpaceCore';
-import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import { getCardBackgroundSpec, getProductUnsplashImageUrl } from '../domain/cardBackgrounds';
 import { t } from '../domain/i18n';
 import {
   BannerSlideItem,
+  MasterPatternCard,
   PrimaryCtaButton,
   SoftFilledIcon,
   SwipeableBannerCarousel,
@@ -403,40 +404,59 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
           return (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5">
-                {visibleCards.map((card) => {
-                  const bgSpec = getCardBackgroundSpec(card.id, state.darkMode);
-                  return (
-                    <button
-                      key={card.id}
-                      type="button"
-                      data-image-card="true"
-                      onClick={() => navigateTo(card.id)}
-                      style={{ backgroundImage: bgSpec.backgroundImageCss }}
-                      className="image-bg-card group min-h-[126px] sm:min-h-[138px] rounded-[24px] p-4 sm:p-5 flex flex-col justify-between items-start text-start cursor-pointer"
-                    >
-                      <div className="w-full flex items-center justify-between gap-2">
-                        <SoftFilledIcon id={card.iconId} boxSize="sm" />
-                        <span className="image-card-badge px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold tabular-nums">
-                          {card.badge}
-                        </span>
-                      </div>
-                      <div className="mt-3 w-full space-y-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="image-card-title text-sm sm:text-base font-extrabold truncate">
-                            {card.title}
-                          </span>
-                          <span className="text-sm font-extrabold opacity-80 group-hover:translate-x-0.5 transition-transform">
-                            {isEn ? '→' : '←'}
-                          </span>
-                        </div>
-                        <p className="image-card-subtitle text-[11px] font-semibold truncate">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {visibleCards.map((card, idx) => (
+                  <MasterPatternCard
+                    key={card.id}
+                    tone={idx % 2 === 0 ? 'teal' : 'amber'}
+                    categoryKey={card.id}
+                    itemIdOrIndex={idx}
+                    darkMode={Boolean(state.darkMode)}
+                    onThumbnailClick={() => navigateTo(card.id)}
+                    topLeftBadge={
+                      <>
+                        <ThreeDIcon id={card.iconId} size={13} />
+                        <span>{card.title}</span>
+                      </>
+                    }
+                    topRightBadge={<span>⭐ {card.badge}</span>}
+                    title={card.title}
+                    titlePrefixSlot={<SoftFilledIcon id={card.iconId} boxSize="sm" />}
+                    metaLeft={
+                      <>
+                        <span className="truncate">📍 {localizedCity}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
                           {card.subtitle}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
+                        </span>
+                      </>
+                    }
+                    metaRightAction={
+                      <button
+                        type="button"
+                        onClick={() => navigateTo(card.id)}
+                        className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                      >
+                        {isEn ? 'View Details' : 'شوف التفاصيل'}
+                      </button>
+                    }
+                    footerLeft={
+                      <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                        {card.badge}
+                      </span>
+                    }
+                    footerRight={
+                      <button
+                        type="button"
+                        onClick={() => navigateTo(card.id)}
+                        className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold inline-flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                      >
+                        <span>{isEn ? 'Open' : 'افتح القسم'}</span>
+                        <span>{isEn ? '→' : '←'}</span>
+                      </button>
+                    }
+                  />
+                ))}
               </div>
 
               <div className="flex justify-center pt-1">
@@ -528,42 +548,77 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         {/* TAB 1: NEARBY SERVICES & STORE */}
         {homeFocusTab === 'nearby' && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--color-control-muted)] p-3 border border-[var(--color-border)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <label htmlFor="home-city-filter-select" className="text-xs font-extrabold text-[var(--color-text)] inline-flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
+              <div className="flex flex-wrap items-center gap-2.5">
+                {/* Step 1: Hierarchical Country Selector (Egypt vs Saudi Arabia) */}
+                <div className="inline-flex items-center gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646]">
+                  <button
+                    id="home-country-eg-btn"
+                    type="button"
+                    onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
+                    aria-pressed={state.country === 'EG'}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                      state.country === 'EG'
+                        ? 'bg-[#0d9488] text-white shadow-2xs'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {isEn ? '🇪🇬 Egypt (27)' : '🇪🇬 مصر (٢٧ محافظة)'}
+                  </button>
+                  <button
+                    id="home-country-sa-btn"
+                    type="button"
+                    onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                    aria-pressed={state.country === 'SA'}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                      state.country === 'SA'
+                        ? 'bg-[#0d9488] text-white shadow-2xs'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية'}
+                  </button>
+                </div>
+
+                {/* Step 2: Dynamic Governorate / Region Selector for the Selected Country */}
+                <label
+                  htmlFor="home-city-filter-select"
+                  className="text-xs font-extrabold text-[var(--color-text)] inline-flex items-center gap-1"
+                >
                   <ThreeDIcon id="services" size={14} />
-                  <span>{isEn ? 'City:' : 'المدينة:'}</span>
+                  <span>
+                    {state.country === 'EG'
+                      ? isEn
+                        ? 'Governorate:'
+                        : 'المحافظة:'
+                      : isEn
+                      ? 'Region / Governorate:'
+                      : 'المنطقة / المحافظة:'}
+                  </span>
                 </label>
                 <select
                   id="home-city-filter-select"
                   value={`${state.country}:${activeCity}`}
                   onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="min-h-[36px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
+                  className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
                 >
-                  <optgroup label={isEn ? 'Saudi Arabia (Cities)' : 'السعودية (المدن والمحافظات)'}>
-                    {COUNTRY_CITIES_MAP.SA.map((c) => (
-                      <option key={`sa-${c.id}`} value={`SA:${c.id}`}>
-                        {isEn ? `${c.nameEn} — Saudi Arabia` : `${c.nameAr} — السعودية`}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label={isEn ? 'Egypt (Cities & Governorates)' : 'مصر (المدن والمحافظات)'}>
-                    {COUNTRY_CITIES_MAP.EG.map((c) => (
-                      <option key={`eg-${c.id}`} value={`EG:${c.id}`}>
-                        {isEn ? `${c.nameEn} — Egypt` : `${c.nameAr} — مصر`}
-                      </option>
-                    ))}
-                  </optgroup>
+                  {(COUNTRY_CITIES_MAP[state.country] || []).map((c, idx) => (
+                    <option key={`${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
+                      {isEn
+                        ? `${idx + 1}. ${c.nameEn}`
+                        : `${idx + 1}. ${c.nameAr}`}
+                    </option>
+                  ))}
                 </select>
 
                 <button
                   id="use-current-location-btn"
                   type="button"
                   onClick={onUseCurrentLocation}
-                  className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                  className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
                     geoStatus === 'active'
                       ? 'bg-[#0d9488] text-white shadow-2xs'
-                      : 'bg-[var(--color-surface)] text-[var(--color-role-text)] border border-[var(--color-border)] hover:border-[var(--color-accent)]'
+                      : 'bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-role-text)] border border-[var(--color-border)] dark:border-[#1E3646] hover:border-[var(--color-accent)]'
                   }`}
                 >
                   <ThreeDIcon id="services" size={14} />
@@ -586,13 +641,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <button
                 type="button"
                 onClick={() => navigateTo('services')}
-                className="text-xs font-extrabold text-[var(--color-role-text)] hover:underline"
+                className="text-xs font-extrabold text-[var(--color-role-text)] hover:underline cursor-pointer"
               >
                 {isEn ? 'Open Full Store →' : 'عرض المتجر كاملًا ←'}
               </button>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5 py-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-1">
               {sortCatalogByCityAndProximity(
                 COMMERCIAL_CATALOG,
                 state.country,
@@ -602,74 +657,79 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 .slice(0, 6)
                 .map((item) => {
                   const price = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
-                  const itemBg = getCardBackgroundSpec(item.category, state.darkMode);
+                  const origPrice = state.currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
+                  const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
                   const isWishlisted = homeWishlistIds.includes(item.id);
                   const revCount = item.reviewCount || 142;
+                  const handleInspect = () =>
+                    onInspectCommercialItem
+                      ? onInspectCommercialItem(item)
+                      : navigateTo('services');
+
                   return (
-                    <div
+                    <MasterPatternCard
                       key={`home-carousel-${item.id}`}
-                      className="rounded-[20px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.01]"
-                    >
-                      <div
-                        onClick={() =>
-                          onInspectCommercialItem
-                            ? onInspectCommercialItem(item)
-                            : navigateTo('services')
-                        }
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            if (onInspectCommercialItem) {
-                              onInspectCommercialItem(item);
-                            } else {
-                              navigateTo('services');
-                            }
-                          }
-                        }}
-                        style={{ backgroundImage: itemBg.backgroundImageCss }}
-                        className="image-bg-card !rounded-none !border-0 p-3.5 min-h-[104px] flex flex-col justify-between cursor-pointer"
-                      >
-                        <div className="flex items-center justify-between gap-1.5">
-                          <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold truncate">
-                            {item.emoji} {locText(item.categoryLabel, lang)}
+                      tone="teal"
+                      categoryKey={item.category}
+                      customImageUrl={stockImageUrl}
+                      itemIdOrIndex={item.id}
+                      darkMode={Boolean(state.darkMode)}
+                      onThumbnailClick={handleInspect}
+                      topLeftBadge={
+                        <>
+                          <span>{item.emoji}</span>
+                          <span>{locText(item.categoryLabel, lang)}</span>
+                        </>
+                      }
+                      topRightBadge={
+                        <>
+                          <span>⭐ {item.rating}</span>
+                          <span className="opacity-85">({revCount})</span>
+                        </>
+                      }
+                      title={isEn ? item.nameEn : item.name}
+                      metaLeft={
+                        <>
+                          <span className="truncate">
+                            📍 {locText(item.city, lang)} · {item.estimatedDistanceKm}{' '}
+                            {isEn ? 'km' : 'كم'}
                           </span>
-                          <span
-                            data-keep-dark-text="true"
-                            className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1"
-                          >
-                            <span>⭐ {item.rating}</span>
-                            <span className="opacity-85">({revCount})</span>
-                          </span>
-                        </div>
-                        <div className="mt-2 space-y-1">
-                          <h3 className="image-card-title text-xs sm:text-sm font-extrabold line-clamp-1">
-                            {isEn ? item.nameEn : item.name}
-                          </h3>
-                          <div className="flex items-center justify-between gap-2 text-[10px] font-bold">
-                            <span className="image-card-subtitle truncate">
-                              📍 {locText(item.city, lang)} · {item.estimatedDistanceKm}{' '}
-                              {isEn ? 'km' : 'كم'}
-                            </span>
-                            <span className="image-card-badge px-2 py-0.5 rounded-md text-[9.5px] font-extrabold shrink-0">
-                              {isEn ? 'View Details' : 'شوف التفاصيل'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
-                        <div
-                          onClick={() =>
-                            onInspectCommercialItem
-                              ? onInspectCommercialItem(item)
-                              : navigateTo('services')
-                          }
-                          className="text-sm font-extrabold text-[var(--color-role-text)] tabular-nums cursor-pointer"
+                          {item.deliveryEstimateAr && (
+                            <>
+                              <span aria-hidden="true">·</span>
+                              <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
+                                🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
+                              </span>
+                            </>
+                          )}
+                        </>
+                      }
+                      metaRightAction={
+                        <button
+                          type="button"
+                          onClick={handleInspect}
+                          className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
                         >
-                          {formatCurrency(price, state.currency, state.language)}
+                          {isEn ? 'View Details' : 'شوف التفاصيل'}
+                        </button>
+                      }
+                      footerLeft={
+                        <div
+                          onClick={handleInspect}
+                          className="flex items-baseline gap-1.5 tabular-nums cursor-pointer"
+                        >
+                          {origPrice && (
+                            <span className="text-[10px] line-through text-[var(--color-muted)]">
+                              {formatCurrency(origPrice, state.currency, state.language)}
+                            </span>
+                          )}
+                          <strong className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                            {formatCurrency(price, state.currency, state.language)}
+                          </strong>
                         </div>
-                        <div className="flex items-center gap-1.5">
+                      }
+                      footerRight={
+                        <>
                           <button
                             type="button"
                             onClick={() => toggleHomeWishlist(item)}
@@ -677,15 +737,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                             aria-label={isEn ? 'Toggle Wishlist' : 'إضافة للمفضلة'}
                             className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                               isWishlisted
-                                ? 'bg-[#FFF0ED] dark:bg-[#142430] border-[#FF8C61] text-[#FF8C61]'
-                                : 'bg-[var(--color-control-bg)] dark:bg-[#142430] border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] hover:text-[#FF8C61] hover:border-[#FF8C61]/50'
+                                ? 'bg-[#FF8C61] border-[#FF8C61] text-white'
+                                : 'border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white'
                             }`}
                           >
                             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                               <path
                                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
                                 fill="currentColor"
-                                fillOpacity={isWishlisted ? '0.9' : '0.18'}
+                                fillOpacity={isWishlisted ? '0.95' : '0.2'}
                                 stroke="currentColor"
                                 strokeWidth="1.9"
                                 strokeLinecap="round"
@@ -719,9 +779,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                               />
                             </svg>
                           </button>
-                        </div>
-                      </div>
-                    </div>
+                        </>
+                      }
+                    />
                   );
                 })}
             </div>
@@ -744,34 +804,63 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {state.kids.map((kid) => {
+              {state.kids.map((kid, idx) => {
                 const ageInfo = calculateChildAge(kid.birth, state.language);
                 const displayKidName = locText(kid.name, lang);
                 return (
-                  <button
+                  <MasterPatternCard
                     key={kid.id}
-                    type="button"
-                    onClick={() => navigateTo('children')}
-                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-4 flex items-center gap-3.5 text-start hover:border-[var(--color-accent)] hover:scale-[1.01] transition-all"
-                  >
-                    <ThreeDChildAvatar
-                      name={displayKidName}
-                      gender={kid.gender}
-                      stageCode={ageInfo.stageCode}
-                      accessoryTheme={kid.avatarTheme || 'astronaut'}
-                      photoDataUrl={kid.photoDataUrl}
-                      useIllustratedAvatar={kid.useIllustratedAvatar}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="font-extrabold text-sm text-[var(--color-text)] truncate">
-                        {displayKidName}
-                      </div>
-                      <div className="text-xs text-[var(--color-muted)] tabular-nums truncate">
-                        {ageInfo.label} · {locText(kid.interests, lang)}
-                      </div>
-                    </div>
-                  </button>
+                    tone={idx % 2 === 0 ? 'teal' : 'rose'}
+                    categoryKey="children"
+                    itemIdOrIndex={kid.id}
+                    darkMode={Boolean(state.darkMode)}
+                    onThumbnailClick={() => navigateTo('children')}
+                    topLeftBadge={<span>👶 {ageInfo.stageTitle}</span>}
+                    topRightBadge={<span>⭐ {ageInfo.label}</span>}
+                    title={displayKidName}
+                    titlePrefixSlot={
+                      <ThreeDChildAvatar
+                        name={displayKidName}
+                        gender={kid.gender}
+                        stageCode={ageInfo.stageCode}
+                        accessoryTheme={kid.avatarTheme || 'astronaut'}
+                        photoDataUrl={kid.photoDataUrl}
+                        useIllustratedAvatar={kid.useIllustratedAvatar}
+                        size="sm"
+                      />
+                    }
+                    metaLeft={
+                      <>
+                        <span>📍 {localizedCity}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="truncate">{locText(kid.interests, lang)}</span>
+                      </>
+                    }
+                    metaRightAction={
+                      <button
+                        type="button"
+                        onClick={() => navigateTo('children')}
+                        className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                      >
+                        {isEn ? 'View Profile' : 'شوف الملف'}
+                      </button>
+                    }
+                    footerLeft={
+                      <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                        {kid.growthHeightCm ? `${kid.growthHeightCm} cm` : ''}{' '}
+                        {kid.growthWeightKg ? `· ${kid.growthWeightKg} kg` : ''}
+                      </span>
+                    }
+                    footerRight={
+                      <button
+                        type="button"
+                        onClick={() => navigateTo('children')}
+                        className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold cursor-pointer"
+                      >
+                        {t(lang, 'manageProfiles')}
+                      </button>
+                    }
+                  />
                 );
               })}
             </div>
@@ -782,59 +871,96 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         {homeFocusTab === 'schedule' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {nearestEvent ? (
-              <button
-                type="button"
-                onClick={() => navigateTo('calendar')}
-                style={{
-                  backgroundImage: getCardBackgroundSpec('calendar', state.darkMode).backgroundImageCss,
-                }}
-                className="image-bg-card w-full rounded-2xl p-5 flex items-center justify-between gap-3 text-start"
-              >
-                <div className="min-w-0">
-                  <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold">
-                    {t(lang, 'nearestAppointment')}
+              <MasterPatternCard
+                tone="sky"
+                categoryKey="calendar"
+                itemIdOrIndex={1}
+                darkMode={Boolean(state.darkMode)}
+                onThumbnailClick={() => navigateTo('calendar')}
+                topLeftBadge={<span>📅 {t(lang, 'nearestAppointment')}</span>}
+                topRightBadge={<span>⭐ {nearestEvent.date}</span>}
+                title={locText(nearestEvent.title, lang)}
+                metaLeft={
+                  <>
+                    <span>📍 {localizedCity}</span>
+                    {nearestEvent.time && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>🕒 {locText(nearestEvent.time, lang)}</span>
+                      </>
+                    )}
+                  </>
+                }
+                metaRightAction={
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('calendar')}
+                    className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                  >
+                    {t(lang, 'openCalendar')}
+                  </button>
+                }
+                footerLeft={
+                  <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {locText(nearestEvent.type || 'موعد أسري', lang)}
                   </span>
-                  <div className="image-card-title font-extrabold text-sm sm:text-base truncate mt-2">
-                    {locText(nearestEvent.title, lang)}
-                  </div>
-                  <div className="image-card-subtitle text-xs tabular-nums truncate mt-1">
-                    {nearestEvent.date} {nearestEvent.time ? `· ${locText(nearestEvent.time, lang)}` : ''}
-                  </div>
-                </div>
-                <span className="image-card-badge px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0">
-                  {t(lang, 'openCalendar')}
-                </span>
-              </button>
+                }
+                footerRight={
+                  <button
+                    type="button"
+                    onClick={() => navigateTo('calendar')}
+                    className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold cursor-pointer"
+                  >
+                    {t(lang, 'openCalendar')}
+                  </button>
+                }
+              />
             ) : (
-              <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-5 text-center text-xs text-[var(--color-muted)]">
+              <div className="soft-card-surface rounded-3xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-5 text-center text-xs text-[var(--color-muted)]">
                 {t(lang, 'noUpcomingEvents')}
               </div>
             )}
 
-            <button
-              type="button"
-              onClick={() => navigateTo('routine')}
-              style={{
-                backgroundImage: getCardBackgroundSpec('routine', state.darkMode).backgroundImageCss,
-              }}
-              className="image-bg-card w-full rounded-2xl p-5 flex items-center justify-between gap-3 text-start"
-            >
-              <div className="min-w-0">
-                <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold">
-                  {isEn ? 'Daily Routine Progress' : 'إنجاز الروتين اليومي'}
+            <MasterPatternCard
+              tone="teal"
+              categoryKey="routine"
+              itemIdOrIndex={2}
+              darkMode={Boolean(state.darkMode)}
+              onThumbnailClick={() => navigateTo('routine')}
+              topLeftBadge={<span>✅ {isEn ? 'Daily Routine Progress' : 'إنجاز الروتين اليومي'}</span>}
+              topRightBadge={
+                <span>
+                  ⭐ {completedTasksCount}/{state.tasks.length}
                 </span>
-                <div className="image-card-title font-extrabold text-sm sm:text-base truncate mt-2">
-                  {completedTasksCount} / {state.tasks.length}{' '}
-                  {isEn ? 'Tasks Completed Today' : 'مهام مكتملة اليوم'}
-                </div>
-                <div className="image-card-subtitle text-xs truncate mt-1">
-                  {todayFormattedCombined}
-                </div>
-              </div>
-              <span className="image-card-badge px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0">
-                {isEn ? 'Open Routine' : 'فتح الروتين'}
-              </span>
-            </button>
+              }
+              title={`${completedTasksCount} / ${state.tasks.length} ${
+                isEn ? 'Tasks Completed Today' : 'مهام مكتملة اليوم'
+              }`}
+              metaLeft={<span>📅 {todayFormattedCombined}</span>}
+              metaRightAction={
+                <button
+                  type="button"
+                  onClick={() => navigateTo('routine')}
+                  className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                >
+                  {isEn ? 'Open Routine' : 'فتح الروتين'}
+                </button>
+              }
+              footerLeft={
+                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Daily Family Habits' : 'عادات ومهام الأسرة اليومية'}
+                </span>
+              }
+              footerRight={
+                <button
+                  type="button"
+                  onClick={() => navigateTo('routine')}
+                  className="min-h-[34px] px-3 py-1 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-[11px] font-extrabold cursor-pointer"
+                >
+                  {isEn ? 'Open Routine' : 'فتح الروتين'}
+                </button>
+              }
+            />
           </div>
         )}
       </div>

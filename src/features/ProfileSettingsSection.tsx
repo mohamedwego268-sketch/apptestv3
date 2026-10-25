@@ -14,7 +14,7 @@ import {
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { t } from '../domain/i18n';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
-import { PrimaryCtaButton, SoftFilledIcon, UnifiedBadge, CollapsibleSectionCard } from '../components/DesignSystem';
+import { MasterPatternCard, PrimaryCtaButton, SoftFilledIcon, UnifiedBadge, CollapsibleSectionCard } from '../components/DesignSystem';
 
 export interface ProfileSettingsSectionProps {
   state: FamilySpaceState;
@@ -166,44 +166,56 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
       </div>
 
       {/* Dedicated Dark / Light Mode Accessibility Toggle Card in Profile (الحساب) */}
-      <div
+      <MasterPatternCard
         id="profile-dark-mode-card"
-        className="rounded-[24px] border border-indigo-200/85 dark:border-[#1E3646] bg-indigo-50/85 dark:bg-[#101D26] p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-4"
-      >
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
-            <SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={24} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-                {lang === 'en'
-                  ? 'Dark Mode — Deep Midnight Charcoal'
-                  : 'الوضع الليلي الهادي والمريح للعين'}
-              </h3>
-              <UnifiedBadge
-                label={
-                  state.darkMode
-                    ? lang === 'en'
-                      ? 'Active · Midnight Charcoal'
-                      : 'شغال · ليلي فحمي'
-                    : lang === 'en'
-                    ? 'Light Mode · Pastel'
-                    : 'الوضع النهاري · فاتح'
-                }
-                tone="indigo"
-                iconId="settings"
-              />
-            </div>
-            <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5">
-              {lang === 'en'
-                ? 'Switches the entire app instantly to deep midnight charcoal tones (#0B131A) with high-contrast legible text.'
-                : 'بيحول ألوان التطبيق كله للرمادي الفحمي الغامق (#0B131A) عشان يريح عينك بليل ويوفر البطارية.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0">
+        tone="indigo"
+        categoryKey="settings"
+        itemIdOrIndex={1}
+        darkMode={state.darkMode}
+        onThumbnailClick={onToggleDarkMode}
+        topLeftBadge={
+          state.darkMode
+            ? lang === 'en'
+              ? 'Active · Midnight Charcoal'
+              : 'شغال · ليلي فحمي'
+            : lang === 'en'
+            ? 'Light Mode · Pastel'
+            : 'الوضع النهاري · فاتح'
+        }
+        topRightBadge={
+          <span>
+            {state.darkMode ? '🌙 #0B131A' : '☀️ #F8FAFC'}
+          </span>
+        }
+        titlePrefixSlot={<SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={20} />}
+        title={
+          lang === 'en'
+            ? 'Dark Mode — Deep Midnight Charcoal'
+            : 'الوضع الليلي الهادي والمريح للعين'
+        }
+        metaLeft={
+          <span>
+            {lang === 'en'
+              ? 'Switches the entire app instantly to deep midnight charcoal tones (#0B131A).'
+              : 'بيحول ألوان التطبيق كله للرمادي الفحمي الغامق (#0B131A) عشان يريح عينك بليل ويوفر البطارية.'}
+          </span>
+        }
+        footerLeft={
+          <UnifiedBadge
+            label={
+              state.darkMode
+                ? lang === 'en'
+                  ? 'Active · Midnight Charcoal'
+                  : 'شغال · ليلي فحمي'
+                : lang === 'en'
+                ? 'Light Mode · Pastel'
+                : 'الوضع النهاري · فاتح'
+            }
+            tone="indigo"
+            iconId="settings"
+          />
+        }
+        footerRight={
           <button
             id="profile-dark-mode-switch"
             type="button"
@@ -215,7 +227,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 : 'تبديل الوضع الليلي والنهاري'
             }
             onClick={onToggleDarkMode}
-            className={`min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold flex items-center gap-2.5 border shadow-2xs active:scale-95 transition-all ${
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 border shadow-2xs active:scale-95 transition-all cursor-pointer ${
               state.darkMode
                 ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-500'
                 : 'bg-[var(--color-control-bg)] hover:border-[var(--color-accent)] text-[var(--color-text)] border-[var(--color-border)]'
@@ -223,11 +235,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           >
             <span
               aria-hidden="true"
-              className={`w-9 h-5 rounded-full p-0.5 flex items-center transition-colors ${
+              className={`w-8 h-4 rounded-full p-0.5 flex items-center transition-colors ${
                 state.darkMode ? 'bg-indigo-900/80 justify-end' : 'bg-slate-200 justify-start'
               }`}
             >
-              <span className="w-4 h-4 rounded-full bg-white shadow-xs block" />
+              <span className="w-3 h-3 rounded-full bg-white shadow-xs block" />
             </span>
             <span>
               {state.darkMode
@@ -239,8 +251,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 : 'شغّل الوضع الليلي'}
             </span>
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Inner Settings Section inside Profile Screen */}
       {showInnerSettings && (
@@ -451,17 +463,25 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
                 <div>
                   <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                    {lang === 'en' ? 'City / Governorate' : 'المدينة / المحافظة'}
+                    {settingsCountry === 'EG'
+                      ? lang === 'en'
+                        ? 'Governorate (All 27 Egyptian Governorates)'
+                        : 'المحافظة (جميع الـ ٢٧ محافظة المصرية بالترتيب)'
+                      : lang === 'en'
+                      ? 'Region / Governorate (Saudi Arabia)'
+                      : 'المنطقة والمحافظة الرئيسية (المملكة العربية السعودية)'}
                   </label>
                   <select
                     id="settingsCity"
                     value={settingsCity}
                     onChange={(e) => onChangeSettingsCity(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-sm font-bold text-[var(--color-text)]"
                   >
-                    {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem) => (
+                    {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem, idx) => (
                       <option key={cItem.id} value={cItem.id}>
-                        {lang === 'en' ? `${cItem.nameEn} (${cItem.regionEn})` : `${cItem.nameAr} (${cItem.regionAr})`}
+                        {lang === 'en'
+                          ? `${idx + 1}. ${cItem.nameEn}`
+                          : `${idx + 1}. ${cItem.nameAr}`}
                       </option>
                     ))}
                   </select>

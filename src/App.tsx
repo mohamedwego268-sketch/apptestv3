@@ -88,6 +88,7 @@ import {
   SectionSkeletonLoader,
   SoftFilledIcon,
 } from './components/DesignSystem';
+import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => loadFamilySpaceState());
@@ -182,6 +183,7 @@ export default function App() {
 
   const [eventModalOpen, setEventModalOpen] = useState<boolean>(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [smartPlannerModalOpen, setSmartPlannerModalOpen] = useState<boolean>(false);
 
   const [wishModalOpen, setWishModalOpen] = useState<boolean>(false);
   const [editingWish, setEditingWish] = useState<WishItem | null>(null);
@@ -1258,6 +1260,7 @@ export default function App() {
           brandName={t(lang, 'brandName')}
           darkMode={Boolean(state.darkMode)}
           unreadNotifCount={unreadNotifCount}
+          openTasksCount={state.tasks.filter((tItem) => !tItem.done).length}
           parentProfileSpec={{
             role: parentProfileSpec.role,
             displayNameAr: parentProfileSpec.displayNameAr,
@@ -1271,6 +1274,7 @@ export default function App() {
           onNavigate={navigateTo}
           onToggleDarkMode={handleToggleDarkMode}
           onToggleLanguage={handleToggleTopLanguage}
+          onOpenSmartPlanner={() => setSmartPlannerModalOpen(true)}
           onOpenProfileDrawer={() => setRoleModalOpen(true)}
           isScrolled={isScrolled}
         />
@@ -2434,6 +2438,118 @@ export default function App() {
           confirmResetModal={confirmResetModal}
           onCloseConfirmResetModal={() => setConfirmResetModal(false)}
           onResetAllData={handleResetAllData}
+        />
+
+        {/* Dedicated Smart Family Calendar & To-Do List Modal ("مفكرة العيلة الذكية") */}
+        <FamilySmartPlannerModal
+          open={smartPlannerModalOpen}
+          onClose={() => setSmartPlannerModalOpen(false)}
+          lang={lang}
+          darkMode={Boolean(state.darkMode)}
+          role={state.role}
+          parentName={state.parentName}
+          kids={state.kids}
+          events={state.events}
+          tasks={state.tasks}
+          onSaveEvent={(payload) => {
+            setState((prev) => {
+              if (payload.id !== undefined) {
+                return {
+                  ...prev,
+                  events: prev.events.map((ev) =>
+                    ev.id === payload.id
+                      ? {
+                          ...ev,
+                          title: payload.title,
+                          date: payload.date,
+                          time: payload.time,
+                          type: payload.type,
+                          childId: payload.childId,
+                          repeat: payload.repeat,
+                          note: payload.note,
+                        }
+                      : ev
+                  ),
+                };
+              }
+              return {
+                ...prev,
+                events: [
+                  {
+                    id: Date.now() + Math.floor(Math.random() * 100),
+                    title: payload.title,
+                    date: payload.date,
+                    time: payload.time,
+                    type: payload.type,
+                    childId: payload.childId,
+                    repeat: payload.repeat,
+                    note: payload.note,
+                    createdAt: new Date().toISOString(),
+                  },
+                  ...prev.events,
+                ],
+              };
+            });
+            showToast(
+              payload.id !== undefined
+                ? lang === 'en'
+                  ? 'Family occasion updated!'
+                  : 'تم تحديث الموعد في مفكرة العيلة الذكية'
+                : lang === 'en'
+                ? 'New family occasion added to calendar!'
+                : 'تمت إضافة الموعد الجديد لتقويم العيلة بنجاح'
+            );
+          }}
+          onDeleteEvent={handleDeleteEvent}
+          onSaveTask={(payload) => {
+            setState((prev) => {
+              if (payload.id !== undefined) {
+                return {
+                  ...prev,
+                  tasks: prev.tasks.map((tItem) =>
+                    tItem.id === payload.id
+                      ? {
+                          ...tItem,
+                          name: payload.name,
+                          time: payload.time,
+                          kidId: payload.kidId,
+                          category: payload.category,
+                          owner: payload.owner,
+                          cadence: payload.cadence,
+                        }
+                      : tItem
+                  ),
+                };
+              }
+              return {
+                ...prev,
+                tasks: [
+                  {
+                    id: Date.now() + Math.floor(Math.random() * 100),
+                    name: payload.name,
+                    time: payload.time,
+                    done: false,
+                    kidId: payload.kidId,
+                    category: payload.category,
+                    owner: payload.owner,
+                    cadence: payload.cadence,
+                  },
+                  ...prev.tasks,
+                ],
+              };
+            });
+            showToast(
+              payload.id !== undefined
+                ? lang === 'en'
+                  ? 'Family task updated!'
+                  : 'تم تحديث المهمة في قائمة مهام العيلة'
+                : lang === 'en'
+                ? 'Added new task to Family To-Do list!'
+                : 'تمت إضافة المهمة الجديدة لقائمة مهام العيلة'
+            );
+          }}
+          onToggleTask={handleToggleTask}
+          onDeleteTask={handleDeleteTask}
         />
 
         {/* Global Toast / Snackbar Micro-feedback */}

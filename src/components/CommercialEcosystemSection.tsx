@@ -16,7 +16,11 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
-import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
+import {
+  CARD_STOCK_PHOTO_URLS,
+  getCardBackgroundSpec,
+  getProductUnsplashImageUrl,
+} from '../domain/cardBackgrounds';
 import {
   BannerSlideItem,
   CollapsibleSectionCard,
@@ -158,6 +162,27 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCartPanel, setShowCartPanel] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [priceRangeFilter, setPriceRangeFilter] = useState<'all' | 'under300' | '300to800' | 'above800'>('all');
+  const [minRatingFilter, setMinRatingFilter] = useState<number>(0);
+  const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'express' | 'local' | 'offers'>('all');
+
+  const activeFiltersCount =
+    (priceRangeFilter !== 'all' ? 1 : 0) +
+    (minRatingFilter > 0 ? 1 : 0) +
+    (availabilityFilter !== 'all' ? 1 : 0) +
+    (collectionFilter !== 'all' ? 1 : 0);
+
+  const resetStoreFilters = () => {
+    setPriceRangeFilter('all');
+    setMinRatingFilter(0);
+    setAvailabilityFilter('all');
+    setCollectionFilter('all');
+    setCityScopeFilter('all');
+    setSegment('all');
+    setCategoryFilter('all');
+    setSearchQuery('');
+  };
 
   // Store Flow View Mode: Catalog vs Dedicated Checkout (إتمام الطلب) vs Order Confirmed (تأكيد الطلب)
   const [storeFlowStep, setStoreFlowStep] = useState<'catalog' | 'checkout' | 'confirmed'>('catalog');
@@ -188,7 +213,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🧸 ألعاب مونتيسوري',
       badgeEn: '🧸 Montessori Toys',
       emoji: '🧸',
-      bgKey: 'toys',
+      bgKey: 'toys' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.toys,
       matchCategories: ['toys'],
     },
     {
@@ -200,7 +226,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '📚 حضانات ومدارس',
       badgeEn: '📚 Nurseries & Schools',
       emoji: '📚',
-      bgKey: 'nursery',
+      bgKey: 'nursery' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.nursery,
       matchCategories: ['nursery'],
     },
     {
@@ -212,7 +239,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🩺 أطباء أطفال',
       badgeEn: '🩺 Pediatricians',
       emoji: '🩺',
-      bgKey: 'doctor',
+      bgKey: 'doctor' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.doctor,
       matchCategories: ['doctor'],
     },
     {
@@ -224,7 +252,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '👗 ألبسة قطنية',
       badgeEn: '👗 Cotton Apparel',
       emoji: '👗',
-      bgKey: 'clothing',
+      bgKey: 'clothing' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.clothing,
       matchCategories: ['clothing'],
     },
     {
@@ -236,7 +265,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🍼 مستلزمات عائلية',
       badgeEn: '🍼 Family Essentials',
       emoji: '🍼',
-      bgKey: 'essentials',
+      bgKey: 'essentials' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.essentials,
       matchCategories: ['essentials'],
     },
     {
@@ -248,7 +278,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🎨 كورسات أطفال',
       badgeEn: '🎨 Kids Courses',
       emoji: '🎨',
-      bgKey: 'courses',
+      bgKey: 'courses' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.courses,
       matchCategories: ['courses'],
     },
     {
@@ -260,7 +291,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '⚽ ملاعب وأنشطة',
       badgeEn: '⚽ Sports & Play',
       emoji: '⚽',
-      bgKey: 'sports',
+      bgKey: 'sports' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.sports,
       matchCategories: ['sports'],
     },
     {
@@ -272,7 +304,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🎪 ملاهي وأعياد ميلاد',
       badgeEn: '🎪 Parks & Birthdays',
       emoji: '🎪',
-      bgKey: 'events_parks',
+      bgKey: 'events_parks' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.events_parks,
       matchCategories: ['events_parks'],
     },
     {
@@ -284,7 +317,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '📖 قصص وكتب',
       badgeEn: '📖 Books & Stories',
       emoji: '📖',
-      bgKey: 'books',
+      bgKey: 'books' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.books,
       matchCategories: ['books'],
     },
     {
@@ -296,7 +330,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🍱 تغذية صحية',
       badgeEn: '🍱 Healthy Nutrition',
       emoji: '🍱',
-      bgKey: 'nutrition',
+      bgKey: 'nutrition' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.nutrition,
       matchCategories: ['nutrition'],
     },
     {
@@ -308,7 +343,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '🪑 أثاث غرف الأطفال',
       badgeEn: '🪑 Kids Furniture',
       emoji: '🪑',
-      bgKey: 'furniture',
+      bgKey: 'furniture' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.furniture,
       matchCategories: ['furniture'],
     },
     {
@@ -320,7 +356,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       badgeAr: '👩‍⚕️ استشارات وتوصيل',
       badgeEn: '👩‍⚕️ Consultations',
       emoji: '👩‍⚕️',
-      bgKey: 'consultation',
+      bgKey: 'consultation' as const,
+      imageUrl: CARD_STOCK_PHOTO_URLS.consultation,
       matchCategories: ['consultation', 'delivery'],
     },
   ] as const;
@@ -341,7 +378,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const displayTitle = isEn ? item.nameEn : item.name;
     const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
     const tone = PASTEL_CARD_TONES[toneKey];
-    const itemBgSpec = getCardBackgroundSpec(item.category, darkMode);
+    const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
+    const itemBgSpec = getCardBackgroundSpec(item.category, darkMode, stockImageUrl);
     const revCount = item.reviewCount || 142;
 
     return (
@@ -350,12 +388,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[242px] sm:w-[264px] shrink-0'
+            ? 'w-[244px] sm:w-[268px] shrink-0'
             : 'w-full'
-        } rounded-[20px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface hover:scale-[1.01] active:scale-[0.99] transition-all`}
+        } rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group`}
       >
-        <div className="space-y-2">
-          {/* Compact Visual Header (Clickable to open full details modal) */}
+        <div className="space-y-2.5">
+          {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
           <div
             onClick={() => onInspectCommercialItem(item)}
             role="button"
@@ -368,22 +406,45 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card rounded-xl p-2.5 sm:p-3 min-h-[86px] sm:min-h-[94px] cursor-pointer flex flex-col justify-between gap-1.5"
+            className="image-bg-card relative overflow-hidden rounded-2xl p-2.5 sm:p-3 min-h-[124px] sm:min-h-[134px] aspect-[16/10] cursor-pointer flex flex-col justify-between gap-2 shadow-xs"
           >
-            <div className="flex items-center justify-between gap-1.5">
-              <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-extrabold truncate">
+            <img
+              src={stockImageUrl}
+              alt={displayTitle}
+              loading="lazy"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.src !== itemBgSpec.imagePath) {
+                  target.src = itemBgSpec.imagePath;
+                }
+              }}
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 dark:opacity-80 group-hover:scale-105 transition-transform duration-500"
+            />
+            {/* Directional Gradient Scrim (WCAG AAA Contrast for Bottom Text, Vibrant Image Top) */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: darkMode
+                  ? 'linear-gradient(to top, rgba(11, 19, 26, 0.95) 0%, rgba(16, 29, 38, 0.62) 52%, rgba(11, 19, 26, 0.28) 100%)'
+                  : 'linear-gradient(to top, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 252, 0.65) 50%, rgba(255, 255, 255, 0.22) 100%)',
+              }}
+            />
+
+            <div className="relative z-10 flex items-center justify-between gap-1.5">
+              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-extrabold truncate shadow-2xs">
                 {item.emoji} {locText(item.categoryLabel, language)}
               </span>
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1"
+                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1 shadow-2xs"
               >
                 <span>⭐ {item.rating}</span>
                 <span className="opacity-85">({revCount})</span>
               </span>
             </div>
 
-            <div className="flex items-end justify-between gap-1.5 pt-0.5">
+            <div className="relative z-10 image-card-glass-panel rounded-xl px-2.5 py-1.5 flex items-end justify-between gap-1.5">
               <h4 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
                 {displayTitle}
               </h4>
@@ -495,6 +556,18 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن' || item.city.includes(city);
       if (!matchesCountry || !matchesCity) return false;
     }
+    const itemPrice = currency === 'SAR' ? item.priceSAR : item.priceEGP;
+    if (priceRangeFilter === 'under300' && itemPrice >= 300) return false;
+    if (priceRangeFilter === '300to800' && (itemPrice < 300 || itemPrice > 800)) return false;
+    if (priceRangeFilter === 'above800' && itemPrice <= 800) return false;
+    if (minRatingFilter > 0 && Number(item.rating) < minRatingFilter) return false;
+    if (availabilityFilter === 'express' && item.kind !== 'product') return false;
+    if (availabilityFilter === 'local') {
+      const matchesCountry = item.country === 'ALL' || item.country === country;
+      const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن' || item.city.includes(city);
+      if (!matchesCountry || !matchesCity) return false;
+    }
+    if (availabilityFilter === 'offers' && item.kind !== 'offer' && item.collectionTag !== 'deal') return false;
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       const match =
@@ -1865,55 +1938,202 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </select>
         </div>
 
-        {/* Horizontal Swipeable Category Bar (RTL-Optimized) — Clicking any Category opens its Full-Page View */}
-        <div
-          dir={isEn ? 'ltr' : 'rtl'}
-          className="horizontal-scroll-row pt-0.5"
-          role="region"
-          aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
-        >
+        {/* Horizontal Swipeable Category Bar + Prominent Filter Button Right Beside Category Selectors */}
+        <div className="flex items-center gap-2.5 pt-0.5">
           <button
+            id="store-category-filter-btn"
+            data-testid="store-category-filter-btn"
             type="button"
-            onClick={() => {
-              setActiveCategoryPageId(null);
-              setCategoryFilter('all');
-            }}
-            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
-              activeCategoryPageId === null
-                ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
-                : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+            onClick={() => setShowFilterPanel((prev) => !prev)}
+            aria-expanded={showFilterPanel}
+            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 shrink-0 shadow-xs ${
+              showFilterPanel || activeFiltersCount > 0
+                ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-md'
+                : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
             }`}
           >
-            <span>✨</span>
-            <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M6 12h12m-9 8h6" />
+            </svg>
+            <span>{isEn ? 'Filter' : 'تصفية وفلترة'}</span>
+            {activeFiltersCount > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-white text-[#0B131A] tabular-nums">
+                {activeFiltersCount}
+              </span>
+            )}
           </button>
 
-          {STORE_CATEGORY_SECTIONS.map((sec) => {
-            const isSelected = activeCategoryPageId === sec.id;
-            const secCount = filtered.filter((item) =>
-              (sec.matchCategories as readonly string[]).includes(item.category)
-            ).length;
-            return (
-              <button
-                key={sec.id}
-                type="button"
-                data-testid={`store-category-pill-${sec.id}`}
-                onClick={() => openCategoryFullPage(sec.id)}
-                className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
-                  isSelected
-                    ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
-                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
-                }`}
-              >
-                <span>{sec.emoji}</span>
-                <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
-                  {secCount}
-                </span>
-              </button>
-            );
-          })}
+          <div
+            dir={isEn ? 'ltr' : 'rtl'}
+            className="horizontal-scroll-row flex-1 !pb-1"
+            role="region"
+            aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategoryPageId(null);
+                setCategoryFilter('all');
+              }}
+              className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
+                activeCategoryPageId === null
+                  ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
+                  : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+              }`}
+            >
+              <span>✨</span>
+              <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
+            </button>
+
+            {STORE_CATEGORY_SECTIONS.map((sec) => {
+              const isSelected = activeCategoryPageId === sec.id;
+              const secCount = filtered.filter((item) =>
+                (sec.matchCategories as readonly string[]).includes(item.category)
+              ).length;
+              return (
+                <button
+                  key={sec.id}
+                  type="button"
+                  data-testid={`store-category-pill-${sec.id}`}
+                  onClick={() => openCategoryFullPage(sec.id)}
+                  className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
+                    isSelected
+                      ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
+                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                  }`}
+                >
+                  <span>{sec.emoji}</span>
+                  <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
+                    {secCount}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Interactive Store Filter Panel (Price, Rating, Availability) */}
+        {showFilterPanel && (
+          <div
+            id="store-category-filter-panel"
+            data-testid="store-category-filter-panel"
+            className="soft-card-surface rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 space-y-4 animate-page-enter"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  🎛️ {isEn ? 'Smart Store Filters (Price · Rating · Availability)' : 'فلترة المتجر الذكية (السعر · التقييم · التوفر)'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-500/15 text-teal-700 dark:text-[#A5F3FC] tabular-nums">
+                  {filtered.length} {isEn ? 'items match' : 'منتج وخدمة مطابقة'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetStoreFilters}
+                  className="px-3 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61]"
+                >
+                  {isEn ? 'Reset All' : 'إعادة ضبط الفلاتر'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowFilterPanel(false)}
+                  className="px-3 py-1 rounded-lg text-[11px] font-extrabold bg-[#0d9488] text-white"
+                >
+                  {isEn ? 'Apply & Close' : 'تطبيق وإغلاق'}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* 1. Price Filter */}
+              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
+                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                  💰 {isEn ? `Price Range (${currency})` : `نطاق السعر (${currency === 'SAR' ? 'ر.س' : 'ج.م'})`}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'all', labelAr: 'كل الأسعار', labelEn: 'All Prices' },
+                    { id: 'under300', labelAr: 'أقل من ٣٠٠', labelEn: 'Under 300' },
+                    { id: '300to800', labelAr: '٣٠٠ إلى ٨٠٠', labelEn: '300 – 800' },
+                    { id: 'above800', labelAr: 'أكثر من ٨٠٠', labelEn: 'Above 800' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setPriceRangeFilter(opt.id as typeof priceRangeFilter)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                        priceRangeFilter === opt.id
+                          ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
+                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                      }`}
+                    >
+                      {isEn ? opt.labelEn : opt.labelAr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Rating Filter */}
+              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
+                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                  ⭐ {isEn ? 'Minimum Parent Rating' : 'تقييم الأمهات والآباء'}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { val: 0, labelAr: 'كل التقييمات', labelEn: 'All Ratings' },
+                    { val: 4.5, labelAr: '⭐ +4.5 ممتاز', labelEn: '⭐ 4.5+ & Up' },
+                    { val: 4.8, labelAr: '⭐ +4.8 فائق', labelEn: '⭐ 4.8+ Top' },
+                    { val: 4.9, labelAr: '⭐ +4.9 النخبة', labelEn: '⭐ 4.9+ Elite' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.val}
+                      type="button"
+                      onClick={() => setMinRatingFilter(opt.val)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                        minRatingFilter === opt.val
+                          ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-2xs'
+                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                      }`}
+                    >
+                      {isEn ? opt.labelEn : opt.labelAr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Availability Filter */}
+              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
+                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                  🚚 {isEn ? 'Availability & Delivery' : 'التوفر والشحن السريع'}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'all', labelAr: 'الكل متاح', labelEn: 'All Available' },
+                    { id: 'express', labelAr: 'شحن فوري (منتجات)', labelEn: 'Express In-Stock' },
+                    { id: 'local', labelAr: `متاح في ${displayCity}`, labelEn: `In ${displayCity}` },
+                    { id: 'offers', labelAr: 'عروض وخصومات', labelEn: 'Active Deals' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setAvailabilityFilter(opt.id as typeof availabilityFilter)}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                        availabilityFilter === opt.id
+                          ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
+                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                      }`}
+                    >
+                      {isEn ? opt.labelEn : opt.labelAr}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* =====================================================================
@@ -1926,23 +2146,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           id="empty-store-filter-state"
           iconId="services"
           tone="amber"
-          title={
-            isEn
-              ? 'No items here yet — No matching products'
-              : 'لا توجد عناصر هنا بعد — لا توجد منتجات مطابقة للبحث'
-          }
-          subtitle={
-            isEn
-              ? 'Try clearing search filters or returning to all store categories.'
-              : 'جرّب مسح كلمات البحث أو العودة لاستعراض جميع أقسام المتجر.'
-          }
-          actionLabel={isEn ? 'Reset Store Filters' : 'إعادة ضبط فلاتر المتجر'}
+          title={getEmptyStateCopy('search', language).title}
+          subtitle={getEmptyStateCopy('search', language).subtitle}
+          actionLabel={getEmptyStateCopy('search', language).actionLabel}
           onAction={() => {
-            setSearchQuery('');
-            setSegment('all');
-            setCategoryFilter('all');
-            setCollectionFilter('all');
-            setCityScopeFilter('all');
+            resetStoreFilters();
             setActiveCategoryPageId(null);
           }}
         />
@@ -1955,12 +2163,26 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           data-testid="store-category-fullpage-view"
           className="space-y-4 animate-page-enter"
         >
-          {/* Full-Page Category Header Banner with Back Button */}
-          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 soft-card-surface">
-            <div className="flex items-start sm:items-center gap-3">
-              <span className="w-12 h-12 rounded-2xl bg-[#142430] border border-[#1E3646] text-2xl flex items-center justify-center shrink-0 shadow-2xs">
-                {activeCategorySpec.emoji}
-              </span>
+          {/* Full-Page Category Header Banner with Back Button & Unsplash Stock Thumbnail */}
+          <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 soft-card-surface shadow-sm">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="relative w-16 h-16 rounded-2xl bg-[#142430] border border-[#1E3646] overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+                <img
+                  src={activeCategorySpec.imageUrl}
+                  alt={isEn ? activeCategorySpec.titleEn : activeCategorySpec.titleAr}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover opacity-85"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      'linear-gradient(to top, rgba(11, 19, 26, 0.85) 0%, rgba(11, 19, 26, 0.25) 100%)',
+                  }}
+                />
+                <span className="relative z-10 text-xl drop-shadow">{activeCategorySpec.emoji}</span>
+              </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#142430] text-[#A5F3FC] border border-[#1E3646]">
@@ -1983,7 +2205,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               type="button"
               data-testid="back-to-store-categories-btn"
               onClick={() => setActiveCategoryPageId(null)}
-              className="min-h-[40px] px-4 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-2 shrink-0 active:scale-95 transition-all"
+              className="min-h-[40px] px-4 py-2 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-2 shrink-0 active:scale-95 transition-all"
             >
               <span>{isEn ? '←' : '→'}</span>
               <span>{isEn ? 'Back to All Categories' : 'العودة لجميع أقسام المتجر'}</span>
@@ -2018,18 +2240,32 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div
                 key={sec.id}
                 data-testid={`store-category-row-${sec.id}`}
-                className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface"
+                className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface shadow-sm"
               >
-                {/* Clickable Category Row Header / Button */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                {/* Clickable Category Row Header / Button with Unsplash Thumbnail & Gradient Overlay */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
                   <button
                     type="button"
                     data-testid={`store-category-header-btn-${sec.id}`}
                     onClick={() => openCategoryFullPage(sec.id)}
                     className="flex items-center gap-3 text-start group cursor-pointer min-w-0"
                   >
-                    <span className="w-10 h-10 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] flex items-center justify-center text-xl shrink-0 group-hover:border-[#FF8C61] transition-colors">
-                      {sec.emoji}
+                    <span className="relative w-12 h-12 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] overflow-hidden flex items-center justify-center text-lg shrink-0 group-hover:border-[#FF8C61] shadow-2xs transition-all">
+                      <img
+                        src={sec.imageUrl}
+                        alt={isEn ? sec.titleEn : sec.titleAr}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover opacity-85 group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0"
+                        style={{
+                          background:
+                            'linear-gradient(to top, rgba(11, 19, 26, 0.82) 0%, rgba(11, 19, 26, 0.22) 100%)',
+                        }}
+                      />
+                      <span className="relative z-10 drop-shadow">{sec.emoji}</span>
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -2050,7 +2286,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     type="button"
                     data-testid={`store-category-viewall-btn-${sec.id}`}
                     onClick={() => openCategoryFullPage(sec.id)}
-                    className="min-h-[34px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#A5F3FC] text-[11px] font-extrabold flex items-center gap-1.5 shrink-0 active:scale-95 transition-all"
+                    className="min-h-[34px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#A5F3FC] text-[11px] font-extrabold flex items-center gap-1.5 shrink-0 active:scale-95 transition-all"
                   >
                     <span>{isEn ? 'View All' : 'عرض الكل'}</span>
                     <span>{isEn ? '→' : '←'}</span>

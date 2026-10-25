@@ -192,7 +192,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
     >
-      <div className="w-full max-w-2xl rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+      <div className="soft-card-surface w-full max-w-2xl rounded-[22px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
         {/* Header & Step Progress */}
         <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-[var(--color-border)]">
           <div>
@@ -206,8 +206,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   : '١. إنشاء حساب أو تسجيل الدخول أو الربط برمز QR'
                 : step === 2
                 ? isEn
-                  ? '2. Select Your Country & City (Location-Aware Ecosystem)'
-                  : '٢. اختيار الدولة والمدينة (لتخصيص الأطباء والحضانات والمتجر)'
+                  ? '2. Select Your Country & Governorate / Region (Location-Aware Ecosystem)'
+                  : '٢. اختيار الدولة والمحافظة / المنطقة (لتخصيص الأطباء والحضانات والمتجر)'
                 : step === 3
                 ? isEn
                   ? '3. Parent Profile & Visual Experience Setup'
@@ -231,7 +231,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <div className="grid grid-cols-4 gap-2">
           {[
             { num: 1, labelAr: '١. الحساب وQR', labelEn: '1. Account & QR' },
-            { num: 2, labelAr: '٢. الدولة والمدينة', labelEn: '2. Location' },
+            { num: 2, labelAr: '٢. الدولة والمحافظة', labelEn: '2. Location' },
             { num: 3, labelAr: '٣. ملف الوالد', labelEn: '3. Parent' },
             { num: 4, labelAr: '٤. ملف الطفل', labelEn: '4. Child' },
           ].map((s) => (
@@ -386,13 +386,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           </div>
         )}
 
-        {/* STEP 2: COUNTRY & DEPENDENT CITY SELECTION */}
+        {/* STEP 2: COUNTRY & DEPENDENT GOVERNORATE / REGION SELECTION */}
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-xs text-[var(--color-muted)] leading-relaxed">
               {isEn
-                ? 'Choosing your country and city automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar.'
-                : 'اختيار الدولة والمدينة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل نكبر.'}
+                ? 'Choosing your country and governorate/region automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar.'
+                : 'اختيار الدولة والمحافظة أو المنطقة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل نكبر.'}
             </p>
 
             {/* Country Cards */}
@@ -401,17 +401,17 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 [
                   {
                     code: 'EG' as CountryCode,
-                    titleAr: '🇪🇬 جمهورية مصر العربية',
-                    titleEn: '🇪🇬 Egypt (+20 · EGP)',
-                    subAr: 'القاهرة الكبرى، الشيخ زايد، الإسكندرية، المنصورة · العملة: ج.م (EGP)',
-                    subEn: 'Greater Cairo, Sheikh Zayed, Alexandria, Mansoura · Currency: EGP',
+                    titleAr: '🇪🇬 جمهورية مصر العربية (٢٧ محافظة)',
+                    titleEn: '🇪🇬 Egypt (All 27 Governorates · EGP)',
+                    subAr: 'القاهرة، الجيزة، الإسكندرية، القليوبية، الدقهلية، الشرقية وجميع المحافظات الـ ٢٧ · العملة: ج.م (EGP)',
+                    subEn: 'Cairo, Giza, Alexandria, Qalyubia, Dakahlia, Sharqia & all 27 Governorates · Currency: EGP',
                   },
                   {
                     code: 'SA' as CountryCode,
-                    titleAr: '🇸🇦 المملكة العربية السعودية',
-                    titleEn: '🇸🇦 Saudi Arabia (+966 · SAR)',
-                    subAr: 'الرياض، جدة، الدمام والخبر، المدينة المنورة · العملة: ر.س (SAR)',
-                    subEn: 'Riyadh, Jeddah, Dammam & Khobar, Madinah · Currency: SAR',
+                    titleAr: '🇸🇦 المملكة العربية السعودية (المناطق والمحافظات الرئيسية)',
+                    titleEn: '🇸🇦 Saudi Arabia (Main Regions & Governorates · SAR)',
+                    subAr: 'الرياض، مكة المكرمة، المدينة المنورة، الشرقية، القصيم، عسير، تبوك، حائل، جازان، نجران، الباحة، الجوف، الحدود الشمالية، الطائف، ينبع · العملة: ر.س (SAR)',
+                    subEn: 'Riyadh, Makkah, Madinah, Eastern Province, Qassim, Asir, Tabuk, Hail, Jazan, Najran, Al-Baha, Al-Jouf, Northern Borders, Taif, Yanbu · SAR',
                   },
                 ]
               ).map((c) => {
@@ -421,7 +421,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     key={c.code}
                     type="button"
                     onClick={() => handleSelectCountry(c.code)}
-                    className={`p-4 rounded-2xl border-2 text-start transition-all space-y-1 ${
+                    className={`soft-card-surface p-4 rounded-2xl border-2 text-start transition-all space-y-1 ${
                       active
                         ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)]'
                         : 'border-[var(--color-border)] bg-[var(--color-control-bg)]'
@@ -438,22 +438,49 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               })}
             </div>
 
-            {/* Dependent Cities List */}
-            <div className="space-y-2">
-              <label className="block text-xs font-extrabold text-[var(--color-text)]">
-                📍 {isEn ? 'Select City (Filtered by Selected Country)' : 'اختر المدينة (تتغير تلقائيًا حسب الدولة المختارة)'}
-              </label>
+            {/* Dependent Governorate / Region Dropdown + Interactive Grid */}
+            <div className="space-y-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="block text-xs font-extrabold text-[var(--color-text)]">
+                  📍{' '}
+                  {selectedCountry === 'EG'
+                    ? isEn
+                      ? 'Select Governorate (All 27 Egyptian Governorates)'
+                      : 'اختر المحافظة (جميع محافظات مصر الـ ٢٧ كاملة)'
+                    : isEn
+                    ? 'Select Region / Governorate (Main Saudi Regions & Cities)'
+                    : 'اختر المنطقة أو المحافظة الرئيسية في المملكة'}
+                </label>
+                <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC]">
+                  {availableCities.length} {selectedCountry === 'EG' ? (isEn ? 'governorates' : 'محافظة') : (isEn ? 'regions' : 'منطقة ومحافظة')}
+                </span>
+              </div>
+
+              {!isLoadingCities && availableCities.length > 0 && (
+                <select
+                  aria-label={isEn ? 'Quick select governorate or region' : 'اختيار سريع للمحافظة أو المنطقة'}
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  {availableCities.map((cityItem) => (
+                    <option key={cityItem.id} value={cityItem.id}>
+                      {isEn ? cityItem.nameEn : cityItem.nameAr} — {isEn ? cityItem.regionEn : cityItem.regionAr}
+                    </option>
+                  ))}
+                </select>
+              )}
 
               {isLoadingCities ? (
                 <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-xs font-bold text-[var(--color-muted)]">
-                  ⏳ {isEn ? 'Loading cities and local providers for selected country...' : 'جاري تحميل قائمة المدن ومقدمي الخدمات للدولة المختارة...'}
+                  ⏳ {isEn ? 'Loading governorates and local providers...' : 'جاري تحميل قائمة المحافظات ومقدمي الخدمات للدولة المختارة...'}
                 </div>
               ) : availableCities.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-6 text-center text-xs text-[var(--color-muted)]">
                   {isEn ? 'No cities available.' : 'لا توجد مدن متاحة.'}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pe-1">
                   {availableCities.map((cityItem) => {
                     const isSelected = selectedCity === cityItem.id;
                     return (
@@ -461,7 +488,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         key={cityItem.id}
                         type="button"
                         onClick={() => setSelectedCity(cityItem.id)}
-                        className={`p-3.5 rounded-xl border text-start transition-all flex items-center justify-between gap-2 ${
+                        className={`soft-card-surface p-3 rounded-xl border text-start transition-all flex items-center justify-between gap-2 ${
                           isSelected
                             ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] font-extrabold'
                             : 'border-[var(--color-border)] bg-[var(--color-control-bg)] hover:border-[var(--color-accent)]'
@@ -475,7 +502,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                             {isEn ? cityItem.regionEn : cityItem.regionAr}
                           </div>
                         </div>
-                        <span className="text-[11px] font-bold text-emerald-800 shrink-0 tabular-nums">
+                        <span className="text-[11px] font-bold text-emerald-800 dark:text-[#A5F3FC] shrink-0 tabular-nums">
                           {cityItem.providersCount} {isEn ? 'providers' : 'خدمة وعيادة'}
                         </span>
                       </button>
