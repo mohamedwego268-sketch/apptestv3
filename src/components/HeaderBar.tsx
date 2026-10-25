@@ -34,12 +34,13 @@ export interface HeaderBarProps {
 
 /**
  * HeaderBar Component for نكبر (Nekbaar).
- * Restructures top sticky header bar into a clean, responsive flexbox layout with zero overlaps.
- * Features:
- * 1. Strict localized brand name ("نكبر" in Arabic, "Nekbaar" in English).
- * 2. Primary nav tabs with high-contrast active state.
- * 3. Standardized soft-filled SVG control buttons sharing identical h-9 height, rounded-2xl geometry, and harmonious borders.
- * 4. Perfectly aligned Notification Bell container with absolute corner counter badge.
+ * Clean flexbox layout with zero overlapping elements:
+ * 1. Brand Wordmark strictly renders "نكبر" in Arabic and "Nekbaar" in English.
+ * 2. Primary desktop navigation bar.
+ * 3. Uniform soft-filled SVG control buttons (Theme, Language, Notifications, Profile) sharing
+ *    identical h-9 height, rounded-2xl geometry, and harmonious borders.
+ * 4. Dynamic Notification Badge that displays unread counter cleanly side-by-side with the bell icon
+ *    and hides seamlessly when unreadNotifCount === 0 without distorting the icon or button layout.
  */
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   lang,
@@ -57,17 +58,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 }) => {
   const isEn = lang === 'en';
 
-  const defaultPrimaryNavIds = ['home', 'medical', 'media', 'community', 'chat', 'assistant', 'services'];
+  const defaultPrimaryNavIds: PageId[] = [
+    'home',
+    'medical',
+    'media',
+    'community',
+    'chat',
+    'assistant',
+    'services',
+  ];
   const primaryNavItems = navItems.filter((item) => defaultPrimaryNavIds.includes(item.id));
+
+  const sharedControlBtnClass =
+    'h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none';
 
   return (
     <header
       id="main-sticky-header"
       data-scrolled={isScrolled ? 'true' : 'false'}
-      className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] glass-sticky-header transition-colors select-none"
+      className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] dark:border-[#1E3646] glass-sticky-header transition-colors select-none"
     >
-      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
-        {/* Zone 1: Localized Official Brand Wordmark ("نكبر" in AR / "Nekbaar" in EN) */}
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+        {/* Zone 1: Localized Official Brand Wordmark (Strictly "نكبر" in AR or "Nekbaar" in EN) */}
         <button
           type="button"
           onClick={() => onNavigate('home')}
@@ -108,9 +120,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </nav>
         )}
 
-        {/* Zone 3: Standardized Aligned Controls (Theme + Lang + Notifications + Profile) */}
+        {/* Zone 3: Standardized Aligned Controls (Theme + Language + Notifications + Profile) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Dark / Light Mode Toggle Button */}
+          {/* 1. Theme Toggle Button (Soft-Filled Sun / Moon SVG) */}
           <button
             id="top-dark-mode-toggle"
             type="button"
@@ -125,27 +137,37 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 ? 'Switch to Dark Mode'
                 : 'التبديل إلى الوضع الليلي'
             }
-            className={`h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs ${
-              darkMode
-                ? 'border-teal-500/50 bg-teal-500/20 text-teal-200 hover:border-teal-400'
-                : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)]'
-            }`}
+            className={sharedControlBtnClass}
           >
             {darkMode ? (
-              <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-amber-300" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="5" />
-                <line x1="12" y1="1" x2="12" y2="3" strokeLinecap="round" />
-                <line x1="12" y1="21" x2="12" y2="23" strokeLinecap="round" />
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" strokeLinecap="round" />
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" strokeLinecap="round" />
-                <line x1="1" y1="12" x2="3" y2="12" strokeLinecap="round" />
-                <line x1="21" y1="12" x2="23" y2="12" strokeLinecap="round" />
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" strokeLinecap="round" />
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" strokeLinecap="round" />
+              <svg
+                className="w-4 h-4 shrink-0 text-amber-400"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                fillOpacity="0.22"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="12" cy="12" r="4.5" />
+                <path
+                  strokeLinecap="round"
+                  d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41"
+                />
               </svg>
             ) : (
-              <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-slate-700" viewBox="0 0 24 24">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              <svg
+                className="w-4 h-4 shrink-0 text-[#0d9488]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                fillOpacity="0.18"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                />
               </svg>
             )}
             <span className="hidden sm:inline">
@@ -153,45 +175,76 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </span>
           </button>
 
-          {/* Language Toggle Button (AR <-> EN) */}
+          {/* 2. Language Toggle Button (Soft-Filled Globe SVG) */}
           <button
             id="top-language-switcher"
             type="button"
             onClick={onToggleLanguage}
             aria-label={isEn ? 'Switch language to Arabic' : 'Switch language to English'}
-            className="h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] flex items-center gap-1.5 transition-all shadow-2xs"
+            className={sharedControlBtnClass}
           >
-            <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-[#0d9488]" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            <svg
+              className="w-4 h-4 shrink-0 text-[#0d9488] dark:text-teal-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              fillOpacity="0.16"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="9.5" />
+              <line x1="2.5" y1="12" x2="21.5" y2="12" />
+              <path d="M12 2.5a14.5 14.5 0 0 1 3.8 9.5 14.5 14.5 0 0 1-3.8 9.5 14.5 14.5 0 0 1-3.8-9.5 14.5 14.5 0 0 1 3.8-9.5z" />
             </svg>
             <span>{isEn ? 'عربي' : 'English'}</span>
           </button>
 
-          {/* Notifications Bell Container with Non-Overlapping Corner Badge */}
+          {/* 3. Notifications Bell Button (Non-Overlapping Inline Counter Pill) */}
           <button
             id="top-notification-bell"
             type="button"
             onClick={() => onNavigate('notifications')}
-            aria-label={isEn ? 'Notifications' : 'الإشعارات اليومية'}
-            className="h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] flex items-center gap-1.5 whitespace-nowrap shrink-0 hover:border-[var(--color-accent)] transition-all shadow-2xs relative"
+            aria-label={
+              unreadNotifCount > 0
+                ? isEn
+                  ? `Notifications (${unreadNotifCount} unread)`
+                  : `الإشعارات اليومية (${unreadNotifCount} غير مقروءة)`
+                : isEn
+                ? 'Notifications (All read)'
+                : 'الإشعارات اليومية (مقروءة بالكامل)'
+            }
+            className={`${sharedControlBtnClass} ${
+              activePage === 'notifications'
+                ? 'border-[#FF8C61] dark:border-[#FF8C61]'
+                : ''
+            }`}
           >
-            <div className="relative flex items-center justify-center">
-              <svg className="w-4 h-4 fill-none stroke-current stroke-2 shrink-0 text-[#FF8C61]" viewBox="0 0 24 24">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h24s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              {unreadNotifCount > 0 && (
-                <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#FF8C61] text-white text-[9.5px] font-black flex items-center justify-center tabular-nums leading-none shadow-2xs">
-                  {unreadNotifCount}
-                </span>
-              )}
-            </div>
+            <svg
+              className="w-4 h-4 shrink-0 text-[#FF8C61]"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              fillOpacity="0.2"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"
+              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
             <span className="hidden md:inline">{isEn ? 'Alerts' : 'إشعارات'}</span>
+            {unreadNotifCount > 0 && (
+              <span
+                data-testid="header-notif-badge"
+                className="min-w-[19px] h-[19px] px-1.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+              >
+                {unreadNotifCount}
+              </span>
+            )}
           </button>
 
-          {/* Color-Coded Parent Profile Button */}
+          {/* 4. Parent Profile Drawer Button (Soft-Filled User Avatar SVG) */}
           <button
             id="open-profile-drawer-btn"
             type="button"
@@ -203,10 +256,17 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               color: parentProfileSpec.badgeTextCss,
               borderColor: parentProfileSpec.badgeBorderCss,
             }}
-            className="h-9 px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs"
+            className="h-9 px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none"
           >
-            <span className="w-5 h-5 rounded-full bg-white/30 dark:bg-black/20 flex items-center justify-center shrink-0">
-              <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+            <span className="w-5 h-5 rounded-full bg-white/30 dark:bg-black/25 inline-flex items-center justify-center shrink-0">
+              <svg
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                fillOpacity="0.2"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
               </svg>

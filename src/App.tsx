@@ -1204,9 +1204,6 @@ export default function App() {
     { id: 'assistant', label: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', iconId: 'assistant' },
     { id: 'family', label: t(lang, 'navFamily'), shortLabel: lang === 'en' ? 'Family' : 'العائلة', iconId: 'family' },
     { id: 'settings', label: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات', shortLabel: lang === 'en' ? 'Profile' : 'الحساب', iconId: 'settings' },
-    { id: 'privacy', label: lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية', shortLabel: lang === 'en' ? 'Privacy' : 'الخصوصية', iconId: 'shield' },
-    { id: 'terms', label: lang === 'en' ? 'Terms & IP Rights' : 'الشروط وحقوق الملكية', shortLabel: lang === 'en' ? 'Terms & IP' : 'الشروط والملكية', iconId: 'star' },
-    { id: 'contact', label: lang === 'en' ? 'Contact Us' : 'تواصل معنا', shortLabel: lang === 'en' ? 'Contact' : 'تواصل معنا', iconId: 'notifications' },
   ];
 
   const childToDelete = useMemo(
@@ -2064,59 +2061,51 @@ export default function App() {
               />
             )}
 
-            {/* UNIFIED FOOTER AREA */}
+            {/* COMPACT SINGLE-LINE MINIMALIST FOOTER */}
             <footer
-              className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3.5 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs"
+              data-testid="minimalist-footer"
+              className="pt-3 pb-1 border-t border-[var(--color-border)]/60 flex flex-wrap items-center justify-between gap-2 text-[11px] font-normal text-[var(--color-muted)]"
               aria-label={lang === 'en' ? 'Policies & Support Footer' : 'تذييل السياسات والتواصل'}
             >
-              <div className="flex items-center gap-2 text-[var(--color-muted)] font-bold">
+              <div className="inline-flex items-center gap-1.5">
                 <span>© 2026 {t(lang, 'brandName')}</span>
                 <span aria-hidden="true">·</span>
                 <span>{lang === 'en' ? 'All Rights Reserved' : 'جميع الحقوق محفوظة'}</span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 font-extrabold">
+              <div className="inline-flex flex-wrap items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => navigateTo('privacy')}
-                  className={`inline-flex items-center gap-1 hover:underline transition-colors ${
-                    activePage === 'privacy'
-                      ? 'text-teal-700 underline'
-                      : 'text-[var(--color-text)]'
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                    activePage === 'privacy' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
-                  <SoftFilledIcon id="shield" size={14} />
-                  <span>{lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}</span>
+                  {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
                 </button>
-                <span aria-hidden="true" className="text-[var(--color-muted)]">
+                <span aria-hidden="true" className="opacity-50">
                   ·
                 </span>
                 <button
                   type="button"
                   onClick={() => navigateTo('terms')}
-                  className={`inline-flex items-center gap-1 hover:underline transition-colors ${
-                    activePage === 'terms'
-                      ? 'text-indigo-700 underline'
-                      : 'text-[var(--color-text)]'
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                    activePage === 'terms' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
-                  <SoftFilledIcon id="star" size={14} />
-                  <span>{lang === 'en' ? 'Terms & IP Rights' : 'الشروط والأحكام وحقوق الملكية'}</span>
+                  {lang === 'en' ? 'Terms & IP Rights' : 'الشروط وحقوق الملكية'}
                 </button>
-                <span aria-hidden="true" className="text-[var(--color-muted)]">
+                <span aria-hidden="true" className="opacity-50">
                   ·
                 </span>
                 <button
                   type="button"
                   onClick={() => navigateTo('contact')}
-                  className={`inline-flex items-center gap-1 hover:underline transition-colors ${
-                    activePage === 'contact'
-                      ? 'text-orange-700 underline'
-                      : 'text-[var(--color-text)]'
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                    activePage === 'contact' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
-                  <SoftFilledIcon id="notifications" size={14} />
-                  <span>{lang === 'en' ? 'Contact Us' : 'تواصل معنا'}</span>
+                  {lang === 'en' ? 'Contact Us' : 'تواصل معنا'}
                 </button>
               </div>
             </footer>

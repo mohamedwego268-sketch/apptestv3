@@ -21,6 +21,7 @@ import {
   SwipeableBannerCarousel,
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from '../components/ThreeDVisuals';
+import { LiveWeatherWidget } from '../components/LiveWeatherWidget';
 import { PageId } from '../context/FamilyAppContext';
 
 export interface HomeDashboardSectionProps {
@@ -58,6 +59,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 }) => {
   const [showAllHomeHubs, setShowAllHomeHubs] = useState<boolean>(false);
   const [homeFocusTab, setHomeFocusTab] = useState<'nearby' | 'children' | 'schedule'>('nearby');
+  const [homeWishlistIds, setHomeWishlistIds] = useState<number[]>([]);
+
+  const toggleHomeWishlist = (id: number) => {
+    setHomeWishlistIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   const isEn = lang === 'en';
   const brandName = t(lang, 'brandName');
@@ -137,7 +143,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   );
 
   return (
-    <section className="space-y-8" aria-label={isEn ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
+    <section className="space-y-5" aria-label={isEn ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
       {/* 1. AUTO-PLAY HERO CAROUSEL AT THE VERY TOP */}
       <SwipeableBannerCarousel
         slides={heroSlides}
@@ -146,7 +152,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         ariaLabel={isEn ? `${brandName} Featured Announcements Carousel` : `لافتات ${brandName} الترويجية المتحركة`}
       />
 
-      {/* 2. PERSONALIZED GREETING & CORE VALUE PROPOSITION HERO */}
+      {/* 2. SLEEK LIVE WEATHER WIDGET STRIP (Current Temp, Condition & Mini Today/Tomorrow Forecast) */}
+      <LiveWeatherWidget
+        city={activeCity}
+        country={state.country}
+        language={lang}
+        darkMode={Boolean(state.darkMode)}
+        userCoords={userCoords}
+      />
+
+      {/* 3. PERSONALIZED GREETING & CORE VALUE PROPOSITION HERO */}
       <div
         id="home-core-value-hero"
         data-testid="home-core-value-hero"
@@ -155,9 +170,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           backgroundImage: heroBgSpec.backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
-        className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col justify-between gap-5"
+        className="image-bg-card rounded-[24px] p-5 sm:p-6 flex flex-col justify-between gap-4"
       >
-        <div className="space-y-4 max-w-3xl">
+        <div className="space-y-3.5 max-w-3xl">
           {/* Top Personalized Greeting Badge & Parent Profile Switcher */}
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -567,7 +582,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </button>
             </div>
 
-            <div className="horizontal-scroll-row py-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 py-1">
               {sortCatalogByCityAndProximity(
                 COMMERCIAL_CATALOG,
                 state.country,
@@ -578,17 +593,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 .map((item) => {
                   const price = state.currency === 'SAR' ? item.priceSAR : item.priceEGP;
                   const itemBg = getCardBackgroundSpec(item.category, state.darkMode);
+                  const isWishlisted = homeWishlistIds.includes(item.id);
                   return (
                     <div
                       key={`home-carousel-${item.id}`}
-                      className="w-[270px] sm:w-[295px] rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.02]"
+                      className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] overflow-hidden soft-card-surface flex flex-col justify-between transition-transform duration-200 hover:scale-[1.01]"
                     >
                       <div
                         style={{ backgroundImage: itemBg.backgroundImageCss }}
-                        className="image-bg-card !rounded-none !border-0 p-4 min-h-[108px] flex flex-col justify-between"
+                        className="image-bg-card !rounded-none !border-0 p-3.5 min-h-[96px] flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold truncate">
+                          <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold truncate">
                             {locText(item.categoryLabel, lang)}
                           </span>
                           <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums">
@@ -596,28 +612,61 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                             {isEn ? 'km' : 'كم'}
                           </span>
                         </div>
-                        <h3 className="image-card-title text-sm sm:text-base font-extrabold line-clamp-1 mt-2">
+                        <h3 className="image-card-title text-xs sm:text-sm font-extrabold line-clamp-1 mt-2">
                           {isEn ? item.nameEn : item.name}
                         </h3>
                       </div>
-                      <div className="p-4 flex items-center justify-between gap-2">
+                      <div className="px-3.5 py-2.5 flex items-center justify-between gap-2">
                         <div className="text-sm font-extrabold text-[var(--color-role-text)] tabular-nums">
                           {formatCurrency(price, state.currency, state.language)}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
-                            onClick={() => onAddToCart(item)}
-                            className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-accent)] text-[var(--color-accent-contrast)] active:scale-95 transition-transform"
+                            onClick={() => toggleHomeWishlist(item.id)}
+                            aria-label={isEn ? 'Toggle Wishlist' : 'إضافة للمفضلة'}
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 ${
+                              isWishlisted
+                                ? 'bg-[#FFF0ED] dark:bg-[#FF8C61]/20 border-[#FF8C61] text-[#FF8C61]'
+                                : 'bg-[var(--color-control-bg)] border-[var(--color-border)] text-[var(--color-muted)] hover:text-[#FF8C61] hover:border-[#FF8C61]/50'
+                            }`}
                           >
-                            {isEn ? '+ Add to Cart' : '+ أضف للسلة'}
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                                fill="currentColor"
+                                fillOpacity={isWishlisted ? '0.9' : '0.18'}
+                                stroke="currentColor"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
                           </button>
                           <button
                             type="button"
-                            onClick={() => navigateTo('services')}
-                            className="min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                            onClick={() => onAddToCart(item)}
+                            aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
+                            className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95"
                           >
-                            {isEn ? 'View' : 'عرض'}
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                              <path
+                                d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"
+                                fill="currentColor"
+                                fillOpacity="0.22"
+                                stroke="currentColor"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M3 6h18M16 10a4 4 0 01-8 0"
+                                stroke="currentColor"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
                           </button>
                         </div>
                       </div>

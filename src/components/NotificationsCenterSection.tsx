@@ -110,17 +110,20 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
                 onClick={() => {
                   const next = !isDismissedAll;
                   setIsDismissedAll(next);
+                  if (next) {
+                    onMarkAllRead();
+                  }
                   onShowToast?.(
                     next
                       ? isEn
-                        ? 'Notifications cleared'
-                        : 'تم مسح قائمة الإشعارات مؤقتًا'
+                        ? 'Notifications cleared & marked as read'
+                        : 'تم مسح قائمة الإشعارات وتحديدها كمقروءة'
                       : isEn
                       ? 'Notifications restored'
                       : 'تمت استعادة الإشعارات اليومية بنجاح'
                   );
                 }}
-                className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
+                className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
               >
                 {isDismissedAll
                   ? isEn
@@ -130,7 +133,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
                   ? '🗑️ Clear List'
                   : '🗑️ مسح الإشعارات'}
               </button>
-              {notifications.length > 0 && (
+              {notifications.length > 0 && unreadCount > 0 && (
                 <PrimaryCtaButton
                   variant="orange"
                   size="sm"
@@ -164,28 +167,35 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
               {notifications.map((notif) => {
                 const slotCardStyle =
                   notif.slot === 'morning'
-                    ? 'bg-amber-50/80 border-amber-200/80'
+                    ? 'bg-amber-50/75 dark:bg-[#142430] border-amber-200/75 dark:border-[#1E3646]'
                     : notif.slot === 'midday'
-                    ? 'bg-sky-50/80 border-sky-200/80'
-                    : 'bg-purple-50/80 border-purple-200/80';
+                    ? 'bg-sky-50/75 dark:bg-[#142430] border-sky-200/75 dark:border-[#1E3646]'
+                    : 'bg-teal-50/75 dark:bg-[#142430] border-teal-200/75 dark:border-[#1E3646]';
 
                 return (
                   <div
                     key={notif.id}
                     className={`rounded-2xl border p-4 transition-all ${slotCardStyle} ${
-                      notif.read ? 'opacity-80' : 'shadow-2xs'
+                      notif.read ? 'opacity-85' : 'shadow-2xs'
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="px-2.5 py-0.5 rounded-xl bg-white text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs">
-                        {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2.5 py-0.5 rounded-xl bg-white dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs">
+                          {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
+                        </span>
+                        {notif.read && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 text-[10px] font-extrabold">
+                            ✓ {isEn ? 'Read' : 'مقروء'}
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-xs font-extrabold text-[var(--color-muted)] tabular-nums">
                         <span>🕒 {notif.scheduledTime}</span>
                         <button
                           type="button"
                           onClick={() => onToggleReadNotification(notif.id)}
-                          className="px-3 py-1 rounded-xl border border-[var(--color-border)] bg-white text-[11px] font-extrabold text-[var(--color-text)]"
+                          className="px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-[11px] font-extrabold text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
                         >
                           {notif.read
                             ? isEn
@@ -212,12 +222,12 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
         </div>
 
         {/* Per-Parent Preferences & Quiet Hours */}
-        <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
+        <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-4 shadow-2xs">
           <h3 className="text-base font-extrabold text-[var(--color-text)]">
             ⚙️ {isEn ? 'Notification Schedule' : 'مواعيد الإشعارات وساعات الهدوء'}
           </h3>
 
-          <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80 cursor-pointer">
+          <label className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-50/70 dark:bg-[#142430] border border-amber-200/80 dark:border-[#1E3646] cursor-pointer">
             <input
               type="checkbox"
               checked={prefs.enabled}

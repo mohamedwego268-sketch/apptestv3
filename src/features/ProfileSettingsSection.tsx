@@ -11,7 +11,6 @@ import {
   locText,
   ParentProfileThemeSpec,
 } from '../domain/familySpaceCore';
-import { THREE_D_ASSET_MANIFEST } from '../domain/assetManifest3D';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { t } from '../domain/i18n';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
@@ -152,8 +151,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           </div>
         </div>
 
-        {/* Quick Profile Image Background Grid Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pt-2">
+        {/* Compact Quick Profile Overview Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
           {[
             {
               key: 'children',
@@ -198,15 +197,15 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 data-image-card="true"
                 onClick={pCard.onClick}
                 style={{ backgroundImage: spec.backgroundImageCss }}
-                className="image-bg-card rounded-2xl p-4 text-start flex flex-col justify-between min-h-[104px]"
+                className="image-bg-card rounded-2xl p-3 text-start flex flex-col justify-between min-h-[72px]"
               >
                 <div className="flex items-center justify-between gap-2 w-full">
-                  <SoftFilledIcon id={pCard.iconId} size={22} />
-                  <span className="image-card-badge px-2.5 py-0.5 rounded-lg text-[10.5px] font-extrabold tabular-nums">
+                  <SoftFilledIcon id={pCard.iconId} size={18} />
+                  <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums">
                     {pCard.badge}
                   </span>
                 </div>
-                <div className="image-card-title text-xs sm:text-sm font-extrabold mt-3">
+                <div className="image-card-title text-xs font-extrabold mt-2">
                   {pCard.title}
                 </div>
               </button>
@@ -449,35 +448,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                       {lang === 'en' ? 'Download Full Family Snapshot' : 'تنزيل لقطة كاملة لبيانات الأسرة'}
                     </button>
                   </div>
-                </div>
-              </CollapsibleSectionCard>
-
-              {/* 3D Asset Manifest Registry */}
-              <CollapsibleSectionCard
-                title={
-                  lang === 'en'
-                    ? `3D Asset Manifest (${THREE_D_ASSET_MANIFEST.length} Groups)`
-                    : `سجل الأصول ثلاثية الأبعاد (${THREE_D_ASSET_MANIFEST.length} مجموعات)`
-                }
-                subtitle={lang === 'en' ? 'Registered Three.js and procedural assets' : 'الأصول البرمجية وثلاثية الأبعاد المسجلة'}
-                iconId="games"
-                badgeLabel="Three.js"
-                badgeTone="sky"
-                cardTone="sky"
-                defaultOpen={false}
-              >
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px]">
-                  {THREE_D_ASSET_MANIFEST.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="rounded-xl bg-[var(--color-control-bg)] px-2.5 py-1.5 flex items-center justify-between gap-2"
-                    >
-                      <span className="font-bold text-[var(--color-text)] truncate">
-                        {lang === 'en' ? entry.titleEn : entry.titleAr}
-                      </span>
-                      <span className="text-emerald-700 font-extrabold shrink-0">{entry.renderEngine}</span>
-                    </div>
-                  ))}
                 </div>
               </CollapsibleSectionCard>
             </div>
