@@ -169,13 +169,218 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     isEn ? 'Leave at door / Don’t ring bell (baby sleeping)' : 'يرجى الاتصال عند الوصول وعدم رن الجرس (الطفل نائم)'
   );
 
+  // Dedicated Full-Page Category View state (null = Categorized Horizontal Rows overview)
+  const [activeCategoryPageId, setActiveCategoryPageId] = useState<string | null>(null);
+
+  const STORE_CATEGORY_SECTIONS = [
+    {
+      id: 'nursery',
+      titleAr: 'الحضانات والمدارس والأكاديميات',
+      titleEn: 'Schools, Nurseries & Academies',
+      subtitleAr: 'حضانات مونتيسوري، مدارس دولية، وأكاديميات تنمية المهارات المعتمدة',
+      subtitleEn: 'Verified Montessori nurseries, international preschools & skill academies',
+      badgeAr: 'حضانات ومدارس',
+      badgeEn: 'Schools & Nurseries',
+      emoji: '🏫',
+      bgKey: 'nursery',
+      matchCategories: ['nursery'],
+    },
+    {
+      id: 'clothing',
+      titleAr: 'الألبسة وأزياء الأطفال القطنية',
+      titleEn: 'Apparel & Organic Kids Fashion',
+      subtitleAr: 'أطقم قطنية عضوية، ملابس نوم ناعمة، وأحذية طبية مرنة للخطوات الأولى',
+      subtitleEn: '100% organic cotton sets, cozy sleepwear & ergonomic toddler footwear',
+      badgeAr: 'ألبسة وأزياء',
+      badgeEn: 'Apparel & Fashion',
+      emoji: '👕',
+      bgKey: 'clothing',
+      matchCategories: ['clothing'],
+    },
+    {
+      id: 'toys',
+      titleAr: 'الترفيه والألعاب التعليمية (Montessori & STEM)',
+      titleEn: 'Entertainment & Educational Toys',
+      subtitleAr: 'ألعاب خشبية تفاعلية، مختبرات علوم وفضاء، ودراجات توازن آمنة بدون شاشات',
+      subtitleEn: 'Interactive wooden Montessori sets, 3D STEM kits & safe balance bikes',
+      badgeAr: 'ترفيه وألعاب',
+      badgeEn: 'Toys & Entertainment',
+      emoji: '🧸',
+      bgKey: 'toys',
+      matchCategories: ['toys'],
+    },
+    {
+      id: 'essentials',
+      titleAr: 'مستلزمات الرضع والعناية اليومية',
+      titleEn: 'Daily Baby Care & Essentials',
+      subtitleAr: 'باقات التوفير الشهرية، حقائب التنظيم الذكية، وأدوات الطعام السيليكون الطبي',
+      subtitleEn: 'Monthly family value bundles, smart organizer bags & silicone feeding sets',
+      badgeAr: 'مستلزمات يومية',
+      badgeEn: 'Baby Essentials',
+      emoji: '🍼',
+      bgKey: 'essentials',
+      matchCategories: ['essentials'],
+    },
+    {
+      id: 'services',
+      titleAr: 'العيادات والاستشارات والتوصيل السريع',
+      titleEn: 'Clinics, Consultations & Express Delivery',
+      subtitleAr: 'عيادات طب الأطفال والنمو، الإرشاد الأسري والتربوي، وخدمات التوصيل الفوري',
+      subtitleEn: 'Pediatric growth clinics, family counseling & same-day express delivery',
+      badgeAr: 'عيادات وخدمات',
+      badgeEn: 'Clinics & Services',
+      emoji: '🩺',
+      bgKey: 'doctor',
+      matchCategories: ['doctor', 'consultation', 'delivery'],
+    },
+  ] as const;
+
+  const openCategoryFullPage = (secId: string) => {
+    setActiveCategoryPageId(secId);
+    setCategoryFilter('all');
+    setStoreFlowStep('catalog');
+    setShowCartPanel(false);
+  };
+
+  const renderCompactProductCard = (
+    item: CommercialCatalogItem,
+    layoutMode: 'carousel' | 'grid'
+  ) => {
+    const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
+    const origVal = currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
+    const displayTitle = isEn ? item.nameEn : item.name;
+    const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
+    const tone = PASTEL_CARD_TONES[toneKey];
+    const itemBgSpec = getCardBackgroundSpec(item.category, darkMode);
+
+    return (
+      <div
+        key={`${layoutMode}-${item.id}`}
+        data-store-product-card={item.id}
+        className={`${
+          layoutMode === 'carousel'
+            ? 'w-[232px] sm:w-[256px] shrink-0'
+            : 'w-full'
+        } rounded-[20px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface hover:scale-[1.01] active:scale-[0.99] transition-all`}
+      >
+        <div className="space-y-2">
+          {/* Compact Visual Header */}
+          <div
+            onClick={() => onInspectCommercialItem(item)}
+            data-image-card="true"
+            style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
+            className="image-bg-card rounded-xl p-2.5 sm:p-3 min-h-[78px] sm:min-h-[86px] cursor-pointer flex flex-col justify-between gap-1.5"
+          >
+            <div className="flex items-center justify-between gap-1.5">
+              <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-extrabold truncate">
+                {item.emoji} {locText(item.categoryLabel, language)}
+              </span>
+              <span
+                data-keep-dark-text="true"
+                className="image-card-rating-pill px-1.5 py-0.5 rounded-md text-[9px] sm:text-[9.5px] font-extrabold tabular-nums shrink-0"
+              >
+                ★ {item.rating}
+              </span>
+            </div>
+
+            <div className="flex items-end justify-between gap-1.5 pt-0.5">
+              <h4 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
+                {displayTitle}
+              </h4>
+            </div>
+          </div>
+
+          {/* Compact Metadata Strip */}
+          <div className="flex flex-wrap items-center gap-1 text-[10px] font-bold text-[var(--color-muted)]">
+            <span className="truncate">📍 {locText(item.city, language)}</span>
+            {item.deliveryEstimateAr && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
+                  🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Price + Universal Minimalist Action Icons (Wishlist Heart + Shopping Cart) */}
+        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-baseline gap-1 tabular-nums">
+              {origVal && (
+                <span className="text-[10px] line-through text-[var(--color-muted)]">
+                  {formatCurrency(origVal, currency, language)}
+                </span>
+              )}
+              <strong className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
+                {formatCurrency(priceVal, currency, language)}
+              </strong>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Minimalist Wishlist / Heart Icon (Warm Coral #FF8C61) */}
+            <button
+              type="button"
+              onClick={() => onAddProductToWishes(item)}
+              title={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
+              aria-label={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
+              className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  fill="currentColor"
+                  fillOpacity="0.2"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+
+            {/* Minimalist Shopping Cart Icon (Teal #0d9488) */}
+            <button
+              type="button"
+              onClick={() => onAddToCart(item, item.variants?.[0])}
+              title={isEn ? 'Add to Cart' : 'أضف للسلة'}
+              aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
+              className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"
+                  fill="currentColor"
+                  fillOpacity="0.22"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M3 6h18M16 10a4 4 0 01-8 0"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const filtered = COMMERCIAL_CATALOG.filter((item) => {
     if (segment !== 'all' && item.kind !== segment) return false;
     if (collectionFilter !== 'all' && item.collectionTag !== collectionFilter) return false;
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
     if (cityScopeFilter === 'local' && item.kind === 'service') {
       const matchesCountry = item.country === 'ALL' || item.country === country;
-      const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن';
+      const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن' || item.city.includes(city);
       if (!matchesCountry || !matchesCity) return false;
     }
     if (searchQuery.trim()) {
@@ -310,11 +515,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       subtitle: isEn
         ? `Fast Delivery in ${displayCity} · Live Courier Tracking`
         : `توصيل فوري في ${city} · تتبع المندوب مباشرة على الخريطة`,
-      ctaLabel: isEn ? 'Shop Bestsellers Now' : 'تسوّق الأكثر مبيعًا الآن',
-      onCtaClick: () => {
-        setSegment('product');
-        setCollectionFilter('bestseller');
-      },
+      ctaLabel: isEn ? 'Explore Toys & Entertainment' : 'استكشف قسم الألعاب والترفيه',
+      onCtaClick: () => openCategoryFullPage('toys'),
       iconId: 'services',
       gradient: 'linear-gradient(125deg, #fff4e6, #ffedd5, #fde8ef)',
       ctaVariant: 'orange',
@@ -336,28 +538,27 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     },
     {
       id: 'store-slide-nurseries',
-      badge: isEn ? '🏫 Verified Nurseries & Clinics' : '🏫 حضانات وعيادات موثقة',
+      badge: isEn ? '🏫 Verified Nurseries & Schools' : '🏫 حضانات ومدارس موثقة',
       title: isEn
-        ? `Top Nurseries & Pediatric Services in ${displayCity}`
-        : `أفضل الحضانات والخدمات المعتمدة في ${city}`,
+        ? `Top Nurseries, Preschools & Academies in ${displayCity}`
+        : `أفضل الحضانات والمدارس المعتمدة في ${city}`,
       subtitle: isEn
         ? 'Verified Ratings · Direct Booking · Local Directory'
         : 'تقييمات موثقة · حجز مباشر · دليل مدينتك',
-      ctaLabel: isEn ? 'Explore Local Services' : 'استكشف خدمات مدينتي',
-      onCtaClick: () => {
-        setSegment('service');
-        setCityScopeFilter('local');
-      },
+      ctaLabel: isEn ? 'View All Schools & Nurseries' : 'عرض قسم الحضانات والمدارس',
+      onCtaClick: () => openCategoryFullPage('nursery'),
       iconId: 'children',
       gradient: 'linear-gradient(125deg, #eef2ff, #e0e7ff, #f3e8ff)',
       ctaVariant: 'indigo',
     },
   ];
 
+  const activeCategorySpec = STORE_CATEGORY_SECTIONS.find((s) => s.id === activeCategoryPageId) || null;
+
   return (
     <section className="space-y-6" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
-      {/* 1. Auto-Play Hero Carousel at the VERY TOP of the Store page for featured products & sponsored deals */}
-      {storeFlowStep === 'catalog' && (
+      {/* 1. Auto-Play Hero Carousel at the VERY TOP of the Store page */}
+      {storeFlowStep === 'catalog' && !activeCategorySpec && (
         <SwipeableBannerCarousel
           slides={storeBanners}
           language={language}
@@ -370,10 +571,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* Sticky Glassmorphism Action Strip: City Filter + Live Order Tracking + Cart Button */}
       <div
         id="store-sticky-subheader"
-        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/60 bg-amber-50/85 px-4 py-3 shadow-2xs flex flex-wrap items-center justify-between gap-2.5 transition-all"
+        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/60 dark:border-[#1E3646] bg-amber-50/85 dark:bg-[#101D26]/95 px-4 py-3 shadow-2xs flex flex-wrap items-center justify-between gap-2.5 transition-all"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-2xl bg-white shadow-2xs flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#142430] border border-transparent dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
             <ThreeDIcon id="services" size={24} />
           </div>
           <div className="min-w-0">
@@ -387,7 +588,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] bg-white/90 p-0.5">
+          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] p-0.5">
             <button
               type="button"
               onClick={() => setCityScopeFilter('all')}
@@ -422,7 +623,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 ${
               showLiveTracking && storeFlowStep === 'catalog'
                 ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs'
-                : 'border-emerald-300 bg-emerald-50 text-emerald-950 hover:bg-emerald-100'
+                : 'border-emerald-300 dark:border-[#1E3646] bg-emerald-50 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] hover:bg-emerald-100'
             }`}
           >
             <span>🛵</span>
@@ -445,9 +646,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       </div>
 
-      {/* Store Flow Navigation Stepper Bar (Catalog -> Checkout إتمام الطلب -> Order Confirmed -> Live Tracking) */}
+      {/* Store Flow Navigation Stepper Bar */}
       <div
-        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-2 shadow-2xs flex flex-wrap items-center justify-between gap-2"
+        className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-2 shadow-2xs flex flex-wrap items-center justify-between gap-2"
         role="tablist"
         aria-label={isEn ? 'Store & Checkout Steps' : 'مراحل التسوق وإتمام الطلب'}
       >
@@ -459,6 +660,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             onClick={() => {
               setStoreFlowStep('catalog');
               setShowCartPanel(false);
+              setActiveCategoryPageId(null);
             }}
             className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
               storeFlowStep === 'catalog' && !showCartPanel
@@ -467,7 +669,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }`}
           >
             <span>🛍️</span>
-            <span>{isEn ? '1. Store Catalog' : '١. تصفح المتجر'}</span>
+            <span>{isEn ? '1. Store Categories' : '١. أقسام المتجر'}</span>
           </button>
 
           <button
@@ -481,7 +683,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
               storeFlowStep === 'checkout'
                 ? 'bg-orange-600 text-white shadow-2xs'
-                : 'bg-orange-50 text-orange-950 border border-orange-200 hover:bg-orange-100'
+                : 'bg-orange-50 dark:bg-[#142430] text-orange-950 dark:text-[#FDBA74] border border-orange-200 dark:border-[#1E3646] hover:bg-orange-100'
             }`}
           >
             <span>💳</span>
@@ -499,7 +701,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
               storeFlowStep === 'confirmed'
                 ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'bg-emerald-50 text-emerald-950 border border-emerald-200 hover:bg-emerald-100'
+                : 'bg-emerald-50 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] border border-emerald-200 dark:border-[#1E3646] hover:bg-emerald-100'
             }`}
           >
             <span>✅</span>
@@ -511,7 +713,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           🔒 {isEn ? 'Safe Mock Checkout (No Real Charge)' : 'محاكاة دفع آمنة ١٠٠٪ لأغراض الاختبار'}
         </span>
       </div>
-
 
       {/* =====================================================================
           TALABAT / UBER-EATS STYLE LIVE ORDER TRACKING & ROUTE MAP
@@ -535,11 +736,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 }`
           }
           badge={
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-900 dark:text-emerald-200 text-[10px] font-extrabold border border-emerald-200/50 dark:border-emerald-800">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold border border-emerald-200/50 dark:border-[#1E3646]">
               #{latestOrder ? latestOrder.id : 'FS-9042'} · {isEn ? 'LIVE GPS' : 'تتبع حي'}
             </span>
           }
-          bodyClassName="p-4 sm:p-5 space-y-4 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 dark:from-[#10242B]/90 dark:via-[#101D26] dark:to-[#0E202B]/90"
+          bodyClassName="p-4 sm:p-5 space-y-4 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#101D26]"
         >
           {/* Header Bar */}
           <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -549,7 +750,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 text-[10px] font-extrabold">
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                     {isEn ? 'LIVE GPS TRACKING' : 'تتبع مباشر · Talabat Style'}
                   </span>
                   <span className="text-[11px] font-extrabold text-[var(--color-muted)] tabular-nums">
@@ -563,8 +764,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="rounded-xl bg-emerald-950 text-white px-3 py-1.5 text-center shadow-2xs">
-                <div className="text-[9px] font-bold text-emerald-200 uppercase">
+              <div className="rounded-xl bg-[#142430] border border-[#1E3646] text-white px-3 py-1.5 text-center shadow-2xs">
+                <div className="text-[9px] font-bold text-[#A5F3FC] uppercase">
                   {isEn ? 'Estimated Arrival' : 'وقت الوصول المتوقع'}
                 </div>
                 <div className="text-xs sm:text-sm font-extrabold tabular-nums">
@@ -577,19 +778,20 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     : `${activeStage.etaMinutes} دقيقة`}
                 </div>
               </div>
+
               <button
                 type="button"
                 onClick={() => setShowLiveTracking(false)}
-                className="min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] bg-white text-[var(--color-muted)]"
+                className="min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-muted)]"
               >
                 {isEn ? 'Hide' : 'إخفاء'}
               </button>
             </div>
           </div>
 
-          {/* Status Timeline Stepper (Order Received -> Preparing -> Out for Delivery -> Delivered) */}
+          {/* Status Timeline Stepper */}
           <div className="space-y-2">
-            <div className="w-full h-2 rounded-full bg-emerald-100 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-emerald-100 dark:bg-[#142430] overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 transition-all duration-300"
                 style={{ width: `${activeStage.progressPct}%` }}
@@ -607,20 +809,20 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     onClick={() => setTrackingStageIdx(stage.index)}
                     className={`rounded-xl border p-2.5 text-start transition-all cursor-pointer flex items-center gap-2 ${
                       isCurrent
-                        ? 'border-emerald-600 bg-emerald-50/95 ring-2 ring-emerald-500/20 shadow-2xs'
+                        ? 'border-emerald-600 bg-emerald-50/95 dark:bg-[#142430] ring-2 ring-emerald-500/20 shadow-2xs'
                         : isDone
-                        ? 'border-emerald-200 bg-white text-emerald-950'
-                        : 'border-[var(--color-border)] bg-white/60 text-[var(--color-muted)]'
+                        ? 'border-emerald-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-emerald-950 dark:text-[#F8FAFC]'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white/60 dark:bg-[#101D26] text-[var(--color-muted)]'
                     }`}
                   >
-                    <span className="w-8 h-8 rounded-lg bg-white border border-emerald-100 flex items-center justify-center text-base shrink-0 shadow-2xs">
+                    <span className="w-8 h-8 rounded-lg bg-white dark:bg-[#142430] border border-emerald-100 dark:border-[#1E3646] flex items-center justify-center text-base shrink-0 shadow-2xs">
                       {stage.icon}
                     </span>
                     <div className="min-w-0">
                       <div className="text-[11px] font-extrabold text-[var(--color-text)] truncate">
                         {isEn ? stage.titleEn : stage.titleAr}
                       </div>
-                      <div className="text-[10px] font-bold text-emerald-700">
+                      <div className="text-[10px] font-bold text-emerald-700 dark:text-[#2DD4BF]">
                         {isCurrent
                           ? isEn
                             ? '● Active Now'
@@ -643,17 +845,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           {/* Interactive Live Map & Courier Card Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.45fr_1fr] gap-3.5 items-stretch">
             {/* Mock Live GPS Route Map */}
-            <div className="rounded-2xl border border-emerald-200 bg-slate-900 text-white p-3 relative overflow-hidden min-h-[195px] flex flex-col justify-between">
+            <div className="rounded-2xl border border-emerald-200 dark:border-[#1E3646] bg-[#0B131A] text-white p-3 relative overflow-hidden min-h-[195px] flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2 z-10 text-[11px] font-bold">
-                <span className="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-xs text-emerald-300">
+                <span className="px-2.5 py-1 rounded-lg bg-[#142430] border border-[#1E3646] text-[#A5F3FC]">
                   🛰️ {isEn ? `Live Route · ${displayCity}` : `خريطة التوصيل المباشرة · ${city}`}
                 </span>
-                <span className="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-xs text-white tabular-nums">
+                <span className="px-2.5 py-1 rounded-lg bg-[#142430] border border-[#1E3646] text-white tabular-nums">
                   📍 {locText(shippingAddress.streetDetails, language) || (isEn ? 'Family Home' : 'منزل الأسرة')}
                 </span>
               </div>
 
-              {/* SVG Street Grid + Route + Moving Courier Marker */}
               <svg
                 viewBox="0 0 400 165"
                 className="w-full h-36 my-1 rounded-xl"
@@ -662,13 +863,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               >
                 <defs>
                   <linearGradient id="mapBgGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#0f172a" />
-                    <stop offset="100%" stopColor="#1e293b" />
+                    <stop offset="0%" stopColor="#0B131A" />
+                    <stop offset="100%" stopColor="#142430" />
                   </linearGradient>
                 </defs>
                 <rect width="400" height="165" rx="12" fill="url(#mapBgGrad)" />
 
-                {/* City Blocks & Roads */}
                 <g stroke="#334155" strokeWidth="10" strokeLinecap="round" fill="none" opacity="0.7">
                   <path d="M 20 135 L 150 135 L 220 85 L 375 85" />
                   <path d="M 55 25 L 55 150" />
@@ -677,7 +877,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   <path d="M 30 55 L 365 55" />
                 </g>
 
-                {/* Planned Route Line (Dashed) */}
                 <path
                   d="M 68 128 C 120 128, 130 95, 195 88 C 250 82, 285 58, 332 54"
                   stroke="#64748b"
@@ -686,7 +885,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   fill="none"
                 />
 
-                {/* Active Route Line */}
                 <path
                   d="M 68 128 C 120 128, 130 95, 195 88 C 250 82, 285 58, 332 54"
                   stroke="#10b981"
@@ -697,7 +895,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   strokeDashoffset={Math.round(320 * (1 - activeStage.progressPct / 100))}
                 />
 
-                {/* Store Pin (Origin) */}
                 <g transform="translate(68, 128)">
                   <circle r="13" fill="#f97316" />
                   <circle r="6" fill="#ffffff" />
@@ -706,7 +903,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   {isEn ? 'Store' : 'المتجر'}
                 </text>
 
-                {/* Home Pin (Destination) */}
                 <g transform="translate(332, 54)">
                   <circle r="15" fill="#10b981" opacity="0.3" />
                   <circle r="10" fill="#10b981" />
@@ -716,7 +912,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   {isEn ? 'Home' : 'المنزل'}
                 </text>
 
-                {/* Moving Courier Pin */}
                 <g
                   transform={`translate(${activeStage.courierCoords.x}, ${activeStage.courierCoords.y})`}
                 >
@@ -747,22 +942,22 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
 
             {/* Driver Contact & Delivery Instructions Card */}
-            <div className="rounded-2xl border border-emerald-200/90 bg-white p-3.5 flex flex-col justify-between gap-3">
+            <div className="rounded-2xl border border-emerald-200/90 dark:border-[#1E3646] bg-white dark:bg-[#101D26] p-3.5 flex flex-col justify-between gap-3">
               <div className="flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-2xl shrink-0">
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646] flex items-center justify-center text-2xl shrink-0">
                     👷🏻‍♂️
                   </div>
                   <div>
                     <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                       {isEn ? 'Capt. Tarek Al-Harbi' : 'كابتن طارق الحربي'}
                     </div>
-                    <div className="text-[11px] font-bold text-emerald-800">
+                    <div className="text-[11px] font-bold text-emerald-800 dark:text-[#2DD4BF]">
                       ⭐ 4.95 · {isEn ? 'Verified Family Courier' : 'مندوب توصيل طلبات الأسرة'}
                     </div>
                   </div>
                 </div>
-                <span className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-900 text-[10px] font-extrabold tabular-nums">
+                <span className="px-2 py-1 rounded-lg bg-emerald-50 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold tabular-nums">
                   🛵 4821-أ ب
                 </span>
               </div>
@@ -779,7 +974,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   type="text"
                   value={driverInstructionNote}
                   onChange={(e) => setDriverInstructionNote(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-text)]"
+                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-text)]"
                 />
               </div>
 
@@ -807,7 +1002,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         : '💬 تم إرسال ملاحظة التوصيل للمندوب بنجاح!'
                     )
                   }
-                  className="min-h-[36px] px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-950 text-xs font-extrabold flex items-center justify-center gap-1.5"
+                  className="min-h-[36px] px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-[#1E3646] bg-emerald-50 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] text-xs font-extrabold flex items-center justify-center gap-1.5"
                 >
                   <span>💬</span>
                   <span>{isEn ? 'Message' : 'رسالة سريعة'}</span>
@@ -826,16 +1021,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         <div
           id="shopping-cart-panel"
           data-testid="store-checkout-flow-container"
-          className="rounded-[22px] border-2 border-orange-300 bg-[var(--color-surface)] p-4 sm:p-5 space-y-4 shadow-md"
+          className="rounded-[22px] border-2 border-orange-300 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 shadow-md"
         >
           {/* Header Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] flex items-center justify-center">
                 <ThreeDIcon id="cart" size={26} />
               </div>
               <div>
-                <span className="inline-block px-2 py-0.5 rounded-md bg-orange-100 text-orange-900 text-[10px] font-extrabold">
+                <span className="inline-block px-2 py-0.5 rounded-md bg-orange-100 dark:bg-[#142430] text-orange-900 dark:text-[#FDBA74] text-[10px] font-extrabold">
                   {storeFlowStep === 'confirmed'
                     ? isEn
                       ? 'ORDER CONFIRMED · تم تأكيد الطلب'
@@ -862,7 +1057,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   id="clear-cart-empty-btn"
                   type="button"
                   onClick={handleClearCartForEmptyState}
-                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-rose-200 bg-rose-50 text-rose-900 hover:bg-rose-100 transition-colors"
+                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-rose-200 dark:border-[#1E3646] bg-rose-50 dark:bg-[#142430] text-rose-900 dark:text-[#FDA4AF] hover:bg-rose-100 transition-colors"
                 >
                   🗑️ {isEn ? 'Clear Cart' : 'تفريغ السلة'}
                 </button>
@@ -871,7 +1066,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <button
                   type="button"
                   onClick={() => setStoreFlowStep('checkout')}
-                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-orange-300 bg-orange-50 text-orange-950"
+                  className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-orange-300 dark:border-[#1E3646] bg-orange-50 dark:bg-[#142430] text-orange-950 dark:text-[#FDBA74]"
                 >
                   {isEn ? '← Back to Checkout' : '← الرجوع لإتمام الطلب'}
                 </button>
@@ -882,34 +1077,30 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   setShowCartPanel(false);
                   setStoreFlowStep('catalog');
                 }}
-                className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)]"
+                className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)]"
               >
                 {isEn ? 'Close' : 'إغلاق'}
               </button>
             </div>
           </div>
 
-          {/* -----------------------------------------------------------------
-              VIEW A: PAYMENT SUCCESSFUL / ORDER CONFIRMED SCREEN
-              ----------------------------------------------------------------- */}
           {storeFlowStep === 'confirmed' ? (
             <div
               id="store-order-confirmed-screen"
               data-testid="payment-successful-screen"
-              className="rounded-[20px] border-2 border-emerald-300 bg-gradient-to-br from-emerald-50/95 via-white to-teal-50/85 p-4 sm:p-6 space-y-5 shadow-2xs"
+              className="rounded-[20px] border-2 border-emerald-300 dark:border-[#1E3646] bg-gradient-to-br from-emerald-50/95 via-white to-teal-50/85 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#101D26] p-4 sm:p-6 space-y-5 shadow-2xs"
             >
-              {/* Success Banner */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-emerald-200/80">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-emerald-200/80 dark:border-[#1E3646]">
                 <div className="flex items-center gap-3.5">
                   <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-3xl shadow-sm shrink-0">
                     ✅
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-950 text-[10px] font-extrabold">
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                         {isEn ? 'PAYMENT SUCCESSFUL' : 'عملية دفع وتأكيد ناجحة'}
                       </span>
-                      <span className="text-xs font-extrabold text-emerald-900 tabular-nums">
+                      <span className="text-xs font-extrabold text-emerald-900 dark:text-[#2DD4BF] tabular-nums">
                         #{latestOrder ? latestOrder.id : 'FS-9042'}
                       </span>
                     </div>
@@ -926,7 +1117,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                 </div>
 
-                {/* Primary CTA leading directly to Live Order Tracking UI */}
                 <PrimaryCtaButton
                   variant="emerald"
                   size="lg"
@@ -951,21 +1141,19 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 </PrimaryCtaButton>
               </div>
 
-              {/* Confirmed Order Summary Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Order Details & Payment Method Summary */}
-                <div className="rounded-2xl border border-emerald-200 bg-white p-4 space-y-3 shadow-2xs">
+                <div className="rounded-2xl border border-emerald-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <h5 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                       📋 {isEn ? 'Confirmed Order Summary' : 'ملخص الطلب المؤكد وتفاصيل الدفع'}
                     </h5>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-900 text-[10px] font-extrabold">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-[#101D26] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                       {isEn ? 'Verified' : 'مؤكد ✓'}
                     </span>
                   </div>
 
                   <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-[#1E3646]">
                       <span className="font-bold text-[var(--color-muted)]">
                         {isEn ? 'Order Number:' : 'رقم الطلب:'}
                       </span>
@@ -974,11 +1162,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-[#1E3646]">
                       <span className="font-bold text-[var(--color-muted)]">
                         {isEn ? 'Payment Method:' : 'وسيلة الدفع المختارة:'}
                       </span>
-                      <span className="font-extrabold text-emerald-900 bg-emerald-50 px-2.5 py-0.5 rounded-lg">
+                      <span className="font-extrabold text-emerald-900 dark:text-[#A5F3FC] bg-emerald-50 dark:bg-[#101D26] px-2.5 py-0.5 rounded-lg">
                         {latestOrder?.paymentMethodLabelAr
                           ? isEn
                             ? latestOrder.paymentMethodLabelEn
@@ -989,7 +1177,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-[#1E3646]">
                       <span className="font-bold text-[var(--color-muted)]">
                         {isEn ? 'Recipient:' : 'المستلم:'}
                       </span>
@@ -998,7 +1186,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100">
+                    <div className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-[#1E3646]">
                       <span className="font-bold text-[var(--color-muted)]">
                         {isEn ? 'Delivery Destination:' : 'وجهة التوصيل:'}
                       </span>
@@ -1008,7 +1196,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 text-sm font-extrabold text-emerald-950">
+                    <div className="flex items-center justify-between pt-2 text-sm font-extrabold text-emerald-950 dark:text-[#A5F3FC]">
                       <span>{isEn ? 'Total Order Amount:' : 'الإجمالي النهائي للطلب:'}</span>
                       <span className="tabular-nums text-base">
                         {formatCurrency(
@@ -1021,8 +1209,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                 </div>
 
-                {/* Ordered Items List + Action Buttons */}
-                <div className="rounded-2xl border border-emerald-200 bg-white p-4 flex flex-col justify-between gap-3 shadow-2xs">
+                <div className="rounded-2xl border border-emerald-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 flex flex-col justify-between gap-3 shadow-2xs">
                   <div className="space-y-2.5">
                     <h5 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                       🛍️ {isEn ? 'Ordered Family Items' : 'المنتجات والخدمات المشمولة في الطلب'}
@@ -1040,11 +1227,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       ).map((item, idx) => (
                         <div
                           key={`${item.productId}-${idx}`}
-                          className="rounded-xl bg-emerald-50/70 border border-emerald-100 px-3 py-2 flex items-center justify-between gap-2 text-xs"
+                          className="rounded-xl bg-emerald-50/70 dark:bg-[#101D26] border border-emerald-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2 text-xs"
                         >
                           <div>
                             <div className="font-extrabold text-[var(--color-text)]">
-                              {item.name} <span className="text-emerald-800">(×{item.quantity})</span>
+                              {item.name} <span className="text-emerald-800 dark:text-[#2DD4BF]">(×{item.quantity})</span>
                             </div>
                             {item.variant && (
                               <div className="text-[10px] font-bold text-[var(--color-muted)]">
@@ -1052,7 +1239,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               </div>
                             )}
                           </div>
-                          <span className="font-extrabold text-emerald-950 tabular-nums">
+                          <span className="font-extrabold text-emerald-950 dark:text-[#A5F3FC] tabular-nums">
                             {formatCurrency(item.unitPrice * item.quantity, currency, language)}
                           </span>
                         </div>
@@ -1060,7 +1247,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-[#1E3646]">
                     <button
                       type="button"
                       onClick={() => {
@@ -1080,7 +1267,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         setShowCartPanel(false);
                         setStoreFlowStep('catalog');
                       }}
-                      className="min-h-[40px] px-3 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)] text-xs font-extrabold flex items-center justify-center gap-1.5"
+                      className="min-h-[40px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#101D26] text-[var(--color-text)] text-xs font-extrabold flex items-center justify-center gap-1.5"
                     >
                       <span>🛍️</span>
                       <span>{isEn ? 'Continue Shopping' : 'متابعة التسوق'}</span>
@@ -1090,9 +1277,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
             </div>
           ) : cart.length === 0 ? (
-            /* -----------------------------------------------------------------
-               EMPTY CART STATE (سلة التسوق فارغة — لا توجد عناصر هنا بعد)
-               ----------------------------------------------------------------- */
             <div className="space-y-3">
               <FriendlyEmptyState
                 id="empty-cart-state"
@@ -1119,16 +1303,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     setShowCartPanel(false);
                     setStoreFlowStep('catalog');
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)]"
+                  className="px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)]"
                 >
                   🛍️ {emptyCartCopy.actionLabel}
                 </button>
               </div>
             </div>
           ) : (
-            /* -----------------------------------------------------------------
-               VIEW B: DEDICATED CHECKOUT SCREEN (شاشة إتمام الطلب ومحاكاة الدفع)
-               ----------------------------------------------------------------- */
             <div
               id="store-checkout-screen"
               data-testid="checkout-payment-screen"
@@ -1136,12 +1317,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             >
               {/* Column 1: Order Items & Delivery Info */}
               <div className="space-y-3.5">
-                <div className="rounded-2xl border border-amber-200/80 bg-amber-50/55 p-3.5 space-y-2.5">
+                <div className="rounded-2xl border border-amber-200/80 dark:border-[#1E3646] bg-amber-50/55 dark:bg-[#142430] p-3.5 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <h4 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                       🛍️ {isEn ? '1. Order Items Review' : '١. مراجعة منتجات الطلب'}
                     </h4>
-                    <span className="px-2 py-0.5 rounded-md bg-white text-amber-900 text-[10px] font-extrabold tabular-nums">
+                    <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#101D26] text-amber-900 dark:text-[#FDBA74] text-[10px] font-extrabold tabular-nums">
                       {cartEnriched.reduce((a, b) => a + b.quantity, 0)}{' '}
                       {isEn ? 'items' : 'منتجات'}
                     </span>
@@ -1151,17 +1332,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     {cartEnriched.map((ci) => (
                       <div
                         key={ci.productId}
-                        className="rounded-xl border border-amber-200/70 bg-white p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs"
+                        className="rounded-xl border border-amber-200/70 dark:border-[#1E3646] bg-white dark:bg-[#101D26] p-2.5 flex flex-wrap items-center justify-between gap-2 shadow-2xs"
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center text-lg shrink-0">
+                          <span className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-[#142430] flex items-center justify-center text-lg shrink-0">
                             {ci.product.emoji}
                           </span>
                           <div className="min-w-0">
                             <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
                               {isEn ? ci.product.nameEn : ci.product.name}
                             </div>
-                            <div className="text-[11px] font-bold text-orange-800 tabular-nums">
+                            <div className="text-[11px] font-bold text-orange-800 dark:text-[#FDBA74] tabular-nums">
                               {formatCurrency(ci.unitPrice, currency, language)} × {ci.quantity} ={' '}
                               <strong>{formatCurrency(ci.lineTotal, currency, language)}</strong>
                             </div>
@@ -1174,18 +1355,18 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               type="button"
                               aria-label="إنقاص الكمية"
                               onClick={() => onUpdateCartQuantity(ci.productId, -1)}
-                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-amber-50 text-xs font-extrabold"
+                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-amber-50 dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)]"
                             >
                               −
                             </button>
-                            <span className="px-1.5 text-xs font-extrabold tabular-nums">
+                            <span className="px-1.5 text-xs font-extrabold tabular-nums text-[var(--color-text)]">
                               {ci.quantity}
                             </span>
                             <button
                               type="button"
                               aria-label="زيادة الكمية"
                               onClick={() => onUpdateCartQuantity(ci.productId, 1)}
-                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] bg-amber-50 text-xs font-extrabold"
+                              className="w-7 h-7 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-amber-50 dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)]"
                             >
                               +
                             </button>
@@ -1197,7 +1378,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 </div>
 
                 {/* Delivery Recipient & Shipping Details */}
-                <div className="rounded-2xl border border-sky-200/80 bg-sky-50/55 p-3.5 space-y-2.5">
+                <div className="rounded-2xl border border-sky-200/80 dark:border-[#1E3646] bg-sky-50/55 dark:bg-[#142430] p-3.5 space-y-2.5">
                   <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                     🚚 {isEn ? '2. Delivery Recipient & Address' : '٢. بيانات المستلم وعنوان التوصيل'}
                   </div>
@@ -1211,7 +1392,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         type="text"
                         value={shippingAddress.recipientName}
                         onChange={(e) => onUpdateShippingAddress({ recipientName: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
+                        className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-text)]"
                       />
                     </div>
                     <div>
@@ -1224,7 +1405,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         dir="ltr"
                         value={shippingAddress.phone}
                         onChange={(e) => onUpdateShippingAddress({ phone: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold tabular-nums"
+                        className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-semibold tabular-nums text-[var(--color-text)]"
                       />
                     </div>
                     <div>
@@ -1236,7 +1417,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         type="text"
                         value={shippingAddress.city}
                         onChange={(e) => onUpdateShippingAddress({ city: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
+                        className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-text)]"
                       />
                     </div>
                     <div>
@@ -1248,27 +1429,25 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         type="text"
                         value={shippingAddress.streetDetails}
                         onChange={(e) => onUpdateShippingAddress({ streetDetails: e.target.value })}
-                        className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1.5 text-xs font-semibold"
+                        className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-semibold text-[var(--color-text)]"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Column 2: Payment Methods Selection (Electronic Payment vs Cash on Delivery) */}
-              <div className="rounded-2xl border-2 border-orange-200/95 bg-orange-50/55 p-4 space-y-3.5 shadow-2xs">
+              {/* Column 2: Payment Methods Selection */}
+              <div className="rounded-2xl border-2 border-orange-200/95 dark:border-[#1E3646] bg-orange-50/55 dark:bg-[#142430] p-4 space-y-3.5 shadow-2xs">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                     💳 {isEn ? '3. Select Payment Method' : '٣. اختر طريقة الدفع (محاكاة الدفع)'}
                   </h4>
-                  <span className="px-2 py-0.5 rounded-md bg-orange-100 text-orange-950 text-[10px] font-extrabold">
+                  <span className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-[#101D26] text-orange-950 dark:text-[#FDBA74] text-[10px] font-extrabold">
                     {isEn ? '2 Options Available' : 'خياران متاحان'}
                   </span>
                 </div>
 
-                {/* Two Distinct Payment Category Cards: Electronic Payment vs Cash on Delivery (COD) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" role="radiogroup" aria-label="طرق الدفع">
-                  {/* Option A: Electronic Payment (الدفع الإلكتروني) */}
                   <button
                     type="button"
                     role="radio"
@@ -1276,11 +1455,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     onClick={() => handleSelectCategoryMode('electronic')}
                     className={`rounded-2xl border-2 p-3 text-start transition-all cursor-pointer flex items-start gap-2.5 ${
                       paymentCategory === 'electronic'
-                        ? 'border-orange-600 bg-white ring-2 ring-orange-500/20 shadow-2xs'
-                        : 'border-[var(--color-border)] bg-white/75 text-[var(--color-muted)] hover:bg-white'
+                        ? 'border-orange-600 bg-white dark:bg-[#101D26] ring-2 ring-orange-500/20 shadow-2xs'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white/75 dark:bg-[#101D26] text-[var(--color-muted)]'
                     }`}
                   >
-                    <span className="w-9 h-9 rounded-xl bg-orange-100 text-orange-900 flex items-center justify-center text-lg shrink-0">
+                    <span className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-[#142430] text-orange-900 dark:text-[#FDBA74] flex items-center justify-center text-lg shrink-0">
                       💳
                     </span>
                     <div className="min-w-0">
@@ -1295,7 +1474,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
                   </button>
 
-                  {/* Option B: Cash on Delivery (الدفع عند الاستلام) */}
                   <button
                     type="button"
                     role="radio"
@@ -1303,11 +1481,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     onClick={() => handleSelectCategoryMode('cod')}
                     className={`rounded-2xl border-2 p-3 text-start transition-all cursor-pointer flex items-start gap-2.5 ${
                       paymentCategory === 'cod'
-                        ? 'border-emerald-600 bg-white ring-2 ring-emerald-500/20 shadow-2xs'
-                        : 'border-[var(--color-border)] bg-white/75 text-[var(--color-muted)] hover:bg-white'
+                        ? 'border-emerald-600 bg-white dark:bg-[#101D26] ring-2 ring-emerald-500/20 shadow-2xs'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white/75 dark:bg-[#101D26] text-[var(--color-muted)]'
                     }`}
                   >
-                    <span className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center text-lg shrink-0">
+                    <span className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] flex items-center justify-center text-lg shrink-0">
                       💵
                     </span>
                     <div className="min-w-0">
@@ -1323,10 +1501,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </button>
                 </div>
 
-                {/* ELECTRONIC PAYMENT DETAILS: Apple Pay / Google Pay Buttons + Credit/Debit Card Fields */}
                 {paymentCategory === 'electronic' ? (
-                  <div className="rounded-2xl border border-orange-200 bg-white p-3.5 space-y-3 shadow-2xs">
-                    {/* Express Digital Wallets: Apple Pay & Google Pay */}
+                  <div className="rounded-2xl border border-orange-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] p-3.5 space-y-3 shadow-2xs">
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[11px] font-extrabold text-[var(--color-muted)]">
                         <span>⚡ {isEn ? 'Express Digital Wallets:' : 'محافظ الدفع السريع بضغطة واحدة:'}</span>
@@ -1345,8 +1521,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                           }}
                           className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
                             paymentMethod === 'apple_pay'
-                              ? 'border-slate-950 bg-slate-950 text-white shadow-sm'
-                              : 'border-slate-300 bg-slate-900 text-white hover:bg-slate-800'
+                              ? 'border-teal-400 bg-[#142430] text-white shadow-sm'
+                              : 'border-[#1E3646] bg-[#0B131A] text-white hover:bg-[#142430]'
                           }`}
                         >
                           <span className="text-base"></span>
@@ -1366,26 +1542,25 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                           }}
                           className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
                             paymentMethod === 'google_pay'
-                              ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
-                              : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50'
+                              ? 'border-blue-500 bg-blue-600 text-white shadow-sm'
+                              : 'border-[#1E3646] bg-[#142430] text-white hover:bg-[#182C3A]'
                           }`}
                         >
-                          <span className="font-black text-blue-600 bg-white px-1.5 rounded">G</span>
+                          <span className="font-black text-blue-400 bg-[#0B131A] px-1.5 rounded">G</span>
                           <span>Google Pay</span>
                           {paymentMethod === 'google_pay' && <span>✓</span>}
                         </button>
                       </div>
                     </div>
 
-                    {/* Credit / Debit Card Mock Input Fields */}
-                    <div className="pt-2 border-t border-slate-100 space-y-2">
+                    <div className="pt-2 border-t border-slate-100 dark:border-[#1E3646] space-y-2">
                       <div className="flex items-center justify-between">
                         <button
                           type="button"
                           onClick={() => setPaymentMethod('electronic_card')}
                           className={`text-xs font-extrabold flex items-center gap-1.5 ${
                             paymentMethod === 'electronic_card'
-                              ? 'text-orange-700'
+                              ? 'text-[#FF8C61]'
                               : 'text-[var(--color-text)]'
                           }`}
                         >
@@ -1396,7 +1571,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               : 'بيانات البطاقة الائتمانية / بطاقة الخصم المباشر'}
                           </span>
                         </button>
-                        <span dir="ltr" className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                        <span dir="ltr" className="text-[10px] font-extrabold text-emerald-800 dark:text-[#A5F3FC] bg-emerald-50 dark:bg-[#142430] px-2 py-0.5 rounded-md">
                           VISA · Mastercard · mada
                         </span>
                       </div>
@@ -1416,7 +1591,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               setTestCardHolder(e.target.value);
                             }}
                             placeholder="AHMED & SARA"
-                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-900"
+                            className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
                           />
                         </div>
 
@@ -1434,7 +1609,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               setTestCardNumber(e.target.value);
                             }}
                             placeholder="4242 •••• •••• 4242"
-                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                            className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] px-2.5 py-1.5 text-xs font-mono font-bold text-[var(--color-text)]"
                           />
                         </div>
                       </div>
@@ -1453,7 +1628,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               setTestCardExpiry(e.target.value);
                             }}
                             placeholder="09/28"
-                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                            className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] px-2.5 py-1.5 text-xs font-mono font-bold text-[var(--color-text)]"
                           />
                         </div>
                         <div>
@@ -1469,23 +1644,22 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                               setTestCardCvv(e.target.value);
                             }}
                             placeholder="888"
-                            className="w-full rounded-xl border border-[var(--color-border)] bg-slate-50 px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900"
+                            className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] px-2.5 py-1.5 text-xs font-mono font-bold text-[var(--color-text)]"
                           />
                         </div>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  /* CASH ON DELIVERY (الدفع عند الاستلام) DETAILS */
                   <div
                     data-testid="cod-payment-box"
-                    className="rounded-2xl border border-emerald-300 bg-white p-3.5 space-y-2 shadow-2xs"
+                    className="rounded-2xl border border-emerald-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] p-3.5 space-y-2 shadow-2xs"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-950 text-[10px] font-extrabold">
+                      <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                         💵 {isEn ? 'CASH ON DELIVERY SELECTED' : 'تم اختيار الدفع عند الاستلام'}
                       </span>
-                      <span className="text-xs font-extrabold text-emerald-900">
+                      <span className="text-xs font-extrabold text-emerald-900 dark:text-[#2DD4BF]">
                         {isEn ? 'No upfront payment needed' : 'لا يتطلب بطاقة بنكية'}
                       </span>
                     </div>
@@ -1497,8 +1671,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                 )}
 
-                {/* Order Cost Summary Breakdown */}
-                <div className="rounded-xl bg-white/90 border border-orange-200/80 p-3 space-y-1.5 text-xs">
+                <div className="rounded-xl bg-white/90 dark:bg-[#101D26] border border-orange-200/80 dark:border-[#1E3646] p-3 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between text-[var(--color-muted)] font-bold">
                     <span>{isEn ? 'Items Subtotal:' : 'قيمة المنتجات:'}</span>
                     <span className="tabular-nums">{formatCurrency(cartTotalAmount, currency, language)}</span>
@@ -1508,12 +1681,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     <span className="tabular-nums">{formatCurrency(deliveryFee, currency, language)}</span>
                   </div>
                   {codFee > 0 && (
-                    <div className="flex items-center justify-between text-emerald-800 font-bold">
+                    <div className="flex items-center justify-between text-emerald-800 dark:text-[#2DD4BF] font-bold">
                       <span>{isEn ? 'Cash on Delivery Service:' : 'رسوم خدمة الدفع عند الاستلام:'}</span>
                       <span className="tabular-nums">{formatCurrency(codFee, currency, language)}</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-sm font-extrabold text-orange-950 pt-1.5 border-t border-orange-100">
+                  <div className="flex items-center justify-between text-sm font-extrabold text-[var(--color-text)] pt-1.5 border-t border-orange-100 dark:border-[#1E3646]">
                     <span>{isEn ? 'Total Amount:' : 'الإجمالي النهائي للطلب:'}</span>
                     <span className="tabular-nums text-base">
                       {formatCurrency(grandTotal, currency, language)}
@@ -1521,7 +1694,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                 </div>
 
-                {/* Primary Confirm Checkout CTA */}
                 <PrimaryCtaButton
                   variant="orange"
                   size="lg"
@@ -1547,226 +1719,96 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       )}
 
-      {/* Search & Visual Category Filter Cards */}
-      <CollapsibleSectionCard
-        id="store-catalog-filters-card"
-        title={isEn ? 'Search Catalog & Filter Categories' : 'بحث وتصفية منتجات وخدمات المتجر'}
-        subtitle={
-          isEn
-            ? `${filtered.length} products & verified services in ${displayCity}`
-            : `${filtered.length} منتجات وخدمات معتمدة في ${city}`
-        }
-        iconId="services"
-        cardTone="amber"
-        badgeLabel={isEn ? 'Filters' : 'تصفية'}
-        badgeTone="amber"
-        defaultOpen={true}
-      >
-        <div className="space-y-3 pt-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex-1 min-w-[200px]">
-              <label htmlFor="search" className="sr-only">
-                {isEn ? 'Search in Store & Services' : 'بحث في المتجر والخدمات'}
-              </label>
-              <input
-                id="search"
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={
-                  isEn
-                    ? '🔍 Search Montessori toys, cotton clothes, clinics, nurseries...'
-                    : '🔍 ابحث عن لعبة مونتيسوري، ملابس قطنية، طبيب، أو حضانة...'
-                }
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
-              />
-            </div>
-
-            <select
-              aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
-            >
-              <option value="featured">{isEn ? 'Sort: Featured' : 'الترتيب: المختارات'}</option>
-              <option value="price-asc">{isEn ? 'Price: Low to High' : 'السعر: الأقل أولًا'}</option>
-              <option value="price-desc">{isEn ? 'Price: High to Low' : 'السعر: الأعلى أولًا'}</option>
-              <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
-            </select>
-
-            <select
-              id="commercialCategorySelect"
-              aria-label={isEn ? 'Category' : 'الفئة'}
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
-            >
-              <option value="all">{isEn ? 'All Categories' : 'كل الفئات'}</option>
-              <option value="toys">{isEn ? '🧸 Educational Toys' : '🧸 ألعاب تعليمية'}</option>
-              <option value="clothing">{isEn ? '👕 Clothing' : '👕 ألبسة أطفال'}</option>
-              <option value="essentials">{isEn ? '🍼 Daily Essentials' : '🍼 مستلزمات يومية'}</option>
-              <option value="doctor">{isEn ? '🩺 Doctors & Clinics' : '🩺 أطباء وعيادات'}</option>
-              <option value="nursery">{isEn ? '🏫 Nurseries' : '🏫 حضانات ومدارس'}</option>
-              <option value="consultation">{isEn ? '💬 Consultations' : '💬 استشارات تربوية'}</option>
-              <option value="delivery">{isEn ? '🚚 Delivery' : '🚚 خدمات التوصيل'}</option>
-            </select>
+      {/* Search & Quick Category Navigation Bar */}
+      <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface">
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex-1 min-w-[210px]">
+            <label htmlFor="search" className="sr-only">
+              {isEn ? 'Search in Store & Services' : 'بحث في المتجر والخدمات'}
+            </label>
+            <input
+              id="search"
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={
+                isEn
+                  ? '🔍 Search Montessori toys, schools, cotton apparel, clinics...'
+                  : '🔍 ابحث عن مدرسة، حضانة، ملابس قطنية، لعبة مونتيسوري، أو عيادة...'
+              }
+              className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
+            />
           </div>
 
-          {/* Segment Tabs + Collection Quick Chips */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div
-              className="flex flex-wrap items-center gap-1 bg-[var(--color-control-muted)] p-1 rounded-xl"
-              role="tablist"
-              aria-label="أقسام المتجر والخدمات"
-            >
-              {[
-                { id: 'all', label: isEn ? 'All Items' : 'الكل' },
-                { id: 'product', label: isEn ? '🛍️ Products' : '🛍️ المنتجات' },
-                { id: 'service', label: isEn ? '🏫 Services & Clinics' : '🏫 الحضانات والعيادات' },
-                { id: 'offer', label: isEn ? '🏷️ Offers' : '🏷️ العروض' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setSegment(tab.id as typeof segment)}
-                  className={`px-3 py-1 text-xs font-extrabold rounded-lg transition-colors whitespace-nowrap shrink-0 ${
-                    segment === tab.id
-                      ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-2xs'
-                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1">
-              {[
-                { id: 'all', label: isEn ? 'All' : 'كل المجموعات' },
-                { id: 'bestseller', label: isEn ? '🔥 Bestsellers' : '🔥 الأكثر طلبًا' },
-                { id: 'new', label: isEn ? '✨ New' : '✨ جديد' },
-                { id: 'deal', label: isEn ? '🏷️ Deals' : '🏷️ عروض توفير' },
-              ].map((col) => (
-                <button
-                  key={col.id}
-                  type="button"
-                  onClick={() => setCollectionFilter(col.id as typeof collectionFilter)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold border transition-colors ${
-                    collectionFilter === col.id
-                      ? 'border-orange-500 bg-orange-50 text-orange-900'
-                      : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)]'
-                  }`}
-                >
-                  {col.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <select
+            aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+          >
+            <option value="featured">{isEn ? 'Sort: Featured' : 'الترتيب: المختارات'}</option>
+            <option value="price-asc">{isEn ? 'Price: Low to High' : 'السعر: الأقل أولًا'}</option>
+            <option value="price-desc">{isEn ? 'Price: High to Low' : 'السعر: الأعلى أولًا'}</option>
+            <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
+          </select>
         </div>
-      </CollapsibleSectionCard>
 
-      {/* Horizontal Scrollable Category & Featured Picks Carousels (UI Decluttering & Breathing Room) */}
-      <div className="space-y-4">
-        <div className="horizontal-scroll-row py-1" role="region" aria-label={isEn ? 'Horizontal Category Carousel' : 'شريط الفئات الأفقي'}>
-          {[
-            { id: 'all', labelAr: 'كل الفئات', labelEn: 'All Categories' },
-            { id: 'toys', labelAr: 'ألعاب مونتيسوري', labelEn: 'Montessori Toys' },
-            { id: 'clothing', labelAr: 'ألبسة قطنية', labelEn: 'Cotton Apparel' },
-            { id: 'essentials', labelAr: 'مستلزمات الرضع', labelEn: 'Baby Essentials' },
-            { id: 'doctor', labelAr: 'أطباء وعيادات', labelEn: 'Doctors & Clinics' },
-            { id: 'nursery', labelAr: 'حضانات ومدارس', labelEn: 'Nurseries' },
-            { id: 'consultation', labelAr: 'استشارات تربوية', labelEn: 'Consultations' },
-          ].map((cat) => {
-            const bgSpec = getCardBackgroundSpec(cat.id, darkMode);
-            const isSelected = categoryFilter === cat.id;
+        {/* Horizontal Swipeable Category Bar (RTL-Optimized) — Clicking any Category opens its Full-Page View */}
+        <div
+          dir={isEn ? 'ltr' : 'rtl'}
+          className="horizontal-scroll-row pt-0.5"
+          role="region"
+          aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setActiveCategoryPageId(null);
+              setCategoryFilter('all');
+            }}
+            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
+              activeCategoryPageId === null
+                ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
+                : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+            }`}
+          >
+            <span>✨</span>
+            <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
+          </button>
+
+          {STORE_CATEGORY_SECTIONS.map((sec) => {
+            const isSelected = activeCategoryPageId === sec.id;
+            const secCount = filtered.filter((item) =>
+              (sec.matchCategories as readonly string[]).includes(item.category)
+            ).length;
             return (
               <button
-                key={cat.id}
+                key={sec.id}
                 type="button"
-                data-image-card="true"
-                data-category-image-card={cat.id}
-                onClick={() => setCategoryFilter(cat.id)}
-                style={{ backgroundImage: bgSpec.backgroundImageCss }}
-                className={`image-bg-card min-h-[60px] min-w-[146px] px-5 py-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center text-center whitespace-nowrap ${
+                data-testid={`store-category-pill-${sec.id}`}
+                onClick={() => openCategoryFullPage(sec.id)}
+                className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
                   isSelected
-                    ? 'ring-2 ring-amber-400 shadow-lg'
-                    : 'opacity-95 hover:opacity-100'
+                    ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
                 }`}
               >
-                <span className="image-card-title tracking-wide">
-                  {isEn ? cat.labelEn : cat.labelAr}
+                <span>{sec.emoji}</span>
+                <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
+                  {secCount}
                 </span>
               </button>
             );
           })}
         </div>
-
-        {/* Horizontal Featured Bestsellers Carousel */}
-        <div className="rounded-[24px] border border-[var(--color-border)]/50 bg-[var(--color-surface)] p-5 sm:p-6 space-y-4 soft-card-surface">
-          <div className="section-heading-block">
-            <h3 className="section-heading-centered">
-              {isEn ? 'Featured Picks Carousel' : 'مختارات الأسرة السريعة'}
-            </h3>
-            <p className="section-subtitle-centered">
-              {isEn
-                ? 'Swipe horizontally to explore top-rated Montessori & family essentials'
-                : 'اسحب أفقيًا لاستعراض أفضل منتجات وخدمات الأسرة المختارة'}
-            </p>
-          </div>
-
-          <div
-            data-testid="store-horizontal-carousel"
-            className="horizontal-scroll-row pt-1"
-          >
-            {COMMERCIAL_CATALOG.slice(0, 6).map((item) => {
-              const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
-              const bgSpec = getCardBackgroundSpec(item.category, darkMode);
-              return (
-                <div
-                  key={`carousel-${item.id}`}
-                  data-image-card="true"
-                  style={{ backgroundImage: bgSpec.backgroundImageCss }}
-                  className="image-bg-card w-[245px] sm:w-[265px] rounded-2xl p-4 flex flex-col justify-between gap-3.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                      {locText(item.categoryLabel, language)}
-                    </span>
-                    <span
-                      data-keep-dark-text="true"
-                      className="image-card-rating-pill px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums"
-                    >
-                      ★ {item.rating}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="image-card-title text-sm font-extrabold line-clamp-1">
-                      {isEn ? item.nameEn : item.name}
-                    </div>
-                    <div className="image-card-subtitle text-[11px] font-semibold">
-                      {locText(item.city, language)}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-white/25">
-                    <strong className="text-xs font-extrabold text-amber-200 tabular-nums">
-                      {formatCurrency(priceVal, currency, language)}
-                    </strong>
-                    <button
-                      type="button"
-                      onClick={() => onAddToCart(item, item.variants?.[0])}
-                      className="image-card-cta-pill px-3 py-1.5 rounded-xl text-[11px] font-extrabold shadow-2xs"
-                    >
-                      {isEn ? '+ Add' : '+ للسلة'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
-      {/* Super App Product & Service Grid Cards (Spacious Breathing Room) */}
+      {/* =====================================================================
+          STORE CATALOG CONTENT:
+          1) DEDICATED FULL-PAGE CATEGORY VIEW (Multi-Column Grid) when a category title/button is clicked
+          2) CATEGORIZED HORIZONTAL ROWS (Swipeable Carousels per Category) by default
+          ===================================================================== */}
       {filtered.length === 0 ? (
         <FriendlyEmptyState
           id="empty-store-filter-state"
@@ -1779,8 +1821,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           }
           subtitle={
             isEn
-              ? 'Try clearing search filters or selecting another category from the store.'
-              : 'جرّب مسح كلمات البحث أو اختيار فئة أخرى لاستعراض منتجات وخدمات الأسرة.'
+              ? 'Try clearing search filters or returning to all store categories.'
+              : 'جرّب مسح كلمات البحث أو العودة لاستعراض جميع أقسام المتجر.'
           }
           actionLabel={isEn ? 'Reset Store Filters' : 'إعادة ضبط فلاتر المتجر'}
           onAction={() => {
@@ -1789,151 +1831,127 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             setCategoryFilter('all');
             setCollectionFilter('all');
             setCityScopeFilter('all');
+            setActiveCategoryPageId(null);
           }}
         />
+      ) : activeCategorySpec ? (
+        /* -------------------------------------------------------------------
+           DEDICATED FULL-PAGE CATEGORY VIEW (Multi-Column Grid Layout)
+           ------------------------------------------------------------------- */
+        <div
+          id={`store-category-page-${activeCategorySpec.id}`}
+          data-testid="store-category-fullpage-view"
+          className="space-y-4 animate-page-enter"
+        >
+          {/* Full-Page Category Header Banner with Back Button */}
+          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 soft-card-surface">
+            <div className="flex items-start sm:items-center gap-3">
+              <span className="w-12 h-12 rounded-2xl bg-[#142430] border border-[#1E3646] text-2xl flex items-center justify-center shrink-0 shadow-2xs">
+                {activeCategorySpec.emoji}
+              </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#142430] text-[#A5F3FC] border border-[#1E3646]">
+                    {isEn ? activeCategorySpec.badgeEn : activeCategorySpec.badgeAr}
+                  </span>
+                  <span className="text-[11px] font-bold text-[var(--color-muted)]">
+                    📍 {displayCity}
+                  </span>
+                </div>
+                <h2 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
+                  {isEn ? activeCategorySpec.titleEn : activeCategorySpec.titleAr}
+                </h2>
+                <p className="text-xs font-semibold text-[var(--color-muted)]">
+                  {isEn ? activeCategorySpec.subtitleEn : activeCategorySpec.subtitleAr}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-testid="back-to-store-categories-btn"
+              onClick={() => setActiveCategoryPageId(null)}
+              className="min-h-[40px] px-4 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-2 shrink-0 active:scale-95 transition-all"
+            >
+              <span>{isEn ? '←' : '→'}</span>
+              <span>{isEn ? 'Back to All Categories' : 'العودة لجميع أقسام المتجر'}</span>
+            </button>
+          </div>
+
+          {/* Dedicated Category Multi-Column Grid */}
+          <div
+            data-testid="store-category-grid"
+            className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5"
+          >
+            {filtered
+              .filter((item) =>
+                (activeCategorySpec.matchCategories as readonly string[]).includes(item.category)
+              )
+              .map((item) => renderCompactProductCard(item, 'grid'))}
+          </div>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-          {filtered.map((item) => {
-            const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
-            const origVal = currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
-            const displayTitle = isEn ? item.nameEn : item.name;
-            const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
-            const tone = PASTEL_CARD_TONES[toneKey];
-            const itemBgSpec = getCardBackgroundSpec(item.category, darkMode);
+        /* -------------------------------------------------------------------
+           CATEGORIZED HORIZONTAL ROWS (Default Store Catalog View)
+           Each row features a clickable Section Header/Button + Horizontal Carousel
+           ------------------------------------------------------------------- */
+        <div data-testid="store-categorized-rows" className="space-y-5">
+          {STORE_CATEGORY_SECTIONS.map((sec) => {
+            const rowItems = filtered.filter((item) =>
+              (sec.matchCategories as readonly string[]).includes(item.category)
+            );
+            if (rowItems.length === 0) return null;
 
             return (
               <div
-                key={item.id}
-                className={`rounded-[20px] border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 flex flex-col justify-between gap-3 soft-card-surface hover:scale-[1.01] active:scale-[1.01] hover:shadow-sm transition-all`}
+                key={sec.id}
+                data-testid={`store-category-row-${sec.id}`}
+                className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface"
               >
-                <div className="space-y-2.5">
-                  {/* Top Visual Header: Compact Image Background Header */}
-                  <div
-                    onClick={() => onInspectCommercialItem(item)}
-                    data-image-card="true"
-                    style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-                    className="image-bg-card rounded-xl p-2.5 sm:p-3 min-h-[76px] sm:min-h-[82px] cursor-pointer flex flex-col justify-between gap-1.5"
+                {/* Clickable Category Row Header / Button */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    data-testid={`store-category-header-btn-${sec.id}`}
+                    onClick={() => openCategoryFullPage(sec.id)}
+                    className="flex items-center gap-3 text-start group cursor-pointer min-w-0"
                   >
-                    <div className="flex items-center justify-between gap-1.5">
-                      <span className="image-card-badge px-2 py-0.5 rounded-full text-[9.5px] font-extrabold">
-                        {locText(item.categoryLabel, language)}
-                      </span>
-                      {item.collectionTag && (
-                        <span
-                          data-keep-dark-text="true"
-                          className="image-card-rating-pill px-2 py-0.5 rounded-md text-[9.5px] font-extrabold"
-                        >
-                          {item.collectionTag === 'bestseller'
-                            ? isEn
-                              ? 'Bestseller'
-                              : 'الأكثر مبيعًا'
-                            : item.collectionTag === 'new'
-                            ? isEn
-                              ? 'New'
-                              : 'جديد'
-                            : item.collectionTag === 'deal'
-                            ? isEn
-                              ? 'Value Deal'
-                              : 'عرض توفير'
-                            : isEn
-                            ? 'Recommended'
-                            : 'موصى به'}
+                    <span className="w-10 h-10 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] flex items-center justify-center text-xl shrink-0 group-hover:border-[#FF8C61] transition-colors">
+                      {sec.emoji}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] group-hover:text-[#FF8C61] transition-colors truncate">
+                          {isEn ? sec.titleEn : sec.titleAr}
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] border border-[var(--color-border)] dark:border-[#1E3646] tabular-nums shrink-0">
+                          {rowItems.length}
                         </span>
-                      )}
+                      </div>
+                      <p className="text-[11px] font-semibold text-[var(--color-muted)] line-clamp-1">
+                        {isEn ? sec.subtitleEn : sec.subtitleAr}
+                      </p>
                     </div>
+                  </button>
 
-                    <div className="flex items-end justify-between gap-1.5 pt-1">
-                      <h3 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
-                        {displayTitle}
-                      </h3>
-                      <span className="text-[10.5px] font-extrabold text-amber-200 tabular-nums shrink-0">
-                        ★ {item.rating} ({item.reviewCount || 80})
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Compact Visual Metadata Strip */}
-                  <div className="space-y-1">
-                    <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-bold text-[var(--color-muted)]">
-                      <span>{locText(item.categoryLabel, language)}</span>
-                      <span aria-hidden="true">·</span>
-                      <span>📍 {locText(item.city, language)}</span>
-                      {item.deliveryEstimateAr && (
-                        <>
-                          <span aria-hidden="true">·</span>
-                          <span className="text-emerald-700 dark:text-emerald-300 font-extrabold">
-                            🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    data-testid={`store-category-viewall-btn-${sec.id}`}
+                    onClick={() => openCategoryFullPage(sec.id)}
+                    className="min-h-[34px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#A5F3FC] text-[11px] font-extrabold flex items-center gap-1.5 shrink-0 active:scale-95 transition-all"
+                  >
+                    <span>{isEn ? 'View All' : 'عرض الكل'}</span>
+                    <span>{isEn ? '→' : '←'}</span>
+                  </button>
                 </div>
 
-                {/* Price + Minimalist Matching Icon Controls */}
-                <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2">
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-bold text-[var(--color-muted)]">
-                      {item.kind === 'service'
-                        ? isEn
-                          ? 'Fee'
-                          : 'التكلفة'
-                        : isEn
-                        ? 'Price'
-                        : 'السعر'}
-                    </span>
-                    <div className="flex items-baseline gap-1.5 tabular-nums">
-                      {origVal && (
-                        <span className="text-[10.5px] line-through text-[var(--color-muted)]">
-                          {formatCurrency(origVal, currency, language)}
-                        </span>
-                      )}
-                      <strong className="text-sm font-extrabold text-[var(--color-text)]">
-                        {formatCurrency(priceVal, currency, language)}
-                      </strong>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    {/* Minimalist Details Link Button */}
-                    <button
-                      type="button"
-                      onClick={() => onInspectCommercialItem(item)}
-                      title={isEn ? 'Details' : 'التفاصيل'}
-                      aria-label={isEn ? 'Details' : 'التفاصيل'}
-                      className="h-8 px-2.5 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-300 active:scale-95 transition-all"
-                    >
-                      {isEn ? 'Details' : 'التفاصيل'}
-                    </button>
-
-                    {/* Wishlist / Heart Icon (Matching Warm Coral #FF8C61 Palette) */}
-                    <button
-                      type="button"
-                      onClick={() => onAddProductToWishes(item)}
-                      title={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
-                      aria-label={isEn ? 'Save to Wishlist' : 'إضافة للأمنيات'}
-                      className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-orange-800/60 bg-orange-50/80 dark:bg-orange-950/40 text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white dark:hover:bg-[#FF8C61] dark:hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
-                    >
-                      <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                    </button>
-
-                    {/* Shopping Cart Icon (Matching Warm Teal Palette) */}
-                    <button
-                      type="button"
-                      onClick={() => onAddToCart(item, item.variants?.[0])}
-                      title={isEn ? 'Add to Cart' : 'أضف للسلة'}
-                      aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
-                      className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0"
-                    >
-                      <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                        <circle cx="9" cy="21" r="1" />
-                        <circle cx="20" cy="21" r="1" />
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                      </svg>
-                    </button>
-                  </div>
+                {/* Smooth Swipeable Horizontal Carousel for this Category */}
+                <div
+                  dir={isEn ? 'ltr' : 'rtl'}
+                  data-testid={`store-horizontal-carousel-${sec.id}`}
+                  className="horizontal-scroll-row pt-0.5"
+                >
+                  {rowItems.map((item) => renderCompactProductCard(item, 'carousel'))}
                 </div>
               </div>
             );
@@ -1942,7 +1960,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       )}
 
       {/* Compact Visual Payment Badges Strip */}
-      <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)]">
+      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)]">
         <span>
           🛡️ {isEn ? 'Localized Catalog & Live Delivery Tracking' : 'كتالوج محلي وتوصيل مباشر على الخريطة'}
         </span>
@@ -1953,3 +1971,4 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     </section>
   );
 };
+

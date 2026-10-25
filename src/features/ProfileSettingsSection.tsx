@@ -144,73 +144,24 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
-              className="min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold border border-white bg-white/90 text-slate-900 shadow-2xs"
+              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
             >
               {lang === 'en' ? 'Family & Permissions' : 'العائلة والصلاحيات'}
             </button>
-          </div>
-        </div>
-
-        {/* Compact Quick Profile Overview Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-          {[
-            {
-              key: 'children',
-              iconId: 'children' as const,
-              onClick: () => onNavigateTo('children'),
-              badge: String(state.kids.length),
-              title: lang === 'en' ? 'Children Profiles' : 'ملفات الأطفال',
-            },
-            {
-              key: 'services',
-              iconId: 'services' as const,
-              onClick: () => onNavigateTo('services'),
-              badge: String(state.orders.length),
-              title: lang === 'en' ? 'Store Orders' : 'طلبات المتجر',
-            },
-            {
-              key: 'chat',
-              iconId: 'notifications' as const,
-              onClick: () => onNavigateTo('notifications'),
-              badge: String(unreadNotifCount),
-              title: lang === 'en' ? 'Notifications' : 'الإشعارات اليومية',
-            },
-            {
-              key: 'settings',
-              iconId: 'settings' as const,
-              onClick: onToggleShowInnerSettings,
-              badge: showInnerSettings
+            <button
+              type="button"
+              onClick={onToggleShowInnerSettings}
+              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
+            >
+              {showInnerSettings
                 ? lang === 'en'
-                  ? 'Open'
-                  : 'مفتوحة'
+                  ? 'Hide Settings'
+                  : 'إخفاء الإعدادات'
                 : lang === 'en'
-                ? 'Show'
-                : 'عرض',
-              title: lang === 'en' ? 'App Settings' : 'الإعدادات',
-            },
-          ].map((pCard) => {
-            const spec = getCardBackgroundSpec(pCard.key, state.darkMode);
-            return (
-              <button
-                key={pCard.key}
-                type="button"
-                data-image-card="true"
-                onClick={pCard.onClick}
-                style={{ backgroundImage: spec.backgroundImageCss }}
-                className="image-bg-card rounded-2xl p-3 text-start flex flex-col justify-between min-h-[72px]"
-              >
-                <div className="flex items-center justify-between gap-2 w-full">
-                  <SoftFilledIcon id={pCard.iconId} size={18} />
-                  <span className="image-card-badge px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums">
-                    {pCard.badge}
-                  </span>
-                </div>
-                <div className="image-card-title text-xs font-extrabold mt-2">
-                  {pCard.title}
-                </div>
-              </button>
-            );
-          })}
+                ? 'App Settings'
+                : 'الإعدادات'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -475,14 +426,14 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             )}`}
             badgeTone="amber"
             cardTone="amber"
-            defaultOpen={true}
+            defaultOpen={false}
           >
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <UnifiedBadge label={`OTP: ${DEMO_OTP_CODE}`} tone="amber" iconId="shield" />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
@@ -606,110 +557,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           </CollapsibleSectionCard>
         </div>
       )}
-
-      {/* ==============================================================
-          LEGAL POLICIES, INTELLECTUAL PROPERTY & DIGITAL CONTACT CARDS
-          ============================================================== */}
-      <CollapsibleSectionCard
-        title={
-          lang === 'en'
-            ? 'Legal Policies, Intellectual Property & Contact Us'
-            : 'سياسة الخصوصية، الشروط وحقوق الملكية، وتواصل معنا'
-        }
-        subtitle={
-          lang === 'en'
-            ? 'Terms, privacy protection clauses & 24/7 digital care'
-            : 'بنود حماية بيانات الطفل والأسرة، حقوق الملكية، وقنوات الدعم'
-        }
-        iconId="shield"
-        badgeLabel={lang === 'en' ? 'POLICIES & CARE' : 'السياسات والدعم'}
-        badgeTone="teal"
-        cardTone="teal"
-        defaultOpen={false}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          {/* 1. Privacy Policy Card */}
-          <button
-            type="button"
-            onClick={() => onNavigateTo('privacy')}
-            style={{
-              backgroundImage: getCardBackgroundSpec('privacy', state.darkMode).backgroundImageCss,
-            }}
-            className="image-bg-card p-5 text-start flex flex-col justify-between gap-3 min-h-[126px]"
-          >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <SoftFilledIcon id="shield" size={26} />
-              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                {lang === 'en' ? 'Privacy' : 'الخصوصية'}
-              </span>
-            </div>
-            <div>
-              <div className="image-card-title text-xs sm:text-sm font-extrabold">
-                {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
-              </div>
-              <div className="image-card-subtitle text-[11px] font-bold mt-0.5">
-                {lang === 'en'
-                  ? 'Family & child data protection clauses'
-                  : 'ضوابط حماية بيانات الأسرة والطفل'}
-              </div>
-            </div>
-          </button>
-
-          {/* 2. Terms of Service & IP Card */}
-          <button
-            type="button"
-            onClick={() => onNavigateTo('terms')}
-            style={{
-              backgroundImage: getCardBackgroundSpec('terms', state.darkMode).backgroundImageCss,
-            }}
-            className="image-bg-card p-5 text-start flex flex-col justify-between gap-3 min-h-[126px]"
-          >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <SoftFilledIcon id="star" size={26} />
-              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                {lang === 'en' ? 'Terms & IP' : 'حقوق الملكية'}
-              </span>
-            </div>
-            <div>
-              <div className="image-card-title text-xs sm:text-sm font-extrabold">
-                {lang === 'en' ? 'Terms of Service & IP' : 'الشروط والأحكام وحقوق الملكية'}
-              </div>
-              <div className="image-card-subtitle text-[11px] font-bold mt-0.5">
-                {lang === 'en'
-                  ? 'Terms of use & intellectual property rights'
-                  : 'شروط الاستخدام وحقوق الملكية الفكرية'}
-              </div>
-            </div>
-          </button>
-
-          {/* 3. Contact Us (Strictly Digital) Card */}
-          <button
-            type="button"
-            onClick={() => onNavigateTo('contact')}
-            style={{
-              backgroundImage: getCardBackgroundSpec('contact', state.darkMode).backgroundImageCss,
-            }}
-            className="image-bg-card p-5 text-start flex flex-col justify-between gap-3 min-h-[126px]"
-          >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <SoftFilledIcon id="notifications" size={26} />
-              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold">
-                {lang === 'en' ? 'Digital 24/7' : 'تواصل رقمي'}
-              </span>
-            </div>
-            <div>
-              <div className="image-card-title text-xs sm:text-sm font-extrabold">
-                {lang === 'en' ? 'Contact Us' : 'تواصل معنا'}
-              </div>
-              <div className="image-card-subtitle text-[11px] font-bold mt-0.5">
-                {lang === 'en'
-                  ? 'Support email, phone & social channels'
-                  : 'البريد، رقم خدمة العملاء، والتواصل الاجتماعي'}
-              </div>
-            </div>
-          </button>
-        </div>
-      </CollapsibleSectionCard>
     </section>
   );
 };

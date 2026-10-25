@@ -183,63 +183,63 @@ export const PASTEL_CARD_TONES: Record<
   { card: string; badge: string; iconBg: string }
 > = {
   emerald: {
-    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
+    card: 'bg-teal-50/75 dark:bg-[#101D26] border-teal-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-teal-100/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] border border-teal-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-teal-100/60 dark:border-[#1E3646]',
   },
   amber: {
-    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#251B17] border-orange-100/60 dark:border-orange-700/40',
+    card: 'bg-orange-50/75 dark:bg-[#101D26] border-orange-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-orange-100/90 dark:bg-[#142430] text-orange-950 dark:text-[#FDBA74] border border-orange-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-orange-100/60 dark:border-[#1E3646]',
   },
   rose: {
-    card: 'bg-orange-50/75 dark:bg-[#221619]/90 border-orange-200/45 dark:border-rose-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-rose-100/90 dark:bg-rose-950/60 text-rose-950 dark:text-rose-200 border border-rose-200/50 dark:border-rose-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#2A181C] border-rose-100/60 dark:border-rose-700/40',
+    card: 'bg-orange-50/75 dark:bg-[#101D26] border-orange-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-rose-100/90 dark:bg-[#142430] text-rose-950 dark:text-[#FDA4AF] border border-rose-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-rose-100/60 dark:border-[#1E3646]',
   },
   indigo: {
-    card: 'bg-cyan-50/75 dark:bg-[#101D2B]/90 border-cyan-200/45 dark:border-cyan-700/50 shadow-[0_10px_28px_-14px_rgba(14,116,144,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-cyan-100/90 dark:bg-cyan-950/60 text-cyan-950 dark:text-cyan-200 border border-cyan-200/50 dark:border-cyan-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#132333] border-cyan-100/60 dark:border-cyan-700/40',
+    card: 'bg-cyan-50/75 dark:bg-[#101D26] border-cyan-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(14,116,144,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-cyan-100/90 dark:bg-[#142430] text-cyan-950 dark:text-[#A5F3FC] border border-cyan-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-cyan-100/60 dark:border-[#1E3646]',
   },
   purple: {
-    card: 'bg-teal-50/75 dark:bg-[#121E2A]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#152535] border-teal-100/60 dark:border-teal-700/40',
+    card: 'bg-teal-50/75 dark:bg-[#101D26] border-teal-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-teal-100/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] border border-teal-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-teal-100/60 dark:border-[#1E3646]',
   },
   sky: {
-    card: 'bg-sky-50/75 dark:bg-[#0E202E]/90 border-sky-200/45 dark:border-sky-700/50 shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-sky-100/90 dark:bg-sky-950/60 text-sky-950 dark:text-sky-200 border border-sky-200/50 dark:border-sky-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#122838] border-sky-100/60 dark:border-sky-700/40',
+    card: 'bg-sky-50/75 dark:bg-[#101D26] border-sky-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(14,165,233,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-sky-100/90 dark:bg-[#142430] text-sky-950 dark:text-[#A5F3FC] border border-sky-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-sky-100/60 dark:border-[#1E3646]',
   },
   teal: {
-    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(20,184,166,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
+    card: 'bg-teal-50/75 dark:bg-[#101D26] border-teal-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(20,184,166,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-teal-100/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] border border-teal-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-teal-100/60 dark:border-[#1E3646]',
   },
   orange: {
-    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#261C18] border-orange-100/60 dark:border-orange-700/40',
+    card: 'bg-orange-50/75 dark:bg-[#101D26] border-orange-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-orange-100/90 dark:bg-[#142430] text-orange-950 dark:text-[#FDBA74] border border-orange-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-orange-100/60 dark:border-[#1E3646]',
   },
   pink: {
-    card: 'bg-orange-50/75 dark:bg-[#201815]/90 border-orange-200/45 dark:border-orange-700/50 shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-orange-100/90 dark:bg-orange-950/60 text-orange-950 dark:text-orange-200 border border-orange-200/50 dark:border-orange-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#261C18] border-orange-100/60 dark:border-orange-700/40',
+    card: 'bg-orange-50/75 dark:bg-[#101D26] border-orange-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(255,140,97,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-orange-100/90 dark:bg-[#142430] text-orange-950 dark:text-[#FDA4AF] border border-orange-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-orange-100/60 dark:border-[#1E3646]',
   },
   cyan: {
-    card: 'bg-cyan-50/75 dark:bg-[#0E202B]/90 border-cyan-200/45 dark:border-cyan-700/50 shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-cyan-100/90 dark:bg-cyan-950/60 text-cyan-950 dark:text-cyan-200 border border-cyan-200/50 dark:border-cyan-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#122835] border-cyan-100/60 dark:border-cyan-700/40',
+    card: 'bg-cyan-50/75 dark:bg-[#101D26] border-cyan-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(6,182,212,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-cyan-100/90 dark:bg-[#142430] text-cyan-950 dark:text-[#A5F3FC] border border-cyan-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-cyan-100/60 dark:border-[#1E3646]',
   },
   lime: {
-    card: 'bg-teal-50/75 dark:bg-[#10242B]/90 border-teal-200/45 dark:border-teal-700/50 shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-teal-100/90 dark:bg-teal-900/50 text-teal-950 dark:text-teal-200 border border-teal-200/50 dark:border-teal-700/60',
-    iconBg: 'bg-white/95 dark:bg-[#132A33] border-teal-100/60 dark:border-teal-700/40',
+    card: 'bg-teal-50/75 dark:bg-[#101D26] border-teal-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(13,148,136,0.12)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-teal-100/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] border border-teal-200/50 dark:border-[#1E3646]',
+    iconBg: 'bg-white/95 dark:bg-[#142430] border-teal-100/60 dark:border-[#1E3646]',
   },
   slate: {
-    card: 'bg-slate-50/85 dark:bg-[#101D26]/90 border-slate-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.5)]',
-    badge: 'bg-slate-200/80 dark:bg-slate-800/80 text-slate-900 dark:text-slate-200 border border-slate-300/50 dark:border-slate-700/60',
+    card: 'bg-slate-50/85 dark:bg-[#101D26] border-slate-200/45 dark:border-[#1E3646] shadow-[0_10px_28px_-14px_rgba(15,23,42,0.08)] dark:shadow-[0_10px_28px_-14px_rgba(0,0,0,0.6)]',
+    badge: 'bg-slate-200/80 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] border border-slate-300/50 dark:border-[#1E3646]',
     iconBg: 'bg-white/95 dark:bg-[#142430] border-slate-100/60 dark:border-[#1E3646]',
   },
 };
@@ -308,12 +308,36 @@ const ICON_TO_BG_KEY: Record<ThreeDIconId, string> = {
 export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = ({
   slides,
   language,
+  darkMode,
   ariaLabel,
   autoPlayMs = 4500,
 }) => {
   const [activeIdx, setActiveIdx] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [domDark, setDomDark] = useState<boolean>(() =>
+    typeof document !== 'undefined'
+      ? document.documentElement.getAttribute('data-color-mode') === 'dark' ||
+        document.documentElement.classList.contains('dark')
+      : false
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const syncDomMode = () => {
+      setDomDark(
+        document.documentElement.getAttribute('data-color-mode') === 'dark' ||
+          document.documentElement.classList.contains('dark')
+      );
+    };
+    syncDomMode();
+    const obs = new MutationObserver(syncDomMode);
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-color-mode', 'class'],
+    });
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     if (slides.length <= 1 || isPaused || autoPlayMs <= 0) return;
@@ -328,7 +352,8 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
   const isEn = language === 'en';
   const btnTone = CTA_BUTTON_VARIANTS[current.ctaVariant || 'orange'];
   const bgKey = ICON_TO_BG_KEY[current.iconId] || 'services';
-  const bgSpec = getCardBackgroundSpec(bgKey);
+  const resolvedDark = darkMode !== undefined ? darkMode : domDark;
+  const bgSpec = getCardBackgroundSpec(bgKey, resolvedDark);
 
   return (
     <div
@@ -385,7 +410,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
         </div>
 
         <div className="self-center shrink-0">
-          <SoftFilledIcon id={current.iconId} boxSize="lg" size={40} className="bg-white/90 border-white/80 shadow-sm" />
+          <SoftFilledIcon id={current.iconId} boxSize="lg" size={40} className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-sm" />
         </div>
       </div>
 
@@ -418,7 +443,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-7 h-7 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -426,7 +451,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-7 h-7 rounded-xl bg-white/85 hover:bg-white text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
+              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs"
             >
               {isEn ? '›' : '‹'}
             </button>

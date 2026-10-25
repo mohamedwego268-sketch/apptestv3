@@ -148,6 +148,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <SwipeableBannerCarousel
         slides={heroSlides}
         language={lang}
+        darkMode={Boolean(state.darkMode)}
         autoPlayMs={4500}
         ariaLabel={isEn ? `${brandName} Featured Announcements Carousel` : `لافتات ${brandName} الترويجية المتحركة`}
       />
@@ -582,7 +583,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 py-1">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5 py-1">
               {sortCatalogByCityAndProximity(
                 COMMERCIAL_CATALOG,
                 state.country,
