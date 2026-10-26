@@ -530,14 +530,14 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   return (
     <div
       data-sticky-topbar="true"
-      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex items-center justify-between gap-3 transition-all duration-300 ease-in-out`}
+      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out`}
     >
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
+          className="min-h-[36px] sm:min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
         >
           <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
           <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
@@ -546,7 +546,7 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
         <SoftFilledIcon id={iconId} boxSize="sm" />
 
         <div className="min-w-0 flex-1">
-          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-tight">
+          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-tight truncate">
             {title}
           </h1>
           {(subtitle || badge) && (
@@ -559,13 +559,13 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 
       {badge && (
         <span
-          className={`hidden sm:inline-flex px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
+          className={`hidden md:inline-flex px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
         >
           {badge}
         </span>
       )}
 
-      {rightSlot && <div className="flex items-center gap-2 shrink-0">{rightSlot}</div>}
+      {rightSlot && <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 ms-auto">{rightSlot}</div>}
     </div>
   );
 };
@@ -1099,9 +1099,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
             }}
           />
 
-          <div className="relative z-10 flex items-center justify-between gap-1 overflow-x-auto whitespace-nowrap no-scrollbar">
-            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1 shrink-0">
-              {topLeftBadge}
+          <div className="relative z-10 flex items-center justify-between gap-1.5 min-w-0">
+            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1 max-w-[68%]">
+              <span className="truncate inline-flex items-center gap-1">{topLeftBadge}</span>
             </span>
             {topRightBadge && (
               <span
@@ -1126,11 +1126,11 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Compact Metadata Strip */}
         {(metaLeft || metaRightAction) && (
-          <div className="flex items-center justify-between gap-1.5 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 overflow-x-auto whitespace-nowrap no-scrollbar">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
+            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar">
               {metaLeft}
             </div>
-            {metaRightAction && <div className="shrink-0">{metaRightAction}</div>}
+            {metaRightAction && <div className="shrink-0 ms-auto">{metaRightAction}</div>}
           </div>
         )}
 
@@ -1144,9 +1144,11 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
       {/* Bottom Price/Metric + Action Buttons */}
       {(footerLeft || footerRight) && (
-        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
-          <div className="min-w-0 shrink-0">{footerLeft}</div>
-          <div className="flex items-center gap-1.5 shrink-0">{footerRight}</div>
+        <div className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">{footerLeft}</div>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 ms-auto">
+            {footerRight}
+          </div>
         </div>
       )}
 

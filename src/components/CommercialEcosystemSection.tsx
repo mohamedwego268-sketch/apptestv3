@@ -438,7 +438,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[212px] sm:w-[232px] shrink-0'
+            ? 'w-[236px] sm:w-[256px] shrink-0'
             : 'w-full'
         } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-4 sm:p-5 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
       >
@@ -482,8 +482,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               }}
             />
 
-            <div className="relative z-10 flex items-center justify-between gap-1 overflow-x-auto whitespace-nowrap no-scrollbar">
-              <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs shrink-0">
+            <div className="relative z-10 flex items-center justify-between gap-1.5 min-w-0">
+              <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs max-w-[65%]">
                 {item.emoji} {locText(item.categoryLabel, language)}
               </span>
               <span
@@ -503,8 +503,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           {/* Compact Metadata Strip + Interactive Details Link */}
-          <div className="flex items-center justify-between gap-1.5 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 overflow-x-auto whitespace-nowrap no-scrollbar">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
+            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar">
               <span className="shrink-0">📍 {locText(item.city, language)}</span>
               {item.deliveryEstimateAr && (
                 <>
@@ -518,7 +518,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => onInspectCommercialItem(item)}
-              className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
+              className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 ms-auto cursor-pointer"
             >
               {isEn ? 'Details' : 'تفاصيل'}
             </button>
@@ -526,24 +526,24 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
 
         {/* Price + Universal Minimalist Action Icons (Compare Arrows + Wishlist Heart + Shopping Cart) */}
-        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5">
+        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
           <div
             onClick={() => onInspectCommercialItem(item)}
-            className="flex flex-col min-w-0 cursor-pointer"
+            className="flex flex-col min-w-0 flex-1 cursor-pointer"
           >
-            <div className="flex items-baseline gap-1 tabular-nums">
+            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 tabular-nums">
               {origVal && (
-                <span className="text-[9.5px] line-through text-[var(--color-muted)]">
+                <span className="text-[9.5px] line-through text-[var(--color-muted)] whitespace-nowrap">
                   {formatCurrency(origVal, currency, language)}
                 </span>
               )}
-              <strong className="text-xs font-extrabold text-[var(--color-text)] truncate">
+              <strong className="text-xs font-extrabold text-[var(--color-text)] whitespace-nowrap">
                 {formatCurrency(priceVal, currency, language)}
               </strong>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 ms-auto">
             {/* Smart Product Comparison Toggle Button (Modern Dual Opposing Arrows ⇄) */}
             <button
               type="button"
@@ -566,7 +566,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               }`}
             >
               <CompareArrowsIcon size={13} />
-              <span className="hidden sm:inline">
+              <span className="hidden md:inline">
                 {compareIds.includes(item.id)
                   ? isEn
                     ? 'Comparing'
@@ -856,12 +856,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] p-0.5">
+        <div className="w-full sm:w-auto flex flex-wrap items-center justify-between sm:justify-end gap-1.5">
+          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] p-0.5 shrink-0">
             <button
               type="button"
               onClick={() => setCityScopeFilter('all')}
-              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors ${
+              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors whitespace-nowrap ${
                 cityScopeFilter === 'all'
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
                   : 'text-[var(--color-muted)]'
@@ -872,7 +872,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => setCityScopeFilter('local')}
-              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors ${
+              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors whitespace-nowrap max-w-[120px] truncate ${
                 cityScopeFilter === 'local'
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
                   : 'text-[var(--color-muted)]'
@@ -890,7 +890,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               setShowCartPanel(false);
               setShowComparePanel((prev) => !prev);
             }}
-            className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
+            className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 shrink-0 whitespace-nowrap cursor-pointer ${
               showComparePanel
                 ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-2xs'
                 : 'border-teal-300 dark:border-[#1E3646] bg-teal-50/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] hover:bg-teal-100'
@@ -911,14 +911,14 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               setShowCartPanel(false);
               setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
             }}
-            className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 ${
+            className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 shrink-0 whitespace-nowrap cursor-pointer ${
               showLiveTracking && storeFlowStep === 'catalog'
                 ? 'border-emerald-600 bg-emerald-600 text-white shadow-2xs'
                 : 'border-emerald-300 dark:border-[#1E3646] bg-emerald-50 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] hover:bg-emerald-100'
             }`}
           >
             <span>🛵</span>
-            <span>{isEn ? 'Live Order Tracking' : 'تتبع الطلب المباشر'}</span>
+            <span>{isEn ? 'Live Tracking' : 'تتبع الطلب المباشر'}</span>
           </button>
 
           <PrimaryCtaButton
@@ -2508,7 +2508,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           {/* Dedicated Category Multi-Column Grid */}
           <div
             data-testid="store-category-grid"
-            className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3.5"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"
           >
             {filtered
               .filter((item) =>

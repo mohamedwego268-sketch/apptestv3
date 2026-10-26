@@ -172,9 +172,9 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       />
 
       {/* Segmented Navigation inside Medical Hub */}
-      <div className="flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div
-          className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646] shrink-0"
+          className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646] overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
           role="tablist"
         >
           <button
@@ -182,7 +182,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'doctors'}
             onClick={() => setActiveTab('doctors')}
-            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'doctors'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
@@ -195,33 +195,33 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'child_records'}
             onClick={() => setActiveTab('child_records')}
-            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'child_records'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            💉 {isEn ? `Vaccinations & Growth (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
+            💉 {isEn ? `Growth & Vaccines (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
           </button>
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'articles'}
             onClick={() => setActiveTab('articles')}
-            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+            className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'articles'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            📋 {isEn ? `Medical Guides (${medicalArticles.length})` : `أدلة طبية سريعة (${medicalArticles.length})`}
+            📋 {isEn ? `Guides (${medicalArticles.length})` : `أدلة طبية سريعة (${medicalArticles.length})`}
           </button>
         </div>
 
         <button
           type="button"
           onClick={() => setFilterByUserCity((prev) => !prev)}
-          className={`min-h-[36px] px-3 py-1.5 rounded-2xl text-[11px] font-extrabold border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+          className={`min-h-[36px] px-3 py-1.5 rounded-2xl text-[11px] font-extrabold border transition-colors whitespace-nowrap shrink-0 ms-auto cursor-pointer ${
             filterByUserCity
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
               : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'

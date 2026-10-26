@@ -582,7 +582,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           data-testid="home-proactive-family-tips"
           className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] space-y-2"
         >
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
               📋{' '}
               {isEn
@@ -599,7 +599,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     : `تم توليد خطط إضافية مخصصة لـ ${activeKidName}!`
                 );
               }}
-              className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] transition-all cursor-pointer"
+              className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] transition-all shrink-0 cursor-pointer"
             >
               🔄 {isEn ? 'Extend Plans' : 'توليد خطة إضافية'}
             </button>
@@ -628,7 +628,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
                   <button
                     type="button"
                     onClick={() => handleSendHomeAiQuery(isEn ? plan.titleEn : plan.titleAr)}
@@ -649,7 +649,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         navigateTo('routine');
                       }
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-[10px] font-extrabold transition-all active:scale-95 cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-[10px] font-extrabold transition-all active:scale-95 shrink-0 ms-auto cursor-pointer"
                   >
                     + {isEn ? 'Add to Routine' : 'أضف للروتين'}
                   </button>
@@ -941,16 +941,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         {/* TAB 1: NEARBY SERVICES & STORE */}
         {homeFocusTab === 'nearby' && (
           <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-4 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                 {/* Step 1: Hierarchical Country Selector (Egypt vs Saudi Arabia) */}
-                <div className="inline-flex items-center gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646]">
+                <div className="inline-flex flex-wrap items-center gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646]">
                   <button
                     id="home-country-eg-btn"
                     type="button"
                     onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
                     aria-pressed={state.country === 'EG'}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer ${
                       state.country === 'EG'
                         ? 'bg-[#0d9488] text-white shadow-2xs'
                         : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -958,85 +958,85 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   >
                     {isEn ? '🇪🇬 Egypt (27)' : '🇪🇬 مصر (٢٧ محافظة)'}
                   </button>
-                <button
-                  id="home-country-sa-btn"
-                  type="button"
-                  onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
-                  aria-pressed={state.country === 'SA'}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-                    state.country === 'SA'
-                      ? 'bg-[#0d9488] text-white shadow-2xs'
-                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  {isEn ? '🇸🇦 Saudi Arabia (15 · SAR)' : '🇸🇦 السعودية (١٥ منطقة · SAR)'}
-                </button>
-              </div>
+                  <button
+                    id="home-country-sa-btn"
+                    type="button"
+                    onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                    aria-pressed={state.country === 'SA'}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-extrabold transition-all whitespace-nowrap cursor-pointer ${
+                      state.country === 'SA'
+                        ? 'bg-[#0d9488] text-white shadow-2xs'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    {isEn ? '🇸🇦 Saudi Arabia (15)' : '🇸🇦 السعودية (١٥ منطقة · SAR)'}
+                  </button>
+                </div>
 
-              {/* Step 2: Dynamic Governorate / Region Selector Right Beside GPS Button */}
-              <div className="flex flex-wrap items-center gap-2">
-                <label
-                  htmlFor="home-city-filter-select"
-                  className="text-xs font-extrabold text-[var(--color-text)] inline-flex items-center gap-1"
-                >
-                  <ThreeDIcon id="services" size={14} />
-                  <span>
-                    {state.country === 'EG'
-                      ? isEn
-                        ? 'Governorate:'
-                        : 'المحافظة:'
-                      : isEn
-                      ? 'Region / City:'
-                      : 'المنطقة / المدينة:'}
-                  </span>
-                </label>
-                <select
-                  id="home-city-filter-select"
-                  value={`${state.country}:${activeCity}`}
-                  onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)] cursor-pointer"
-                >
-                  {activeCountryCities.map((c, idx) => (
-                    <option key={`${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
-                      {isEn
-                        ? `${idx + 1}. ${c.nameEn}`
-                        : `${idx + 1}. ${c.nameAr}`}
-                    </option>
-                  ))}
-                </select>
+                {/* Step 2: Dynamic Governorate / Region Selector Right Beside GPS Button */}
+                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
+                  <label
+                    htmlFor="home-city-filter-select"
+                    className="text-xs font-extrabold text-[var(--color-text)] inline-flex items-center gap-1 shrink-0"
+                  >
+                    <ThreeDIcon id="services" size={14} />
+                    <span>
+                      {state.country === 'EG'
+                        ? isEn
+                          ? 'Governorate:'
+                          : 'المحافظة:'
+                        : isEn
+                        ? 'Region:'
+                        : 'المنطقة / المدينة:'}
+                    </span>
+                  </label>
+                  <select
+                    id="home-city-filter-select"
+                    value={`${state.country}:${activeCity}`}
+                    onChange={(e) => onSelectPreciseCity(e.target.value)}
+                    className="min-h-[36px] sm:min-h-[38px] max-w-full sm:max-w-[215px] flex-1 min-w-[130px] truncate rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-2.5 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)] cursor-pointer"
+                  >
+                    {activeCountryCities.map((c, idx) => (
+                      <option key={`${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
+                        {isEn
+                          ? `${idx + 1}. ${c.nameEn}`
+                          : `${idx + 1}. ${c.nameAr}`}
+                      </option>
+                    ))}
+                  </select>
 
-                <button
-                  id="use-current-location-btn"
-                  type="button"
-                  onClick={onUseCurrentLocation}
-                  className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
-                    geoStatus === 'active'
-                      ? 'bg-[#0d9488] text-white shadow-2xs'
-                      : 'bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-role-text)] border border-[var(--color-border)] dark:border-[#1E3646] hover:border-[var(--color-accent)]'
-                  }`}
-                >
-                  <ThreeDIcon id="services" size={14} />
-                  <span>
-                    {geoStatus === 'locating'
-                      ? isEn
-                        ? 'Detecting GPS...'
-                        : 'جاري تحديد موقعك...'
-                      : geoStatus === 'active'
-                      ? isEn
-                        ? 'GPS Sorted (Closest)'
-                        : 'مرتب حسب الأقرب (GPS)'
-                      : isEn
-                      ? 'Use my current location'
-                      : 'استخدم موقعي الحالي'}
-                  </span>
-                </button>
+                  <button
+                    id="use-current-location-btn"
+                    type="button"
+                    onClick={onUseCurrentLocation}
+                    className={`min-h-[36px] sm:min-h-[38px] px-3 py-1.5 rounded-xl text-[11px] sm:text-xs font-extrabold flex items-center gap-1.5 transition-all shrink-0 whitespace-nowrap cursor-pointer ${
+                      geoStatus === 'active'
+                        ? 'bg-[#0d9488] text-white shadow-2xs'
+                        : 'bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-role-text)] border border-[var(--color-border)] dark:border-[#1E3646] hover:border-[var(--color-accent)]'
+                    }`}
+                  >
+                    <ThreeDIcon id="services" size={14} />
+                    <span>
+                      {geoStatus === 'locating'
+                        ? isEn
+                          ? 'Detecting GPS...'
+                          : 'جاري تحديد موقعك...'
+                        : geoStatus === 'active'
+                        ? isEn
+                          ? 'GPS Sorted ✓'
+                          : 'مرتب حسب الأقرب (GPS)'
+                        : isEn
+                        ? 'GPS Location'
+                        : 'استخدم موقعي الحالي'}
+                    </span>
+                  </button>
+                </div>
               </div>
-            </div>
 
               <button
                 type="button"
                 onClick={() => navigateTo('services')}
-                className="text-xs font-extrabold text-[var(--color-role-text)] hover:underline cursor-pointer"
+                className="text-xs font-extrabold text-[var(--color-role-text)] hover:underline shrink-0 ms-auto cursor-pointer"
               >
                 {isEn ? 'Open Full Store →' : 'عرض المتجر كاملًا ←'}
               </button>

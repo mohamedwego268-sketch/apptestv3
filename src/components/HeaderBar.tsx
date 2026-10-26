@@ -78,10 +78,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const primaryNavItems = navItems.filter((item) => defaultPrimaryNavIds.includes(item.id));
 
   const sharedControlBtnClass =
-    'h-9 min-w-[36px] px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
+    'h-8 sm:h-9 min-w-[32px] sm:min-w-[36px] px-2 sm:px-2.5 rounded-xl sm:rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1 sm:gap-1.5 transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
 
   const compactIconBadgeBtnClass =
-    'w-9 h-9 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] shrink-0 inline-flex items-center justify-center transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
+    'w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] shrink-0 inline-flex items-center justify-center transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
 
   return (
     <header
@@ -89,7 +89,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       data-scrolled={isScrolled ? 'true' : 'false'}
       className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] dark:border-[#1E3646] glass-sticky-header transition-colors select-none"
     >
-      <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4">
+      <div className="max-w-[1280px] mx-auto px-2.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
         {/* Zone 1: Localized Official Brand Wordmark (Strictly "نكبر" in AR or "Nekbaar" in EN) */}
         <button
           type="button"
@@ -97,10 +97,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           aria-label={isEn ? 'Nekbaar Home' : 'رئيسية نكبر'}
           className="h-10 flex items-center gap-2 sm:gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
             <ThreeDIcon id="home" size={20} />
           </div>
-          <span className="font-black text-base sm:text-lg text-[var(--color-text)] leading-none">
+          <span className="font-black text-sm sm:text-lg text-[var(--color-text)] leading-none">
             {brandName}
           </span>
         </button>
@@ -109,7 +109,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         {primaryNavItems.length > 0 && (
           <nav
             aria-label={isEn ? 'Main navigation' : 'التنقل الرئيسي'}
-            className="hidden xl:flex items-center gap-1.5 text-xs font-bold text-[var(--color-muted)] min-w-0"
+            className="hidden xl:flex items-center justify-center gap-1 text-xs font-bold text-[var(--color-muted)] min-w-0 flex-1 overflow-x-auto no-scrollbar px-1"
           >
             {primaryNavItems.map((item) => {
               const isActive = activePage === item.id;
@@ -118,7 +118,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   key={item.id}
                   type="button"
                   onClick={() => onNavigate(item.id)}
-                  className={`h-9 px-3 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                  className={`h-9 px-2.5 rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     isActive
                       ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
                       : 'hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
@@ -132,7 +132,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         )}
 
         {/* Zone 3: Standardized Well-Spaced Controls (Theme + Bedtime Mode + Sleek Language Globe 🌐 + Calendar/To-Do + Notifications + Profile) */}
-        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* 1. Theme Toggle Button (Soft-Filled Sun / Moon SVG) */}
           <button
             id="top-dark-mode-toggle"
@@ -190,7 +190,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 />
               </svg>
             )}
-            <span className="hidden lg:inline">
+            <span className="hidden 2xl:inline">
               {darkMode ? (isEn ? 'Light' : 'نهاري') : isEn ? 'Dark' : 'ليلي'}
             </span>
           </button>
@@ -219,7 +219,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }`}
             >
               <span className="text-sm leading-none">🕯️</span>
-              <span className="hidden lg:inline">
+              <span className="hidden 2xl:inline">
                 {bedtimeMode
                   ? isEn
                     ? 'Bedtime On'
@@ -290,11 +290,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="hidden lg:inline">{isEn ? 'Planner' : 'المفكرة'}</span>
+            <span className="hidden 2xl:inline">{isEn ? 'Planner' : 'المفكرة'}</span>
             {openTasksCount > 0 && (
               <span
                 data-testid="header-planner-badge"
-                className="min-w-[17px] h-[17px] px-1 rounded-full bg-[#0d9488] dark:bg-[#38BDF8] text-white dark:text-[#0B131A] text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+                className="min-w-[16px] h-[16px] sm:min-w-[17px] sm:h-[17px] px-1 rounded-full bg-[#0d9488] dark:bg-[#38BDF8] text-white dark:text-[#0B131A] text-[9px] sm:text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
               >
                 {openTasksCount}
               </span>
@@ -345,11 +345,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               />
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span className="hidden lg:inline">{isEn ? 'Alerts' : 'إشعارات'}</span>
+            <span className="hidden 2xl:inline">{isEn ? 'Alerts' : 'إشعارات'}</span>
             {unreadNotifCount > 0 && (
               <span
                 data-testid="header-notif-badge"
-                className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF8C61] text-white text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+                className="min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] px-1 rounded-full bg-[#FF8C61] text-white text-[9px] sm:text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
               >
                 {unreadNotifCount}
               </span>
@@ -369,7 +369,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               color: parentProfileSpec.badgeTextCss,
               borderColor: parentProfileSpec.badgeBorderCss,
             }}
-            className="h-9 min-w-[36px] px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none cursor-pointer"
+            className="h-8 sm:h-9 min-w-[32px] sm:min-w-[36px] px-2 sm:px-3 rounded-xl sm:rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none cursor-pointer"
           >
             <span className="w-5 h-5 rounded-full bg-white/30 dark:bg-black/25 inline-flex items-center justify-center shrink-0">
               <svg
@@ -384,7 +384,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </span>
-            <span className="hidden md:inline font-extrabold">
+            <span className="hidden sm:inline xl:hidden 2xl:inline font-extrabold max-w-[105px] truncate">
               {isEn ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
             </span>
           </button>
