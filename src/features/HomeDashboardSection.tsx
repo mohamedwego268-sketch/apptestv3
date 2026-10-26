@@ -17,9 +17,11 @@ import { t } from '../domain/i18n';
 import {
   BannerSlideItem,
   CompareArrowsIcon,
+  FamilyMoodBarometer,
   MasterPatternCard,
   PrimaryCtaButton,
   SoftFilledIcon,
+  StarOfTheDayCrownBadge,
   SwipeableBannerCarousel,
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from '../components/ThreeDVisuals';
@@ -411,6 +413,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 1.5 EMOTIONAL FAMILY ENGAGEMENT: INTERACTIVE FAMILY MOOD BAROMETER */}
+      <FamilyMoodBarometer
+        language={lang}
+        darkMode={Boolean(state.darkMode)}
+        onSelectMood={(_, msg) => onShowToast?.(msg)}
+      />
 
       {/* 2. INTERACTIVE AI ASSISTANT CHAT BOX & DYNAMIC CHILD PLANS DIRECTLY BELOW TOP HERO CARD */}
       <div
@@ -940,7 +949,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
         {/* TAB 1: NEARBY SERVICES & STORE */}
         {homeFocusTab === 'nearby' && (
-          <div className="space-y-3">
+          <div className="space-y-3 animate-tab-enter">
             <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
               <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                 {/* Step 1: Hierarchical Country Selector (Egypt vs Saudi Arabia) */}
@@ -1200,7 +1209,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
         {/* TAB 2: CHILDREN 3D PROFILES */}
         {homeFocusTab === 'children' && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-tab-enter">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-extrabold text-[var(--color-text)]">
                 {t(lang, 'yourChildren')}
@@ -1217,6 +1226,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               {state.kids.map((kid, idx) => {
                 const ageInfo = calculateChildAge(kid.birth, state.language);
                 const displayKidName = locText(kid.name, lang);
+                const kidDoneCount = state.tasks.filter(
+                  (tItem) => tItem.done && (Number(tItem.kidId) === kid.id || tItem.kidId === null)
+                ).length;
                 return (
                   <MasterPatternCard
                     key={kid.id}
@@ -1226,7 +1238,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     darkMode={Boolean(state.darkMode)}
                     onThumbnailClick={() => navigateTo('children')}
                     topLeftBadge={<span>👶 {ageInfo.stageTitle}</span>}
-                    topRightBadge={<span>⭐ {ageInfo.label}</span>}
+                    topRightBadge={
+                      <StarOfTheDayCrownBadge
+                        language={lang}
+                        completedCount={Math.max(1, kidDoneCount)}
+                      />
+                    }
                     title={displayKidName}
                     titlePrefixSlot={
                       <ThreeDChildAvatar
@@ -1279,7 +1296,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
         {/* TAB 3: UPCOMING SCHEDULE & ROUTINE */}
         {homeFocusTab === 'schedule' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-tab-enter">
             {nearestEvent ? (
               <MasterPatternCard
                 tone="sky"

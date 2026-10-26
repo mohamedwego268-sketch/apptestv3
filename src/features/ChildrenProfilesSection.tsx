@@ -11,6 +11,7 @@ import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import {
   MasterPatternCard,
   PrimaryCtaButton,
+  StarOfTheDayCrownBadge,
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar, ThreeDIcon } from '../components/ThreeDVisuals';
 import { ChildGrowthChart } from '../components/ChildGrowthChart';
@@ -84,6 +85,10 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
               AVATAR_ACCESSORY_THEMES[0];
             const displayKidName = locText(kid.name, lang);
 
+            const kidDoneTasksCount = state.tasks.filter(
+              (tItem) => tItem.done && (Number(tItem.kidId) === kid.id || tItem.kidId === null)
+            ).length;
+
             return (
               <MasterPatternCard
                 key={kid.id}
@@ -94,15 +99,10 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                 onThumbnailClick={() => onOpenEditChild(kid)}
                 topLeftBadge={ageInfo.label}
                 topRightBadge={
-                  <span>
-                    {kid.photoDataUrl && !kid.useIllustratedAvatar
-                      ? isEn
-                        ? '📸 Real Photo'
-                        : '📸 صورة حقيقية'
-                      : isEn
-                      ? `✨ ${themeObj.labelEn}`
-                      : `✨ ${themeObj.labelAr}`}
-                  </span>
+                  <StarOfTheDayCrownBadge
+                    language={lang}
+                    completedCount={Math.max(1, kidDoneTasksCount)}
+                  />
                 }
                 titlePrefixSlot={
                   <ThreeDChildAvatar
@@ -117,9 +117,19 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                 }
                 title={displayKidName}
                 metaLeft={
-                  <span className="inline-flex items-center gap-1">
+                  <span className="inline-flex items-center gap-1.5">
                     <ThreeDIcon id="health" size={14} />
                     <span>{ageInfo.stageTitle}</span>
+                    <span aria-hidden="true">·</span>
+                    <span>
+                      {kid.photoDataUrl && !kid.useIllustratedAvatar
+                        ? isEn
+                          ? '📸 Real Photo'
+                          : '📸 صورة حقيقية'
+                        : isEn
+                        ? `✨ ${themeObj.labelEn}`
+                        : `✨ ${themeObj.labelAr}`}
+                    </span>
                   </span>
                 }
                 metaRightAction={

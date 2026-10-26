@@ -575,6 +575,61 @@ interface SectionSkeletonLoaderProps {
   language: LanguageCode;
 }
 
+export const PlayfulChildLoaderSvg: React.FC<{ size?: number }> = ({ size = 44 }) => (
+  <span
+    data-testid="playful-child-svg-loader"
+    aria-hidden="true"
+    className="relative inline-flex items-center justify-center shrink-0 select-none"
+    style={{ width: size, height: size }}
+  >
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 64 64"
+      fill="none"
+      className="animate-child-loader-bob drop-shadow-xs"
+    >
+      {/* Soft warm halo circle */}
+      <circle cx="32" cy="34" r="22" fill="#FF8C61" fillOpacity="0.16" />
+      <circle cx="32" cy="34" r="18" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="2.2" />
+      {/* Playful curl of hair at top */}
+      <path
+        d="M25 17c2-4 8-5 11-1 2 2 1 5-2 5"
+        stroke="#0D9488"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+      {/* Smiling eyes */}
+      <path d="M24 31c1.2-1.8 3.2-1.8 4.4 0" stroke="#0B131A" strokeWidth="2.3" strokeLinecap="round" />
+      <path d="M35.6 31c1.2-1.8 3.2-1.8 4.4 0" stroke="#0B131A" strokeWidth="2.3" strokeLinecap="round" />
+      {/* Rosy cheeks */}
+      <circle cx="22.5" cy="35.5" r="2.4" fill="#FF8C61" fillOpacity="0.65" />
+      <circle cx="41.5" cy="35.5" r="2.4" fill="#FF8C61" fillOpacity="0.65" />
+      {/* Joyful wide smile */}
+      <path
+        d="M25.5 37.5c2 3.8 11 3.8 13 0"
+        stroke="#0B131A"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      {/* Floating twinkling star top-right */}
+      <g className="animate-star-twinkle" style={{ transformOrigin: '51px 15px' }}>
+        <path
+          d="M51 9l1.6 4.2L57 14.8l-4.4 1.6L51 20.6l-1.6-4.2L45 14.8l4.4-1.6L51 9z"
+          fill="#F59E0B"
+        />
+      </g>
+      {/* Floating heart top-left */}
+      <g className="animate-star-twinkle" style={{ transformOrigin: '13px 17px', animationDelay: '350ms' }}>
+        <path
+          d="M13 21.5s-4.5-2.7-4.5-5.6c0-1.6 1.3-2.8 2.8-2.8 1 0 1.7.5 1.7 1.2 0-.7.7-1.2 1.7-1.2 1.5 0 2.8 1.2 2.8 2.8 0 2.9-4.5 5.6-4.5 5.6z"
+          fill="#FF8C61"
+        />
+      </g>
+    </svg>
+  </span>
+);
+
 export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
   section,
   language,
@@ -584,14 +639,14 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
     section === 'services'
       ? isEn
         ? 'Loading Family Store & Live Tracking...'
-        : 'جاري تحميل منتجات متجر الأسرة وخريطة التوصيل المباشر...'
+        : 'جاري تجهيز متجر الأسرة وخريطة التوصيل المباشر...'
       : section === 'medical'
       ? isEn
         ? 'Loading Verified Pediatricians & Records...'
-        : 'جاري تحميل قائمة أطباء الأطفال وسجل متابعة النمو...'
+        : 'جاري تجهيز أطباء الأطفال وسجل متابعة النمو...'
       : isEn
       ? 'Loading Parents Community Discussions...'
-      : 'جاري تحميل أحدث تجارب ونقاشات مجتمع الآباء والأمهات...';
+      : 'جاري تجهيز أحدث تجارب ونقاشات مجتمع الآباء والأمهات...';
 
   const cardCount = section === 'community' ? 4 : 6;
 
@@ -604,19 +659,19 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
       aria-busy="true"
       className="space-y-4 animate-page-enter"
     >
-      {/* Top Status Strip Shimmer */}
-      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-3.5 flex items-center justify-between gap-3 shadow-2xs">
-        <div className="flex items-center gap-3">
-          <span className="w-9 h-9 rounded-xl skeleton-shimmer shrink-0" />
-          <div className="space-y-1.5">
+      {/* Charming Animated Smiling Child SVG Loader Header */}
+      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs soft-card-surface">
+        <div className="flex items-center gap-3 min-w-0">
+          <PlayfulChildLoaderSvg size={44} />
+          <div className="space-y-1.5 min-w-0">
             <div className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-2">
-              <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent)] animate-ping" />
-              <span>{sectionLabel}</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent)] animate-ping shrink-0" />
+              <span className="truncate">{sectionLabel}</span>
             </div>
-            <div className="h-2.5 w-48 rounded-full skeleton-shimmer" />
+            <div className="h-2.5 w-44 sm:w-56 rounded-full skeleton-shimmer" />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="h-8 w-20 rounded-xl skeleton-shimmer" />
           <div className="h-8 w-24 rounded-xl skeleton-shimmer hidden sm:block" />
         </div>
@@ -1154,6 +1209,282 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
       {children}
     </article>
+  );
+};
+
+export interface TaskFestivalCelebrationProps {
+  celebration: {
+    id: number;
+    titleAr: string;
+    titleEn: string;
+    subtitleAr?: string;
+    subtitleEn?: string;
+  } | null;
+  language: LanguageCode;
+}
+
+const FESTIVAL_PARTICLES: Array<{
+  left: string;
+  tx: string;
+  delay: string;
+  glyph: string;
+  color: string;
+}> = [
+  { left: '12%', tx: '-24px', delay: '0ms', glyph: '⭐', color: '#F59E0B' },
+  { left: '22%', tx: '18px', delay: '60ms', glyph: '✨', color: '#0D9488' },
+  { left: '32%', tx: '-16px', delay: '110ms', glyph: '💛', color: '#FF8C61' },
+  { left: '42%', tx: '22px', delay: '30ms', glyph: '🌟', color: '#FBBF24' },
+  { left: '50%', tx: '-10px', delay: '80ms', glyph: '🎉', color: '#2DD4BF' },
+  { left: '58%', tx: '26px', delay: '40ms', glyph: '⭐', color: '#F59E0B' },
+  { left: '68%', tx: '-20px', delay: '95ms', glyph: '🧡', color: '#FF8C61' },
+  { left: '78%', tx: '16px', delay: '50ms', glyph: '✨', color: '#14B8A6' },
+  { left: '88%', tx: '-22px', delay: '120ms', glyph: '🌟', color: '#FBBF24' },
+];
+
+/**
+ * Performance-optimized Task & Goal Completion "Festival" Celebration Overlay.
+ * Renders floating glowing stars, hearts, and confetti particles with a joyful pill banner.
+ */
+export const TaskFestivalCelebrationOverlay: React.FC<TaskFestivalCelebrationProps> = ({
+  celebration,
+  language,
+}) => {
+  if (!celebration) return null;
+  const isEn = language === 'en';
+
+  return (
+    <div
+      key={celebration.id}
+      id="task-festival-celebration"
+      data-testid="task-festival-celebration"
+      aria-live="polite"
+      className="fixed inset-0 z-[85] pointer-events-none overflow-hidden flex flex-col items-center justify-start pt-18 sm:pt-20 px-4"
+    >
+      {/* Joyful Spring Pill Banner */}
+      <div className="animate-festival-banner rounded-2xl border border-amber-300/90 dark:border-amber-400/50 bg-white/95 dark:bg-[#142430]/95 backdrop-blur-md px-4 py-2.5 shadow-[0_16px_36px_-8px_rgba(245,158,11,0.35)] flex items-center gap-2.5 max-w-md">
+        <span className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/50 flex items-center justify-center text-base shrink-0">
+          🏆
+        </span>
+        <div className="min-w-0 text-start">
+          <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+            {isEn ? celebration.titleEn : celebration.titleAr}
+          </div>
+          {(celebration.subtitleAr || celebration.subtitleEn) && (
+            <div className="text-[10px] font-bold text-[#0d9488] dark:text-[#A5F3FC] truncate">
+              {isEn ? celebration.subtitleEn : celebration.subtitleAr}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Floating Glowing Stars, Hearts & Confetti Particles */}
+      <div className="relative w-full max-w-lg h-44 mt-6">
+        {FESTIVAL_PARTICLES.map((p, idx) => (
+          <span
+            key={idx}
+            aria-hidden="true"
+            style={
+              {
+                left: p.left,
+                bottom: '0px',
+                animationDelay: p.delay,
+                color: p.color,
+                '--tx': p.tx,
+              } as React.CSSProperties
+            }
+            className="animate-festival-particle absolute text-lg sm:text-xl select-none drop-shadow-xs"
+          >
+            {p.glyph}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export type FamilyMoodId = 'calm' | 'excited' | 'cozy' | 'focused';
+
+export interface FamilyMoodBarometerProps {
+  language: LanguageCode;
+  darkMode?: boolean;
+  onSelectMood?: (moodId: FamilyMoodId, message: string) => void;
+}
+
+const FAMILY_MOOD_OPTIONS: Array<{
+  id: FamilyMoodId;
+  emoji: string;
+  labelAr: string;
+  labelEn: string;
+  vibeAr: string;
+  vibeEn: string;
+}> = [
+  {
+    id: 'calm',
+    emoji: '😊',
+    labelAr: 'هادئ وممتن',
+    labelEn: 'Calm & Grateful',
+    vibeAr: 'جو البيت هادئ ومريح النهارده — وقت لطيف لحكاية قصيرة مع الأولاد',
+    vibeEn: 'Calm & peaceful family vibe today — great time for a cozy story',
+  },
+  {
+    id: 'excited',
+    emoji: '🤩',
+    labelAr: 'نشيط ومتحمس',
+    labelEn: 'Joyful & Active',
+    vibeAr: 'طاقة حلوة وحماس في البيت! مثالي لأنشطة اللعب والتحديات السريعة',
+    vibeEn: 'High energy & smiles! Perfect for interactive play and milestones',
+  },
+  {
+    id: 'cozy',
+    emoji: '🧸',
+    labelAr: 'دافئ وحنون',
+    labelEn: 'Cozy & Cuddly',
+    vibeAr: 'مود دافئ وحنون — حضن كبير للأولاد وروتين مسائي هادئ',
+    vibeEn: 'Warm & cuddly mood — extra hugs and a gentle evening routine',
+  },
+  {
+    id: 'focused',
+    emoji: '🌿',
+    labelAr: 'تركيز وروقان',
+    labelEn: 'Focused & Zen',
+    vibeAr: 'تركيز وترتيب مريح — يوم مناسب لإنجاز مهام الروتين خطوة بخطوة',
+    vibeEn: 'Focused & organized — ideal for checking off daily routine goals',
+  },
+];
+
+/**
+ * Interactive Family Mood Barometer Widget (😊 / 🤩 / 🧸 / 🌿).
+ * Lets parents set the family's daily vibe with instant visual & emotional feedback.
+ */
+export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
+  language,
+  onSelectMood,
+}) => {
+  const isEn = language === 'en';
+  const [selectedMood, setSelectedMood] = useState<FamilyMoodId>(() => {
+    try {
+      const saved = window.localStorage.getItem('nekbaar_family_mood_v1');
+      if (saved === 'calm' || saved === 'excited' || saved === 'cozy' || saved === 'focused') {
+        return saved;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return 'calm';
+  });
+
+  const activeMoodObj =
+    FAMILY_MOOD_OPTIONS.find((m) => m.id === selectedMood) || FAMILY_MOOD_OPTIONS[0];
+
+  const handleChooseMood = (opt: (typeof FAMILY_MOOD_OPTIONS)[number]) => {
+    setSelectedMood(opt.id);
+    try {
+      window.localStorage.setItem('nekbaar_family_mood_v1', opt.id);
+    } catch {
+      // ignore storage errors
+    }
+    onSelectMood?.(opt.id, `${opt.emoji} ${isEn ? opt.vibeEn : opt.vibeAr}`);
+  };
+
+  return (
+    <div
+      id="family-mood-barometer"
+      data-testid="family-mood-barometer"
+      className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2.5 sm:px-4 sm:py-3 soft-card-surface flex flex-wrap items-center justify-between gap-2.5"
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="w-8 h-8 rounded-xl bg-amber-400/15 dark:bg-[#142430] border border-amber-400/35 dark:border-[#1E3646] flex items-center justify-center text-base shrink-0">
+          {activeMoodObj.emoji}
+        </span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] sm:text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+              {isEn ? 'Family Mood Barometer' : 'مؤشر مود العيلة اليوم'}
+            </span>
+            <span className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] shrink-0">
+              · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+            </span>
+          </div>
+          <p className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+            {isEn ? activeMoodObj.vibeEn : activeMoodObj.vibeAr}
+          </p>
+        </div>
+      </div>
+
+      <div
+        role="radiogroup"
+        aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
+        className="flex flex-wrap items-center gap-1.5 ms-auto"
+      >
+        {FAMILY_MOOD_OPTIONS.map((opt) => {
+          const isSelected = opt.id === selectedMood;
+          return (
+            <button
+              key={opt.id}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              data-testid={`mood-option-${opt.id}`}
+              onClick={() => handleChooseMood(opt)}
+              className={`min-h-[32px] px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
+                isSelected
+                  ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs scale-[1.03]'
+                  : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+              }`}
+            >
+              <span className="text-xs leading-none">{opt.emoji}</span>
+              <span>{isEn ? opt.labelEn : opt.labelAr}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export interface StarOfTheDayCrownBadgeProps {
+  language: LanguageCode;
+  completedCount?: number;
+  onClick?: () => void;
+}
+
+/**
+ * Glowing "Star of the Day" Crown & Star Micro-Animation Badge for Child Profile Cards.
+ */
+export const StarOfTheDayCrownBadge: React.FC<StarOfTheDayCrownBadgeProps> = ({
+  language,
+  completedCount = 1,
+  onClick,
+}) => {
+  const isEn = language === 'en';
+  return (
+    <span
+      onClick={(e) => {
+        if (onClick) {
+          e.stopPropagation();
+          onClick();
+        }
+      }}
+      data-testid="star-of-the-day-badge"
+      className={`animate-star-crown-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 text-slate-950 border border-amber-500/70 shadow-xs select-none whitespace-nowrap ${
+        onClick ? 'cursor-pointer' : ''
+      }`}
+      title={
+        isEn
+          ? `Star of the Day (${completedCount} milestone${completedCount === 1 ? '' : 's'} completed)`
+          : `نجم اليوم (${completedCount} إنجاز مكتمل اليوم)`
+      }
+    >
+      <span aria-hidden="true" className="text-[10px] leading-none">
+        👑
+      </span>
+      <span>{isEn ? 'Star of the Day' : 'نجم اليوم'}</span>
+      {completedCount > 0 && (
+        <span className="px-1 rounded-full bg-amber-950/15 text-[8.5px] tabular-nums">
+          ★ {completedCount}
+        </span>
+      )}
+    </span>
   );
 };
 

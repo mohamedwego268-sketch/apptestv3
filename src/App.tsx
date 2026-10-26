@@ -87,6 +87,7 @@ import {
   PASTEL_CARD_TONES,
   SectionSkeletonLoader,
   SoftFilledIcon,
+  TaskFestivalCelebrationOverlay,
 } from './components/DesignSystem';
 import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 
@@ -101,6 +102,19 @@ export default function App() {
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoStatus, setGeoStatus] = useState<'idle' | 'locating' | 'active'>('idle');
   const [bedtimeMode, setBedtimeMode] = useState<boolean>(false);
+  const [festivalCelebration, setFestivalCelebration] = useState<{
+    id: number;
+    titleAr: string;
+    titleEn: string;
+    subtitleAr?: string;
+    subtitleEn?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!festivalCelebration) return;
+    const tId = window.setTimeout(() => setFestivalCelebration(null), 2200);
+    return () => window.clearTimeout(tId);
+  }, [festivalCelebration]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -584,10 +598,27 @@ export default function App() {
   };
 
   const handleToggleTask = (id: number, done: boolean) => {
+    const targetTask = state.tasks.find((tItem) => tItem.id === id);
     setState((prev) => ({
       ...prev,
       tasks: prev.tasks.map((tItem) => (tItem.id === id ? { ...tItem, done } : tItem)),
     }));
+    if (done) {
+      const targetKid = targetTask?.kidId
+        ? state.kids.find((k) => k.id === Number(targetTask.kidId))
+        : null;
+      setFestivalCelebration({
+        id: Date.now(),
+        titleAr: targetTask ? `برافو! اكتملت مهمة «${targetTask.name}» ✨` : 'برافو! اكتملت المهمة بنجاح ✨',
+        titleEn: targetTask ? `Awesome! Completed "${targetTask.name}" ✨` : 'Awesome! Task completed ✨',
+        subtitleAr: targetKid
+          ? `👑 نجمة اليوم مضافة لـ ${targetKid.name}`
+          : '🌟 خطوة جميلة في روتين العيلة اليوم',
+        subtitleEn: targetKid
+          ? `👑 Star of the Day milestone for ${targetKid.name}`
+          : '🌟 Another great family milestone today',
+      });
+    }
   };
 
   const handleDeleteTask = (id: number) => {
@@ -762,6 +793,8 @@ export default function App() {
   };
 
   const handleToggleWishReserve = (id: number) => {
+    const targetWish = state.wishes.find((w) => w.id === id);
+    const becomingReserved = targetWish ? !targetWish.reserved : false;
     setState((prev) => ({
       ...prev,
       wishes: prev.wishes.map((w) =>
@@ -770,18 +803,39 @@ export default function App() {
           : w
       ),
     }));
-    showToast('تم تحديث حالة حجز الأمنية');
+    if (becomingReserved && targetWish) {
+      setFestivalCelebration({
+        id: Date.now(),
+        titleAr: `احتفال العيلة! اكتملت أمنية «${targetWish.name}» 🎁`,
+        titleEn: `Family Goal Reached! "${targetWish.name}" Fulfilled 🎁`,
+        subtitleAr: '🌟 فرحة جديدة مضافة لأهداف الأطفال',
+        subtitleEn: '🌟 A joyful family goal achieved together',
+      });
+    } else {
+      showToast('تم تحديث حالة حجز الأمنية');
+    }
   };
 
   const handleUpdateWishProgress = (id: number, delta: number) => {
+    const targetWish = state.wishes.find((w) => w.id === id);
+    const prevProg = targetWish?.progress || 0;
+    const nextProg = Math.max(0, Math.min(100, prevProg + delta));
     setState((prev) => ({
       ...prev,
       wishes: prev.wishes.map((w) => {
         if (w.id !== id) return w;
-        const nextProg = Math.max(0, Math.min(100, (w.progress || 0) + delta));
         return { ...w, progress: nextProg, reserved: nextProg === 100 ? true : w.reserved };
       }),
     }));
+    if (prevProg < 100 && nextProg === 100 && targetWish) {
+      setFestivalCelebration({
+        id: Date.now(),
+        titleAr: `مبروك! اكتمل ادخار أمنية «${targetWish.name}» ١٠٠٪ 🎉`,
+        titleEn: `100% Goal Reached for "${targetWish.name}"! 🎉`,
+        subtitleAr: '👑 إنجاز عائلي رائع النهارده',
+        subtitleEn: '👑 Wonderful family savings milestone',
+      });
+    }
   };
 
   const handleDeleteWish = (id: number) => {
@@ -2630,6 +2684,12 @@ export default function App() {
             </div>
           </>
         )}
+
+        {/* Task & Goal Completion Festival Celebration (Confetti & Stars) */}
+        <TaskFestivalCelebrationOverlay
+          celebration={festivalCelebration}
+          language={state.language}
+        />
 
         {/* Global Toast / Snackbar Micro-feedback */}
         <GlobalToastSnackbar

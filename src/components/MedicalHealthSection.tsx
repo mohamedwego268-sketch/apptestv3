@@ -16,6 +16,7 @@ import {
   CompareArrowsIcon,
   MasterPatternCard,
   PrimaryCtaButton,
+  StarOfTheDayCrownBadge,
   SwipeableBannerCarousel,
 } from './DesignSystem';
 import { ChildGrowthChart } from './ChildGrowthChart';
@@ -345,7 +346,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* TAB 2: CHILD VACCINATIONS, GROWTH & PRIVATE HEALTH RECORDS */}
       {activeTab === 'child_records' && (
-        <div className="space-y-5">
+        <div className="space-y-5 animate-tab-enter">
           {kids.length > 0 && (
             <ChildGrowthChart
               kids={kids}
@@ -365,11 +366,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   itemIdOrIndex={kid.id}
                   darkMode={darkMode}
                   topLeftBadge={age.label}
-                  topRightBadge={
-                    <span>
-                      ✅ {isEn ? 'Up to Date' : 'تطعيمات منتظمة'}
-                    </span>
-                  }
+                  topRightBadge={<StarOfTheDayCrownBadge language={language} completedCount={1} />}
                   titlePrefixSlot={
                     <ThreeDChildAvatar
                       name={kid.name}
@@ -447,7 +444,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* TAB 3: EVIDENCE-BASED MEDICAL & PSYCHOLOGICAL GUIDES */}
       {activeTab === 'articles' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-tab-enter">
           {medicalArticles.map((article) => {
             const isSaved = savedMediaIds.includes(article.id);
             return (

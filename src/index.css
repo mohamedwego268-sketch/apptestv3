@@ -732,16 +732,33 @@ textarea:focus-visible {
 @keyframes pageFadeSlideUp {
   0% {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(8px) scale(0.992);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tabGentleFadeScale {
+  0% {
+    opacity: 0;
+    transform: translateY(5px) scale(0.994);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
 .animate-page-enter {
-  animation: pageFadeSlideUp 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pageFadeSlideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+.animate-tab-enter {
+  animation: tabGentleFadeScale 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
 }
 
 /* ==========================================================================
@@ -831,16 +848,16 @@ select,
 input,
 textarea {
   transition-property: color, background-color, border-color, box-shadow, transform, opacity, filter;
-  transition-duration: 300ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 280ms;
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 button:not(:disabled):hover {
-  transform: translateY(-1px);
+  transform: translateY(-1.5px);
 }
 
 button:not(:disabled):active {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 /* ==========================================================================
@@ -1184,3 +1201,113 @@ h1, h2, h3, h4 {
   border-bottom-color: #1E3646 !important;
 }
 
+/* ==========================================================================
+   MICRO-INTERACTIONS, SPRING PHYSICS & EMOTIONAL FAMILY ENGAGEMENT
+   - Spring card lift & tap feedback
+   - Playful Child SVG Loader animation
+   - Task Completion Festival Confetti & Glowing Stars
+   - "Star of the Day" Crown Shimmer
+   ========================================================================== */
+[data-master-card="true"],
+[data-store-product-card] {
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 240ms ease,
+    background-color 240ms ease !important;
+}
+
+[data-master-card="true"]:hover,
+[data-store-product-card]:hover {
+  transform: translateY(-2px) scale(1.006);
+}
+
+[data-master-card="true"]:active,
+[data-store-product-card]:active {
+  transform: scale(0.985);
+}
+
+@keyframes childFloatBob {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(1.5deg);
+  }
+}
+
+@keyframes starTwinkleSpin {
+  0%, 100% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.18) rotate(15deg);
+    opacity: 1;
+  }
+}
+
+.animate-child-loader-bob {
+  animation: childFloatBob 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-star-twinkle {
+  animation: starTwinkleSpin 1.8s ease-in-out infinite;
+}
+
+@keyframes festivalParticleRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 24px, 0) scale(0.5) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate3d(var(--tx, 10px), -18px, 0) scale(1.12) rotate(45deg);
+  }
+  80% {
+    opacity: 0.95;
+    transform: translate3d(calc(var(--tx, 10px) * 1.6), -110px, 0) scale(1) rotate(160deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(calc(var(--tx, 10px) * 2), -155px, 0) scale(0.65) rotate(220deg);
+  }
+}
+
+@keyframes festivalBannerSpring {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.88);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-festival-particle {
+  animation: festivalParticleRise 1.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-festival-banner {
+  animation: festivalBannerSpring 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes starCrownGlow {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45), 0 4px 12px -2px rgba(245, 158, 11, 0.35);
+  }
+  50% {
+    transform: translateY(-1.5px) scale(1.04);
+    box-shadow: 0 0 0 5px rgba(251, 191, 36, 0), 0 6px 16px -2px rgba(245, 158, 11, 0.55);
+  }
+}
+
+.animate-star-crown-badge {
+  animation: starCrownGlow 2.4s ease-in-out infinite;
+}
