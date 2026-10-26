@@ -66,8 +66,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   const simulatedVoicePrompts = [
     {
       topic: 'sleep',
-      ar: `🎙️ «يا نكبر، صمّم لي جدول نوم مسائي هادئ لـ ${selectedKid?.name || 'طفلي'} يبدأ الساعة ٨ مساءً بدون شاشات»`,
-      en: `🎙️ "Nekbaar, create a calm 8:00 PM screen-free bedtime routine for ${displayKidName}"`,
+      ar: `🎙️ «صمّم لي جدول نوم مسائي هادئ لـ ${selectedKid?.name || 'طفلي'} يبدأ الساعة ٨ مساءً بدون شاشات»`,
+      en: `🎙️ "Create a calm 8:00 PM screen-free bedtime routine for ${displayKidName}"`,
     },
     {
       topic: 'food',
@@ -482,11 +482,11 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
         titleEn: `Daily Self-Reliance Habits for ${kName}`,
         stepsAr: [
           `ترتيب صندوق الألعاب وتجهيز ملابس الغد بمشاركة ${kName}`,
-          `تحديث لوحة النجوم والمكافآت الأسبوعية في نكبر`,
+          `تحديث لوحة النجوم والمكافآت الأسبوعية للطفل`,
         ],
         stepsEn: [
           `Tidy up toy box & prepare tomorrow's outfit with ${kName}`,
-          `Update weekly star & reward chart in Nekbaar`,
+          `Update weekly star & reward chart together`,
         ],
         taskTime: '07:00 م',
       },

@@ -336,12 +336,12 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
       data-testid="live-weather-widget"
       data-image-card="true"
       aria-label={isEn ? 'Live Family Weather Forecast' : 'حالة الطقس المباشرة للأسرة'}
-      className="image-bg-card rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 transition-all duration-300 ease-in-out"
+      className="image-bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 ease-in-out"
       style={{
         backgroundImage: bgSpec.backgroundImageCss,
       }}
     >
-      <div className="image-card-glass-panel rounded-2xl p-2.5 sm:p-3 space-y-2.5">
+      <div className="image-card-glass-panel rounded-2xl p-3.5 sm:p-4 space-y-2">
         {/* Top Row: Current City Temperature + Condition + Interactive Quick City Switcher */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -356,8 +356,8 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
             </div>
 
             <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="image-card-badge px-2 py-0.5 rounded-full text-[9.5px] font-extrabold inline-flex items-center gap-1">
+              <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+                <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] font-extrabold inline-flex items-center gap-1 shrink-0">
                   <span>📍</span>
                   <span>{displayCityName}</span>
                 </span>
@@ -374,20 +374,20 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
                   type="button"
                   onClick={() => fetchLiveWeather()}
                   title={isEn ? 'Refresh live weather' : 'تحديث الطقس المباشر'}
-                  className="px-1.5 py-0.5 rounded-full text-[9.5px] font-extrabold bg-white/80 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#FF8C61] transition-all cursor-pointer"
+                  className="px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-white/80 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#FF8C61] transition-all shrink-0 cursor-pointer"
                 >
                   {isRefreshing ? '⏳' : '🔄'}
                 </button>
               </div>
 
-              <div className="flex items-baseline gap-2 mt-0.5">
-                <span className="image-card-title text-xl sm:text-2xl font-black tabular-nums tracking-tight">
+              <div className="flex items-baseline gap-1.5 mt-0.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+                <span className="image-card-title text-lg sm:text-xl font-black tabular-nums tracking-tight shrink-0">
                   {displayTemp}°C
                 </span>
-                <span className="text-xs font-extrabold text-[#0D9488] dark:text-[#2DD4BF]">
+                <span className="text-[11px] font-extrabold text-[#0D9488] dark:text-[#2DD4BF] shrink-0">
                   {visual.label}
                 </span>
-                <span className="text-[10.5px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] tabular-nums">
+                <span className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] tabular-nums shrink-0">
                   {isEn
                     ? `H: ${activeDay?.maxTempC ?? weather.highTempC}° · L: ${activeDay?.minTempC ?? weather.lowTempC}°`
                     : `العظمى ${activeDay?.maxTempC ?? weather.highTempC}° · الصغرى ${activeDay?.minTempC ?? weather.lowTempC}°`}
@@ -398,19 +398,19 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
 
           {/* Compact Metrics Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
-            <div className="px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[10px] font-extrabold flex items-center gap-1">
+            <div className="px-2 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[9.5px] font-extrabold flex items-center gap-1 shrink-0">
               <span>💧</span>
               <span className="text-[var(--color-muted)]">{isEn ? 'Humidity' : 'الرطوبة'}:</span>
               <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">{weather.humidity}%</span>
             </div>
-            <div className="px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[10px] font-extrabold flex items-center gap-1">
+            <div className="px-2 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[9.5px] font-extrabold flex items-center gap-1 shrink-0">
               <span>🌬️</span>
               <span className="text-[var(--color-muted)]">{isEn ? 'Wind' : 'الرياح'}:</span>
               <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {weather.windKmh} {isEn ? 'km/h' : 'كم/س'}
               </span>
             </div>
-            <div className="px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[10px] font-extrabold flex items-center gap-1">
+            <div className="px-2 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-[9.5px] font-extrabold flex items-center gap-1 shrink-0">
               <span>☔</span>
               <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {activeDay?.rainProb ?? weather.rainProbability}%
@@ -434,7 +434,7 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
                 type="button"
                 data-testid={`weather-forecast-day-${idx}`}
                 onClick={() => setSelectedDayIdx(idx)}
-                className={`px-2.5 py-1.5 rounded-xl border text-[10.5px] font-extrabold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-xl border text-[10px] font-extrabold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                   isSelected
                     ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs scale-[1.01]'
                     : 'bg-white/80 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
@@ -443,7 +443,7 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
                 <span>{dayVisual.icon}</span>
                 <span>{isEn ? day.labelEn : day.labelAr}</span>
                 <span className="tabular-nums font-black">{day.maxTempC}°</span>
-                <span className="opacity-75 tabular-nums text-[9.5px]">{day.minTempC}°</span>
+                <span className="opacity-75 tabular-nums text-[9px]">{day.minTempC}°</span>
               </button>
             );
           })}
@@ -457,7 +457,7 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
                   key={cObj.id}
                   type="button"
                   onClick={() => onSelectCity(country, cObj.id)}
-                  className={`px-2.5 py-1.5 rounded-xl border text-[10px] font-extrabold transition-all shrink-0 cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-xl border text-[9.5px] font-extrabold transition-all shrink-0 cursor-pointer ${
                     isCurrentCity
                       ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-2xs'
                       : 'bg-white/65 dark:bg-[#101D26] text-[var(--color-muted)] dark:text-[#CBD5E1] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
@@ -471,7 +471,7 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
 
         {/* Compact Parenting Tip Banner */}
         <div
-          className="rounded-xl px-2.5 py-1.5 border flex items-center justify-between gap-2 text-[11px] font-bold"
+          className="rounded-xl px-2.5 py-1.5 border flex items-center justify-between gap-2 text-[10px] font-bold"
           style={{
             backgroundColor: darkMode ? '#142430' : 'rgba(240, 253, 250, 0.92)',
             borderColor: darkMode ? '#1E3646' : '#99F6E4',

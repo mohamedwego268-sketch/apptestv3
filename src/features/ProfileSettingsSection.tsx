@@ -124,7 +124,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h2>
               <div className="image-card-subtitle text-[11px] font-bold tabular-nums truncate">
-                {t(lang, 'brandName')} ·{' '}
                 {state.country === 'SA'
                   ? lang === 'en'
                     ? 'Saudi Arabia'
@@ -176,28 +175,34 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
         topLeftBadge={
           state.darkMode
             ? lang === 'en'
-              ? 'Active · Midnight Charcoal'
-              : 'شغال · ليلي فحمي'
+              ? 'Active · Night Mode'
+              : 'مفعّل · الوضع الليلي'
             : lang === 'en'
-            ? 'Light Mode · Pastel'
-            : 'الوضع النهاري · فاتح'
+            ? 'Light Mode'
+            : 'الوضع النهاري'
         }
         topRightBadge={
           <span>
-            {state.darkMode ? '🌙 #0B131A' : '☀️ #F8FAFC'}
+            {state.darkMode
+              ? lang === 'en'
+                ? '🌙 Night'
+                : '🌙 ليلي'
+              : lang === 'en'
+              ? '☀️ Day'
+              : '☀️ نهاري'}
           </span>
         }
         titlePrefixSlot={<SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={20} />}
         title={
           lang === 'en'
-            ? 'Dark Mode — Midnight Charcoal'
+            ? 'Eye-Comfort Dark Mode'
             : 'الوضع الليلي المريح للعين'
         }
         metaLeft={
           <span>
             {lang === 'en'
-              ? 'Deep midnight charcoal (#0B131A) for comfortable night reading.'
-              : 'ألوان فحمية هادئة (#0B131A) مريحة للعين ليلًا.'}
+              ? 'Balanced dark tones for comfortable evening reading.'
+              : 'درجات لونية هادئة ومريحة للعين أثناء التصفح المسائي.'}
           </span>
         }
         footerLeft={
@@ -205,11 +210,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             label={
               state.darkMode
                 ? lang === 'en'
-                  ? 'Active · Midnight Charcoal'
-                  : 'شغال · ليلي فحمي'
+                  ? 'Active · Night Mode'
+                  : 'مفعّل · الوضع الليلي'
                 : lang === 'en'
-                ? 'Light Mode · Pastel'
-                : 'الوضع النهاري · فاتح'
+                ? 'Light Mode'
+                : 'الوضع النهاري'
             }
             tone="indigo"
             iconId="settings"
@@ -350,10 +355,10 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <div className="space-y-5">
               <CollapsibleSectionCard
                 id="settings-json-backup"
-                title={lang === 'en' ? 'JSON Data Backup & Restore' : 'النسخ الاحتياطي واستيراد البيانات (JSON)'}
-                subtitle={lang === 'en' ? 'Export or import your family profile locally' : 'تصدير أو استيراد ملف بيانات أسرتك محلياً'}
+                title={lang === 'en' ? 'Data Backup & Restore' : 'النسخ الاحتياطي واستعادة البيانات'}
+                subtitle={lang === 'en' ? 'Export or import your family profile locally' : 'تصدير أو استيراد ملف بيانات أسرتك بأمان'}
                 iconId="shield"
-                badgeLabel="family-space-v1"
+                badgeLabel={lang === 'en' ? 'Safe Backup' : 'حفظ آمن'}
                 badgeTone="emerald"
                 cardTone="emerald"
                 defaultOpen={false}
@@ -366,12 +371,12 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                       className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs inline-flex items-center gap-1.5"
                     >
                       <SoftFilledIcon id="shield" size={16} />
-                      <span>{lang === 'en' ? 'Export JSON Backup' : 'تصدير نسخة JSON'}</span>
+                      <span>{lang === 'en' ? 'Export Backup' : 'تصدير نسخة احتياطية'}</span>
                     </button>
 
                     <label className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs cursor-pointer inline-flex items-center gap-1.5">
                       <SoftFilledIcon id="sparkles" size={16} />
-                      <span>{lang === 'en' ? 'Import JSON File' : 'استيراد ملف JSON'}</span>
+                      <span>{lang === 'en' ? 'Import Backup File' : 'استيراد ملف بيانات'}</span>
                       <input
                         type="file"
                         accept="application/json,.json"
@@ -385,7 +390,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                       onClick={onOpenConfirmResetModal}
                       className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-red-200 bg-[var(--color-control-bg)] text-red-700"
                     >
-                      {lang === 'en' ? 'Reset Demo Data' : 'مسح وإعادة ضبط البيانات'}
+                      {lang === 'en' ? 'Reset Account Data' : 'مسح وإعادة ضبط البيانات'}
                     </button>
                   </div>
 
@@ -442,7 +447,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           >
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <UnifiedBadge label={`OTP: ${DEMO_OTP_CODE}`} tone="amber" iconId="shield" />
+                <UnifiedBadge
+                  label={lang === 'en' ? 'Verified Mobile Protection' : 'حماية الجوال الموثق'}
+                  tone="amber"
+                  iconId="shield"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -542,8 +551,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 <div className="rounded-2xl border border-amber-300 bg-[var(--color-control-bg)] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="text-[var(--color-text)] font-bold">
                     {lang === 'en'
-                      ? `Enter OTP code (${DEMO_OTP_CODE}) to confirm update:`
-                      : `أدخل رمز التحقق OTP التجريبي (${DEMO_OTP_CODE}) لتأكيد التحديث:`}
+                      ? 'Enter verification code (OTP) to confirm update:'
+                      : 'أدخل رمز التحقق المرسل للجوال لتأكيد التحديث:'}
                   </div>
                   <input
                     type="text"

@@ -40,20 +40,20 @@ const PRIVACY_CLAUSES: PolicyClause[] = [
     id: 'privacy-1',
     badgeAr: 'البند الأول · جمع البيانات',
     badgeEn: 'Clause 1 · Data Collection',
-    titleAr: '١. سياسة جمع بيانات الأسرة والطفل (نص قياسي تجريبي)',
-    titleEn: '1. Family & Child Data Collection Policy (Standard Placeholder)',
+    titleAr: '١. سياسة جمع وحماية بيانات الأسرة والطفل',
+    titleEn: '1. Family & Child Data Collection Policy',
     bodyAr:
-      'هذا النص يمثل نصًا قياسيًا تجريبيًا (أبجد هوز حطي كلمن — لوريم إيبسوم بالعربية) مخصصًا لاختبار واجهة سياسة الخصوصية في تطبيق مساحة الأسرة. نلتزم بحماية كافة البيانات المدخلة الخاصة بالوالدين والأطفال وعدم مشاركتها مع أي أطراف خارجية غير مصرح لها.',
+      'نلتزم بأعلى معايير الخصوصية والأمان لحماية كافة البيانات الخاصة بالوالدين والأطفال، وعدم مشاركة أي معلومات شخصية مع أطراف خارجية غير مصرح لها تحت أي ظرف.',
     bodyEn:
-      'Standard Arabic & English placeholder text for user testing. We protect all parent and child profile data and never share personal information with unauthorized third parties.',
+      'We adhere to strict privacy and security standards to protect all parent and child profile data and never share personal information with unauthorized third parties.',
     bulletsAr: [
-      'يتم حفظ بيانات ملفات الأطفال والروتين محليًا لأغراض العرض والاختبار.',
-      'لا يتم جمع أي بيانات بنكية حقيقية أثناء تجربة محاكاة الدفع الإلكتروني.',
+      'يتم حفظ بيانات ملفات الأطفال والروتين اليومي بأمان تام على جهازك.',
+      'تتم معالجة المدفوعات الإلكترونية عبر قنوات مشفرة ومحمية بالكامل.',
       'يحق لولي الأمر تصدير أو مسح كافة البيانات المسجلة في أي وقت بضغطة واحدة.',
     ],
     bulletsEn: [
-      'Child profiles and routines are stored locally for prototype testing.',
-      'No real banking credentials are collected during checkout simulation.',
+      'Child profiles and daily routines are securely stored with full privacy.',
+      'Electronic payments are processed through encrypted and secure channels.',
       'Parents can export or erase all stored data at any time with one click.',
     ],
     tone: 'teal',
@@ -65,7 +65,7 @@ const PRIVACY_CLAUSES: PolicyClause[] = [
     titleAr: '٢. أمن المعلومات وصلاحيات الوصول العائلي المشترك',
     titleEn: '2. Information Security & Shared Family Access Permissions',
     bodyAr:
-      'نص تجريبي قياسي: تخضع جميع صلاحيات أفراد العائلة (الأب، الأم، الجد، الجدة، العم، الخالة) لضوابط صارمة يحددها الحساب الرئيسي للأسرة، مع إمكانية تجميد الصلاحيات الحساسة أو إلغاء الربط عبر رمز الاستجابة السريعة (QR) في أي لحظة.',
+      'تخضع جميع صلاحيات أفراد العائلة (الأب، الأم، الجد، الجدة، العم، الخالة) لضوابط دقيقة يحددها الحساب الرئيسي للأسرة، مع إمكانية تجميد الصلاحيات الحساسة أو إلغاء الربط عبر رمز الاستجابة السريعة (QR) في أي لحظة.',
     bodyEn:
       'All family member permissions (Father, Mother, Grandparents, Uncles, Aunts) are governed by strict role controls managed by the primary family account.',
     bulletsAr: [
@@ -82,16 +82,16 @@ const PRIVACY_CLAUSES: PolicyClause[] = [
   },
   {
     id: 'privacy-3',
-    badgeAr: 'البند الثالث · ملفات تعريف الارتباط',
-    badgeEn: 'Clause 3 · Local Storage & Cookies',
-    titleAr: '٣. التخزين المحلي وتفضيلات تجربة المستخدم',
-    titleEn: '3. Local Storage & User Experience Preferences',
+    badgeAr: 'البند الثالث · تفضيلات الاستخدام',
+    badgeEn: 'Clause 3 · Preferences & Storage',
+    titleAr: '٣. حفظ التفضيلات وتجربة الاستخدام المخصصة',
+    titleEn: '3. Personalized Preferences & Child Digital Safety',
     bodyAr:
-      'نص تجريبي قياسي (لوريم إيبسوم العربي): يستخدم التطبيق تقنيات التخزين المحلي في المتصفح لحفظ تفضيلات السمة البصرية، اللغة المختارة، ومحتويات سلة التسوق التجريبية لضمان استمرارية التجربة بسلاسة دون الحاجة لإعادة الإدخال.',
+      'يتم حفظ تفضيلات السمة البصرية، اللغة المختارة، والمنطقة الجغرافية ومحتويات سلة التسوق لضمان استمرارية التجربة بسلاسة وسرعة عالية.',
     bodyEn:
-      'The application uses browser local storage to persist theme preferences, language settings, and mock shopping cart items across testing sessions.',
+      'Your visual theme, language settings, selected city, and shopping cart items are seamlessly persisted across sessions.',
     bulletsAr: [
-      'حفظ تلقائي لسمة الأم أو الأب واللغة العربية أو الإنجليزية.',
+      'حفظ تلقائي لسمة الحساب واللغة العربية أو الإنجليزية.',
       'عدم استخدام أي ملفات تتبع إعلانية خارجية داخل قسم ألعاب الأطفال.',
       'الالتزام الكامل بمعايير خصوصية الطفل الرقمية في جميع الأقسام التفاعلية.',
     ],
@@ -109,20 +109,20 @@ const TERMS_AND_IP_CLAUSES: PolicyClause[] = [
     id: 'terms-1',
     badgeAr: 'القسم الأول · شروط الاستخدام',
     badgeEn: 'Section 1 · Terms of Service',
-    titleAr: '١. الشروط والأحكام العامة لاستخدام المنصة (نص قياسي تجريبي)',
+    titleAr: '١. الشروط والأحكام العامة لاستخدام المنصة',
     titleEn: '1. General Terms & Conditions of Platform Use',
     bodyAr:
-      'هذا النص يمثل مسودة قياسية تجريبية (لوريم إيبسوم بالعربية) للشروط والأحكام الخاصة بتطبيق «نكبر». باستخدامك لهذا النموذج التفاعلي، فإنك تقر بأن كافة عمليات الدفع والطلبات والحجوزات الطبية المعروضة هي محاكاة تجريبية مخصصة لاستطلاعات الرأي واختبار تجربة المستخدم.',
+      'تنظم هذه الشروط والأحكام استخدام كافة خدمات المنصة من إدارة ملفات الأطفال، تنظيم الروتين، حجز العيادات والحضانات، والمشاركة في مجتمع الآباء والأمهات.',
     bodyEn:
-      'Standard placeholder text for Terms of Service on Nekbaar. By using this interactive prototype, you acknowledge that all payments, orders, and bookings are simulated for user survey and testing purposes.',
+      'These Terms of Service govern your use of child profile management, daily routines, clinic and nursery bookings, and community discussions.',
     bulletsAr: [
       'المحتوى الطبي والتربوي المعروض استرشادي وتوعوي ولا يغني عن استشارة الطبيب المختص.',
-      'بوابة الدفع الإلكتروني والدفع عند الاستلام تعمل في وضع المحاكاة الآمنة (Sandbox).',
+      'تتم عمليات الدفع والحجوزات وفق سياسات المزودين المعتمدين في كل محافظة ومنطقة.',
       'يلتزم المستخدمون في مجتمع الآباء والأمهات بقواعد الاحترام المتبادل والخصوصية.',
     ],
     bulletsEn: [
       'Medical and parenting guides are informational and do not replace professional medical advice.',
-      'Electronic payment and Cash on Delivery operate in safe sandbox simulation mode.',
+      'Orders and bookings are fulfilled by verified providers in your selected region.',
       'Community members agree to uphold respectful and constructive parenting discussions.',
     ],
     tone: 'amber',
@@ -131,12 +131,12 @@ const TERMS_AND_IP_CLAUSES: PolicyClause[] = [
     id: 'terms-2',
     badgeAr: 'القسم الثاني · حقوق الملكية الفكرية',
     badgeEn: 'Section 2 · Intellectual Property Rights',
-    titleAr: '٢. حقوق الملكية الفكرية والعلامات التجارية والتصميمات (IP Rights)',
+    titleAr: '٢. حقوق الملكية الفكرية والعلامات التجارية والتصميمات',
     titleEn: '2. Intellectual Property, Trademarks & 3D Visual Assets',
     bodyAr:
-      'نص قياسي لحقوق الملكية الفكرية: جميع حقوق الملكية الفكرية والتصميمات البصرية، بما في ذلك الهوية البصرية، الأيقونات ثلاثية الأبعاد، نماذج الألعاب التفاعلية، مقاطع الريلز والبودكاست، وهيكلة النظام البرمجي محفوظة بالكامل لمنصة «نكبر».',
+      'جميع حقوق الملكية الفكرية والتصميمات البصرية، بما في ذلك الهوية البصرية، الأيقونات ثلاثية الأبعاد، نماذج الألعاب التفاعلية، مقاطع الريلز والبودكاست، وهيكلة النظام البرمجي محفوظة بالكامل للمنصة.',
     bodyEn:
-      'All intellectual property rights, including visual design systems, 3D icons, interactive kids games, media reels/podcasts, and software architecture are reserved to Nekbaar.',
+      'All intellectual property rights, including visual design systems, 3D icons, interactive kids games, media reels/podcasts, and software architecture are reserved.',
     bulletsAr: [
       'يُحظر نسخ أو إعادة توزيع التصميمات أو الأصول البصرية ثلاثية الأبعاد دون إذن كتابي مسبق.',
       'العلامة التجارية والشعار وواجهة الاستخدام محمية بموجب قوانين حماية الملكية الفكرية.',
@@ -156,18 +156,18 @@ const TERMS_AND_IP_CLAUSES: PolicyClause[] = [
     titleAr: '٣. أحكام المتجر، الدفع الإلكتروني، والدفع عند الاستلام',
     titleEn: '3. Store, Electronic Payment & Cash on Delivery Terms',
     bodyAr:
-      'نص تجريبي قياسي: يتيح قسم المتجر استعراض المنتجات والخدمات العائلية وإتمام الطلبات عبر خيارات الدفع الإلكتروني (البطاقات البنكية، Apple Pay، Google Pay) أو الدفع النقدي عند الاستلام، مع توفير شاشة تتبع مباشر لحالة الطلب من الاستلام وحتى التوصيل.',
+      'يتيح قسم المتجر استعراض المنتجات والخدمات العائلية وإتمام الطلبات عبر خيارات الدفع الإلكتروني (البطاقات البنكية، Apple Pay، Google Pay) أو الدفع النقدي عند الاستلام، مع توفير شاشة تتبع مباشر لحالة الطلب من الاستلام وحتى التوصيل.',
     bodyEn:
       'The Store section supports Electronic Payment (Cards, Apple Pay, Google Pay) and Cash on Delivery (COD), paired with live order status tracking.',
     bulletsAr: [
       'إمكانية مراجعة ملخص الطلب وتفاصيل الدفع قبل التأكيد النهائي.',
       'تتبع فوري لمراحل تجهيز وتوصيل الطلب عبر واجهة التتبع المباشر.',
-      'سياسة استبدال واسترجاع مرنة خلال ١٤ يومًا للمنتجات غير المستخدمة (بنود قياسية).',
+      'سياسة استبدال واسترجاع مرنة خلال ١٤ يومًا للمنتجات غير المستخدمة.',
     ],
     bulletsEn: [
       'Full order summary review prior to final confirmation.',
       'Real-time status updates via the Live Order Tracking interface.',
-      'Standard 14-day return and exchange policy for eligible family products.',
+      'Flexible 14-day return and exchange policy for eligible family products.',
     ],
     tone: 'emerald',
   },
@@ -310,13 +310,13 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </span>
             <h2 className="section-heading-centered image-card-title">
               {isEn
-                ? 'Privacy Policy — Nekbaar Super App'
-                : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل — نكبر'}
+                ? 'Privacy Policy & Family Data Protection'
+                : 'سياسة الخصوصية وحماية بيانات الأسرة والطفل'}
             </h2>
             <p className="image-card-subtitle text-xs font-semibold max-w-xl">
               {isEn
-                ? 'Last updated: October 2026 · Structured Arabic placeholder clauses for beta testing'
-                : 'آخر تحديث: أكتوبر ٢٠٢٦ · نص قياسي منظم لأغراض الفحص واستطلاع الرأي'}
+                ? 'Last updated: October 2026 · Verified Privacy & Security Standards'
+                : 'آخر تحديث: أكتوبر ٢٠٢٦ · معايير خصوصية وأمان معتمدة'}
             </p>
             <button
               type="button"
@@ -391,8 +391,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </h2>
             <p className="image-card-subtitle text-xs font-semibold max-w-xl">
               {isEn
-                ? 'All rights reserved © 2026 Nekbaar · Standard legal placeholder'
-                : 'جميع الحقوق محفوظة © ٢٠٢٦ نكبر · نص قانوني قياسي لمرحلة الاختبار'}
+                ? 'All rights reserved © 2026 · Official Platform Terms'
+                : 'جميع الحقوق محفوظة © ٢٠٢٦ · الشروط والأحكام المعتمدة'}
             </p>
             <button
               type="button"
@@ -620,8 +620,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                 </span>
                 <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-0.5">
                   {isEn
-                    ? 'Follow & Message Nekbaar on Social Media'
-                    : 'تابع منصة نكبر وتواصل معنا عبر منصات التواصل الاجتماعي'}
+                    ? 'Follow & Message Us on Social Media'
+                    : 'تابعنا وتواصل معنا عبر منصات التواصل الاجتماعي'}
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-purple-900">

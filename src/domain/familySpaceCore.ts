@@ -342,7 +342,7 @@ export const BILINGUAL_SEED_DICTIONARY: Record<string, string> = {
   'مشرفة حضانة': 'Nursery Supervisor',
   'الحضانة والمدرسة': 'Nursery & School',
   'التجمع الخامس — الحي الثالث': 'Fifth Settlement — 3rd District',
-  'شارع التسعين الشمالي، فيلا 14 (عنوان تجريبي)': 'North 90th Street, Villa 14 (Demo Address)',
+  'شارع التسعين الشمالي، فيلا 14': 'North 90th Street, Villa 14',
   'موعد التطعيم - نور': 'Vaccination Appointment - Nour',
   'اجتماع عائلي وتخطيط الأسبوع': 'Family Meeting & Weekly Planning',
   'حصة السباحة - عز': 'Swimming Lesson - Ezz',
@@ -761,7 +761,7 @@ export const DEFAULT_PARENT_ACCOUNTS: {
     phoneCode: '+20',
     phoneNumber: '1012345678',
     phoneVerified: true,
-    email: 'sara.mom@familyspace.demo',
+    email: 'sara.mom@family.app',
     emailVerified: true,
     onboardingCompleted: true,
     notificationPrefs: {
@@ -784,7 +784,7 @@ export const DEFAULT_PARENT_ACCOUNTS: {
     phoneCode: '+20',
     phoneNumber: '1098765432',
     phoneVerified: true,
-    email: 'ahmed.dad@familyspace.demo',
+    email: 'ahmed.dad@family.app',
     emailVerified: true,
     onboardingCompleted: true,
     notificationPrefs: {
@@ -986,7 +986,7 @@ export const DEFAULT_SEED: FamilySpaceState = {
       side: 'الحضانة والمدرسة',
       phoneCountry: 'EG',
       phoneNumber: '1022334455',
-      email: 'reem.nursery@demo.org',
+      email: 'reem.nursery@littlesteps.edu.eg',
       assignedKidIds: [2], // Assigned ONLY to Nour (id: 2)
       permissions: {
         profile: true,
@@ -1015,7 +1015,7 @@ export const DEFAULT_SEED: FamilySpaceState = {
     recipientName: 'أحمد و سارة',
     city: 'القاهرة الجديدة',
     district: 'التجمع الخامس — الحي الثالث',
-    streetDetails: 'شارع التسعين الشمالي، فيلا 14 (عنوان تجريبي)',
+    streetDetails: 'شارع التسعين الشمالي، فيلا 14',
     phone: '+20 1012345678',
   },
   orders: [],
@@ -1947,7 +1947,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'حضانات ومدارس',
     emoji: '📚',
     kind: 'service',
-    sellerAr: 'شبكة الحضانات والمدارس المعتمدة في نكبر',
+    sellerAr: 'شبكة الحضانات والمدارس المعتمدة',
     deliveryAr: 'حجز زيارة مجانية ومقابلة تقييم فورية',
     deliveryEn: 'Free campus tour & instant assessment',
     items: [
@@ -2112,7 +2112,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'أطباء أطفال',
     emoji: '🩺',
     kind: 'service',
-    sellerAr: 'شبكة أطباء واستشاريي نكبر المعتمدين',
+    sellerAr: 'شبكة الأطباء والاستشاريين المعتمدين',
     deliveryAr: 'حجز فوري وتأكيد الميعاد برسالة SMS',
     deliveryEn: 'Instant booking & SMS confirmation',
     items: [
@@ -2627,7 +2627,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'كورسات أطفال',
     emoji: '🎨',
     kind: 'service',
-    sellerAr: 'أكاديمية نكبر للمواهب والمهارات',
+    sellerAr: 'أكاديمية المواهب والمهارات للأطفال',
     deliveryAr: 'حجز فوري (حضوري أو أونلاين تفاعلي لايف)',
     deliveryEn: 'Instant enrollment (In-person or Live Online)',
     items: [
@@ -2811,8 +2811,8 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     emoji: '⚽',
     kind: 'service',
     sellerAr: 'الأندية والأكاديميات الرياضية المعتمدة',
-    deliveryAr: 'حجز فوري لحصة التقييم التجريبية',
-    deliveryEn: 'Instant trial session booking',
+    deliveryAr: 'حجز فوري لحصة التقييم الأولى',
+    deliveryEn: 'Instant first session booking',
     items: [
       {
         nameAr: 'أكاديمية السباحة وتأهيل الأطفال للماء في حمام سباحة مغطى ومدفأ',
@@ -3176,7 +3176,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'قصص وكتب',
     emoji: '📖',
     kind: 'product',
-    sellerAr: 'دار حكايات نكبر للنشر وكتب الأطفال',
+    sellerAr: 'دار الحكايات للنشر وكتب الأطفال',
     deliveryAr: 'توصيل خلال 24–48 ساعة لكل المحافظات',
     deliveryEn: '24–48h nationwide delivery',
     items: [
@@ -3345,7 +3345,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'تغذية صحية',
     emoji: '🍱',
     kind: 'product',
-    sellerAr: 'مطبخ ومزرعة نكبر للتغذية الصحية للطفل',
+    sellerAr: 'مطبخ ومزرعة التغذية الصحية للطفل',
     deliveryAr: 'توصيل مبرد يومي طازج لباب البيت',
     deliveryEn: 'Fresh chilled daily doorstep delivery',
     items: [
@@ -3530,7 +3530,7 @@ const CATEGORY_CATALOG_BLUEPRINTS: CategoryExpansionTemplate[] = [
     categoryLabel: 'أثاث غرف الأطفال',
     emoji: '🪑',
     kind: 'product',
-    sellerAr: 'ورشة نكبر لأثاث غرف الأطفال الآمن والطبيعي',
+    sellerAr: 'ورشة أثاث غرف الأطفال الآمن والطبيعي',
     deliveryAr: 'توصيل وتركيب مجاني لحد باب الغرفة',
     deliveryEn: 'Free delivery & in-room assembly',
     items: [
@@ -4959,53 +4959,53 @@ export function getEmptyStateCopy(
   const isEn = lang === 'en';
   switch (section) {
     case 'cart': {
-      const ctaLabel = isEn ? 'Browse Store Catalog' : 'يلا نتسوق من المتجر';
+      const ctaLabel = isEn ? 'Browse Store Catalog' : 'تصفح المتجر الآن';
       return {
         title: isEn
-          ? 'No items here yet — Your Cart is Empty'
-          : 'السلة فاضية يا بابا، يلا نختار شوية حاجات تفيد ولادنا',
+          ? 'Your Shopping Cart is Empty'
+          : 'سلة التسوق فارغة حاليًا',
         subtitle: isEn
-          ? 'Browse our curated family products, Montessori toys, and baby essentials to add items to your cart.'
-          : 'جمعنالك أحلى ألعاب مونتيسوري، هدوم قطن ١٠٠٪، ومستلزمات العناية بأطفالك.. اختار اللي يعجبك بضغطة واحدة!',
+          ? 'Browse curated family products, Montessori toys, and baby essentials to add items to your cart.'
+          : 'تصفح ألعاب مونتيسوري، الملابس القطنية، ومستلزمات العناية بأطفالك وأضفها للسلة بضغطة واحدة.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'wishes': {
-      const ctaLabel = isEn ? '+ Add New Wish' : '+ ضيف أمنية جديدة';
+      const ctaLabel = isEn ? '+ Add New Wish' : '+ إضافة أمنية جديدة';
       return {
         title: isEn
-          ? 'No wishes here yet — Wishlist is Empty'
-          : 'قائمة الأمنيات لسه فاضية يا بابا، يلا نختار شوية حاجات تفرح ولادنا',
+          ? 'Wishlist is Empty'
+          : 'قائمة الأمنيات فارغة حاليًا',
         subtitle: isEn
           ? 'Save gift ideas, educational toys, and family goals so everyone can celebrate together.'
-          : 'سجل هدايا وأمنيات أطفالك هنا عشان تتابع تحقيقها خطوة بخطوة أو تشاركها مع العيلة.',
+          : 'سجّل هدايا وأمنيات أطفالك لمتابعة تحقيقها خطوة بخطوة أو مشاركتها مع العائلة.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'routine': {
-      const ctaLabel = isEn ? '+ Add Routine Task' : '+ ضيف مهمة لروتين النهاردة';
+      const ctaLabel = isEn ? '+ Add Routine Task' : '+ إضافة مهمة للروتين';
       return {
         title: isEn
           ? 'No tasks match this filter yet'
-          : 'مفيش مهام هنا دلوقتي يا بابا، يلا ننظم روتين النهاردة مع ولادنا',
+          : 'لا توجد مهام مطابقة لهذا التصنيف',
         subtitle: isEn
           ? 'Add a new daily habit or clear the current filter to view all family routine tasks.'
-          : 'تقدر تضيف مهمة جديدة بسهولة أو تغير الفلتر عشان تشوف كل مهام الروتين اليومي.',
+          : 'أضف مهمة جديدة بسهولة أو غيّر التصنيف لعرض جميع مهام الروتين اليومي.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'calendar': {
-      const ctaLabel = isEn ? '+ Add Family Event' : '+ ضيف ميعاد أو خروجة جديدة';
+      const ctaLabel = isEn ? '+ Add Family Event' : '+ إضافة موعد جديد';
       return {
         title: isEn
           ? 'No events scheduled in this period'
-          : 'الجدول رايق ومفيش مواعيد في الفترة دي يا بابا',
+          : 'لا توجد مواعيد مجدولة في هذه الفترة',
         subtitle: isEn
           ? 'Schedule pediatric checkups, school events, or family outings in Gregorian & Hijri.'
-          : 'سجل مواعيد التطعيمات، متابعات الدكتور، أو خروجات العيلة بالتقويم الميلادي والهجري.',
+          : 'سجّل مواعيد التطعيمات، متابعات الطبيب، أو المناسبات العائلية بالتقويم الميلادي والهجري.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
@@ -5014,11 +5014,11 @@ export function getEmptyStateCopy(
       const ctaLabel = isEn ? 'Restore Daily Notifications' : 'استرجاع تنبيهات اليوم';
       return {
         title: isEn
-          ? 'No items here yet — Notifications Cleared'
-          : 'كله تمام يا بابا — مفيش إشعارات جديدة دلوقتي',
+          ? 'All Notifications Cleared'
+          : 'لا توجد إشعارات جديدة حاليًا',
         subtitle: isEn
           ? 'You are all caught up! Restore daily parenting tips whenever you are ready.'
-          : 'إنت متابع كل حاجة أول بأول! تقدر تسترجع همسات وتنبيهات اليوم التلاتة في أي وقت.',
+          : 'تمت متابعة جميع الإشعارات! يمكنك استرجاع تنبيهات اليوم في أي وقت.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
@@ -5028,38 +5028,38 @@ export function getEmptyStateCopy(
       const ctaLabel = isEn ? 'Show All Conversations' : 'عرض كل المحادثات النشطة';
       return {
         title: isEn
-          ? 'No items here yet — No Active Chats'
-          : 'مفيش محادثات في القسم ده دلوقتي يا بابا',
+          ? 'No Active Chats in This Filter'
+          : 'لا توجد محادثات نشطة في هذا القسم',
         subtitle: isEn
           ? 'Start or restore a direct conversation with your child’s nursery, pediatrician, or family members.'
-          : 'تقدر تبدأ محادثة فورية مع دكتور الأطفال، الحضانة، أو أفراد العيلة بضغطة زر.',
+          : 'ابدأ محادثة مباشرة مع طبيب الأطفال، الحضانة، أو أفراد العائلة بضغطة زر.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'community': {
-      const ctaLabel = isEn ? 'Show All Posts' : 'عرض كل تجارب الأمهات والآباء';
+      const ctaLabel = isEn ? 'Show All Posts' : 'عرض كل التجارب والنقاشات';
       return {
         title: isEn
-          ? 'No items here yet — No Matching Posts'
-          : 'مفيش منشورات مطابقة للبحث ده يا بابا',
+          ? 'No Matching Community Posts'
+          : 'لا توجد منشورات مطابقة للبحث',
         subtitle: isEn
           ? 'Try clearing the search filter or share your own parenting experience with the community.'
-          : 'جرّب تغير التصنيف أو شاركنا سؤالك وتجربتك مع مجتمع أمهات وآباء نكبر.',
+          : 'جرّب تغيير التصنيف أو شارك سؤالك وتجربتك مع مجتمع الآباء والأمهات.',
         ctaLabel,
         actionLabel: ctaLabel,
       };
     }
     case 'search':
     default: {
-      const ctaLabel = isEn ? 'Reset Filters' : 'عرض كل الأقسام من تاني';
+      const ctaLabel = isEn ? 'Reset Filters' : 'إعادة ضبط الفلاتر';
       return {
         title: isEn
-          ? 'No items here yet'
-          : 'ملقيناش نتايج مطابقة لبحثك يا بابا، يلا نجرب كلمة تانية',
+          ? 'No Matching Results'
+          : 'لا توجد نتائج مطابقة لبحثك',
         subtitle: isEn
-          ? 'Try adjusting your filters or adding a new item.'
-          : 'جرّب تمسح الفلتر الحالي أو تتصفح كل أقسام المتجر والخدمات المختارة لولادنا.',
+          ? 'Try adjusting your filters or browsing all categories.'
+          : 'جرّب مسح الفلتر الحالي أو تصفح جميع الأقسام المتاحة.',
         ctaLabel,
         actionLabel: ctaLabel,
       };

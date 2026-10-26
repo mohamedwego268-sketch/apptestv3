@@ -418,10 +418,10 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-2 sm:p-3 flex flex-row items-center justify-between gap-2 min-h-[88px] sm:min-h-[98px] text-start">
-        <div className="image-card-glass-panel rounded-xl p-2 sm:p-2.5 space-y-0.5 max-w-xl flex-1 flex flex-col items-start transition-all duration-300 ease-in-out">
-          <div className="flex flex-wrap items-center gap-1">
-            <span className="image-card-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold">
+      <div className="p-4 sm:p-5 flex flex-row items-center justify-between gap-2.5 min-h-[88px] sm:min-h-[96px] text-start">
+        <div className="image-card-glass-panel rounded-xl p-3 sm:p-3.5 space-y-1 max-w-xl flex-1 flex flex-col items-start transition-all duration-300 ease-in-out min-w-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar max-w-full">
+            <span className="image-card-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold shrink-0">
               <ThreeDIcon id={current.iconId} size={11} />
               <span>{current.badge}</span>
             </span>
@@ -583,15 +583,15 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
   const sectionLabel =
     section === 'services'
       ? isEn
-        ? 'Fetching Family Store & Live Tracking...'
-        : 'ثواني يا بابا.. بنجهزلك منتجات متجر الأسرة وخريطة التوصيل المباشر...'
+        ? 'Loading Family Store & Live Tracking...'
+        : 'جاري تحميل منتجات متجر الأسرة وخريطة التوصيل المباشر...'
       : section === 'medical'
       ? isEn
-        ? 'Fetching Verified Pediatricians & Records...'
-        : 'ثواني يا بابا.. بنحمل أشطر دكاترة الأطفال وسجل متابعة النمو...'
+        ? 'Loading Verified Pediatricians & Records...'
+        : 'جاري تحميل قائمة أطباء الأطفال وسجل متابعة النمو...'
       : isEn
-      ? 'Fetching Parents Community Discussions...'
-      : 'ثواني يا بابا.. بنجهزلك أحدث تجارب ونقاشات أمهات وآباء نكبر...';
+      ? 'Loading Parents Community Discussions...'
+      : 'جاري تحميل أحدث تجارب ونقاشات مجتمع الآباء والأمهات...';
 
   const cardCount = section === 'community' ? 4 : 6;
 
@@ -848,12 +848,12 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
             handleToggle();
           }
         }}
-        className={`w-full p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all duration-300 ease-in-out ${headerClassName}`}
+        className={`w-full p-4 sm:p-5 flex items-center justify-between gap-2.5 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all duration-300 ease-in-out ${headerClassName}`}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {resolvedIcon && <div className="shrink-0">{resolvedIcon}</div>}
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-1.5">
+          <div className="min-w-0 space-y-0.5">
+            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
               <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
                 {title}
               </h3>
@@ -866,7 +866,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
               )}
             </div>
             {subtitle && (
-              <p className="text-[10.5px] font-semibold text-[var(--color-muted)] mt-0.5 leading-snug line-clamp-1">
+              <p className="text-[10px] font-semibold text-[var(--color-muted)] leading-snug line-clamp-1">
                 {subtitle}
               </p>
             )}
@@ -904,7 +904,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
       {isExpanded && (
         <div
           id={id ? `${id}-content` : undefined}
-          className={`p-3 sm:p-4 pt-0 border-t border-[var(--color-border)]/40 ${bodyClassName}`}
+          className={`p-4 sm:p-5 pt-0 border-t border-[var(--color-border)]/40 ${bodyClassName}`}
         >
           {children}
         </div>
@@ -1052,7 +1052,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
       id={id}
       data-testid={testId}
       data-master-card="true"
-      className={`rounded-2xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2 sm:p-2.5 flex flex-col justify-between gap-1.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
+      className={`rounded-2xl sm:rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-4 sm:p-5 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
     >
       <div className="space-y-1.5">
         {/* Structured Top Image Thumbnail */}
@@ -1072,7 +1072,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
           }
           data-image-card="true"
           style={{ backgroundImage: bgSpec.backgroundImageCss }}
-          className={`image-bg-card relative overflow-hidden rounded-xl p-2 min-h-[82px] sm:min-h-[90px] flex flex-col justify-between gap-1 shadow-2xs ${
+          className={`image-bg-card relative overflow-hidden rounded-xl p-2.5 min-h-[82px] sm:min-h-[90px] flex flex-col justify-between gap-1 shadow-2xs ${
             onThumbnailClick ? 'cursor-pointer' : ''
           } ${thumbnailClassName}`}
         >
@@ -1099,8 +1099,8 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
             }}
           />
 
-          <div className="relative z-10 flex items-center justify-between gap-1">
-            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
+          <div className="relative z-10 flex items-center justify-between gap-1 overflow-x-auto whitespace-nowrap no-scrollbar">
+            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1 shrink-0">
               {topLeftBadge}
             </span>
             {topRightBadge && (
@@ -1126,15 +1126,17 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Compact Metadata Strip */}
         {(metaLeft || metaRightAction) && (
-          <div className="flex items-center justify-between gap-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 truncate">{metaLeft}</div>
+          <div className="flex items-center justify-between gap-1.5 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
+            <div className="flex items-center gap-1 min-w-0 overflow-x-auto whitespace-nowrap no-scrollbar">
+              {metaLeft}
+            </div>
             {metaRightAction && <div className="shrink-0">{metaRightAction}</div>}
           </div>
         )}
 
         {/* Optional Body Content */}
         {bodyContent && (
-          <div className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug px-0.5">
+          <div className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug px-0.5">
             {bodyContent}
           </div>
         )}
@@ -1142,9 +1144,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
       {/* Bottom Price/Metric + Action Buttons */}
       {(footerLeft || footerRight) && (
-        <div className="pt-1.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
-          <div className="min-w-0">{footerLeft}</div>
-          <div className="flex items-center gap-1 shrink-0">{footerRight}</div>
+        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+          <div className="min-w-0 shrink-0">{footerLeft}</div>
+          <div className="flex items-center gap-1.5 shrink-0">{footerRight}</div>
         </div>
       )}
 

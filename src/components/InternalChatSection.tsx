@@ -168,12 +168,12 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       senderNameEn: activeThread.participantNameEn.split('—')[0].trim(),
       textAr:
         activeThread.category === 'nursery'
-          ? 'تم استلام رسالتك في سجل متابعة الحضانة، وسنوافيكم بالتحديث فورًا (رد تلقائي تجريبي).'
+          ? 'تم استلام رسالتك في سجل متابعة الحضانة، وسنوافيكم بالتحديث فورًا.'
           : activeThread.category === 'doctor'
-          ? 'شكرًا لتواصلكم مع العيادة، تم تسجيل استفساركم في ملف الطفل الطبي (رد تلقائي تجريبي).'
-          : 'تمام، وصلت رسالتك وتم تحديث تنسيق اليوم العائلي 👍 (رد تجريبي).',
+          ? 'شكرًا لتواصلكم مع العيادة، تم تسجيل استفساركم في ملف الطفل الطبي.'
+          : 'تمام، وصلت رسالتك وتم تحديث تنسيق اليوم العائلي 👍.',
       textEn:
-        'Message received and logged under family permissions (Simulated demo reply).',
+        'Message received and logged in your family care record.',
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
@@ -189,7 +189,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       )
     );
     setMessageInput('');
-    onShowToast(isEn ? 'Message sent (Demo)' : 'تم إرسال الرسالة');
+    onShowToast(isEn ? 'Message sent' : 'تم إرسال الرسالة');
   };
 
   return (

@@ -173,9 +173,9 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       />
 
       {/* Segmented Navigation inside Medical Hub */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
+      <div className="flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
         <div
-          className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646]"
+          className="inline-flex items-center gap-1.5 p-1 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646] shrink-0"
           role="tablist"
         >
           <button
@@ -183,7 +183,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'doctors'}
             onClick={() => setActiveTab('doctors')}
-            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'doctors'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
@@ -196,7 +196,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'child_records'}
             onClick={() => setActiveTab('child_records')}
-            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'child_records'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
@@ -209,7 +209,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             role="tab"
             aria-selected={activeTab === 'articles'}
             onClick={() => setActiveTab('articles')}
-            className={`min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap shrink-0 ${
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'articles'
                 ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
@@ -222,7 +222,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         <button
           type="button"
           onClick={() => setFilterByUserCity((prev) => !prev)}
-          className={`min-h-[40px] px-3.5 py-2 rounded-2xl text-xs font-extrabold border transition-colors whitespace-nowrap shrink-0 ${
+          className={`min-h-[36px] px-3 py-1.5 rounded-2xl text-[11px] font-extrabold border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
             filterByUserCity
               ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
               : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -235,7 +235,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       {/* TAB 1: DOCTORS, PEDIATRICIANS & PSYCHOLOGISTS DIRECTORY */}
       {activeTab === 'doctors' && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-2xs">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xs soft-card-surface">
             <input
               type="search"
               value={searchQuery}

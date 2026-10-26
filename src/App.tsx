@@ -303,8 +303,8 @@ export default function App() {
     setState((prev) => ({ ...prev, language: nextLang }));
     showToast(
       nextLang === 'en'
-        ? 'Language switched to English (LTR) — Nekbaar'
-        : 'تم التبديل إلى اللغة العربية (RTL) — نكبر'
+        ? 'Language switched to English (LTR)'
+        : 'تم التبديل إلى اللغة العربية (RTL)'
     );
   };
 
@@ -955,7 +955,7 @@ export default function App() {
       ...prev,
       family: prev.family.filter((m) => m.id !== id),
     }));
-    showToast('تمت إزالة الفرد من النموذج');
+    showToast('تمت إزالة الفرد من قائمة العائلة');
   };
 
   // Settings & Internationalization handlers
@@ -972,10 +972,12 @@ export default function App() {
   };
 
   const handleSaveGeneralSettings = () => {
+    const isDad = settingsRole === 'dad';
     setState((prev) => ({
       ...prev,
-      parentName: settingsParentName.trim() || 'ولي الأمر',
+      parentName: settingsParentName.trim() || (isDad ? 'بابا (أحمد)' : 'ماما (سارة)'),
       role: settingsRole,
+      activeParentAccount: isDad ? 'father' : 'mother',
       language: settingsLanguage,
       calendarMode: settingsCalendarMode,
     }));
@@ -1005,8 +1007,8 @@ export default function App() {
       setSettingsOtpStep(true);
       showToast(
         lang === 'en'
-          ? `OTP required to change phone/country. Enter demo code ${DEMO_OTP_CODE}`
-          : `يتطلب تغيير الدولة أو رقم الهاتف رمز تحقق OTP. أدخل الرمز التجريبي ${DEMO_OTP_CODE}`
+          ? 'Please enter the mobile verification code (OTP) to confirm changes.'
+          : 'يرجى إدخال رمز التحقق المرسل للجوال (OTP) لتأكيد التحديث.'
       );
       return;
     }
@@ -1014,8 +1016,8 @@ export default function App() {
     if (settingsOtpStep && settingsOtpCode.trim() !== DEMO_OTP_CODE) {
       showToast(
         lang === 'en'
-          ? `Invalid OTP code. Use ${DEMO_OTP_CODE}`
-          : `رمز التحقق غير صحيح. استخدم الرمز التجريبي ${DEMO_OTP_CODE}`
+          ? 'Incorrect OTP verification code. Please check and try again.'
+          : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.'
       );
       return;
     }
@@ -1951,6 +1953,7 @@ export default function App() {
                 invitations={state.invitations}
                 disputeFreezeActive={state.disputeFreezeActive}
                 language={state.language}
+                activeParentAccount={state.activeParentAccount}
                 onOpenAddPersonModal={() => setPersonModalOpen(true)}
                 onOpenPermModal={(member) => setPermModalMember(member)}
                 onDeletePerson={handleDeletePerson}
@@ -2126,7 +2129,7 @@ export default function App() {
               aria-label={lang === 'en' ? 'Policies & Support Footer' : 'تذييل السياسات والتواصل'}
             >
               <div className="inline-flex items-center gap-1.5">
-                <span>© 2026 {t(lang, 'brandName')}</span>
+                <span>© 2026</span>
                 <span aria-hidden="true">·</span>
                 <span>{lang === 'en' ? 'All Rights Reserved' : 'جميع الحقوق محفوظة'}</span>
               </div>

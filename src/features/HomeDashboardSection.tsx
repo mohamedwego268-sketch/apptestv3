@@ -116,7 +116,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   };
 
   const isEn = lang === 'en';
-  const brandName = t(lang, 'brandName');
   const activeCountryCities = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedHomeCityObj =
     activeCountryCities.find(
@@ -256,7 +255,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     () => [
       {
         id: 'hero-announcement-welcome',
-        badge: `${brandName} · ${isEn ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}`,
+        badge: isEn ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr,
         title: isEn
           ? `${parentProfileSpec.greetingEn} — Your Family Daily Hub`
           : `${parentProfileSpec.greetingAr} — مساحة أسرتك المتكاملة اليوم`,
@@ -271,7 +270,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       },
       {
         id: 'hero-top-article',
-        badge: isEn ? `${brandName} · Pediatric Guide` : `${brandName} · دليل النمو والتطعيمات`,
+        badge: isEn ? 'Pediatric Guide' : 'دليل النمو والتطعيمات',
         title: isEn
           ? 'Vaccination & Developmental Milestones (Day 1 – 8 Years)'
           : 'دليل التطعيمات ومراحل النمو الصحي للطفل (من أول يوم حتى 8 سنوات)',
@@ -286,7 +285,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       },
       {
         id: 'hero-store-promo',
-        badge: isEn ? `${brandName} · Family Store` : `${brandName} · عروض متجر الأسرة`,
+        badge: isEn ? 'Family Store' : 'عروض متجر الأسرة',
         title: isEn
           ? `Nurseries, Montessori Toys & Baby Essentials in ${localizedCity}`
           : `حضانات وألعاب مونتيسوري ومستلزمات الطفل في ${localizedCity}`,
@@ -300,7 +299,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         ctaVariant: 'orange',
       },
     ],
-    [brandName, isEn, parentProfileSpec, localizedCity, state.role, navigateTo]
+    [isEn, parentProfileSpec, localizedCity, state.role, navigateTo]
   );
 
   const heroBgSpec = getCardBackgroundSpec(
@@ -319,12 +318,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           backgroundImage: heroBgSpec.backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
-        className="image-bg-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col justify-between gap-2.5"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col justify-between gap-2"
       >
-        <div className="space-y-2">
-          {/* Top Compact Personalized Greeting Row & Parent Profile Switcher */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+        <div className="space-y-1.5">
+          {/* Top Compact Personalized Single-Account Context Row */}
+          <div className="flex items-center justify-between gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+            <div className="flex items-center gap-1.5 shrink-0">
               <span
                 id="hero-parent-role-badge"
                 style={{
@@ -334,62 +333,35 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 }}
                 className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shadow-2xs inline-flex items-center gap-1 shrink-0"
               >
-                <ThreeDIcon id="family" size={12} />
+                <ThreeDIcon id="family" size={11} />
                 <span>
-                  {isEn ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}
+                  {isEn ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
                 </span>
               </span>
               <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold inline-flex items-center gap-1 shrink-0">
-                <ThreeDIcon id="home" size={12} />
-                <span>{brandName} · 📍 {localizedCity}</span>
+                <ThreeDIcon id="home" size={11} />
+                <span>📍 {localizedCity}</span>
               </span>
             </div>
 
-            {/* Instant Parent Profile Switcher: Father vs. Mother */}
-            <div
-              role="group"
-              aria-label={isEn ? 'Switch Parent Profile' : 'التبديل بين حساب الأب وحساب الأم'}
-              className="inline-flex items-center gap-1 rounded-full bg-[var(--color-surface)]/90 dark:bg-[#101D26]/95 backdrop-blur-md p-0.5 border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xs"
+            <button
+              type="button"
+              onClick={() => navigateTo('settings')}
+              className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold inline-flex items-center gap-1 shrink-0 hover:opacity-95 transition-opacity cursor-pointer"
             >
-              <button
-                id="switch-parent-dad-btn"
-                type="button"
-                onClick={() => onSelectParentProfile('dad')}
-                aria-pressed={state.role === 'dad'}
-                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
-                  state.role === 'dad'
-                    ? 'bg-[#0d9488] text-white shadow-2xs'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                <ThreeDIcon id="shield" size={12} />
-                <span>{isEn ? 'Dad (Ahmed)' : 'بابا (أحمد)'}</span>
-              </button>
-              <button
-                id="switch-parent-mom-btn"
-                type="button"
-                onClick={() => onSelectParentProfile('mom')}
-                aria-pressed={state.role !== 'dad'}
-                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
-                  state.role !== 'dad'
-                    ? 'bg-[#E86A3D] text-white shadow-2xs'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                <ThreeDIcon id="family" size={12} />
-                <span>{isEn ? 'Mom (Sara)' : 'ماما (سارة)'}</span>
-              </button>
-            </div>
+              <ThreeDIcon id="settings" size={11} />
+              <span>{isEn ? 'Account' : 'الحساب'}</span>
+            </button>
           </div>
 
           {/* Compact Single-Line Greeting & Subtitle */}
           <div className="space-y-0.5">
             <h1
               id="home-main-greeting-heading"
-              className="image-card-title text-base sm:text-xl font-extrabold leading-snug"
+              className="image-card-title text-sm sm:text-lg font-extrabold leading-snug"
             >
               {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr} —{' '}
-              <span className="text-xs sm:text-sm font-bold opacity-95">
+              <span className="text-[11px] sm:text-xs font-bold opacity-95">
                 {isEn
                   ? 'Child Health, Smart Routines & Trusted Care'
                   : 'صحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر'}
@@ -410,7 +382,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <button
               type="button"
               onClick={() => navigateTo('assistant')}
-              className="image-card-badge min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold hover:opacity-95 transition-opacity inline-flex items-center gap-1 shrink-0 cursor-pointer"
+              className="image-card-badge min-h-[34px] px-3 py-1 rounded-xl text-[10.5px] font-extrabold hover:opacity-95 transition-opacity inline-flex items-center gap-1 shrink-0 cursor-pointer"
             >
               <ThreeDIcon id="assistant" size={13} />
               <span>{isEn ? 'Full AI Studio' : 'استوديو المساعد الذكي'}</span>
@@ -420,7 +392,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 type="button"
                 onClick={onToggleBedtimeMode}
                 aria-pressed={Boolean(bedtimeMode)}
-                className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
+                className={`min-h-[34px] px-3 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
                   bedtimeMode
                     ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-2xs'
                     : 'image-card-badge hover:opacity-95'
@@ -446,7 +418,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <div
         id="home-inline-ai-assistant"
         data-testid="home-inline-ai-assistant"
-        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 sm:p-4 space-y-2.5 soft-card-surface shadow-sm"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-2 soft-card-surface shadow-sm"
       >
         {/* Header + Registered Child Selector Carousel */}
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -639,26 +611,26 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             {dynamicHomeChildPlans.map((plan) => (
               <div
                 key={plan.id}
-                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/55 dark:bg-[#142430] p-2.5 flex flex-col justify-between gap-2"
+                className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/55 dark:bg-[#142430] p-3.5 sm:p-4 flex flex-col justify-between gap-1.5"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between gap-1.5">
-                    <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-extrabold">
+                  <div className="flex items-center justify-between gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+                    <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[9px] font-extrabold shrink-0">
                       {isEn ? plan.badgeEn : plan.badgeAr}
                     </span>
-                    <span className="text-[10px] font-bold text-[var(--color-muted)] tabular-nums">
+                    <span className="text-[9.5px] font-bold text-[var(--color-muted)] tabular-nums shrink-0">
                       🕒 {plan.time}
                     </span>
                   </div>
                   <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
                     {isEn ? plan.titleEn : plan.titleAr}
                   </h3>
-                  <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug line-clamp-2">
+                  <p className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug line-clamp-2">
                     {isEn ? plan.descEn : plan.descAr}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
+                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
                   <button
                     type="button"
                     onClick={() => handleSendHomeAiQuery(isEn ? plan.titleEn : plan.titleAr)}
@@ -706,7 +678,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         language={lang}
         darkMode={Boolean(state.darkMode)}
         autoPlayMs={4500}
-        ariaLabel={isEn ? `${brandName} Featured Announcements Carousel` : `لافتات ${brandName} الترويجية المتحركة`}
+        ariaLabel={isEn ? 'Featured Announcements Carousel' : 'اللافتات الترويجية المتحركة'}
       />
 
       {/* 5. CORE HUBS GRID WITH UNIFIED SOFT-FILLED ICONOGRAPHY */}
@@ -907,16 +879,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <div
         id="home-decluttered-tabs"
         data-testid="home-horizontal-carousel"
-        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 sm:p-4 space-y-3.5 soft-card-surface"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-3 soft-card-surface"
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 border-b border-[var(--color-border)] pb-2.5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-[var(--color-border)] pb-2.5">
           <div className="text-center sm:text-start">
             <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-heading)]">
               {isEn
                 ? 'Local Services & Family Snapshot'
                 : 'الخدمات القريبة وملخص الأسرة'}
             </h2>
-            <p className="text-[10.5px] font-semibold text-[var(--color-muted)]">
+            <p className="text-[10px] font-semibold text-[var(--color-muted)]">
               {isEn
                 ? `Filtered for ${localizedCity}`
                 : `مخصص لمدينة ${localizedCity}`}
@@ -927,7 +899,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           <div
             role="tablist"
             aria-label={isEn ? 'Home organized sections' : 'تبويبات الشاشة الرئيسية المنظمة'}
-            className="flex flex-wrap items-center gap-1 rounded-xl bg-[var(--color-control-muted)] p-1"
+            className="flex items-center gap-1 rounded-xl bg-[var(--color-control-muted)] p-1 overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
           >
             {[
               {
@@ -954,13 +926,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   role="tab"
                   aria-selected={active}
                   onClick={() => setHomeFocusTab(tab.id)}
-                  className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all inline-flex items-center gap-1.5 ${
+                  className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all inline-flex items-center gap-1.5 shrink-0 ${
                     active
                       ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-2xs'
                       : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                   }`}
                 >
-                  <ThreeDIcon id={tab.iconId} size={14} />
+                  <ThreeDIcon id={tab.iconId} size={13} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -970,9 +942,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
         {/* TAB 1: NEARBY SERVICES & STORE */}
         {homeFocusTab === 'nearby' && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
-              <div className="flex flex-wrap items-center gap-2.5">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-2xl bg-[var(--color-surface)] dark:bg-[#101D26] p-4 border border-[var(--color-border)] dark:border-[#1E3646] soft-card-surface">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Step 1: Hierarchical Country Selector (Egypt vs Saudi Arabia) */}
                 <div className="inline-flex items-center gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646]">
                   <button

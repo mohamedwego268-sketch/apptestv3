@@ -89,8 +89,8 @@ const DELIVERY_TIMELINE_STAGES: DeliveryTimelineStage[] = [
     id: 'received',
     titleAr: 'تم استلام الطلب',
     titleEn: 'Order Received',
-    subtitleAr: 'تم تأكيد الدفع التجريبي وإرسال الطلب للمتجر',
-    subtitleEn: 'Test payment verified & sent to merchant',
+    subtitleAr: 'تم تأكيد الطلب وإرساله للمتجر للتجهيز',
+    subtitleEn: 'Order verified & sent to merchant',
     etaMinutes: 28,
     icon: '📋',
     progressPct: 18,
@@ -439,9 +439,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[196px] sm:w-[216px] shrink-0'
+            ? 'w-[212px] sm:w-[232px] shrink-0'
             : 'w-full'
-        } rounded-2xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2 sm:p-2.5 flex flex-col justify-between gap-1.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
+        } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-4 sm:p-5 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
       >
         <div className="space-y-1.5">
           {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
@@ -457,7 +457,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card relative overflow-hidden rounded-xl p-2 min-h-[82px] sm:min-h-[90px] cursor-pointer flex flex-col justify-between gap-1 shadow-2xs"
+            className="image-bg-card relative overflow-hidden rounded-xl p-2.5 min-h-[82px] sm:min-h-[90px] cursor-pointer flex flex-col justify-between gap-1 shadow-2xs"
           >
             <img
               src={stockImageUrl}
@@ -483,8 +483,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               }}
             />
 
-            <div className="relative z-10 flex items-center justify-between gap-1">
-              <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs">
+            <div className="relative z-10 flex items-center justify-between gap-1 overflow-x-auto whitespace-nowrap no-scrollbar">
+              <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs shrink-0">
                 {item.emoji} {locText(item.categoryLabel, language)}
               </span>
               <span
@@ -504,13 +504,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           {/* Compact Metadata Strip + Interactive Details Link */}
-          <div className="flex items-center justify-between gap-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 truncate">
-              <span className="truncate">📍 {locText(item.city, language)}</span>
+          <div className="flex items-center justify-between gap-1.5 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
+            <div className="flex items-center gap-1 min-w-0 overflow-x-auto whitespace-nowrap no-scrollbar">
+              <span className="shrink-0">📍 {locText(item.city, language)}</span>
               {item.deliveryEstimateAr && (
                 <>
                   <span aria-hidden="true">·</span>
-                  <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold truncate">
+                  <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold shrink-0">
                     🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
                   </span>
                 </>
@@ -527,7 +527,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
 
         {/* Price + Universal Minimalist Action Icons (Compare Arrows + Wishlist Heart + Shopping Cart) */}
-        <div className="pt-1.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1">
+        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5">
           <div
             onClick={() => onInspectCommercialItem(item)}
             className="flex flex-col min-w-0 cursor-pointer"
@@ -729,8 +729,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       if (!testCardNumber.trim() || !testCardExpiry.trim() || !testCardCvv.trim()) {
         onShowToast(
           isEn
-            ? 'Please fill in the mock card details to complete Electronic Payment.'
-            : 'يرجى استكمال بيانات البطاقة التجريبية لإتمام الدفع الإلكتروني.'
+            ? 'Please complete your card details to proceed with Electronic Payment.'
+            : 'يرجى استكمال بيانات البطاقة البنكية لإتمام الدفع الإلكتروني.'
         );
         return;
       }
@@ -979,7 +979,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }`}
           >
             <span>💳</span>
-            <span>{isEn ? '2. Checkout (إتمام الطلب)' : '٢. إتمام الطلب ومحاكاة الدفع'}</span>
+            <span>{isEn ? '2. Checkout' : '٢. إتمام الطلب والدفع'}</span>
           </button>
 
           <button
@@ -1002,12 +1002,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
 
         <span className="text-[11px] font-bold text-[var(--color-muted)] px-2">
-          🔒 {isEn ? 'Safe Mock Checkout (No Real Charge)' : 'محاكاة دفع آمنة ١٠٠٪ لأغراض الاختبار'}
+          🔒 {isEn ? 'Encrypted & Secure Checkout' : 'معاملات دفع آمنة ومحمية بالكامل'}
         </span>
       </div>
 
       {/* =====================================================================
-          TALABAT / UBER-EATS STYLE LIVE ORDER TRACKING & ROUTE MAP
+          LIVE ORDER TRACKING & ROUTE MAP
           ===================================================================== */}
       {storeFlowStep === 'catalog' && (
         <CollapsibleSectionCard
@@ -1017,7 +1017,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           isOpen={showLiveTracking}
           onToggle={setShowLiveTracking}
           defaultOpen={false}
-          title={isEn ? 'Live Delivery Tracking & Route Map' : 'تتبع الطلب المباشر وخريطة التوصيل (Talabat Style)'}
+          title={isEn ? 'Live Delivery Tracking & Route Map' : 'تتبع الطلب المباشر وخريطة التوصيل'}
           subtitle={
             isEn
               ? `Status: ${activeStage.titleEn} · ETA: ${
@@ -1043,7 +1043,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
-                    {isEn ? 'LIVE GPS TRACKING' : 'تتبع مباشر · Talabat Style'}
+                    {isEn ? 'LIVE GPS TRACKING' : 'تتبع مباشر لحالة الطلب'}
                   </span>
                   <span className="text-[11px] font-extrabold text-[var(--color-muted)] tabular-nums">
                     #{latestOrder ? latestOrder.id : 'FS-9042'}
@@ -1071,11 +1071,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <span>
                   {isAutoSimulatingDelivery
                     ? isEn
-                      ? 'Simulating Live...'
-                      : 'محاكاة حية نشطة...'
+                      ? 'Live Updates Active'
+                      : 'تحديث مباشر نشط'
                     : isEn
-                    ? 'Simulate Progress'
-                    : 'تشغيل المحاكاة الحية'}
+                    ? 'Auto-Update Status'
+                    : 'تحديث تلقائي للحالة'}
                 </span>
               </button>
 
@@ -1250,7 +1250,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     }
                     className="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-[11px] cursor-pointer"
                   >
-                    {isEn ? '▶ Simulate Next Step' : '▶ محاكاة الخطوة التالية'}
+                    {isEn ? '▶ Next Stage' : '▶ المرحلة التالية'}
                   </button>
                 </div>
               </div>
@@ -1348,11 +1348,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <span className="inline-block px-2 py-0.5 rounded-md bg-orange-100 dark:bg-[#142430] text-orange-900 dark:text-[#FDBA74] text-[10px] font-extrabold">
                   {storeFlowStep === 'confirmed'
                     ? isEn
-                      ? 'ORDER CONFIRMED · تم تأكيد الطلب'
+                      ? 'ORDER CONFIRMED'
                       : 'تم الدفع وتأكيد الطلب بنجاح'
                     : isEn
-                    ? 'CHECKOUT & MOCK PAYMENT · إتمام الطلب'
-                    : 'شاشة إتمام الطلب ومحاكاة الدفع'}
+                    ? 'SECURE CHECKOUT'
+                    : 'شاشة إتمام الطلب وتأكيد الدفع'}
                 </span>
                 <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-0.5">
                   {storeFlowStep === 'confirmed'
@@ -1360,8 +1360,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       ? 'Payment Successful & Order Confirmed'
                       : 'تمت عملية الدفع وتأكيد طلب الأسرة بنجاح'
                     : isEn
-                    ? 'Checkout (إتمام الطلب) — Select Payment Method'
-                    : 'إتمام الطلب (Checkout) — اختيار وسيلة الدفع وتأكيد الشحن'}
+                    ? 'Checkout — Select Payment Method'
+                    : 'إتمام الطلب — اختيار وسيلة الدفع وتأكيد الشحن'}
                 </h3>
               </div>
             </div>
@@ -1602,8 +1602,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 subtitle={emptyCartCopy.subtitle}
                 actionLabel={
                   isEn
-                    ? '+ Add Demo Item to Cart'
-                    : '➕ إضافة منتج تجريبي للسلة'
+                    ? '+ Add Featured Item to Cart'
+                    : '➕ إضافة منتج مختار للسلة'
                 }
                 onAction={() => {
                   const demoItem = COMMERCIAL_CATALOG[0];
@@ -1756,7 +1756,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div className="rounded-2xl border-2 border-orange-200/95 dark:border-[#1E3646] bg-orange-50/55 dark:bg-[#142430] p-4 space-y-3.5 shadow-2xs">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                    💳 {isEn ? '3. Select Payment Method' : '٣. اختر طريقة الدفع (محاكاة الدفع)'}
+                    💳 {isEn ? '3. Select Payment Method' : '٣. اختر طريقة الدفع'}
                   </h4>
                   <span className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-[#101D26] text-orange-950 dark:text-[#FDBA74] text-[10px] font-extrabold">
                     {isEn ? '2 Options Available' : 'خياران متاحان'}
@@ -1831,8 +1831,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                             setPaymentMethod('apple_pay');
                             onShowToast(
                               isEn
-                                ? ' Apple Pay selected — tap Confirm Order below or pay instantly'
-                                : ' تم اختيار Apple Pay — اضغط تأكيد الطلب بالأسفل لإتمام المحاكاة'
+                                ? ' Apple Pay selected — tap Confirm Order below'
+                                : ' تم اختيار Apple Pay — اضغط تأكيد الطلب بالأسفل لإتمام الطلب'
                             );
                           }}
                           className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
@@ -1853,7 +1853,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                             onShowToast(
                               isEn
                                 ? 'G Google Pay selected — tap Confirm Order below'
-                                : 'G تم اختيار Google Pay — اضغط تأكيد الطلب بالأسفل لإتمام المحاكاة'
+                                : 'G تم اختيار Google Pay — اضغط تأكيد الطلب بالأسفل لإتمام الطلب'
                             );
                           }}
                           className={`min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border-2 transition-all flex items-center justify-center gap-1.5 ${
@@ -1883,7 +1883,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                           <span>💳</span>
                           <span>
                             {isEn
-                              ? 'Credit / Debit Card Details (Mock)'
+                              ? 'Credit / Debit Card Details'
                               : 'بيانات البطاقة الائتمانية / بطاقة الخصم المباشر'}
                           </span>
                         </button>

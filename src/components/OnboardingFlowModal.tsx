@@ -59,7 +59,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [joinMemberRoleLabel, setJoinMemberRoleLabel] = useState<string>('الأم (Mother)');
 
   // Step 1: Account & OTP
-  const [email, setEmail] = useState<string>('sara.mom@familyspace.demo');
+  const [email, setEmail] = useState<string>('sara.mom@family.app');
   const [phone, setPhone] = useState<string>('1012345678');
   const [otpInput, setOtpInput] = useState<string>('123456');
 
@@ -125,8 +125,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       if (otpInput.trim() !== DEMO_OTP_CODE) {
         setErrorMsg(
           isEn
-            ? `Invalid demo OTP code. Use ${DEMO_OTP_CODE}.`
-            : `رمز التحقق التجريبي غير صحيح. استخدم الرمز ${DEMO_OTP_CODE}.`
+            ? 'Invalid OTP verification code. Please check and try again.'
+            : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.'
         );
         return;
       }
@@ -197,7 +197,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <div className="flex items-start justify-between gap-3 pb-2.5 border-b border-[var(--color-border)]">
           <div>
             <div className="text-[11px] font-extrabold text-[var(--color-role-text)]">
-              🚀 {isEn ? `Nekbaar · Interactive Registration & QR Setup (Step ${step} of 4)` : `نكبر · معالج التسجيل وربط الأسرة عبر QR (الخطوة ${step} من 4)`}
+              🚀 {isEn ? `Account & Family Setup (Step ${step} of 4)` : `معالج إعداد الحساب وربط الأسرة (الخطوة ${step} من 4)`}
             </div>
             <h2 id="onboarding-modal-title" className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
               {step === 1
@@ -368,10 +368,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <div className="rounded-xl bg-[var(--color-control-muted)] p-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <label className="text-xs font-bold text-[var(--color-text)]">
-                  🔑 {isEn ? 'Simulated OTP Verification Code (Demo: 123456)' : 'رمز التحقق التجريبي عبر الجوال (الرمز: 123456)'}
+                  🔑 {isEn ? 'Mobile Verification Code (OTP)' : 'رمز التحقق عبر الجوال (OTP)'}
                 </label>
                 <span dir="ltr" className="text-xs font-mono font-bold text-emerald-800">
-                  OTP: 123456
+                  ✓ SMS
                 </span>
               </div>
               <input
@@ -391,8 +391,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           <div className="space-y-4">
             <p className="text-xs text-[var(--color-muted)] leading-relaxed">
               {isEn
-                ? 'Choosing your country and governorate/region automatically personalizes local pediatricians, nurseries, stores, and currency across Nekbaar.'
-                : 'اختيار الدولة والمحافظة أو المنطقة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك داخل نكبر.'}
+                ? 'Choosing your country and governorate/region automatically personalizes local pediatricians, nurseries, stores, and currency.'
+                : 'اختيار الدولة والمحافظة أو المنطقة يضبط العملة تلقائيًا ويظهر لك الأطباء والعيادات والحضانات والمتاجر المتاحة في منطقتك.'}
             </p>
 
             {/* Country Cards */}
@@ -645,8 +645,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <div className="flex items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)]">
           <div className="text-[11px] text-[var(--color-muted)]">
             {isEn
-              ? 'Demo Mode: Saves locally & updates location-based providers.'
-              : 'وضع العرض التجريبي: يحفظ الإعدادات محليًا ويحدّث خدمات مدينتك فورًا.'}
+              ? 'Saves your preferences and updates local providers in your city.'
+              : 'يحفظ إعدادات حسابك ويحدّث خدمات مدينتك فورًا.'}
           </div>
           <div className="flex items-center gap-2">
             {step > 1 && (

@@ -505,11 +505,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
       <div
         id="community-story-reels-strip"
-        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 sm:p-4 space-y-2.5 soft-card-surface shadow-xs"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-2.5 soft-card-surface shadow-xs"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="space-y-0.5">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold">
+          <div className="space-y-0.5 min-w-0">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold">
               <span>🎬</span>
               <span>
                 {isEn
@@ -527,7 +527,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           <button
             type="button"
             onClick={() => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts')}
-            className={`min-h-[32px] px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
+            className={`min-h-[32px] px-3 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
               topicFilter === 'experts'
                 ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
                 : 'border-amber-400/50 bg-amber-50/90 dark:bg-[#142430] text-amber-900 dark:text-amber-300 hover:border-amber-400'
@@ -547,7 +547,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         </div>
 
         {/* Horizontal Story Reels Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           {familyStoryReels.map((reel) => {
             const isSelectedReel = activeStoryReelId === reel.id;
             return (

@@ -170,6 +170,7 @@ interface FamilyPermissionsSectionProps {
   invitations: FamilyInvitation[];
   disputeFreezeActive: boolean;
   language: LanguageCode;
+  activeParentAccount?: 'mother' | 'father';
   onOpenAddPersonModal: () => void;
   onOpenPermModal: (member: FamilyMember) => void;
   onDeletePerson: (id: number) => void;
@@ -243,6 +244,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   invitations,
   disputeFreezeActive,
   language,
+  activeParentAccount = 'mother',
   onOpenAddPersonModal,
   onOpenPermModal,
   onDeletePerson,
@@ -254,13 +256,23 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   onShowToast,
 }) => {
   const isEn = language === 'en';
-  const [editingParent, setEditingParent] = useState<'mother' | 'father'>('mother');
+  const editingParent: 'mother' | 'father' = activeParentAccount;
   const currentParent = parentAccounts[editingParent];
   const [phoneInput, setPhoneInput] = useState(currentParent.phoneNumber);
   const [countryInput, setCountryInput] = useState<CountryCode>(currentParent.country);
   const [emailInput, setEmailInput] = useState(currentParent.email);
   const [otpInput, setOtpInput] = useState('');
   const [otpRequested, setOtpRequested] = useState(false);
+
+  React.useEffect(() => {
+    const p = parentAccounts[editingParent];
+    setPhoneInput(p.phoneNumber);
+    setCountryInput(p.country);
+    setEmailInput(p.email);
+    setOtpRequested(false);
+    setOtpInput('');
+    setVerificationMsg(null);
+  }, [editingParent, parentAccounts]);
   const [verificationMsg, setVerificationMsg] = useState<{
     type: 'ok' | 'err';
     text: string;
@@ -363,17 +375,6 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     );
   };
 
-  const handleSwitchParentTab = (pid: 'mother' | 'father') => {
-    setEditingParent(pid);
-    const p = parentAccounts[pid];
-    setPhoneInput(p.phoneNumber);
-    setCountryInput(p.country);
-    setEmailInput(p.email);
-    setOtpRequested(false);
-    setOtpInput('');
-    setVerificationMsg(null);
-  };
-
   const handleRequestOtp = () => {
     const check = validatePhoneForCountry(phoneInput, countryInput);
     if (!check.valid) {
@@ -387,8 +388,8 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     setVerificationMsg({
       type: 'ok',
       text: isEn
-        ? `Simulated OTP sent to ${check.fullInternational}. Code: ${DEMO_OTP_CODE}`
-        : `تم إرسال رمز التحقق التجريبي إلى ${check.fullInternational}. الرمز: ${DEMO_OTP_CODE}`,
+        ? `Verification code sent to ${check.fullInternational}.`
+        : `تم إرسال رمز التحقق إلى ${check.fullInternational}.`,
     });
   };
 
@@ -405,8 +406,8 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
       setVerificationMsg({
         type: 'err',
         text: isEn
-          ? `Incorrect OTP code. Enter demo code ${DEMO_OTP_CODE}.`
-          : `رمز التحقق غير صحيح. أدخل الرمز التجريبي ${DEMO_OTP_CODE}.`,
+          ? 'Incorrect OTP verification code. Please check and try again.'
+          : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.',
       });
       return;
     }
@@ -855,37 +856,22 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
         </div>
       </div>
 
-      {/* SECTION A: Two Independent Parent Accounts (Mother & Father) */}
+      {/* SECTION A: Active Parent Account Verification */}
       <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 sm:p-5 space-y-3.5 shadow-2xs">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-            {isEn ? '1. Verified Parent Accounts (Mother & Father)' : '١. حسابات الوالدين وتوثيق الهوية'}
+            {isEn ? '1. Verified Parent Account & Identity' : '١. حساب ولي الأمر وتوثيق الهوية'}
           </h3>
 
-          <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => handleSwitchParentTab('mother')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${
-                editingParent === 'mother'
-                  ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-2xs'
-                  : 'text-[var(--color-muted)]'
-              }`}
-            >
-              👩🏻 {isEn ? 'Mother (Sara)' : 'الأم (سارة)'}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSwitchParentTab('father')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold ${
-                editingParent === 'father'
-                  ? 'bg-[var(--color-surface)] text-[var(--color-text)] shadow-2xs'
-                  : 'text-[var(--color-muted)]'
-              }`}
-            >
-              👨🏻 {isEn ? 'Father (Ahmed)' : 'الأب (أحمد)'}
-            </button>
-          </div>
+          <span className="px-3 py-1 rounded-xl text-xs font-extrabold bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)]">
+            {editingParent === 'father'
+              ? isEn
+                ? '👨🏻 Father (Ahmed)'
+                : '👨🏻 الأب (أحمد)'
+              : isEn
+              ? '👩🏻 Mother (Sara)'
+              : '👩🏻 الأم (سارة)'}
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">

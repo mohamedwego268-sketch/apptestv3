@@ -1364,8 +1364,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       ? 'Switch to Breathable Light Mode'
                       : 'التبديل إلى الوضع النهاري المريح'
                     : lang === 'en'
-                    ? 'Enable Deep Midnight Charcoal Dark Mode (#0B131A)'
-                    : 'تفعيل الوضع الليلي الفحمي العميق (#0B131A)'}
+                    ? 'Enable Eye-Comfort Dark Mode'
+                    : 'تفعيل الوضع الليلي المريح للعين'}
                 </span>
                 <UnifiedBadge
                   label={state.darkMode ? (lang === 'en' ? 'Active' : 'مفعّل') : lang === 'en' ? 'Off' : 'إيقاف'}
@@ -1603,7 +1603,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               </button>
             </div>
             <p className="text-sm text-[var(--color-muted)]">
-              سيتم مسح التعديلات المحفوظة في هذا المتصفح وإعادة البيانات التجريبية الافتراضية. يُنصح بتصدير نسخة JSON أولًا إذا كنت ترغب في الاحتفاظ ببياناتك.
+              سيتم مسح التعديلات المحفوظة في هذا المتصفح واستعادة الإعدادات الافتراضية للحساب. يُنصح بتصدير نسخة احتياطية أولًا إذا كنت ترغب في الاحتفاظ ببياناتك.
             </p>
             <div className="flex items-center justify-end gap-2">
               <button

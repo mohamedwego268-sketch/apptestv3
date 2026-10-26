@@ -44,48 +44,29 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
 
   return (
     <div className="space-y-5">
-      {/* Top Parent Switcher Image Background Hero Card */}
+      {/* Top Active Parent Image Background Hero Card */}
       <div
-        className="image-bg-card rounded-[24px] p-5 space-y-4"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 space-y-2.5"
         style={{ backgroundImage: getCardBackgroundSpec('notifications', state.darkMode).backgroundImageCss }}
       >
-        <div className="flex flex-col items-center justify-center text-center gap-2">
-          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
-            <SoftFilledIcon id="notifications" size={24} />
-            <span>
-              {isEn ? '3 Daily Notifications Engine' : '٣ إشعارات يومية مخصصة'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
+        <div className="flex flex-col items-center justify-center text-center gap-1.5">
+          <div className="flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar max-w-full">
+            <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1.5 shrink-0">
+              <SoftFilledIcon id="notifications" size={16} />
+              <span>
+                {isEn ? 'Smart Daily Alerts' : 'تنبيهات يومية مخصصة'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
+              </span>
             </span>
-          </span>
-          <h2 className="section-heading-centered image-card-title">
+            <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1 shrink-0">
+              <SoftFilledIcon id="family" size={14} />
+              <span>{isEn ? locText(parentProfile.fullName, language) : parentProfile.fullName}</span>
+            </span>
+          </div>
+          <h2 className="section-heading-centered image-card-title text-base sm:text-xl">
             {isEn
               ? `Today's Notifications — ${locText(parentProfile.fullName, language)}`
               : `إشعارات اليوم — ${parentProfile.fullName}`}
           </h2>
-        </div>
-
-        <div className="flex items-center justify-center gap-1.5 bg-[var(--color-surface)]/95 dark:bg-[#142430] p-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] max-w-sm mx-auto">
-          <button
-            type="button"
-            onClick={() => onSelectParentAccount('mother')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
-              activeParent === 'mother'
-                ? 'bg-[#FF8C61] text-white shadow-2xs'
-                : 'text-[var(--color-text)]'
-            }`}
-          >
-            {isEn ? 'Mother (Sara)' : 'ماما (سارة)'}
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelectParentAccount('father')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors ${
-              activeParent === 'father'
-                ? 'bg-[#0d9488] text-white shadow-2xs'
-                : 'text-[var(--color-text)]'
-            }`}
-          >
-            {isEn ? 'Father (Ahmed)' : 'بابا (أحمد)'}
-          </button>
         </div>
       </div>
 

@@ -78,7 +78,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const primaryNavItems = navItems.filter((item) => defaultPrimaryNavIds.includes(item.id));
 
   const sharedControlBtnClass =
-    'h-9 px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
+    'h-9 min-w-[36px] px-2.5 sm:px-3 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
+
+  const compactIconBadgeBtnClass =
+    'w-9 h-9 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[var(--color-accent)] hover:scale-[1.02] active:scale-[0.98] shrink-0 inline-flex items-center justify-center transition-all duration-300 ease-in-out shadow-2xs select-none cursor-pointer';
 
   return (
     <header
@@ -86,15 +89,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       data-scrolled={isScrolled ? 'true' : 'false'}
       className="sticky top-0 z-30 w-full border-b border-[var(--color-border)] dark:border-[#1E3646] glass-sticky-header transition-colors select-none"
     >
-      <div className="max-w-[1280px] mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+      <div className="max-w-[1280px] mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4">
         {/* Zone 1: Localized Official Brand Wordmark (Strictly "نكبر" in AR or "Nekbaar" in EN) */}
         <button
           type="button"
           onClick={() => onNavigate('home')}
           aria-label={isEn ? 'Nekbaar Home' : 'رئيسية نكبر'}
-          className="h-10 flex items-center gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
+          className="h-10 flex items-center gap-2 sm:gap-2.5 text-base sm:text-lg font-black tracking-tight text-[var(--color-text)] whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
             <ThreeDIcon id="home" size={20} />
           </div>
           <span className="font-black text-base sm:text-lg text-[var(--color-text)] leading-none">
@@ -128,14 +131,23 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </nav>
         )}
 
-        {/* Zone 3: Standardized Aligned Controls (Theme + Bedtime Mode + Language + Calendar/To-Do + Notifications + Profile) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Zone 3: Standardized Well-Spaced Controls (Theme + Bedtime Mode + Sleek Language Globe 🌐 + Calendar/To-Do + Notifications + Profile) */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           {/* 1. Theme Toggle Button (Soft-Filled Sun / Moon SVG) */}
           <button
             id="top-dark-mode-toggle"
             type="button"
             onClick={onToggleDarkMode}
             aria-pressed={Boolean(darkMode)}
+            title={
+              darkMode
+                ? isEn
+                  ? 'Switch to Light Mode'
+                  : 'التبديل إلى الوضع النهاري'
+                : isEn
+                ? 'Switch to Dark Mode'
+                : 'التبديل إلى الوضع الليلي'
+            }
             aria-label={
               darkMode
                 ? isEn
@@ -178,7 +190,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 />
               </svg>
             )}
-            <span className="hidden sm:inline">
+            <span className="hidden lg:inline">
               {darkMode ? (isEn ? 'Light' : 'نهاري') : isEn ? 'Dark' : 'ليلي'}
             </span>
           </button>
@@ -207,7 +219,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }`}
             >
               <span className="text-sm leading-none">🕯️</span>
-              <span className="hidden md:inline">
+              <span className="hidden lg:inline">
                 {bedtimeMode
                   ? isEn
                     ? 'Bedtime On'
@@ -219,27 +231,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </button>
           )}
 
-          {/* 2. Language Toggle Button (Soft-Filled Globe SVG) */}
+          {/* 2. Sleek Compact Language Globe Icon Badge (🌐) */}
           <button
             id="top-language-switcher"
             type="button"
             onClick={onToggleLanguage}
+            title={isEn ? 'التبديل إلى العربية' : 'Switch to English'}
             aria-label={isEn ? 'Switch language to Arabic' : 'Switch language to English'}
-            className={sharedControlBtnClass}
+            className={compactIconBadgeBtnClass}
           >
-            <svg
-              className="w-4 h-4 shrink-0 text-[#0d9488] dark:text-teal-300"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              fillOpacity="0.16"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="9.5" />
-              <line x1="2.5" y1="12" x2="21.5" y2="12" />
-              <path d="M12 2.5a14.5 14.5 0 0 1 3.8 9.5 14.5 14.5 0 0 1-3.8 9.5 14.5 14.5 0 0 1-3.8-9.5 14.5 14.5 0 0 1 3.8-9.5z" />
-            </svg>
-            <span>{isEn ? 'عربي' : 'English'}</span>
+            <span aria-hidden="true" className="text-sm leading-none">
+              🌐
+            </span>
           </button>
 
           {/* 3. Family Calendar & To-Do List Button ("مفكرة العيلة الذكية") */}
@@ -253,6 +256,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 onNavigate('calendar');
               }
             }}
+            title={
+              isEn
+                ? 'Open Family Calendar & To-Do List'
+                : 'فتح مفكرة العيلة الذكية وقائمة المهام'
+            }
             aria-label={
               isEn
                 ? 'Open Family Calendar & To-Do List'
@@ -282,22 +290,31 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="hidden sm:inline">{isEn ? 'Planner' : 'المفكرة'}</span>
+            <span className="hidden lg:inline">{isEn ? 'Planner' : 'المفكرة'}</span>
             {openTasksCount > 0 && (
               <span
                 data-testid="header-planner-badge"
-                className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#0d9488] dark:bg-[#38BDF8] text-white dark:text-[#0B131A] text-[10px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+                className="min-w-[17px] h-[17px] px-1 rounded-full bg-[#0d9488] dark:bg-[#38BDF8] text-white dark:text-[#0B131A] text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
               >
                 {openTasksCount}
               </span>
             )}
           </button>
 
-          {/* 3. Notifications Bell Button (Non-Overlapping Inline Counter Pill) */}
+          {/* 4. Notifications Bell Button (Non-Overlapping Inline Counter Pill) */}
           <button
             id="top-notification-bell"
             type="button"
             onClick={() => onNavigate('notifications')}
+            title={
+              unreadNotifCount > 0
+                ? isEn
+                  ? `Notifications (${unreadNotifCount} unread)`
+                  : `الإشعارات اليومية (${unreadNotifCount} غير مقروءة)`
+                : isEn
+                ? 'Notifications (All read)'
+                : 'الإشعارات اليومية (مقروءة بالكامل)'
+            }
             aria-label={
               unreadNotifCount > 0
                 ? isEn
@@ -328,30 +345,31 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               />
               <path strokeLinecap="round" strokeLinejoin="round" d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            <span className="hidden md:inline">{isEn ? 'Alerts' : 'إشعارات'}</span>
+            <span className="hidden lg:inline">{isEn ? 'Alerts' : 'إشعارات'}</span>
             {unreadNotifCount > 0 && (
               <span
                 data-testid="header-notif-badge"
-                className="min-w-[19px] h-[19px] px-1.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
+                className="min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF8C61] text-white text-[9.5px] font-black inline-flex items-center justify-center tabular-nums leading-none shadow-2xs shrink-0"
               >
                 {unreadNotifCount}
               </span>
             )}
           </button>
 
-          {/* 4. Parent Profile Drawer Button (Soft-Filled User Avatar SVG) */}
+          {/* 5. Parent Profile Drawer Button (Soft-Filled User Avatar SVG) */}
           <button
             id="open-profile-drawer-btn"
             type="button"
             data-parent-role={parentProfileSpec.role}
             onClick={onOpenProfileDrawer}
+            title={isEn ? 'Open Profile Controls' : 'فتح التحكم بالحساب'}
             aria-label={isEn ? 'Open Profile Controls' : 'فتح التحكم بالحساب'}
             style={{
               backgroundColor: parentProfileSpec.badgeBgCss,
               color: parentProfileSpec.badgeTextCss,
               borderColor: parentProfileSpec.badgeBorderCss,
             }}
-            className="h-9 px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none"
+            className="h-9 min-w-[36px] px-2.5 sm:px-3.5 rounded-2xl text-xs font-extrabold border whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1.5 transition-all shadow-2xs select-none cursor-pointer"
           >
             <span className="w-5 h-5 rounded-full bg-white/30 dark:bg-black/25 inline-flex items-center justify-center shrink-0">
               <svg
@@ -366,7 +384,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </span>
-            <span className="hidden sm:inline font-extrabold">
+            <span className="hidden md:inline font-extrabold">
               {isEn ? parentProfileSpec.displayNameEn : parentProfileSpec.displayNameAr}
             </span>
           </button>
