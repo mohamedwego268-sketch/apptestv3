@@ -99,9 +99,9 @@ export const UnifiedBadge: React.FC<UnifiedBadgeProps> = ({
   return (
     <span
       data-unified-badge="true"
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold ${toneClasses.badge} shadow-2xs select-none ${className}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold ${toneClasses.badge} shadow-2xs select-none whitespace-nowrap ${className}`}
     >
-      {iconId && <ThreeDIcon id={iconId} size={13} />}
+      {iconId && <ThreeDIcon id={iconId} size={11} />}
       <span>{content}</span>
     </span>
   );
@@ -361,7 +361,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       data-banner-carousel="true"
       data-autoplay-enabled="true"
       data-banner-variant={current.ctaVariant || 'orange'}
-      className="image-bg-card relative rounded-3xl overflow-hidden select-none transition-all duration-300 ease-in-out shadow-md"
+      className="image-bg-card relative rounded-2xl sm:rounded-3xl overflow-hidden select-none transition-all duration-300 ease-in-out shadow-sm"
       style={{
         backgroundImage: bgSpec.backgroundImageCss,
       }}
@@ -387,43 +387,45 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-4 sm:p-5.5 flex flex-col sm:flex-row items-center justify-between gap-4 min-h-[160px] text-center sm:text-start">
-        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-4.5 space-y-2 max-w-xl w-full flex flex-col items-center sm:items-start transition-all duration-300 ease-in-out">
-          <span className="image-card-badge inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-extrabold">
-            <ThreeDIcon id={current.iconId} size={14} />
-            <span>{current.badge}</span>
-          </span>
-          <h2 className="image-card-title text-base sm:text-lg font-extrabold leading-snug">
+      <div className="p-2.5 sm:p-3.5 flex flex-row items-center justify-between gap-2.5 min-h-[104px] sm:min-h-[116px] text-start">
+        <div className="image-card-glass-panel rounded-2xl p-2.5 sm:p-3 space-y-1 max-w-xl flex-1 flex flex-col items-start transition-all duration-300 ease-in-out">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="image-card-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold">
+              <ThreeDIcon id={current.iconId} size={12} />
+              <span>{current.badge}</span>
+            </span>
+          </div>
+          <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug line-clamp-1">
             {current.title}
           </h2>
-          <div className="image-card-subtitle text-xs font-semibold leading-relaxed">
+          <div className="image-card-subtitle text-[11px] font-semibold leading-snug line-clamp-1">
             {current.subtitle}
           </div>
-          <div className="pt-1 flex items-center gap-2">
+          <div className="pt-0.5 flex items-center gap-2">
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[38px] px-4 py-1.5 rounded-xl text-xs font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out cursor-pointer ${btnTone}`}
+              className={`min-h-[32px] px-3 py-1 rounded-xl text-[11px] font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out cursor-pointer ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
           </div>
         </div>
 
-        <div className="self-center shrink-0">
+        <div className="self-center shrink-0 hidden xs:block sm:block">
           <SoftFilledIcon
             id={current.iconId}
-            boxSize="lg"
-            size={40}
-            className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-sm rounded-2xl transition-transform duration-300 ease-in-out hover:scale-105"
+            boxSize="md"
+            size={28}
+            className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-2xs rounded-2xl transition-transform duration-300 ease-in-out hover:scale-105"
           />
         </div>
       </div>
 
       {/* Pagination Dots & Prev/Next Controls */}
       {slides.length > 1 && (
-        <div className="px-4 sm:px-5.5 pb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
+        <div className="px-3 sm:px-3.5 pb-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1" role="tablist" aria-label={isEn ? 'Banner slides' : 'شرائح اللافتات'}>
             {slides.map((s, idx) => {
               const isCurrent = idx === activeIdx % slides.length;
               return (
@@ -434,22 +436,22 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
                   aria-selected={isCurrent}
                   aria-label={`${isEn ? 'Slide' : 'شريحة'} ${idx + 1}`}
                   onClick={() => setActiveIdx(idx)}
-                  className={`h-2.5 rounded-full transition-all duration-300 ease-in-out cursor-pointer ${
+                  className={`h-2 rounded-full transition-all duration-300 ease-in-out cursor-pointer ${
                     isCurrent
-                      ? 'w-7 bg-[#FF8C61]'
-                      : 'w-2.5 bg-[var(--color-text)]/30 hover:bg-[var(--color-text)]/50'
+                      ? 'w-5 bg-[#FF8C61]'
+                      : 'w-2 bg-[var(--color-text)]/30 hover:bg-[var(--color-text)]/50'
                   }`}
                 />
               );
             })}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setActiveIdx((prev) => (prev - 1 + slides.length) % slides.length)}
               aria-label={isEn ? 'Previous Slide' : 'الشريحة السابقة'}
-              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="w-6 h-6 rounded-lg bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? '‹' : '›'}
             </button>
@@ -457,7 +459,7 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
               type="button"
               onClick={() => setActiveIdx((prev) => (prev + 1) % slides.length)}
               aria-label={isEn ? 'Next Slide' : 'الشريحة التالية'}
-              className="w-7 h-7 rounded-xl bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="w-6 h-6 rounded-lg bg-white/85 dark:bg-[#142430] hover:bg-white dark:hover:bg-[#182C3A] border border-transparent dark:border-[#1E3646] text-[var(--color-text)] font-extrabold text-xs flex items-center justify-center shadow-2xs transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
             >
               {isEn ? '›' : '‹'}
             </button>
@@ -1019,9 +1021,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
       id={id}
       data-testid={testId}
       data-master-card="true"
-      className={`rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group ${className}`}
+      className={`rounded-2xl sm:rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2.5 sm:p-3 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
     >
-      <div className="space-y-2.5">
+      <div className="space-y-2">
         {/* Structured Top Image Thumbnail */}
         <div
           onClick={onThumbnailClick}
@@ -1039,7 +1041,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
           }
           data-image-card="true"
           style={{ backgroundImage: bgSpec.backgroundImageCss }}
-          className={`image-bg-card relative overflow-hidden rounded-2xl p-2.5 sm:p-3 min-h-[120px] sm:min-h-[130px] flex flex-col justify-between gap-2 shadow-xs ${
+          className={`image-bg-card relative overflow-hidden rounded-xl sm:rounded-2xl p-2 sm:p-2.5 min-h-[96px] sm:min-h-[104px] flex flex-col justify-between gap-1.5 shadow-2xs ${
             onThumbnailClick ? 'cursor-pointer' : ''
           } ${thumbnailClassName}`}
         >
@@ -1047,6 +1049,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
             src={resolvedStockUrl}
             alt={typeof title === 'string' ? title : ''}
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               const target = e.currentTarget;
               if (target.src !== bgSpec.imagePath) {
@@ -1065,24 +1068,24 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
             }}
           />
 
-          <div className="relative z-10 flex items-center justify-between gap-1.5">
-            <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[9.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
+          <div className="relative z-10 flex items-center justify-between gap-1">
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
               {topLeftBadge}
             </span>
             {topRightBadge && (
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1 shadow-2xs"
+                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[9px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
               >
                 {topRightBadge}
               </span>
             )}
           </div>
 
-          <div className="relative z-10 image-card-glass-panel rounded-xl px-2.5 py-1.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+          <div className="relative z-10 image-card-glass-panel rounded-xl px-2 py-1.5 flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
               {titlePrefixSlot && <div className="shrink-0">{titlePrefixSlot}</div>}
-              <h3 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
+              <h3 className="image-card-title text-xs sm:text-[13px] font-extrabold leading-snug line-clamp-2">
                 {title}
               </h3>
             </div>
@@ -1092,7 +1095,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Compact Metadata Strip */}
         {(metaLeft || metaRightAction) && (
-          <div className="flex items-center justify-between gap-1.5 text-[10.5px] font-bold text-[var(--color-muted)] px-0.5">
+          <div className="flex items-center justify-between gap-1 text-[10px] font-bold text-[var(--color-muted)] px-0.5">
             <div className="flex items-center gap-1 min-w-0 truncate">{metaLeft}</div>
             {metaRightAction && <div className="shrink-0">{metaRightAction}</div>}
           </div>
@@ -1100,7 +1103,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Optional Body Content */}
         {bodyContent && (
-          <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed px-0.5">
+          <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed px-0.5">
             {bodyContent}
           </div>
         )}
@@ -1108,7 +1111,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
       {/* Bottom Price/Metric + Action Buttons */}
       {(footerLeft || footerRight) && (
-        <div className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
           <div className="min-w-0">{footerLeft}</div>
           <div className="flex items-center gap-1.5 shrink-0">{footerRight}</div>
         </div>

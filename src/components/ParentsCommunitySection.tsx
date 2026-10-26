@@ -288,10 +288,83 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   const [newPostTopic, setNewPostTopic] = useState<CommunityPost['topicId']>('experiences');
   const [newPostAge, setNewPostAge] = useState<string>('2–5 سنوات');
 
+  // Short-Form Family Story Reels Preview State
+  const [activeStoryReelId, setActiveStoryReelId] = useState<string | null>(null);
+
+  const familyStoryReels = [
+    {
+      id: 'reel-expert-sleep',
+      authorAr: 'د. طارق النجار',
+      authorEn: 'Dr. Tarek El-Naggar',
+      roleAr: '🏅 استشاري طب الأطفال (موثّق)',
+      roleEn: '🏅 Certified Pediatrician',
+      isExpert: true,
+      duration: '0:45',
+      emoji: '🌙',
+      titleAr: 'سر الـ ٢٠ دقيقة الذهبية قبل نوم الطفل بدون سهر',
+      titleEn: 'The Golden 20-Minute Wind-Down Before Bedtime',
+      summaryAr: 'إطفاء الشاشات + إضاءة صفراء دافئة + قصة قصيرة يضبط الساعة البيولوجية لطفلك من ثالث يوم.',
+      summaryEn: 'Zero screens + warm amber lighting + a short story resets your toddler’s sleep cycle in 3 days.',
+      imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      id: 'reel-lunchbox',
+      authorAr: 'د. هبة عبد الرحمن',
+      authorEn: 'Dr. Heba Abdelrahman',
+      roleAr: '🏅 استشاري تغذية أطفال (موثّق)',
+      roleEn: '🏅 Pediatric Nutritionist',
+      isExpert: true,
+      duration: '0:38',
+      emoji: '🍱',
+      titleAr: '٣ أفكار لانش بوكس غنية بالحديد والتركيز للمدرسة',
+      titleEn: '3 Iron-Rich School Lunchbox Combos Kids Love',
+      summaryAr: 'شوفان بالتمر والسمسم + شرائح تفاح بالقرفة + ساندوتش جبنة قريش بالخضار الملون.',
+      summaryEn: 'Date-sesame oat bites + cinnamon apple slices + colorful veggie cottage cheese wraps.',
+      imageUrl: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      id: 'reel-montessori',
+      authorAr: 'أ. سارة المنيري',
+      authorEn: 'Sara El-Moneiry',
+      roleAr: '🏅 أخصائية مونتيسوري وتعديل سلوك',
+      roleEn: '🏅 Certified Montessori Specialist',
+      isExpert: true,
+      duration: '0:52',
+      emoji: '🧸',
+      titleAr: 'نشاط مونتيسوري منزلي بأدوات المطبخ لتنمية التركيز',
+      titleEn: '5-Minute Kitchen Montessori Sorting Activity',
+      summaryAr: 'تصنيف البقوليات أو الأغطية الملونة ينمي العضلات الدقيقة والانتباه بدون تكلفة.',
+      summaryEn: 'Sorting colorful lids or pasta shapes builds fine motor skills and calm focus.',
+      imageUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=600&q=80',
+    },
+    {
+      id: 'reel-nursery-mom',
+      authorAr: 'نهى محمود (ماما عمر)',
+      authorEn: 'Noha Mahmoud (Mom of Omar)',
+      roleAr: '🌟 تجربة أم مميزة',
+      roleEn: '🌟 Featured Parent Story',
+      isExpert: false,
+      duration: '0:30',
+      emoji: '🎒',
+      titleAr: 'روتيني الصباحي السريع لتجهيز الأولاد للحضانة في ١٥ دقيقة',
+      titleEn: 'Our 15-Minute Calm Morning Nursery Prep Routine',
+      summaryAr: 'تجهيز الشنط والملابس من بالليل واختيار الطفل لفاكهته المفضلة بيوفر نص الوقت الصبح!',
+      summaryEn: 'Prepping bags at night and letting kids pick their fruit saves half the morning rush!',
+      imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=600&q=80',
+    },
+  ];
+
+  const activeStoryReel = familyStoryReels.find((r) => r.id === activeStoryReelId) || null;
+
   const filteredPosts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return posts.filter((p) => {
-      if (topicFilter !== 'all' && p.topicId !== topicFilter) return false;
+      if (topicFilter === 'experts') {
+        const hasExpert = p.comments.some((c) => c.isVerifiedExpert);
+        if (!hasExpert) return false;
+      } else if (topicFilter !== 'all' && p.topicId !== topicFilter) {
+        return false;
+      }
       if (!q) return true;
       const haystack = `${p.titleAr} ${p.titleEn} ${p.bodyAr} ${p.bodyEn} ${p.authorAr}`.toLowerCase();
       return haystack.includes(q);
@@ -429,6 +502,143 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         ariaLabel={isEn ? 'Community Highlights Carousel' : 'لافتات مجتمع الآباء المتحركة'}
       />
 
+      {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
+      <div
+        id="community-story-reels-strip"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 soft-card-surface shadow-xs"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="space-y-0.5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[11px] font-extrabold">
+              <span>🎬</span>
+              <span>
+                {isEn
+                  ? 'Short Family Story Reels & Golden Verified Specialists'
+                  : 'قصص وريلز العيلة القصيرة · ونخبة أطباء وخبراء «نكبر» المعتمدين'}
+              </span>
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn
+                ? '60-Second Expert Tips & Real Parent Stories'
+                : 'كبسولات تربوية وطبية سريعة (Reels) مع الأطباء الموثقين بالشارة الذهبية 🏅'}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts')}
+            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+              topicFilter === 'experts'
+                ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
+                : 'border-amber-400/50 bg-amber-50/90 dark:bg-[#142430] text-amber-900 dark:text-amber-300 hover:border-amber-400'
+            }`}
+          >
+            <span>🏅</span>
+            <span>
+              {topicFilter === 'experts'
+                ? isEn
+                  ? 'Showing Verified Expert Replies ✓'
+                  : 'عرض استشارات الخبراء المعتمدين ✓'
+                : isEn
+                ? 'Filter Verified Expert Replies'
+                : 'عرض المنشورات الموثقة من الأطباء'}
+            </span>
+          </button>
+        </div>
+
+        {/* Horizontal Story Reels Strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {familyStoryReels.map((reel) => {
+            const isSelectedReel = activeStoryReelId === reel.id;
+            return (
+              <button
+                key={reel.id}
+                type="button"
+                onClick={() => setActiveStoryReelId(isSelectedReel ? null : reel.id)}
+                className={`group relative overflow-hidden rounded-2xl border text-start p-2.5 min-h-[116px] flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                  isSelectedReel
+                    ? 'border-amber-400 ring-2 ring-amber-400/30 scale-[1.01]'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] hover:border-amber-400/60 hover:scale-[1.01]'
+                }`}
+              >
+                <img
+                  src={reel.imageUrl}
+                  alt={isEn ? reel.titleEn : reel.titleAr}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(to top, rgba(11, 19, 26, 0.94) 0%, rgba(16, 29, 38, 0.58) 55%, rgba(11, 19, 26, 0.25) 100%)',
+                  }}
+                />
+
+                <div className="relative z-10 flex items-center justify-between gap-1 w-full">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[9px] font-black inline-flex items-center gap-1 ${
+                      reel.isExpert
+                        ? 'bg-amber-400 text-slate-950 shadow-2xs'
+                        : 'bg-teal-500 text-white'
+                    }`}
+                  >
+                    <span>{reel.isExpert ? '🏅' : '🌟'}</span>
+                    <span className="truncate max-w-[105px]">
+                      {isEn ? reel.roleEn.replace('🏅 ', '') : reel.roleAr.replace('🏅 ', '')}
+                    </span>
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-black/65 text-white text-[9px] font-extrabold tabular-nums">
+                    ▶ {reel.duration}
+                  </span>
+                </div>
+
+                <div className="relative z-10 space-y-0.5 pt-2">
+                  <div className="text-[10px] font-extrabold text-amber-300 truncate">
+                    {reel.emoji} {isEn ? reel.authorEn : reel.authorAr}
+                  </div>
+                  <div className="text-[11px] font-black text-white leading-snug line-clamp-2">
+                    {isEn ? reel.titleEn : reel.titleAr}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Story Reel Inline Viewer */}
+        {activeStoryReel && (
+          <div className="rounded-2xl border border-amber-400/50 bg-amber-50/85 dark:bg-[#142430] p-3.5 flex items-start justify-between gap-3 animate-fade-in">
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9.5px] font-black">
+                  {isEn ? activeStoryReel.roleEn : activeStoryReel.roleAr}
+                </span>
+                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? activeStoryReel.authorEn : activeStoryReel.authorAr}
+                </span>
+              </div>
+              <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {activeStoryReel.emoji} {isEn ? activeStoryReel.titleEn : activeStoryReel.titleAr}
+              </h4>
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                {isEn ? activeStoryReel.summaryEn : activeStoryReel.summaryAr}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveStoryReelId(null)}
+              aria-label={isEn ? 'Close story reel' : 'إغلاق القصة'}
+              className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0B131A] text-white flex items-center justify-center cursor-pointer shrink-0"
+            >
+              ×
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Post Composer Collapsible Card */}
       <CollapsibleSectionCard
         id="community-post-composer-accordion"
@@ -555,10 +765,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           </button>
         }
       >
-        <div className="space-y-3 pt-3">
-          <div className="flex flex-wrap items-center gap-1.5">
+        <div className="space-y-2.5 pt-2.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar pb-0.5">
             {[
               { id: 'all', labelAr: 'الكل', labelEn: 'All' },
+              { id: 'experts', labelAr: '🏅 ردود الأطباء والخبراء', labelEn: '🏅 Verified Experts' },
               { id: 'nursery', labelAr: '🏫 الحضانات', labelEn: '🏫 Nurseries' },
               { id: 'behavior', labelAr: '💛 السلوك', labelEn: '💛 Behavior' },
               { id: 'nutrition', labelAr: '🍎 التغذية', labelEn: '🍎 Nutrition' },
@@ -569,7 +780,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 key={tab.id}
                 type="button"
                 onClick={() => setTopicFilter(tab.id)}
-                className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+                className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                   topicFilter === tab.id
                     ? 'bg-[#0d9488] text-white shadow-2xs'
                     : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -723,24 +934,33 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                   {post.comments.map((c) => (
                     <div
                       key={c.id}
-                      className={`rounded-2xl p-3 text-xs space-y-1 ${
+                      className={`rounded-2xl p-3 text-xs space-y-1.5 ${
                         c.isVerifiedExpert
-                          ? 'bg-emerald-50/90 dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646]'
+                          ? 'bg-gradient-to-r from-amber-50/95 via-emerald-50/85 to-amber-50/90 dark:from-[#142430] dark:to-[#182C3A] border-2 border-amber-400/60 dark:border-amber-400/50 shadow-2xs'
                           : 'bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646]'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                          {isEn ? c.authorEn : c.authorAr}{' '}
-                          <span className="font-bold text-emerald-800 dark:text-[#2DD4BF]">
-                            · {isEn ? c.roleBadgeEn : c.roleBadgeAr}
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                            {isEn ? c.authorEn : c.authorAr}
                           </span>
-                        </span>
+                          {c.isVerifiedExpert ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black shadow-2xs">
+                              <span>🏅</span>
+                              <span>{isEn ? c.roleBadgeEn : c.roleBadgeAr}</span>
+                            </span>
+                          ) : (
+                            <span className="font-bold text-emerald-800 dark:text-[#2DD4BF]">
+                              · {isEn ? c.roleBadgeEn : c.roleBadgeAr}
+                            </span>
+                          )}
+                        </div>
                         <span dir="ltr" className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8] tabular-nums">
                           {c.timeLabel}
                         </span>
                       </div>
-                      <p className="text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+                      <p className="text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed font-semibold">
                         {isEn ? c.textEn : c.textAr}
                       </p>
                     </div>

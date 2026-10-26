@@ -35,6 +35,8 @@ export interface HomeDashboardSectionProps {
   todayFormattedCombined: string;
   userCoords: { lat: number; lng: number } | null;
   geoStatus: 'idle' | 'locating' | 'active';
+  bedtimeMode?: boolean;
+  onToggleBedtimeMode?: () => void;
   navigateTo: (page: PageId) => void;
   onSelectParentProfile: (role: 'mom' | 'dad') => void;
   onSelectPreciseCity: (combinedValue: string) => void;
@@ -42,6 +44,8 @@ export interface HomeDashboardSectionProps {
   onAddToCart: (item: CommercialCatalogItem) => void;
   onInspectCommercialItem?: (item: CommercialCatalogItem) => void;
   onAddProductToWishes?: (item: CommercialCatalogItem) => void;
+  onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null) => void;
+  onShowToast?: (msg: string) => void;
 }
 
 export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
@@ -54,6 +58,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   todayFormattedCombined,
   userCoords,
   geoStatus,
+  bedtimeMode = false,
+  onToggleBedtimeMode,
   navigateTo,
   onSelectParentProfile,
   onSelectPreciseCity,
@@ -61,10 +67,25 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onAddToCart,
   onInspectCommercialItem,
   onAddProductToWishes,
+  onAddSuggestedRoutineTask,
+  onShowToast,
 }) => {
   const [showAllHomeHubs, setShowAllHomeHubs] = useState<boolean>(false);
   const [homeFocusTab, setHomeFocusTab] = useState<'nearby' | 'children' | 'schedule'>('nearby');
   const [homeWishlistIds, setHomeWishlistIds] = useState<number[]>([]);
+  const [activeTipKidIdx, setActiveTipKidIdx] = useState<number>(0);
+  const [proactiveTipIndex, setProactiveTipIndex] = useState<number>(0);
+  const [homeAiPrompt, setHomeAiPrompt] = useState<string>('');
+  const [homeAiVoiceActive, setHomeAiVoiceActive] = useState<boolean>(false);
+  const [homeAiReply, setHomeAiReply] = useState<{
+    badgeAr: string;
+    badgeEn: string;
+    textAr: string;
+    textEn: string;
+    taskTitleAr: string;
+    taskTitleEn: string;
+    taskTime: string;
+  } | null>(null);
 
   const toggleHomeWishlist = (item: CommercialCatalogItem) => {
     setHomeWishlistIds((prev) =>
@@ -77,8 +98,139 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const isEn = lang === 'en';
   const brandName = t(lang, 'brandName');
-  const activeCity = state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة');
-  const localizedCity = locText(activeCity, lang);
+  const activeCountryCities = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
+  const resolvedHomeCityObj =
+    activeCountryCities.find(
+      (c) =>
+        c.id === state.city ||
+        (state.city && (c.id.includes(state.city) || state.city.includes(c.id)))
+    ) || activeCountryCities[0];
+  const activeCity = resolvedHomeCityObj.id;
+  const localizedCity = isEn ? resolvedHomeCityObj.nameEn : resolvedHomeCityObj.nameAr;
+
+  const activeTipKid = state.kids[activeTipKidIdx] || state.kids[0];
+  const activeTipKidAge = activeTipKid ? calculateChildAge(activeTipKid.birth, lang) : null;
+  const activeKidName = activeTipKid ? locText(activeTipKid.name, lang) : isEn ? 'Your Child' : 'طفلك';
+
+  const quickChildPromptChips = useMemo(() => {
+    const kAr = activeTipKid?.name || 'طفلي';
+    const kEn = activeTipKid ? locText(activeTipKid.name, 'en') : 'my child';
+    return [
+      {
+        id: 'sleep',
+        labelAr: `🌙 خطة نوم هادئ لـ ${kAr}`,
+        labelEn: `🌙 Calm Sleep Plan for ${kEn}`,
+        promptAr: `اقترح خطة نوم مسائية هادئة لـ ${kAr}`,
+        promptEn: `Suggest a calm evening sleep plan for ${kEn}`,
+      },
+      {
+        id: 'play',
+        labelAr: `🎨 أنشطة ذكاء ومونتيسوري لـ ${kAr}`,
+        labelEn: `🎨 Montessori Play for ${kEn}`,
+        promptAr: `اقترح ٣ أنشطة ذكاء ومونتيسوري لـ ${kAr} بدون شاشات`,
+        promptEn: `Suggest 3 screen-free Montessori activities for ${kEn}`,
+      },
+      {
+        id: 'nutrition',
+        labelAr: `🥦 وجبات تركيز ومناعة لـ ${kAr}`,
+        labelEn: `🥦 Healthy Meals for ${kEn}`,
+        promptAr: `اقترح جدول وجبات صحية لزيادة التركيز والمناعة لـ ${kAr}`,
+        promptEn: `Suggest healthy focus & immunity meals for ${kEn}`,
+      },
+      {
+        id: 'behavior',
+        labelAr: `💛 تعديل السلوك الإيجابي لـ ${kAr}`,
+        labelEn: `💛 Positive Behavior for ${kEn}`,
+        promptAr: `كيف أتعامل بهدوء مع العناد ونوبات الغضب عند ${kAr}؟`,
+        promptEn: `How to handle tantrums and build confidence for ${kEn}?`,
+      },
+    ];
+  }, [activeTipKid]);
+
+  const dynamicHomeChildPlans = useMemo(() => {
+    const kAr = activeTipKid?.name || 'طفلك';
+    const kEn = activeTipKid ? locText(activeTipKid.name, 'en') : 'your child';
+    const stageStr = activeTipKidAge?.label || (isEn ? '3–5 yrs' : '3–5 سنوات');
+    const interestsAr = activeTipKid?.interests || 'القصص والمكعبات';
+    const interestsEn = activeTipKid ? locText(activeTipKid.interests, 'en') : 'stories and blocks';
+
+    const plans = [
+      {
+        id: 'plan-evening',
+        badgeAr: `🌙 روتين المساء · ${stageStr}`,
+        badgeEn: `🌙 Evening Ritual · ${stageStr}`,
+        titleAr: `تهدئة المساء وقصة قبل النوم لـ ${kAr}`,
+        titleEn: `Calm Wind-Down & Storytime for ${kEn}`,
+        descAr: `إيقاف الشاشات 07:30 م + حمام دافئ وقراءة قصة قصيرة تناسب حب ${kAr} لـ (${interestsAr}).`,
+        descEn: `Zero screens at 07:30 PM + warm bath & short story tailored to ${kEn}'s love for ${interestsEn}.`,
+        time: '07:45 م',
+      },
+      {
+        id: 'plan-focus',
+        badgeAr: `🎨 تنمية المهارات · ${stageStr}`,
+        badgeEn: `🎨 Skill Growth · ${stageStr}`,
+        titleAr: `جلسة تركيز ولعب تفاعلي (٢٠ دقيقة) مع ${kAr}`,
+        titleEn: `20-Min Interactive Focus Play with ${kEn}`,
+        descAr: `نشاط عملي لتنمية الحصيلة اللغوية والمهارات الحركية لـ ${kAr} باستخدام (${interestsAr}).`,
+        descEn: `Hands-on vocabulary & motor skills session for ${kEn} built around ${interestsEn}.`,
+        time: '04:30 م',
+      },
+      {
+        id: 'plan-nutrition',
+        badgeAr: `🍎 تغذية صحية · ${stageStr}`,
+        badgeEn: `🍎 Smart Nutrition · ${stageStr}`,
+        titleAr: `وجبة الطاقة والتركيز الصباحية لـ ${kAr}`,
+        titleEn: `Morning Energy & Brain-Boost Meal for ${kEn}`,
+        descAr: `تحضير وجبة متوازنة غنية بالحديد والفيتامينات لدعم نمو ${kAr} في مرحلة ${stageStr}.`,
+        descEn: `Prepare an iron-rich balanced meal supporting ${kEn}'s growth at ${stageStr}.`,
+        time: '08:30 ص',
+      },
+      {
+        id: 'plan-autonomy',
+        badgeAr: `🌟 الاستقلالية · ${stageStr}`,
+        badgeEn: `🌟 Independence · ${stageStr}`,
+        titleAr: `تحدي الاعتماد على النفس اليومي لـ ${kAr}`,
+        titleEn: `Daily Self-Reliance Challenge for ${kEn}`,
+        descAr: `منح ${kAr} خيارين إيجابيين لترتيب ألعابه وتجهيز أدوات الغد مع تشجيع فوري.`,
+        descEn: `Give ${kEn} two positive choices to tidy toys and prep tomorrow's essentials.`,
+        time: '06:30 م',
+      },
+    ];
+
+    const offset = proactiveTipIndex % plans.length;
+    return [...plans.slice(offset), ...plans.slice(0, offset)].slice(0, 2);
+  }, [activeTipKid, activeTipKidAge, isEn, proactiveTipIndex]);
+
+  const handleSendHomeAiQuery = (customQuery?: string) => {
+    const query = (customQuery ?? homeAiPrompt).trim();
+    if (!query) return;
+    const kAr = activeTipKid?.name || 'طفلك';
+    const kEn = activeTipKid ? locText(activeTipKid.name, 'en') : 'your child';
+    const stageStr = activeTipKidAge?.label || (isEn ? '3–5 yrs' : '3–5 سنوات');
+
+    setHomeAiReply({
+      badgeAr: `خطة ذكية فورية لـ ${kAr} (${stageStr})`,
+      badgeEn: `Instant AI Blueprint for ${kEn} (${stageStr})`,
+      textAr: `بناءً على سؤالك «${query}»، ينصح المساعد الذكي بتقسيم الخطوات لـ ${kAr} إلى روتين يومي ثابت مدته ١٥ دقيقة مع تشجيع إيجابي وبدون شاشات.`,
+      textEn: `Based on "${query}", our AI recommends a consistent 15-minute screen-free daily habit for ${kEn} with positive reinforcement.`,
+      taskTitleAr: `تطبيق خطة المساعد الذكي لـ ${kAr}: ${query.slice(0, 32)}`,
+      taskTitleEn: `AI Action Step for ${kEn}: ${query.slice(0, 32)}`,
+      taskTime: '06:00 م',
+    });
+    setHomeAiPrompt('');
+    setHomeAiVoiceActive(false);
+  };
+
+  const handleToggleHomeVoiceMic = () => {
+    if (!homeAiVoiceActive) {
+      setHomeAiVoiceActive(true);
+      const sample = quickChildPromptChips[proactiveTipIndex % quickChildPromptChips.length];
+      setHomeAiPrompt(isEn ? sample.promptEn : sample.promptAr);
+    } else {
+      setHomeAiVoiceActive(false);
+      handleSendHomeAiQuery(homeAiPrompt);
+    }
+  };
 
   // Compact Auto-Play Hero Carousel Slides at the very top of the Home Screen
   const heroSlides: BannerSlideItem[] = useMemo(
@@ -90,9 +242,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           ? `${parentProfileSpec.greetingEn} — Your Family Daily Hub`
           : `${parentProfileSpec.greetingAr} — مساحة أسرتك المتكاملة اليوم`,
         subtitle: isEn
-          ? `${brandName} · Everything your family needs for child health, daily routines & trusted care in ${localizedCity}.`
-          : `${brandName} · كل ما تحتاجه أسرتك لصحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر في ${localizedCity}.`,
-        ctaLabel: isEn ? 'Explore Medical Care' : 'استكشف الرعاية الطبية',
+          ? `Child health, daily routines & trusted care in ${localizedCity}.`
+          : `صحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر في ${localizedCity}.`,
+        ctaLabel: isEn ? 'Medical Care' : 'الرعاية الطبية',
         onCtaClick: () => navigateTo('medical'),
         iconId: 'health',
         gradient: 'from-teal-50 to-sky-50',
@@ -100,14 +252,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       },
       {
         id: 'hero-top-article',
-        badge: isEn ? `${brandName} · Top Pediatric Article` : `${brandName} · مقال طبي وتربوي مميز`,
+        badge: isEn ? `${brandName} · Pediatric Guide` : `${brandName} · دليل النمو والتطعيمات`,
         title: isEn
-          ? 'Vaccination & Developmental Milestones Guide (Day 1 – 8 Years)'
+          ? 'Vaccination & Developmental Milestones (Day 1 – 8 Years)'
           : 'دليل التطعيمات ومراحل النمو الصحي للطفل (من أول يوم حتى 8 سنوات)',
         subtitle: isEn
-          ? 'Track height, weight, sleep habits, and book verified pediatricians directly in your city.'
-          : 'تابع جدول التطعيمات، الطول والوزن، عادات النوم، واحجز موعدك مباشرة مع نخبة أطباء الأطفال.',
-        ctaLabel: isEn ? 'Manage 3D Child Profiles' : 'إدارة ملفات الأطفال 3D',
+          ? 'Track height, weight, sleep habits, and book verified pediatricians.'
+          : 'تابع جدول التطعيمات، الطول والوزن، واحجز موعدك مع نخبة أطباء الأطفال.',
+        ctaLabel: isEn ? '3D Child Profiles' : 'ملفات الأطفال 3D',
         onCtaClick: () => navigateTo('children'),
         iconId: 'children',
         gradient: 'from-emerald-50 to-teal-50',
@@ -115,33 +267,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       },
       {
         id: 'hero-store-promo',
-        badge: isEn ? `${brandName} · Featured Promotion` : `${brandName} · عروض متجر الأسرة المميزة`,
+        badge: isEn ? `${brandName} · Family Store` : `${brandName} · عروض متجر الأسرة`,
         title: isEn
-          ? `Curated Nurseries, Montessori Toys & Baby Essentials in ${localizedCity}`
-          : `عروض مختارة على الحضانات والألعاب التعليمية ومستلزمات الطفل في ${localizedCity}`,
+          ? `Nurseries, Montessori Toys & Baby Essentials in ${localizedCity}`
+          : `حضانات وألعاب مونتيسوري ومستلزمات الطفل في ${localizedCity}`,
         subtitle: isEn
-          ? 'Sorted dynamically by proximity to your city with Cash on Delivery & live order tracking.'
-          : 'مرتبة تلقائيًا حسب الأقرب لمدينتك مع خيارات الدفع عند الاستلام وتتبع الطلبات مباشرة.',
-        ctaLabel: isEn ? 'Shop Family Store' : 'تسوّق متجر الأسرة',
+          ? 'Sorted dynamically by proximity to your city with live order tracking.'
+          : 'مرتبة تلقائيًا حسب الأقرب لمدينتك مع تتبع الطلبات مباشرة.',
+        ctaLabel: isEn ? 'Shop Store' : 'تسوّق المتجر',
         onCtaClick: () => navigateTo('services'),
         iconId: 'services',
         gradient: 'from-orange-50 to-amber-50',
         ctaVariant: 'orange',
-      },
-      {
-        id: 'hero-ai-reels',
-        badge: isEn ? `${brandName} · 9:16 Reels & AI Agent` : `${brandName} · الريلز التربوية والمساعد الذكي`,
-        title: isEn
-          ? '60-Second Visual Parenting Tips & Instant AI Routine Planner'
-          : 'نصائح تربوية سريعة في 60 ثانية وتخطيط ذكي للروتين اليومي بالذكاء الاصطناعي',
-        subtitle: isEn
-          ? 'Watch bite-sized expert reels or ask our AI Parenting Agent for age-tailored daily schedules.'
-          : 'شاهد فيديوهات الريلز القصيرة أو استشر المساعد الذكي لتصميم جدول يومي مخصص لعمر طفلك.',
-        ctaLabel: isEn ? 'Ask AI Parenting Agent' : 'استشر المساعد الذكي AI',
-        onCtaClick: () => navigateTo('assistant'),
-        iconId: 'assistant',
-        gradient: 'from-cyan-50 to-teal-50',
-        ctaVariant: 'blue',
       },
     ],
     [brandName, isEn, parentProfileSpec, localizedCity, state.role, navigateTo]
@@ -153,26 +290,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   );
 
   return (
-    <section className="space-y-5" aria-label={isEn ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
-      {/* 1. AUTO-PLAY HERO CAROUSEL AT THE VERY TOP */}
-      <SwipeableBannerCarousel
-        slides={heroSlides}
-        language={lang}
-        darkMode={Boolean(state.darkMode)}
-        autoPlayMs={4500}
-        ariaLabel={isEn ? `${brandName} Featured Announcements Carousel` : `لافتات ${brandName} الترويجية المتحركة`}
-      />
-
-      {/* 2. SLEEK LIVE WEATHER WIDGET STRIP (Current Temp, Condition & Mini Today/Tomorrow Forecast) */}
-      <LiveWeatherWidget
-        city={activeCity}
-        country={state.country}
-        language={lang}
-        darkMode={Boolean(state.darkMode)}
-        userCoords={userCoords}
-      />
-
-      {/* 3. PERSONALIZED GREETING & CORE VALUE PROPOSITION HERO */}
+    <section className="space-y-3.5" aria-label={isEn ? 'Home Dashboard' : 'الشاشة الرئيسية'}>
+      {/* 1. COMPACT PRIMARY HERO CARD AT THE TOP OF HOME SCREEN */}
       <div
         id="home-core-value-hero"
         data-testid="home-core-value-hero"
@@ -181,12 +300,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           backgroundImage: heroBgSpec.backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
-        className="image-bg-card rounded-[24px] p-5 sm:p-6 flex flex-col justify-between gap-4"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col justify-between gap-2.5"
       >
-        <div className="space-y-3.5 max-w-3xl">
-          {/* Top Personalized Greeting Badge & Parent Profile Switcher */}
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
+        <div className="space-y-2">
+          {/* Top Compact Personalized Greeting Row & Parent Profile Switcher */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
               <span
                 id="hero-parent-role-badge"
                 style={{
@@ -194,37 +313,37 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   color: parentProfileSpec.badgeTextCss,
                   borderColor: parentProfileSpec.badgeBorderCss,
                 }}
-                className="px-3.5 py-1 rounded-full text-xs font-extrabold border shadow-2xs inline-flex items-center gap-1.5"
+                className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shadow-2xs inline-flex items-center gap-1 shrink-0"
               >
-                <ThreeDIcon id="family" size={15} />
+                <ThreeDIcon id="family" size={12} />
                 <span>
                   {isEn ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}
                 </span>
               </span>
-              <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
-                <ThreeDIcon id="home" size={14} />
-                <span>{brandName}</span>
+              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold inline-flex items-center gap-1 shrink-0">
+                <ThreeDIcon id="home" size={12} />
+                <span>{brandName} · 📍 {localizedCity}</span>
               </span>
             </div>
 
-            {/* Instant Parent Profile Switcher: Father (Teal/Slate Blue) vs. Mother (Soft Coral/Warm Rose) */}
+            {/* Instant Parent Profile Switcher: Father vs. Mother */}
             <div
               role="group"
               aria-label={isEn ? 'Switch Parent Profile' : 'التبديل بين حساب الأب وحساب الأم'}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-surface)]/90 backdrop-blur-md p-1 border border-[var(--color-border)] shadow-2xs"
+              className="inline-flex items-center gap-1 rounded-full bg-[var(--color-surface)]/90 dark:bg-[#101D26]/95 backdrop-blur-md p-0.5 border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xs"
             >
               <button
                 id="switch-parent-dad-btn"
                 type="button"
                 onClick={() => onSelectParentProfile('dad')}
                 aria-pressed={state.role === 'dad'}
-                className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
                   state.role === 'dad'
                     ? 'bg-[#0d9488] text-white shadow-2xs'
                     : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
-                <ThreeDIcon id="shield" size={14} />
+                <ThreeDIcon id="shield" size={12} />
                 <span>{isEn ? 'Dad (Ahmed)' : 'بابا (أحمد)'}</span>
               </button>
               <button
@@ -232,62 +351,347 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 type="button"
                 onClick={() => onSelectParentProfile('mom')}
                 aria-pressed={state.role !== 'dad'}
-                className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all flex items-center gap-1.5 ${
+                className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
                   state.role !== 'dad'
                     ? 'bg-[#E86A3D] text-white shadow-2xs'
                     : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
-                <ThreeDIcon id="family" size={14} />
+                <ThreeDIcon id="family" size={12} />
                 <span>{isEn ? 'Mom (Sara)' : 'ماما (سارة)'}</span>
               </button>
             </div>
           </div>
 
-          {/* Personalized Greeting & Strictly Single-Language Brand Tagline */}
-          <div className="space-y-2">
+          {/* Compact Single-Line Greeting & Subtitle */}
+          <div className="space-y-0.5">
             <h1
               id="home-main-greeting-heading"
-              className="image-card-title text-2xl sm:text-4xl font-extrabold leading-tight"
+              className="image-card-title text-base sm:text-xl font-extrabold leading-snug"
             >
-              {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
+              {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr} —{' '}
+              <span className="text-xs sm:text-sm font-bold opacity-95">
+                {isEn
+                  ? 'Child Health, Smart Routines & Trusted Care'
+                  : 'صحة طفلك، روتينه اليومي، وأفضل الأطباء والمتاجر'}
+              </span>
             </h1>
-            <p className="image-card-title text-base sm:text-xl font-extrabold leading-snug">
-              {isEn
-                ? `${brandName} · Everything Your Family Needs for Child Health, Daily Routines & Trusted Care`
-                : `${brandName} · كل اللي عيلتك محتاجاه لصحة طفلك، روتينه اليومي، وأشطر الدكاترة والحضانات والمتاجر الموثوقة`}
-            </p>
           </div>
 
-          <p className="image-card-subtitle text-xs sm:text-sm font-semibold leading-relaxed max-w-2xl">
-            {isEn
-              ? 'Personalized for ages Day 1 to 8 Years · Instant pediatric booking, smart AI routine planning, and verified family stores.'
-              : 'تجربة هادية ومظبوطة على سن طفلك من أول يوم لحد 8 سنين · حجز دكاترة أطفال معتمدين، مساعد ذكي للروتين، ومتجر متكامل لبيتك.'}
-          </p>
-
-          <div className="pt-1 flex flex-wrap items-center gap-2.5">
-            <PrimaryCtaButton variant="teal" size="md" onClick={() => navigateTo('medical')}>
-              <ThreeDIcon id="health" size={16} />
-              <span>{isEn ? 'Book Pediatrician' : 'احجز دكتور أطفال'}</span>
+          {/* Horizontal Scrollable Quick Action Carousel Strip */}
+          <div className="pt-0.5 flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+            <PrimaryCtaButton variant="teal" size="sm" onClick={() => navigateTo('medical')}>
+              <ThreeDIcon id="health" size={13} />
+              <span>{isEn ? 'Book Doctor' : 'احجز دكتور أطفال'}</span>
             </PrimaryCtaButton>
-            <PrimaryCtaButton variant="orange" size="md" onClick={() => navigateTo('services')}>
-              <ThreeDIcon id="services" size={16} />
-              <span>{isEn ? 'Explore Family Store' : 'اتسوق من متجر الأسرة'}</span>
+            <PrimaryCtaButton variant="orange" size="sm" onClick={() => navigateTo('services')}>
+              <ThreeDIcon id="services" size={13} />
+              <span>{isEn ? 'Family Store' : 'متجر الأسرة'}</span>
             </PrimaryCtaButton>
             <button
               type="button"
               onClick={() => navigateTo('assistant')}
-              className="image-card-badge min-h-[40px] px-4 py-2 rounded-xl text-xs font-extrabold hover:opacity-95 transition-opacity inline-flex items-center gap-1.5"
+              className="image-card-badge min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold hover:opacity-95 transition-opacity inline-flex items-center gap-1 shrink-0 cursor-pointer"
             >
-              <ThreeDIcon id="assistant" size={15} />
-              <span>{isEn ? 'Smart AI Assistant' : 'اسأل المساعد الذكي AI'}</span>
+              <ThreeDIcon id="assistant" size={13} />
+              <span>{isEn ? 'Full AI Studio' : 'استوديو المساعد الذكي'}</span>
             </button>
+            {onToggleBedtimeMode && (
+              <button
+                type="button"
+                onClick={onToggleBedtimeMode}
+                aria-pressed={Boolean(bedtimeMode)}
+                className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
+                  bedtimeMode
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-2xs'
+                    : 'image-card-badge hover:opacity-95'
+                }`}
+              >
+                <span>🕯️</span>
+                <span>
+                  {bedtimeMode
+                    ? isEn
+                      ? 'Bedtime Active'
+                      : 'وضع النوم مفعّل'
+                    : isEn
+                    ? 'Bedtime Mode'
+                    : 'وضع وقت النوم'}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 3. CORE HUBS GRID WITH UNIFIED SOFT-FILLED ICONOGRAPHY */}
-      <div className="space-y-5">
+      {/* 2. INTERACTIVE AI ASSISTANT CHAT BOX & DYNAMIC CHILD PLANS DIRECTLY BELOW TOP HERO CARD */}
+      <div
+        id="home-inline-ai-assistant"
+        data-testid="home-inline-ai-assistant"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 sm:p-4 space-y-2.5 soft-card-surface shadow-sm"
+      >
+        {/* Header + Registered Child Selector Carousel */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488]/20 to-[#FF8C61]/25 border border-[#0d9488]/30 flex items-center justify-center shrink-0">
+              <ThreeDIcon id="assistant" size={18} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                🤖 {isEn ? `Smart AI Assistant for ${activeKidName}` : `المساعد الذكي السريع لـ ${activeKidName}`}
+              </h2>
+              <p className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+                {isEn
+                  ? `Ask anything or tap a quick chip tailored to ${activeKidName} (${activeTipKidAge?.label || '3–5 yrs'})`
+                  : `اسأل مباشرة أو اختر اقتراحًا مخصصًا لـ ${activeKidName} (${activeTipKidAge?.label || '3–5 سنوات'})`}
+              </p>
+            </div>
+          </div>
+
+          {/* Horizontal Scrollable Child Profile Selector Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+            {state.kids.map((kid, idx) => {
+              const isSelected = activeTipKid?.id === kid.id;
+              return (
+                <button
+                  key={kid.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveTipKidIdx(idx);
+                    setProactiveTipIndex(0);
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border transition-all shrink-0 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                  }`}
+                >
+                  👶 {locText(kid.name, lang)}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => navigateTo('assistant')}
+              className="px-2.5 py-1 rounded-xl text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[#0d9488] dark:text-[#2DD4BF] hover:border-[#0d9488] shrink-0 cursor-pointer"
+            >
+              {isEn ? 'Full Chat →' : 'المحادثة الكاملة ←'}
+            </button>
+          </div>
+        </div>
+
+        {/* Horizontal Scrollable Quick Recommendation Chips Based on Child Names */}
+        <div
+          role="region"
+          aria-label={isEn ? 'Child AI Recommendation Chips' : 'شريط توصيات المساعد الذكي باسم الطفل'}
+          className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar pb-0.5"
+        >
+          {quickChildPromptChips.map((chip) => (
+            <button
+              key={chip.id}
+              type="button"
+              data-testid={`home-ai-chip-${chip.id}`}
+              onClick={() => handleSendHomeAiQuery(isEn ? chip.promptEn : chip.promptAr)}
+              className="px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#FF8C61] transition-all shrink-0 cursor-pointer"
+            >
+              {isEn ? chip.labelEn : chip.labelAr}
+            </button>
+          ))}
+        </div>
+
+        {/* Interactive AI Input Bar with Clean Microphone Icon (🎤) */}
+        <div className="flex items-center gap-1.5">
+          <button
+            id="home-ai-voice-mic-btn"
+            data-testid="home-ai-voice-mic-btn"
+            type="button"
+            onClick={handleToggleHomeVoiceMic}
+            aria-pressed={homeAiVoiceActive}
+            aria-label={isEn ? 'Voice input microphone' : 'ميكروفون التحدث الصوتي'}
+            title={isEn ? 'Voice Input' : 'إدخال صوتي بالمايكروفون'}
+            className={`w-9 h-9 rounded-xl text-sm font-extrabold border transition-all flex items-center justify-center shrink-0 cursor-pointer ${
+              homeAiVoiceActive
+                ? 'bg-rose-600 text-white border-rose-500 animate-pulse shadow-sm'
+                : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+            }`}
+          >
+            <span aria-hidden="true">{homeAiVoiceActive ? '⏹️' : '🎤'}</span>
+          </button>
+
+          <input
+            type="text"
+            value={homeAiPrompt}
+            onChange={(e) => setHomeAiPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleSendHomeAiQuery();
+              }
+            }}
+            placeholder={
+              isEn
+                ? `Ask AI about ${activeKidName}'s routine, sleep, or tap 🎤...`
+                : `اسأل المساعد الذكي عن ${activeKidName} أو اضغط 🎤...`
+            }
+            className="flex-1 min-w-0 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+          />
+
+          <button
+            type="button"
+            data-testid="home-ai-send-btn"
+            onClick={() => handleSendHomeAiQuery()}
+            className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold shrink-0 transition-all active:scale-95 cursor-pointer"
+          >
+            {isEn ? 'Ask ✨' : 'اسأل ✨'}
+          </button>
+        </div>
+
+        {/* Instant AI Reply Bubble if user asked or tapped a chip */}
+        {homeAiReply && (
+          <div
+            data-testid="home-ai-instant-reply"
+            className="rounded-xl border border-[#0d9488]/40 dark:border-[#1E3646] bg-teal-50/70 dark:bg-[#142430] p-2.5 space-y-1.5 animate-page-enter"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                ✨ {isEn ? homeAiReply.badgeEn : homeAiReply.badgeAr}
+              </span>
+              <button
+                type="button"
+                onClick={() => setHomeAiReply(null)}
+                aria-label={isEn ? 'Dismiss AI reply' : 'إغلاق الرد'}
+                className="w-6 h-6 rounded-lg bg-white/80 dark:bg-[#101D26] text-[var(--color-text)] text-xs font-black flex items-center justify-center cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+              {isEn ? homeAiReply.textEn : homeAiReply.textAr}
+            </p>
+            {onAddSuggestedRoutineTask && (
+              <div className="pt-0.5 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddSuggestedRoutineTask(
+                      isEn ? homeAiReply.taskTitleEn : homeAiReply.taskTitleAr,
+                      homeAiReply.taskTime,
+                      activeTipKid?.id || null
+                    );
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-[#0d9488] text-white text-[10.5px] font-extrabold cursor-pointer"
+                >
+                  + {isEn ? 'Add to Daily Routine' : 'أضف لجدول الروتين اليومي'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Personalized Family Action Plans Positioned Directly Beneath the Chat Interface */}
+        <div
+          id="home-proactive-family-tips"
+          data-testid="home-proactive-family-tips"
+          className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] space-y-2"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+              📋{' '}
+              {isEn
+                ? `Personalized Action Plans for ${activeKidName} (${activeTipKidAge?.label || '3–5 yrs'})`
+                : `خطط العمل اليومية المخصصة لـ ${activeKidName} (${activeTipKidAge?.label || '3–5 سنوات'})`}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setProactiveTipIndex((prev) => prev + 1);
+                onShowToast?.(
+                  isEn
+                    ? `Extended fresh plans for ${activeKidName}!`
+                    : `تم توليد خطط إضافية مخصصة لـ ${activeKidName}!`
+                );
+              }}
+              className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] transition-all cursor-pointer"
+            >
+              🔄 {isEn ? 'Extend Plans' : 'توليد خطة إضافية'}
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {dynamicHomeChildPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/55 dark:bg-[#142430] p-2.5 flex flex-col justify-between gap-2"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-extrabold">
+                      {isEn ? plan.badgeEn : plan.badgeAr}
+                    </span>
+                    <span className="text-[10px] font-bold text-[var(--color-muted)] tabular-nums">
+                      🕒 {plan.time}
+                    </span>
+                  </div>
+                  <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                    {isEn ? plan.titleEn : plan.titleAr}
+                  </h3>
+                  <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug line-clamp-2">
+                    {isEn ? plan.descEn : plan.descAr}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    onClick={() => handleSendHomeAiQuery(isEn ? plan.titleEn : plan.titleAr)}
+                    className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                  >
+                    {isEn ? 'Customize in Chat' : 'تخصيص في المحادثة'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onAddSuggestedRoutineTask) {
+                        onAddSuggestedRoutineTask(
+                          isEn ? plan.titleEn : plan.titleAr,
+                          plan.time,
+                          activeTipKid?.id || null
+                        );
+                      } else {
+                        navigateTo('routine');
+                      }
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-[10px] font-extrabold transition-all active:scale-95 cursor-pointer"
+                  >
+                    + {isEn ? 'Add to Routine' : 'أضف للروتين'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. SLEEK LIVE WEATHER WIDGET STRIP (Current Temp, Condition & Interactive 5-Day Forecast) */}
+      <LiveWeatherWidget
+        city={activeCity}
+        country={state.country}
+        language={lang}
+        darkMode={Boolean(state.darkMode)}
+        userCoords={userCoords}
+        onSelectCity={(cCode, cName) => onSelectPreciseCity(`${cCode}:${cName}`)}
+      />
+
+      {/* 4. COMPACT AUTO-PLAY HIGHLIGHTS CAROUSEL */}
+      <SwipeableBannerCarousel
+        slides={heroSlides}
+        language={lang}
+        darkMode={Boolean(state.darkMode)}
+        autoPlayMs={4500}
+        ariaLabel={isEn ? `${brandName} Featured Announcements Carousel` : `لافتات ${brandName} الترويجية المتحركة`}
+      />
+
+      {/* 5. CORE HUBS GRID WITH UNIFIED SOFT-FILLED ICONOGRAPHY */}
+      <div className="space-y-3.5">
         <div className="section-heading-block">
           <h2 className="section-heading-centered">
             {isEn ? 'Quick Family Picks' : 'مختارات الأسرة السريعة'}
@@ -565,22 +969,23 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   >
                     {isEn ? '🇪🇬 Egypt (27)' : '🇪🇬 مصر (٢٧ محافظة)'}
                   </button>
-                  <button
-                    id="home-country-sa-btn"
-                    type="button"
-                    onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
-                    aria-pressed={state.country === 'SA'}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
-                      state.country === 'SA'
-                        ? 'bg-[#0d9488] text-white shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية'}
-                  </button>
-                </div>
+                <button
+                  id="home-country-sa-btn"
+                  type="button"
+                  onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                  aria-pressed={state.country === 'SA'}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                    state.country === 'SA'
+                      ? 'bg-[#0d9488] text-white shadow-2xs'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  {isEn ? '🇸🇦 Saudi Arabia (15 · SAR)' : '🇸🇦 السعودية (١٥ منطقة · SAR)'}
+                </button>
+              </div>
 
-                {/* Step 2: Dynamic Governorate / Region Selector for the Selected Country */}
+              {/* Step 2: Dynamic Governorate / Region Selector Right Beside GPS Button */}
+              <div className="flex flex-wrap items-center gap-2">
                 <label
                   htmlFor="home-city-filter-select"
                   className="text-xs font-extrabold text-[var(--color-text)] inline-flex items-center gap-1"
@@ -592,17 +997,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         ? 'Governorate:'
                         : 'المحافظة:'
                       : isEn
-                      ? 'Region / Governorate:'
-                      : 'المنطقة / المحافظة:'}
+                      ? 'Region / City:'
+                      : 'المنطقة / المدينة:'}
                   </span>
                 </label>
                 <select
                   id="home-city-filter-select"
                   value={`${state.country}:${activeCity}`}
                   onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)]"
+                  className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[var(--color-accent)] cursor-pointer"
                 >
-                  {(COUNTRY_CITIES_MAP[state.country] || []).map((c, idx) => (
+                  {activeCountryCities.map((c, idx) => (
                     <option key={`${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
                       {isEn
                         ? `${idx + 1}. ${c.nameEn}`
@@ -637,6 +1042,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </span>
                 </button>
               </div>
+            </div>
 
               <button
                 type="button"

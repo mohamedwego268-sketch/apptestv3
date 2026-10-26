@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   COMMERCIAL_CATALOG,
   CartItem,
@@ -194,11 +194,61 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [testCardCvv, setTestCardCvv] = useState('888');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [confirmedOrderSnapshot, setConfirmedOrderSnapshot] = useState<DemoOrder | null>(null);
-  const [showLiveTracking, setShowLiveTracking] = useState(false);
+  const [showLiveTracking, setShowLiveTracking] = useState(true);
   const [trackingStageIdx, setTrackingStageIdx] = useState<DeliveryStageIndex>(2);
+  const [isAutoSimulatingDelivery, setIsAutoSimulatingDelivery] = useState<boolean>(false);
   const [driverInstructionNote, setDriverInstructionNote] = useState(
     isEn ? 'Leave at door / Don’t ring bell (baby sleeping)' : 'يرجى الاتصال عند الوصول وعدم رن الجرس (الطفل نائم)'
   );
+
+  // Smart Product Comparison State (up to 3 items side-by-side)
+  const [compareIds, setCompareIds] = useState<number[]>([
+    COMMERCIAL_CATALOG[0]?.id ?? 1,
+    COMMERCIAL_CATALOG[1]?.id ?? 2,
+  ]);
+  const [showComparePanel, setShowComparePanel] = useState<boolean>(false);
+
+  const comparedItems = COMMERCIAL_CATALOG.filter((item) => compareIds.includes(item.id));
+
+  const handleToggleCompareItem = (item: CommercialCatalogItem) => {
+    setCompareIds((prev) => {
+      if (prev.includes(item.id)) {
+        const next = prev.filter((id) => id !== item.id);
+        onShowToast(
+          isEn
+            ? `Removed "${item.nameEn}" from comparison`
+            : `تمت إزالة «${item.name}» من المقارنة الذكية`
+        );
+        return next;
+      }
+      if (prev.length >= 3) {
+        const next = [...prev.slice(1), item.id];
+        setShowComparePanel(true);
+        onShowToast(
+          isEn
+            ? `Added "${item.nameEn}" to Smart Comparison (3/3)`
+            : `تمت إضافة «${item.name}» للمقارنة الذكية (٣ منتجات)`
+        );
+        return next;
+      }
+      const next = [...prev, item.id];
+      setShowComparePanel(true);
+      onShowToast(
+        isEn
+          ? `Added "${item.nameEn}" to Smart Comparison (${next.length}/3)`
+          : `تمت إضافة «${item.name}» لجدول المقارنة الذكية (${next.length}/3)`
+      );
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (!isAutoSimulatingDelivery) return;
+    const timer = window.setInterval(() => {
+      setTrackingStageIdx((prev) => ((prev + 1) % 4) as DeliveryStageIndex);
+    }, 2400);
+    return () => window.clearInterval(timer);
+  }, [isAutoSimulatingDelivery]);
 
   // Dedicated Full-Page Category View state (null = Categorized Horizontal Rows overview)
   const [activeCategoryPageId, setActiveCategoryPageId] = useState<string | null>(null);
@@ -388,11 +438,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[244px] sm:w-[268px] shrink-0'
+            ? 'w-[216px] sm:w-[238px] shrink-0'
             : 'w-full'
-        } rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-3 sm:p-3.5 flex flex-col justify-between gap-2.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all group`}
+        } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2.5 sm:p-3 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
       >
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
           <div
             onClick={() => onInspectCommercialItem(item)}
@@ -406,12 +456,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card relative overflow-hidden rounded-2xl p-2.5 sm:p-3 min-h-[124px] sm:min-h-[134px] aspect-[16/10] cursor-pointer flex flex-col justify-between gap-2 shadow-xs"
+            className="image-bg-card relative overflow-hidden rounded-xl sm:rounded-2xl p-2 sm:p-2.5 min-h-[96px] sm:min-h-[106px] cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs"
           >
             <img
               src={stockImageUrl}
               alt={displayTitle}
               loading="lazy"
+              decoding="async"
               onError={(e) => {
                 const target = e.currentTarget;
                 if (target.src !== itemBgSpec.imagePath) {
@@ -431,21 +482,21 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               }}
             />
 
-            <div className="relative z-10 flex items-center justify-between gap-1.5">
-              <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[9px] sm:text-[9.5px] font-extrabold truncate shadow-2xs">
+            <div className="relative z-10 flex items-center justify-between gap-1">
+              <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] font-extrabold truncate shadow-2xs">
                 {item.emoji} {locText(item.categoryLabel, language)}
               </span>
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[9.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-1 shadow-2xs"
+                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[9px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
               >
                 <span>⭐ {item.rating}</span>
                 <span className="opacity-85">({revCount})</span>
               </span>
             </div>
 
-            <div className="relative z-10 image-card-glass-panel rounded-xl px-2.5 py-1.5 flex items-end justify-between gap-1.5">
-              <h4 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-2">
+            <div className="relative z-10 image-card-glass-panel rounded-xl px-2 py-1.5 flex items-end justify-between gap-1.5">
+              <h4 className="image-card-title text-xs sm:text-[13px] font-extrabold leading-snug line-clamp-2">
                 {displayTitle}
               </h4>
             </div>
@@ -493,6 +544,39 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Smart Product Comparison Toggle Button */}
+            <button
+              type="button"
+              onClick={() => handleToggleCompareItem(item)}
+              aria-pressed={compareIds.includes(item.id)}
+              title={
+                compareIds.includes(item.id)
+                  ? isEn
+                    ? 'In Comparison (Tap to remove)'
+                    : 'مضاف للمقارنة (اضغط للإزالة)'
+                  : isEn
+                  ? 'Compare Product Specs'
+                  : 'قارن مواصفات وسعر المنتج'
+              }
+              aria-label={isEn ? 'Compare Product' : 'مقارنة المنتج'}
+              className={`h-8 px-2 rounded-xl border text-[10px] font-extrabold flex items-center justify-center gap-1 shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer ${
+                compareIds.includes(item.id)
+                  ? 'border-[#0d9488] bg-[#0d9488] text-white'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#0d9488]'
+              }`}
+            >
+              <span>⚖️</span>
+              <span className="hidden sm:inline">
+                {compareIds.includes(item.id)
+                  ? isEn
+                    ? 'Comparing'
+                    : 'في المقارنة'
+                  : isEn
+                  ? 'Compare'
+                  : 'قارن'}
+              </span>
+            </button>
+
             {/* Minimalist Wishlist / Heart Icon (Warm Coral #FF8C61) */}
             <button
               type="button"
@@ -799,6 +883,28 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           <button
+            id="store-smart-compare-header-btn"
+            type="button"
+            onClick={() => {
+              setStoreFlowStep('catalog');
+              setShowCartPanel(false);
+              setShowComparePanel((prev) => !prev);
+            }}
+            className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+              showComparePanel
+                ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-2xs'
+                : 'border-teal-300 dark:border-[#1E3646] bg-teal-50/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] hover:bg-teal-100'
+            }`}
+          >
+            <span>⚖️</span>
+            <span>
+              {isEn
+                ? `Compare (${comparedItems.length}/3)`
+                : `مقارنة المنتجات (${comparedItems.length}/3)`}
+            </span>
+          </button>
+
+          <button
             type="button"
             onClick={() => {
               setStoreFlowStep('catalog');
@@ -948,7 +1054,30 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                id="toggle-auto-delivery-sim-btn"
+                type="button"
+                onClick={() => setIsAutoSimulatingDelivery((prev) => !prev)}
+                aria-pressed={isAutoSimulatingDelivery}
+                className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                  isAutoSimulatingDelivery
+                    ? 'border-amber-400 bg-amber-500 text-slate-950 shadow-sm'
+                    : 'border-emerald-300 dark:border-[#1E3646] bg-emerald-50 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] hover:border-emerald-500'
+                }`}
+              >
+                <span>{isAutoSimulatingDelivery ? '⏸️' : '▶️'}</span>
+                <span>
+                  {isAutoSimulatingDelivery
+                    ? isEn
+                      ? 'Simulating Live...'
+                      : 'محاكاة حية نشطة...'
+                    : isEn
+                    ? 'Simulate Progress'
+                    : 'تشغيل المحاكاة الحية'}
+                </span>
+              </button>
+
               <div className="rounded-xl bg-[#142430] border border-[#1E3646] text-white px-3 py-1.5 text-center shadow-2xs">
                 <div className="text-[9px] font-bold text-[#A5F3FC] uppercase">
                   {isEn ? 'Estimated Arrival' : 'وقت الوصول المتوقع'}
@@ -1262,9 +1391,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   setShowCartPanel(false);
                   setStoreFlowStep('catalog');
                 }}
-                className="min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)]"
+                aria-label={isEn ? 'Close Cart & Checkout' : 'إغلاق السلة وإتمام الطلب'}
+                className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[#FF8C61] flex items-center justify-center shrink-0 cursor-pointer"
               >
-                {isEn ? 'Close' : 'إغلاق'}
+                ×
               </button>
             </div>
           </div>
@@ -2040,9 +2170,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <button
                   type="button"
                   onClick={() => setShowFilterPanel(false)}
-                  className="px-3 py-1 rounded-lg text-[11px] font-extrabold bg-[#0d9488] text-white"
+                  aria-label={isEn ? 'Close filter panel' : 'إغلاق لوحة الفلترة'}
+                  className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0d9488] text-white flex items-center justify-center shrink-0 cursor-pointer"
                 >
-                  {isEn ? 'Apply & Close' : 'تطبيق وإغلاق'}
+                  ×
                 </button>
               </div>
             </div>
@@ -2135,6 +2266,166 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
         )}
       </div>
+
+      {/* =====================================================================
+          SMART PRODUCT COMPARISON MATRIX (Side-by-Side Specs, Price & Rating)
+          ===================================================================== */}
+      {storeFlowStep === 'catalog' && showComparePanel && (
+        <div
+          id="store-smart-comparison-panel"
+          className="rounded-3xl border border-[#0d9488]/40 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 soft-card-surface shadow-md animate-page-enter"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+            <div className="flex items-center gap-2.5">
+              <span className="w-10 h-10 rounded-2xl bg-[#0d9488]/15 dark:bg-[#142430] border border-[#0d9488]/30 flex items-center justify-center text-lg shrink-0">
+                ⚖️
+              </span>
+              <div>
+                <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn
+                    ? `Smart Product Comparison (${comparedItems.length}/3 Selected)`
+                    : `جدول المقارنة الذكية للمنتجات والخدمات (${comparedItems.length}/3)`}
+                </h3>
+                <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                  {isEn
+                    ? 'Compare price, parent rating, delivery speed, and child age suitability side-by-side'
+                    : 'قارن السعر، تقييم الأمهات والآباء، سرعة التوصيل، والمرحلة العمرية المناسبة لطفلك جنبًا إلى جنب'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setCompareIds(COMMERCIAL_CATALOG.slice(0, 3).map((item) => item.id))
+                }
+                className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[#0d9488]/40 bg-teal-50/80 dark:bg-[#142430] text-[#0d9488] dark:text-[#A5F3FC] cursor-pointer"
+              >
+                {isEn ? '✨ Compare Top 3 Picks' : '✨ قارن أفضل ٣ اختيارات'}
+              </button>
+              {comparedItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setCompareIds([])}
+                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] cursor-pointer"
+                >
+                  {isEn ? 'Clear All' : 'مسح الكل'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowComparePanel(false)}
+                aria-label={isEn ? 'Close comparison panel' : 'إغلاق جدول المقارنة'}
+                className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0d9488] text-white flex items-center justify-center shrink-0 cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {comparedItems.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-6 text-center space-y-2">
+              <div className="text-2xl">⚖️</div>
+              <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+                {isEn
+                  ? 'No products selected for comparison yet'
+                  : 'لم تختر أي منتجات للمقارنة بعد — اضغط على زر «⚖️ قارن» في أي بطاقة منتج'}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {comparedItems.map((cItem) => {
+                const cPrice = currency === 'SAR' ? cItem.priceSAR : cItem.priceEGP;
+                const cTitle = isEn ? cItem.nameEn : cItem.name;
+                return (
+                  <div
+                    key={cItem.id}
+                    className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430] p-3.5 flex flex-col justify-between gap-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#0d9488]/15 text-[#0d9488] dark:text-[#A5F3FC]">
+                          {cItem.emoji} {locText(cItem.categoryLabel, language)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCompareItem(cItem)}
+                          className="text-[11px] font-extrabold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                        >
+                          {isEn ? 'Remove ✕' : 'إزالة ✕'}
+                        </button>
+                      </div>
+                      <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                        {cTitle}
+                      </h4>
+
+                      <div className="space-y-1.5 pt-1 text-[11px]">
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                          <span className="font-bold text-[var(--color-muted)]">
+                            {isEn ? 'Price:' : 'السعر:'}
+                          </span>
+                          <span className="font-black text-[#0d9488] dark:text-[#2DD4BF] tabular-nums">
+                            {formatCurrency(cPrice, currency, language)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                          <span className="font-bold text-[var(--color-muted)]">
+                            {isEn ? 'Parent Rating:' : 'تقييم الوالدين:'}
+                          </span>
+                          <span className="font-extrabold text-amber-600 dark:text-amber-300 tabular-nums">
+                            ⭐ {cItem.rating} ({cItem.reviewCount || 140})
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-1 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                          <span className="font-bold text-[var(--color-muted)]">
+                            {isEn ? 'Location / Scope:' : 'النطاق والتوصيل:'}
+                          </span>
+                          <span className="font-extrabold text-[var(--color-text)] truncate max-w-[140px]">
+                            📍 {locText(cItem.city, language)}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between py-1">
+                          <span className="font-bold text-[var(--color-muted)]">
+                            {isEn ? 'Delivery Speed:' : 'سرعة التوصيل:'}
+                          </span>
+                          <span className="font-extrabold text-emerald-700 dark:text-[#A5F3FC]">
+                            🚚{' '}
+                            {cItem.deliveryEstimateAr
+                              ? isEn
+                                ? cItem.deliveryEstimateEn
+                                : cItem.deliveryEstimateAr
+                              : isEn
+                              ? 'Same-Day Booking'
+                              : 'حجز وتنفيذ فوري'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => onAddToCart(cItem, cItem.variants?.[0])}
+                        className="flex-1 min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition-all cursor-pointer"
+                      >
+                        🛒 {isEn ? 'Add to Cart' : 'أضف للسلة'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onInspectCommercialItem(cItem)}
+                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] cursor-pointer"
+                      >
+                        {isEn ? 'Details' : 'تفاصيل'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* =====================================================================
           STORE CATALOG CONTENT:

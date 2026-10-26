@@ -100,6 +100,7 @@ export default function App() {
   const [showInnerSettings, setShowInnerSettings] = useState<boolean>(true);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoStatus, setGeoStatus] = useState<'idle' | 'locating' | 'active'>('idle');
+  const [bedtimeMode, setBedtimeMode] = useState<boolean>(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -322,13 +323,31 @@ export default function App() {
     );
   };
 
+  // Instant Warm Bedtime / Family Night Reading Mode Toggle
+  const handleToggleBedtimeMode = () => {
+    setBedtimeMode((prev) => {
+      const next = !prev;
+      showToast(
+        next
+          ? lang === 'en'
+            ? '🌙 Warm Bedtime Focus Mode enabled — Low blue-light comfort filter active'
+            : '🌙 تم تفعيل وضع هدوء المساء — إضاءة دافئة مريحة لعيونك وعيون طفلك قبل النوم'
+          : lang === 'en'
+          ? '☀️ Bedtime Focus Mode turned off'
+          : '☀️ تم إيقاف وضع هدوء المساء والعودة للإضاءة الطبيعية'
+      );
+      return next;
+    });
+  };
+
   // Precise City/Governorate Dropdown Change Handler (SA & EG individual cities)
   const handleSelectPreciseCity = (combinedValue: string) => {
     const [countryRaw, cityVal] = combinedValue.split(':');
     const nextCountry: CountryCode = countryRaw === 'SA' ? 'SA' : 'EG';
     const cityObj =
-      COUNTRY_CITIES_MAP[nextCountry].find((c) => c.id === cityVal) ||
-      COUNTRY_CITIES_MAP[nextCountry][0];
+      COUNTRY_CITIES_MAP[nextCountry].find(
+        (c) => c.id === cityVal || c.id.startsWith(cityVal) || cityVal.startsWith(c.id)
+      ) || COUNTRY_CITIES_MAP[nextCountry][0];
     const nextCurrency = getSuggestedCurrencyForCountry(nextCountry);
 
     setState((prev) => ({
@@ -1277,6 +1296,8 @@ export default function App() {
           onOpenSmartPlanner={() => setSmartPlannerModalOpen(true)}
           onOpenProfileDrawer={() => setRoleModalOpen(true)}
           isScrolled={isScrolled}
+          bedtimeMode={bedtimeMode}
+          onToggleBedtimeMode={handleToggleBedtimeMode}
         />
 
 
@@ -1541,6 +1562,32 @@ export default function App() {
                 onAddProductToWishes={(item) =>
                   handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                 }
+                onAddSuggestedRoutineTask={(taskName, timeStr, kidId) => {
+                  setState((prev) => ({
+                    ...prev,
+                    tasks: [
+                      {
+                        id: Date.now() + Math.floor(Math.random() * 100),
+                        name: taskName,
+                        kidId,
+                        category: 'تربية ونمو',
+                        time: timeStr,
+                        owner: prev.role === 'dad' ? 'الأب' : 'الأم',
+                        cadence: 'daily',
+                        done: false,
+                      },
+                      ...prev.tasks,
+                    ],
+                  }));
+                  showToast(
+                    lang === 'en'
+                      ? `Added "${taskName}" to Daily Routine!`
+                      : `تمت إضافة «${taskName}» إلى الروتين اليومي!`
+                  );
+                }}
+                onShowToast={showToast}
+                bedtimeMode={bedtimeMode}
+                onToggleBedtimeMode={handleToggleBedtimeMode}
               />
             )}
 
@@ -2417,6 +2464,9 @@ export default function App() {
           }}
           onSelectPreciseCity={handleSelectPreciseCity}
           onUseCurrentLocation={handleUseCurrentLocation}
+          geoStatus={geoStatus}
+          bedtimeMode={bedtimeMode}
+          onToggleBedtimeMode={handleToggleBedtimeMode}
           onSelectParentProfile={(role) => {
             handleSelectParentProfile(role);
             setRoleModalOpen(false);
@@ -2551,6 +2601,37 @@ export default function App() {
           onToggleTask={handleToggleTask}
           onDeleteTask={handleDeleteTask}
         />
+
+        {/* Warm Bedtime / Night Reading Comfort Dimming Overlay */}
+        {bedtimeMode && (
+          <>
+            <div
+              id="bedtime-warm-dimmer-overlay"
+              aria-hidden="true"
+              className="fixed inset-0 z-[90] pointer-events-none transition-opacity duration-500"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 30%, rgba(251, 146, 60, 0.16) 0%, rgba(180, 83, 9, 0.26) 65%, rgba(15, 23, 42, 0.38) 100%)',
+                mixBlendMode: 'multiply',
+              }}
+            />
+            <div className="fixed bottom-20 lg:bottom-5 start-4 z-[95] flex items-center gap-2 rounded-full border border-amber-400/60 bg-[#1C1917]/95 text-amber-200 px-3.5 py-1.5 text-[11px] font-extrabold shadow-lg backdrop-blur-md">
+              <span>🛌</span>
+              <span>
+                {lang === 'en'
+                  ? 'Warm Bedtime Reading Filter Active'
+                  : 'وضع هدوء المساء الدافئ مفعّل لراحة العين'}
+              </span>
+              <button
+                type="button"
+                onClick={handleToggleBedtimeMode}
+                className="ms-1 px-2 py-0.5 rounded-full bg-amber-500/25 hover:bg-amber-500 text-amber-100 hover:text-slate-950 transition-all cursor-pointer font-black"
+              >
+                {lang === 'en' ? 'Turn Off' : 'إيقاف'}
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Global Toast / Snackbar Micro-feedback */}
         <GlobalToastSnackbar

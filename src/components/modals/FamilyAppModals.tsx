@@ -69,9 +69,12 @@ export interface FamilyAppModalsProps {
   onOpenCartFromDrawer: () => void;
   onSelectPreciseCity: (combinedValue: string) => void;
   onUseCurrentLocation: () => void;
+  geoStatus?: 'idle' | 'locating' | 'active';
   onSelectParentProfile: (role: 'mom' | 'dad') => void;
   onEnableHighContrast: () => void;
   onToggleDarkMode: () => void;
+  bedtimeMode?: boolean;
+  onToggleBedtimeMode?: () => void;
   // 9. Media Reader Modal
   activeMediaModal: MediaContentItem | null;
   onCloseMediaModal: () => void;
@@ -129,9 +132,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onOpenCartFromDrawer,
   onSelectPreciseCity,
   onUseCurrentLocation,
+  geoStatus = 'idle',
   onSelectParentProfile,
   onEnableHighContrast,
   onToggleDarkMode,
+  bedtimeMode = false,
+  onToggleBedtimeMode,
   activeMediaModal,
   onCloseMediaModal,
   activeCommercialModal,
@@ -145,6 +151,13 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onResetAllData,
 }) => {
   const lang = state.language;
+  const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
+  const resolvedDrawerCityId =
+    activeCountryList.find(
+      (c) =>
+        c.id === state.city ||
+        (state.city && (c.id.includes(state.city) || state.city.includes(c.id)))
+    )?.id || activeCountryList[0].id;
 
   return (
     <>
@@ -1150,8 +1163,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               </button>
             </div>
 
-            {/* Relocated Hierarchical Country & Governorate/Region + GPS Filter inside Profile Drawer */}
-            <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-2.5 soft-card-surface">
+            {/* Symmetric Country & Governorate/Region + GPS Filter inside Profile Drawer */}
+            <div
+              data-testid="drawer-symmetric-location-selector"
+              className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-3 soft-card-surface"
+            >
               <div className="flex items-center justify-between gap-2">
                 <label
                   htmlFor="drawer-city-select"
@@ -1160,59 +1176,107 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   <SoftFilledIcon id="location" size={16} />
                   <span>
                     {lang === 'en'
-                      ? 'Country & Governorate / Region'
-                      : 'الدولة والمحافظة / المنطقة'}
+                      ? state.country === 'EG'
+                        ? 'Egypt Governorate (27) & Currency'
+                        : 'Saudi Region / City (15) & Currency'
+                      : state.country === 'EG'
+                      ? 'محافظة مصر (٢٧ محافظة) والعملة'
+                      : 'منطقة / مدينة السعودية (١٥ منطقة) والعملة'}
                   </span>
                 </label>
-                <UnifiedBadge label={state.currency} tone="teal" />
+                <UnifiedBadge
+                  label={
+                    state.country === 'SA'
+                      ? lang === 'en'
+                        ? '🇸🇦 SAR'
+                        : '🇸🇦 ر.س (SAR)'
+                      : lang === 'en'
+                      ? '🇪🇬 EGP'
+                      : '🇪🇬 ج.م (EGP)'
+                  }
+                  tone="teal"
+                />
               </div>
 
-              {/* Country Switcher */}
+              {/* Symmetric Country Switcher (Egypt 27 Governorates + EGP vs Saudi Arabia 15 Regions + SAR) */}
               <div className="grid grid-cols-2 gap-2">
                 <button
+                  id="drawer-country-eg-btn"
                   type="button"
+                  aria-pressed={state.country === 'EG'}
                   onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
-                  className={`py-1.5 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                  className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     state.country === 'EG'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
-                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
                   }`}
                 >
-                  {lang === 'en' ? '🇪🇬 Egypt (27 Govs)' : '🇪🇬 مصر (٢٧ محافظة)'}
+                  <span>🇪🇬</span>
+                  <span>{lang === 'en' ? 'Egypt (27 · EGP)' : 'مصر (٢٧ محافظة · EGP)'}</span>
                 </button>
                 <button
+                  id="drawer-country-sa-btn"
                   type="button"
+                  aria-pressed={state.country === 'SA'}
                   onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
-                  className={`py-1.5 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                  className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     state.country === 'SA'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
-                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
                   }`}
                 >
-                  {lang === 'en' ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية'}
+                  <span>🇸🇦</span>
+                  <span>{lang === 'en' ? 'Saudi (15 · SAR)' : 'السعودية (١٥ منطقة · SAR)'}</span>
                 </button>
               </div>
 
+              {/* Identical Dropdown Menu Right Beside GPS Location Button for Both Countries */}
               <div className="flex items-center gap-2">
                 <select
                   id="drawer-city-select"
-                  value={`${state.country}:${state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}`}
+                  aria-label={
+                    lang === 'en'
+                      ? state.country === 'EG'
+                        ? 'Select Egyptian Governorate'
+                        : 'Select Saudi Region or City'
+                      : state.country === 'EG'
+                      ? 'اختر المحافظة في مصر'
+                      : 'اختر المنطقة أو المدينة في السعودية'
+                  }
+                  value={`${state.country}:${resolvedDrawerCityId}`}
                   onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="flex-1 min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-2.5 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+                  className="flex-1 min-w-0 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[#0d9488] cursor-pointer"
                 >
-                  {(COUNTRY_CITIES_MAP[state.country] || []).map((c, idx) => (
+                  {activeCountryList.map((c, idx) => (
                     <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
                       {lang === 'en' ? `${idx + 1}. ${c.nameEn}` : `${idx + 1}. ${c.nameAr}`}
                     </option>
                   ))}
                 </select>
                 <button
+                  id="drawer-gps-location-btn"
                   type="button"
                   onClick={onUseCurrentLocation}
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] text-white shrink-0 flex items-center gap-1 cursor-pointer"
+                  className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
+                    geoStatus === 'active'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-2xs'
+                  }`}
                 >
                   <SoftFilledIcon id="location" size={15} />
-                  <span>GPS</span>
+                  <span>
+                    {geoStatus === 'locating'
+                      ? lang === 'en'
+                        ? 'GPS...'
+                        : 'تحديد...'
+                      : geoStatus === 'active'
+                      ? lang === 'en'
+                        ? 'GPS ✓'
+                        : 'موقعي ✓'
+                      : lang === 'en'
+                      ? 'GPS'
+                      : 'موقعي GPS'}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1221,7 +1285,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectParentProfile('mom')}
-                className="p-3.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-900 font-bold text-xs sm:text-sm text-start flex items-center gap-2"
+                className="p-3.5 rounded-xl border border-rose-200 dark:border-[#1E3646] bg-rose-50 dark:bg-[#142430] text-rose-900 dark:text-[#FDA4AF] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
               >
                 <SoftFilledIcon id="family" size={20} />
                 <span>
@@ -1233,7 +1297,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectParentProfile('dad')}
-                className="p-3.5 rounded-xl border border-sky-200 bg-sky-50 text-sky-900 font-bold text-xs sm:text-sm text-start flex items-center gap-2"
+                className="p-3.5 rounded-xl border border-sky-200 dark:border-[#1E3646] bg-sky-50 dark:bg-[#142430] text-sky-900 dark:text-[#7DD3FC] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
               >
                 <SoftFilledIcon id="family" size={20} />
                 <span>
@@ -1242,10 +1306,42 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     : 'حساب الأب (بابا أحمد) — تيل هادئ وأزرق أردوازي'}
                 </span>
               </button>
+              {onToggleBedtimeMode && (
+                <button
+                  id="drawer-bedtime-mode-btn"
+                  type="button"
+                  onClick={() => {
+                    onToggleBedtimeMode();
+                    onCloseRoleModal();
+                  }}
+                  className="p-3.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-bold text-xs sm:text-sm text-start flex items-center justify-between gap-2 cursor-pointer"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="text-base">🕯️</span>
+                    <span>
+                      {lang === 'en'
+                        ? 'Warm Bedtime Focus & Night Story Dimming'
+                        : 'وضع وقت النوم والهدوء الليلي الدافئ للقراءة'}
+                    </span>
+                  </span>
+                  <UnifiedBadge
+                    label={
+                      bedtimeMode
+                        ? lang === 'en'
+                          ? 'Active'
+                          : 'مفعّل'
+                        : lang === 'en'
+                        ? 'Off'
+                        : 'إيقاف'
+                    }
+                    tone="amber"
+                  />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={onEnableHighContrast}
-                className="p-3.5 rounded-xl border border-slate-500 bg-[var(--color-control-bg)] text-[var(--color-text)] font-bold text-xs sm:text-sm text-start flex items-center gap-2"
+                className="p-3.5 rounded-xl border border-slate-500 bg-[var(--color-control-bg)] text-[var(--color-text)] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
               >
                 <SoftFilledIcon id="shield" size={20} />
                 <span>
@@ -1260,7 +1356,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   onToggleDarkMode();
                   onCloseRoleModal();
                 }}
-                className="p-3.5 rounded-xl border border-teal-400/50 bg-teal-50 text-teal-950 font-bold text-xs sm:text-sm text-start flex items-center justify-between gap-2"
+                className="p-3.5 rounded-xl border border-teal-400/50 bg-teal-50 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] font-bold text-xs sm:text-sm text-start flex items-center justify-between gap-2 cursor-pointer"
               >
                 <span>
                   {state.darkMode
@@ -1308,8 +1404,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               <button
                 type="button"
                 onClick={onCloseMediaModal}
-                aria-label="إغلاق"
-                className="px-3 py-1 rounded-lg bg-[var(--color-control-muted)] text-sm font-bold text-[var(--color-text)]"
+                aria-label={lang === 'en' ? 'Close' : 'إغلاق'}
+                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-lg font-black leading-none text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
               >
                 ×
               </button>
@@ -1331,13 +1427,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               <span className="text-xs text-[var(--color-muted)]">
                 {activeMediaModal.durationLabel} · تقييم {activeMediaModal.rating}/5
               </span>
-              <button
-                type="button"
-                onClick={onCloseMediaModal}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
-              >
-                إغلاق
-              </button>
             </div>
           </div>
         </div>
@@ -1389,7 +1478,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 type="button"
                 onClick={onCloseCommercialModal}
                 aria-label={lang === 'en' ? 'Close' : 'إغلاق'}
-                className="px-3 py-1 rounded-lg bg-[var(--color-control-muted)] text-sm font-bold text-[var(--color-text)]"
+                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-lg font-black leading-none text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
               >
                 ×
               </button>
@@ -1486,13 +1575,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               >
                 {lang === 'en' ? '+ Add to Wishes' : '+ أضف للأمنيات'}
               </button>
-              <button
-                type="button"
-                onClick={onCloseCommercialModal}
-                className="px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--color-border)] text-[var(--color-text)]"
-              >
-                {lang === 'en' ? 'Close' : 'إغلاق'}
-              </button>
             </div>
           </div>
         </div>
@@ -1505,11 +1587,21 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="resetModalTitle"
-            className="w-full max-w-md rounded-[20px] bg-[var(--color-surface)] p-5 space-y-4 border border-[var(--color-border)]"
+            className="w-full max-w-md rounded-[20px] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-4 border border-[var(--color-border)] dark:border-[#1E3646]"
           >
-            <h2 id="resetModalTitle" className="text-lg font-bold text-[var(--color-text)]">
-              مسح البيانات المحلية وإعادة الضبط؟
-            </h2>
+            <div className="flex items-start justify-between gap-2">
+              <h2 id="resetModalTitle" className="text-lg font-bold text-[var(--color-text)]">
+                مسح البيانات المحلية وإعادة الضبط؟
+              </h2>
+              <button
+                type="button"
+                onClick={onCloseConfirmResetModal}
+                aria-label="إغلاق"
+                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-lg font-black leading-none text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
             <p className="text-sm text-[var(--color-muted)]">
               سيتم مسح التعديلات المحفوظة في هذا المتصفح وإعادة البيانات التجريبية الافتراضية. يُنصح بتصدير نسخة JSON أولًا إذا كنت ترغب في الاحتفاظ ببياناتك.
             </p>

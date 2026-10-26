@@ -508,9 +508,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setBookingDoctor(null)}
-                className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
+                aria-label={isEn ? 'Close modal' : 'إغلاق النافذة'}
+                className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
               >
-                {isEn ? 'Close' : 'إغلاق'}
+                ×
               </button>
             </div>
 
@@ -610,9 +611,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setReadingArticle(null)}
-                className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
+                aria-label={isEn ? 'Close guide reader' : 'إغلاق الدليل الطبي'}
+                className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
               >
-                {isEn ? 'Close' : 'إغلاق'}
+                ×
               </button>
             </div>
 

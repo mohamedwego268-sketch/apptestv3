@@ -192,6 +192,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const [cursorDate, setCursorDate] = useState<Date>(() => new Date());
   const [selectedDateIso, setSelectedDateIso] = useState<string>(todayIso);
   const [eventSourceFilter, setEventSourceFilter] = useState<'all' | 'private' | 'public'>('all');
+  const [eventCategoryFilter, setEventCategoryFilter] = useState<string>('all');
   const [mobileSectionTab, setMobileSectionTab] = useState<'both' | 'calendar' | 'todo'>('both');
 
   // Event form state
@@ -213,6 +214,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const [taskInputCategory, setTaskInputCategory] = useState<string>('مهام الأسرة');
   const [editingTaskId, setEditingTaskId] = useState<number | undefined>(undefined);
   const [todoFilter, setTodoFilter] = useState<'all' | 'open' | 'done'>('all');
+  const [taskOwnerFilter, setTaskOwnerFilter] = useState<'all' | 'dad' | 'mom' | 'shared'>('all');
 
   const kidMap = useMemo(
     () => Object.fromEntries(kids.map((k) => [String(k.id), k])),
@@ -295,15 +297,18 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const displayedPrivateEvents = useMemo(() => {
     if (eventSourceFilter === 'public') return [];
     const exact = events.filter((ev) => ev.date === selectedDateIso);
-    if (exact.length > 0) return exact;
-    return [...events].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
-  }, [events, selectedDateIso, eventSourceFilter]);
+    const baseList =
+      exact.length > 0
+        ? exact
+        : [...events].sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+    if (eventCategoryFilter === 'all') return baseList;
+    return baseList.filter((ev) => (ev.type || 'مناسبة عائلية').includes(eventCategoryFilter));
+  }, [events, selectedDateIso, eventSourceFilter, eventCategoryFilter]);
 
   const displayedPublicEvents = useMemo(() => {
     if (eventSourceFilter === 'private') return [];
     const exact = publicOccasions.filter((pub) => pub.date === selectedDateIso);
-    if (exact.length > 0) return exact;
-    return publicOccasions;
+    return exact.length > 0 ? exact : publicOccasions;
   }, [publicOccasions, selectedDateIso, eventSourceFilter]);
 
   const selectedDateHasExactEvents = useMemo(() => {
@@ -318,11 +323,38 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
 
   const visibleTasks = useMemo(() => {
     return tasks.filter((t) => {
-      if (todoFilter === 'open') return !t.done;
-      if (todoFilter === 'done') return t.done;
+      if (todoFilter === 'open' && t.done) return false;
+      if (todoFilter === 'done' && !t.done) return false;
+      if (taskOwnerFilter === 'dad') {
+        return (t.owner || '').includes('بابا') || (t.owner || '').toLowerCase().includes('dad');
+      }
+      if (taskOwnerFilter === 'mom') {
+        return (t.owner || '').includes('ماما') || (t.owner || '').toLowerCase().includes('mom');
+      }
+      if (taskOwnerFilter === 'shared') {
+        return (t.owner || '').includes('مشترك') || (t.owner || '').toLowerCase().includes('shared');
+      }
       return true;
     });
-  }, [tasks, todoFilter]);
+  }, [tasks, todoFilter, taskOwnerFilter]);
+
+  const handleCycleTaskDelegation = (task: RoutineTask) => {
+    const currentOwner = task.owner || 'بابا أحمد';
+    const nextOwner = currentOwner.includes('بابا')
+      ? 'ماما سارة'
+      : currentOwner.includes('ماما')
+      ? 'مشترك'
+      : 'بابا أحمد';
+    onSaveTask({
+      id: task.id,
+      name: task.name,
+      time: task.time || '18:00',
+      kidId: task.kidId ?? null,
+      category: task.category || 'مهام الأسرة',
+      owner: nextOwner,
+      cadence: task.cadence || 'daily',
+    });
+  };
 
   if (!open) return null;
 
@@ -535,10 +567,9 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
               type="button"
               onClick={onClose}
               aria-label={isEn ? 'Close Family Planner' : 'إغلاق مفكرة العيلة'}
-              className="h-9 px-3.5 rounded-2xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[#0B131A] dark:text-[#F8FAFC] hover:border-[#FF8C61] hover:text-[#FF8C61] transition-all duration-300 ease-in-out inline-flex items-center gap-1.5 cursor-pointer"
+              className="w-9 h-9 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[#0B131A] dark:text-[#F8FAFC] hover:border-[#FF8C61] hover:text-[#FF8C61] transition-all duration-300 ease-in-out flex items-center justify-center shrink-0 cursor-pointer"
             >
-              <span>✕</span>
-              <span>{isEn ? 'Close' : 'إغلاق'}</span>
+              ×
             </button>
           </div>
         </div>
@@ -971,6 +1002,31 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                   </div>
                 </div>
 
+                {/* Event Category Filter Chips */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {[
+                    { id: 'all', labelAr: '✨ كل التصنيفات', labelEn: '✨ All Categories' },
+                    { id: 'مناسبة عائلية', labelAr: '🏠 عائلية', labelEn: '🏠 Family' },
+                    { id: 'موعد طبي', labelAr: '💉 طبي وتطعيم', labelEn: '💉 Medical' },
+                    { id: 'مدرسة وحضانة', labelAr: '🏫 مدرسة وحضانة', labelEn: '🏫 School' },
+                    { id: 'عيد ميلاد', labelAr: '🎂 عيد ميلاد', labelEn: '🎂 Birthday' },
+                    { id: 'نشاط عائلي', labelAr: '🎡 خروجة ونشاط', labelEn: '🎡 Outing' },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setEventCategoryFilter(cat.id)}
+                      className={`px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
+                        eventCategoryFilter === cat.id
+                          ? 'border-[#0d9488] bg-[#0d9488]/15 dark:bg-[#38BDF8]/20 text-[#0f766e] dark:text-[#7DD3FC]'
+                          : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC] dark:bg-[#142430] text-[#475569] dark:text-[#CBD5E1]'
+                      }`}
+                    >
+                      {isEn ? cat.labelEn : cat.labelAr}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Private Family Events List */}
                 {displayedPrivateEvents.length > 0 && (
                   <div className="space-y-2.5">
@@ -1252,35 +1308,66 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                   </div>
                 </form>
 
-                {/* Filter Tabs for To-Do List */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="inline-flex p-1 rounded-2xl bg-[#F8FAFC] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646]">
+                {/* Filter Tabs for To-Do List + Parent Delegation Filter */}
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="inline-flex p-1 rounded-2xl bg-[#F8FAFC] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646]">
+                      {(
+                        [
+                          { id: 'all', labelAr: `الكل (${tasks.length})`, labelEn: `All (${tasks.length})` },
+                          {
+                            id: 'open',
+                            labelAr: `مطلوب (${tasks.length - completedTasksCount})`,
+                            labelEn: `Open (${tasks.length - completedTasksCount})`,
+                          },
+                          {
+                            id: 'done',
+                            labelAr: `تمت (${completedTasksCount})`,
+                            labelEn: `Done (${completedTasksCount})`,
+                          },
+                        ] as const
+                      ).map((tab) => (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setTodoFilter(tab.id)}
+                          className={`px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
+                            todoFilter === tab.id
+                              ? 'bg-[#0d9488] text-white'
+                              : 'text-[#475569] dark:text-[#CBD5E1]'
+                          }`}
+                        >
+                          {isEn ? tab.labelEn : tab.labelAr}
+                        </button>
+                      ))}
+                    </div>
+
+                    <span className="text-[10px] font-extrabold text-[#475569] dark:text-[#94A3B8]">
+                      {isEn ? 'Tap owner badge to delegate ⇄' : 'اضغط على اسم المسؤول للتفويض السريع ⇄'}
+                    </span>
+                  </div>
+
+                  {/* Parent Delegation Filter Bar (Dad / Mom / Shared) */}
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {(
                       [
-                        { id: 'all', labelAr: `الكل (${tasks.length})`, labelEn: `All (${tasks.length})` },
-                        {
-                          id: 'open',
-                          labelAr: `مطلوب (${tasks.length - completedTasksCount})`,
-                          labelEn: `Open (${tasks.length - completedTasksCount})`,
-                        },
-                        {
-                          id: 'done',
-                          labelAr: `تمت (${completedTasksCount})`,
-                          labelEn: `Done (${completedTasksCount})`,
-                        },
+                        { id: 'all', labelAr: '👨‍👩‍👧‍👦 كل المهام', labelEn: '👨‍👩‍👧‍👦 All Owners' },
+                        { id: 'dad', labelAr: '👨 مهام بابا أحمد', labelEn: '👨 Dad Ahmed' },
+                        { id: 'mom', labelAr: '👩 مهام ماما سارة', labelEn: '👩 Mom Sara' },
+                        { id: 'shared', labelAr: '🤝 مشترك سوا', labelEn: '🤝 Shared' },
                       ] as const
-                    ).map((tab) => (
+                    ).map((delTab) => (
                       <button
-                        key={tab.id}
+                        key={delTab.id}
                         type="button"
-                        onClick={() => setTodoFilter(tab.id)}
-                        className={`px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
-                          todoFilter === tab.id
-                            ? 'bg-[#0d9488] text-white'
-                            : 'text-[#475569] dark:text-[#CBD5E1]'
+                        onClick={() => setTaskOwnerFilter(delTab.id)}
+                        className={`px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
+                          taskOwnerFilter === delTab.id
+                            ? 'border-[#FF8C61] bg-[#FF8C61] text-white shadow-2xs'
+                            : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC] dark:bg-[#142430] text-[#475569] dark:text-[#CBD5E1]'
                         }`}
                       >
-                        {isEn ? tab.labelEn : tab.labelAr}
+                        {isEn ? delTab.labelEn : delTab.labelAr}
                       </button>
                     ))}
                   </div>
@@ -1314,16 +1401,18 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                               : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC] dark:bg-[#142430] hover:border-[#0d9488]/60'
                           }`}
                         >
-                          <label className="flex items-start gap-2.5 cursor-pointer min-w-0 flex-1 select-none">
+                          <div className="flex items-start gap-2.5 min-w-0 flex-1">
                             <input
                               type="checkbox"
                               checked={task.done}
                               onChange={(e) => onToggleTask(task.id, e.target.checked)}
+                              aria-label={task.name}
                               className="mt-1 w-4 h-4 rounded-md accent-[#0d9488] cursor-pointer shrink-0"
                             />
                             <div className="min-w-0 flex-1 space-y-1">
                               <div
-                                className={`text-xs sm:text-sm font-black transition-all ${
+                                onClick={() => onToggleTask(task.id, !task.done)}
+                                className={`text-xs sm:text-sm font-black transition-all cursor-pointer ${
                                   task.done
                                     ? 'line-through text-[#64748B] dark:text-[#94A3B8]'
                                     : 'text-[#0B131A] dark:text-[#F8FAFC]'
@@ -1337,9 +1426,35 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                                     ⏰ {task.time}
                                   </span>
                                 )}
-                                {task.owner && (
-                                  <span className="px-2 py-0.5 rounded-md bg-[#0d9488]/15 dark:bg-[#38BDF8]/20 text-[#0f766e] dark:text-[#7DD3FC]">
-                                    👤 {task.owner}
+                                <button
+                                  type="button"
+                                  onClick={() => handleCycleTaskDelegation(task)}
+                                  title={
+                                    isEn
+                                      ? 'Tap to delegate between Dad, Mom & Shared'
+                                      : 'اضغط لتفويض المهمة بين بابا أحمد، ماما سارة، أو مشترك'
+                                  }
+                                  className={`px-2 py-0.5 rounded-md border transition-all cursor-pointer inline-flex items-center gap-1 ${
+                                    (task.owner || '').includes('ماما')
+                                      ? 'border-[#FF8C61]/40 bg-[#FF8C61]/15 text-[#c2410c] dark:text-[#FDBA74]'
+                                      : (task.owner || '').includes('مشترك')
+                                      ? 'border-purple-400/40 bg-purple-500/15 text-purple-800 dark:text-purple-300'
+                                      : 'border-[#0d9488]/40 bg-[#0d9488]/15 dark:bg-[#38BDF8]/20 text-[#0f766e] dark:text-[#7DD3FC]'
+                                  }`}
+                                >
+                                  <span>
+                                    {(task.owner || '').includes('ماما')
+                                      ? '👩'
+                                      : (task.owner || '').includes('مشترك')
+                                      ? '🤝'
+                                      : '👨'}
+                                  </span>
+                                  <span>{task.owner || 'بابا أحمد'}</span>
+                                  <span className="opacity-75">⇄</span>
+                                </button>
+                                {task.category && (
+                                  <span className="px-2 py-0.5 rounded-md bg-white dark:bg-[#101D26] text-[#475569] dark:text-[#94A3B8]">
+                                    🏷️ {task.category}
                                   </span>
                                 )}
                                 {kid && (
@@ -1349,7 +1464,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                                 )}
                               </div>
                             </div>
-                          </label>
+                          </div>
 
                           <div className="flex items-center gap-1 shrink-0">
                             <button

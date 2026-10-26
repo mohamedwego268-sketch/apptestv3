@@ -94,36 +94,36 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   const lang = state.language;
 
   return (
-    <section className="space-y-6" aria-label={lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات'}>
-      {/* Profile Hero Warm Image Card with Father vs. Mother Visual Distinction */}
+    <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات'}>
+      {/* Compact Profile Hero Warm Image Card with Father vs. Mother Visual Distinction */}
       <div
-        className="image-bg-card rounded-[24px] p-5 sm:p-6 space-y-5"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 space-y-2.5"
         style={{
           backgroundImage: getCardBackgroundSpec('settings', state.darkMode).backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-16 h-16 rounded-3xl bg-white/90 border border-white shadow-sm flex items-center justify-center shrink-0">
-              <ThreeDIcon id="family" size={38} />
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-[#142430] border border-white dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
+              <ThreeDIcon id="family" size={28} />
             </div>
-            <div>
+            <div className="min-w-0">
               <span
                 style={{
                   backgroundColor: parentProfileSpec.badgeBgCss,
                   color: parentProfileSpec.badgeTextCss,
                   borderColor: parentProfileSpec.badgeBorderCss,
                 }}
-                className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-extrabold border shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shadow-2xs"
               >
-                <SoftFilledIcon id="family" size={14} />
+                <SoftFilledIcon id="family" size={12} boxSize="sm" />
                 <span>{lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}</span>
               </span>
-              <h2 className="image-card-title text-xl sm:text-2xl font-extrabold mt-1">
+              <h2 className="image-card-title text-base sm:text-xl font-extrabold mt-0.5 truncate">
                 {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h2>
-              <div className="image-card-subtitle text-xs font-bold tabular-nums mt-0.5">
+              <div className="image-card-subtitle text-[11px] font-bold tabular-nums truncate">
                 {t(lang, 'brandName')} ·{' '}
                 {state.country === 'SA'
                   ? lang === 'en'
@@ -137,21 +137,21 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <PrimaryCtaButton variant="orange" onClick={onOpenOnboardingModal}>
-              {lang === 'en' ? 'Edit Account & City' : 'عدّل بيانات الحساب والمدينة'}
+          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+            <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenOnboardingModal}>
+              {lang === 'en' ? 'Edit Account & City' : 'عدّل الحساب والمدينة'}
             </PrimaryCtaButton>
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
-              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
+              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
             >
               {lang === 'en' ? 'Family & Permissions' : 'العيلة والصلاحيات'}
             </button>
             <button
               type="button"
               onClick={onToggleShowInnerSettings}
-              className="min-h-[40px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs"
+              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
             >
               {showInnerSettings
                 ? lang === 'en'

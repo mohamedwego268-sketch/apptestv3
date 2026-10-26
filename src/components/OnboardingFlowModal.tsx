@@ -221,9 +221,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label={isEn ? 'Close registration wizard' : 'إغلاق نافذة التسجيل'}
-            className="px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-control-muted)]"
+            className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[#FF8C61] flex items-center justify-center shrink-0 cursor-pointer"
           >
-            {isEn ? 'Close' : 'إغلاق'}
+            ×
           </button>
         </div>
 

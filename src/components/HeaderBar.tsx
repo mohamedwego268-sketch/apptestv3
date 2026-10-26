@@ -21,6 +21,7 @@ export interface HeaderBarProps {
   lang: LanguageCode;
   brandName: string;
   darkMode: boolean;
+  bedtimeMode?: boolean;
   unreadNotifCount: number;
   openTasksCount?: number;
   parentProfileSpec: HeaderBarProfileSpec;
@@ -28,6 +29,7 @@ export interface HeaderBarProps {
   navItems?: HeaderBarNavOption[];
   onNavigate: (pageId: PageId) => void;
   onToggleDarkMode: () => void;
+  onToggleBedtimeMode?: () => void;
   onToggleLanguage: () => void;
   onOpenSmartPlanner?: () => void;
   onOpenProfileDrawer: () => void;
@@ -39,7 +41,7 @@ export interface HeaderBarProps {
  * Clean flexbox layout with zero overlapping elements:
  * 1. Brand Wordmark strictly renders "نكبر" in Arabic and "Nekbaar" in English.
  * 2. Primary desktop navigation bar.
- * 3. Uniform soft-filled SVG control buttons (Theme, Language, Calendar & To-Do, Notifications, Profile) sharing
+ * 3. Uniform soft-filled SVG control buttons (Theme, Bedtime Focus, Language, Calendar & To-Do, Notifications, Profile) sharing
  *    identical h-9 height, rounded-2xl geometry, and harmonious borders.
  * 4. Dynamic Notification Badge that displays unread counter cleanly side-by-side with the bell icon
  *    and hides seamlessly when unreadNotifCount === 0 without distorting the icon or button layout.
@@ -48,6 +50,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   lang,
   brandName,
   darkMode,
+  bedtimeMode = false,
   unreadNotifCount,
   openTasksCount = 0,
   parentProfileSpec,
@@ -55,6 +58,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   navItems = [],
   onNavigate,
   onToggleDarkMode,
+  onToggleBedtimeMode,
   onToggleLanguage,
   onOpenSmartPlanner,
   onOpenProfileDrawer,
@@ -124,7 +128,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </nav>
         )}
 
-        {/* Zone 3: Standardized Aligned Controls (Theme + Language + Calendar/To-Do + Notifications + Profile) */}
+        {/* Zone 3: Standardized Aligned Controls (Theme + Bedtime Mode + Language + Calendar/To-Do + Notifications + Profile) */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* 1. Theme Toggle Button (Soft-Filled Sun / Moon SVG) */}
           <button
@@ -178,6 +182,42 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               {darkMode ? (isEn ? 'Light' : 'نهاري') : isEn ? 'Dark' : 'ليلي'}
             </span>
           </button>
+
+          {/* 1B. Warm Bedtime / Family Focus Mode Toggle */}
+          {onToggleBedtimeMode && (
+            <button
+              id="top-bedtime-mode-toggle"
+              type="button"
+              onClick={onToggleBedtimeMode}
+              aria-pressed={Boolean(bedtimeMode)}
+              title={
+                isEn
+                  ? 'Warm Bedtime Dimming & Night Reading Filter'
+                  : 'وضع وقت النوم وتعتيم القراءة الليلي الدافئ'
+              }
+              aria-label={
+                isEn
+                  ? 'Toggle Warm Bedtime Focus Mode'
+                  : 'تفعيل أو إيقاف وضع وقت النوم الدافئ'
+              }
+              className={`${sharedControlBtnClass} ${
+                bedtimeMode
+                  ? '!bg-amber-500/20 !border-amber-500 !text-amber-700 dark:!text-amber-300'
+                  : ''
+              }`}
+            >
+              <span className="text-sm leading-none">🕯️</span>
+              <span className="hidden md:inline">
+                {bedtimeMode
+                  ? isEn
+                    ? 'Bedtime On'
+                    : 'نوم دافئ ✓'
+                  : isEn
+                  ? 'Bedtime'
+                  : 'وقت النوم'}
+              </span>
+            </button>
+          )}
 
           {/* 2. Language Toggle Button (Soft-Filled Globe SVG) */}
           <button
