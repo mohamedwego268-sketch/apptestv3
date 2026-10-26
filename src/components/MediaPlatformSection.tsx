@@ -641,14 +641,14 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
 
       {/* Mode Switcher Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-indigo-50/90 border border-indigo-200/80">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-indigo-50/90 dark:bg-[#101D26] border border-indigo-200/80 dark:border-[#1E3646]">
           <button
             type="button"
             onClick={() => setMediaViewMode('reels')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
               mediaViewMode === 'reels'
                 ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 hover:bg-indigo-100/70'
+                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
             }`}
           >
             📱 {isEn ? 'Vertical Reels (9:16)' : 'ريلز الأسرة (9:16)'}
@@ -656,10 +656,10 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           <button
             type="button"
             onClick={() => setMediaViewMode('audio')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
               mediaViewMode === 'audio'
                 ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 hover:bg-indigo-100/70'
+                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
             }`}
           >
             🎙️ {isEn ? 'Podcasts & Audio Stories' : 'البودكاست والقصص الصوتية'}
@@ -667,10 +667,10 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           <button
             type="button"
             onClick={() => setMediaViewMode('library')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
               mediaViewMode === 'library'
                 ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 hover:bg-indigo-100/70'
+                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
             }`}
           >
             🎥 {isEn ? 'Videos & Guides' : 'الفيديو والأدلة'}
@@ -759,7 +759,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                       ? 'Write a comment or parenting question...'
                       : 'أضف تعليقك أو تجربتك مع هذا الريل...'
                   }
-                  className="flex-1 rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+                  className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
                 />
                 <PrimaryCtaButton
                   variant="orange"
@@ -780,12 +780,12 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                   currentReelComments.map((c) => (
                     <div
                       key={c.id}
-                      className="rounded-xl bg-white border border-rose-100 p-2.5 space-y-1 shadow-2xs"
+                      className="rounded-xl bg-white dark:bg-[#142430] border border-rose-100 dark:border-[#1E3646] p-2.5 space-y-1 shadow-2xs"
                     >
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="font-extrabold text-[var(--color-text)]">
                           {isEn ? c.authorEn : c.authorAr}{' '}
-                          <span className="text-[10px] font-bold text-rose-700">
+                          <span className="text-[10px] font-bold text-rose-700 dark:text-[#FDA4AF]">
                             · {isEn ? c.roleEn : c.roleAr}
                           </span>
                         </span>
@@ -793,7 +793,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                           {isEn ? c.timeAgoEn : c.timeAgoAr}
                         </span>
                       </div>
-                      <p className="text-xs font-semibold text-slate-700">
+                      <p className="text-xs font-semibold text-slate-700 dark:text-[#E2E8F0]">
                         {isEn ? c.textEn : c.textAr}
                       </p>
                     </div>
@@ -804,12 +804,12 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             )}
 
             {/* Quick Actionable Steps */}
-            <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/70 p-4 space-y-2.5 shadow-2xs">
+            <div className="rounded-[22px] border border-indigo-200/80 dark:border-[#1E3646] bg-indigo-50/70 dark:bg-[#101D26] p-4 space-y-2.5 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-extrabold text-[var(--color-text)]">
                   💡 {isEn ? 'Quick Actionable Steps' : 'خطوات عملية سريعة'}
                 </h3>
-                <span className="px-2 py-0.5 rounded-lg bg-indigo-100 text-indigo-900 text-[11px] font-extrabold">
+                <span className="px-2 py-0.5 rounded-lg bg-indigo-100 dark:bg-[#142430] text-indigo-900 dark:text-[#A5F3FC] text-[11px] font-extrabold">
                   {currentReel.ageStage}
                 </span>
               </div>
@@ -817,7 +817,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 {(isEn ? currentReel.keyTakeawaysEn : currentReel.keyTakeawaysAr).map((step, i) => (
                   <div
                     key={i}
-                    className="rounded-xl bg-white border border-indigo-100 p-2.5 text-xs font-bold text-slate-800 shadow-2xs"
+                    className="rounded-xl bg-white dark:bg-[#142430] border border-indigo-100 dark:border-[#1E3646] p-2.5 text-xs font-bold text-slate-800 dark:text-[#F8FAFC] shadow-2xs"
                   >
                     {step}
                   </div>
@@ -1301,7 +1301,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           </div>
 
           {/* Transcript Box */}
-          <div className="rounded-xl bg-white border border-purple-100 p-3.5 text-xs font-semibold text-[var(--color-text)] leading-relaxed shadow-2xs">
+          <div className="rounded-xl bg-white dark:bg-[#142430] border border-purple-100 dark:border-[#1E3646] p-3.5 text-xs font-semibold text-[var(--color-text)] leading-relaxed shadow-2xs">
             {isEn ? activeAudioItem.audioConfig.transcriptEn : activeAudioItem.audioConfig.transcriptAr}
           </div>
         </div>
@@ -1314,7 +1314,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-xl rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-3.5 max-h-[85vh] overflow-y-auto shadow-xl">
+          <div className="w-full max-w-xl rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-3.5 max-h-[85vh] overflow-y-auto shadow-xl">
             <div className="flex items-start justify-between gap-3">
               <h3 className="text-base font-extrabold text-[var(--color-text)]">
                 {isEn ? activeItem.titleEn : activeItem.title}
@@ -1323,14 +1323,14 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 type="button"
                 onClick={() => setActiveItem(null)}
                 aria-label={isEn ? 'Close' : 'إغلاق'}
-                className="w-8 h-8 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] hover:bg-rose-500 hover:text-white text-base font-black text-[var(--color-text)] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-rose-500 hover:text-white text-base font-black text-[var(--color-text)] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
               >
                 ×
               </button>
             </div>
             <div className="space-y-2 text-xs sm:text-sm text-[var(--color-text)] leading-relaxed">
               {(isEn && activeItem.bodyEn ? activeItem.bodyEn : activeItem.body).map((line, i) => (
-                <p key={i} className="rounded-xl bg-indigo-50/70 border border-indigo-100 p-3">
+                <p key={i} className="rounded-xl bg-indigo-50/70 dark:bg-[#142430] border border-indigo-100 dark:border-[#1E3646] p-3">
                   {line}
                 </p>
               ))}

@@ -360,7 +360,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     name="healthNotePrivate"
                     maxLength={240}
                     defaultValue={editingChild?.healthNotePrivate || ''}
-                    placeholder="لا تستخدم بيانات طبية حساسة حقيقية أثناء التجربة"
+                    placeholder="مثلاً: حساسية الألبان أو المكسرات (أو لا يوجد)"
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text)]"
                   />
                 </div>

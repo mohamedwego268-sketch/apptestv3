@@ -280,7 +280,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
         /* Two-Column Messaging Workspace */
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-stretch">
           {/* Conversation List */}
-          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2 shadow-2xs">
+          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-2 shadow-2xs">
             <div className="px-2 py-1 text-xs font-extrabold text-[var(--color-muted)]">
               {isEn ? 'Active Conversations' : 'المحادثات النشطة'}
             </div>
@@ -297,10 +297,10 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                     prev.map((t) => (t.id === thread.id ? { ...t, unreadCount: 0 } : t))
                   );
                 }}
-                className={`w-full p-3.5 rounded-2xl border text-start transition-colors space-y-1 ${
+                className={`w-full p-3.5 rounded-2xl border text-start transition-colors space-y-1 cursor-pointer ${
                   isSelected
-                    ? 'border-blue-600 bg-sky-50/90 shadow-2xs'
-                    : 'border-transparent hover:bg-[var(--color-control-muted)]'
+                    ? 'border-blue-600 dark:border-[#38BDF8] bg-sky-50/90 dark:bg-[#142430] shadow-2xs'
+                    : 'border-transparent hover:bg-[var(--color-control-muted)] dark:hover:bg-[#142430]/70'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -313,7 +313,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                     </span>
                   )}
                 </div>
-                <div className="text-[11px] font-bold text-blue-800 truncate">
+                <div className="text-[11px] font-bold text-blue-800 dark:text-[#7DD3FC] truncate">
                   🔒 {isEn ? `Scope: ${thread.scopedChildEn}` : `النطاق: ${thread.scopedChildAr}`}
                 </div>
                 {lastMsg && (
@@ -328,21 +328,21 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
 
         {/* Active Chat Screen */}
         {activeThread && (
-          <div className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] flex flex-col justify-between min-h-[460px] overflow-hidden shadow-2xs">
+          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] flex flex-col justify-between min-h-[460px] overflow-hidden shadow-2xs">
             {/* Chat Header */}
-            <div className="p-4 border-b border-[var(--color-border)] bg-sky-50/60 flex flex-wrap items-center justify-between gap-2">
+            <div className="p-4 border-b border-[var(--color-border)] dark:border-[#1E3646] bg-sky-50/60 dark:bg-[#142430] flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
                   {isEn ? activeThread.participantNameEn : activeThread.participantNameAr}
                 </h3>
                 <div className="text-xs font-semibold text-[var(--color-muted)]">
                   {isEn ? activeThread.roleTitleEn : activeThread.roleTitleAr} ·{' '}
-                  <span className="text-emerald-700 font-bold">
+                  <span className="text-emerald-700 dark:text-[#2DD4BF] font-bold">
                     ● {isEn ? activeThread.onlineStatusEn : activeThread.onlineStatusAr}
                   </span>
                 </div>
               </div>
-              <div className="text-[11px] font-extrabold text-blue-900 bg-white border border-sky-200 px-3 py-1 rounded-xl shadow-2xs">
+              <div className="text-[11px] font-extrabold text-blue-900 dark:text-[#7DD3FC] bg-white dark:bg-[#101D26] border border-sky-200 dark:border-[#1E3646] px-3 py-1 rounded-xl shadow-2xs">
                 🛡️ {isEn ? activeThread.scopedChildEn : activeThread.scopedChildAr}
               </div>
             </div>
@@ -360,7 +360,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                       className={`max-w-[82%] rounded-2xl px-4 py-3 text-xs sm:text-sm leading-relaxed ${
                         isMe
                           ? 'bg-blue-600 text-white rounded-ee-xs'
-                          : 'bg-sky-50/80 border border-sky-100 text-[var(--color-text)] rounded-es-xs'
+                          : 'bg-sky-50/80 dark:bg-[#142430] border border-sky-100 dark:border-[#1E3646] text-[var(--color-text)] rounded-es-xs'
                       }`}
                     >
                       <div className="font-extrabold text-[11px] opacity-80 mb-0.5">
@@ -380,7 +380,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
             </div>
 
             {/* Quick Reply Chips & Input Composer */}
-            <div className="p-4 border-t border-[var(--color-border)] space-y-2.5 bg-[var(--color-surface)]">
+            <div className="p-4 border-t border-[var(--color-border)] dark:border-[#1E3646] space-y-2.5 bg-[var(--color-surface)] dark:bg-[#101D26]">
               <div className="flex flex-wrap items-center gap-1.5">
                 {[
                   isEn ? 'Thank you for the update! 🌸' : 'شكرًا جزيلًا على المتابعة 🌸',
@@ -391,7 +391,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                     key={idx}
                     type="button"
                     onClick={() => handleSendMessage(quick)}
-                    className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-sky-50 border border-sky-200/70 text-sky-950 hover:bg-sky-100"
+                    className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-sky-50 dark:bg-[#142430] border border-sky-200/70 dark:border-[#1E3646] text-sky-950 dark:text-[#7DD3FC] hover:bg-sky-100 transition-colors cursor-pointer"
                   >
                     {quick}
                   </button>
@@ -414,7 +414,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                       ? 'Type a message...'
                       : 'اكتب رسالتك هنا...'
                   }
-                  className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
+                  className="flex-1 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
                 />
                 <PrimaryCtaButton
                   variant="blue"

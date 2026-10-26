@@ -161,6 +161,7 @@ const MATH_CHALLENGES: MathChallengeItem[] = [
 export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = ({
   kids,
   language,
+  onExitGamesToDashboard,
 }) => {
   const isEn = language === 'en';
   const [selectedKidId, setSelectedKidId] = useState<number>(kids[0]?.id || 1);
@@ -319,7 +320,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
   return (
     <div className="space-y-4">
       {/* Parent Approval & Child Stage Selector Bar */}
-      <div className="rounded-[20px] border border-emerald-200/80 bg-emerald-50/75 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
+      <div className="rounded-[20px] border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/75 dark:bg-[#101D26] p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
         <div className="flex flex-wrap items-center gap-2.5">
           {activeKid && (
             <ThreeDChildAvatar
@@ -341,7 +342,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                 id="gameChildSelector"
                 value={selectedKidId}
                 onChange={(e) => setSelectedKidId(Number(e.target.value))}
-                className="rounded-xl border border-[var(--color-border)] bg-white px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)] shadow-2xs"
+                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)] shadow-2xs"
               >
                 {kids.map((k) => (
                   <option key={k.id} value={k.id}>
@@ -353,17 +354,26 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
           </div>
         </div>
 
-        <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-emerald-200 text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs">
-          <input
-            type="checkbox"
-            checked={parentApprovedSession}
-            onChange={(e) => setParentApprovedSession(e.target.checked)}
-            className="accent-[var(--color-accent)]"
-          />
-          <span>
-            🛡️ {isEn ? 'Parent Co-Play Active (15m)' : 'إشراف الوالدين نشط (15 دقيقة)'}
-          </span>
-        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs">
+            <input
+              type="checkbox"
+              checked={parentApprovedSession}
+              onChange={(e) => setParentApprovedSession(e.target.checked)}
+              className="accent-[var(--color-accent)]"
+            />
+            <span>
+              🛡️ {isEn ? 'Parent Co-Play Active (15m)' : 'إشراف الوالدين نشط (15 دقيقة)'}
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={onExitGamesToDashboard}
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs"
+          >
+            {isEn ? '← Home' : '← الرئيسية'}
+          </button>
+        </div>
       </div>
 
       {/* 4-Game Grid Switcher Cards (Memory, Coloring, Puzzle, Math) */}

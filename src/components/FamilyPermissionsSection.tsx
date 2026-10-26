@@ -542,10 +542,16 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
           {/* Left Column: User A (Dad) QR Generator + Invite Link + Manual Code */}
-          <div className="rounded-2xl border border-teal-200/80 bg-white/95 p-4 flex flex-col sm:flex-row items-center gap-4 shadow-2xs">
+          <div
+            className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-center gap-4 shadow-2xs transition-all ${
+              qrMode === 'generate'
+                ? 'border-teal-400 dark:border-[#2DD4BF] bg-white/95 dark:bg-[#101D26] ring-2 ring-teal-500/20'
+                : 'border-teal-200/80 dark:border-[#1E3646] bg-white/85 dark:bg-[#101D26]/80'
+            }`}
+          >
             <div className="shrink-0 text-center space-y-1.5">
               <FamilyQrCodeSvg code={familyInviteCode} />
-              <div className="text-[10.5px] font-extrabold text-teal-900 tabular-nums">
+              <div className="text-[10.5px] font-extrabold text-teal-900 dark:text-[#2DD4BF] tabular-nums">
                 {familyInviteCode}
               </div>
             </div>
@@ -556,12 +562,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
               </div>
 
               {/* Manual Code Box */}
-              <div className="rounded-xl bg-teal-50/80 border border-teal-200 px-3 py-2 flex items-center justify-between gap-2">
+              <div className="rounded-xl bg-teal-50/80 dark:bg-[#142430] border border-teal-200 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                 <div>
                   <div className="text-[10px] font-bold text-[var(--color-muted)]">
                     {isEn ? 'Manual Family Code' : 'كود الربط اليدوي للأسرة'}
                   </div>
-                  <div dir="ltr" className="text-xs font-mono font-extrabold text-teal-950 tracking-wider">
+                  <div dir="ltr" className="text-xs font-mono font-extrabold text-teal-950 dark:text-[#F8FAFC] tracking-wider">
                     {familyInviteCode}
                   </div>
                 </div>
@@ -572,10 +578,10 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                     onClick={() =>
                       handleCopyText(
                         familyInviteCode,
-                        isEn ? 'تم نسخ الكود اليدوي بنجاح' : 'تم نسخ الكود اليدوي بنجاح'
+                        isEn ? 'Manual family code copied' : 'تم نسخ الكود اليدوي بنجاح'
                       )
                     }
-                    className="px-2.5 py-1 rounded-lg bg-white border border-teal-200 text-[11px] font-extrabold text-teal-900"
+                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#101D26] border border-teal-200 dark:border-[#1E3646] text-[11px] font-extrabold text-teal-900 dark:text-[#A5F3FC] cursor-pointer"
                   >
                     {isEn ? 'Copy Code' : 'نسخ الكود'}
                   </button>
@@ -587,12 +593,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                       setFamilyInviteCode(next);
                       setManualCodeInput(next);
                       const msg = isEn
-                        ? `تمت الإضافة بنجاح — Generated QR (${next})`
-                        : `تمت الإضافة بنجاح — تم توليد رمز QR جديد (${next})`;
+                        ? `New Family QR Generated (${next})`
+                        : `تم توليد رمز QR جديد للأسرة (${next})`;
                       setLinkCopiedMsg(msg);
                       onShowToast?.(msg);
                     }}
-                    className="px-2.5 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-extrabold flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-extrabold flex items-center gap-1 cursor-pointer"
                     title={isEn ? 'Generate new QR code' : 'توليد رمز QR جديد'}
                   >
                     <span>🔄</span>
@@ -602,7 +608,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
               </div>
 
               {/* Invite Link Box */}
-              <div className="rounded-xl bg-slate-50 border border-[var(--color-border)] px-3 py-2 flex items-center justify-between gap-2">
+              <div className="rounded-xl bg-slate-50 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <div className="text-[10px] font-bold text-[var(--color-muted)]">
                     {isEn ? 'Direct Invite Link' : 'رابط الدعوة المباشر'}
@@ -617,10 +623,10 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                   onClick={() =>
                     handleCopyText(
                       inviteUrl,
-                      isEn ? 'تم نسخ الرابط بنجاح (Invite Link Copied)' : 'تم نسخ الرابط بنجاح — جاهز للمشاركة مع الأسرة'
+                      isEn ? 'Family invite link copied' : 'تم نسخ الرابط بنجاح — جاهز للمشاركة مع الأسرة'
                     )
                   }
-                  className="px-2.5 py-1 rounded-lg bg-white border border-[var(--color-border)] text-[11px] font-extrabold text-[var(--color-text)] shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-extrabold text-[var(--color-text)] shrink-0 cursor-pointer"
                 >
                   🔗 {isEn ? 'Copy Link' : 'نسخ الرابط'}
                 </button>
@@ -629,7 +635,13 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
           </div>
 
           {/* Right Column: User B (Mom / Family Member) Interactive QR Scanner & Role Join */}
-          <div className="rounded-2xl border border-rose-200/80 bg-white/95 p-4 space-y-3 shadow-2xs flex flex-col justify-between">
+          <div
+            className={`rounded-2xl border p-4 space-y-3 shadow-2xs flex flex-col justify-between transition-all ${
+              qrMode === 'scan'
+                ? 'border-rose-400 dark:border-[#FDA4AF] bg-white/95 dark:bg-[#101D26] ring-2 ring-rose-500/20'
+                : 'border-rose-200/80 dark:border-[#1E3646] bg-white/85 dark:bg-[#101D26]/80'
+            }`}
+          >
             <div className="space-y-2.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs font-extrabold text-[var(--color-text)]">
@@ -935,9 +947,9 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
             <button
               type="button"
               onClick={handleRequestOtp}
-              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)]"
+              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] cursor-pointer"
             >
-              🔐 {isEn ? 'Send OTP (123456)' : 'إرسال رمز OTP (123456)'}
+              🔐 {isEn ? 'Send Verification Code' : 'إرسال رمز التحقق'}
             </button>
             {otpRequested && (
               <div className="flex items-center gap-1.5">

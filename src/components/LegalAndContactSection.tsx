@@ -287,8 +287,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
               ? '🌐 100% Digital Support'
               : '🌐 قنوات تواصل رقمية فقط'
             : isEn
-            ? '📋 Standard Testing Copy'
-            : '📋 نصوص قياسية لمرحلة الاختبار'}
+            ? '📋 Official Platform Policies'
+            : '📋 السياسات الرسمية المعتمدة'}
         </span>
       </div>
 
@@ -354,9 +354,9 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     {(isEn ? clause.bulletsEn : clause.bulletsAr).map((b, idx) => (
                       <div
                         key={idx}
-                        className="rounded-xl bg-white/85 border border-white p-2.5 text-[11px] font-bold text-[var(--color-text)] flex items-start gap-1.5 shadow-2xs"
+                        className="rounded-xl bg-white/85 dark:bg-[#142430] border border-white dark:border-[#1E3646] p-2.5 text-[11px] font-bold text-[var(--color-text)] flex items-start gap-1.5 shadow-2xs"
                       >
-                        <span className="text-teal-700 font-extrabold">✓</span>
+                        <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold">✓</span>
                         <span>{b}</span>
                       </div>
                     ))}
@@ -430,9 +430,9 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     {(isEn ? clause.bulletsEn : clause.bulletsAr).map((b, idx) => (
                       <div
                         key={idx}
-                        className="rounded-xl bg-white/85 border border-white p-2.5 text-[11px] font-bold text-[var(--color-text)] flex items-start gap-1.5 shadow-2xs"
+                        className="rounded-xl bg-white/85 dark:bg-[#142430] border border-white dark:border-[#1E3646] p-2.5 text-[11px] font-bold text-[var(--color-text)] flex items-start gap-1.5 shadow-2xs"
                       >
-                        <span className="text-indigo-700 font-extrabold">●</span>
+                        <span className="text-indigo-700 dark:text-[#A5F3FC] font-extrabold">●</span>
                         <span>{b}</span>
                       </div>
                     ))}
@@ -475,10 +475,10 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           {/* 1. Primary Digital Channels Grid: Support Email & Customer Service Phone Number */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {/* Support Email Card */}
-            <div className="rounded-[20px] border border-sky-200/90 bg-sky-50/85 p-4 space-y-3 shadow-2xs flex flex-col justify-between">
+            <div className="rounded-[20px] border border-sky-200/90 dark:border-[#1E3646] bg-sky-50/85 dark:bg-[#101D26] p-4 space-y-3 shadow-2xs flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md bg-sky-100 text-sky-900 text-[10px] font-extrabold">
+                  <span className="px-2.5 py-0.5 rounded-md bg-sky-100 dark:bg-[#142430] text-sky-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                     {isEn ? 'SUPPORT EMAIL' : 'البريد الإلكتروني للدعم الفني'}
                   </span>
                   <span className="text-lg" aria-hidden="true">✉️</span>
@@ -487,19 +487,19 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                   {isEn ? 'Official Support & Care Email' : 'مراسلة الدعم الفني عبر البريد الإلكتروني'}
                 </h3>
                 <div className="space-y-1.5 pt-1">
-                  <div className="rounded-xl bg-white/90 border border-sky-100 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-sky-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
                       {isEn ? 'Technical Support:' : 'الدعم الفني العام:'}
                     </span>
-                    <span dir="ltr" className="text-xs font-extrabold text-sky-950 select-all">
+                    <span dir="ltr" className="text-xs font-extrabold text-sky-950 dark:text-[#F8FAFC] select-all">
                       {STRICTLY_DIGITAL_CONTACT_CONFIG.supportEmail}
                     </span>
                   </div>
-                  <div className="rounded-xl bg-white/90 border border-sky-100 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-sky-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
                       {isEn ? 'Family & Orders Care:' : 'رعاية الأسرة والطلبات:'}
                     </span>
-                    <span dir="ltr" className="text-xs font-extrabold text-sky-950 select-all">
+                    <span dir="ltr" className="text-xs font-extrabold text-sky-950 dark:text-[#F8FAFC] select-all">
                       {STRICTLY_DIGITAL_CONTACT_CONFIG.careEmail}
                     </span>
                   </div>
@@ -517,7 +517,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                         : `✓ تم نسخ البريد الإلكتروني: ${STRICTLY_DIGITAL_CONTACT_CONFIG.supportEmail}`
                     );
                   }}
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-colors"
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-colors cursor-pointer"
                 >
                   {isEn ? 'Copy Email' : 'نسخ البريد الإلكتروني'}
                 </button>
@@ -530,7 +530,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                         : `✉️ تم تجهيز مراسلة فورية إلى ${STRICTLY_DIGITAL_CONTACT_CONFIG.supportEmail}`
                     )
                   }
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl border border-sky-300 bg-white text-sky-950 text-xs font-extrabold hover:bg-sky-100 transition-colors"
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl border border-sky-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-sky-950 dark:text-[#F8FAFC] text-xs font-extrabold hover:bg-sky-100 transition-colors cursor-pointer"
                 >
                   {isEn ? 'Direct Email' : 'إرسال بريد مباشر'}
                 </button>
@@ -538,10 +538,10 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </div>
 
             {/* Customer Service Phone Number Card */}
-            <div className="rounded-[20px] border border-emerald-200/90 bg-emerald-50/85 p-4 space-y-3 shadow-2xs flex flex-col justify-between">
+            <div className="rounded-[20px] border border-emerald-200/90 dark:border-[#1E3646] bg-emerald-50/85 dark:bg-[#101D26] p-4 space-y-3 shadow-2xs flex flex-col justify-between">
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-900 text-[10px] font-extrabold">
+                  <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
                     {isEn ? 'CUSTOMER SERVICE PHONE' : 'أرقام هاتف خدمة العملاء'}
                   </span>
                   <span className="text-lg" aria-hidden="true">📞</span>
@@ -552,27 +552,27 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     : 'الخط الساخن الموحد وأرقام خدمة العملاء المباشرة'}
                 </h3>
                 <div className="space-y-1.5 pt-1">
-                  <div className="rounded-xl bg-white/90 border border-emerald-100 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-emerald-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
                       {isEn ? 'Unified Short Number:' : 'الرقم المختصر الموحد:'}
                     </span>
-                    <span dir="ltr" className="text-sm font-extrabold text-emerald-950 tabular-nums">
+                    <span dir="ltr" className="text-sm font-extrabold text-emerald-950 dark:text-[#2DD4BF] tabular-nums">
                       ☎️ {STRICTLY_DIGITAL_CONTACT_CONFIG.hotlineShort}
                     </span>
                   </div>
-                  <div className="rounded-xl bg-white/90 border border-emerald-100 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-emerald-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
                       {isEn ? 'Customer Care Line 1:' : 'هاتف خدمة العملاء (١):'}
                     </span>
-                    <span dir="ltr" className="text-xs font-extrabold text-emerald-950 tabular-nums select-all">
+                    <span dir="ltr" className="text-xs font-extrabold text-emerald-950 dark:text-[#F8FAFC] tabular-nums select-all">
                       {STRICTLY_DIGITAL_CONTACT_CONFIG.customerServicePhonePrimary}
                     </span>
                   </div>
-                  <div className="rounded-xl bg-white/90 border border-emerald-100 px-3 py-2 flex items-center justify-between gap-2">
+                  <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-emerald-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
                       {isEn ? 'Customer Care Line 2:' : 'هاتف خدمة العملاء (٢):'}
                     </span>
-                    <span dir="ltr" className="text-xs font-extrabold text-emerald-950 tabular-nums select-all">
+                    <span dir="ltr" className="text-xs font-extrabold text-emerald-950 dark:text-[#F8FAFC] tabular-nums select-all">
                       {STRICTLY_DIGITAL_CONTACT_CONFIG.customerServicePhoneSecondary}
                     </span>
                   </div>
@@ -589,7 +589,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                         : `📞 جاري الاتصال بخدمة العملاء (${STRICTLY_DIGITAL_CONTACT_CONFIG.hotlineShort})...`
                     )
                   }
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-colors"
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-colors cursor-pointer"
                 >
                   {isEn ? 'Call Customer Care' : 'اتصال بخدمة العملاء'}
                 </button>
@@ -603,7 +603,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                         : `✓ تم نسخ رقم خدمة العملاء: ${STRICTLY_DIGITAL_CONTACT_CONFIG.customerServicePhonePrimary}`
                     );
                   }}
-                  className="min-h-[38px] px-3 py-1.5 rounded-xl border border-emerald-300 bg-white text-emerald-950 text-xs font-extrabold hover:bg-emerald-100 transition-colors"
+                  className="min-h-[38px] px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-emerald-950 dark:text-[#F8FAFC] text-xs font-extrabold hover:bg-emerald-100 transition-colors cursor-pointer"
                 >
                   {isEn ? 'Copy Number' : 'نسخ رقم الهاتف'}
                 </button>
@@ -612,10 +612,10 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           </div>
 
           {/* 2. Social Media Icons & Official Digital Channels Grid */}
-          <div className="rounded-[22px] border border-purple-200/85 bg-purple-50/75 p-4 sm:p-5 space-y-3 shadow-2xs">
+          <div className="rounded-[22px] border border-purple-200/85 dark:border-[#1E3646] bg-purple-50/75 dark:bg-[#101D26] p-4 sm:p-5 space-y-3 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="px-2.5 py-0.5 rounded-md bg-purple-100 text-purple-900 text-[10px] font-extrabold">
+                <span className="px-2.5 py-0.5 rounded-md bg-purple-100 dark:bg-[#142430] text-purple-900 dark:text-[#C4B5FD] text-[10px] font-extrabold">
                   {isEn ? 'SOCIAL MEDIA CHANNELS' : 'قنوات التواصل الاجتماعي الرسمية'}
                 </span>
                 <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-0.5">
@@ -624,7 +624,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     : 'تابعنا وتواصل معنا عبر منصات التواصل الاجتماعي'}
                 </h3>
               </div>
-              <span className="text-[11px] font-bold text-purple-900">
+              <span className="text-[11px] font-bold text-purple-900 dark:text-[#C4B5FD]">
                 ⚡ {isEn ? 'Instant Digital Response' : 'استجابة رقمية فورية'}
               </span>
             </div>
@@ -645,7 +645,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                           : `🌐 تم فتح قناة ${soc.nameAr} الرسمية (${soc.handle})`
                       )
                     }
-                    className={`rounded-2xl border ${toneObj.card} bg-white/95 p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-95 transition-all`}
+                    className={`rounded-2xl border ${toneObj.card} bg-white/95 dark:bg-[#142430] p-3 text-center flex flex-col items-center justify-center gap-1.5 shadow-2xs hover:shadow-sm active:scale-95 transition-all cursor-pointer`}
                   >
                     <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg font-extrabold ${toneObj.iconBg}`}>
                       {soc.icon}
@@ -663,10 +663,10 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           </div>
 
           {/* 3. Direct In-App Digital Support Message Form (No Physical Address Fields) */}
-          <div className="rounded-[22px] border border-amber-200/85 bg-amber-50/75 p-4 sm:p-5 space-y-3.5 shadow-2xs">
+          <div className="rounded-[22px] border border-amber-200/85 dark:border-[#1E3646] bg-amber-50/75 dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-900 text-[10px] font-extrabold">
+                <span className="px-2.5 py-0.5 rounded-md bg-amber-100 dark:bg-[#142430] text-amber-900 dark:text-[#FDBA74] text-[10px] font-extrabold">
                   {isEn ? 'DIRECT DIGITAL MESSAGE' : 'نموذج المراسلة الرقمية السريعة'}
                 </span>
                 <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] mt-0.5">
@@ -694,7 +694,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     value={senderName}
                     onChange={(e) => setSenderName(e.target.value)}
                     placeholder={isEn ? 'Parent Name' : 'اسم ولي الأمر'}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
                   />
                 </div>
 
@@ -708,7 +708,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     dir="ltr"
                     value={senderEmail}
                     onChange={(e) => setSenderEmail(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
                   />
                 </div>
 
@@ -722,7 +722,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     dir="ltr"
                     value={senderPhone}
                     onChange={(e) => setSenderPhone(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)] tabular-nums"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)] tabular-nums"
                   />
                 </div>
               </div>
@@ -736,7 +736,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                     id="contactTopicSelect"
                     value={ticketTopic}
                     onChange={(e) => setTicketTopic(e.target.value as typeof ticketTopic)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
                   >
                     <option value="support">{isEn ? 'Technical Support' : 'دعم فني للحساب'}</option>
                     <option value="store">{isEn ? 'Store & Orders' : 'استفسار عن طلب بالمتجر'}</option>
@@ -759,13 +759,13 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                         ? 'Write your question or feedback here...'
                         : 'اكتب سؤالك أو رسالتك لفريق الدعم الرقمي...'
                     }
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
                   />
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className="text-[11px] font-bold text-amber-900">
+                <span className="text-[11px] font-bold text-amber-900 dark:text-[#FDBA74]">
                   ✉️ {STRICTLY_DIGITAL_CONTACT_CONFIG.supportEmail} · ☎️ {STRICTLY_DIGITAL_CONTACT_CONFIG.hotlineShort}
                 </span>
                 <PrimaryCtaButton type="submit" variant="orange" size="md">
