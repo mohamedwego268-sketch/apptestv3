@@ -15,7 +15,6 @@ import {
   FriendlyEmptyState,
   MasterPatternCard,
   PrimaryCtaButton,
-  SoftFilledIcon,
   UnifiedBadge,
 } from '../components/DesignSystem';
 

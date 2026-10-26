@@ -45,7 +45,6 @@ const WEEKDAYS_AR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأ
 const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function buildCalibratedFiveDayForecast(
-  baseTemp: number,
   highTemp: number,
   lowTemp: number,
   baseCode: number,
@@ -152,7 +151,7 @@ function resolveCityWeatherBaseline(country: CountryCode, cityName: string) {
       highTempC: highC,
       lowTempC: lowC,
       rainProbability: rainProb,
-      forecastDays: buildCalibratedFiveDayForecast(tempC, highC, lowC, weatherCode, rainProb),
+      forecastDays: buildCalibratedFiveDayForecast(highC, lowC, weatherCode, rainProb),
       source: 'calibrated' as const,
       updatedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },

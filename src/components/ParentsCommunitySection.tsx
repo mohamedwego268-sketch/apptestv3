@@ -5,11 +5,9 @@ import {
   CollapsibleSectionCard,
   FriendlyEmptyState,
   MasterPatternCard,
-  PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
-  UnifiedBadge,
 } from './DesignSystem';
 
 interface CommunityComment {

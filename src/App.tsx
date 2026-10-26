@@ -1241,8 +1241,7 @@ export default function App() {
   const parentProfileSpec = getParentProfileThemeSpec(
     state.role,
     state.parentName,
-    state.darkMode,
-    lang
+    state.darkMode
   );
 
   const handleSelectParentProfile = (targetRole: 'mom' | 'dad') => {
@@ -1553,7 +1552,6 @@ export default function App() {
                 userCoords={userCoords}
                 geoStatus={geoStatus}
                 navigateTo={navigateTo}
-                onSelectParentProfile={handleSelectParentProfile}
                 onSelectPreciseCity={handleSelectPreciseCity}
                 onUseCurrentLocation={handleUseCurrentLocation}
                 onAddToCart={handleAddToCart}
@@ -1857,9 +1855,6 @@ export default function App() {
               <NotificationsCenterSection
                 state={state}
                 language={state.language}
-                onSelectParentAccount={(pid) =>
-                  setState((prev) => ({ ...prev, activeParentAccount: pid }))
-                }
                 onShowToast={showToast}
                 onUpdateNotificationPrefs={(pid, patch) => {
                   setState((prev) => ({

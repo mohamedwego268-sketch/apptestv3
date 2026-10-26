@@ -14,7 +14,6 @@ import {
   MasterPatternCard,
   PrimaryCtaButton,
   SoftFilledIcon,
-  UnifiedBadge,
 } from '../components/DesignSystem';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
 

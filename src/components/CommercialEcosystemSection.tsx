@@ -30,7 +30,6 @@ import {
   PastelTone,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
-  UnifiedBadge,
 } from './DesignSystem';
 
 interface CommercialEcosystemSectionProps {
@@ -793,7 +792,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     },
     {
       id: 'store-slide-tracking',
-      badge: isEn ? '🛵 Live Talabat-Style Tracking' : '🛵 تتبع الطلبات المباشر',
+      badge: isEn ? '🛵 Live Delivery Tracking' : '🛵 تتبع الطلبات المباشر',
       title: isEn
         ? 'Real-Time Order Timeline & Live Driver Route Map'
         : 'تتبع لحظي لحالة طلبك ومسار المندوب حتى باب المنزل',

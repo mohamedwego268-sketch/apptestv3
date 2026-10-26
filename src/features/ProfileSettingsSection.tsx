@@ -7,7 +7,6 @@ import {
   CurrencyCode,
   CalendarDisplayMode,
   COUNTRY_CITIES_MAP,
-  DEMO_OTP_CODE,
   locText,
   ParentProfileThemeSpec,
 } from '../domain/familySpaceCore';
@@ -146,6 +145,15 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
             >
               {lang === 'en' ? 'Family & Permissions' : 'العيلة والصلاحيات'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigateTo('notifications')}
+              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
+            >
+              {lang === 'en'
+                ? `Alerts (${unreadNotifCount})`
+                : `الإشعارات (${unreadNotifCount})`}
             </button>
             <button
               type="button"

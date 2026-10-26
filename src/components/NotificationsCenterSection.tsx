@@ -8,12 +8,11 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
-import { FriendlyEmptyState, MasterPatternCard, PrimaryCtaButton, SectionHeader, SoftFilledIcon } from './DesignSystem';
+import { FriendlyEmptyState, MasterPatternCard, PrimaryCtaButton, SoftFilledIcon } from './DesignSystem';
 
 interface NotificationsCenterSectionProps {
   state: FamilySpaceState;
   language: LanguageCode;
-  onSelectParentAccount: (parentId: 'mother' | 'father') => void;
   onUpdateNotificationPrefs: (
     parentId: 'mother' | 'father',
     patch: Partial<ParentNotificationPrefs>
@@ -26,7 +25,6 @@ interface NotificationsCenterSectionProps {
 export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProps> = ({
   state,
   language,
-  onSelectParentAccount,
   onUpdateNotificationPrefs,
   onToggleReadNotification,
   onMarkAllRead,

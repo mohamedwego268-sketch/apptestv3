@@ -10,9 +10,7 @@ import { AVATAR_ACCESSORY_THEMES } from '../domain/assetManifest3D';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import {
   MasterPatternCard,
-  PASTEL_CARD_TONES,
   PrimaryCtaButton,
-  UnifiedBadge,
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar, ThreeDIcon } from '../components/ThreeDVisuals';
 import { ChildGrowthChart } from '../components/ChildGrowthChart';

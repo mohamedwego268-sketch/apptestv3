@@ -39,7 +39,6 @@ export interface HomeDashboardSectionProps {
   bedtimeMode?: boolean;
   onToggleBedtimeMode?: () => void;
   navigateTo: (page: PageId) => void;
-  onSelectParentProfile: (role: 'mom' | 'dad') => void;
   onSelectPreciseCity: (combinedValue: string) => void;
   onUseCurrentLocation: () => void;
   onAddToCart: (item: CommercialCatalogItem) => void;
@@ -62,7 +61,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   bedtimeMode = false,
   onToggleBedtimeMode,
   navigateTo,
-  onSelectParentProfile,
   onSelectPreciseCity,
   onUseCurrentLocation,
   onAddToCart,

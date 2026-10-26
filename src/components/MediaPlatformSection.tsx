@@ -474,12 +474,19 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           <button
             type="button"
             onClick={() => setIsFullScreenReel((f) => !f)}
-            className="px-2.5 py-1 rounded-full bg-white text-slate-950 hover:bg-indigo-50 text-[11px] font-extrabold shadow-2xs"
+            aria-label={
+              fullScreenMode
+                ? isEn
+                  ? 'Exit Full Screen'
+                  : 'إغلاق ملء الشاشة'
+                : isEn
+                ? 'Full Screen'
+                : 'ملء الشاشة'
+            }
+            className="px-2.5 py-1 rounded-full bg-white text-slate-950 hover:bg-indigo-50 text-[11px] font-extrabold shadow-2xs cursor-pointer"
           >
             {fullScreenMode
-              ? isEn
-                ? '✕ Exit Full Screen'
-                : '✕ إغلاق ملء الشاشة'
+              ? '×'
               : isEn
               ? '⛶ Full Screen'
               : '⛶ ملء الشاشة'}
@@ -703,7 +710,8 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           {/* Right Panel: Interactive Comments Section + Takeaways + All Reels Grid */}
           <div className="space-y-4">
             {/* Interactive Social Comments & Discussion Box */}
-            <div className="rounded-[22px] border border-rose-200/80 bg-rose-50/50 p-4 space-y-3 shadow-2xs">
+            {showCommentsDrawerFor !== null && (
+            <div className="rounded-[22px] border border-rose-200/80 dark:border-[#1E3646] bg-rose-50/50 dark:bg-[#101D26] p-4 space-y-3 shadow-2xs soft-card-surface">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-sm font-extrabold text-[var(--color-text)] flex items-center gap-1.5">
                   <span>💬</span>
@@ -722,9 +730,17 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                         isEn ? currentReel.titleEn : currentReel.titleAr
                       )
                     }
-                    className="px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-[11px] font-extrabold text-rose-900"
+                    className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#142430] border border-rose-200 dark:border-[#1E3646] text-[11px] font-extrabold text-rose-900 dark:text-[#F8FAFC] cursor-pointer"
                   >
                     📤 {isEn ? 'Share Reel' : 'مشاركة الريل'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCommentsDrawerFor(null)}
+                    aria-label={isEn ? 'Hide comments' : 'إخفاء التعليقات'}
+                    className="w-7 h-7 rounded-lg bg-white dark:bg-[#142430] border border-rose-200 dark:border-[#1E3646] text-xs font-black text-[var(--color-text)] flex items-center justify-center cursor-pointer"
+                  >
+                    ×
                   </button>
                 </div>
               </div>
@@ -785,6 +801,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 )}
               </div>
             </div>
+            )}
 
             {/* Quick Actionable Steps */}
             <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/70 p-4 space-y-2.5 shadow-2xs">
@@ -1305,9 +1322,10 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveItem(null)}
-                className="px-3 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)]"
+                aria-label={isEn ? 'Close' : 'إغلاق'}
+                className="w-8 h-8 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] hover:bg-rose-500 hover:text-white text-base font-black text-[var(--color-text)] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
               >
-                {isEn ? 'Close' : 'إغلاق'}
+                ×
               </button>
             </div>
             <div className="space-y-2 text-xs sm:text-sm text-[var(--color-text)] leading-relaxed">

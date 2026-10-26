@@ -638,6 +638,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </select>
               </div>
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--color-text)] mb-1">
+                {isEn ? 'Favorite Activities & Interests' : 'اهتمامات وهوايات الطفل المفضلة'}
+              </label>
+              <input
+                type="text"
+                value={childInterests}
+                onChange={(e) => setChildInterests(e.target.value)}
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
+              />
+            </div>
           </div>
         )}
 

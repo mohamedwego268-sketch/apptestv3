@@ -274,7 +274,7 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
                   : 'text-[var(--color-muted)] dark:text-[#94A3B8] hover:text-[var(--color-text)]'
               }`}
             >
-              ⚖️ {isEn ? 'Weight (kg)' : 'الوزن (كجم)'}
+              📊 {isEn ? 'Weight (kg)' : 'الوزن (كجم)'}
             </button>
           </div>
         </div>
@@ -299,7 +299,7 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
 
         <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-bg)] dark:bg-[#142430] p-3.5">
           <div className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-            ⚖️ {isEn ? 'Current Weight' : 'الوزن الحالي'}
+            📊 {isEn ? 'Current Weight' : 'الوزن الحالي'}
           </div>
           <div
             dir="ltr"

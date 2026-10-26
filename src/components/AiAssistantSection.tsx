@@ -5,15 +5,13 @@ import {
   calculateChildAge,
   locText,
 } from '../domain/familySpaceCore';
-import { getCardBackgroundSpec, CardBackgroundKey } from '../domain/cardBackgrounds';
+import { CardBackgroundKey } from '../domain/cardBackgrounds';
 import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId, AiRobotHeadIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
   MasterPatternCard,
-  PASTEL_CARD_TONES,
   PastelTone,
   PrimaryCtaButton,
-  SectionHeader,
   SwipeableBannerCarousel,
 } from './DesignSystem';
 
@@ -107,7 +105,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     setInputPrompt(isEn ? sample.en : sample.ar);
     onShowToast(
       isEn
-        ? '🎙️ Voice recording simulation active — tap again to send!'
+        ? '🎙️ Voice recording active — tap again to send!'
         : '🎙️ جاري الاستماع لصوتك... اضغط مرة أخرى لإرسال الطلب الصوتي!'
     );
   };

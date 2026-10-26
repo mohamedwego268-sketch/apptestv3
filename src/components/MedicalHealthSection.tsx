@@ -10,7 +10,7 @@ import {
   formatCurrency,
   locText,
 } from '../domain/familySpaceCore';
-import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
+import { ThreeDChildAvatar } from './ThreeDVisuals';
 import {
   BannerSlideItem,
   CompareArrowsIcon,
@@ -18,7 +18,6 @@ import {
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
-import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { ChildGrowthChart } from './ChildGrowthChart';
 
 interface MedicalHealthSectionProps {

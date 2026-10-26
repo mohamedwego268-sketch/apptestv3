@@ -4875,8 +4875,7 @@ export interface ParentProfileThemeSpec {
 export function getParentProfileThemeSpec(
   role: ParentThemeRole,
   parentName?: string,
-  darkMode?: boolean,
-  lang: LanguageCode = 'ar'
+  darkMode?: boolean
 ): ParentProfileThemeSpec {
   const isDad = role === 'dad';
   const isDark = Boolean(darkMode);
