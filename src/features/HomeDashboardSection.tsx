@@ -16,6 +16,7 @@ import { getCardBackgroundSpec, getProductUnsplashImageUrl } from '../domain/car
 import { t } from '../domain/i18n';
 import {
   BannerSlideItem,
+  CompareArrowsIcon,
   MasterPatternCard,
   PrimaryCtaButton,
   SoftFilledIcon,
@@ -73,6 +74,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [showAllHomeHubs, setShowAllHomeHubs] = useState<boolean>(false);
   const [homeFocusTab, setHomeFocusTab] = useState<'nearby' | 'children' | 'schedule'>('nearby');
   const [homeWishlistIds, setHomeWishlistIds] = useState<number[]>([]);
+  const [homeCompareIds, setHomeCompareIds] = useState<number[]>([]);
   const [activeTipKidIdx, setActiveTipKidIdx] = useState<number>(0);
   const [proactiveTipIndex, setProactiveTipIndex] = useState<number>(0);
   const [homeAiPrompt, setHomeAiPrompt] = useState<string>('');
@@ -94,6 +96,23 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     if (onAddProductToWishes) {
       onAddProductToWishes(item);
     }
+  };
+
+  const toggleHomeCompare = (item: CommercialCatalogItem) => {
+    setHomeCompareIds((prev) => {
+      const exists = prev.includes(item.id);
+      const next = exists ? prev.filter((id) => id !== item.id) : [...prev.slice(-2), item.id];
+      onShowToast?.(
+        exists
+          ? lang === 'en'
+            ? `Removed "${item.nameEn}" from comparison`
+            : `تمت إزالة «${item.name}» من المقارنة`
+          : lang === 'en'
+          ? `Added "${item.nameEn}" to comparison`
+          : `تمت إضافة «${item.name}» للمقارنة الذكية`
+      );
+      return next;
+    });
   };
 
   const isEn = lang === 'en';
@@ -157,42 +176,42 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     const plans = [
       {
         id: 'plan-evening',
-        badgeAr: `🌙 روتين المساء · ${stageStr}`,
-        badgeEn: `🌙 Evening Ritual · ${stageStr}`,
+        badgeAr: `🌙 المساء · ${stageStr}`,
+        badgeEn: `🌙 Evening · ${stageStr}`,
         titleAr: `تهدئة المساء وقصة قبل النوم لـ ${kAr}`,
         titleEn: `Calm Wind-Down & Storytime for ${kEn}`,
-        descAr: `إيقاف الشاشات 07:30 م + حمام دافئ وقراءة قصة قصيرة تناسب حب ${kAr} لـ (${interestsAr}).`,
-        descEn: `Zero screens at 07:30 PM + warm bath & short story tailored to ${kEn}'s love for ${interestsEn}.`,
+        descAr: `إيقاف الشاشات 07:30 م + قصة قصيرة تناسب حب ${kAr} لـ (${interestsAr}).`,
+        descEn: `Zero screens at 07:30 PM + short story around ${interestsEn}.`,
         time: '07:45 م',
       },
       {
         id: 'plan-focus',
-        badgeAr: `🎨 تنمية المهارات · ${stageStr}`,
-        badgeEn: `🎨 Skill Growth · ${stageStr}`,
-        titleAr: `جلسة تركيز ولعب تفاعلي (٢٠ دقيقة) مع ${kAr}`,
+        badgeAr: `🎨 المهارات · ${stageStr}`,
+        badgeEn: `🎨 Skills · ${stageStr}`,
+        titleAr: `جلسة تركيز ولعب تفاعلي (٢٠ د) مع ${kAr}`,
         titleEn: `20-Min Interactive Focus Play with ${kEn}`,
-        descAr: `نشاط عملي لتنمية الحصيلة اللغوية والمهارات الحركية لـ ${kAr} باستخدام (${interestsAr}).`,
-        descEn: `Hands-on vocabulary & motor skills session for ${kEn} built around ${interestsEn}.`,
+        descAr: `نشاط عملي لتنمية اللغة والمهارات لـ ${kAr} عبر (${interestsAr}).`,
+        descEn: `Hands-on vocabulary & motor skills session around ${interestsEn}.`,
         time: '04:30 م',
       },
       {
         id: 'plan-nutrition',
-        badgeAr: `🍎 تغذية صحية · ${stageStr}`,
-        badgeEn: `🍎 Smart Nutrition · ${stageStr}`,
+        badgeAr: `🍎 التغذية · ${stageStr}`,
+        badgeEn: `🍎 Nutrition · ${stageStr}`,
         titleAr: `وجبة الطاقة والتركيز الصباحية لـ ${kAr}`,
         titleEn: `Morning Energy & Brain-Boost Meal for ${kEn}`,
-        descAr: `تحضير وجبة متوازنة غنية بالحديد والفيتامينات لدعم نمو ${kAr} في مرحلة ${stageStr}.`,
-        descEn: `Prepare an iron-rich balanced meal supporting ${kEn}'s growth at ${stageStr}.`,
+        descAr: `وجبة متوازنة غنية بالحديد لدعم نمو ${kAr} (${stageStr}).`,
+        descEn: `Iron-rich balanced meal supporting ${kEn}'s growth (${stageStr}).`,
         time: '08:30 ص',
       },
       {
         id: 'plan-autonomy',
         badgeAr: `🌟 الاستقلالية · ${stageStr}`,
-        badgeEn: `🌟 Independence · ${stageStr}`,
+        badgeEn: `🌟 Autonomy · ${stageStr}`,
         titleAr: `تحدي الاعتماد على النفس اليومي لـ ${kAr}`,
         titleEn: `Daily Self-Reliance Challenge for ${kEn}`,
-        descAr: `منح ${kAr} خيارين إيجابيين لترتيب ألعابه وتجهيز أدوات الغد مع تشجيع فوري.`,
-        descEn: `Give ${kEn} two positive choices to tidy toys and prep tomorrow's essentials.`,
+        descAr: `منح ${kAr} خيارين لترتيب ألعابه وتجهيز أدوات الغد.`,
+        descEn: `Two positive choices for ${kEn} to tidy toys and prep for tomorrow.`,
         time: '06:30 م',
       },
     ];
@@ -808,7 +827,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
           return (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {visibleCards.map((card, idx) => (
                   <MasterPatternCard
                     key={card.id}
@@ -819,7 +838,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     onThumbnailClick={() => navigateTo(card.id)}
                     topLeftBadge={
                       <>
-                        <ThreeDIcon id={card.iconId} size={13} />
+                        <ThreeDIcon id={card.iconId} size={12} />
                         <span>{card.title}</span>
                       </>
                     }
@@ -839,13 +858,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => navigateTo(card.id)}
-                        className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                        className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
                       >
-                        {isEn ? 'View Details' : 'شوف التفاصيل'}
+                        {isEn ? 'Details' : 'تفاصيل'}
                       </button>
                     }
                     footerLeft={
-                      <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                      <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                         {card.badge}
                       </span>
                     }
@@ -853,9 +872,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => navigateTo(card.id)}
-                        className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold inline-flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
+                        className="min-h-[30px] px-2.5 py-1 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-[10.5px] font-extrabold inline-flex items-center gap-1 shadow-2xs transition-all cursor-pointer"
                       >
-                        <span>{isEn ? 'Open' : 'افتح القسم'}</span>
+                        <span>{isEn ? 'Open' : 'افتح'}</span>
                         <span>{isEn ? '→' : '←'}</span>
                       </button>
                     }
@@ -863,12 +882,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 ))}
               </div>
 
-              <div className="flex justify-center pt-1">
+              <div className="flex justify-center pt-0.5">
                 <button
                   id="toggle-all-home-hubs-btn"
                   type="button"
                   onClick={() => setShowAllHomeHubs((prev) => !prev)}
-                  className="min-h-[38px] px-5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-role-text)] hover:border-[var(--color-accent)] transition-colors"
+                  className="min-h-[34px] px-4 py-1.5 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-role-text)] hover:border-[var(--color-accent)] transition-colors"
                 >
                   {showAllHomeHubs
                     ? isEn
@@ -888,19 +907,19 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <div
         id="home-decluttered-tabs"
         data-testid="home-horizontal-carousel"
-        className="rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 sm:p-7 space-y-6 soft-card-surface"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 sm:p-4 space-y-3.5 soft-card-surface"
       >
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[var(--color-border)] pb-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 border-b border-[var(--color-border)] pb-2.5">
           <div className="text-center sm:text-start">
-            <h2 className="text-lg sm:text-xl font-extrabold text-[var(--color-heading)]">
+            <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-heading)]">
               {isEn
-                ? 'Your Local Services & Family Snapshot'
-                : 'الخدمات القريبة وملخص الأسرة اليومي'}
+                ? 'Local Services & Family Snapshot'
+                : 'الخدمات القريبة وملخص الأسرة'}
             </h2>
-            <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5">
+            <p className="text-[10.5px] font-semibold text-[var(--color-muted)]">
               {isEn
-                ? `Filtered for ${localizedCity} · Switch tabs below`
-                : `مخصص لمدينة ${localizedCity} · تنقّل بين التبويبات المنظمة`}
+                ? `Filtered for ${localizedCity}`
+                : `مخصص لمدينة ${localizedCity}`}
             </p>
           </div>
 
@@ -908,7 +927,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           <div
             role="tablist"
             aria-label={isEn ? 'Home organized sections' : 'تبويبات الشاشة الرئيسية المنظمة'}
-            className="flex flex-wrap items-center gap-1.5 rounded-2xl bg-[var(--color-control-muted)] p-1.5"
+            className="flex flex-wrap items-center gap-1 rounded-xl bg-[var(--color-control-muted)] p-1"
           >
             {[
               {
@@ -1053,7 +1072,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 py-0.5">
               {sortCatalogByCityAndProximity(
                 COMMERCIAL_CATALOG,
                 state.country,
@@ -1066,6 +1085,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   const origPrice = state.currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
                   const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
                   const isWishlisted = homeWishlistIds.includes(item.id);
+                  const isCompared = homeCompareIds.includes(item.id);
                   const revCount = item.reviewCount || 142;
                   const handleInspect = () =>
                     onInspectCommercialItem
@@ -1114,22 +1134,22 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         <button
                           type="button"
                           onClick={handleInspect}
-                          className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
+                          className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
                         >
-                          {isEn ? 'View Details' : 'شوف التفاصيل'}
+                          {isEn ? 'Details' : 'تفاصيل'}
                         </button>
                       }
                       footerLeft={
                         <div
                           onClick={handleInspect}
-                          className="flex items-baseline gap-1.5 tabular-nums cursor-pointer"
+                          className="flex items-baseline gap-1 tabular-nums cursor-pointer"
                         >
                           {origPrice && (
-                            <span className="text-[10px] line-through text-[var(--color-muted)]">
+                            <span className="text-[9.5px] line-through text-[var(--color-muted)]">
                               {formatCurrency(origPrice, state.currency, state.language)}
                             </span>
                           )}
-                          <strong className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                          <strong className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                             {formatCurrency(price, state.currency, state.language)}
                           </strong>
                         </div>
@@ -1138,16 +1158,30 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         <>
                           <button
                             type="button"
+                            onClick={() => toggleHomeCompare(item)}
+                            aria-pressed={isCompared}
+                            title={isEn ? 'Compare Product' : 'مقارنة المنتج'}
+                            aria-label={isEn ? 'Compare Product' : 'مقارنة المنتج'}
+                            className={`h-7 px-2 rounded-lg border text-[9.5px] font-extrabold flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
+                              isCompared
+                                ? 'bg-[#0d9488] border-[#0d9488] text-white'
+                                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#0d9488]'
+                            }`}
+                          >
+                            <CompareArrowsIcon size={13} />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => toggleHomeWishlist(item)}
                             title={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
                             aria-label={isEn ? 'Toggle Wishlist' : 'إضافة للمفضلة'}
-                            className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+                            className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
                               isWishlisted
                                 ? 'bg-[#FF8C61] border-[#FF8C61] text-white'
                                 : 'border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white'
                             }`}
                           >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
                               <path
                                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
                                 fill="currentColor"
@@ -1164,9 +1198,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                             onClick={() => onAddToCart(item)}
                             title={isEn ? 'Add to Cart' : 'أضف للسلة'}
                             aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
-                            className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
+                            className="w-7 h-7 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs transition-all active:scale-95 cursor-pointer"
                           >
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+                            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
                               <path
                                 d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"
                                 fill="currentColor"

@@ -494,7 +494,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   ];
 
   return (
-    <section className="space-y-5" aria-label={isEn ? 'Parents Community' : 'مجتمع الوالدين'}>
+    <section className="space-y-3.5" aria-label={isEn ? 'Parents Community' : 'مجتمع الوالدين'}>
       {/* Swipeable Community Banner Carousel */}
       <SwipeableBannerCarousel
         slides={communityBanners}
@@ -505,29 +505,29 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
       <div
         id="community-story-reels-strip"
-        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 soft-card-surface shadow-xs"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 sm:p-4 space-y-2.5 soft-card-surface shadow-xs"
       >
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-0.5">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[11px] font-extrabold">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold">
               <span>🎬</span>
               <span>
                 {isEn
-                  ? 'Short Family Story Reels & Golden Verified Specialists'
-                  : 'قصص وريلز العيلة القصيرة · ونخبة أطباء وخبراء «نكبر» المعتمدين'}
+                  ? 'Family Story Reels & Verified Specialists'
+                  : 'ريلز العيلة القصيرة · والخبراء المعتمدين'}
               </span>
             </div>
-            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+            <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
               {isEn
-                ? '60-Second Expert Tips & Real Parent Stories'
-                : 'كبسولات تربوية وطبية سريعة (Reels) مع الأطباء الموثقين بالشارة الذهبية 🏅'}
+                ? '60s Expert Tips & Real Parent Stories'
+                : 'كبسولات تربوية وطبية سريعة مع الأطباء الموثقين 🏅'}
             </h3>
           </div>
 
           <button
             type="button"
             onClick={() => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts')}
-            className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`min-h-[32px] px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
               topicFilter === 'experts'
                 ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
                 : 'border-amber-400/50 bg-amber-50/90 dark:bg-[#142430] text-amber-900 dark:text-amber-300 hover:border-amber-400'
@@ -537,17 +537,17 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             <span>
               {topicFilter === 'experts'
                 ? isEn
-                  ? 'Showing Verified Expert Replies ✓'
-                  : 'عرض استشارات الخبراء المعتمدين ✓'
+                  ? 'Verified Replies ✓'
+                  : 'ردود الخبراء ✓'
                 : isEn
-                ? 'Filter Verified Expert Replies'
-                : 'عرض المنشورات الموثقة من الأطباء'}
+                ? 'Expert Replies'
+                : 'منشورات الأطباء'}
             </span>
           </button>
         </div>
 
         {/* Horizontal Story Reels Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           {familyStoryReels.map((reel) => {
             const isSelectedReel = activeStoryReelId === reel.id;
             return (
@@ -555,7 +555,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 key={reel.id}
                 type="button"
                 onClick={() => setActiveStoryReelId(isSelectedReel ? null : reel.id)}
-                className={`group relative overflow-hidden rounded-2xl border text-start p-2.5 min-h-[116px] flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                className={`group relative overflow-hidden rounded-xl border text-start p-2 min-h-[96px] flex flex-col justify-between transition-all duration-300 cursor-pointer ${
                   isSelectedReel
                     ? 'border-amber-400 ring-2 ring-amber-400/30 scale-[1.01]'
                     : 'border-[var(--color-border)] dark:border-[#1E3646] hover:border-amber-400/60 hover:scale-[1.01]'
@@ -828,7 +828,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           }}
         />
       ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {filteredPosts.map((post) => {
           const isLiked = likedIds.includes(post.id);
           const isHelpful = helpfulIds.includes(post.id);
@@ -855,7 +855,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 </span>
               }
               titlePrefixSlot={
-                <div className="w-7 h-7 rounded-xl bg-white/95 dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] text-orange-900 dark:text-[#FDBA74] text-xs font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-6 h-6 rounded-lg bg-white/95 dark:bg-[#142430] border border-orange-200 dark:border-[#1E3646] text-orange-900 dark:text-[#FDBA74] text-[10.5px] font-extrabold flex items-center justify-center shrink-0 shadow-2xs">
                   {(isEn ? post.authorEn : post.authorAr).slice(0, 1)}
                 </div>
               }
@@ -868,12 +868,12 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 </span>
               }
               metaRightAction={
-                <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                <span className="text-[10px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
                   {isEn ? post.authorEn : post.authorAr}
                 </span>
               }
               bodyContent={
-                <p className="text-xs text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold leading-relaxed">
+                <p className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold leading-snug line-clamp-2">
                   {isEn ? post.bodyEn : post.bodyAr}
                 </p>
               }

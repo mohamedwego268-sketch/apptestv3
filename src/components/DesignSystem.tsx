@@ -85,6 +85,37 @@ export interface UnifiedBadgeProps {
 }
 
 /**
+ * Modern Dual Opposing Arrows Comparison Icon (⇄) — replaces legacy balance/scale icon universally.
+ */
+export const CompareArrowsIcon: React.FC<{ className?: string; size?: number }> = ({
+  className = '',
+  size = 14,
+}) => (
+  <span
+    data-compare-icon="arrows"
+    aria-hidden="true"
+    className={`inline-flex items-center justify-center leading-none select-none font-black ${className}`}
+  >
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+    >
+      <path d="M16 3l4 4-4 4" />
+      <path d="M20 7H4" />
+      <path d="M8 21l-4-4 4-4" />
+      <path d="M4 17h16" />
+    </svg>
+  </span>
+);
+
+/**
  * Unified Tag & Badge component ensuring consistent typography, border radius, and soft-filled colors.
  */
 export const UnifiedBadge: React.FC<UnifiedBadgeProps> = ({
@@ -99,9 +130,9 @@ export const UnifiedBadge: React.FC<UnifiedBadgeProps> = ({
   return (
     <span
       data-unified-badge="true"
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold ${toneClasses.badge} shadow-2xs select-none whitespace-nowrap ${className}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${toneClasses.badge} shadow-2xs select-none whitespace-nowrap ${className}`}
     >
-      {iconId && <ThreeDIcon id={iconId} size={11} />}
+      {iconId && <ThreeDIcon id={iconId} size={10} />}
       <span>{content}</span>
     </span>
   );
@@ -387,25 +418,25 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
       }}
       aria-label={ariaLabel || (isEn ? 'Featured Highlights Carousel' : 'لافتات العروض والمختارات المتحركة')}
     >
-      <div className="p-2.5 sm:p-3.5 flex flex-row items-center justify-between gap-2.5 min-h-[104px] sm:min-h-[116px] text-start">
-        <div className="image-card-glass-panel rounded-2xl p-2.5 sm:p-3 space-y-1 max-w-xl flex-1 flex flex-col items-start transition-all duration-300 ease-in-out">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="image-card-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9.5px] font-extrabold">
-              <ThreeDIcon id={current.iconId} size={12} />
+      <div className="p-2 sm:p-3 flex flex-row items-center justify-between gap-2 min-h-[88px] sm:min-h-[98px] text-start">
+        <div className="image-card-glass-panel rounded-xl p-2 sm:p-2.5 space-y-0.5 max-w-xl flex-1 flex flex-col items-start transition-all duration-300 ease-in-out">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="image-card-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold">
+              <ThreeDIcon id={current.iconId} size={11} />
               <span>{current.badge}</span>
             </span>
           </div>
-          <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug line-clamp-1">
+          <h2 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug line-clamp-1">
             {current.title}
           </h2>
-          <div className="image-card-subtitle text-[11px] font-semibold leading-snug line-clamp-1">
+          <div className="image-card-subtitle text-[10px] font-semibold leading-snug line-clamp-1">
             {current.subtitle}
           </div>
-          <div className="pt-0.5 flex items-center gap-2">
+          <div className="pt-0.5 flex items-center gap-1.5">
             <button
               type="button"
               onClick={current.onCtaClick}
-              className={`min-h-[32px] px-3 py-1 rounded-xl text-[11px] font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out cursor-pointer ${btnTone}`}
+              className={`min-h-[28px] px-2.5 py-0.5 rounded-lg text-[10.5px] font-extrabold hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out cursor-pointer ${btnTone}`}
             >
               {current.ctaLabel}
             </button>
@@ -415,9 +446,9 @@ export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = (
         <div className="self-center shrink-0 hidden xs:block sm:block">
           <SoftFilledIcon
             id={current.iconId}
-            boxSize="md"
-            size={28}
-            className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-2xs rounded-2xl transition-transform duration-300 ease-in-out hover:scale-105"
+            boxSize="sm"
+            size={22}
+            className="bg-white/90 dark:bg-[#142430] border-white/80 dark:border-[#1E3646] shadow-2xs rounded-xl transition-transform duration-300 ease-in-out hover:scale-105"
           />
         </div>
       </div>
@@ -803,7 +834,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
       id={id}
       data-collapsible-section="true"
       data-expanded={isExpanded ? 'true' : 'false'}
-      className={`soft-card-surface rounded-3xl border shadow-sm transition-all duration-300 ease-in-out overflow-hidden bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] ${cardToneClasses} ${className}`}
+      className={`soft-card-surface rounded-2xl sm:rounded-3xl border shadow-sm transition-all duration-300 ease-in-out overflow-hidden bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] ${cardToneClasses} ${className}`}
     >
       <div
         role="button"
@@ -817,13 +848,13 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
             handleToggle();
           }
         }}
-        className={`w-full p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all duration-300 ease-in-out ${headerClassName}`}
+        className={`w-full p-3 sm:p-3.5 flex items-center justify-between gap-2.5 cursor-pointer select-none hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all duration-300 ease-in-out ${headerClassName}`}
       >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {resolvedIcon && <div className="shrink-0">{resolvedIcon}</div>}
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] truncate">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
                 {title}
               </h3>
               {resolvedBadge && (
@@ -835,14 +866,14 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
               )}
             </div>
             {subtitle && (
-              <p className="text-xs font-semibold text-[var(--color-muted)] mt-0.5 leading-relaxed line-clamp-1">
+              <p className="text-[10.5px] font-semibold text-[var(--color-muted)] mt-0.5 leading-snug line-clamp-1">
                 {subtitle}
               </p>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           {headerAction && (
             <div
               onClick={(e) => e.stopPropagation()}
@@ -854,14 +885,14 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
           <span
             data-accordion-chevron="true"
             aria-hidden="true"
-            className={`w-8 h-8 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)] flex items-center justify-center transition-transform duration-300 ease-in-out ${
+            className={`w-7 h-7 rounded-xl bg-[var(--color-control-muted)] text-[var(--color-text)] border border-[var(--color-border)] flex items-center justify-center transition-transform duration-300 ease-in-out ${
               isExpanded
                 ? 'rotate-180 bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border-[var(--color-accent)]/30'
                 : 'rotate-0'
             }`}
           >
             <svg
-              className="w-4 h-4 fill-none stroke-current stroke-[2.5]"
+              className="w-3.5 h-3.5 fill-none stroke-current stroke-[2.5]"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -873,7 +904,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
       {isExpanded && (
         <div
           id={id ? `${id}-content` : undefined}
-          className={`p-4 sm:p-5 pt-0 border-t border-[var(--color-border)]/40 ${bodyClassName}`}
+          className={`p-3 sm:p-4 pt-0 border-t border-[var(--color-border)]/40 ${bodyClassName}`}
         >
           {children}
         </div>
@@ -1021,9 +1052,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
       id={id}
       data-testid={testId}
       data-master-card="true"
-      className={`rounded-2xl sm:rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2.5 sm:p-3 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
+      className={`rounded-2xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2 sm:p-2.5 flex flex-col justify-between gap-1.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
     >
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         {/* Structured Top Image Thumbnail */}
         <div
           onClick={onThumbnailClick}
@@ -1041,7 +1072,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
           }
           data-image-card="true"
           style={{ backgroundImage: bgSpec.backgroundImageCss }}
-          className={`image-bg-card relative overflow-hidden rounded-xl sm:rounded-2xl p-2 sm:p-2.5 min-h-[96px] sm:min-h-[104px] flex flex-col justify-between gap-1.5 shadow-2xs ${
+          className={`image-bg-card relative overflow-hidden rounded-xl p-2 min-h-[82px] sm:min-h-[90px] flex flex-col justify-between gap-1 shadow-2xs ${
             onThumbnailClick ? 'cursor-pointer' : ''
           } ${thumbnailClassName}`}
         >
@@ -1069,23 +1100,23 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
           />
 
           <div className="relative z-10 flex items-center justify-between gap-1">
-            <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
+            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1">
               {topLeftBadge}
             </span>
             {topRightBadge && (
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[9px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
+                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
               >
                 {topRightBadge}
               </span>
             )}
           </div>
 
-          <div className="relative z-10 image-card-glass-panel rounded-xl px-2 py-1.5 flex items-center justify-between gap-1.5">
+          <div className="relative z-10 image-card-glass-panel rounded-lg px-2 py-1 flex items-center justify-between gap-1.5">
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               {titlePrefixSlot && <div className="shrink-0">{titlePrefixSlot}</div>}
-              <h3 className="image-card-title text-xs sm:text-[13px] font-extrabold leading-snug line-clamp-2">
+              <h3 className="image-card-title text-[11.5px] sm:text-xs font-extrabold leading-tight line-clamp-1">
                 {title}
               </h3>
             </div>
@@ -1095,7 +1126,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Compact Metadata Strip */}
         {(metaLeft || metaRightAction) && (
-          <div className="flex items-center justify-between gap-1 text-[10px] font-bold text-[var(--color-muted)] px-0.5">
+          <div className="flex items-center justify-between gap-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
             <div className="flex items-center gap-1 min-w-0 truncate">{metaLeft}</div>
             {metaRightAction && <div className="shrink-0">{metaRightAction}</div>}
           </div>
@@ -1103,7 +1134,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Optional Body Content */}
         {bodyContent && (
-          <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed px-0.5">
+          <div className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug px-0.5">
             {bodyContent}
           </div>
         )}
@@ -1111,9 +1142,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
       {/* Bottom Price/Metric + Action Buttons */}
       {(footerLeft || footerRight) && (
-        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
+        <div className="pt-1.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
           <div className="min-w-0">{footerLeft}</div>
-          <div className="flex items-center gap-1.5 shrink-0">{footerRight}</div>
+          <div className="flex items-center gap-1 shrink-0">{footerRight}</div>
         </div>
       )}
 

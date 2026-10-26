@@ -13,6 +13,7 @@ import {
 import { ThreeDChildAvatar, ThreeDIcon } from './ThreeDVisuals';
 import {
   BannerSlideItem,
+  CompareArrowsIcon,
   MasterPatternCard,
   PrimaryCtaButton,
   SwipeableBannerCarousel,
@@ -61,6 +62,24 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   const [bookingTime, setBookingTime] = useState<string>('05:00 م');
   const [bookingNote, setBookingNote] = useState<string>('');
   const [readingArticle, setReadingArticle] = useState<MediaContentItem | null>(null);
+  const [comparedDoctorIds, setComparedDoctorIds] = useState<number[]>([]);
+
+  const handleToggleCompareDoctor = (doc: CommercialCatalogItem) => {
+    setComparedDoctorIds((prev) => {
+      const exists = prev.includes(doc.id);
+      const next = exists ? prev.filter((id) => id !== doc.id) : [...prev.slice(-2), doc.id];
+      onShowToast(
+        exists
+          ? isEn
+            ? `Removed "${doc.nameEn}" from comparison`
+            : `تمت إزالة «${doc.name}» من المقارنة`
+          : isEn
+          ? `Added "${doc.nameEn}" to comparison`
+          : `تمت إضافة «${doc.name}» للمقارنة`
+      );
+      return next;
+    });
+  };
 
   const filteredDoctors = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -215,25 +234,25 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* TAB 1: DOCTORS, PEDIATRICIANS & PSYCHOLOGISTS DIRECTORY */}
       {activeTab === 'doctors' && (
-        <div className="space-y-4">
-          <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shadow-2xs">
+        <div className="space-y-3">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shadow-2xs">
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 isEn
-                  ? '🔍 Search pediatrician, speech therapist, psychologist, or clinic...'
-                  : '🔍 ابحث عن طبيب أطفال، أخصائي تخاطب، استشاري نفسي، أو عيادة...'
+                  ? '🔍 Search pediatrician, speech therapist, or clinic...'
+                  : '🔍 ابحث عن طبيب أطفال، أخصائي تخاطب، أو عيادة...'
               }
               aria-label={isEn ? 'Search doctors and clinics' : 'البحث في الأطباء والعيادات'}
-              className="flex-1 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
+              className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
             />
             <select
               value={specialtyFilter}
               onChange={(e) => setSpecialtyFilter(e.target.value)}
               aria-label={isEn ? 'Filter by medical specialty' : 'تصفية حسب التخصص الطبي'}
-              className="min-h-[42px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2.5 text-xs font-extrabold text-[var(--color-text)]"
+              className="min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
             >
               <option value="all">{isEn ? 'All Specialties' : 'كل التخصصات'}</option>
               <option value="pediatrics">{isEn ? '🩺 Pediatrics & Growth' : '🩺 طب الأطفال والنمو'}</option>
@@ -241,10 +260,11 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredDoctors.map((doc) => {
               const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
               const isPediatrics = doc.category === 'doctor';
+              const isCompared = comparedDoctorIds.includes(doc.id);
               return (
                 <MasterPatternCard
                   key={doc.id}
@@ -270,36 +290,52 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   title={isEn ? doc.nameEn : doc.name}
                   metaLeft={
                     <span>
-                      📍 {locText(doc.city, language)} · {isEn ? 'Verified Clinic' : 'عيادة موثقة'}
+                      📍 {locText(doc.city, language)} · {isEn ? 'Verified' : 'موثق'}
                     </span>
                   }
                   metaRightAction={
                     <button
                       type="button"
                       onClick={() => setBookingDoctor(doc)}
-                      className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                      className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
                     >
-                      {isEn ? 'View Details' : 'شوف التفاصيل'}
+                      {isEn ? 'Details' : 'تفاصيل'}
                     </button>
                   }
                   footerLeft={
                     <div className="flex flex-col">
-                      <span className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                        {isEn ? 'Consultation Fee:' : 'سعر الكشف / الجلسة:'}
+                      <span className="text-[9.5px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                        {isEn ? 'Fee:' : 'الكشف:'}
                       </span>
-                      <span dir="ltr" className="text-sm font-extrabold text-emerald-900 dark:text-[#A5F3FC] tabular-nums">
+                      <span dir="ltr" className="text-xs font-extrabold text-emerald-900 dark:text-[#A5F3FC] tabular-nums">
                         {formatCurrency(fee, currency, language)}
                       </span>
                     </div>
                   }
                   footerRight={
-                    <PrimaryCtaButton
-                      variant="emerald"
-                      size="sm"
-                      onClick={() => setBookingDoctor(doc)}
-                    >
-                      📅 {isEn ? 'Book Appointment' : 'احجز ميعاد الكشف'}
-                    </PrimaryCtaButton>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCompareDoctor(doc)}
+                        aria-pressed={isCompared}
+                        title={isEn ? 'Compare Clinic' : 'مقارنة العيادة'}
+                        aria-label={isEn ? 'Compare Clinic' : 'مقارنة العيادة'}
+                        className={`h-8 px-2 rounded-lg border text-[10px] font-extrabold flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer ${
+                          isCompared
+                            ? 'bg-[#0d9488] border-[#0d9488] text-white'
+                            : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#0d9488]'
+                        }`}
+                      >
+                        <CompareArrowsIcon size={13} />
+                      </button>
+                      <PrimaryCtaButton
+                        variant="emerald"
+                        size="sm"
+                        onClick={() => setBookingDoctor(doc)}
+                      >
+                        📅 {isEn ? 'Book' : 'احجز'}
+                      </PrimaryCtaButton>
+                    </div>
                   }
                 />
               );
@@ -365,7 +401,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                         </div>
                         <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-teal-100 dark:border-[#1E3646] p-2 shadow-2xs">
                           <div className="text-[10px] text-teal-900 dark:text-[#94A3B8] font-bold">
-                            ⚖️ {isEn ? 'Weight' : 'الوزن'}
+                            📊 {isEn ? 'Weight' : 'الوزن'}
                           </div>
                           <div dir="ltr" className="text-xs sm:text-sm font-extrabold text-teal-950 dark:text-[#FB923C] tabular-nums mt-0.5">
                             {kid.growthWeightKg ? `${kid.growthWeightKg} kg` : '—'}

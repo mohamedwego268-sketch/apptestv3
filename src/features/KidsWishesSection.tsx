@@ -51,19 +51,21 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
   const emptyWishesCopy = getEmptyStateCopy('wishes', lang);
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Wishes & Gifts' : 'الأمنيات والهدايا'}>
+    <section className="space-y-4" aria-label={isEn ? 'Wishes & Gifts' : 'الأمنيات والهدايا'}>
       <div
         style={{ backgroundImage: getCardBackgroundSpec('wishes', state.darkMode).backgroundImageCss }}
-        className="image-bg-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3 shadow-md"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2.5 shadow-sm"
       >
-        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-5 max-w-xl w-full flex flex-col items-center justify-center gap-2.5">
-          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold tabular-nums">
-            {state.wishes.length} {isEn ? 'Saved Wishes' : 'أمنيات مسجلة'}
-          </span>
-          <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center leading-snug">
-            {isEn ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
-          </h2>
-          <PrimaryCtaButton variant="orange" onClick={onOpenAddWish}>
+        <div className="image-card-glass-panel rounded-xl p-3 flex-1 flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-0.5 text-start">
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums">
+              {state.wishes.length} {isEn ? 'Saved Wishes' : 'أمنيات مسجلة'}
+            </span>
+            <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug">
+              {isEn ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
+            </h2>
+          </div>
+          <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenAddWish}>
             {isEn ? '+ Add Wish' : '+ إضافة أمنية'}
           </PrimaryCtaButton>
         </div>
@@ -98,8 +100,8 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
           {filteredWishes.length === 0 ? (
             <div className="sm:col-span-2">
               <FriendlyEmptyState

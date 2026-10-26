@@ -57,25 +57,27 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
   const emptyCalendarCopy = getEmptyStateCopy('calendar', lang);
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Family Calendar' : 'التقويم الأسري'}>
+    <section className="space-y-4" aria-label={isEn ? 'Family Calendar' : 'التقويم الأسري'}>
       <div
         style={{ backgroundImage: getCardBackgroundSpec('calendar', state.darkMode).backgroundImageCss }}
-        className="image-bg-card rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-3 shadow-md"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2.5 shadow-sm"
       >
-        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-5 max-w-xl w-full flex flex-col items-center justify-center gap-2.5">
-          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold tabular-nums">
-            {todayFormattedCombined}
-          </span>
-          <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center leading-snug">
-            {isEn ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
-          </h2>
-          <PrimaryCtaButton variant="teal" onClick={onOpenAddEvent}>
+        <div className="image-card-glass-panel rounded-xl p-3 flex-1 flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-0.5 text-start">
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums">
+              {todayFormattedCombined}
+            </span>
+            <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug">
+              {isEn ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
+            </h2>
+          </div>
+          <PrimaryCtaButton variant="teal" size="sm" onClick={onOpenAddEvent}>
             {isEn ? '+ Add New Event' : '+ إضافة حدث جديد'}
           </PrimaryCtaButton>
         </div>
       </div>
 
-      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface space-y-5">
+      <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
           <div className="flex flex-wrap items-center gap-2">
             <button

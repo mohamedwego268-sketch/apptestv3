@@ -24,6 +24,7 @@ import {
 import {
   BannerSlideItem,
   CollapsibleSectionCard,
+  CompareArrowsIcon,
   FriendlyEmptyState,
   PASTEL_CARD_TONES,
   PastelTone,
@@ -257,9 +258,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'toys',
       titleAr: '🧸 ألعاب مونتيسوري وتنمية الذكاء',
-      titleEn: '🧸 Montessori & STEM Educational Toys',
-      subtitleAr: 'ألعاب خشبية آمنة، بازل، ومكعبات ذكية تنمي خيال طفلك من غير شاشات',
-      subtitleEn: 'Interactive wooden Montessori sets, 3D STEM kits & safe balance bikes',
+      titleEn: '🧸 Montessori & STEM Toys',
+      subtitleAr: 'ألعاب خشبية آمنة وبازل لتنمية الذكاء بدون شاشات',
+      subtitleEn: 'Wooden Montessori sets, STEM kits & balance bikes',
       badgeAr: '🧸 ألعاب مونتيسوري',
       badgeEn: '🧸 Montessori Toys',
       emoji: '🧸',
@@ -271,8 +272,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       id: 'nursery',
       titleAr: '📚 حضانات ومدارس معتمدة',
       titleEn: '📚 Verified Nurseries & Preschools',
-      subtitleAr: 'أفضل حضانات المونتيسوري والمدارس الدولية القريبة من بيتك بتقييمات حقيقية',
-      subtitleEn: 'Verified Montessori nurseries, international preschools & skill academies',
+      subtitleAr: 'أفضل الحضانات والمدارس القريبة بتقييمات موثقة',
+      subtitleEn: 'Verified Montessori nurseries & international preschools',
       badgeAr: '📚 حضانات ومدارس',
       badgeEn: '📚 Nurseries & Schools',
       emoji: '📚',
@@ -283,9 +284,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'doctor',
       titleAr: '🩺 أطباء أطفال وعيادات متخصصة',
-      titleEn: '🩺 Pediatricians & Specialist Clinics',
-      subtitleAr: 'نخبة استشاريي طب الأطفال، حديثي الولادة، التغذية، والأسنان بحجز فوري',
-      subtitleEn: 'Top pediatricians, neonatologists, nutritionists & dental clinics',
+      titleEn: '🩺 Pediatricians & Clinics',
+      subtitleAr: 'استشاريو طب الأطفال والتغذية والأسنان بحجز فوري',
+      subtitleEn: 'Top pediatricians, nutritionists & dental clinics',
       badgeAr: '🩺 أطباء أطفال',
       badgeEn: '🩺 Pediatricians',
       emoji: '🩺',
@@ -296,9 +297,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'clothing',
       titleAr: '👗 ألبسة قطنية وأزياء أطفال',
-      titleEn: '👗 100% Organic Cotton Kids Apparel',
-      subtitleAr: 'أطقم قطن مصري ١٠٠٪ ناعمة على بشرة طفلك، بيجامات، وأحذية طبية لأول خطوة',
-      subtitleEn: '100% organic cotton sets, cozy sleepwear & ergonomic toddler footwear',
+      titleEn: '👗 Organic Cotton Apparel',
+      subtitleAr: 'أطقم قطن ١٠٠٪ ناعمة وأحذية طبية مريحة',
+      subtitleEn: '100% organic cotton sets & ergonomic footwear',
       badgeAr: '👗 ألبسة قطنية',
       badgeEn: '👗 Cotton Apparel',
       emoji: '👗',
@@ -309,9 +310,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'essentials',
       titleAr: '🍼 مستلزمات عائلية وعناية يومية',
-      titleEn: '🍼 Family & Daily Baby Essentials',
-      subtitleAr: 'عربيات أطفال، كراسي سيارة، ببرونات، ومنتجات عناية طبيعية لبشرة البيبي',
-      subtitleEn: 'Strollers, car seats, sterilizers & daily natural baby care bundles',
+      titleEn: '🍼 Daily Baby Essentials',
+      subtitleAr: 'عربيات أطفال، كراسي سيارة، ومنتجات عناية طبيعية',
+      subtitleEn: 'Strollers, car seats & natural baby care bundles',
       badgeAr: '🍼 مستلزمات عائلية',
       badgeEn: '🍼 Family Essentials',
       emoji: '🍼',
@@ -322,9 +323,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'courses',
       titleAr: '🎨 كورسات أطفال وتنمية مهارات',
-      titleEn: '🎨 Kids Courses & Skill Academies',
-      subtitleAr: 'كورسات برمجة، روبوتيكس، رسم، فينيكس، وحساب ذهني بطريقة ممتعة',
-      subtitleEn: 'Coding, robotics, art workshops, phonics & mental math for kids',
+      titleEn: '🎨 Kids Skill Academies',
+      subtitleAr: 'برمجة، روبوتيكس، رسم، وحساب ذهني تفاعلي',
+      subtitleEn: 'Coding, robotics, art workshops & mental math',
       badgeAr: '🎨 كورسات أطفال',
       badgeEn: '🎨 Kids Courses',
       emoji: '🎨',
@@ -335,9 +336,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'sports',
       titleAr: '⚽ ملاعب وأنشطة رياضية',
-      titleEn: '⚽ Sports Academies & Active Play',
-      subtitleAr: 'أكاديميات سباحة، كرة قدم، جمباز، كاراتيه، وتنس لتفريغ طاقة الأبطال',
-      subtitleEn: 'Swimming, football, gymnastics, karate & tennis academies',
+      titleEn: '⚽ Sports Academies',
+      subtitleAr: 'سباحة، كرة قدم، جمباز، وكاراتيه للأبطال',
+      subtitleEn: 'Swimming, football, gymnastics & karate academies',
       badgeAr: '⚽ ملاعب وأنشطة',
       badgeEn: '⚽ Sports & Play',
       emoji: '⚽',
@@ -348,9 +349,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'events_parks',
       titleAr: '🎪 ملاهي وأعياد ميلاد وخروجات',
-      titleEn: '🎪 Playgrounds, Parks & Birthday Parties',
-      subtitleAr: 'أحلى أماكن الخروج العائلية، كيدز إيريا آمنة، وتنظيم أعياد ميلاد مبهجة',
-      subtitleEn: 'Safe indoor play areas, edutainment parks & full birthday packages',
+      titleEn: '🎪 Parks & Birthday Parties',
+      subtitleAr: 'أماكن خروج آمنة وتنظيم أعياد ميلاد مبهجة',
+      subtitleEn: 'Safe indoor play areas & birthday packages',
       badgeAr: '🎪 ملاهي وأعياد ميلاد',
       badgeEn: '🎪 Parks & Birthdays',
       emoji: '🎪',
@@ -361,9 +362,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'books',
       titleAr: '📖 قصص وكتب أطفال تفاعلية',
-      titleEn: '📖 Interactive Storybooks & Reading',
-      subtitleAr: 'قصص قبل النوم، كتب قماشية وتفاعلية، وموسوعات علمية مصورة بالعربي والإنجليزي',
-      subtitleEn: 'Bedtime stories, pop-up books, emotional intelligence tales & encyclopedias',
+      titleEn: '📖 Interactive Storybooks',
+      subtitleAr: 'قصص قبل النوم وموسوعات مصورة بالعربي والإنجليزي',
+      subtitleEn: 'Bedtime stories, pop-up books & illustrated tales',
       badgeAr: '📖 قصص وكتب',
       badgeEn: '📖 Books & Stories',
       emoji: '📖',
@@ -374,9 +375,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'nutrition',
       titleAr: '🍱 تغذية صحية ولانش بوكس',
-      titleEn: '🍱 Healthy Kids Nutrition & Lunchbox',
-      subtitleAr: 'وجبات صحية طازجة، سناكس فواكه طبيعية بدون سكر، وأدوات لانش بوكس مبهجة',
-      subtitleEn: 'Fresh organic meals, zero-sugar fruit snacks & thermal lunchboxes',
+      titleEn: '🍱 Healthy Kids Nutrition',
+      subtitleAr: 'وجبات صحية طازجة وسناكس طبيعية بدون سكر',
+      subtitleEn: 'Fresh organic meals & zero-sugar fruit snacks',
       badgeAr: '🍱 تغذية صحية',
       badgeEn: '🍱 Healthy Nutrition',
       emoji: '🍱',
@@ -387,9 +388,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'furniture',
       titleAr: '🪑 أثاث غرف الأطفال ومونتيسوري',
-      titleEn: '🪑 Kids Room & Montessori Furniture',
-      subtitleAr: 'سراير مونتيسوري أرضية، مكاتب مذاكرة مريحة، ووحدات تخزين ألعاب آمنة',
-      subtitleEn: 'Montessori floor beds, ergonomic study desks & safe toy organizers',
+      titleEn: '🪑 Kids Montessori Furniture',
+      subtitleAr: 'سراير مونتيسوري، مكاتب مذاكرة، ووحدات تخزين آمنة',
+      subtitleEn: 'Montessori floor beds, desks & safe organizers',
       badgeAr: '🪑 أثاث غرف الأطفال',
       badgeEn: '🪑 Kids Furniture',
       emoji: '🪑',
@@ -400,9 +401,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     {
       id: 'services',
       titleAr: '👩‍⚕️ استشارات تربوية وتوصيل سريع',
-      titleEn: '👩‍⚕️ Parenting Consultations & Express Delivery',
-      subtitleAr: 'جلسات إرشاد تربوي وتخاطب أونلاين، وخدمات توصيل فوري لمستلزمات الأسرة',
-      subtitleEn: 'Online parenting & speech consultations and express family delivery',
+      titleEn: '👩‍⚕️ Consultations & Delivery',
+      subtitleAr: 'جلسات إرشاد وتخاطب أونلاين وتوصيل فوري للأسرة',
+      subtitleEn: 'Online parenting consultations & express delivery',
       badgeAr: '👩‍⚕️ استشارات وتوصيل',
       badgeEn: '👩‍⚕️ Consultations',
       emoji: '👩‍⚕️',
@@ -438,11 +439,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[216px] sm:w-[238px] shrink-0'
+            ? 'w-[196px] sm:w-[216px] shrink-0'
             : 'w-full'
-        } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2.5 sm:p-3 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
+        } rounded-2xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2 sm:p-2.5 flex flex-col justify-between gap-1.5 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
       >
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
           <div
             onClick={() => onInspectCommercialItem(item)}
@@ -456,7 +457,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card relative overflow-hidden rounded-xl sm:rounded-2xl p-2 sm:p-2.5 min-h-[96px] sm:min-h-[106px] cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs"
+            className="image-bg-card relative overflow-hidden rounded-xl p-2 min-h-[82px] sm:min-h-[90px] cursor-pointer flex flex-col justify-between gap-1 shadow-2xs"
           >
             <img
               src={stockImageUrl}
@@ -483,27 +484,27 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             />
 
             <div className="relative z-10 flex items-center justify-between gap-1">
-              <span className="image-card-badge px-2 py-0.5 rounded-full text-[9px] font-extrabold truncate shadow-2xs">
+              <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs">
                 {item.emoji} {locText(item.categoryLabel, language)}
               </span>
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[9px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
+                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
               >
                 <span>⭐ {item.rating}</span>
                 <span className="opacity-85">({revCount})</span>
               </span>
             </div>
 
-            <div className="relative z-10 image-card-glass-panel rounded-xl px-2 py-1.5 flex items-end justify-between gap-1.5">
-              <h4 className="image-card-title text-xs sm:text-[13px] font-extrabold leading-snug line-clamp-2">
+            <div className="relative z-10 image-card-glass-panel rounded-lg px-2 py-1 flex items-end justify-between gap-1">
+              <h4 className="image-card-title text-[11.5px] sm:text-xs font-extrabold leading-tight line-clamp-1">
                 {displayTitle}
               </h4>
             </div>
           </div>
 
           {/* Compact Metadata Strip + Interactive Details Link */}
-          <div className="flex items-center justify-between gap-1.5 text-[10px] font-bold text-[var(--color-muted)]">
+          <div className="flex items-center justify-between gap-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
             <div className="flex items-center gap-1 min-w-0 truncate">
               <span className="truncate">📍 {locText(item.city, language)}</span>
               {item.deliveryEstimateAr && (
@@ -518,33 +519,33 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => onInspectCommercialItem(item)}
-              className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
+              className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 cursor-pointer"
             >
-              {isEn ? 'View Details' : 'شوف التفاصيل'}
+              {isEn ? 'Details' : 'تفاصيل'}
             </button>
           </div>
         </div>
 
-        {/* Price + Universal Minimalist Action Icons (Wishlist Heart + Shopping Cart) */}
-        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5">
+        {/* Price + Universal Minimalist Action Icons (Compare Arrows + Wishlist Heart + Shopping Cart) */}
+        <div className="pt-1.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1">
           <div
             onClick={() => onInspectCommercialItem(item)}
             className="flex flex-col min-w-0 cursor-pointer"
           >
             <div className="flex items-baseline gap-1 tabular-nums">
               {origVal && (
-                <span className="text-[10px] line-through text-[var(--color-muted)]">
+                <span className="text-[9.5px] line-through text-[var(--color-muted)]">
                   {formatCurrency(origVal, currency, language)}
                 </span>
               )}
-              <strong className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
+              <strong className="text-xs font-extrabold text-[var(--color-text)] truncate">
                 {formatCurrency(priceVal, currency, language)}
               </strong>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Smart Product Comparison Toggle Button */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Smart Product Comparison Toggle Button (Modern Dual Opposing Arrows ⇄) */}
             <button
               type="button"
               onClick={() => handleToggleCompareItem(item)}
@@ -559,13 +560,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   : 'قارن مواصفات وسعر المنتج'
               }
               aria-label={isEn ? 'Compare Product' : 'مقارنة المنتج'}
-              className={`h-8 px-2 rounded-xl border text-[10px] font-extrabold flex items-center justify-center gap-1 shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer ${
+              className={`h-7 px-2 rounded-lg border text-[9.5px] font-extrabold flex items-center justify-center gap-1 shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer ${
                 compareIds.includes(item.id)
                   ? 'border-[#0d9488] bg-[#0d9488] text-white'
                   : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#0d9488]'
               }`}
             >
-              <span>⚖️</span>
+              <CompareArrowsIcon size={13} />
               <span className="hidden sm:inline">
                 {compareIds.includes(item.id)
                   ? isEn
@@ -583,9 +584,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               onClick={() => onAddProductToWishes(item)}
               title={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
               aria-label={isEn ? 'Save to Wishlist' : 'احفظ في الأمنيات'}
-              className="w-8 h-8 rounded-xl border border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
+              className="w-7 h-7 rounded-lg border border-orange-200/80 dark:border-[#1E3646] bg-orange-50/80 dark:bg-[#142430] text-[#FF8C61] hover:bg-[#FF8C61] hover:text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
                   fill="currentColor"
@@ -604,9 +605,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               onClick={() => onAddToCart(item, item.variants?.[0])}
               title={isEn ? 'Add to Cart' : 'أضف للسلة'}
               aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
-              className="w-8 h-8 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
                 <path
                   d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"
                   fill="currentColor"
@@ -825,7 +826,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const activeCategorySpec = STORE_CATEGORY_SECTIONS.find((s) => s.id === activeCategoryPageId) || null;
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
+    <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
       {/* 1. Auto-Play Hero Carousel at the VERY TOP of the Store page */}
       {storeFlowStep === 'catalog' && !activeCategorySpec && (
         <SwipeableBannerCarousel
@@ -840,17 +841,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* Sticky Glassmorphism Action Strip: City Filter + Live Order Tracking + Cart Button */}
       <div
         id="store-sticky-subheader"
-        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/60 dark:border-[#1E3646] bg-amber-50/85 dark:bg-[#101D26]/95 px-4 py-3 shadow-2xs flex flex-wrap items-center justify-between gap-2.5 transition-all"
+        className="sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border border-amber-200/60 dark:border-[#1E3646] bg-amber-50/85 dark:bg-[#101D26]/95 px-3 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2 transition-all"
       >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#142430] border border-transparent dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
-            <ThreeDIcon id="services" size={24} />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-white dark:bg-[#142430] border border-transparent dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
+            <ThreeDIcon id="services" size={20} />
           </div>
           <div className="min-w-0">
-            <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
+            <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
               {isEn ? 'Family Store & Express Delivery' : 'متجر الأسرة والتوصيل الفوري'}
             </div>
-            <div className="text-[11px] font-bold text-[var(--color-muted)] truncate">
+            <div className="text-[10px] font-bold text-[var(--color-muted)] truncate">
               {country === 'SA' ? (isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية') : isEn ? '🇪🇬 Egypt' : '🇪🇬 مصر'} · 📍 {displayCity} · {currency}
             </div>
           </div>
@@ -861,7 +862,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => setCityScopeFilter('all')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-colors ${
+              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors ${
                 cityScopeFilter === 'all'
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
                   : 'text-[var(--color-muted)]'
@@ -872,7 +873,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <button
               type="button"
               onClick={() => setCityScopeFilter('local')}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-colors ${
+              className={`px-2 py-1 rounded-lg text-[10.5px] font-extrabold transition-colors ${
                 cityScopeFilter === 'local'
                   ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
                   : 'text-[var(--color-muted)]'
@@ -890,17 +891,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               setShowCartPanel(false);
               setShowComparePanel((prev) => !prev);
             }}
-            className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
               showComparePanel
                 ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-2xs'
                 : 'border-teal-300 dark:border-[#1E3646] bg-teal-50/90 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] hover:bg-teal-100'
             }`}
           >
-            <span>⚖️</span>
+            <CompareArrowsIcon size={14} />
             <span>
               {isEn
                 ? `Compare (${comparedItems.length}/3)`
-                : `مقارنة المنتجات (${comparedItems.length}/3)`}
+                : `مقارنة (${comparedItems.length}/3)`}
             </span>
           </button>
 
@@ -2273,34 +2274,34 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {storeFlowStep === 'catalog' && showComparePanel && (
         <div
           id="store-smart-comparison-panel"
-          className="rounded-3xl border border-[#0d9488]/40 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 soft-card-surface shadow-md animate-page-enter"
+          className="rounded-2xl sm:rounded-3xl border border-[#0d9488]/40 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 space-y-3 soft-card-surface shadow-md animate-page-enter"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-            <div className="flex items-center gap-2.5">
-              <span className="w-10 h-10 rounded-2xl bg-[#0d9488]/15 dark:bg-[#142430] border border-[#0d9488]/30 flex items-center justify-center text-lg shrink-0">
-                ⚖️
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+            <div className="flex items-center gap-2">
+              <span className="w-9 h-9 rounded-xl bg-[#0d9488]/15 dark:bg-[#142430] border border-[#0d9488]/30 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center shrink-0">
+                <CompareArrowsIcon size={18} />
               </span>
               <div>
-                <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                   {isEn
                     ? `Smart Product Comparison (${comparedItems.length}/3 Selected)`
                     : `جدول المقارنة الذكية للمنتجات والخدمات (${comparedItems.length}/3)`}
                 </h3>
-                <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                <p className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
                   {isEn
-                    ? 'Compare price, parent rating, delivery speed, and child age suitability side-by-side'
-                    : 'قارن السعر، تقييم الأمهات والآباء، سرعة التوصيل، والمرحلة العمرية المناسبة لطفلك جنبًا إلى جنب'}
+                    ? 'Compare price, parent rating, and delivery speed side-by-side'
+                    : 'قارن السعر، تقييم الوالدين، وسرعة التوصيل جنبًا إلى جنب'}
                 </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() =>
                   setCompareIds(COMMERCIAL_CATALOG.slice(0, 3).map((item) => item.id))
                 }
-                className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[#0d9488]/40 bg-teal-50/80 dark:bg-[#142430] text-[#0d9488] dark:text-[#A5F3FC] cursor-pointer"
+                className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold border border-[#0d9488]/40 bg-teal-50/80 dark:bg-[#142430] text-[#0d9488] dark:text-[#A5F3FC] cursor-pointer"
               >
                 {isEn ? '✨ Compare Top 3 Picks' : '✨ قارن أفضل ٣ اختيارات'}
               </button>
@@ -2308,7 +2309,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <button
                   type="button"
                   onClick={() => setCompareIds([])}
-                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] cursor-pointer"
+                  className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] cursor-pointer"
                 >
                   {isEn ? 'Clear All' : 'مسح الكل'}
                 </button>
@@ -2317,7 +2318,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 type="button"
                 onClick={() => setShowComparePanel(false)}
                 aria-label={isEn ? 'Close comparison panel' : 'إغلاق جدول المقارنة'}
-                className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0d9488] text-white flex items-center justify-center shrink-0 cursor-pointer"
+                className="w-7 h-7 rounded-xl text-base font-black leading-none bg-[#0d9488] text-white flex items-center justify-center shrink-0 cursor-pointer"
               >
                 ×
               </button>
@@ -2325,12 +2326,14 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           {comparedItems.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-6 text-center space-y-2">
-              <div className="text-2xl">⚖️</div>
-              <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
+            <div className="rounded-2xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-4 text-center space-y-1.5">
+              <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#0d9488]/15 text-[#0d9488] dark:text-[#2DD4BF]">
+                <CompareArrowsIcon size={18} />
+              </div>
+              <div className="text-xs font-extrabold text-[var(--color-text)]">
                 {isEn
-                  ? 'No products selected for comparison yet'
-                  : 'لم تختر أي منتجات للمقارنة بعد — اضغط على زر «⚖️ قارن» في أي بطاقة منتج'}
+                  ? 'No products selected for comparison yet — tap ⇄ Compare on any card'
+                  : 'لم تختر أي منتجات للمقارنة بعد — اضغط على زر «⇄ قارن» في أي بطاقة منتج'}
               </div>
             </div>
           ) : (
@@ -2520,7 +2523,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
            CATEGORIZED HORIZONTAL ROWS (Default Store Catalog View)
            Each row features a clickable Section Header/Button + Horizontal Carousel
            ------------------------------------------------------------------- */
-        <div data-testid="store-categorized-rows" className="space-y-5">
+        <div data-testid="store-categorized-rows" className="space-y-3.5">
           {STORE_CATEGORY_SECTIONS.map((sec) => {
             const rowItems = filtered.filter((item) =>
               (sec.matchCategories as readonly string[]).includes(item.category)
@@ -2531,17 +2534,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div
                 key={sec.id}
                 data-testid={`store-category-row-${sec.id}`}
-                className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface shadow-sm"
+                className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 sm:p-4 space-y-2.5 soft-card-surface shadow-sm"
               >
                 {/* Clickable Category Row Header / Button with Unsplash Thumbnail & Gradient Overlay */}
-                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
                   <button
                     type="button"
                     data-testid={`store-category-header-btn-${sec.id}`}
                     onClick={() => openCategoryFullPage(sec.id)}
-                    className="flex items-center gap-3 text-start group cursor-pointer min-w-0"
+                    className="flex items-center gap-2.5 text-start group cursor-pointer min-w-0"
                   >
-                    <span className="relative w-12 h-12 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] overflow-hidden flex items-center justify-center text-lg shrink-0 group-hover:border-[#FF8C61] shadow-2xs transition-all">
+                    <span className="relative w-10 h-10 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] overflow-hidden flex items-center justify-center text-base shrink-0 group-hover:border-[#FF8C61] shadow-2xs transition-all">
                       <img
                         src={sec.imageUrl}
                         alt={isEn ? sec.titleEn : sec.titleAr}
@@ -2559,15 +2562,15 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       <span className="relative z-10 drop-shadow">{sec.emoji}</span>
                     </span>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] group-hover:text-[#FF8C61] transition-colors truncate">
+                      <div className="flex items-center gap-1.5">
+                        <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] group-hover:text-[#FF8C61] transition-colors truncate">
                           {isEn ? sec.titleEn : sec.titleAr}
                         </h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] border border-[var(--color-border)] dark:border-[#1E3646] tabular-nums shrink-0">
+                        <span className="px-1.5 py-0.5 rounded-full text-[9.5px] font-extrabold bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] border border-[var(--color-border)] dark:border-[#1E3646] tabular-nums shrink-0">
                           {rowItems.length}
                         </span>
                       </div>
-                      <p className="text-[11px] font-semibold text-[var(--color-muted)] line-clamp-1">
+                      <p className="text-[10px] font-semibold text-[var(--color-muted)] line-clamp-1">
                         {isEn ? sec.subtitleEn : sec.subtitleAr}
                       </p>
                     </div>
@@ -2577,7 +2580,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     type="button"
                     data-testid={`store-category-viewall-btn-${sec.id}`}
                     onClick={() => openCategoryFullPage(sec.id)}
-                    className="min-h-[34px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#A5F3FC] text-[11px] font-extrabold flex items-center gap-1.5 shrink-0 active:scale-95 transition-all"
+                    className="min-h-[30px] px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#A5F3FC] text-[10.5px] font-extrabold flex items-center gap-1 shrink-0 active:scale-95 transition-all"
                   >
                     <span>{isEn ? 'View All' : 'عرض الكل'}</span>
                     <span>{isEn ? '→' : '←'}</span>

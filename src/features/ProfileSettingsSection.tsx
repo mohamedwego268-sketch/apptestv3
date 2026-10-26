@@ -190,14 +190,14 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
         titlePrefixSlot={<SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={20} />}
         title={
           lang === 'en'
-            ? 'Dark Mode — Deep Midnight Charcoal'
-            : 'الوضع الليلي الهادي والمريح للعين'
+            ? 'Dark Mode — Midnight Charcoal'
+            : 'الوضع الليلي المريح للعين'
         }
         metaLeft={
           <span>
             {lang === 'en'
-              ? 'Switches the entire app instantly to deep midnight charcoal tones (#0B131A).'
-              : 'بيحول ألوان التطبيق كله للرمادي الفحمي الغامق (#0B131A) عشان يريح عينك بليل ويوفر البطارية.'}
+              ? 'Deep midnight charcoal (#0B131A) for comfortable night reading.'
+              : 'ألوان فحمية هادئة (#0B131A) مريحة للعين ليلًا.'}
           </span>
         }
         footerLeft={

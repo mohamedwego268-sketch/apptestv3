@@ -35,23 +35,25 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
   const isEn = lang === 'en';
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Children Profiles' : 'ملفات الأطفال'}>
+    <section className="space-y-4" aria-label={isEn ? 'Children Profiles' : 'ملفات الأطفال'}>
       <div
         style={{ backgroundImage: getCardBackgroundSpec('children', state.darkMode).backgroundImageCss }}
-        className="image-bg-card rounded-[24px] p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-4"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex flex-wrap items-center justify-between gap-2.5"
       >
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold">
-            {isEn ? '0–8 Years' : 'من أول يوم حتى 8 سنوات'}
-          </span>
-          <span className="image-card-badge px-3 py-1 rounded-xl text-xs font-extrabold">
-            {isEn ? '3D Avatar & Photo' : 'هوية 3D وصورة حقيقية'}
-          </span>
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[9.5px] font-extrabold">
+              {isEn ? '0–8 Years' : 'من أول يوم حتى 8 سنوات'}
+            </span>
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[9.5px] font-extrabold">
+              {isEn ? '3D Avatar & Photo' : 'هوية 3D وصورة حقيقية'}
+            </span>
+          </div>
+          <h2 className="image-card-title text-sm sm:text-base font-extrabold">
+            {isEn ? '3D Child Profiles & Growth' : 'ملفات الأطفال ومتابعة النمو'}
+          </h2>
         </div>
-        <h2 className="image-card-title text-xl sm:text-2xl font-extrabold text-center">
-          {isEn ? '3D Child Profiles & Growth' : 'ملفات الأطفال ومتابعة النمو'}
-        </h2>
-        <PrimaryCtaButton variant="teal" onClick={onOpenAddChild}>
+        <PrimaryCtaButton variant="teal" size="sm" onClick={onOpenAddChild}>
           {isEn ? '+ Add Child Profile' : '+ إضافة طفل جديد'}
         </PrimaryCtaButton>
       </div>
@@ -67,13 +69,13 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
       )}
 
       {state.kids.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-8 text-center text-sm font-bold text-[var(--color-muted)]">
+        <div className="rounded-2xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-6 text-center text-xs font-bold text-[var(--color-muted)]">
           {isEn
             ? 'No child profiles yet. Tap "+ Add Child Profile" to create the first profile.'
             : 'لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل جديد» لإنشاء الملف الأول.'}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {state.kids.map((kid, idx) => {
             const ageInfo = calculateChildAge(kid.birth, state.language);
             const kidTasksCount = state.tasks.filter((tItem) => Number(tItem.kidId) === kid.id).length;

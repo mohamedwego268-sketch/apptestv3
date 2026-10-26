@@ -78,38 +78,40 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
   const emptyRoutineCopy = getEmptyStateCopy('routine', lang);
 
   return (
-    <section className="space-y-6" aria-label={isEn ? 'Daily Routine' : 'الروتين اليومي'}>
+    <section className="space-y-4" aria-label={isEn ? 'Daily Routine' : 'الروتين اليومي'}>
       {/* Top Action & Smart Reminders Warm Image Card */}
       <div
-        className="image-bg-card rounded-3xl p-5 sm:p-6 space-y-4 shadow-md"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5 shadow-sm"
         style={{
           backgroundImage: getCardBackgroundSpec('routine', state.darkMode).backgroundImageCss,
         }}
         aria-label={isEn ? 'Daily Routine Reminders' : 'تذكيرات الروتين اليومي'}
       >
-        <div className="image-card-glass-panel rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center gap-3">
-          <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold tabular-nums">
-            {isEn ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
-          </span>
-          <h2 className="section-heading-centered image-card-title">
-            {isEn ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
-          </h2>
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+        <div className="image-card-glass-panel rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-0.5 text-start">
+            <span className="image-card-badge px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums">
+              {isEn ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
+            </span>
+            <h2 className="image-card-title text-sm sm:text-base font-extrabold">
+              {isEn ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={onResetTasks}
-              className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-white/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] whitespace-nowrap transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-white/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] whitespace-nowrap transition-all active:scale-95 cursor-pointer"
             >
-              {isEn ? 'Reset Progress' : 'إعادة ضبط الإنجاز'}
+              {isEn ? 'Reset' : 'إعادة ضبط'}
             </button>
-            <PrimaryCtaButton variant="orange" onClick={onOpenAddTask}>
+            <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenAddTask}>
               {isEn ? '+ Add Task' : '+ إضافة مهمة'}
             </PrimaryCtaButton>
           </div>
         </div>
 
         {/* Quick Reminder Status Filter Pills */}
-        <div className="image-card-glass-panel rounded-2xl p-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="image-card-glass-panel rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2">
           <div
             className="flex flex-wrap items-center gap-1.5"
             role="group"
@@ -185,7 +187,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface space-y-5">
+      <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
         {/* Day / Week / Month Tabs & Filters */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
@@ -262,7 +264,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             }}
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filteredTasks.map((task) => {
               const assignedKid = task.kidId ? kidMap[String(task.kidId)] : null;
               const reminder = getRoutineTaskReminder(
