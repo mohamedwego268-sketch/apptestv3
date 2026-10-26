@@ -4936,7 +4936,7 @@ export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
 
 export const SKELETON_TABS = ['services', 'medical', 'community'] as const;
 export type SkeletonTabId = (typeof SKELETON_TABS)[number];
-export const SKELETON_LOAD_DURATION_MS = 1100;
+export const SKELETON_LOAD_DURATION_MS = 260;
 
 export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonTabId {
   return (SKELETON_TABS as readonly string[]).includes(pageId);

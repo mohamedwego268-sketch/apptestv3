@@ -1236,6 +1236,50 @@ h1, h2, h3, h4 {
   }
 }
 
+@keyframes toddlerStepLeft {
+  0%, 100% {
+    transform: rotate(-14deg) translateY(0);
+  }
+  50% {
+    transform: rotate(14deg) translateY(-2.5px);
+  }
+}
+
+@keyframes toddlerStepRight {
+  0%, 100% {
+    transform: rotate(14deg) translateY(-2.5px);
+  }
+  50% {
+    transform: rotate(-14deg) translateY(0);
+  }
+}
+
+@keyframes navPulseHalo {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.14);
+    opacity: 0.85;
+  }
+}
+
+@keyframes navProgressFill {
+  0% {
+    transform: scaleX(0.12);
+    opacity: 0.85;
+  }
+  65% {
+    transform: scaleX(0.88);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
 @keyframes starTwinkleSpin {
   0%, 100% {
     transform: scale(0.9) rotate(0deg);
@@ -1248,7 +1292,30 @@ h1, h2, h3, h4 {
 }
 
 .animate-child-loader-bob {
-  animation: childFloatBob 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: childFloatBob 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-toddler-step-a {
+  transform-origin: center top;
+  animation: toddlerStepLeft 0.55s ease-in-out infinite;
+}
+
+.animate-toddler-step-b {
+  transform-origin: center top;
+  animation: toddlerStepRight 0.55s ease-in-out infinite;
+}
+
+.animate-nav-pulse-halo {
+  animation: navPulseHalo 1.5s ease-in-out infinite;
+}
+
+.animate-nav-progress {
+  transform-origin: left center;
+  animation: navProgressFill 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+:root[dir="rtl"] .animate-nav-progress {
+  transform-origin: right center;
 }
 
 .animate-star-twinkle {

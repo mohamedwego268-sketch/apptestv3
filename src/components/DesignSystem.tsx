@@ -575,60 +575,194 @@ interface SectionSkeletonLoaderProps {
   language: LanguageCode;
 }
 
-export const PlayfulChildLoaderSvg: React.FC<{ size?: number }> = ({ size = 44 }) => (
+export const PlayfulChildLoaderSvg: React.FC<{ size?: number }> = ({ size = 56 }) => (
   <span
     data-testid="playful-child-svg-loader"
     aria-hidden="true"
     className="relative inline-flex items-center justify-center shrink-0 select-none"
     style={{ width: size, height: size }}
   >
+    {/* Subtle Glowing Pulse Halo */}
+    <span
+      className="animate-nav-pulse-halo absolute inset-0 rounded-full pointer-events-none"
+      style={{
+        background:
+          'radial-gradient(circle, rgba(13, 148, 136, 0.24) 0%, rgba(255, 140, 97, 0.18) 55%, transparent 75%)',
+      }}
+    />
     <svg
       width={size}
       height={size}
-      viewBox="0 0 64 64"
+      viewBox="0 0 80 80"
       fill="none"
-      className="animate-child-loader-bob drop-shadow-xs"
+      className="animate-child-loader-bob relative z-10 drop-shadow-xs"
     >
-      {/* Soft warm halo circle */}
-      <circle cx="32" cy="34" r="22" fill="#FF8C61" fillOpacity="0.16" />
-      <circle cx="32" cy="34" r="18" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="2.2" />
-      {/* Playful curl of hair at top */}
+      {/* Soft Ground Shadow */}
+      <ellipse cx="40" cy="71" rx="15" ry="3.2" fill="#0D9488" fillOpacity="0.18" />
+
+      {/* Walking Toddler Left & Right Legs (Animated Alternating Steps) */}
+      <g className="animate-toddler-step-a" style={{ transformOrigin: '35px 54px' }}>
+        <path
+          d="M35 54L31 66"
+          stroke="#0D9488"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+        />
+        <ellipse cx="29.5" cy="67" rx="4.2" ry="2.4" fill="#FF8C61" />
+      </g>
+      <g className="animate-toddler-step-b" style={{ transformOrigin: '45px 54px' }}>
+        <path
+          d="M45 54L49 66"
+          stroke="#0D9488"
+          strokeWidth="4.5"
+          strokeLinecap="round"
+        />
+        <ellipse cx="50.5" cy="67" rx="4.2" ry="2.4" fill="#FF8C61" />
+      </g>
+
+      {/* Playful Waving Arms */}
+      <g className="animate-toddler-step-b" style={{ transformOrigin: '28px 42px' }}>
+        <path
+          d="M29 42L20 36"
+          stroke="#FBBF24"
+          strokeWidth="4.2"
+          strokeLinecap="round"
+        />
+        <circle cx="19" cy="35.5" r="2.8" fill="#FDE68A" stroke="#F59E0B" strokeWidth="1.2" />
+      </g>
+      <g className="animate-toddler-step-a" style={{ transformOrigin: '52px 42px' }}>
+        <path
+          d="M51 42L60 36"
+          stroke="#FBBF24"
+          strokeWidth="4.2"
+          strokeLinecap="round"
+        />
+        <circle cx="61" cy="35.5" r="2.8" fill="#FDE68A" stroke="#F59E0B" strokeWidth="1.2" />
+      </g>
+
+      {/* Cozy Toddler Romper / Overalls Body */}
+      <rect
+        x="27"
+        y="37"
+        width="26"
+        height="20"
+        rx="11"
+        fill="#0D9488"
+        stroke="#14B8A6"
+        strokeWidth="1.8"
+      />
+      {/* Little Star Emblem on Chest */}
       <path
-        d="M25 17c2-4 8-5 11-1 2 2 1 5-2 5"
+        d="M40 42.5l1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4 1.3-2.7z"
+        fill="#FDE047"
+      />
+
+      {/* Smiling Baby / Toddler Head */}
+      <circle cx="40" cy="25" r="14.5" fill="#FEF3C7" stroke="#F59E0B" strokeWidth="2" />
+
+      {/* Playful Curl of Hair at Top */}
+      <path
+        d="M35 10.5c2.2-3.8 7.8-4.5 10.5-1 1.8 2 0.8 4.6-2 4.6"
         stroke="#0D9488"
         strokeWidth="2.6"
         strokeLinecap="round"
       />
-      {/* Smiling eyes */}
-      <path d="M24 31c1.2-1.8 3.2-1.8 4.4 0" stroke="#0B131A" strokeWidth="2.3" strokeLinecap="round" />
-      <path d="M35.6 31c1.2-1.8 3.2-1.8 4.4 0" stroke="#0B131A" strokeWidth="2.3" strokeLinecap="round" />
-      {/* Rosy cheeks */}
-      <circle cx="22.5" cy="35.5" r="2.4" fill="#FF8C61" fillOpacity="0.65" />
-      <circle cx="41.5" cy="35.5" r="2.4" fill="#FF8C61" fillOpacity="0.65" />
-      {/* Joyful wide smile */}
+
+      {/* Happy Arched Eyes */}
+      <path d="M33.2 23.2c1.1-1.6 2.9-1.6 4 0" stroke="#0B131A" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M42.8 23.2c1.1-1.6 2.9-1.6 4 0" stroke="#0B131A" strokeWidth="2.2" strokeLinecap="round" />
+
+      {/* Rosy Cheeks */}
+      <circle cx="31.5" cy="27" r="2.3" fill="#FF8C61" fillOpacity="0.7" />
+      <circle cx="48.5" cy="27" r="2.3" fill="#FF8C61" fillOpacity="0.7" />
+
+      {/* Joyful Smile */}
       <path
-        d="M25.5 37.5c2 3.8 11 3.8 13 0"
+        d="M35 28.8c1.8 3.2 8.2 3.2 10 0"
         stroke="#0B131A"
-        strokeWidth="2.4"
+        strokeWidth="2.2"
         strokeLinecap="round"
       />
-      {/* Floating twinkling star top-right */}
-      <g className="animate-star-twinkle" style={{ transformOrigin: '51px 15px' }}>
+
+      {/* Floating Twinkling Star Top-Right */}
+      <g className="animate-star-twinkle" style={{ transformOrigin: '64px 16px' }}>
         <path
-          d="M51 9l1.6 4.2L57 14.8l-4.4 1.6L51 20.6l-1.6-4.2L45 14.8l4.4-1.6L51 9z"
+          d="M64 10l1.5 3.8 3.9 1.5-3.9 1.5L64 20.6l-1.5-3.8-3.9-1.5 3.9-1.5L64 10z"
           fill="#F59E0B"
         />
       </g>
-      {/* Floating heart top-left */}
-      <g className="animate-star-twinkle" style={{ transformOrigin: '13px 17px', animationDelay: '350ms' }}>
+
+      {/* Floating Warm Family Heart Top-Left */}
+      <g className="animate-star-twinkle" style={{ transformOrigin: '16px 18px', animationDelay: '300ms' }}>
         <path
-          d="M13 21.5s-4.5-2.7-4.5-5.6c0-1.6 1.3-2.8 2.8-2.8 1 0 1.7.5 1.7 1.2 0-.7.7-1.2 1.7-1.2 1.5 0 2.8 1.2 2.8 2.8 0 2.9-4.5 5.6-4.5 5.6z"
+          d="M16 22.5s-4.5-2.7-4.5-5.5c0-1.5 1.2-2.7 2.7-2.7 1 0 1.8.5 1.8 1.2 0-.7.8-1.2 1.8-1.2 1.5 0 2.7 1.2 2.7 2.7 0 2.8-4.5 5.5-4.5 5.5z"
           fill="#FF8C61"
         />
       </g>
     </svg>
   </span>
 );
+
+export interface FullScreenNavigationLoaderProps {
+  visible: boolean;
+  fadingOut?: boolean;
+  language: LanguageCode;
+  labelAr?: string;
+  labelEn?: string;
+}
+
+/**
+ * Full-Screen Center-Screen Navigation Transition Loader.
+ * Appears immediately on page/tab switch with an adorable walking toddler SVG,
+ * glowing pulse rings, and a minimal progress bar, then smoothly fades out
+ * the exact moment the new page finishes rendering.
+ */
+export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProps> = ({
+  visible,
+  fadingOut = false,
+  language,
+  labelAr,
+  labelEn,
+}) => {
+  if (!visible) return null;
+  const isEn = language === 'en';
+  const displayLabel = isEn
+    ? labelEn || 'Opening Family Space...'
+    : labelAr || 'جاري فتح القسم...';
+
+  return (
+    <div
+      id="fullscreen-navigation-loader"
+      data-testid="fullscreen-navigation-loader"
+      role="status"
+      aria-live="polite"
+      aria-busy={!fadingOut}
+      className={`fixed inset-0 z-[80] pointer-events-none flex items-center justify-center p-4 transition-all duration-200 ease-out ${
+        fadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+      }`}
+      style={{
+        backgroundColor: 'rgba(11, 19, 26, 0.18)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
+      }}
+    >
+      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-6 py-5 shadow-[0_20px_50px_-12px_rgba(11,19,26,0.38)] flex flex-col items-center justify-center gap-3 min-w-[210px] max-w-[280px] text-center">
+        <PlayfulChildLoaderSvg size={68} />
+
+        <div className="space-y-1.5 w-full">
+          <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+            {displayLabel}
+          </div>
+
+          {/* Minimal Glowing Progress Indicator */}
+          <div className="w-36 mx-auto h-1.5 rounded-full bg-slate-200/80 dark:bg-[#142430] overflow-hidden">
+            <div className="animate-nav-progress h-full w-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61]" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
   section,

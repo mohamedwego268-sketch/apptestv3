@@ -82,6 +82,7 @@ import {
   AiRobotHeadIcon,
 } from './components/ThreeDVisuals';
 import {
+  FullScreenNavigationLoader,
   GlobalToastSnackbar,
   InnerScreenTopBar,
   PASTEL_CARD_TONES,
@@ -96,6 +97,13 @@ export default function App() {
   const [activePage, setActivePage] = useState<PageId>('home');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
   const tabLoadingTimerRef = React.useRef<number | null>(null);
+  const navFadeTimerRef = React.useRef<number | null>(null);
+  const navHideTimerRef = React.useRef<number | null>(null);
+  const [navLoader, setNavLoader] = useState<{
+    visible: boolean;
+    fadingOut: boolean;
+    targetPage: PageId;
+  }>({ visible: false, fadingOut: false, targetPage: 'home' });
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [showInnerSettings, setShowInnerSettings] = useState<boolean>(true);
@@ -129,6 +137,12 @@ export default function App() {
     return () => {
       if (tabLoadingTimerRef.current) {
         window.clearTimeout(tabLoadingTimerRef.current);
+      }
+      if (navFadeTimerRef.current) {
+        window.clearTimeout(navFadeTimerRef.current);
+      }
+      if (navHideTimerRef.current) {
+        window.clearTimeout(navHideTimerRef.current);
       }
     };
   }, []);
@@ -298,15 +312,42 @@ export default function App() {
       window.clearTimeout(tabLoadingTimerRef.current);
       tabLoadingTimerRef.current = null;
     }
-    if (shouldTriggerSkeletonForTab(page) && page !== activePage) {
-      setIsTabLoading(true);
-      tabLoadingTimerRef.current = window.setTimeout(() => {
+    if (navFadeTimerRef.current) {
+      window.clearTimeout(navFadeTimerRef.current);
+      navFadeTimerRef.current = null;
+    }
+    if (navHideTimerRef.current) {
+      window.clearTimeout(navHideTimerRef.current);
+      navHideTimerRef.current = null;
+    }
+
+    if (page !== activePage) {
+      const isHeavyTab = shouldTriggerSkeletonForTab(page);
+      setNavLoader({ visible: true, fadingOut: false, targetPage: page });
+
+      if (isHeavyTab) {
+        setIsTabLoading(true);
+        tabLoadingTimerRef.current = window.setTimeout(() => {
+          setIsTabLoading(false);
+          tabLoadingTimerRef.current = null;
+        }, SKELETON_LOAD_DURATION_MS);
+      } else {
         setIsTabLoading(false);
-        tabLoadingTimerRef.current = null;
-      }, SKELETON_LOAD_DURATION_MS);
+      }
+
+      const renderReadyMs = isHeavyTab ? SKELETON_LOAD_DURATION_MS : 160;
+      navFadeTimerRef.current = window.setTimeout(() => {
+        setNavLoader((prev) => ({ ...prev, fadingOut: true }));
+        navHideTimerRef.current = window.setTimeout(() => {
+          setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
+          navHideTimerRef.current = null;
+        }, 190);
+        navFadeTimerRef.current = null;
+      }, renderReadyMs);
     } else {
       setIsTabLoading(false);
     }
+
     setActivePage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -2684,6 +2725,39 @@ export default function App() {
             </div>
           </>
         )}
+
+        {/* Full-Screen Center-Screen Navigation Transition Loader */}
+        <FullScreenNavigationLoader
+          visible={navLoader.visible}
+          fadingOut={navLoader.fadingOut}
+          language={state.language}
+          labelAr={
+            navLoader.targetPage === 'services'
+              ? 'جاري فتح متجر الأسرة والخدمات...'
+              : navLoader.targetPage === 'medical'
+              ? 'جاري فتح الرعاية الطبية ومتابعة النمو...'
+              : navLoader.targetPage === 'community'
+              ? 'جاري فتح مجتمع الآباء والأمهات...'
+              : navLoader.targetPage === 'assistant'
+              ? 'جاري تجهيز المساعد الذكي...'
+              : navLoader.targetPage === 'calendar' || navLoader.targetPage === 'routine'
+              ? 'جاري فتح التقويم والروتين اليومي...'
+              : 'جاري الانتقال...'
+          }
+          labelEn={
+            navLoader.targetPage === 'services'
+              ? 'Opening Family Store & Services...'
+              : navLoader.targetPage === 'medical'
+              ? 'Opening Medical Care & Growth...'
+              : navLoader.targetPage === 'community'
+              ? 'Opening Parents Community...'
+              : navLoader.targetPage === 'assistant'
+              ? 'Preparing Smart AI Assistant...'
+              : navLoader.targetPage === 'calendar' || navLoader.targetPage === 'routine'
+              ? 'Opening Schedule & Daily Routine...'
+              : 'Switching View...'
+          }
+        />
 
         {/* Task & Goal Completion Festival Celebration (Confetti & Stars) */}
         <TaskFestivalCelebrationOverlay
