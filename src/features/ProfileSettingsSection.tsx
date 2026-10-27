@@ -22,6 +22,7 @@ export interface ProfileSettingsSectionProps {
   showInnerSettings: boolean;
   onToggleShowInnerSettings: () => void;
   onOpenOnboardingModal: () => void;
+  onOpenSessionLoginGate?: () => void;
   onNavigateTo: (page: 'family' | 'children' | 'services' | 'notifications' | 'privacy' | 'terms' | 'contact') => void;
   onToggleDarkMode: () => void;
   settingsParentName: string;
@@ -60,6 +61,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   showInnerSettings,
   onToggleShowInnerSettings,
   onOpenOnboardingModal,
+  onOpenSessionLoginGate,
   onNavigateTo,
   onToggleDarkMode,
   settingsParentName,
@@ -94,9 +96,9 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
   return (
     <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات'}>
-      {/* Compact Profile Hero Warm Image Card with Father vs. Mother Visual Distinction */}
+      {/* Compact Profile Hero Warm Image Card with Father vs. Mother Independent Session Distinction */}
       <div
-        className="image-bg-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 space-y-2.5"
+        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5"
         style={{
           backgroundImage: getCardBackgroundSpec('settings', state.darkMode).backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
@@ -114,15 +116,15 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                   color: parentProfileSpec.badgeTextCss,
                   borderColor: parentProfileSpec.badgeBorderCss,
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border shadow-2xs"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold border shadow-2xs"
               >
                 <SoftFilledIcon id="family" size={12} boxSize="sm" />
                 <span>{lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}</span>
               </span>
-              <h2 className="image-card-title text-base sm:text-xl font-extrabold mt-0.5 truncate">
+              <h2 className="image-card-title text-base sm:text-xl font-extrabold mt-0.5 leading-snug">
                 {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h2>
-              <div className="image-card-subtitle text-[11px] font-bold tabular-nums truncate">
+              <div className="image-card-subtitle text-xs font-bold tabular-nums leading-relaxed">
                 {state.country === 'SA'
                   ? lang === 'en'
                     ? 'Saudi Arabia'
@@ -135,21 +137,30 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {onOpenSessionLoginGate && (
+              <button
+                type="button"
+                onClick={onOpenSessionLoginGate}
+                className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-rose-300 dark:border-rose-500/40 bg-rose-50/95 dark:bg-[#142430] text-rose-900 dark:text-rose-200 shadow-2xs cursor-pointer"
+              >
+                🔒 {lang === 'en' ? 'Sign Out (Session Gate)' : 'تسجيل الخروج لبوابة الحساب'}
+              </button>
+            )}
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenOnboardingModal}>
               {lang === 'en' ? 'Edit Account & City' : 'عدّل الحساب والمدينة'}
             </PrimaryCtaButton>
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
-              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
+              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
               {lang === 'en' ? 'Family & Permissions' : 'العيلة والصلاحيات'}
             </button>
             <button
               type="button"
               onClick={() => onNavigateTo('notifications')}
-              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
+              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
               {lang === 'en'
                 ? `Alerts (${unreadNotifCount})`
@@ -158,7 +169,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <button
               type="button"
               onClick={onToggleShowInnerSettings}
-              className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs shrink-0 cursor-pointer"
+              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
               {showInnerSettings
                 ? lang === 'en'

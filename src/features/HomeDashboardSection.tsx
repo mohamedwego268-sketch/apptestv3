@@ -7,7 +7,9 @@ import {
   LanguageCode,
   ParentProfileThemeSpec,
   calculateChildAge,
+  isTaskVisibleForParentSession,
   locText,
+  sanitizeUserText,
 } from '../domain/familySpaceCore';
 import {
   FamilyMoodBarometer,
@@ -15,7 +17,7 @@ import {
   SoftFilledIcon,
   StarOfTheDayCrownBadge,
 } from '../components/DesignSystem';
-import { ThreeDChildAvatar, ThreeDIcon, ThreeDIconId } from '../components/ThreeDVisuals';
+import { ThreeDChildAvatar, ThreeDIconId } from '../components/ThreeDVisuals';
 import { LiveWeatherWidget } from '../components/LiveWeatherWidget';
 import { PageId } from '../context/FamilyAppContext';
 
@@ -41,6 +43,9 @@ export interface HomeDashboardSectionProps {
   onShowToast?: (msg: string) => void;
   onOpenStoreCategory?: (categoryId: string) => void;
   onReplaySplash?: () => void;
+  onOpenSessionLoginGate?: () => void;
+  onToggleTaskDone?: (taskId: number) => void;
+  onUpdateParentPersonalNotes?: (notes: string) => void;
 }
 
 export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
@@ -57,6 +62,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onAddSuggestedRoutineTask,
   onShowToast,
   onOpenStoreCategory,
+  onOpenSessionLoginGate,
+  onToggleTaskDone,
+  onUpdateParentPersonalNotes,
 }) => {
   const isEn = lang === 'en';
 
@@ -76,6 +84,23 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [completedSportByKid, setCompletedSportByKid] = useState<Record<number, boolean>>({});
   const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(false);
 
+  // Context-Aware Dynamic Shell & Parent Burnout Survival Mode States
+  const [contextModeSelection, setContextModeSelection] = useState<'auto' | 'morning' | 'noon' | 'evening'>('auto');
+  const [survivalModeActive, setSurvivalModeActive] = useState<boolean>(false);
+  const [survivalStepsCompleted, setSurvivalStepsCompleted] = useState<Record<number, boolean>>({
+    1: false,
+    2: false,
+    3: false,
+  });
+
+  const activeParentAccountObj = state.parentAccounts[state.activeParentAccount];
+  const isFatherSession = state.activeParentAccount === 'father';
+
+  const parentScopedTasks = useMemo(
+    () => state.tasks.filter((t) => isTaskVisibleForParentSession(t, state.activeParentAccount)),
+    [state.tasks, state.activeParentAccount]
+  );
+
   const activeCountryCities = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedHomeCityObj =
     activeCountryCities.find(
@@ -92,41 +117,57 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'Your Child' : 'طفلك';
   const activeKidStageLabel = activeKidAge?.label || (isEn ? '3–5 yrs' : '٣–٥ سنوات');
 
+  const resolvedTimeSlot: 'morning' | 'noon' | 'evening' = useMemo(() => {
+    if (contextModeSelection !== 'auto') return contextModeSelection;
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'noon';
+    return 'evening';
+  }, [contextModeSelection]);
+
   // Time-Aware Greeting & Smart Daily Activity Recommendation
   const timeAwareSpec = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
+    if (resolvedTimeSlot === 'morning') {
       return {
+        slot: 'morning' as const,
         icon: '☀️',
-        periodAr: 'صباح الإشراق والنشاط',
-        periodEn: 'Good Morning & Bright Energy',
+        periodAr: 'سياق الصباح: الاستعداد للمدرسة والحضانة والطقس',
+        periodEn: 'Morning Context: School/Nursery Prep & Weather',
         recTitleAr: `توصية الصباح لـ ${activeKidName}`,
         recTitleEn: `Morning Activity Tip for ${activeKidName}`,
-        recBodyAr: `الطقس في ${localizedCity} مناسب لتهوية الغرفة، فطور صحي غني بالبروتين، و١٥ دقيقة لعب حركي قبل الحضانة أو المدرسة.`,
-        recBodyEn: `Fresh morning in ${localizedCity} — ideal for a protein breakfast and 15 mins of active stretching with ${activeKidName}.`,
+        recBodyAr: `الطقس في ${localizedCity} مناسب لتهوية الغرفة، فطور صحي غني بالبروتين، وتجهيز شنطة المدرسة لـ يوسف والحضانة لـ ليلى بهدوء.`,
+        recBodyEn: `Fresh morning in ${localizedCity} — ideal for protein breakfast and school/nursery prep for Youssef & Laila.`,
+        focusModulesAr: ['🎒 تحضير مدرسة يوسف وحضانة ليلى', '🌤️ طقس الصباح وملابس الخروج', '🥣 فطور الصباح والرضعة الأولى لحمزة'],
+        focusModulesEn: ['🎒 Youssef School & Laila Nursery Prep', '🌤️ Morning Weather & Outfit Check', '🥣 Morning Breakfast & Hamza First Feed'],
       };
     }
-    if (hour >= 12 && hour < 17) {
+    if (resolvedTimeSlot === 'noon') {
       return {
-        icon: '🌤️',
-        periodAr: 'نهاركم سعيد ومليان حيوية',
-        periodEn: 'Good Afternoon & Joyful Vibes',
+        slot: 'noon' as const,
+        icon: '🍼',
+        periodAr: 'سياق الظهيرة: تتبع الرضيع (حمزة ٦ شهور) والترطيب',
+        periodEn: 'Noon Context: Infant Tracking (Hamza 6m) & Hydration',
         recTitleAr: `توصية الظهيرة والعصر لـ ${activeKidName}`,
         recTitleEn: `Afternoon Activity Tip for ${activeKidName}`,
-        recBodyAr: `أفضل وقت لترطيب الجسم بالمياه، وجبة غداء متوازنة، ونشاط رياضي خفيف في الهواء الطلق أو النادي في ${localizedCity}.`,
-        recBodyEn: `Great afternoon in ${localizedCity} for hydration, balanced lunch, and outdoor park or club play with ${activeKidName}.`,
+        recBodyAr: `وقت مثالي لمتابعة وجبة خضار حمزة (٦ شهور) وتمرين وقت البطن، مع شرب المياه وأنشطة اللعب الإبداعي لـ ليلى ويوسف في ${localizedCity}.`,
+        recBodyEn: `Ideal midday window for Hamza's (6m) solid feeding & tummy time, plus hydration and creative play in ${localizedCity}.`,
+        focusModulesAr: ['👶🏻 تتبع رضاعة ووقت البطن لحمزة (٦ شهور)', '💧 شرب المياه والغداء الصحي', '🎨 نشاط بعد الحضانة والمدرسة لليلى ويوسف'],
+        focusModulesEn: ['👶🏻 Hamza (6m) Feeding & Tummy Time Tracker', '💧 Hydration & Balanced Lunch', '🎨 Post-School Creative Play for Laila & Youssef'],
       };
     }
     return {
+      slot: 'evening' as const,
       icon: '🌙',
-      periodAr: 'مساء الهدوء والدفء العائلي',
-      periodEn: 'Good Evening & Calm Family Time',
+      periodAr: 'سياق المساء: تهدئة البيت وروتين النوم الهادئ',
+      periodEn: 'Evening Context: Calm Wind-Down & Bedtime Focus',
       recTitleAr: `توصية المساء الهادئ لـ ${activeKidName}`,
       recTitleEn: `Evening Wind-Down Tip for ${activeKidName}`,
-      recBodyAr: `أمسية لطيفة في ${localizedCity} — ينصح بتخفيف الإضاءة، إيقاف الشاشات، وقراءة قصة قصيرة مع ${activeKidName} قبل النوم.`,
-      recBodyEn: `Cozy evening in ${localizedCity} — dim the lights, pause screens, and enjoy a short bedtime story with ${activeKidName}.`,
+      recBodyAr: `أمسية هادئة في ${localizedCity} — حمام دافئ لحمزة (٦ شهور)، إغلاق الشاشات، وقصة ما قبل النوم لـ ليلى ويوسف.`,
+      recBodyEn: `Cozy evening in ${localizedCity} — warm bath for Hamza (6m), screens off, and bedtime story for Laila & Youssef.`,
+      focusModulesAr: ['🛁 حمام دافئ وتتبع نوم حمزة الليلي', '📵 إيقاف الشاشات تماماً قبل النوم بساعة', '📖 قصة المساء المشتركة لـ ليلى ويوسف'],
+      focusModulesEn: ['🛁 Warm Bath & Night Sleep Log for Hamza', '📵 Full Screen-Off 1 Hour Before Bed', '📖 Shared Bedtime Story for Laila & Youssef'],
     };
-  }, [activeKidName, localizedCity]);
+  }, [resolvedTimeSlot, activeKidName, localizedCity]);
 
   // 1. Stage-Tailored Daily Nutrition & Lunchbox Data for Selected Child (Hamza 6m, Laila 4y, Youssef 8y)
   const nutritionPlans = useMemo(() => {
@@ -471,6 +512,266 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       aria-label={isEn ? 'Family Care Dashboard' : 'لوحة رعاية الأسرة والطفل'}
     >
       {/* =====================================================================
+          0. INDEPENDENT ACCOUNT ARCHITECTURE BAR & CONTEXT-AWARE / SURVIVAL SHELL
+          ===================================================================== */}
+      <div
+        id="home-context-and-session-shell"
+        data-testid="home-context-and-session-shell"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 shadow-sm"
+      >
+        {/* Top Row: Independent Parent Session Identity + Sign-Out Gate Trigger + Survival Mode Toggle */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]">
+          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
+            <span className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-2xl shrink-0">
+              {isFatherSession ? '👨🏻' : '👩🏻'}
+            </span>
+            <div className="space-y-0.5 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                  {isFatherSession
+                    ? isEn
+                      ? 'Independent Session: Ahmed (Father)'
+                      : 'الجلسة المستقلة النشطة: أحمد (الأب)'
+                    : isEn
+                    ? 'Independent Session: Maryam (Mother)'
+                    : 'الجلسة المستقلة النشطة: مريم (الأم)'}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-black">
+                  {isEn
+                    ? `${parentScopedTasks.length} Personal & Shared Tasks`
+                    : `${parentScopedTasks.length} مهام شخصية ومشتركة`}
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
+                {isEn
+                  ? 'Isolated personal tasks & settings · Shared central DB for Hamza (6m), Laila (4y) & Youssef (8y)'
+                  : 'مهام وإعدادات شخصية معزولة · قاعدة بيانات مشتركة لـ حمزة (٦ شهور) وليلى (٤ سنوات) ويوسف (٨ سنوات)'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Parent Burnout / Survival Mode Sleek Toggle */}
+            <button
+              id="parent-survival-mode-toggle"
+              data-testid="parent-survival-mode-toggle"
+              type="button"
+              aria-pressed={survivalModeActive}
+              onClick={() => {
+                const next = !survivalModeActive;
+                setSurvivalModeActive(next);
+                onShowToast?.(
+                  next
+                    ? isEn
+                      ? '🛟 Parent Survival Mode Activated: Non-essential clutter hidden.'
+                      : '🛟 تم تفعيل وضع النجاة للطوارئ: تم إخفاء المهام غير الضرورية والاكتفاء بـ ٣ خطوات هادئة.'
+                    : isEn
+                    ? '✨ Standard Full Dashboard Restored.'
+                    : '✨ تمت استعادة عرض اللوحة الكاملة.'
+                );
+              }}
+              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-black border transition-all inline-flex items-center gap-2 cursor-pointer ${
+                survivalModeActive
+                  ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md'
+                  : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40'
+              }`}
+            >
+              <span>🛟</span>
+              <span>
+                {survivalModeActive
+                  ? isEn
+                    ? 'Survival Mode: ON'
+                    : 'وضع النجاة للطوارئ: مفعّل ✓'
+                  : isEn
+                  ? 'Survival Mode (Burnout Relief)'
+                  : 'وضع النجاة للطوارئ (تخفيف الإرهاق)'}
+              </span>
+            </button>
+
+            {/* Session Sign-Out / Login Gate Button (No Direct Quick-Switch Toggle) */}
+            {onOpenSessionLoginGate && (
+              <button
+                id="open-independent-session-gate-btn"
+                data-testid="open-independent-session-gate-btn"
+                type="button"
+                onClick={onOpenSessionLoginGate}
+                className="min-h-[44px] px-3.5 py-2 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>🔐</span>
+                <span>{isEn ? 'Sign Out / Session Gate' : 'تسجيل الخروج لبوابة الحساب'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Context-Aware Dynamic Shell Selector (Morning / Noon / Evening) */}
+        <div
+          id="context-aware-dynamic-shell-bar"
+          data-testid="context-aware-dynamic-shell-bar"
+          className="space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
+                🧭 {isEn ? 'Context-Aware Dynamic Shell' : 'واجهة السياق المتكيف حسب الوقت'}
+              </span>
+              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                {isEn ? timeAwareSpec.periodEn : timeAwareSpec.periodAr}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                { id: 'auto' as const, labelAr: '⚡ تلقائي', labelEn: '⚡ Auto' },
+                { id: 'morning' as const, labelAr: '☀️ الصباح (المدرسة والطقس)', labelEn: '☀️ Morning (School/Weather)' },
+                { id: 'noon' as const, labelAr: '🍼 الظهيرة (تتبع الرضيع)', labelEn: '🍼 Noon (Infant Care)' },
+                { id: 'evening' as const, labelAr: '🌙 المساء (النوم والهدوء)', labelEn: '🌙 Evening (Bedtime)' },
+              ].map((ctx) => {
+                const isSelected = contextModeSelection === ctx.id;
+                return (
+                  <button
+                    key={ctx.id}
+                    type="button"
+                    data-testid={`context-shell-mode-${ctx.id}`}
+                    onClick={() => setContextModeSelection(ctx.id)}
+                    className={`min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                        : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                    }`}
+                  >
+                    {isEn ? ctx.labelEn : ctx.labelAr}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Context Focus Pills for Current Time of Day */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {(isEn ? timeAwareSpec.focusModulesEn : timeAwareSpec.focusModulesAr).map((modText, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl border border-teal-500/25 bg-teal-500/8 dark:bg-[#142430] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words flex items-center gap-2"
+              >
+                <span className="text-[#0d9488] dark:text-[#2DD4BF] font-black">#{idx + 1}</span>
+                <span>{modText}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================================
+          0B. PARENT BURNOUT / SURVIVAL MODE PANEL (WHEN ACTIVE, STRIPS CLUTTER)
+          ===================================================================== */}
+      {survivalModeActive && (
+        <div
+          id="parent-survival-mode-panel"
+          data-testid="parent-survival-mode-panel"
+          className="rounded-3xl border-2 border-amber-400 bg-gradient-to-br from-amber-50/95 via-white to-teal-50/70 dark:from-[#142430] dark:via-[#101D26] dark:to-[#0B131A] p-5 sm:p-6 space-y-4 shadow-lg animate-fade-in"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs font-black">
+                🛟 {isEn ? 'Emergency Parent Burnout / Survival Mode' : 'وضع النجاة للطوارئ وتخفيف الاحتراق الوالدي'}
+              </span>
+              <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                {isEn
+                  ? 'Take a Deep Breath — Only 3 Calm Essentials Today'
+                  : 'خُذ نفساً عميقاً.. لستما مضطرين لإنجاز كل شيء اليوم'}
+              </h2>
+              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                {isEn
+                  ? 'Non-essential tasks and store banners are paused. Focus only on these 3 calm steps and rotate rest between Ahmed & Maryam.'
+                  : 'تم إخفاء كافة المهام الفرعية والإشعارات غير الضرورية. ركّزوا فقط على هذه الخطوات الثلاث الهادئة مع تبادل الراحة بين أحمد ومريم.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSurvivalModeActive(false)}
+              className="min-h-[44px] px-4 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+            >
+              {isEn ? 'Exit Survival Mode' : 'إنهاء وضع النجاة'}
+            </button>
+          </div>
+
+          {/* Minimal 3-Step Calm Routine */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[
+              {
+                step: 1,
+                emoji: '🍼',
+                titleAr: '١. إطعام وترطيب بسيط بدون تعقيد',
+                titleEn: '1. Simple Feeding & Hydration Only',
+                descAr: 'رضعة ومهروس جاهز لحمزة، وساندوتش فواكه أو جبن سريع لليلى ويوسف مع كوب ماء.',
+                descEn: 'Milk/puree for Hamza, and a quick fruit/cheese snack with water for Laila & Youssef.',
+              },
+              {
+                step: 2,
+                emoji: '🧸',
+                titleAr: '٢. نشاط هادئ آمن في مكان واحد (٢٠ دقيقة)',
+                titleEn: '2. Safe Single-Room Quiet Play (20m)',
+                descAr: 'سجادة اللعب لحمزة، وبازل أو تلوين حر لليلى ويوسف بجانبكم على الأريكة بدون مجهود.',
+                descEn: 'Floor playmat for Hamza, and quiet coloring/puzzles for Laila & Youssef next to you.',
+              },
+              {
+                step: 3,
+                emoji: '🛋️',
+                titleAr: '٣. تناوب راحة ٢٠ دقيقة بين أحمد ومريم',
+                titleEn: '3. 20-Min Rest Shift for Ahmed & Maryam',
+                descAr: isFatherSession
+                  ? 'يراقب أحمد الأولاد ٢٠ دقيقة بهدوء لتستريح مريم، ثم يتبادلان الدور.'
+                  : 'تستريح مريم ٢٠ دقيقة مع مشروب دافئ بينما يتولى أحمد متابعة الأولاد.',
+                descEn: 'One parent takes a 20-min quiet break with a warm drink while the other supervises.',
+              },
+            ].map((item) => {
+              const isDone = Boolean(survivalStepsCompleted[item.step]);
+              return (
+                <button
+                  key={item.step}
+                  type="button"
+                  data-testid={`survival-step-${item.step}`}
+                  onClick={() =>
+                    setSurvivalStepsCompleted((prev) => ({
+                      ...prev,
+                      [item.step]: !prev[item.step],
+                    }))
+                  }
+                  className={`min-h-[110px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
+                    isDone
+                      ? 'border-emerald-500 bg-emerald-500/12'
+                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span className="text-2xl">{item.emoji}</span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
+                        isDone
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                      }`}
+                    >
+                      {isDone ? (isEn ? '✓ Done' : '✓ تمت بهدوء') : isEn ? 'Tap when done' : 'اضغط عند الإتمام'}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                      {isEn ? item.titleEn : item.titleAr}
+                    </div>
+                    <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                      {isEn ? item.descEn : item.descAr}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
           1. DYNAMIC TIME-AWARE HERO & LIVE WEATHER ACTIVITY RECOMMENDATION
           ===================================================================== */}
       <div
@@ -485,13 +786,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         <div className="space-y-3">
           {/* Clean Uncluttered Top Context Line + Official Slogan Pill */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
-            <div className="inline-flex items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
+            <div className="inline-flex flex-wrap items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
               <span>{timeAwareSpec.icon}</span>
               <span>{isEn ? timeAwareSpec.periodEn : timeAwareSpec.periodAr}</span>
               <span aria-hidden="true" className="opacity-50">·</span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-[11px] font-black">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-xs font-black">
               <span>✨</span>
               <span>
                 {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
@@ -508,7 +809,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               >
                 {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h1>
-              <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
                 {todayFormattedCombined}
               </span>
             </div>
@@ -518,122 +819,204 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
 
-        {/* Live Weather Strip Embedded Seamlessly */}
-        <LiveWeatherWidget
-          city={activeCity}
-          country={state.country}
-          language={lang}
-          darkMode={Boolean(state.darkMode)}
-          userCoords={userCoords}
-          onSelectCity={(cCode, cName) => onSelectPreciseCity(`${cCode}:${cName}`)}
-        />
+        {/* Live Weather Strip (Prioritized in Morning or Standard Mode, Hidden in Survival Mode to reduce clutter) */}
+        {!survivalModeActive && (
+          <LiveWeatherWidget
+            city={activeCity}
+            country={state.country}
+            language={lang}
+            darkMode={Boolean(state.darkMode)}
+            userCoords={userCoords}
+            onSelectCity={(cCode, cName) => onSelectPreciseCity(`${cCode}:${cName}`)}
+          />
+        )}
+      </div>
+
+      {/* Isolated Personal Tasks & Notes Card for Active Parent Session (Ahmed vs Maryam) */}
+      <div
+        id="home-isolated-parent-session-card"
+        data-testid="home-isolated-parent-session-card"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-4 shadow-2xs"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isFatherSession
+                ? isEn
+                  ? '👨🏻 Ahmed’s Isolated Personal Tasks & Shared Family Routine'
+                  : '👨🏻 مهام جلسة أحمد (الأب) المستقلة والمشتركة'
+                : isEn
+                ? '👩🏻 Maryam’s Isolated Personal Tasks & Shared Family Routine'
+                : '👩🏻 مهام جلسة مريم (الأم) المستقلة والمشتركة'}
+            </h2>
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+              {isEn
+                ? 'Only tasks assigned to your session or marked Shared appear here'
+                : 'تظهر هنا فقط المهام المخصصة لحسابك الشخصي أو المشتركة بينكما'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigateTo('routine')}
+            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-teal-500/35 bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+          >
+            {isEn ? 'Full Routine →' : 'جدول الروتين الكامل ←'}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {parentScopedTasks.slice(0, survivalModeActive ? 3 : 6).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => onToggleTaskDone?.(t.id)}
+              className={`min-h-[48px] p-3 rounded-2xl border text-start transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                t.done
+                  ? 'border-emerald-500/40 bg-emerald-500/10 text-[var(--color-text)] dark:text-[#F8FAFC]'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <span className="text-base shrink-0">{t.done ? '✅' : '⬜'}</span>
+                <span className={`text-xs sm:text-sm font-bold leading-snug break-words ${t.done ? 'line-through opacity-75' : ''}`}>
+                  {locText(t.name, lang)}
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-lg bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-extrabold shrink-0">
+                {t.owner} · {t.time}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Isolated Parent Personal Note Input */}
+        <div className="pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] shrink-0">
+            📝 {isFatherSession ? (isEn ? 'Ahmed Private Note:' : 'مفكرة أحمد الخاصة:') : isEn ? 'Maryam Private Note:' : 'مفكرة مريم الخاصة:'}
+          </span>
+          <input
+            type="text"
+            value={activeParentAccountObj.personalNotes || ''}
+            onChange={(e) => onUpdateParentPersonalNotes?.(sanitizeUserText(e.target.value, 220))}
+            placeholder={
+              isEn
+                ? 'Write a private session note...'
+                : 'اكتب ملاحظة خاصة بجلستك المستقلة...'
+            }
+            className="flex-1 min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs sm:text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+          />
+        </div>
       </div>
 
       {/* Interactive Family Pulse & Battery Diagnostic Widget ("اختبار نبض البطارية والبيت اليومي") */}
-      <FamilyMoodBarometer
-        language={lang}
-        darkMode={Boolean(state.darkMode)}
-        onSelectMood={(_, msg) => onShowToast?.(msg)}
-        onAddRescueTask={(taskName, timeStr, kidId) => {
-          onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
-          onShowToast?.(
-            isEn
-              ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
-              : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
-          );
-        }}
-      />
+      {!survivalModeActive && (
+        <FamilyMoodBarometer
+          language={lang}
+          darkMode={Boolean(state.darkMode)}
+          onSelectMood={(_, msg) => onShowToast?.(msg)}
+          onAddRescueTask={(taskName, timeStr, kidId) => {
+            onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
+            onShowToast?.(
+              isEn
+                ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
+                : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
+            );
+          }}
+        />
+      )}
 
       {/* =====================================================================
           1B. DAILY HERO CHALLENGE & PARENTING WISDOM (SOLID HIGH-CONTRAST CARDS)
           ===================================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Daily Hero Challenge Card */}
-        <div
-          id="home-daily-hero-challenge"
-          data-testid="home-daily-hero-challenge"
-          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[11px] font-black">
-                🏆 {isEn ? 'Daily Hero Challenge' : 'تحدي بطل اليوم'}
-              </span>
-              <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                +25 ⭐ {isEn ? 'Points' : 'نقطة تشجيع'}
-              </span>
+      {!survivalModeActive && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Daily Hero Challenge Card */}
+          <div
+            id="home-daily-hero-challenge"
+            data-testid="home-daily-hero-challenge"
+            className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
+          >
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 text-xs font-black">
+                  🏆 {isEn ? 'Daily Hero Challenge' : 'تحدي بطل اليوم'}
+                </span>
+                <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                  +25 ⭐ {isEn ? 'Points' : 'نقطة تشجيع'}
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                {isEn
+                  ? `15-Minute Tidy-Up & Gratitude Circle with ${activeKidName}`
+                  : `١٥ دقيقة ترتيب الألعاب بمرح + جملة شكر مع ${activeKidName}`}
+              </h3>
+              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+                {isEn
+                  ? 'Turn cleanup into a quick team race before dinner and celebrate together!'
+                  : 'حوّلوا ترتيب الغرفة لسباق عائلي مبهج على أنشودة قصيرة واحتفلوا بالإنجاز معاً!'}
+              </p>
             </div>
-            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-              {isEn
-                ? `15-Minute Tidy-Up & Gratitude Circle with ${activeKidName}`
-                : `١٥ دقيقة ترتيب الألعاب بمرح + جملة شكر مع ${activeKidName}`}
-            </h3>
-            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-              {isEn
-                ? 'Turn cleanup into a quick team race before dinner and celebrate together!'
-                : 'حوّلوا ترتيب الغرفة لسباق عائلي مبهج على أنشودة قصيرة واحتفلوا بالإنجاز معاً!'}
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                👶 {activeKidName} ({activeKidStageLabel})
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  onShowToast?.(
+                    isEn
+                      ? `🏆 Bravo! ${activeKidName} completed the Daily Hero Challenge (+25 ⭐)!`
+                      : `🏆 بطل رائع! أتمّ ${activeKidName} تحدي بطل اليوم وحصل على +٢٥ نجمة تشجيع!`
+                  );
+                }}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
+              >
+                {isEn ? 'Complete Challenge 🎉' : 'إتمام التحدي 🎉'}
+              </button>
+            </div>
           </div>
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
-            <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              👶 {activeKidName} ({activeKidStageLabel})
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                onShowToast?.(
-                  isEn
-                    ? `🏆 Bravo! ${activeKidName} completed the Daily Hero Challenge (+25 ⭐)!`
-                    : `🏆 بطل رائع! أتمّ ${activeKidName} تحدي بطل اليوم وحصل على +٢٥ نجمة تشجيع!`
-                );
-              }}
-              className="min-h-[34px] px-3.5 py-1 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer"
-            >
-              {isEn ? 'Complete Challenge 🎉' : 'إتمام التحدي 🎉'}
-            </button>
-          </div>
-        </div>
 
-        {/* Daily Parenting Wisdom Card */}
-        <div
-          id="home-daily-parenting-wisdom"
-          data-testid="home-daily-parenting-wisdom"
-          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-black">
-                💡 {isEn ? 'Daily Parenting Wisdom' : 'حكمة ومعلومة تربوية اليوم'}
-              </span>
-              <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                {isEn ? 'Positive Discipline' : 'تربية إيجابية ذكية'}
-              </span>
+          {/* Daily Parenting Wisdom Card */}
+          <div
+            id="home-daily-parenting-wisdom"
+            data-testid="home-daily-parenting-wisdom"
+            className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
+          >
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
+                  💡 {isEn ? 'Daily Parenting Wisdom' : 'حكمة ومعلومة تربوية اليوم'}
+                </span>
+                <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                  {isEn ? 'Positive Discipline' : 'تربية إيجابية ذكية'}
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                {isEn
+                  ? 'Connection Before Correction Builds Lifelong Confidence'
+                  : '«التواصل العاطفي قبل التوجيه» يصنع طفلاً واثقاً ومتعاوناً'}
+              </h3>
+              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+                {isEn
+                  ? `When ${activeKidName} feels heard for 30 seconds at eye level, cooperation increases naturally without power struggles.`
+                  : `النزول لمستوى نظر ${activeKidName} واحتواء مشاعره لمدة ٣٠ ثانية قبل إعطاء التوجيه يضاعف استجابته بهدوء وحب.`}
+              </p>
             </div>
-            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-              {isEn
-                ? 'Connection Before Correction Builds Lifelong Confidence'
-                : '«التواصل العاطفي قبل التوجيه» يصنع طفلاً واثقاً ومتعاوناً'}
-            </h3>
-            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-              {isEn
-                ? `When ${activeKidName} feels heard for 30 seconds at eye level, cooperation increases naturally without power struggles.`
-                : `النزول لمستوى نظر ${activeKidName} واحتواء مشاعره لمدة ٣٠ ثانية قبل إعطاء التوجيه يضاعف استجابته بهدوء وحب.`}
-            </p>
-          </div>
-          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
-            <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-              ✨ {isEn ? 'Verified Pediatric Psychology Tip' : 'توصية خبراء علم نفس الطفل'}
-            </span>
-            <button
-              type="button"
-              onClick={() => navigateTo('assistant')}
-              className="min-h-[34px] px-3.5 py-1 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-extrabold transition-all cursor-pointer"
-            >
-              {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
-            </button>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+              <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                ✨ {isEn ? 'Verified Pediatric Psychology Tip' : 'توصية خبراء علم نفس الطفل'}
+              </span>
+              <button
+                type="button"
+                onClick={() => navigateTo('assistant')}
+                className="min-h-[44px] px-4 py-2 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold transition-all cursor-pointer"
+              >
+                {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* =====================================================================
           2. REFINED KIDS CAROUSEL & ELEVATED MODULAR CARDS (ملفات الأطفال)

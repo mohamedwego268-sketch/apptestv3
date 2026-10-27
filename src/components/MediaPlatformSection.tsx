@@ -286,6 +286,30 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const [videoCaptionsOn, setVideoCaptionsOn] = useState(true);
   const [videoSpeed, setVideoSpeed] = useState<1 | 1.25 | 1.5>(1);
 
+  // 1-Minute Audio Briefs Mini Player State (ملخص صوتي في دقيقة للمكتبة التربوية)
+  const [briefItemId, setBriefItemId] = useState<number>(catalog[0]?.id || 101);
+  const [briefPlaying, setBriefPlaying] = useState<boolean>(false);
+  const [briefProgressSec, setBriefProgressSec] = useState<number>(0);
+  const [briefSpeed, setBriefSpeed] = useState<1 | 1.25 | 1.5>(1);
+  const activeBriefItem = useMemo(
+    () => catalog.find((c) => c.id === briefItemId) || catalog[0],
+    [catalog, briefItemId]
+  );
+
+  useEffect(() => {
+    if (!briefPlaying) return;
+    const interval = window.setInterval(() => {
+      setBriefProgressSec((prev) => {
+        if (prev >= 60) {
+          setBriefPlaying(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, Math.round(1000 / briefSpeed));
+    return () => window.clearInterval(interval);
+  }, [briefPlaying, briefSpeed]);
+
   const filteredReels = useMemo(() => {
     if (reelCategoryFilter === 'all') return PARENTING_REELS_FEED;
     return PARENTING_REELS_FEED.filter(
@@ -851,7 +875,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                         <ThreeDIcon id={reel.iconId} size={24} />
                       </div>
                       <div className="min-w-0 flex-1 space-y-0.5">
-                        <div className="text-xs font-extrabold text-[var(--color-text)] line-clamp-2 leading-snug">
+                        <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] leading-snug">
                           {isEn ? reel.titleEn : reel.titleAr}
                         </div>
                         <div className="text-[10px] font-bold text-[var(--color-muted)]">
@@ -868,9 +892,92 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
         </div>
       )}
 
-      {/* MODE 2: VIDEO PLAYER & EDUCATIONAL GUIDES LIBRARY */}
+      {/* MODE 2: VIDEO PLAYER & EDUCATIONAL GUIDES LIBRARY + 1-MINUTE AUDIO BRIEFS MINI PLAYER */}
       {mediaViewMode === 'library' && (
         <div className="space-y-4">
+          {/* Sleek 1-Minute Audio Briefs Mini Player (ملخص صوتي في دقيقة) */}
+          {activeBriefItem && (
+            <div
+              id="audio-briefs-mini-player"
+              data-testid="audio-briefs-mini-player"
+              className="rounded-2xl border border-teal-300/90 dark:border-teal-500/40 bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 shadow-md space-y-2.5"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !briefPlaying;
+                      setBriefPlaying(next);
+                      if (next) {
+                        triggerGentleChime(392, audioVolume);
+                      }
+                    }}
+                    aria-label={
+                      briefPlaying
+                        ? isEn
+                          ? 'Pause 1-minute audio brief'
+                          : 'إيقاف الملخص الصوتي'
+                        : isEn
+                        ? 'Play 1-minute audio brief'
+                        : 'تشغيل الملخص الصوتي في دقيقة'
+                    }
+                    className="min-w-[44px] min-h-[44px] rounded-xl bg-[#0d9488] hover:bg-[#14b8a6] text-white font-black text-xs sm:text-sm flex items-center justify-center shrink-0 shadow-2xs cursor-pointer"
+                  >
+                    {briefPlaying ? '⏸' : '▶'}
+                  </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded-full bg-teal-400/20 border border-teal-300/40 text-teal-200 text-[10.5px] font-extrabold">
+                        🎧 {isEn ? '1-Min Audio Brief' : 'ملخص صوتي في دقيقة (60 ثانية)'}
+                      </span>
+                      <span dir="ltr" className="text-xs font-extrabold text-teal-200 tabular-nums">
+                        0:{String(briefProgressSec).padStart(2, '0')} / 1:00
+                      </span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-white mt-0.5 leading-snug">
+                      {isEn ? activeBriefItem.titleEn : activeBriefItem.title}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setBriefSpeed((s) => (s === 1 ? 1.25 : s === 1.25 ? 1.5 : 1))
+                    }
+                    className="min-h-[44px] px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold tabular-nums cursor-pointer"
+                  >
+                    <span dir="ltr">{briefSpeed}x</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveItem(activeBriefItem)}
+                    className="min-h-[44px] px-3 py-1.5 rounded-xl bg-white text-slate-900 hover:bg-teal-50 text-xs font-extrabold cursor-pointer"
+                  >
+                    📖 {isEn ? 'Read Article' : 'قراءة المقال'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <input
+                  type="range"
+                  min={0}
+                  max={60}
+                  value={briefProgressSec}
+                  onChange={(e) => setBriefProgressSec(Number(e.target.value))}
+                  aria-label={isEn ? '1-minute audio brief progress' : 'شريط تقدم الملخص الصوتي'}
+                  className="w-full accent-teal-400 cursor-pointer"
+                />
+                <p className="text-xs font-semibold text-teal-100/90 leading-relaxed">
+                  💡 {isEn ? activeBriefItem.summaryEn : activeBriefItem.summary}
+                </p>
+              </div>
+            </div>
+          )}
+
           {activeVideoItem && activeVideoItem.videoConfig && (
             <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/60 p-4 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-center shadow-2xs">
               <div
@@ -926,7 +1033,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     <button
                       type="button"
                       onClick={() => setVideoPlaying((p) => !p)}
-                      className="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white text-indigo-950"
+                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white text-indigo-950 cursor-pointer"
                     >
                       {videoPlaying ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : isEn ? '▶ Play Video' : '▶ تشغيل الفيديو'}
                     </button>
@@ -934,7 +1041,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => setVideoCaptionsOn((c) => !c)}
-                        className={`px-2 py-1 rounded-lg text-[11px] font-bold ${
+                        className={`min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${
                           videoCaptionsOn ? 'bg-indigo-500 text-white' : 'bg-white/15 text-white'
                         }`}
                       >
@@ -945,7 +1052,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                         onClick={() =>
                           setVideoSpeed((s) => (s === 1 ? 1.25 : s === 1.25 ? 1.5 : 1))
                         }
-                        className="px-2 py-1 rounded-lg text-[11px] font-bold bg-white/15 text-white tabular-nums"
+                        className="min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-bold bg-white/15 text-white tabular-nums cursor-pointer"
                       >
                         <span dir="ltr">{videoSpeed}x</span>
                       </button>
@@ -957,7 +1064,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                             isEn ? activeVideoItem.titleEn : activeVideoItem.title
                           )
                         }
-                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/15 text-white"
+                        className="min-h-[44px] px-3 py-1 rounded-lg text-xs font-bold bg-white/15 text-white cursor-pointer"
                       >
                         📤 {isEn ? 'Share' : 'مشاركة'}
                       </button>
@@ -978,7 +1085,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     setVideoPlaying(false);
                   }}
                   aria-label={isEn ? 'Select educational video' : 'اختيار الفيديو التربوي'}
-                  className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
+                  className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
                 >
                   {videoItems.map((v) => (
                     <option key={v.id} value={v.id}>
@@ -986,7 +1093,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     </option>
                   ))}
                 </select>
-                <div className="text-xs font-semibold text-[var(--color-muted)] leading-relaxed">
+                <div className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] leading-relaxed">
                   {isEn ? activeVideoItem.summaryEn : activeVideoItem.summary}
                 </div>
               </div>
@@ -996,7 +1103,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           {/* Filter & Search Bar for Articles/Guides */}
           <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2.5 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {[
                   { id: 'all', label: isEn ? 'All Media' : 'الكل' },
                   { id: 'video', label: isEn ? '🎬 Videos' : '🎬 فيديوهات' },
@@ -1007,7 +1114,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setSelectedType(tab.id as typeof selectedType)}
-                    className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+                    className={`min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
                       selectedType === tab.id
                         ? 'bg-indigo-600 text-white'
                         : 'bg-[var(--color-control-muted)] text-[var(--color-muted)]'
@@ -1022,7 +1129,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                 value={selectedStage}
                 onChange={(e) => setSelectedStage(e.target.value as AgeStage)}
                 aria-label={isEn ? 'Filter by child age' : 'تصفية حسب عمر الطفل'}
-                className="min-h-[34px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)]"
+                className="min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
               >
                 <option value="all">{isEn ? 'All Ages (0–8 yrs)' : 'كل الأعمار (0–8)'}</option>
                 <option value="0-2">{isEn ? '0–2 Years' : '0–2 سنوات'}</option>
@@ -1036,13 +1143,14 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={isEn ? '🔍 Search videos and parenting guides...' : '🔍 ابحث في الفيديوهات والأدلة التربوية...'}
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
+              className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredItems.map((item) => {
               const isSaved = savedMediaIds.includes(item.id);
+              const isBriefActive = briefItemId === item.id && briefPlaying;
               return (
                 <MasterPatternCard
                   key={item.id}
@@ -1070,14 +1178,37 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                   metaRightAction={
                     <button
                       type="button"
-                      onClick={() => setActiveItem(item)}
-                      className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                      onClick={() => {
+                        setBriefItemId(item.id);
+                        setBriefProgressSec(0);
+                        const nextPlay = !(briefItemId === item.id && briefPlaying);
+                        setBriefPlaying(nextPlay);
+                        if (nextPlay) {
+                          triggerGentleChime(440, audioVolume);
+                          onShowToast(
+                            isEn
+                              ? `🎧 Playing 1-minute audio summary: "${item.titleEn}"`
+                              : `🎧 جاري تشغيل الملخص الصوتي (دقيقة واحدة): «${item.title}»`
+                          );
+                        }
+                      }}
+                      className={`min-h-[38px] px-2.5 py-1 rounded-xl text-xs font-extrabold cursor-pointer transition-all ${
+                        isBriefActive
+                          ? 'bg-[#0d9488] text-white'
+                          : 'bg-teal-50 dark:bg-[#142430] text-[#0d9488] dark:text-[#2DD4BF] border border-teal-200 dark:border-[#1E3646]'
+                      }`}
                     >
-                      {isEn ? 'Read More' : 'اقرأ المزيد'}
+                      {isBriefActive
+                        ? isEn
+                          ? '⏸ Playing 1m'
+                          : '⏸ يعمل الآن'
+                        : isEn
+                        ? '🎧 1m Audio Brief'
+                        : '🎧 ملخص صوتي ١د'}
                     </button>
                   }
                   bodyContent={
-                    <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] line-clamp-2">
+                    <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
                       {isEn ? item.summaryEn : item.summary}
                     </p>
                   }
@@ -1100,14 +1231,14 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
                             isEn ? item.titleEn : item.title
                           )
                         }
-                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                        className="min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                       >
                         📤
                       </button>
                       <button
                         type="button"
                         onClick={() => onToggleSaveMedia(item.id)}
-                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                        className="min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                       >
                         {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
                       </button>

@@ -47,6 +47,8 @@ import {
   findNearestCityByCoords,
   getParentProfileThemeSpec,
   sanitizeUserText,
+  isTaskVisibleForParentSession,
+  VoiceVaultMoment,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
 import { t } from './domain/i18n';
@@ -85,6 +87,7 @@ import {
 import {
   FullScreenNavigationLoader,
   GlobalToastSnackbar,
+  IndependentParentSessionGate,
   InnerScreenTopBar,
   InteractiveSplashScreen,
   PASTEL_CARD_TONES,
@@ -116,6 +119,7 @@ export default function App() {
     visible: boolean;
     fadingOut: boolean;
   }>({ visible: true, fadingOut: false });
+  const [sessionGateOpen, setSessionGateOpen] = useState<boolean>(false);
   const splashFadeTimerRef = React.useRef<number | null>(null);
   const splashHideTimerRef = React.useRef<number | null>(null);
   const [storeInitialCategoryId, setStoreInitialCategoryId] = useState<string | null>(null);
@@ -138,13 +142,13 @@ export default function App() {
     setSplashScreen({ visible: true, fadingOut: false });
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 6000);
+    }, 3500);
   }, [handleDismissSplashScreen]);
 
   useEffect(() => {
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 6000);
+    }, 3500);
     return () => {
       if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
       if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
@@ -376,13 +380,13 @@ export default function App() {
         setIsTabLoading(false);
       }
 
-      const renderReadyMs = 520;
+      const renderReadyMs = SKELETON_LOAD_DURATION_MS;
       navFadeTimerRef.current = window.setTimeout(() => {
         setNavLoader((prev) => ({ ...prev, fadingOut: true }));
         navHideTimerRef.current = window.setTimeout(() => {
           setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
           navHideTimerRef.current = null;
-        }, 200);
+        }, 180);
         navFadeTimerRef.current = null;
       }, renderReadyMs);
     } else {
@@ -1111,7 +1115,7 @@ export default function App() {
     const isDad = settingsRole === 'dad';
     setState((prev) => ({
       ...prev,
-      parentName: settingsParentName.trim() || (isDad ? 'بابا (أحمد)' : 'ماما (سارة)'),
+      parentName: settingsParentName.trim() || (isDad ? 'بابا (أحمد)' : 'ماما (مريم)'),
       role: settingsRole,
       activeParentAccount: isDad ? 'father' : 'mother',
       language: settingsLanguage,
@@ -1250,6 +1254,9 @@ export default function App() {
 
   const filteredTasks = useMemo(() => {
     return state.tasks.filter((task) => {
+      if (!isTaskVisibleForParentSession(task, state.activeParentAccount)) {
+        return false;
+      }
       if (routineKidFilter !== 'all' && String(task.kidId || '') !== routineKidFilter) {
         return false;
       }
@@ -1271,6 +1278,7 @@ export default function App() {
     });
   }, [
     state.tasks,
+    state.activeParentAccount,
     routineKidFilter,
     routineStatusFilter,
     routineCadenceFilter,
@@ -1382,7 +1390,7 @@ export default function App() {
 
   const handleSelectParentProfile = (targetRole: 'mom' | 'dad') => {
     const isDad = targetRole === 'dad';
-    const nextName = isDad ? 'بابا (أحمد)' : 'ماما (سارة)';
+    const nextName = isDad ? 'بابا (أحمد)' : 'ماما (مريم)';
     setState((prev) => ({
       ...prev,
       role: targetRole,
@@ -1392,11 +1400,30 @@ export default function App() {
     showToast(
       isDad
         ? lang === 'en'
-          ? 'Father Profile active — Teal & Slate Blue (Dad Ahmed)'
-          : 'تم تفعيل حساب الأب (بابا أحمد) — سمة التييل والأزرق الأردوازي'
+          ? 'Signed in to Independent Session: Ahmed (Father)'
+          : 'تم تسجيل الدخول إلى الجلسة المستقلة: أحمد (الأب)'
         : lang === 'en'
-        ? 'Mother Profile active — Soft Coral & Warm Rose (Mom Sara)'
-        : 'تم تفعيل حساب الأم (ماما سارة) — سمة المرجان الدافئ والوردي الناعم'
+        ? 'Signed in to Independent Session: Mariam (Mother)'
+        : 'تم تسجيل الدخول إلى الجلسة المستقلة: مريم (الأم)'
+    );
+  };
+
+  const handleAddVoiceMomentToChild = (kidId: number, moment: VoiceVaultMoment) => {
+    setState((prev) => ({
+      ...prev,
+      kids: prev.kids.map((k) =>
+        k.id === kidId
+          ? {
+              ...k,
+              voiceMoments: [moment, ...(k.voiceMoments || [])],
+            }
+          : k
+      ),
+    }));
+    showToast(
+      lang === 'en'
+        ? `🎙️ Saved 10s voice memory "${moment.title}" to child vault!`
+        : `🎙️ تم حفظ اللقطة الصوتية «${moment.title}» في خزينة الطفل!`
     );
   };
 
@@ -1677,6 +1704,28 @@ export default function App() {
                   navigateTo('services');
                 }}
                 onReplaySplash={handleReplaySplashScreen}
+                onOpenSessionLoginGate={() => setSessionGateOpen(true)}
+                onToggleTaskDone={(taskId) => {
+                  const target = state.tasks.find((tItem) => tItem.id === taskId);
+                  if (target) {
+                    handleToggleTask(taskId, !target.done);
+                  }
+                }}
+                onUpdateParentPersonalNotes={(notes) => {
+                  setState((prev) => {
+                    const pid = prev.activeParentAccount;
+                    return {
+                      ...prev,
+                      parentAccounts: {
+                        ...prev.parentAccounts,
+                        [pid]: {
+                          ...prev.parentAccounts[pid],
+                          personalNotes: notes,
+                        },
+                      },
+                    };
+                  });
+                }}
               />
             )}
 
@@ -1688,6 +1737,8 @@ export default function App() {
                 onOpenAddChild={openAddChild}
                 onOpenEditChild={openEditChild}
                 onConfirmDeleteChild={(kidId) => setConfirmDeleteChildId(kidId)}
+                onAddVoiceMoment={handleAddVoiceMomentToChild}
+                onShowToast={showToast}
               />
             )}
 
@@ -2160,6 +2211,7 @@ export default function App() {
                 showInnerSettings={showInnerSettings}
                 onToggleShowInnerSettings={() => setShowInnerSettings((prev) => !prev)}
                 onOpenOnboardingModal={() => setOnboardingModalOpen(true)}
+                onOpenSessionLoginGate={() => setSessionGateOpen(true)}
                 onNavigateTo={(page) => navigateTo(page)}
                 onToggleDarkMode={handleToggleDarkMode}
                 settingsParentName={settingsParentName}
@@ -2715,9 +2767,9 @@ export default function App() {
           geoStatus={geoStatus}
           bedtimeMode={bedtimeMode}
           onToggleBedtimeMode={handleToggleBedtimeMode}
-          onSelectParentProfile={(role) => {
-            handleSelectParentProfile(role);
+          onSelectParentProfile={() => {
             setRoleModalOpen(false);
+            setSessionGateOpen(true);
           }}
           onEnableHighContrast={() => {
             setState((prev) => ({ ...prev, role: 'high-contrast', darkMode: false }));
@@ -2920,13 +2972,25 @@ export default function App() {
           language={state.language}
         />
 
-        {/* 4-Second Interactive Glassmorphic Splash / Opening Intro Screen */}
+        {/* Minimalist Text-Free Splash Screen (Boy & Girl Animated Illustration) */}
         <InteractiveSplashScreen
           visible={splashScreen.visible}
           fadingOut={splashScreen.fadingOut}
           language={state.language}
           darkMode={Boolean(state.darkMode)}
           onSkipOrFinish={handleDismissSplashScreen}
+        />
+
+        {/* Independent Account Session Login Gate for Ahmed (Father) & Mariam (Mother) */}
+        <IndependentParentSessionGate
+          visible={sessionGateOpen}
+          language={state.language}
+          darkMode={Boolean(state.darkMode)}
+          activeAccount={state.activeParentAccount}
+          onAuthenticateParent={(account) => {
+            handleSelectParentProfile(account === 'father' ? 'dad' : 'mom');
+            setSessionGateOpen(false);
+          }}
         />
 
         {/* Global Toast / Snackbar Micro-feedback */}

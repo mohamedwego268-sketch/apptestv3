@@ -451,6 +451,16 @@ export function locText(
     .replace(/سنة/g, 'yr');
 }
 
+export interface VoiceVaultMoment {
+  id: string;
+  title: string;
+  createdAt: string;
+  durationSec: number;
+  tag: string;
+  recordedBy: 'mother' | 'father';
+  melodyHz?: number[];
+}
+
 export interface ChildProfile {
   id: number;
   name: string;
@@ -469,6 +479,8 @@ export interface ChildProfile {
   photoDataUrl?: string;
   /** Whether parent prefers the 3D illustrated avatar even if a photo is uploaded */
   useIllustratedAvatar?: boolean;
+  /** 10-second Micro-Moments Voice Vault audio memories */
+  voiceMoments?: VoiceVaultMoment[];
 }
 
 export interface RoutineTask {
@@ -593,6 +605,39 @@ export interface ParentAccountProfile {
   emailVerified: boolean;
   onboardingCompleted: boolean;
   notificationPrefs: ParentNotificationPrefs;
+  personalNotes?: string;
+  survivalModeActive?: boolean;
+  preferredContextMode?: 'auto' | 'morning' | 'noon' | 'evening';
+}
+
+export function isTaskVisibleForParentSession(
+  task: RoutineTask,
+  activeParentAccount: 'mother' | 'father'
+): boolean {
+  const ownerNorm = (task.owner || 'مشترك').trim();
+  if (
+    ownerNorm === 'مشترك' ||
+    ownerNorm.includes('مشترك') ||
+    ownerNorm.toLowerCase() === 'shared'
+  ) {
+    return true;
+  }
+  if (activeParentAccount === 'father') {
+    return (
+      ownerNorm === 'الأب' ||
+      ownerNorm.includes('أحمد') ||
+      ownerNorm.includes('بابا') ||
+      ownerNorm.toLowerCase().includes('father') ||
+      ownerNorm.toLowerCase().includes('dad')
+    );
+  }
+  return (
+    ownerNorm === 'الأم' ||
+    ownerNorm.includes('مريم') ||
+    ownerNorm.includes('ماما') ||
+    ownerNorm.toLowerCase().includes('mother') ||
+    ownerNorm.toLowerCase().includes('mom')
+  );
 }
 
 export interface DailyParentingNotification {
@@ -793,6 +838,9 @@ export const DEFAULT_PARENT_ACCOUNTS: {
     email: 'maryam.mom@nekbaar.app',
     emailVerified: true,
     onboardingCompleted: true,
+    personalNotes: 'تذكير خاص بمريم: تحضير مهروس الكوسة والجزر لحمزة ومراجعة ألوان ليلى.',
+    survivalModeActive: false,
+    preferredContextMode: 'auto',
     notificationPrefs: {
       enabled: true,
       morningEnabled: true,
@@ -813,9 +861,12 @@ export const DEFAULT_PARENT_ACCOUNTS: {
     phoneCode: '+20',
     phoneNumber: '1098765432',
     phoneVerified: true,
-    email: 'ahmed.dad@family.app',
+    email: 'ahmed.dad@nekbaar.app',
     emailVerified: true,
     onboardingCompleted: true,
+    personalNotes: 'تذكير خاص بأحمد: تمرين السباحة والشطرنج مع يوسف ومراجعة وقت البطن لحمزة.',
+    survivalModeActive: false,
+    preferredContextMode: 'auto',
     notificationPrefs: {
       enabled: true,
       morningEnabled: true,
@@ -1098,6 +1149,26 @@ export const DEFAULT_SEED: FamilySpaceState = {
       growthWeightKg: 7.8,
       avatarTheme: 'nature',
       useIllustratedAvatar: true,
+      voiceMoments: [
+        {
+          id: 'vm-hamza-1',
+          title: 'أول ضحكة بصوت عالي وقت اللعب مع بابا أحمد وماما مريم',
+          createdAt: '2026-10-24',
+          durationSec: 10,
+          tag: 'أول ضحكة 👶🏻',
+          recordedBy: 'mother',
+          melodyHz: [392.0, 440.0, 523.25, 587.33, 659.25],
+        },
+        {
+          id: 'vm-hamza-2',
+          title: 'مناغاة الصباح الجميلة (با-با / ما-ما) بعد الرضعة',
+          createdAt: '2026-10-26',
+          durationSec: 8,
+          tag: 'مناغاة 🎵',
+          recordedBy: 'father',
+          melodyHz: [329.63, 392.0, 493.88, 523.25],
+        },
+      ],
     },
     {
       id: 2,
@@ -1113,6 +1184,17 @@ export const DEFAULT_SEED: FamilySpaceState = {
       growthWeightKg: 16.4,
       avatarTheme: 'artist',
       useIllustratedAvatar: true,
+      voiceMoments: [
+        {
+          id: 'vm-laila-1',
+          title: 'حكاية ليلى عن رسمة الشمس وأصحابها في الحضانة',
+          createdAt: '2026-10-25',
+          durationSec: 10,
+          tag: 'حكاية الحضانة 🎨',
+          recordedBy: 'mother',
+          melodyHz: [440.0, 523.25, 659.25, 587.33, 523.25],
+        },
+      ],
     },
     {
       id: 3,
@@ -1128,6 +1210,17 @@ export const DEFAULT_SEED: FamilySpaceState = {
       growthWeightKg: 26.5,
       avatarTheme: 'astronaut',
       useIllustratedAvatar: true,
+      voiceMoments: [
+        {
+          id: 'vm-youssef-1',
+          title: 'شرح يوسف لخطة الفوز في مسابقة الشطرنج المدرسية',
+          createdAt: '2026-10-23',
+          durationSec: 10,
+          tag: 'فخر وإنجاز 🏆',
+          recordedBy: 'father',
+          melodyHz: [293.66, 369.99, 440.0, 587.33],
+        },
+      ],
     },
   ],
   tasks: [
@@ -4002,8 +4095,29 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
       .map((k, idx) => {
         const gender = k.gender === 'girl' ? 'girl' : 'boy';
         const rawTheme = k.avatarTheme as AvatarAccessoryTheme;
+        const kidId = Number.isFinite(Number(k.id)) ? Number(k.id) : idx + 1;
+        const seedKid = DEFAULT_SEED.kids.find((sk) => sk.id === kidId);
+        const rawVoiceMoments = Array.isArray(k.voiceMoments)
+          ? k.voiceMoments
+              .filter((vm): vm is Record<string, unknown> => Boolean(vm && typeof vm === 'object'))
+              .map((vm, vIdx) => ({
+                id: typeof vm.id === 'string' && vm.id ? vm.id : `vm-${kidId}-${vIdx + 1}`,
+                title: typeof vm.title === 'string' && vm.title.trim() ? vm.title.trim() : 'لقطة صوتية مسجلة',
+                createdAt: typeof vm.createdAt === 'string' && vm.createdAt ? vm.createdAt : dateLocalISO(new Date()),
+                durationSec: Number.isFinite(Number(vm.durationSec))
+                  ? Math.max(1, Math.min(10, Number(vm.durationSec)))
+                  : 10,
+                tag: typeof vm.tag === 'string' && vm.tag ? vm.tag : 'ذكرى صوتية 🎙️',
+                recordedBy: (vm.recordedBy === 'father' ? 'father' : 'mother') as 'mother' | 'father',
+                melodyHz: Array.isArray(vm.melodyHz)
+                  ? vm.melodyHz.map((n) => Number(n)).filter((n) => Number.isFinite(n))
+                  : undefined,
+              }))
+          : seedKid?.voiceMoments
+          ? structuredClone(seedKid.voiceMoments)
+          : [];
         return {
-          id: Number.isFinite(Number(k.id)) ? Number(k.id) : idx + 1,
+          id: kidId,
           name: String(k.name ?? '').trim() || `طفل ${idx + 1}`,
           gender,
           birth: typeof k.birth === 'string' ? k.birth : '',
@@ -4017,6 +4131,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           avatarTheme: validThemes.has(rawTheme) ? rawTheme : gender === 'girl' ? 'artist' : 'astronaut',
           photoDataUrl: typeof k.photoDataUrl === 'string' && k.photoDataUrl ? k.photoDataUrl : undefined,
           useIllustratedAvatar: typeof k.useIllustratedAvatar === 'boolean' ? k.useIllustratedAvatar : true,
+          voiceMoments: rawVoiceMoments,
         };
       });
   }
@@ -5017,7 +5132,7 @@ export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
 
 export const SKELETON_TABS = ['services', 'medical', 'community'] as const;
 export type SkeletonTabId = (typeof SKELETON_TABS)[number];
-export const SKELETON_LOAD_DURATION_MS = 650;
+export const SKELETON_LOAD_DURATION_MS = 600;
 
 export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonTabId {
   return (SKELETON_TABS as readonly string[]).includes(pageId);

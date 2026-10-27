@@ -656,7 +656,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                     {story.emoji}
                   </span>
                 </div>
-                <span className="text-[10.5px] font-bold text-[var(--color-text)] dark:text-[#F8FAFC] truncate w-full text-center">
+                <span className="text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words w-full text-center">
                   {(isEn ? story.authorEn : story.authorAr).split(' ')[0]}{' '}
                   {(isEn ? story.authorEn : story.authorAr).split(' ')[1] || ''}
                 </span>
@@ -753,37 +753,37 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         </div>
       )}
 
-      {/* Full-Screen Interactive Story Viewer Modal (Instagram/Facebook Story Popup) */}
+      {/* Full-Screen Interactive Story Viewer Modal (Strictly Mobile Viewport Bounded & Safe-Area Aware) */}
       {activeModalStory && (
         <div
           id="community-story-viewer-modal"
           data-testid="community-story-viewer-modal"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-[125] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 pt-[max(env(safe-area-inset-top,12px),12px)] pb-[calc(env(safe-area-inset-bottom,12px)+5rem)] lg:pb-6 overflow-hidden"
           onClick={() => setStoryModalId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm rounded-[32px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between min-h-[480px]"
+            className="relative w-full max-w-sm flex-1 max-h-full rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between"
           >
             <img
               src={activeModalStory.imageUrl}
               alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
-              className="absolute inset-0 w-full h-full object-cover opacity-55"
+              className="absolute inset-0 w-full h-full object-cover opacity-55 pointer-events-none"
             />
             <div
               aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/35 to-black/90"
+              className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/40 to-black/90 pointer-events-none"
             />
 
             {/* Story Top Progress Segments & Author Header */}
-            <div className="relative z-10 p-4 space-y-3">
+            <div className="relative z-10 p-3.5 sm:p-4 space-y-2.5 shrink-0">
               <div className="flex items-center gap-1.5">
                 {familyStoryReels.map((s, idx) => (
                   <div
                     key={s.id}
-                    className="flex-1 h-1 rounded-full bg-white/25 overflow-hidden"
+                    className="flex-1 h-1.5 rounded-full bg-white/25 overflow-hidden"
                   >
                     <div
                       className={`h-full rounded-full transition-all ${
@@ -795,15 +795,15 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </div>
 
               <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <span className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF8C61] to-[#0d9488] flex items-center justify-center text-lg shrink-0">
                     {activeModalStory.emoji}
                   </span>
-                  <div className="min-w-0">
-                    <div className="text-xs font-black truncate">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm font-black leading-snug break-words">
                       {isEn ? activeModalStory.authorEn : activeModalStory.authorAr}
                     </div>
-                    <div className="text-[10px] font-bold text-amber-300 truncate">
+                    <div className="text-[11px] font-bold text-amber-300 leading-snug break-words">
                       {isEn ? activeModalStory.roleEn : activeModalStory.roleAr}
                     </div>
                   </div>
@@ -811,26 +811,27 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 <button
                   type="button"
                   onClick={() => setStoryModalId(null)}
-                  className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white text-sm font-black flex items-center justify-center cursor-pointer"
+                  aria-label={isEn ? 'Close story' : 'إغلاق الستوري'}
+                  className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-white text-base font-black flex items-center justify-center cursor-pointer shrink-0"
                 >
                   ×
                 </button>
               </div>
             </div>
 
-            {/* Story Center Content */}
-            <div className="relative z-10 px-6 py-8 text-center space-y-3 my-auto">
+            {/* Story Center Content (Scrollable safely if content is long on compact screens) */}
+            <div className="relative z-10 px-5 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
               <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
-              <h4 className="text-lg sm:text-xl font-black leading-snug">
+              <h4 className="text-base sm:text-xl font-black leading-snug break-words">
                 {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
               </h4>
-              <p className="text-xs sm:text-sm font-semibold text-slate-200 leading-relaxed">
+              <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-relaxed break-words">
                 {isEn ? activeModalStory.summaryEn : activeModalStory.summaryAr}
               </p>
             </div>
 
             {/* Story Footer Controls & Quick Reactions */}
-            <div className="relative z-10 p-4 border-t border-white/15 bg-black/50 backdrop-blur-xs flex items-center justify-between gap-2">
+            <div className="relative z-10 p-3.5 sm:p-4 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-1.5">
                 {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
                   <button
@@ -843,7 +844,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                           : `تم إرسال تفاعل ${reactEmoji} على حالة ${activeModalStory.authorAr}!`
                       )
                     }
-                    className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
+                    className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-base flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
                   >
                     {reactEmoji}
                   </button>
@@ -858,7 +859,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                       (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
                     setStoryModalId(familyStoryReels[prevIdx].id);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-[11px] font-extrabold cursor-pointer"
+                  className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold cursor-pointer"
                 >
                   {isEn ? 'Prev' : 'السابق'}
                 </button>
@@ -868,7 +869,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                     const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
                     setStoryModalId(familyStoryReels[nextIdx].id);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-[11px] font-extrabold cursor-pointer"
+                  className="min-h-[44px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-xs font-extrabold cursor-pointer"
                 >
                   {isEn ? 'Next' : 'التالي'}
                 </button>
@@ -960,29 +961,29 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                   }}
                 />
 
-                <div className="relative z-10 flex items-center justify-between gap-1 w-full">
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-1 w-full">
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-black inline-flex items-center gap-1 ${
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-flex items-center gap-1 leading-snug break-words ${
                       reel.isExpert
                         ? 'bg-amber-400 text-slate-950 shadow-2xs'
                         : 'bg-teal-500 text-white'
                     }`}
                   >
                     <span>{reel.isExpert ? '🏅' : '🌟'}</span>
-                    <span className="truncate max-w-[105px]">
+                    <span>
                       {isEn ? reel.roleEn.replace('🏅 ', '') : reel.roleAr.replace('🏅 ', '')}
                     </span>
                   </span>
-                  <span className="px-1.5 py-0.5 rounded-full bg-black/65 text-white text-[9px] font-extrabold tabular-nums">
+                  <span className="px-1.5 py-0.5 rounded-full bg-black/65 text-white text-[10px] font-extrabold tabular-nums">
                     ▶ {reel.duration}
                   </span>
                 </div>
 
-                <div className="relative z-10 space-y-0.5 pt-2">
-                  <div className="text-[10px] font-extrabold text-amber-300 truncate">
+                <div className="relative z-10 space-y-1 pt-2">
+                  <div className="text-xs font-extrabold text-amber-300 leading-snug break-words">
                     {reel.emoji} {isEn ? reel.authorEn : reel.authorAr}
                   </div>
-                  <div className="text-[11px] font-black text-white leading-snug line-clamp-2">
+                  <div className="text-xs sm:text-sm font-black text-white leading-snug break-words">
                     {isEn ? reel.titleEn : reel.titleAr}
                   </div>
                 </div>
@@ -1256,12 +1257,12 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 </span>
               }
               bodyContent={
-                <p className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold leading-snug line-clamp-2">
+                <p className="text-xs sm:text-sm text-[var(--color-muted)] dark:text-[#94A3B8] font-semibold leading-relaxed break-words">
                   {isEn ? post.bodyEn : post.bodyAr}
                 </p>
               }
               footerLeft={
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     onClick={() =>
@@ -1269,7 +1270,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isLiked ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
+                    className={`min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
                       isLiked
                         ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
                         : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -1288,7 +1289,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         isHelpful ? prev.filter((id) => id !== post.id) : [...prev, post.id]
                       )
                     }
-                    className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
+                    className={`min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out active:scale-95 cursor-pointer ${
                       isHelpful
                         ? 'bg-[#0d9488] text-white border-[#0d9488]'
                         : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -1305,7 +1306,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 <button
                   type="button"
                   onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
-                  className="min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                  className="min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[var(--color-control-bg)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
                 >
                   💬 {isEn ? `Comments (${post.comments.length})` : `التعليقات والردود (${post.comments.length})`}
                 </button>

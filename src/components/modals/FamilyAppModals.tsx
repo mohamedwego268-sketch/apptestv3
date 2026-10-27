@@ -1197,11 +1197,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     <span className="w-7 h-7 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-xs font-black shrink-0">
                       ⚡
                     </span>
-                    <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
-                      {isEn ? 'Quick Controls & Parent Profile' : 'أدوات التحكم السريع وحساب الوالدين'}
+                    <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                      {isEn ? 'Quick Controls & Parent Session' : 'أدوات التحكم السريع والجلسة المستقلة'}
                     </span>
                   </div>
-                  <span className="w-7 h-7 rounded-lg bg-[var(--color-surface)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
+                  <span className="w-8 h-8 rounded-lg bg-[var(--color-surface)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
                     {quickControlsAccordionOpen ? '⌄' : '›'}
                   </span>
                 </button>
@@ -1218,7 +1218,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                             onToggleLanguageFromDrawer();
                           }
                         }}
-                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                        className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
                       >
                         <span className="inline-flex items-center gap-1.5">
                           <span>🌐</span>
@@ -1233,11 +1233,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         id="slidebar-dark-mode-toggle-btn"
                         type="button"
                         onClick={onToggleDarkMode}
-                        className="min-h-[38px] px-3 py-2 rounded-xl border border-teal-400/50 bg-teal-50/80 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] text-xs font-extrabold flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                        className="min-h-[44px] px-3 py-2 rounded-xl border border-teal-400/50 bg-teal-50/80 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] text-xs font-extrabold flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
                       >
-                        <span className="inline-flex items-center gap-1.5 truncate">
+                        <span className="inline-flex items-center gap-1.5">
                           <span>{state.darkMode ? '☀️' : '🌙'}</span>
-                          <span className="truncate">{isEn ? 'Eye Comfort' : 'راحة العين'}</span>
+                          <span>{isEn ? 'Eye Comfort' : 'راحة العين'}</span>
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[9.5px] font-black shrink-0">
                           {state.darkMode ? (isEn ? 'Dark' : 'ليلي') : isEn ? 'Light' : 'نهاري'}
@@ -1251,11 +1251,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         id="slidebar-cart-link-btn"
                         type="button"
                         onClick={onOpenCartFromDrawer}
-                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                        className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
                       >
-                        <span className="inline-flex items-center gap-1.5 truncate">
+                        <span className="inline-flex items-center gap-1.5">
                           <span>🛒</span>
-                          <span className="truncate">{isEn ? 'Cart' : 'السلة'}</span>
+                          <span>{isEn ? 'Cart' : 'السلة'}</span>
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black tabular-nums">
                           {cartItemCount}
@@ -1273,11 +1273,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                             onCloseRoleModal();
                           }
                         }}
-                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#FF8C61] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                        className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#FF8C61] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
                       >
-                        <span className="inline-flex items-center gap-1.5 truncate">
+                        <span className="inline-flex items-center gap-1.5">
                           <span>🧡</span>
-                          <span className="truncate">{isEn ? 'Wishlist' : 'قائمة الأمنيات'}</span>
+                          <span>{isEn ? 'Wishlist' : 'قائمة الأمنيات'}</span>
                         </span>
                         <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-black tabular-nums">
                           {state.wishes.length}
@@ -1292,11 +1292,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                           id="drawer-bedtime-mode-btn"
                           type="button"
                           onClick={onToggleBedtimeMode}
-                          className="min-h-[36px] px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-extrabold text-[11px] flex items-center justify-between gap-1 cursor-pointer"
+                          className="min-h-[44px] px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-extrabold text-xs flex flex-wrap items-center justify-between gap-1 cursor-pointer"
                         >
-                          <span className="inline-flex items-center gap-1 truncate">
+                          <span className="inline-flex items-center gap-1">
                             <span>🕯️</span>
-                            <span className="truncate">{isEn ? 'Bedtime Filter' : 'هدوء المساء'}</span>
+                            <span>{isEn ? 'Bedtime Filter' : 'هدوء المساء'}</span>
                           </span>
                           <span className="text-[9.5px] font-black">
                             {bedtimeMode ? (isEn ? 'ON' : 'مفعّل') : isEn ? 'OFF' : 'إيقاف'}
@@ -1306,34 +1306,36 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       <button
                         type="button"
                         onClick={onOpenOnboardingFromDrawer}
-                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="min-h-[44px] px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold text-xs flex flex-wrap items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <SoftFilledIcon id="sparkles" size={15} />
-                        <span className="truncate">{isEn ? 'Account Wizard' : 'معالج الحساب والمدينة'}</span>
+                        <span>{isEn ? 'Account Wizard' : 'معالج الحساب والمدينة'}</span>
                       </button>
                     </div>
 
-                    {/* Row 4: Parent Account Theme Switcher */}
-                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                    {/* Row 4: Independent Account Session Status & Sign-Out Gate (Zero Quick-Toggle Buttons) */}
+                    <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] p-2.5 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <SoftFilledIcon id="family" size={16} />
+                        <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                          {state.activeParentAccount === 'father'
+                            ? isEn
+                              ? 'Active Session: Ahmed (Father)'
+                              : 'الجلسة المستقلة: أحمد (الأب)'
+                            : isEn
+                            ? 'Active Session: Mariam (Mother)'
+                            : 'الجلسة المستقلة: مريم (الأم)'}
+                        </div>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => onSelectParentProfile('mom')}
-                        className="p-2 rounded-xl border border-rose-200 dark:border-[#1E3646] bg-rose-50 dark:bg-[#142430] text-rose-900 dark:text-[#FDA4AF] font-extrabold text-[11px] text-start flex items-center gap-1.5 cursor-pointer"
+                        onClick={() => {
+                          onCloseRoleModal();
+                          onSelectParentProfile(state.role === 'dad' ? 'dad' : 'mom');
+                        }}
+                        className="min-h-[40px] px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-500/40 bg-rose-50/90 dark:bg-[#1A2634] text-rose-900 dark:text-rose-200 text-xs font-extrabold cursor-pointer"
                       >
-                        <SoftFilledIcon id="family" size={15} />
-                        <span className="truncate">
-                          {isEn ? 'Mom Profile (Sara)' : 'حساب ماما (سارة)'}
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onSelectParentProfile('dad')}
-                        className="p-2 rounded-xl border border-sky-200 dark:border-[#1E3646] bg-sky-50 dark:bg-[#142430] text-sky-900 dark:text-[#7DD3FC] font-extrabold text-[11px] text-start flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <SoftFilledIcon id="family" size={15} />
-                        <span className="truncate">
-                          {isEn ? 'Dad Profile (Ahmed)' : 'حساب بابا (أحمد)'}
-                        </span>
+                        🔒 {isEn ? 'Sign Out / Session Gate' : 'خروج لبوابة الحساب المستقل'}
                       </button>
                     </div>
                   </div>

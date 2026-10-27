@@ -1496,11 +1496,11 @@ export const TaskFestivalCelebrationOverlay: React.FC<TaskFestivalCelebrationPro
           🏆
         </span>
         <div className="min-w-0 text-start">
-          <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+          <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
             {isEn ? celebration.titleEn : celebration.titleAr}
           </div>
           {(celebration.subtitleAr || celebration.subtitleEn) && (
-            <div className="text-[10px] font-bold text-[#0d9488] dark:text-[#A5F3FC] truncate">
+            <div className="text-[11px] font-bold text-[#0d9488] dark:text-[#A5F3FC] leading-snug break-words">
               {isEn ? celebration.subtitleEn : celebration.subtitleAr}
             </div>
           )}
@@ -1996,7 +1996,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                 aria-checked={isSelected}
                 data-testid={`mood-option-${opt.id}`}
                 onClick={() => handleChooseMood(opt)}
-                className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center gap-1.5 whitespace-normal break-words leading-snug cursor-pointer ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all inline-flex items-center gap-1.5 whitespace-normal break-words leading-snug cursor-pointer ${
                   isSelected
                     ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                     : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
@@ -2161,13 +2161,13 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                   type="button"
                   data-testid={`diagnostic-member-pill-${m.id}`}
                   onClick={() => setActiveMemberTab(m.id)}
-                  className={`px-3 py-2 rounded-xl border text-start transition-all flex items-center justify-between gap-2 cursor-pointer ${
+                  className={`min-h-[44px] px-3 py-2 rounded-xl border text-start transition-all flex flex-wrap items-center justify-between gap-2 cursor-pointer ${
                     isFocused
                       ? 'border-[#0d9488] bg-teal-500/12 text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs'
                       : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] hover:border-[#0d9488]/60'
                   }`}
                 >
-                  <span className="text-xs font-black leading-snug break-words">
+                  <span className="text-xs sm:text-sm font-black leading-snug break-words">
                     {m.emoji} {isEn ? m.nameEn : m.nameAr}
                   </span>
                   <span
@@ -2254,7 +2254,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                                     isEn ? opt.textEn : opt.textAr
                                   );
                                 }}
-                                className={`flex-1 min-w-[88px] min-h-[34px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center justify-center gap-1.5 text-center whitespace-normal break-words leading-snug cursor-pointer ${
+                                className={`flex-1 min-w-[92px] min-h-[44px] px-3 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all inline-flex items-center justify-center gap-1.5 text-center whitespace-normal break-words leading-snug cursor-pointer ${
                                   isPicked
                                     ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                                     : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
@@ -2371,6 +2371,186 @@ export const StarOfTheDayCrownBadge: React.FC<StarOfTheDayCrownBadgeProps> = ({
   );
 };
 
+/**
+ * Prominent, joyful animated SVG illustration of a Boy and a Girl (طفل وطفلة بشكل مكبر ومبهج)
+ * used exclusively on the minimalist, 100% text-free initial entry splash screen.
+ */
+export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size = 260 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 260 260"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    className="animate-nav-loader-child overflow-visible drop-shadow-xl"
+  >
+    <defs>
+      <radialGradient id="splashAuraGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#2DD4BF" stopOpacity="0.38" />
+        <stop offset="55%" stopColor="#FF8C61" stopOpacity="0.22" />
+        <stop offset="100%" stopColor="#FBBF24" stopOpacity="0" />
+      </radialGradient>
+      <linearGradient id="boyShirtGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#0D9488" />
+        <stop offset="100%" stopColor="#2DD4BF" />
+      </linearGradient>
+      <linearGradient id="girlDressGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#FF8C61" />
+        <stop offset="100%" stopColor="#F43F5E" />
+      </linearGradient>
+      <linearGradient id="skinWarmGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#FFE4C4" />
+        <stop offset="100%" stopColor="#F7C59F" />
+      </linearGradient>
+      <linearGradient id="heartCenterGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#FBBF24" />
+        <stop offset="100%" stopColor="#FF8C61" />
+      </linearGradient>
+    </defs>
+
+    {/* Soft Radiant Ambient Halo */}
+    <circle cx="130" cy="130" r="122" fill="url(#splashAuraGrad)" />
+
+    {/* Floating Joyful Stars & Sparkles (No Text) */}
+    <path
+      d="M130 22 L134 32 L145 33 L136 40 L139 51 L130 45 L121 51 L124 40 L115 33 L126 32 Z"
+      fill="#FBBF24"
+    />
+    <circle cx="48" cy="58" r="6" fill="#2DD4BF" />
+    <circle cx="212" cy="58" r="6.5" fill="#FF8C61" />
+    <circle cx="38" cy="152" r="5" fill="#FBBF24" />
+    <circle cx="222" cy="152" r="5" fill="#0D9488" />
+
+    {/* Soft Ground Meadow Shadow */}
+    <ellipse cx="130" cy="224" rx="84" ry="14" fill="#0D9488" fillOpacity="0.16" />
+
+    {/* ================= LEFT CHARACTER: JOYFUL BOY ================= */}
+    <g>
+      {/* Boy Legs & Shoes */}
+      <rect x="68" y="186" width="11" height="28" rx="5.5" fill="#1E293B" />
+      <rect x="87" y="186" width="11" height="28" rx="5.5" fill="#1E293B" />
+      <rect x="63" y="208" width="18" height="10" rx="5" fill="#0D9488" />
+      <rect x="85" y="208" width="18" height="10" rx="5" fill="#0D9488" />
+
+      {/* Boy Torso (Teal Overalls & Shirt) */}
+      <path
+        d="M58 140 C58 126 108 126 108 140 L112 190 C112 195 54 195 54 190 Z"
+        fill="url(#boyShirtGrad)"
+      />
+      {/* Boy Waving Left Arm */}
+      <path
+        d="M60 142 C42 130 34 112 40 102"
+        stroke="url(#skinWarmGrad)"
+        strokeWidth="12"
+        strokeLinecap="round"
+      />
+      <circle cx="40" cy="100" r="8" fill="url(#skinWarmGrad)" />
+      {/* Boy Inner Arm Holding Heart with Sister */}
+      <path
+        d="M104 146 C116 152 122 150 128 144"
+        stroke="url(#skinWarmGrad)"
+        strokeWidth="11"
+        strokeLinecap="round"
+      />
+
+      {/* Boy Head */}
+      <circle cx="83" cy="96" r="32" fill="url(#skinWarmGrad)" />
+      {/* Boy Curly Hair */}
+      <path
+        d="M52 92 C50 64 72 54 90 58 C108 58 118 74 114 92 C106 78 94 74 82 75 C68 75 58 82 52 92 Z"
+        fill="#1E293B"
+      />
+      <circle cx="66" cy="64" r="10" fill="#1E293B" />
+      <circle cx="84" cy="60" r="11" fill="#1E293B" />
+      <circle cx="101" cy="66" r="9" fill="#1E293B" />
+
+      {/* Boy Rosy Cheeks, Bright Eyes & Big Laughing Smile */}
+      <ellipse cx="66" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.55" />
+      <ellipse cx="100" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.55" />
+      <circle cx="71" cy="92" r="4.2" fill="#0F172A" />
+      <circle cx="95" cy="92" r="4.2" fill="#0F172A" />
+      <circle cx="72.5" cy="90.5" r="1.5" fill="#FFFFFF" />
+      <circle cx="96.5" cy="90.5" r="1.5" fill="#FFFFFF" />
+      <path
+        d="M72 104 Q83 116 94 104"
+        stroke="#0F172A"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </g>
+
+    {/* ================= RIGHT CHARACTER: JOYFUL GIRL ================= */}
+    <g>
+      {/* Girl Legs & Shoes */}
+      <rect x="162" y="186" width="11" height="28" rx="5.5" fill="url(#skinWarmGrad)" />
+      <rect x="181" y="186" width="11" height="28" rx="5.5" fill="url(#skinWarmGrad)" />
+      <rect x="158" y="208" width="18" height="10" rx="5" fill="#F43F5E" />
+      <rect x="179" y="208" width="18" height="10" rx="5" fill="#F43F5E" />
+
+      {/* Girl Pigtails */}
+      <circle cx="142" cy="84" r="13" fill="#292524" />
+      <circle cx="212" cy="84" r="13" fill="#292524" />
+      {/* Hair Ribbons */}
+      <circle cx="149" cy="80" r="5" fill="#FBBF24" />
+      <circle cx="205" cy="80" r="5" fill="#FBBF24" />
+
+      {/* Girl Cheerful Dress */}
+      <path
+        d="M154 138 C158 126 196 126 200 138 L212 192 C212 196 142 196 142 192 Z"
+        fill="url(#girlDressGrad)"
+      />
+      {/* Girl Waving Right Arm */}
+      <path
+        d="M198 142 C216 130 226 112 220 100"
+        stroke="url(#skinWarmGrad)"
+        strokeWidth="12"
+        strokeLinecap="round"
+      />
+      <circle cx="220" cy="98" r="8" fill="url(#skinWarmGrad)" />
+      {/* Girl Inner Arm Holding Heart with Brother */}
+      <path
+        d="M156 146 C144 152 138 150 132 144"
+        stroke="url(#skinWarmGrad)"
+        strokeWidth="11"
+        strokeLinecap="round"
+      />
+
+      {/* Girl Head */}
+      <circle cx="177" cy="96" r="32" fill="url(#skinWarmGrad)" />
+      {/* Girl Hair Bangs */}
+      <path
+        d="M146 92 C146 64 166 56 184 58 C202 60 210 74 208 92 C198 78 188 74 177 74 C164 74 154 80 146 92 Z"
+        fill="#292524"
+      />
+
+      {/* Girl Rosy Cheeks, Bright Eyes & Big Laughing Smile */}
+      <ellipse cx="160" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.6" />
+      <ellipse cx="194" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.6" />
+      <circle cx="165" cy="92" r="4.2" fill="#0F172A" />
+      <circle cx="189" cy="92" r="4.2" fill="#0F172A" />
+      <circle cx="166.5" cy="90.5" r="1.5" fill="#FFFFFF" />
+      <circle cx="190.5" cy="90.5" r="1.5" fill="#FFFFFF" />
+      <path
+        d="M166 104 Q177 116 188 104"
+        stroke="#0F172A"
+        strokeWidth="3.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </g>
+
+    {/* ================= CENTER GLOWING HEART BETWEEN BOY & GIRL ================= */}
+    <path
+      d="M130 152 C130 152 112 139 112 127 C112 119 119 114 125 117 C128 118 130 121 130 121 C130 121 132 118 135 117 C141 114 148 119 148 127 C148 139 130 152 130 152 Z"
+      fill="url(#heartCenterGrad)"
+      stroke="#FFFFFF"
+      strokeWidth="3"
+    />
+  </svg>
+);
+
 export interface InteractiveSplashScreenProps {
   visible: boolean;
   fadingOut?: boolean;
@@ -2380,9 +2560,9 @@ export interface InteractiveSplashScreenProps {
 }
 
 /**
- * Minimalist Full-Screen Opening / Splash Intro Screen for نكبر (Nekbaar).
- * Keeps only the primary Brand Wordmark (نكبر · Nekbaar), the official bilingual slogan
- * ("مساحة تجمعنا.. وبحبهم نكبر" / "Growing Together with Love"), and a clean visual loader.
+ * Minimalist 100% Text-Free Opening / Splash Intro Screen for نكبر (Nekbaar).
+ * Displays ONLY a prominent, centered animated illustration of a boy and girl
+ * over the subtle geometric background pattern (zero text, zero slogans, zero paragraphs).
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
   visible,
@@ -2392,18 +2572,6 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
   onSkipOrFinish,
 }) => {
   const isEn = language === 'en';
-  const [progressPct, setProgressPct] = useState(18);
-
-  useEffect(() => {
-    if (!visible) return;
-    setProgressPct(22);
-    const t1 = window.setTimeout(() => setProgressPct(65), 1400);
-    const t2 = window.setTimeout(() => setProgressPct(100), 3800);
-    return () => {
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-    };
-  }, [visible]);
 
   if (!visible) return null;
 
@@ -2414,17 +2582,18 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       dir={isEn ? 'ltr' : 'rtl'}
       role="dialog"
       aria-modal="true"
-      aria-label={isEn ? 'Welcome to Nekbaar' : 'مرحباً بك في نكبر'}
-      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between px-6 py-8 sm:px-12 sm:py-10 overflow-hidden select-none transition-opacity duration-300 ${
+      aria-label={isEn ? 'Nekbaar Splash Illustration' : 'شاشة ترحيب نكبر'}
+      onClick={onSkipOrFinish}
+      className={`fixed inset-0 z-[130] w-screen h-screen flex items-center justify-center p-6 overflow-hidden select-none cursor-pointer transition-opacity duration-500 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 35%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 42%, rgba(11, 19, 26, 0.98) 85%), #0B131A'
-          : 'radial-gradient(circle at 50% 35%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 46%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
+          ? 'radial-gradient(circle at 50% 45%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
+          : 'radial-gradient(circle at 50% 45%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
       }}
     >
-      {/* Vibrant Geometric Background Pattern Overlay */}
+      {/* Subtle Geometric Background Pattern Overlay */}
       <GeometricBackdropPattern idPrefix="splash-screen" darkMode={darkMode} />
 
       {/* Ambient Floating Decorative Glow Blobs */}
@@ -2437,61 +2606,208 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
       />
 
-      {/* Top Row: Clean Skip Action */}
-      <div className="relative z-10 w-full max-w-3xl flex items-center justify-end">
-        <button
-          id="splash-skip-btn"
-          data-testid="splash-skip-btn"
-          type="button"
-          onClick={onSkipOrFinish}
-          className="min-h-[42px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430]/90 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
-        >
-          <span>{isEn ? 'Skip' : 'تخطي'}</span>
-          <span aria-hidden="true">{isEn ? '→' : '←'}</span>
-        </button>
-      </div>
-
-      {/* Center Stage: Minimalist Brand Identity, Official Slogan & Clean Visual Loader */}
-      <div className="relative z-10 w-full max-w-xl my-auto flex flex-col items-center text-center space-y-8 px-4">
-        {/* Animated Playful Child Visual Loader with Glowing Aura */}
-        <div className="relative flex items-center justify-center">
-          <span
-            aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
-          />
-          <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-white/90 dark:bg-[#142430]/90 border-2 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
-            <PlayfulChildLoaderSvg size={124} />
-          </div>
-        </div>
-
-        {/* Primary Brand Wordmark & Official Slogan Only */}
-        <div className="space-y-3.5">
-          <div className="inline-flex flex-wrap items-center gap-3 justify-center">
-            <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
-              {isEn ? 'Nekbaar' : 'نكبر'}
-            </h1>
-            <span className="px-3.5 py-1 rounded-full text-xs sm:text-sm font-black bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] border border-[#FF8C61]/35">
-              {isEn ? 'نكبر' : 'Nekbaar'}
-            </span>
-          </div>
-          <p className="text-lg sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-            {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
-          </p>
-        </div>
-
-        {/* Clean Visual Loader Bar */}
-        <div className="w-64 sm:w-80 mx-auto h-3 rounded-full bg-slate-200/85 dark:bg-[#142430] border border-teal-500/25 overflow-hidden shadow-inner">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61] transition-all duration-1000 ease-out"
-            style={{ width: `${progressPct}%` }}
-          />
+      {/* Prominent Centered Enlarged Animated Boy & Girl Illustration ONLY (Zero Text) */}
+      <div className="relative z-10 flex items-center justify-center">
+        <span
+          aria-hidden="true"
+          className="animate-nav-loader-pulse-ring absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
+        />
+        <div className="relative w-60 h-60 sm:w-72 sm:h-72 rounded-full bg-white/90 dark:bg-[#142430]/90 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
+          <PlayfulBoyAndGirlSplashSvg size={236} />
         </div>
       </div>
-
-      {/* Bottom Subtle Spacer for Vertical Balance */}
-      <div className="h-6" aria-hidden="true" />
     </div>
   );
 };
+
+export interface IndependentParentSessionGateProps {
+  visible: boolean;
+  language: LanguageCode;
+  darkMode?: boolean;
+  activeAccount: 'mother' | 'father';
+  onAuthenticateParent: (account: 'mother' | 'father') => void;
+}
+
+/**
+ * Independent Account Architecture Login Gate for أحمد (الأب) and مريم (الأم).
+ * Provides clean, isolated session authentication upon entry or sign-out,
+ * with zero quick-toggle switch buttons inside the app workspace.
+ */
+export const IndependentParentSessionGate: React.FC<IndependentParentSessionGateProps> = ({
+  visible,
+  language,
+  darkMode = false,
+  activeAccount,
+  onAuthenticateParent,
+}) => {
+  const isEn = language === 'en';
+  const [selectedParent, setSelectedParent] = useState<'mother' | 'father'>(activeAccount);
+  const [pinCode, setPinCode] = useState('2026');
+
+  useEffect(() => {
+    setSelectedParent(activeAccount);
+  }, [activeAccount]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      id="independent-parent-session-gate"
+      data-testid="independent-parent-session-gate"
+      dir={isEn ? 'ltr' : 'rtl'}
+      role="dialog"
+      aria-modal="true"
+      aria-label={
+        isEn
+          ? 'Independent Parent Account Sign-In'
+          : 'بوابة تسجيل الدخول المستقلة لحساب الوالدين'
+      }
+      className="fixed inset-0 z-[128] flex items-center justify-center p-4 overflow-y-auto bg-slate-950/80 backdrop-blur-md"
+    >
+      <GeometricBackdropPattern idPrefix="session-gate" darkMode={darkMode} />
+      <div className="relative z-10 w-full max-w-lg rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-6 sm:p-7 shadow-2xl space-y-5">
+        <div className="flex items-center gap-3.5">
+          <div className="w-14 h-14 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center shrink-0">
+            <PlayfulBoyAndGirlSplashSvg size={48} />
+          </div>
+          <div className="space-y-1 min-w-0">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]">
+              🔐 {isEn ? 'Isolated Parent Session Gate' : 'بوابة الجلسات المستقلة للوالدين'}
+            </span>
+            <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+              {isEn
+                ? 'Sign In to Your Independent Parent Account'
+                : 'تسجيل الدخول لحسابك المستقل في نكبر'}
+            </h2>
+          </div>
+        </div>
+
+        <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+          {isEn
+            ? 'Each parent maintains isolated personal tasks, preferences, and notes, while seamlessly sharing the central family database for Hamza (6m), Laila (4y), and Youssef (8y).'
+            : 'يحتفظ كل طرف (أحمد أو مريم) بمهامه الشخصية وإعداداته المستقلة تماماً، مع مشاركة قاعدة البيانات العائلية المركزية للأبناء الثلاثة: حمزة (٦ شهور)، ليلى (٤ سنوات)، ويوسف (٨ سنوات).'}
+        </p>
+
+        {/* Selection Cards for Ahmed (Father) & Maryam (Mother) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button
+            type="button"
+            data-testid="session-gate-select-father"
+            onClick={() => setSelectedParent('father')}
+            className={`min-h-[88px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
+              selectedParent === 'father'
+                ? 'border-[#0d9488] bg-teal-500/12 shadow-sm'
+                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2 w-full">
+              <span className="text-2xl">👨🏻</span>
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-sky-500/15 text-sky-700 dark:text-sky-300">
+                {isEn ? 'Father Account' : 'حساب الأب المستقل'}
+              </span>
+            </div>
+            <div>
+              <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Ahmed (Father)' : 'أحمد (الأب)'}
+              </div>
+              <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
+                {isEn
+                  ? 'Personal tasks + Shared 3 kids DB'
+                  : 'مهام أحمد المستقلة + قاعدة بيانات الأولاد'}
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            data-testid="session-gate-select-mother"
+            onClick={() => setSelectedParent('mother')}
+            className={`min-h-[88px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
+              selectedParent === 'mother'
+                ? 'border-[#0d9488] bg-teal-500/12 shadow-sm'
+                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2 w-full">
+              <span className="text-2xl">👩🏻</span>
+              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-rose-500/15 text-rose-700 dark:text-rose-300">
+                {isEn ? 'Mother Account' : 'حساب الأم المستقل'}
+              </span>
+            </div>
+            <div>
+              <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Maryam (Mother)' : 'مريم (الأم)'}
+              </div>
+              <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
+                {isEn
+                  ? 'Personal tasks + Shared 3 kids DB'
+                  : 'مهام مريم المستقلة + قاعدة بيانات الأولاد'}
+              </div>
+            </div>
+          </button>
+        </div>
+
+        {/* Family Shared Database Summary Badge */}
+        <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/70 p-3.5 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+            <span>👨‍👩‍👧‍👦 {isEn ? 'Shared Central Children Database:' : 'قاعدة بيانات الأبناء المشتركة تلقائياً:'}</span>
+            <span className="text-[#0d9488] dark:text-[#2DD4BF]">
+              {isEn ? 'Real-Time Synced' : 'مزامنة فورية آمنة'}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
+              👶🏻 {isEn ? 'Hamza (6m)' : 'حمزة (٦ شهور)'}
+            </span>
+            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
+              👧🏻 {isEn ? 'Laila (4y)' : 'ليلى (٤ سنوات)'}
+            </span>
+            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
+              👦🏻 {isEn ? 'Youssef (8y)' : 'يوسف (٨ سنوات)'}
+            </span>
+          </div>
+        </div>
+
+        {/* Session Passcode / PIN Verification */}
+        <div className="space-y-1.5">
+          <label
+            htmlFor="parent-session-pin-input"
+            className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+          >
+            {isEn ? 'Personal Session Passcode (PIN)' : 'رمز حماية الجلسة المستقلة (PIN)'}
+          </label>
+          <input
+            id="parent-session-pin-input"
+            type="password"
+            inputMode="numeric"
+            maxLength={6}
+            value={pinCode}
+            onChange={(e) => setPinCode(e.target.value.replace(/[^\d]/g, '').slice(0, 6))}
+            className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-sm font-black tracking-widest text-[var(--color-text)] dark:text-[#F8FAFC]"
+          />
+        </div>
+
+        <button
+          type="button"
+          data-testid="confirm-parent-session-login-btn"
+          onClick={() => onAuthenticateParent(selectedParent)}
+          className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>🔓</span>
+          <span>
+            {selectedParent === 'father'
+              ? isEn
+                ? 'Enter Ahmed (Father) Independent Session'
+                : 'دخول جلسة أحمد (الأب) المستقلة'
+              : isEn
+              ? 'Enter Maryam (Mother) Independent Session'
+              : 'دخول جلسة مريم (الأم) المستقلة'}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
 
