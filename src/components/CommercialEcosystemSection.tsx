@@ -49,6 +49,8 @@ interface CommercialEcosystemSectionProps {
   onCompleteDemoCheckout: (paymentMethod?: CheckoutPaymentMethodType) => void;
   onShowToast?: (msg: string) => void;
   darkMode?: boolean;
+  initialCategoryId?: string | null;
+  initialOpenCheckout?: boolean;
 }
 
 const CATEGORY_TONE_MAP: Record<string, PastelTone> = {
@@ -150,6 +152,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   onCompleteDemoCheckout,
   onShowToast = () => {},
   darkMode,
+  initialCategoryId = null,
+  initialOpenCheckout = false,
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
@@ -161,7 +165,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [cityScopeFilter, setCityScopeFilter] = useState<'all' | 'local'>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showCartPanel, setShowCartPanel] = useState(false);
+  const [showCartPanel, setShowCartPanel] = useState(initialOpenCheckout);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [priceRangeFilter, setPriceRangeFilter] = useState<'all' | 'under300' | '300to800' | 'above800'>('all');
   const [minRatingFilter, setMinRatingFilter] = useState<number>(0);
@@ -185,7 +189,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   };
 
   // Store Flow View Mode: Catalog vs Dedicated Checkout (إتمام الطلب) vs Order Confirmed (تأكيد الطلب)
-  const [storeFlowStep, setStoreFlowStep] = useState<'catalog' | 'checkout' | 'confirmed'>('catalog');
+  const [storeFlowStep, setStoreFlowStep] = useState<'catalog' | 'checkout' | 'confirmed'>(
+    initialOpenCheckout ? 'checkout' : 'catalog'
+  );
   const [paymentCategory, setPaymentCategory] = useState<'electronic' | 'cod'>('electronic');
   const [paymentMethod, setPaymentMethod] = useState<CheckoutPaymentMethodType>('electronic_card');
   const [testCardHolder, setTestCardHolder] = useState('AHMED & SARA');
@@ -194,7 +200,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [testCardCvv, setTestCardCvv] = useState('888');
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [confirmedOrderSnapshot, setConfirmedOrderSnapshot] = useState<DemoOrder | null>(null);
-  const [showLiveTracking, setShowLiveTracking] = useState(true);
+  const [showLiveTracking, setShowLiveTracking] = useState(initialCategoryId === 'live_tracking');
+  const [expandedProductMetaIds, setExpandedProductMetaIds] = useState<number[]>([]);
   const [trackingStageIdx, setTrackingStageIdx] = useState<DeliveryStageIndex>(2);
   const [isAutoSimulatingDelivery, setIsAutoSimulatingDelivery] = useState<boolean>(false);
   const [driverInstructionNote, setDriverInstructionNote] = useState(
@@ -251,7 +258,33 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   }, [isAutoSimulatingDelivery]);
 
   // Dedicated Full-Page Category View state (null = Categorized Horizontal Rows overview)
-  const [activeCategoryPageId, setActiveCategoryPageId] = useState<string | null>(null);
+  const [activeCategoryPageId, setActiveCategoryPageId] = useState<string | null>(
+    initialCategoryId === 'live_tracking' ? null : initialCategoryId
+  );
+
+  useEffect(() => {
+    if (initialCategoryId !== undefined) {
+      if (initialCategoryId === 'live_tracking') {
+        setActiveCategoryPageId(null);
+        setStoreFlowStep('catalog');
+        setShowCartPanel(false);
+        setShowLiveTracking(true);
+      } else {
+        setActiveCategoryPageId(initialCategoryId);
+        if (initialCategoryId) {
+          setStoreFlowStep('catalog');
+          setShowCartPanel(false);
+        }
+      }
+    }
+  }, [initialCategoryId]);
+
+  useEffect(() => {
+    if (initialOpenCheckout) {
+      setShowCartPanel(true);
+      setStoreFlowStep('checkout');
+    }
+  }, [initialOpenCheckout]);
 
   const STORE_CATEGORY_SECTIONS = [
     {
@@ -502,36 +535,48 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
           </div>
 
-          {/* Compact Metadata Strip + Interactive Details Link */}
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar">
-              <span className="shrink-0">📍 {locText(item.city, language)}</span>
-              {item.deliveryEstimateAr && (
-                <>
-                  <span aria-hidden="true">·</span>
-                  <span className="text-teal-700 dark:text-[#2DD4BF] font-extrabold shrink-0">
+          {/* Layer 3 (Metadata & Tags Carousel): Hidden by default, revealed only on explicit user trigger */}
+          {expandedProductMetaIds.includes(item.id) && (
+            <div
+              data-card-layer="3-metadata-carousel"
+              className="flex items-center justify-between gap-2 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5 min-w-0 animate-page-enter"
+            >
+              <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5">
+                <span className="px-1.5 py-0.5 rounded-md bg-[var(--color-control-muted)] dark:bg-[#142430] shrink-0">
+                  📍 {locText(item.city, language)}
+                </span>
+                {item.ageStage && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 font-extrabold shrink-0">
+                    👶 {item.ageStage === 'all' ? (isEn ? '0–8 yrs' : '٠–٨ سنوات') : `${item.ageStage} ${isEn ? 'yrs' : 'سنوات'}`}
+                  </span>
+                )}
+                {item.deliveryEstimateAr && (
+                  <span className="px-1.5 py-0.5 rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] font-extrabold shrink-0">
                     🚚 {isEn ? item.deliveryEstimateEn : item.deliveryEstimateAr}
                   </span>
-                </>
-              )}
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => onInspectCommercialItem(item)}
+                className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 ms-auto cursor-pointer"
+              >
+                {isEn ? 'Details' : 'تفاصيل'}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => onInspectCommercialItem(item)}
-              className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 ms-auto cursor-pointer"
-            >
-              {isEn ? 'Details' : 'تفاصيل'}
-            </button>
-          </div>
+          )}
         </div>
 
-        {/* Price + Universal Minimalist Action Icons (Compare Arrows + Wishlist Heart + Shopping Cart) */}
-        <div className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-1.5">
+        {/* Layer 2 (Action Footer): Fixed, non-overlapping horizontal action row for primary buttons */}
+        <div
+          data-card-layer="2-action-footer"
+          className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5 min-w-0"
+        >
           <div
             onClick={() => onInspectCommercialItem(item)}
-            className="flex flex-col min-w-0 flex-1 cursor-pointer"
+            className="flex flex-col min-w-0 flex-1 cursor-pointer truncate"
           >
-            <div className="flex flex-wrap items-baseline gap-x-1 gap-y-0.5 tabular-nums">
+            <div className="flex items-baseline gap-x-1 tabular-nums truncate">
               {origVal && (
                 <span className="text-[9.5px] line-through text-[var(--color-muted)] whitespace-nowrap">
                   {formatCurrency(origVal, currency, language)}
@@ -544,6 +589,28 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
 
           <div className="flex items-center gap-1 shrink-0 ms-auto">
+            {/* Explicit Metadata & Tags Toggle Button (Hidden by Default) */}
+            <button
+              type="button"
+              onClick={() =>
+                setExpandedProductMetaIds((prev) =>
+                  prev.includes(item.id)
+                    ? prev.filter((id) => id !== item.id)
+                    : [...prev, item.id]
+                )
+              }
+              aria-expanded={expandedProductMetaIds.includes(item.id)}
+              title={isEn ? 'Toggle location, age & delivery info' : 'عرض الموقع والسن والتوصيل'}
+              aria-label={isEn ? 'Toggle product metadata' : 'عرض تفاصيل التوصيل والسن'}
+              className={`w-7 h-7 rounded-lg border text-[10px] font-extrabold flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer ${
+                expandedProductMetaIds.includes(item.id)
+                  ? 'border-[#0d9488] bg-[#0d9488]/15 text-[#0d9488] dark:text-[#2DD4BF]'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] hover:border-[#0d9488]'
+              }`}
+            >
+              ℹ️
+            </button>
+
             {/* Smart Product Comparison Toggle Button (Modern Dual Opposing Arrows ⇄) */}
             <button
               type="button"
@@ -1006,9 +1073,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       </div>
 
       {/* =====================================================================
-          LIVE ORDER TRACKING & ROUTE MAP
+          LIVE ORDER TRACKING & ROUTE MAP (Hidden by default; shown only via explicit trigger)
           ===================================================================== */}
-      {storeFlowStep === 'catalog' && (
+      {storeFlowStep === 'catalog' && showLiveTracking && (
         <CollapsibleSectionCard
           id="talabat-live-order-tracker"
           icon="🛵"

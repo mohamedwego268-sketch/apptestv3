@@ -276,7 +276,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [likedIds, setLikedIds] = useState<number[]>([501]);
   const [helpfulIds, setHelpfulIds] = useState<number[]>([503]);
-  const [expandedPostId, setExpandedPostId] = useState<number | null>(501);
+  const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
 
   // New Post Composer State
@@ -748,7 +748,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         cardTone="teal"
         badgeLabel={`${filteredPosts.length}`}
         badgeTone="teal"
-        defaultOpen={true}
+        defaultOpen={false}
         headerAction={
           <button
             type="button"

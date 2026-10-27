@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FamilySpaceState,
   ChildProfile,
@@ -14,6 +14,9 @@ import {
 } from '../../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../../domain/assetManifest3D';
 import { SoftFilledIcon, UnifiedBadge } from '../DesignSystem';
+import { PageId } from '../../context/FamilyAppContext';
+import { ThreeDIcon, ThreeDIconId } from '../ThreeDVisuals';
+import { AiModelId } from '../AiAssistantSection';
 
 export interface FamilyAppModalsProps {
   state: FamilySpaceState;
@@ -62,11 +65,18 @@ export interface FamilyAppModalsProps {
   permModalMember: FamilyMember | null;
   onClosePermModal: () => void;
   onSaveMemberPermissions: (e: React.FormEvent<HTMLFormElement>) => void;
-  // 8. Profile & Quick Controls Drawer
+  // 8. Master Control Slide Bar & Quick Controls Drawer
   roleModalOpen: boolean;
   onCloseRoleModal: () => void;
   onOpenOnboardingFromDrawer: () => void;
   onOpenCartFromDrawer: () => void;
+  onOpenWishesFromDrawer?: () => void;
+  onToggleLanguageFromDrawer?: () => void;
+  onNavigateFromDrawer?: (page: PageId) => void;
+  onOpenStoreCategoryFromDrawer?: (categoryId: string) => void;
+  onSelectAiSubActionFromDrawer?: (action: { modelId?: AiModelId; openHistory?: boolean }) => void;
+  onReplaySplashFromDrawer?: () => void;
+  activePage?: PageId;
   onSelectPreciseCity: (combinedValue: string) => void;
   onUseCurrentLocation: () => void;
   geoStatus?: 'idle' | 'locating' | 'active';
@@ -130,6 +140,13 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onCloseRoleModal,
   onOpenOnboardingFromDrawer,
   onOpenCartFromDrawer,
+  onOpenWishesFromDrawer,
+  onToggleLanguageFromDrawer,
+  onNavigateFromDrawer,
+  onOpenStoreCategoryFromDrawer,
+  onSelectAiSubActionFromDrawer,
+  onReplaySplashFromDrawer,
+  activePage = 'home',
   onSelectPreciseCity,
   onUseCurrentLocation,
   geoStatus = 'idle',
@@ -151,6 +168,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onResetAllData,
 }) => {
   const lang = state.language;
+  const isEn = lang === 'en';
+  const [expandedAccordionId, setExpandedAccordionId] = useState<string>('services');
+  const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(true);
+  const [locationAccordionOpen, setLocationAccordionOpen] = useState<boolean>(false);
   const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedDrawerCityId =
     activeCountryList.find(
@@ -1112,268 +1133,1017 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
         </div>
       )}
 
-      {/* 8. Profile & Quick Controls Drawer */}
+      {/* 8. Master Control Slide Bar with Expandable Accordion Sub-Menus (Adaptive RTL/LTR) */}
       {roleModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-[var(--color-overlay)] flex items-center justify-center p-4"
+          id="master-control-slidebar-backdrop"
+          data-testid="master-control-slidebar-backdrop"
+          dir={isEn ? 'ltr' : 'rtl'}
+          className="fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-xs flex justify-start"
           onClick={(e) => {
             if (e.target === e.currentTarget) onCloseRoleModal();
           }}
         >
-          <div
+          <aside
+            id="master-control-slidebar"
+            data-testid="master-control-slidebar"
             role="dialog"
             aria-modal="true"
             aria-labelledby="roleModalTitle"
-            className="w-full max-w-md rounded-[24px] bg-[var(--color-surface)] p-6 space-y-4 border border-[var(--color-border)]"
+            className="w-full max-w-[390px] sm:max-w-[420px] h-full overflow-y-auto bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] p-4 sm:p-5 space-y-4 shadow-2xl flex flex-col justify-between animate-page-enter"
           >
-            <div className="flex items-center justify-between border-b border-[var(--color-border)] pb-3">
-              <div>
-                <h2 id="roleModalTitle" className="text-base sm:text-lg font-extrabold text-[var(--color-text)]">
-                  {lang === 'en' ? 'Profile & Quick Controls Drawer' : 'درج الحساب والتحكم السريع'}
-                </h2>
-                <p className="text-xs text-[var(--color-muted)] mt-0.5">{todayFormattedCombined}</p>
-              </div>
-              <button
-                type="button"
-                onClick={onCloseRoleModal}
-                aria-label={lang === 'en' ? 'Close' : 'إغلاق'}
-                className="px-3 py-1 rounded-lg bg-[var(--color-control-muted)] text-sm font-bold text-[var(--color-text)]"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Quick Account Setup & Cart Controls */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={onOpenOnboardingFromDrawer}
-                className="p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold text-xs text-start flex items-center gap-2"
-              >
-                <SoftFilledIcon id="sparkles" size={18} />
-                <span>{lang === 'en' ? 'Account & City Wizard' : 'معالج الحساب والمدينة'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={onOpenCartFromDrawer}
-                className="p-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] text-[var(--color-text)] font-extrabold text-xs text-start flex items-center gap-2"
-              >
-                <SoftFilledIcon id="services" size={18} />
-                <span>{lang === 'en' ? `Shopping Cart (${cartItemCount})` : `سلة التسوق (${cartItemCount})`}</span>
-              </button>
-            </div>
-
-            {/* Symmetric Country & Governorate/Region + GPS Filter inside Profile Drawer */}
-            <div
-              data-testid="drawer-symmetric-location-selector"
-              className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-3 soft-card-surface"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <label
-                  htmlFor="drawer-city-select"
-                  className="text-xs font-extrabold text-[var(--color-text)] flex items-center gap-1.5"
-                >
-                  <SoftFilledIcon id="location" size={16} />
-                  <span>
-                    {lang === 'en'
-                      ? state.country === 'EG'
-                        ? 'Egypt Governorate (27) & Currency'
-                        : 'Saudi Region / City (15) & Currency'
-                      : state.country === 'EG'
-                      ? 'محافظة مصر (٢٧ محافظة) والعملة'
-                      : 'منطقة / مدينة السعودية (١٥ منطقة) والعملة'}
-                  </span>
-                </label>
-                <UnifiedBadge
-                  label={
-                    state.country === 'SA'
-                      ? lang === 'en'
-                        ? '🇸🇦 SAR'
-                        : '🇸🇦 ر.س (SAR)'
-                      : lang === 'en'
-                      ? '🇪🇬 EGP'
-                      : '🇪🇬 ج.م (EGP)'
-                  }
-                  tone="teal"
-                />
-              </div>
-
-              {/* Symmetric Country Switcher (Egypt 27 Governorates + EGP vs Saudi Arabia 15 Regions + SAR) */}
-              <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-4">
+              {/* Top Header Row */}
+              <div className="flex items-center justify-between border-b border-[var(--color-border)] dark:border-[#1E3646] pb-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs shrink-0">
+                    <ThreeDIcon id="home" size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <h2
+                      id="roleModalTitle"
+                      className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate"
+                    >
+                      {isEn ? 'Master Navigation & Quick Controls' : 'القائمة الرئيسية والتحكم السريع'}
+                    </h2>
+                    <p className="text-[10.5px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+                      {todayFormattedCombined}
+                    </p>
+                  </div>
+                </div>
                 <button
-                  id="drawer-country-eg-btn"
                   type="button"
-                  aria-pressed={state.country === 'EG'}
-                  onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    state.country === 'EG'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
-                  }`}
+                  onClick={onCloseRoleModal}
+                  aria-label={isEn ? 'Close' : 'إغلاق'}
+                  className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer hover:border-[#0d9488]"
                 >
-                  <span>🇪🇬</span>
-                  <span>{lang === 'en' ? 'Egypt (27 · EGP)' : 'مصر (٢٧ محافظة · EGP)'}</span>
-                </button>
-                <button
-                  id="drawer-country-sa-btn"
-                  type="button"
-                  aria-pressed={state.country === 'SA'}
-                  onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                    state.country === 'SA'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                      : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
-                  }`}
-                >
-                  <span>🇸🇦</span>
-                  <span>{lang === 'en' ? 'Saudi (15 · SAR)' : 'السعودية (١٥ منطقة · SAR)'}</span>
+                  ×
                 </button>
               </div>
 
-              {/* Identical Dropdown Menu Right Beside GPS Location Button for Both Countries */}
-              <div className="flex items-center gap-2">
-                <select
-                  id="drawer-city-select"
-                  aria-label={
-                    lang === 'en'
-                      ? state.country === 'EG'
-                        ? 'Select Egyptian Governorate'
-                        : 'Select Saudi Region or City'
-                      : state.country === 'EG'
-                      ? 'اختر المحافظة في مصر'
-                      : 'اختر المنطقة أو المدينة في السعودية'
-                  }
-                  value={`${state.country}:${resolvedDrawerCityId}`}
-                  onChange={(e) => onSelectPreciseCity(e.target.value)}
-                  className="flex-1 min-w-0 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[#0d9488] cursor-pointer"
-                >
-                  {activeCountryList.map((c, idx) => (
-                    <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
-                      {lang === 'en' ? `${idx + 1}. ${c.nameEn}` : `${idx + 1}. ${c.nameAr}`}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  id="drawer-gps-location-btn"
-                  type="button"
-                  onClick={onUseCurrentLocation}
-                  className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
-                    geoStatus === 'active'
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-2xs'
-                  }`}
-                >
-                  <SoftFilledIcon id="location" size={15} />
-                  <span>
-                    {geoStatus === 'locating'
-                      ? lang === 'en'
-                        ? 'GPS...'
-                        : 'تحديد...'
-                      : geoStatus === 'active'
-                      ? lang === 'en'
-                        ? 'GPS ✓'
-                        : 'موقعي ✓'
-                      : lang === 'en'
-                      ? 'GPS'
-                      : 'موقعي GPS'}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => onSelectParentProfile('mom')}
-                className="p-3.5 rounded-xl border border-rose-200 dark:border-[#1E3646] bg-rose-50 dark:bg-[#142430] text-rose-900 dark:text-[#FDA4AF] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
+              {/* MASTER QUICK TOGGLES ACCORDION (Sidebar Top): Language Switcher, Eye-Comfort Dark/Light, Cart, Wishlist & Parent Profiles */}
+              <div
+                id="slidebar-master-quick-toggles"
+                data-testid="slidebar-master-quick-toggles"
+                className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#101D26] overflow-hidden"
               >
-                <SoftFilledIcon id="family" size={20} />
-                <span>
-                  {lang === 'en'
-                    ? 'Mother Profile — Soft Coral & Warm Rose (Mom Sara)'
-                    : 'حساب الأم (ماما سارة) — مرجاني دافئ ووردي ناعم'}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onSelectParentProfile('dad')}
-                className="p-3.5 rounded-xl border border-sky-200 dark:border-[#1E3646] bg-sky-50 dark:bg-[#142430] text-sky-900 dark:text-[#7DD3FC] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
-              >
-                <SoftFilledIcon id="family" size={20} />
-                <span>
-                  {lang === 'en'
-                    ? 'Father Profile — Calm Teal & Slate Blue (Dad Ahmed)'
-                    : 'حساب الأب (بابا أحمد) — تيل هادئ وأزرق أردوازي'}
-                </span>
-              </button>
-              {onToggleBedtimeMode && (
                 <button
-                  id="drawer-bedtime-mode-btn"
                   type="button"
-                  onClick={() => {
-                    onToggleBedtimeMode();
-                    onCloseRoleModal();
-                  }}
-                  className="p-3.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-bold text-xs sm:text-sm text-start flex items-center justify-between gap-2 cursor-pointer"
+                  onClick={() => setQuickControlsAccordionOpen((prev) => !prev)}
+                  aria-expanded={quickControlsAccordionOpen}
+                  className="w-full p-3 flex items-center justify-between gap-2 text-start cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="text-base">🕯️</span>
-                    <span>
-                      {lang === 'en'
-                        ? 'Warm Bedtime Focus & Night Story Dimming'
-                        : 'وضع وقت النوم والهدوء الليلي الدافئ للقراءة'}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-7 h-7 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-xs font-black shrink-0">
+                      ⚡
                     </span>
+                    <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                      {isEn ? 'Quick Controls & Parent Profile' : 'أدوات التحكم السريع وحساب الوالدين'}
+                    </span>
+                  </div>
+                  <span className="w-7 h-7 rounded-lg bg-[var(--color-surface)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
+                    {quickControlsAccordionOpen ? '⌄' : '›'}
                   </span>
-                  <UnifiedBadge
-                    label={
-                      bedtimeMode
-                        ? lang === 'en'
-                          ? 'Active'
-                          : 'مفعّل'
-                        : lang === 'en'
-                        ? 'Off'
-                        : 'إيقاف'
-                    }
-                    tone="amber"
-                  />
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={onEnableHighContrast}
-                className="p-3.5 rounded-xl border border-slate-500 bg-[var(--color-control-bg)] text-[var(--color-text)] font-bold text-xs sm:text-sm text-start flex items-center gap-2 cursor-pointer"
+
+                {quickControlsAccordionOpen && (
+                  <div className="px-3 pb-3 pt-1.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-2 animate-tab-enter">
+                    {/* Row 1: Instant Language Switcher + Eye-Comfort Dark/Light Mode Switch */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        id="slidebar-language-toggle-btn"
+                        type="button"
+                        onClick={() => {
+                          if (onToggleLanguageFromDrawer) {
+                            onToggleLanguageFromDrawer();
+                          }
+                        }}
+                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                      >
+                        <span className="inline-flex items-center gap-1.5">
+                          <span>🌐</span>
+                          <span>{isEn ? 'Language' : 'اللغة'}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-[#0d9488]/15 text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black">
+                          {isEn ? 'عربي' : 'EN'}
+                        </span>
+                      </button>
+
+                      <button
+                        id="slidebar-dark-mode-toggle-btn"
+                        type="button"
+                        onClick={onToggleDarkMode}
+                        className="min-h-[38px] px-3 py-2 rounded-xl border border-teal-400/50 bg-teal-50/80 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] text-xs font-extrabold flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                      >
+                        <span className="inline-flex items-center gap-1.5 truncate">
+                          <span>{state.darkMode ? '☀️' : '🌙'}</span>
+                          <span className="truncate">{isEn ? 'Eye Comfort' : 'راحة العين'}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[9.5px] font-black shrink-0">
+                          {state.darkMode ? (isEn ? 'Dark' : 'ليلي') : isEn ? 'Light' : 'نهاري'}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Row 2: Direct Links for Shopping Cart (السلة) & Wishlist (قائمة الأمنيات) */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        id="slidebar-cart-link-btn"
+                        type="button"
+                        onClick={onOpenCartFromDrawer}
+                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                      >
+                        <span className="inline-flex items-center gap-1.5 truncate">
+                          <span>🛒</span>
+                          <span className="truncate">{isEn ? 'Cart' : 'السلة'}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black tabular-nums">
+                          {cartItemCount}
+                        </span>
+                      </button>
+
+                      <button
+                        id="slidebar-wishlist-link-btn"
+                        type="button"
+                        onClick={() => {
+                          if (onOpenWishesFromDrawer) {
+                            onOpenWishesFromDrawer();
+                          } else if (onNavigateFromDrawer) {
+                            onNavigateFromDrawer('wishes');
+                            onCloseRoleModal();
+                          }
+                        }}
+                        className="min-h-[38px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#FF8C61] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-1.5 cursor-pointer transition-all"
+                      >
+                        <span className="inline-flex items-center gap-1.5 truncate">
+                          <span>🧡</span>
+                          <span className="truncate">{isEn ? 'Wishlist' : 'قائمة الأمنيات'}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-black tabular-nums">
+                          {state.wishes.length}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Row 3: Warm Bedtime Filter + Account & City Wizard */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {onToggleBedtimeMode && (
+                        <button
+                          id="drawer-bedtime-mode-btn"
+                          type="button"
+                          onClick={onToggleBedtimeMode}
+                          className="min-h-[36px] px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-extrabold text-[11px] flex items-center justify-between gap-1 cursor-pointer"
+                        >
+                          <span className="inline-flex items-center gap-1 truncate">
+                            <span>🕯️</span>
+                            <span className="truncate">{isEn ? 'Bedtime Filter' : 'هدوء المساء'}</span>
+                          </span>
+                          <span className="text-[9.5px] font-black">
+                            {bedtimeMode ? (isEn ? 'ON' : 'مفعّل') : isEn ? 'OFF' : 'إيقاف'}
+                          </span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={onOpenOnboardingFromDrawer}
+                        className="min-h-[36px] px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold text-[11px] flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <SoftFilledIcon id="sparkles" size={15} />
+                        <span className="truncate">{isEn ? 'Account Wizard' : 'معالج الحساب والمدينة'}</span>
+                      </button>
+                    </div>
+
+                    {/* Row 4: Parent Account Theme Switcher */}
+                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={() => onSelectParentProfile('mom')}
+                        className="p-2 rounded-xl border border-rose-200 dark:border-[#1E3646] bg-rose-50 dark:bg-[#142430] text-rose-900 dark:text-[#FDA4AF] font-extrabold text-[11px] text-start flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <SoftFilledIcon id="family" size={15} />
+                        <span className="truncate">
+                          {isEn ? 'Mom Profile (Sara)' : 'حساب ماما (سارة)'}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSelectParentProfile('dad')}
+                        className="p-2 rounded-xl border border-sky-200 dark:border-[#1E3646] bg-sky-50 dark:bg-[#142430] text-sky-900 dark:text-[#7DD3FC] font-extrabold text-[11px] text-start flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <SoftFilledIcon id="family" size={15} />
+                        <span className="truncate">
+                          {isEn ? 'Dad Profile (Ahmed)' : 'حساب بابا (أحمد)'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 12 EXPANDABLE ACCORDION SUB-MENUS IN NATURAL EGYPTIAN ARABIC & STRICT PRIORITY ORDER */}
+              <div
+                id="slidebar-expandable-accordions"
+                data-testid="slidebar-expandable-accordions"
+                className="space-y-1.5"
               >
-                <SoftFilledIcon id="shield" size={20} />
-                <span>
-                  {lang === 'en'
-                    ? 'High Contrast Accessibility Mode'
-                    : 'وضع التباين العالي لسهولة القراءة'}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onToggleDarkMode();
-                  onCloseRoleModal();
-                }}
-                className="p-3.5 rounded-xl border border-teal-400/50 bg-teal-50 dark:bg-[#142430] text-teal-950 dark:text-[#A5F3FC] font-bold text-xs sm:text-sm text-start flex items-center justify-between gap-2 cursor-pointer"
+                <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
+                  📂 {isEn ? 'Platform Sections & Sub-Menus (12)' : 'أقسام المنصة والقوائم الفرعية (١٢ قسم)'}
+                </div>
+
+                {(() => {
+                  const masterAccordionSections: Array<{
+                    id: string;
+                    pageId: PageId;
+                    iconId: ThreeDIconId;
+                    titleAr: string;
+                    titleEn: string;
+                    badgeAr?: string;
+                    badgeEn?: string;
+                    subItems: Array<{
+                      id: string;
+                      labelAr: string;
+                      labelEn: string;
+                      icon: string;
+                      onSelect: () => void;
+                    }>;
+                  }> = [
+                    {
+                      id: 'home',
+                      pageId: 'home',
+                      iconId: 'home',
+                      titleAr: '١. الرئيسية',
+                      titleEn: '1. Home Showcase',
+                      badgeAr: 'البرودكشن',
+                      badgeEn: 'Production',
+                      subItems: [
+                        {
+                          id: 'home-prod',
+                          labelAr: 'واجهة البرودكشن الرئيسية',
+                          labelEn: 'Production Home Showcase',
+                          icon: '🏡',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('home');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'home-promos',
+                          labelAr: 'البانرات الترويجية والإعلانية',
+                          labelEn: 'Promotional & Ad Banners',
+                          icon: '🔥',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('home');
+                            onCloseRoleModal();
+                            window.setTimeout(() => {
+                              document
+                                .getElementById('home-promotional-showcase')
+                                ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 180);
+                          },
+                        },
+                        {
+                          id: 'home-welcome-splash',
+                          labelAr: 'شاشة الترحيب التفاعلية (٤ ثوانٍ)',
+                          labelEn: 'Interactive Welcome Splash (4s)',
+                          icon: '✨',
+                          onSelect: () => {
+                            onCloseRoleModal();
+                            onReplaySplashFromDrawer?.();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'assistant',
+                      pageId: 'assistant',
+                      iconId: 'assistant',
+                      titleAr: '٢. مساعد نكبر الذكي',
+                      titleEn: '2. Smart AI Assistant',
+                      badgeAr: '3 موديلات',
+                      badgeEn: '3 Models',
+                      subItems: [
+                        {
+                          id: 'ai-history',
+                          labelAr: 'سجل المحادثات السابقة',
+                          labelEn: 'Saved Conversation History',
+                          icon: '🗂️',
+                          onSelect: () => {
+                            onSelectAiSubActionFromDrawer?.({ openHistory: true });
+                            onNavigateFromDrawer?.('assistant');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'ai-consultant',
+                          labelAr: 'موديل: مستشار تربوي ذكي',
+                          labelEn: 'Model: Parenting Consultant',
+                          icon: '🧠',
+                          onSelect: () => {
+                            onSelectAiSubActionFromDrawer?.({
+                              modelId: 'consultant',
+                              openHistory: false,
+                            });
+                            onNavigateFromDrawer?.('assistant');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'ai-planner',
+                          labelAr: 'موديل: خطط يومية وتغذية',
+                          labelEn: 'Model: Daily Plans Architect',
+                          icon: '📅',
+                          onSelect: () => {
+                            onSelectAiSubActionFromDrawer?.({
+                              modelId: 'planner',
+                              openHistory: false,
+                            });
+                            onNavigateFromDrawer?.('assistant');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'ai-behavior',
+                          labelAr: 'موديل: دعم سلوكي وتعديل سلوك',
+                          labelEn: 'Model: Behavioral Coach',
+                          icon: '💛',
+                          onSelect: () => {
+                            onSelectAiSubActionFromDrawer?.({
+                              modelId: 'behavior',
+                              openHistory: false,
+                            });
+                            onNavigateFromDrawer?.('assistant');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'children',
+                      pageId: 'children',
+                      iconId: 'children',
+                      titleAr: '٣. أولادنا 3D',
+                      titleEn: '3. Our Kids 3D',
+                      badgeAr: `${state.kids.length} أطفال`,
+                      badgeEn: `${state.kids.length} Kids`,
+                      subItems: [
+                        {
+                          id: 'kids-profiles',
+                          labelAr: 'الملفات الشخصية والهوية 3D',
+                          labelEn: '3D Profiles & Avatars',
+                          icon: '👶',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('children');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'kids-growth',
+                          labelAr: 'قياسات النمو والطول والوزن',
+                          labelEn: 'Growth, Height & Weight Charts',
+                          icon: '📏',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('children');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'kids-health-vaccines',
+                          labelAr: 'السجل الصحي والتطعيمات',
+                          labelEn: 'Health Log & Vaccinations',
+                          icon: '💉',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('children');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'routine',
+                      pageId: 'routine',
+                      iconId: 'routine',
+                      titleAr: '٤. الروتين اليومي',
+                      titleEn: '4. Daily Routine',
+                      badgeAr: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
+                      badgeEn: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
+                      subItems: [
+                        {
+                          id: 'routine-daily-weekly',
+                          labelAr: 'المهام اليومية والأسبوعية',
+                          labelEn: 'Daily & Weekly Tasks',
+                          icon: '✅',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('routine');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'routine-healthy-lunchbox',
+                          labelAr: 'أكلات صحية ولانش بوكس',
+                          labelEn: 'Healthy Meals & Lunchbox',
+                          icon: '🍱',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('routine');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'routine-play-sleep',
+                          labelAr: 'وقت اللعب والنوم الهادئ',
+                          labelEn: 'Playtime & Calm Sleep Routine',
+                          icon: '🌙',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('routine');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'services',
+                      pageId: 'services',
+                      iconId: 'services',
+                      titleAr: '٥. المتجر السريع (٠–٨ سنوات)',
+                      titleEn: '5. Express Store (Ages 0–8)',
+                      badgeAr: '٦ أقسام',
+                      badgeEn: '6 Categories',
+                      subItems: [
+                        {
+                          id: 'store-montessori',
+                          labelAr: 'ألعاب مونتيسوري وتنمية إدراك',
+                          labelEn: 'Montessori & Cognitive Toys',
+                          icon: '🧸',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('toys');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-baby-essentials',
+                          labelAr: 'ملابس ومستلزمات الرضع',
+                          labelEn: 'Baby Gear & Essentials',
+                          icon: '🍼',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('essentials');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-shoes-apparel',
+                          labelAr: 'أحذية وإكسسوارات وأزياء قطنية',
+                          labelEn: 'Shoes, Accessories & Cotton Apparel',
+                          icon: '👟',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('clothing');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-nurseries-schools',
+                          labelAr: 'حضانات ومدارس معتمدة',
+                          labelEn: 'Verified Nurseries & Schools',
+                          icon: '🏫',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('nursery');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-courses-centers',
+                          labelAr: 'مراكز كورسات وأنشطة تفاعلية',
+                          labelEn: 'Interactive Courses & Activity Centers',
+                          icon: '🎨',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('courses');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-online-platforms',
+                          labelAr: 'منصات ودروس أونلاين وقصص',
+                          labelEn: 'Online Learning Platforms & Books',
+                          icon: '💻',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('books');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'store-live-tracking',
+                          labelAr: 'تتبع الطلبات المباشر وخريطة المندوب',
+                          labelEn: 'Live Delivery Tracking & Route Map',
+                          icon: '🛵',
+                          onSelect: () => {
+                            onOpenStoreCategoryFromDrawer?.('live_tracking');
+                            onNavigateFromDrawer?.('services');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'calendar',
+                      pageId: 'calendar',
+                      iconId: 'calendar',
+                      titleAr: '٦. التقويم والمواعيد',
+                      titleEn: '6. Calendar & Appointments',
+                      badgeAr: `${state.events.length} مواعيد`,
+                      badgeEn: `${state.events.length} Events`,
+                      subItems: [
+                        {
+                          id: 'cal-shared',
+                          labelAr: 'التقويم المشترك ميلادي وهجري',
+                          labelEn: 'Shared Gregorian & Hijri Calendar',
+                          icon: '📅',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('calendar');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'cal-medical',
+                          labelAr: 'المواعيد الطبية والتطعيمات',
+                          labelEn: 'Medical & Vaccine Appointments',
+                          icon: '🩺',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('calendar');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'cal-family-events',
+                          labelAr: 'الأحداث والمناسبات العائلية',
+                          labelEn: 'Family Occasions & Memories',
+                          icon: '🎉',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('calendar');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'medical',
+                      pageId: 'medical',
+                      iconId: 'health',
+                      titleAr: '٧. الدكتور والعيادة',
+                      titleEn: '7. Doctor & Pediatric Clinic',
+                      badgeAr: 'حجز فوري',
+                      badgeEn: 'Instant Booking',
+                      subItems: [
+                        {
+                          id: 'med-book-doc',
+                          labelAr: 'حجز دكتور أطفال معتمد',
+                          labelEn: 'Book Verified Pediatrician',
+                          icon: '👨‍⚕️',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('medical');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'med-clinics',
+                          labelAr: 'عيادات تخصصية وتغذية وتخاطب',
+                          labelEn: 'Specialized Pediatric Clinics',
+                          icon: '🏥',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('medical');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'med-instant-consult',
+                          labelAr: 'استشارات طبية وتربوية فورية',
+                          labelEn: 'Instant Medical Consultations',
+                          icon: '⚡',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('medical');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'media',
+                      pageId: 'media',
+                      iconId: 'video',
+                      titleAr: '٨. ريلز وفيديوهات التربية',
+                      titleEn: '8. Parenting Reels & Videos',
+                      badgeAr: '9:16 ريلز',
+                      badgeEn: '9:16 Reels',
+                      subItems: [
+                        {
+                          id: 'media-guided-videos',
+                          labelAr: 'فيديوهات إرشادية للأم والأب',
+                          labelEn: 'Guided Parenting Videos',
+                          icon: '🎬',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('media');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'media-short-reels',
+                          labelAr: 'ريلز قصيرة سريعة (٦٠ ثانية)',
+                          labelEn: 'Short 60s Parenting Reels',
+                          icon: '📱',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('media');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'media-podcast',
+                          labelAr: 'بودكاست عائلي وقصص صوتية',
+                          labelEn: 'Family Podcast & Audio Stories',
+                          icon: '🎧',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('media');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'community',
+                      pageId: 'community',
+                      iconId: 'star',
+                      titleAr: '٩. لمة الآباء',
+                      titleEn: '9. Parents Community',
+                      badgeAr: 'مجتمع آمن',
+                      badgeEn: 'Safe Hub',
+                      subItems: [
+                        {
+                          id: 'comm-open-chat',
+                          labelAr: 'شات النقاشات المفتوحة',
+                          labelEn: 'Open Parents Discussions',
+                          icon: '💬',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('community');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'comm-tips',
+                          labelAr: 'نصائح وتجارب الأهل الحقيقية',
+                          labelEn: 'Real Parent Tips & Experiences',
+                          icon: '🌟',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('community');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'comm-safe',
+                          labelAr: 'مجتمع آمن وموثق للعائلات',
+                          labelEn: 'Verified Safe Family Community',
+                          icon: '🛡️',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('community');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'chat',
+                      pageId: 'chat',
+                      iconId: 'shield',
+                      titleAr: '١٠. شات العيلة',
+                      titleEn: '10. Family Internal Chat',
+                      badgeAr: 'داخلي',
+                      badgeEn: 'Private',
+                      subItems: [
+                        {
+                          id: 'chat-parents-caregivers',
+                          labelAr: 'المحادثات الداخلية بين الوالدين ومقدمي الرعاية',
+                          labelEn: 'Internal Chat Between Parents & Caregivers',
+                          icon: '👨‍👩‍👧‍👦',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('chat');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'chat-pediatric-consult',
+                          labelAr: 'رسائل واستشارات أطباء الأطفال',
+                          labelEn: 'Pediatrician Direct Consultations',
+                          icon: '🩺',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('chat');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'chat-family-notes',
+                          labelAr: 'الملاحظات والتنبيهات العائلية السريعة',
+                          labelEn: 'Pinned Family Notes & Alerts',
+                          icon: '📌',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('chat');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'family',
+                      pageId: 'family',
+                      iconId: 'family',
+                      titleAr: '١١. عيلتنا والصلاحيات',
+                      titleEn: '11. Our Family & Permissions',
+                      badgeAr: `${state.family.length} أفراد`,
+                      badgeEn: `${state.family.length} Members`,
+                      subItems: [
+                        {
+                          id: 'fam-members',
+                          labelAr: 'إدارة الأفراد ومقدمي الرعاية',
+                          labelEn: 'Manage Family & Caregivers',
+                          icon: '👥',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('family');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'fam-permissions',
+                          labelAr: 'الصلاحيات المخصصة لكل طفل',
+                          labelEn: 'Child-Scoped Granular Permissions',
+                          icon: '🔐',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('family');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'fam-invitations',
+                          labelAr: 'الدعوات ومشاركة الرعاية الآمنة',
+                          labelEn: 'Invitations & Safe Care Sharing',
+                          icon: '📩',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('family');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'settings',
+                      pageId: 'settings',
+                      iconId: 'settings',
+                      titleAr: '١٢. الإعدادات والتحكم',
+                      titleEn: '12. Settings & Control',
+                      badgeAr: 'تحكم كامل',
+                      badgeEn: 'Full Control',
+                      subItems: [
+                        {
+                          id: 'set-themes',
+                          labelAr: 'تخصيص السمات وراحة العين',
+                          labelEn: 'Theme & Eye-Comfort Customization',
+                          icon: '🎨',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('settings');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'set-lang-city',
+                          labelAr: 'اللغة، الدولة والمدينة',
+                          labelEn: 'Language, Country & City',
+                          icon: '📍',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('settings');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'set-backup-drive',
+                          labelAr: 'النسخ الاحتياطي JSON ومزامنة Drive',
+                          labelEn: 'JSON Backup & Google Drive Sync',
+                          icon: '☁️',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('settings');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                  ];
+
+                  return masterAccordionSections.map((sec) => {
+                    const isExpanded = expandedAccordionId === sec.id;
+                    const isPageActive = activePage === sec.pageId;
+                    return (
+                      <div
+                        key={sec.id}
+                        data-testid={`slidebar-accordion-${sec.id}`}
+                        className={`rounded-2xl border transition-all overflow-hidden ${
+                          isPageActive
+                            ? 'border-[#0d9488] bg-teal-50/40 dark:bg-[#142430]'
+                            : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 p-2 sm:p-2.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setExpandedAccordionId((prev) => (prev === sec.id ? '' : sec.id));
+                            }}
+                            aria-expanded={isExpanded}
+                            className="flex-1 min-w-0 flex items-center gap-2 text-start cursor-pointer"
+                          >
+                            <span className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] flex items-center justify-center shrink-0">
+                              <ThreeDIcon id={sec.iconId} size={17} />
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                                {isEn ? sec.titleEn : sec.titleAr}
+                              </div>
+                            </div>
+                          </button>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            {sec.badgeAr && (
+                              <span className="px-2 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-black">
+                                {isEn ? sec.badgeEn : sec.badgeAr}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedAccordionId((prev) => (prev === sec.id ? '' : sec.id))
+                              }
+                              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                              className="w-7 h-7 rounded-lg bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black transition-transform cursor-pointer"
+                            >
+                              <span>{isExpanded ? '⌄' : '›'}</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {isExpanded && (
+                          <div className="px-2.5 pb-2.5 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-1 bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/60 animate-tab-enter">
+                            {sec.subItems.map((sub) => (
+                              <button
+                                key={sub.id}
+                                data-testid={`slidebar-subitem-${sub.id}`}
+                                type="button"
+                                onClick={sub.onSelect}
+                                className="w-full px-2.5 py-2 rounded-xl text-start text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#E2E8F0] hover:bg-[#0d9488] hover:text-white transition-all flex items-center justify-between gap-2 cursor-pointer group"
+                              >
+                                <span className="flex items-center gap-2 min-w-0">
+                                  <span className="text-sm leading-none shrink-0">{sub.icon}</span>
+                                  <span className="truncate">
+                                    {isEn ? sub.labelEn : sub.labelAr}
+                                  </span>
+                                </span>
+                                <span className="text-[10px] opacity-60 group-hover:opacity-100 shrink-0">
+                                  {isEn ? '→' : '←'}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+
+              {/* Symmetric Country & Governorate/Region + GPS Filter Accordion inside Slide Bar */}
+              <div
+                data-testid="drawer-symmetric-location-selector"
+                className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] overflow-hidden soft-card-surface"
               >
-                <span>
-                  {state.darkMode
-                    ? lang === 'en'
-                      ? 'Switch to Breathable Light Mode'
-                      : 'التبديل إلى الوضع النهاري المريح'
-                    : lang === 'en'
-                    ? 'Enable Eye-Comfort Dark Mode'
-                    : 'تفعيل الوضع الليلي المريح للعين'}
-                </span>
-                <UnifiedBadge
-                  label={state.darkMode ? (lang === 'en' ? 'Active' : 'مفعّل') : lang === 'en' ? 'Off' : 'إيقاف'}
-                  tone="teal"
-                />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setLocationAccordionOpen((prev) => !prev)}
+                  aria-expanded={locationAccordionOpen}
+                  className="w-full p-3 flex items-center justify-between gap-2 text-start cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <SoftFilledIcon id="location" size={16} />
+                    <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                      {isEn
+                        ? state.country === 'EG'
+                          ? 'Egypt Governorate (27) & GPS'
+                          : 'Saudi Region (15) & GPS'
+                        : state.country === 'EG'
+                        ? 'محافظة مصر (٢٧ محافظة) والـ GPS'
+                        : 'منطقة السعودية (١٥ منطقة) والـ GPS'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <UnifiedBadge
+                      label={
+                        state.country === 'SA'
+                          ? isEn
+                            ? '🇸🇦 SAR'
+                            : '🇸🇦 ر.س'
+                          : isEn
+                          ? '🇪🇬 EGP'
+                          : '🇪🇬 ج.م'
+                      }
+                      tone="teal"
+                    />
+                    <span className="w-7 h-7 rounded-lg bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
+                      {locationAccordionOpen ? '⌄' : '›'}
+                    </span>
+                  </div>
+                </button>
+
+                {locationAccordionOpen && (
+                  <div className="px-3.5 pb-3.5 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-2.5 animate-tab-enter">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        id="drawer-country-eg-btn"
+                        type="button"
+                        aria-pressed={state.country === 'EG'}
+                        onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
+                        className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          state.country === 'EG'
+                            ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                            : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
+                        }`}
+                      >
+                        <span>🇪🇬</span>
+                        <span>{isEn ? 'Egypt (27 · EGP)' : 'مصر (٢٧ محافظة · EGP)'}</span>
+                      </button>
+                      <button
+                        id="drawer-country-sa-btn"
+                        type="button"
+                        aria-pressed={state.country === 'SA'}
+                        onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                        className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          state.country === 'SA'
+                            ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                            : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
+                        }`}
+                      >
+                        <span>🇸🇦</span>
+                        <span>{isEn ? 'Saudi (15 · SAR)' : 'السعودية (١٥ منطقة · SAR)'}</span>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <select
+                        id="drawer-city-select"
+                        aria-label={
+                          isEn
+                            ? state.country === 'EG'
+                              ? 'Select Egyptian Governorate'
+                              : 'Select Saudi Region or City'
+                            : state.country === 'EG'
+                            ? 'اختر المحافظة في مصر'
+                            : 'اختر المنطقة أو المدينة في السعودية'
+                        }
+                        value={`${state.country}:${resolvedDrawerCityId}`}
+                        onChange={(e) => onSelectPreciseCity(e.target.value)}
+                        className="flex-1 min-w-0 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[#0d9488] cursor-pointer"
+                      >
+                        {activeCountryList.map((c, idx) => (
+                          <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
+                            {isEn ? `${idx + 1}. ${c.nameEn}` : `${idx + 1}. ${c.nameAr}`}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        id="drawer-gps-location-btn"
+                        type="button"
+                        onClick={onUseCurrentLocation}
+                        className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
+                          geoStatus === 'active'
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-2xs'
+                        }`}
+                      >
+                        <SoftFilledIcon id="location" size={15} />
+                        <span>
+                          {geoStatus === 'locating'
+                            ? isEn
+                              ? 'GPS...'
+                              : 'تحديد...'
+                            : geoStatus === 'active'
+                            ? isEn
+                              ? 'GPS ✓'
+                              : 'موقعي ✓'
+                            : isEn
+                            ? 'GPS'
+                            : 'موقعي GPS'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       )}
 

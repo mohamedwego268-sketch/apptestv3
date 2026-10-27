@@ -68,7 +68,7 @@ import { MedicalHealthSection } from './components/MedicalHealthSection';
 import { MediaPlatformSection } from './components/MediaPlatformSection';
 import { ParentsCommunitySection } from './components/ParentsCommunitySection';
 import { InternalChatSection } from './components/InternalChatSection';
-import { AiAssistantSection } from './components/AiAssistantSection';
+import { AiAssistantSection, AiModelId } from './components/AiAssistantSection';
 import { OnboardingFlowModal } from './components/OnboardingFlowModal';
 import { CommercialEcosystemSection } from './components/CommercialEcosystemSection';
 import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
@@ -85,6 +85,7 @@ import {
   FullScreenNavigationLoader,
   GlobalToastSnackbar,
   InnerScreenTopBar,
+  InteractiveSplashScreen,
   PASTEL_CARD_TONES,
   SectionSkeletonLoader,
   SoftFilledIcon,
@@ -110,6 +111,51 @@ export default function App() {
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoStatus, setGeoStatus] = useState<'idle' | 'locating' | 'active'>('idle');
   const [bedtimeMode, setBedtimeMode] = useState<boolean>(false);
+  const [splashScreen, setSplashScreen] = useState<{
+    visible: boolean;
+    fadingOut: boolean;
+  }>({ visible: true, fadingOut: false });
+  const splashFadeTimerRef = React.useRef<number | null>(null);
+  const splashHideTimerRef = React.useRef<number | null>(null);
+  const [storeInitialCategoryId, setStoreInitialCategoryId] = useState<string | null>(null);
+  const [storeInitialOpenCheckout, setStoreInitialOpenCheckout] = useState<boolean>(false);
+  const [aiInitialModelId, setAiInitialModelId] = useState<AiModelId>('consultant');
+  const [aiInitialHistoryOpen, setAiInitialHistoryOpen] = useState<boolean>(false);
+
+  const handleDismissSplashScreen = React.useCallback(() => {
+    if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
+    if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
+    setSplashScreen((prev) => (prev.visible ? { visible: true, fadingOut: true } : prev));
+    // Trigger subtle center-screen navigation loader transition into main app
+    setNavLoader({ visible: true, fadingOut: false, targetPage: activePage });
+    splashHideTimerRef.current = window.setTimeout(() => {
+      setSplashScreen({ visible: false, fadingOut: false });
+      setNavLoader((prev) => ({ ...prev, fadingOut: true }));
+      window.setTimeout(() => {
+        setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
+      }, 220);
+    }, 320);
+  }, [activePage]);
+
+  const handleReplaySplashScreen = React.useCallback(() => {
+    if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
+    if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
+    setSplashScreen({ visible: true, fadingOut: false });
+    splashFadeTimerRef.current = window.setTimeout(() => {
+      handleDismissSplashScreen();
+    }, 4000);
+  }, [handleDismissSplashScreen]);
+
+  useEffect(() => {
+    splashFadeTimerRef.current = window.setTimeout(() => {
+      handleDismissSplashScreen();
+    }, 4000);
+    return () => {
+      if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
+      if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
+    };
+  }, [handleDismissSplashScreen]);
+
   const [festivalCelebration, setFestivalCelebration] = useState<{
     id: number;
     titleAr: string;
@@ -1307,21 +1353,21 @@ export default function App() {
     shortLabel: string;
     iconId: ThreeDIconId;
   }[] = [
-    { id: 'home', label: t(lang, 'navHome'), shortLabel: lang === 'en' ? 'Home' : 'الرئيسية', iconId: 'home' },
-    { id: 'children', label: t(lang, 'navChildren'), shortLabel: lang === 'en' ? 'Kids 3D' : 'الأطفال', iconId: 'children' },
-    { id: 'routine', label: t(lang, 'navRoutine'), shortLabel: lang === 'en' ? 'Routine' : 'الروتين', iconId: 'routine' },
-    { id: 'calendar', label: t(lang, 'navCalendar'), shortLabel: lang === 'en' ? 'Calendar' : 'التقويم', iconId: 'calendar' },
+    { id: 'home', label: lang === 'en' ? '1. Home' : '١. الرئيسية', shortLabel: lang === 'en' ? 'Home' : 'الرئيسية', iconId: 'home' },
+    { id: 'assistant', label: lang === 'en' ? '2. Smart AI Assistant' : '٢. مساعد نكبر الذكي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد نكبر الذكي', iconId: 'assistant' },
+    { id: 'children', label: lang === 'en' ? '3. Our Kids 3D' : '٣. أولادنا 3D', shortLabel: lang === 'en' ? 'Kids 3D' : 'أولادنا 3D', iconId: 'children' },
+    { id: 'routine', label: lang === 'en' ? '4. Daily Routine' : '٤. الروتين اليومي', shortLabel: lang === 'en' ? 'Routine' : 'الروتين اليومي', iconId: 'routine' },
+    { id: 'services', label: lang === 'en' ? '5. Quick Store (0–8 Yrs)' : '٥. المتجر السريع (٠–٨ سنوات)', shortLabel: lang === 'en' ? 'Store' : 'المتجر السريع', iconId: 'services' },
+    { id: 'calendar', label: lang === 'en' ? '6. Calendar & Events' : '٦. التقويم والمواعيد', shortLabel: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد', iconId: 'calendar' },
+    { id: 'medical', label: lang === 'en' ? '7. Doctor & Clinic' : '٧. الدكتور والعيادة', shortLabel: lang === 'en' ? 'Clinic' : 'الدكتور والعيادة', iconId: 'health' },
+    { id: 'media', label: lang === 'en' ? '8. Parenting Reels & Videos' : '٨. ريلز وفيديوهات التربية', shortLabel: lang === 'en' ? 'Reels' : 'ريلز التربية', iconId: 'video' },
+    { id: 'community', label: lang === 'en' ? '9. Parents Gathering' : '٩. لمة الآباء', shortLabel: lang === 'en' ? 'Community' : 'لمة الآباء', iconId: 'star' },
+    { id: 'chat', label: lang === 'en' ? '10. Family Chat' : '١٠. شات العيلة', shortLabel: lang === 'en' ? 'Chat' : 'شات العيلة', iconId: 'shield' },
+    { id: 'family', label: lang === 'en' ? '11. Family & Permissions' : '١١. عيلتنا والصلاحيات', shortLabel: lang === 'en' ? 'Family' : 'عيلتنا والصلاحيات', iconId: 'family' },
+    { id: 'settings', label: lang === 'en' ? '12. Settings & Control' : '١٢. الإعدادات والتحكم', shortLabel: lang === 'en' ? 'Settings' : 'الإعدادات والتحكم', iconId: 'settings' },
     { id: 'wishes', label: t(lang, 'navWishes'), shortLabel: lang === 'en' ? 'Wishes' : 'الأمنيات', iconId: 'wishes' },
-    { id: 'medical', label: t(lang, 'navMedical'), shortLabel: lang === 'en' ? 'Medical' : 'الطب', iconId: 'health' },
-    { id: 'media', label: t(lang, 'navMedia'), shortLabel: lang === 'en' ? 'Reels' : 'الريلز', iconId: 'video' },
-    { id: 'community', label: t(lang, 'navCommunity'), shortLabel: lang === 'en' ? 'Community' : 'المجتمع', iconId: 'star' },
-    { id: 'chat', label: t(lang, 'navChat'), shortLabel: lang === 'en' ? 'Chat' : 'المحادثات', iconId: 'shield' },
     { id: 'games', label: t(lang, 'navGames'), shortLabel: lang === 'en' ? '3D Games' : 'الألعاب', iconId: 'games' },
-    { id: 'services', label: t(lang, 'navServices'), shortLabel: lang === 'en' ? 'Store' : 'المتجر', iconId: 'services' },
     { id: 'notifications', label: t(lang, 'navNotifications'), shortLabel: lang === 'en' ? 'Alerts' : 'الإشعارات', iconId: 'notifications' },
-    { id: 'assistant', label: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي', iconId: 'assistant' },
-    { id: 'family', label: t(lang, 'navFamily'), shortLabel: lang === 'en' ? 'Family' : 'العائلة', iconId: 'family' },
-    { id: 'settings', label: lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات', shortLabel: lang === 'en' ? 'Profile' : 'الحساب', iconId: 'settings' },
   ];
 
   const childToDelete = useMemo(
@@ -1398,63 +1444,10 @@ export default function App() {
 
 
 
-        {/* Main Workspace Container (Sidebar + Content Canvas) */}
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-7 pt-6 pb-8 grid grid-cols-1 lg:grid-cols-[256px_1fr] gap-7 items-start">
-          {/* Sidebar Navigation with 3D Icon Family */}
-          <aside className="hidden lg:block sticky top-20 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 soft-card-surface">
-            <div className="pb-3.5 border-b border-[var(--color-border)] space-y-2.5">
-              <div className="text-sm font-extrabold text-[var(--color-text)]">
-                {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
-              </div>
-              <div
-                style={{
-                  backgroundColor: parentProfileSpec.badgeBgCss,
-                  color: parentProfileSpec.badgeTextCss,
-                  borderColor: parentProfileSpec.badgeBorderCss,
-                }}
-                className="px-2.5 py-1 rounded-xl border text-[11px] font-extrabold inline-flex items-center gap-1.5"
-              >
-                <SoftFilledIcon id="family" size={14} />
-                <span>{lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}</span>
-              </div>
-              <button
-                id="open-onboarding-wizard-btn"
-                type="button"
-                onClick={() => setOnboardingModalOpen(true)}
-                className="w-full py-2.5 px-3 rounded-xl text-xs font-extrabold bg-[var(--color-accent-soft)] text-[var(--color-role-text)] border border-[var(--color-accent)]/30 hover:bg-[var(--color-accent)] hover:text-white transition-colors flex items-center justify-center gap-1.5"
-              >
-                <SoftFilledIcon id="sparkles" size={16} />
-                <span>{lang === 'en' ? 'Account & Profile Setup' : 'إعدادات الحساب السريعة'}</span>
-              </button>
-            </div>
-
-            <nav
-              className="grid gap-1.5"
-              aria-label={lang === 'en' ? 'Platform navigation' : 'قائمة أقسام المنصة'}
-            >
-              {navItems.map((item) => {
-                const active = activePage === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => navigateTo(item.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-colors text-start whitespace-nowrap ${
-                      active
-                        ? 'bg-[var(--color-accent-soft)] text-[var(--color-text)] font-extrabold shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:bg-[var(--color-control-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    <ThreeDIcon id={item.iconId} size={22} />
-                    <span className="truncate">{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </aside>
-
+        {/* Main Workspace Container (Centralized Master Slide Bar Architecture) */}
+        <div className="max-w-[1180px] mx-auto px-4 sm:px-7 pt-5 pb-8">
           {/* Main Viewport */}
-          <main key={activePage} className="min-w-0 space-y-8 animate-page-enter">
+          <main key={activePage} className="min-w-0 space-y-6 animate-page-enter">
             {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
             {(() => {
               const innerScreenMeta: Partial<
@@ -1683,6 +1676,12 @@ export default function App() {
                 onShowToast={showToast}
                 bedtimeMode={bedtimeMode}
                 onToggleBedtimeMode={handleToggleBedtimeMode}
+                onOpenStoreCategory={(catId: string) => {
+                  setStoreInitialCategoryId(catId);
+                  setStoreInitialOpenCheckout(false);
+                  navigateTo('services');
+                }}
+                onReplaySplash={handleReplaySplashScreen}
               />
             )}
 
@@ -1924,6 +1923,8 @@ export default function App() {
                   cart={state.cart}
                   shippingAddress={state.shippingAddress}
                   orders={state.orders}
+                  initialCategoryId={storeInitialCategoryId}
+                  initialOpenCheckout={storeInitialOpenCheckout}
                   onAddProductToWishes={(item) =>
                     handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                   }
@@ -2007,6 +2008,8 @@ export default function App() {
                 city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
                 language={state.language}
                 darkMode={Boolean(state.darkMode)}
+                initialModelId={aiInitialModelId}
+                initialHistoryOpen={aiInitialHistoryOpen}
                 onAddSuggestedRoutineTask={(taskName, timeStr, kidId) => {
                   setState((prev) => ({
                     ...prev,
@@ -2212,47 +2215,175 @@ export default function App() {
               />
             )}
 
-            {/* COMPACT SINGLE-LINE MINIMALIST FOOTER */}
+            {/* MINIMALIST OFFICIAL BRAND ICONS & LEGAL FOOTER */}
             <footer
               data-testid="minimalist-footer"
-              className="pt-3 pb-1 border-t border-[var(--color-border)]/60 flex flex-wrap items-center justify-between gap-2 text-[11px] font-normal text-[var(--color-muted)]"
-              aria-label={lang === 'en' ? 'Policies & Support Footer' : 'تذييل السياسات والتواصل'}
+              className="pt-4 pb-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-normal text-[var(--color-muted)]"
+              aria-label={lang === 'en' ? 'Social Media, Policies & Support Footer' : 'تذييل التواصل الاجتماعي والسياسات'}
             >
-              <div className="inline-flex items-center gap-1.5">
-                <span>© 2026</span>
-                <span aria-hidden="true">·</span>
-                <span>{lang === 'en' ? 'All Rights Reserved' : 'جميع الحقوق محفوظة'}</span>
+              {/* Official Social Media Brand SVG Icons (Theme-Colored, Zero Text Clutter) */}
+              <div
+                data-testid="social-media-footer-links"
+                className="flex flex-wrap items-center justify-center gap-2"
+              >
+                {[
+                  {
+                    id: 'facebook',
+                    name: 'Facebook',
+                    labelAr: 'فيسبوك',
+                    href: '#social-facebook',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H7.7v3h2.5V21h3.3z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'instagram',
+                    name: 'Instagram',
+                    labelAr: 'إنستجرام',
+                    href: '#social-instagram',
+                    svg: (
+                      <svg className="w-4 h-4 fill-none stroke-current stroke-[2]" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="5" />
+                        <circle cx="12" cy="12" r="4" />
+                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'twitter-x',
+                    name: 'Twitter / X',
+                    labelAr: 'إكس (تويتر)',
+                    href: '#social-x',
+                    svg: (
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'tiktok',
+                    name: 'TikTok',
+                    labelAr: 'تيك توك',
+                    href: '#social-tiktok',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'youtube',
+                    name: 'YouTube',
+                    labelAr: 'يوتيوب',
+                    href: '#social-youtube',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21.58 7.19a2.75 2.75 0 00-1.94-1.95C17.92 4.8 12 4.8 12 4.8s-5.92 0-7.64.44a2.75 2.75 0 00-1.94 1.95C2 8.9 2 12 2 12s0 3.1.42 4.81a2.75 2.75 0 001.94 1.95c1.72.44 7.64.44 7.64.44s5.92 0 7.64-.44a2.75 2.75 0 001.94-1.95C22 15.1 22 12 22 12s0-3.1-.42-4.81zM10 15.15V8.85L15.5 12 10 15.15z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'whatsapp',
+                    name: 'WhatsApp',
+                    labelAr: 'واتساب',
+                    href: '#social-whatsapp',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12.04 2a9.9 9.9 0 00-8.53 14.9L2 22l5.25-1.38a9.9 9.9 0 104.79-18.62zm5.47 14.12c-.23.65-1.34 1.24-1.88 1.32-.5.07-1.13.1-1.83-.12a16.8 16.8 0 01-6.24-4.23c-1.57-1.82-2.4-3.5-2.4-4.78 0-1.26.67-1.9 1.02-2.25.25-.25.55-.32.73-.32h.54c.18 0 .42-.06.65.5.24.58.8 1.96.87 2.1.07.14.12.31.02.5-.1.2-.15.32-.3.5-.14.16-.3.36-.43.49-.14.14-.3.3-.13.59.17.3.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.36 1.46.3.14.47.12.64-.07.18-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.28.1 1.76.83 2.06.98.3.15.5.22.58.35.07.12.07.72-.16 1.37z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'linkedin',
+                    name: 'LinkedIn',
+                    labelAr: 'لينكد إن',
+                    href: '#social-linkedin',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'snapchat',
+                    name: 'Snapchat',
+                    labelAr: 'سناب شات',
+                    href: '#social-snapchat',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2.5c-3.1 0-5.4 2.2-5.4 5.4v2.3c-.4.2-.9.3-1.4.3-.6 0-1.1.4-1.1.9 0 .6.6 1 1.4 1.2.1.4-.4 1.6-2 2.6-.4.2-.6.6-.5 1 .1.4.6.7 1.3.8.5.1.9.3 1.1.8.2.5.6.7 1.3.7.7 0 1.4-.2 2.3-.2.9 0 1.8.5 3 .5s2.1-.5 3-.5c.9 0 1.6.2 2.3.2.7 0 1.1-.2 1.3-.7.2-.5.6-.7 1.1-.8.7-.1 1.2-.4 1.3-.8.1-.4-.1-.8-.5-1-1.6-1-2.1-2.2-2-2.6.8-.2 1.4-.6 1.4-1.2 0-.5-.5-.9-1.1-.9-.5 0-1-.1-1.4-.3V7.9c0-3.2-2.3-5.4-5.4-5.4z" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    id: 'telegram',
+                    name: 'Telegram',
+                    labelAr: 'تيليجرام',
+                    href: '#social-telegram',
+                    svg: (
+                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21.4 3.4L2.7 10.6c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 11.1-7c.5-.3 1-.1.6.2l-9 8.1-.3 4.6c.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8L22.6 4.6c.3-1.2-.5-1.7-1.2-1.2z" />
+                      </svg>
+                    ),
+                  },
+                ].map((social) => (
+                  <a
+                    key={social.id}
+                    href={social.href}
+                    data-social-platform={social.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      showToast(
+                        lang === 'en'
+                          ? `Nekbaar official ${social.name} channel — ready for link customization`
+                          : `قناة نكبر الرسمية على ${social.labelAr} (${social.name})`
+                      );
+                    }}
+                    title={lang === 'en' ? social.name : social.labelAr}
+                    aria-label={lang === 'en' ? social.name : social.labelAr}
+                    className="w-9 h-9 rounded-xl border border-teal-500/25 dark:border-[#1E3646] bg-teal-50/60 dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] dark:hover:text-white flex items-center justify-center shadow-2xs transition-all active:scale-90"
+                  >
+                    {social.svg}
+                  </a>
+                ))}
               </div>
 
-              <div className="inline-flex flex-wrap items-center gap-2.5">
+              {/* Copyright & Legal Links Row */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
+                <div className="inline-flex items-center gap-1.5">
+                  <span className="font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {lang === 'en' ? 'Nekbaar' : 'نكبر'}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <span>© 2026</span>
+                </div>
+                <span aria-hidden="true" className="opacity-50">·</span>
                 <button
                   type="button"
                   onClick={() => navigateTo('privacy')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
                     activePage === 'privacy' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
                   {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
                 </button>
-                <span aria-hidden="true" className="opacity-50">
-                  ·
-                </span>
+                <span aria-hidden="true" className="opacity-50">·</span>
                 <button
                   type="button"
                   onClick={() => navigateTo('terms')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
                     activePage === 'terms' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
                   {lang === 'en' ? 'Terms & IP Rights' : 'الشروط وحقوق الملكية'}
                 </button>
-                <span aria-hidden="true" className="opacity-50">
-                  ·
-                </span>
+                <span aria-hidden="true" className="opacity-50">·</span>
                 <button
                   type="button"
                   onClick={() => navigateTo('contact')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors ${
+                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
                     activePage === 'contact' ? 'text-[var(--color-text)] underline font-medium' : ''
                   }`}
                 >
@@ -2553,8 +2684,37 @@ export default function App() {
           }}
           onOpenCartFromDrawer={() => {
             setRoleModalOpen(false);
+            setStoreInitialOpenCheckout(true);
             navigateTo('services');
           }}
+          onOpenWishesFromDrawer={() => {
+            setRoleModalOpen(false);
+            navigateTo('wishes');
+          }}
+          onToggleLanguageFromDrawer={handleToggleTopLanguage}
+          onNavigateFromDrawer={(targetPage) => {
+            setRoleModalOpen(false);
+            navigateTo(targetPage);
+          }}
+          onOpenStoreCategoryFromDrawer={(catId) => {
+            setRoleModalOpen(false);
+            setStoreInitialCategoryId(catId);
+            setStoreInitialOpenCheckout(false);
+            navigateTo('services');
+          }}
+          onSelectAiSubActionFromDrawer={(action) => {
+            setRoleModalOpen(false);
+            if (action.modelId) {
+              setAiInitialModelId(action.modelId);
+            }
+            setAiInitialHistoryOpen(Boolean(action.openHistory));
+            navigateTo('assistant');
+          }}
+          onReplaySplashFromDrawer={() => {
+            setRoleModalOpen(false);
+            handleReplaySplashScreen();
+          }}
+          activePage={activePage}
           onSelectPreciseCity={handleSelectPreciseCity}
           onUseCurrentLocation={handleUseCurrentLocation}
           geoStatus={geoStatus}
@@ -2763,6 +2923,15 @@ export default function App() {
         <TaskFestivalCelebrationOverlay
           celebration={festivalCelebration}
           language={state.language}
+        />
+
+        {/* 4-Second Interactive Glassmorphic Splash / Opening Intro Screen */}
+        <InteractiveSplashScreen
+          visible={splashScreen.visible}
+          fadingOut={splashScreen.fadingOut}
+          language={state.language}
+          darkMode={Boolean(state.darkMode)}
+          onSkipOrFinish={handleDismissSplashScreen}
         />
 
         {/* Global Toast / Snackbar Micro-feedback */}

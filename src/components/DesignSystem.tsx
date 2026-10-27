@@ -737,25 +737,33 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
       role="status"
       aria-live="polite"
       aria-busy={!fadingOut}
-      className={`fixed inset-0 z-[80] pointer-events-none flex items-center justify-center p-4 transition-all duration-200 ease-out ${
+      className={`fixed inset-0 z-[80] pointer-events-none flex items-center justify-center p-5 sm:p-6 transition-all duration-200 ease-out ${
         fadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
       }`}
       style={{
-        backgroundColor: 'rgba(11, 19, 26, 0.18)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
+        backgroundColor: 'rgba(11, 19, 26, 0.34)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
       }}
     >
-      <div className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-6 py-5 shadow-[0_20px_50px_-12px_rgba(11,19,26,0.38)] flex flex-col items-center justify-center gap-3 min-w-[210px] max-w-[280px] text-center">
-        <PlayfulChildLoaderSvg size={68} />
+      <div className="w-[88vw] max-w-[340px] sm:max-w-[380px] rounded-[34px] border border-white/80 dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-7 py-7 sm:px-9 sm:py-8 shadow-[0_28px_64px_-12px_rgba(11,19,26,0.48)] flex flex-col items-center justify-center gap-4 text-center">
+        <div className="relative flex items-center justify-center">
+          <span
+            aria-hidden="true"
+            className="animate-nav-loader-pulse-ring absolute w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-[#0d9488]/25 via-[#FF8C61]/20 to-[#FBBF24]/25"
+          />
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-b from-amber-50/90 to-teal-50/80 dark:from-[#142430] dark:to-[#0B131A] border border-teal-500/25 dark:border-[#1E3646] flex items-center justify-center shadow-md">
+            <PlayfulChildLoaderSvg size={88} />
+          </div>
+        </div>
 
-        <div className="space-y-1.5 w-full">
-          <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+        <div className="space-y-2.5 w-full pt-1">
+          <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
             {displayLabel}
           </div>
 
-          {/* Minimal Glowing Progress Indicator */}
-          <div className="w-36 mx-auto h-1.5 rounded-full bg-slate-200/80 dark:bg-[#142430] overflow-hidden">
+          {/* Enlarged Glowing Progress Indicator */}
+          <div className="w-48 sm:w-56 mx-auto h-2 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
             <div className="animate-nav-progress h-full w-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61]" />
           </div>
         </div>
@@ -1231,6 +1239,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
     return () => obs.disconnect();
   }, [darkMode]);
 
+  const [showMetaDetails, setShowMetaDetails] = useState<boolean>(false);
   const isDark = darkMode !== undefined ? darkMode : domDark;
   const toneClasses = PASTEL_CARD_TONES[tone] || PASTEL_CARD_TONES.teal;
   const resolvedStockUrl = customImageUrl || getProductUnsplashImageUrl(categoryKey, itemIdOrIndex);
@@ -1243,7 +1252,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
       data-master-card="true"
       className={`rounded-2xl sm:rounded-3xl border ${toneClasses.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-4 sm:p-5 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group ${className}`}
     >
-      <div className="space-y-1.5">
+      <div className="space-y-1.5" data-card-layer="1-core">
         {/* Structured Top Image Thumbnail */}
         <div
           onClick={onThumbnailClick}
@@ -1309,14 +1318,31 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
                 {title}
               </h3>
             </div>
-            {titleRightSlot && <div className="shrink-0">{titleRightSlot}</div>}
+            {titleRightSlot ? (
+              <div className="shrink-0">{titleRightSlot}</div>
+            ) : metaLeft ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMetaDetails((prev) => !prev);
+                }}
+                aria-expanded={showMetaDetails}
+                className="px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-white/10 text-[9px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC] hover:opacity-90 shrink-0 cursor-pointer"
+              >
+                {showMetaDetails ? '▴' : 'ℹ️'}
+              </button>
+            ) : null}
           </div>
         </div>
 
-        {/* Compact Metadata Strip */}
-        {(metaLeft || metaRightAction) && (
-          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5">
-            <div className="flex items-center gap-1 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar">
+        {/* Layer 3 (Metadata & Tags Carousel): Hidden by default, revealed only on explicit user trigger */}
+        {showMetaDetails && (metaLeft || metaRightAction) && (
+          <div
+            data-card-layer="3-metadata-carousel"
+            className="flex items-center justify-between gap-2 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5 min-w-0 animate-fade-in"
+          >
+            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5">
               {metaLeft}
             </div>
             {metaRightAction && <div className="shrink-0 ms-auto">{metaRightAction}</div>}
@@ -1331,11 +1357,14 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
         )}
       </div>
 
-      {/* Bottom Price/Metric + Action Buttons */}
+      {/* Layer 2 (Action Footer): Fixed, non-overlapping horizontal action row for primary buttons */}
       {(footerLeft || footerRight) && (
-        <div className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
-          <div className="min-w-0 flex-1">{footerLeft}</div>
-          <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 ms-auto">
+        <div
+          data-card-layer="2-action-footer"
+          className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2 min-w-0"
+        >
+          <div className="min-w-0 flex-1 truncate">{footerLeft}</div>
+          <div className="flex items-center justify-end gap-1.5 shrink-0 ms-auto">
             {footerRight}
           </div>
         </div>
@@ -1621,4 +1650,225 @@ export const StarOfTheDayCrownBadge: React.FC<StarOfTheDayCrownBadgeProps> = ({
     </span>
   );
 };
+
+export interface InteractiveSplashScreenProps {
+  visible: boolean;
+  fadingOut?: boolean;
+  language: LanguageCode;
+  darkMode?: boolean;
+  onSkipOrFinish: () => void;
+}
+
+const SPLASH_VALUE_PROPOSITIONS: Array<{
+  id: string;
+  badgeAr: string;
+  badgeEn: string;
+  titleAr: string;
+  titleEn: string;
+  descAr: string;
+  descEn: string;
+  icon: string;
+}> = [
+  {
+    id: 'vp-smart',
+    badgeAr: '✨ رعاية ذكية متكاملة',
+    badgeEn: '✨ Smart Family Care',
+    titleAr: 'رفيقك الذكي لتربية صحية',
+    titleEn: 'Your Smart Companion for Healthy Parenting',
+    descAr: 'خطط يومية مخصصة، متابعة نمو ثلاثية الأبعاد، ومساعد ذكي يفهم احتياجات طفلك من يوم لـ ٨ سنين.',
+    descEn: 'Personalized daily plans, 3D growth tracking, and a smart AI assistant for ages 0–8.',
+    icon: '🧸',
+  },
+  {
+    id: 'vp-all-in-one',
+    badgeAr: '🏡 منظومة العيلة الشاملة',
+    badgeEn: '🏡 All-in-One Family Hub',
+    titleAr: 'كل احتياجات أسرتك في مكان واحد',
+    titleEn: 'All Your Family Needs in One Place',
+    descAr: 'روتين يومي، تقويم مشترك، شات العيلة، ريلز تربوية، وألعاب مونتيسوري وتنمية مهارات.',
+    descEn: 'Daily routines, shared calendar, family chat, parenting reels, and Montessori toys.',
+    icon: '🌟',
+  },
+  {
+    id: 'vp-trusted',
+    badgeAr: '🩺 شبكة موثوقة ومعتمدة',
+    badgeEn: '🩺 Verified & Trusted Network',
+    titleAr: 'دكاترة، حضانات ومتاجر موثوقة',
+    titleEn: 'Verified Doctors, Nurseries & Trusted Stores',
+    descAr: 'احجز أقرب دكتور أطفال أو حضانة معتمدة واطلب مستلزمات طفلك بتوصيل سريع لباب البيت.',
+    descEn: 'Book top pediatricians & verified nurseries or order baby essentials with express delivery.',
+    icon: '🚀',
+  },
+];
+
+/**
+ * 4-Second Interactive Opening / Splash Intro Screen for نكبر (Nekbaar).
+ * Features warm glassmorphic gradients, central animated child SVG, cycling value-proposition subtitles,
+ * interactive pill selector, and a touch-friendly "تخطي / Skip" button.
+ */
+export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
+  visible,
+  fadingOut = false,
+  language,
+  darkMode = false,
+  onSkipOrFinish,
+}) => {
+  const isEn = language === 'en';
+  const [activeSlideIdx, setActiveSlideIdx] = useState(0);
+
+  useEffect(() => {
+    if (!visible) return;
+    setActiveSlideIdx(0);
+    const interval = window.setInterval(() => {
+      setActiveSlideIdx((prev) => (prev + 1) % SPLASH_VALUE_PROPOSITIONS.length);
+    }, 1250);
+    return () => window.clearInterval(interval);
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const currentSlide =
+    SPLASH_VALUE_PROPOSITIONS[activeSlideIdx] || SPLASH_VALUE_PROPOSITIONS[0];
+
+  return (
+    <div
+      id="nekbaar-interactive-splash-screen"
+      data-testid="nekbaar-interactive-splash-screen"
+      dir={isEn ? 'ltr' : 'rtl'}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isEn ? 'Welcome to Nekbaar' : 'مرحباً بك في نكبر'}
+      className={`fixed inset-0 z-[130] flex flex-col items-center justify-between p-5 sm:p-8 overflow-hidden select-none transition-opacity duration-300 ${
+        fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}
+      style={{
+        background: darkMode
+          ? 'radial-gradient(circle at 50% 22%, rgba(13, 148, 136, 0.28) 0%, rgba(255, 140, 97, 0.16) 38%, rgba(11, 19, 26, 0.98) 82%), #0B131A'
+          : 'radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.85) 0%, rgba(204, 251, 241, 0.65) 45%, rgba(248, 250, 252, 0.98) 88%), #F8FAFC',
+      }}
+    >
+      {/* Ambient Floating Decorative Glow Blobs */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 -start-24 w-72 h-72 rounded-full bg-teal-400/20 dark:bg-teal-500/15 blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-24 -end-24 w-80 h-80 rounded-full bg-orange-400/20 dark:bg-orange-500/15 blur-3xl"
+      />
+
+      {/* Top Row: Brand Pill & Interactive Skip Button */}
+      <div className="relative z-10 w-full max-w-xl flex items-center justify-between gap-3 pt-1">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal-500/30 bg-white/85 dark:bg-[#101D26]/90 backdrop-blur-md shadow-xs">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488] animate-ping" />
+          <span className="text-xs sm:text-sm font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+            {isEn ? 'Super Family Platform · Ages 0–8' : 'منصة الأسرة الذكية · من يوم لـ ٨ سنوات'}
+          </span>
+        </div>
+
+        <button
+          id="splash-skip-btn"
+          data-testid="splash-skip-btn"
+          type="button"
+          onClick={onSkipOrFinish}
+          className="min-h-[44px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/95 dark:bg-[#142430]/95 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
+        >
+          <span>{isEn ? 'Skip' : 'تخطي'}</span>
+          <span aria-hidden="true">{isEn ? '→' : '←'}</span>
+        </button>
+      </div>
+
+      {/* Center Stage: Enlarged Mobile-First Glassmorphic Showcase Card */}
+      <div className="relative z-10 w-full max-w-xl my-auto rounded-[36px] border border-white/85 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26]/92 backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 shadow-[0_28px_70px_-15px_rgba(13,148,136,0.3)] dark:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.8)] flex flex-col items-center text-center space-y-6">
+        {/* Enlarged Animated Playful Child SVG with Warm Glowing Aura */}
+        <div className="relative flex items-center justify-center">
+          <span
+            aria-hidden="true"
+            className="animate-nav-loader-pulse-ring absolute w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-[#0d9488]/28 via-[#FF8C61]/25 to-[#FBBF24]/30"
+          />
+          <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-[32px] bg-gradient-to-b from-amber-50/95 to-teal-50/85 dark:from-[#142430] dark:to-[#0B131A] border-2 border-amber-200/80 dark:border-[#1E3646] flex items-center justify-center shadow-lg">
+            <PlayfulChildLoaderSvg size={110} />
+          </div>
+        </div>
+
+        {/* Primary Brand Identity */}
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2.5 justify-center">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
+              {isEn ? 'Nekbaar' : 'نكبر'}
+            </h1>
+            <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-black bg-[#FF8C61]/15 text-[#E86A3D] dark:text-[#FF8C61] border border-[#FF8C61]/30">
+              {isEn ? 'نكبر' : 'Nekbaar'}
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+            {isEn
+              ? 'Growing together with love, smart tools & trusted care'
+              : 'بنكبر سوا خطوة بخطوة مع أولادنا بحب ووعي وراحة بال'}
+          </p>
+        </div>
+
+        {/* Cycling Value Proposition Card with Smooth Keyed Fade Transition */}
+        <div
+          key={currentSlide.id}
+          className="w-full rounded-3xl border border-teal-500/25 dark:border-[#1E3646] bg-gradient-to-br from-teal-50/80 via-white to-amber-50/70 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-5 sm:p-6 space-y-2 animate-page-enter min-h-[146px] flex flex-col items-center justify-center shadow-xs"
+        >
+          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-[#0d9488]/12 text-[#0f766e] dark:text-[#5EEAD4]">
+            {isEn ? currentSlide.badgeEn : currentSlide.badgeAr}
+          </span>
+          <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+            {currentSlide.icon} {isEn ? currentSlide.titleEn : currentSlide.titleAr}
+          </h2>
+          <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed max-w-md">
+            {isEn ? currentSlide.descEn : currentSlide.descAr}
+          </p>
+        </div>
+
+        {/* Interactive Slide Dots + 4-Second Progress Bar */}
+        <div className="w-full space-y-3.5 pt-1">
+          <div className="flex items-center justify-center gap-2.5">
+            {SPLASH_VALUE_PROPOSITIONS.map((sl, idx) => {
+              const isActive = idx === activeSlideIdx;
+              return (
+                <button
+                  key={sl.id}
+                  type="button"
+                  onClick={() => setActiveSlideIdx(idx)}
+                  aria-label={isEn ? sl.titleEn : sl.titleAr}
+                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
+                    isActive
+                      ? 'w-9 bg-[#0d9488] dark:bg-[#2DD4BF]'
+                      : 'w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-teal-400'
+                  }`}
+                />
+              );
+            })}
+          </div>
+
+          <div className="w-full h-2 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#FF8C61] to-[#FBBF24] transition-all duration-500"
+              style={{ width: `${((activeSlideIdx + 1) / SPLASH_VALUE_PROPOSITIONS.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Enter CTA */}
+      <div className="relative z-10 w-full max-w-xl flex items-center justify-center pb-1">
+        <button
+          type="button"
+          onClick={onSkipOrFinish}
+          className="w-full min-h-[52px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0d9488] to-[#0f766e] hover:from-[#0f766e] hover:to-[#115e59] text-white font-black text-sm sm:text-base shadow-lg transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+        >
+          <span>
+            {isEn ? 'Enter Nekbaar Now' : 'ابدأ رحلتك الآن في نكبر'}
+          </span>
+          <span aria-hidden="true">✨</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
