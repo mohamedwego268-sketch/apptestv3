@@ -727,8 +727,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 onChange={(e) => setNewStoryText(e.target.value)}
                 placeholder={
                   isEn
-                    ? 'e.g., Ezz finished his healthy lunchbox and read a bedtime story!'
-                    : 'مثال: الحمد لله عز خلص اللانش بوكس الصحي وقرينا قصة قبل النوم بهدوء!'
+                    ? 'e.g., Today Hamza smiled during tummy time, Laila painted a rainbow, and Youssef built a robot!'
+                    : 'مثال: الحمد لله اليوم حمزة ابتسم في تمارين البطن، وليلى رسمت قوس قزح، ويوسف خلص تمرين الكرة!'
                 }
                 className="w-full rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-3 text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
               />
@@ -753,126 +753,128 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         </div>
       )}
 
-      {/* Full-Screen Interactive Story Viewer Modal (Strictly Mobile Viewport Bounded & Safe-Area Aware) */}
+      {/* Full-Screen Interactive Story Viewer Modal (Strictly Mobile Viewport Bounded & Hovering Above Nav Bar) */}
       {activeModalStory && (
         <div
           id="community-story-viewer-modal"
           data-testid="community-story-viewer-modal"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md px-3 sm:px-4 pt-[max(env(safe-area-inset-top,12px),12px)] pb-[calc(env(safe-area-inset-bottom,12px)+5rem)] lg:pb-6 overflow-hidden"
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md animate-fade-in"
           onClick={() => setStoryModalId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-sm flex-1 max-h-full rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between"
+            className="fixed inset-0 z-50 max-w-md mx-auto flex flex-col justify-between overflow-hidden pt-[max(env(safe-area-inset-top,12px),12px)] pb-[calc(env(safe-area-inset-bottom,12px)+5rem)] lg:pb-6 px-3 sm:px-4"
           >
-            <img
-              src={activeModalStory.imageUrl}
-              alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
-              className="absolute inset-0 w-full h-full object-cover opacity-55 pointer-events-none"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/40 to-black/90 pointer-events-none"
-            />
+            <div className="relative w-full h-full rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between">
+              <img
+                src={activeModalStory.imageUrl}
+                alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
+                className="absolute inset-0 w-full h-full object-cover opacity-55 pointer-events-none"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/40 to-black/90 pointer-events-none"
+              />
 
-            {/* Story Top Progress Segments & Author Header */}
-            <div className="relative z-10 p-3.5 sm:p-4 space-y-2.5 shrink-0">
-              <div className="flex items-center gap-1.5">
-                {familyStoryReels.map((s, idx) => (
-                  <div
-                    key={s.id}
-                    className="flex-1 h-1.5 rounded-full bg-white/25 overflow-hidden"
-                  >
+              {/* Story Top Progress Segments & Author Header */}
+              <div className="relative z-10 p-3.5 sm:p-4 space-y-2.5 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  {familyStoryReels.map((s, idx) => (
                     <div
-                      className={`h-full rounded-full transition-all ${
-                        idx <= modalStoryIndex ? 'w-full bg-[#2DD4BF]' : 'w-0'
-                      }`}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <span className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF8C61] to-[#0d9488] flex items-center justify-center text-lg shrink-0">
-                    {activeModalStory.emoji}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs sm:text-sm font-black leading-snug break-words">
-                      {isEn ? activeModalStory.authorEn : activeModalStory.authorAr}
+                      key={s.id}
+                      className="flex-1 h-1.5 rounded-full bg-white/25 overflow-hidden"
+                    >
+                      <div
+                        className={`h-full rounded-full transition-all ${
+                          idx <= modalStoryIndex ? 'w-full bg-[#2DD4BF]' : 'w-0'
+                        }`}
+                      />
                     </div>
-                    <div className="text-[11px] font-bold text-amber-300 leading-snug break-words">
-                      {isEn ? activeModalStory.roleEn : activeModalStory.roleAr}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setStoryModalId(null)}
-                  aria-label={isEn ? 'Close story' : 'إغلاق الستوري'}
-                  className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-white text-base font-black flex items-center justify-center cursor-pointer shrink-0"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
 
-            {/* Story Center Content (Scrollable safely if content is long on compact screens) */}
-            <div className="relative z-10 px-5 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
-              <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
-              <h4 className="text-base sm:text-xl font-black leading-snug break-words">
-                {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
-              </h4>
-              <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-relaxed break-words">
-                {isEn ? activeModalStory.summaryEn : activeModalStory.summaryAr}
-              </p>
-            </div>
-
-            {/* Story Footer Controls & Quick Reactions */}
-            <div className="relative z-10 p-3.5 sm:p-4 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
-              <div className="flex items-center gap-1.5">
-                {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF8C61] to-[#0d9488] flex items-center justify-center text-lg shrink-0">
+                      {activeModalStory.emoji}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-black leading-snug break-words">
+                        {isEn ? activeModalStory.authorEn : activeModalStory.authorAr}
+                      </div>
+                      <div className="text-[11px] font-bold text-amber-300 leading-snug break-words">
+                        {isEn ? activeModalStory.roleEn : activeModalStory.roleAr}
+                      </div>
+                    </div>
+                  </div>
                   <button
-                    key={reactEmoji}
                     type="button"
-                    onClick={() =>
-                      onShowToast(
-                        isEn
-                          ? `Sent ${reactEmoji} reaction to ${activeModalStory.authorEn}!`
-                          : `تم إرسال تفاعل ${reactEmoji} على حالة ${activeModalStory.authorAr}!`
-                      )
-                    }
-                    className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-base flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
+                    onClick={() => setStoryModalId(null)}
+                    aria-label={isEn ? 'Close story' : 'إغلاق الستوري'}
+                    className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-white text-base font-black flex items-center justify-center cursor-pointer shrink-0"
                   >
-                    {reactEmoji}
+                    ×
                   </button>
-                ))}
+                </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const prevIdx =
-                      (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
-                    setStoryModalId(familyStoryReels[prevIdx].id);
-                  }}
-                  className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold cursor-pointer"
-                >
-                  {isEn ? 'Prev' : 'السابق'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
-                    setStoryModalId(familyStoryReels[nextIdx].id);
-                  }}
-                  className="min-h-[44px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-xs font-extrabold cursor-pointer"
-                >
-                  {isEn ? 'Next' : 'التالي'}
-                </button>
+              {/* Story Center Content (Scrollable safely if content is long on compact screens) */}
+              <div className="relative z-10 px-5 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
+                <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
+                <h4 className="text-base sm:text-xl font-black leading-snug break-words">
+                  {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
+                </h4>
+                <p className="text-xs sm:text-sm font-semibold text-slate-100 leading-relaxed break-words">
+                  {isEn ? activeModalStory.summaryEn : activeModalStory.summaryAr}
+                </p>
+              </div>
+
+              {/* Story Footer Controls & Quick Reactions */}
+              <div className="relative z-10 p-3.5 sm:p-4 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
+                <div className="flex items-center gap-1.5">
+                  {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
+                    <button
+                      key={reactEmoji}
+                      type="button"
+                      onClick={() =>
+                        onShowToast(
+                          isEn
+                            ? `Sent ${reactEmoji} reaction to ${activeModalStory.authorEn}!`
+                            : `تم إرسال تفاعل ${reactEmoji} على حالة ${activeModalStory.authorAr}!`
+                        )
+                      }
+                      className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-base flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
+                    >
+                      {reactEmoji}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prevIdx =
+                        (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
+                      setStoryModalId(familyStoryReels[prevIdx].id);
+                    }}
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold cursor-pointer"
+                  >
+                    {isEn ? 'Prev' : 'السابق'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
+                      setStoryModalId(familyStoryReels[nextIdx].id);
+                    }}
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-xs font-extrabold cursor-pointer"
+                  >
+                    {isEn ? 'Next' : 'التالي'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

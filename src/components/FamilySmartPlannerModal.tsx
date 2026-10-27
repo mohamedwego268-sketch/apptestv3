@@ -182,7 +182,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const isEn = lang === 'en';
   const isMom = role === 'mom';
   const parentCalloutAr = isMom ? 'يا ماما' : 'يا بابا';
-  const parentFullCalloutAr = isMom ? 'ماما سارة' : 'بابا أحمد';
+  const parentFullCalloutAr = isMom ? 'ماما مريم' : 'بابا أحمد';
 
   const todayDate = useMemo(() => new Date(), []);
   const todayIso = useMemo(() => toIsoDateString(todayDate), [todayDate]);
@@ -209,7 +209,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   // To-Do form state
   const [taskInputName, setTaskInputName] = useState('');
   const [taskInputTime, setTaskInputTime] = useState('18:00');
-  const [taskInputOwner, setTaskInputOwner] = useState<string>(isMom ? 'ماما سارة' : 'بابا أحمد');
+  const [taskInputOwner, setTaskInputOwner] = useState<string>(isMom ? 'ماما مريم' : 'بابا أحمد');
   const [taskInputKidId, setTaskInputKidId] = useState<string>('');
   const [taskInputCategory, setTaskInputCategory] = useState<string>('مهام الأسرة');
   const [editingTaskId, setEditingTaskId] = useState<number | undefined>(undefined);
@@ -341,7 +341,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const handleCycleTaskDelegation = (task: RoutineTask) => {
     const currentOwner = task.owner || 'بابا أحمد';
     const nextOwner = currentOwner.includes('بابا')
-      ? 'ماما سارة'
+      ? 'ماما مريم'
       : currentOwner.includes('ماما')
       ? 'مشترك'
       : 'بابا أحمد';
@@ -536,7 +536,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                 </h2>
                 <UnifiedBadge tone="teal" iconId="family">
                   {isEn
-                    ? `Welcome, ${isMom ? 'Mom Sara' : 'Dad Ahmed'}`
+                    ? `Welcome, ${isMom ? 'Mom Maryam' : 'Dad Ahmad'}`
                     : `منور ${parentCalloutAr} (${parentFullCalloutAr})`}
                 </UnifiedBadge>
               </div>
@@ -851,8 +851,8 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                         onChange={(e) => setEventTitle(e.target.value)}
                         placeholder={
                           isEn
-                            ? 'e.g. Laila Vaccination, School Meeting, Family Birthday'
-                            : 'مثال: تطعيم ليلى، اجتماع مدرسة عمر، عيد ميلاد تيتة...'
+                            ? 'e.g. Hamza 6m Vaccination, Laila Nursery Day, Youssef Football Match'
+                            : 'مثال: تطعيم حمزة (٦ شهور)، نشاط حضانة ليلى، مباراة كرة قدم يوسف...'
                         }
                         className="w-full h-10 px-3.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[#F8FAFC] dark:bg-[#142430] text-xs font-bold text-[#0B131A] dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
                       />
@@ -1249,7 +1249,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                         className="w-full h-9 px-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-xs font-bold text-[#0B131A] dark:text-[#F8FAFC]"
                       >
                         <option value="بابا أحمد">بابا أحمد</option>
-                        <option value="ماما سارة">ماما سارة</option>
+                        <option value="ماما مريم">ماما مريم</option>
                         <option value="مشترك">مشترك سوا</option>
                       </select>
                     </div>
@@ -1352,8 +1352,8 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                     {(
                       [
                         { id: 'all', labelAr: '👨‍👩‍👧‍👦 كل المهام', labelEn: '👨‍👩‍👧‍👦 All Owners' },
-                        { id: 'dad', labelAr: '👨 مهام بابا أحمد', labelEn: '👨 Dad Ahmed' },
-                        { id: 'mom', labelAr: '👩 مهام ماما سارة', labelEn: '👩 Mom Sara' },
+                        { id: 'dad', labelAr: '👨 مهام بابا أحمد', labelEn: '👨 Dad Ahmad' },
+                        { id: 'mom', labelAr: '👩 مهام ماما مريم', labelEn: '👩 Mom Maryam' },
                         { id: 'shared', labelAr: '🤝 مشترك سوا', labelEn: '🤝 Shared' },
                       ] as const
                     ).map((delTab) => (
@@ -1431,8 +1431,8 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                                   onClick={() => handleCycleTaskDelegation(task)}
                                   title={
                                     isEn
-                                      ? 'Tap to delegate between Dad, Mom & Shared'
-                                      : 'اضغط لتفويض المهمة بين بابا أحمد، ماما سارة، أو مشترك'
+                                      ? 'Tap to delegate between Dad Ahmad, Mom Maryam & Shared'
+                                      : 'اضغط لتفويض المهمة بين بابا أحمد، ماما مريم، أو مشترك'
                                   }
                                   className={`px-2 py-0.5 rounded-md border transition-all cursor-pointer inline-flex items-center gap-1 ${
                                     (task.owner || '').includes('ماما')

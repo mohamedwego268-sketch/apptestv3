@@ -732,7 +732,7 @@ textarea:focus-visible {
 @keyframes pageFadeSlideUp {
   0% {
     opacity: 0;
-    transform: translateY(8px) scale(0.992);
+    transform: translateY(10px) scale(0.994);
   }
   100% {
     opacity: 1;
@@ -743,7 +743,7 @@ textarea:focus-visible {
 @keyframes tabGentleFadeScale {
   0% {
     opacity: 0;
-    transform: translateY(5px) scale(0.994);
+    transform: translateY(6px) scale(0.995);
   }
   100% {
     opacity: 1;
@@ -752,12 +752,12 @@ textarea:focus-visible {
 }
 
 .animate-page-enter {
-  animation: pageFadeSlideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pageFadeSlideUp 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
 }
 
 .animate-tab-enter {
-  animation: tabGentleFadeScale 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tabGentleFadeScale 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity, transform;
 }
 

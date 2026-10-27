@@ -87,12 +87,10 @@ import {
 import {
   FullScreenNavigationLoader,
   GlobalToastSnackbar,
-  IndependentParentSessionGate,
   InnerScreenTopBar,
   InteractiveSplashScreen,
   PASTEL_CARD_TONES,
   SectionSkeletonLoader,
-  SoftFilledIcon,
   TaskFestivalCelebrationOverlay,
 } from './components/DesignSystem';
 import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
@@ -119,7 +117,6 @@ export default function App() {
     visible: boolean;
     fadingOut: boolean;
   }>({ visible: true, fadingOut: false });
-  const [sessionGateOpen, setSessionGateOpen] = useState<boolean>(false);
   const splashFadeTimerRef = React.useRef<number | null>(null);
   const splashHideTimerRef = React.useRef<number | null>(null);
   const [storeInitialCategoryId, setStoreInitialCategoryId] = useState<string | null>(null);
@@ -386,7 +383,7 @@ export default function App() {
         navHideTimerRef.current = window.setTimeout(() => {
           setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
           navHideTimerRef.current = null;
-        }, 180);
+        }, 200);
         navFadeTimerRef.current = null;
       }, renderReadyMs);
     } else {
@@ -1400,11 +1397,11 @@ export default function App() {
     showToast(
       isDad
         ? lang === 'en'
-          ? 'Signed in to Independent Session: Ahmed (Father)'
-          : 'تم تسجيل الدخول إلى الجلسة المستقلة: أحمد (الأب)'
+          ? 'Switched to Father View: Ahmad — Unified Family Compass'
+          : 'تم التبديل إلى عرض الأب: أحمد — في مساحة الأسرة المشتركة'
         : lang === 'en'
-        ? 'Signed in to Independent Session: Mariam (Mother)'
-        : 'تم تسجيل الدخول إلى الجلسة المستقلة: مريم (الأم)'
+        ? 'Switched to Mother View: Maryam — Unified Family Compass'
+        : 'تم التبديل إلى عرض الأم: مريم — في مساحة الأسرة المشتركة'
     );
   };
 
@@ -1704,27 +1701,12 @@ export default function App() {
                   navigateTo('services');
                 }}
                 onReplaySplash={handleReplaySplashScreen}
-                onOpenSessionLoginGate={() => setSessionGateOpen(true)}
+                onAddVoiceMoment={handleAddVoiceMomentToChild}
                 onToggleTaskDone={(taskId) => {
                   const target = state.tasks.find((tItem) => tItem.id === taskId);
                   if (target) {
                     handleToggleTask(taskId, !target.done);
                   }
-                }}
-                onUpdateParentPersonalNotes={(notes) => {
-                  setState((prev) => {
-                    const pid = prev.activeParentAccount;
-                    return {
-                      ...prev,
-                      parentAccounts: {
-                        ...prev.parentAccounts,
-                        [pid]: {
-                          ...prev.parentAccounts[pid],
-                          personalNotes: notes,
-                        },
-                      },
-                    };
-                  });
                 }}
               />
             )}
@@ -2211,7 +2193,6 @@ export default function App() {
                 showInnerSettings={showInnerSettings}
                 onToggleShowInnerSettings={() => setShowInnerSettings((prev) => !prev)}
                 onOpenOnboardingModal={() => setOnboardingModalOpen(true)}
-                onOpenSessionLoginGate={() => setSessionGateOpen(true)}
                 onNavigateTo={(page) => navigateTo(page)}
                 onToggleDarkMode={handleToggleDarkMode}
                 settingsParentName={settingsParentName}
@@ -2398,13 +2379,16 @@ export default function App() {
               </div>
 
               {/* Copyright & Legal Links Row */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5">
-                <div className="inline-flex items-center gap-1.5">
-                  <span className="font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {lang === 'en' ? 'Nekbaar' : 'نكبر'}
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+                <div
+                  data-testid="footer-brand-copyright"
+                  className="inline-flex items-center gap-1.5 font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  <span>
+                    {lang === 'en'
+                      ? 'نكبر (Nekbaar) © 2026 - A Space That Unites Us.. With Their Love We Grow'
+                      : 'نكبر (Nekbaar) © 2026 - مساحة تجمعنا.. وبحبهم نكبر'}
                   </span>
-                  <span aria-hidden="true">·</span>
-                  <span>© 2026</span>
                 </div>
                 <span aria-hidden="true" className="opacity-50">·</span>
                 <button
@@ -2767,9 +2751,9 @@ export default function App() {
           geoStatus={geoStatus}
           bedtimeMode={bedtimeMode}
           onToggleBedtimeMode={handleToggleBedtimeMode}
-          onSelectParentProfile={() => {
+          onSelectParentProfile={(role) => {
+            handleSelectParentProfile(role);
             setRoleModalOpen(false);
-            setSessionGateOpen(true);
           }}
           onEnableHighContrast={() => {
             setState((prev) => ({ ...prev, role: 'high-contrast', darkMode: false }));
@@ -2972,25 +2956,13 @@ export default function App() {
           language={state.language}
         />
 
-        {/* Minimalist Text-Free Splash Screen (Boy & Girl Animated Illustration) */}
+        {/* Minimalist Splash Screen (Boy & Girl Animated Illustration + Brand Name & Slogan) */}
         <InteractiveSplashScreen
           visible={splashScreen.visible}
           fadingOut={splashScreen.fadingOut}
           language={state.language}
           darkMode={Boolean(state.darkMode)}
           onSkipOrFinish={handleDismissSplashScreen}
-        />
-
-        {/* Independent Account Session Login Gate for Ahmed (Father) & Mariam (Mother) */}
-        <IndependentParentSessionGate
-          visible={sessionGateOpen}
-          language={state.language}
-          darkMode={Boolean(state.darkMode)}
-          activeAccount={state.activeParentAccount}
-          onAuthenticateParent={(account) => {
-            handleSelectParentProfile(account === 'father' ? 'dad' : 'mom');
-            setSessionGateOpen(false);
-          }}
         />
 
         {/* Global Toast / Snackbar Micro-feedback */}

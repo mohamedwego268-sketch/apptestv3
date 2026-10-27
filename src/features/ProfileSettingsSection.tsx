@@ -22,7 +22,6 @@ export interface ProfileSettingsSectionProps {
   showInnerSettings: boolean;
   onToggleShowInnerSettings: () => void;
   onOpenOnboardingModal: () => void;
-  onOpenSessionLoginGate?: () => void;
   onNavigateTo: (page: 'family' | 'children' | 'services' | 'notifications' | 'privacy' | 'terms' | 'contact') => void;
   onToggleDarkMode: () => void;
   settingsParentName: string;
@@ -61,7 +60,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   showInnerSettings,
   onToggleShowInnerSettings,
   onOpenOnboardingModal,
-  onOpenSessionLoginGate,
   onNavigateTo,
   onToggleDarkMode,
   settingsParentName,
@@ -96,7 +94,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
   return (
     <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات'}>
-      {/* Compact Profile Hero Warm Image Card with Father vs. Mother Independent Session Distinction */}
+      {/* Compact Profile Hero Warm Image Card for Unified Family Space */}
       <div
         className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5"
         style={{
@@ -138,15 +136,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5">
-            {onOpenSessionLoginGate && (
-              <button
-                type="button"
-                onClick={onOpenSessionLoginGate}
-                className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-rose-300 dark:border-rose-500/40 bg-rose-50/95 dark:bg-[#142430] text-rose-900 dark:text-rose-200 shadow-2xs cursor-pointer"
-              >
-                🔒 {lang === 'en' ? 'Sign Out (Session Gate)' : 'تسجيل الخروج لبوابة الحساب'}
-              </button>
-            )}
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenOnboardingModal}>
               {lang === 'en' ? 'Edit Account & City' : 'عدّل الحساب والمدينة'}
             </PrimaryCtaButton>

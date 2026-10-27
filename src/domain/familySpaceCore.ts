@@ -60,51 +60,73 @@ export interface BilingualUserProfile {
 }
 
 export const MOCK_BILINGUAL_USER: BilingualUserProfile = {
-  name: { ar: 'أحمد وسارة', en: 'Ahmed & Sara' },
-  role: { ar: 'الأم / الأب', en: 'Mother / Father' },
+  name: { ar: 'أحمد ومريم', en: 'Ahmad & Maryam' },
+  role: { ar: 'الأب والأم (أحمد ومريم)', en: 'Father & Mother (Ahmad & Maryam)' },
   city: { ar: 'القاهرة', en: 'Cairo' },
   children: [
     {
       id: 1,
-      name: { ar: 'عز', en: 'Ezz' },
-      role: { ar: 'الابن الأكبر', en: 'Eldest Son' },
-      ageLabel: { ar: '3 سنوات و 9 أشهر', en: '3 yrs, 9 mos' },
+      name: { ar: 'حمزة', en: 'Hamza' },
+      role: { ar: 'الرضيع (٦ شهور)', en: 'Infant (6 Months)' },
+      ageLabel: { ar: '٦ شهور', en: '6 mos' },
       bloodType: 'O+',
       allergies: [{ ar: 'لا توجد حساسية معروفة', en: 'No known allergies' }],
       vaccinationsNote: {
-        ar: 'مكتمل التطعيمات الأساسية حتى 3 سنوات',
-        en: 'Core vaccinations completed up to 3 years',
+        ar: 'مكتمل تطعيمات الأشهر الستة الأولى وجرعة فيتامين د اليومية',
+        en: '6-month core vaccinations completed & daily Vitamin D drops',
       },
       healthNotePrivate: {
-        ar: 'يتابع نمو اللغة والتركيز بشكل ممتاز مع طبيب الأطفال.',
-        en: 'Tracking language & focus milestones smoothly with the pediatrician.',
+        ar: 'نوم مستقر وتطور حسي وحركي ممتاز (التقلب والابتسام التفاعلي وبداية التسنين).',
+        en: 'Steady sleep and sensory-motor milestones (rolling over, interactive smiles & early teething).',
       },
       interests: [
-        { ar: 'المكعبات', en: 'Building Blocks' },
-        { ar: 'الديناصورات', en: 'Dinosaurs' },
-        { ar: 'الرسم', en: 'Drawing' },
-        { ar: 'السباحة', en: 'Swimming' },
+        { ar: 'تمارين البطن', en: 'Tummy Time' },
+        { ar: 'الشخشيخة الصوتية', en: 'Sound Rattles' },
+        { ar: 'التهويدات الدافئة', en: 'Warm Lullabies' },
       ],
     },
     {
       id: 2,
-      name: { ar: 'نور', en: 'Nour' },
-      role: { ar: 'الابنة الصغرى', en: 'Youngest Daughter' },
-      ageLabel: { ar: 'سنة و 8 أشهر', en: '1 yr, 8 mos' },
+      name: { ar: 'ليلى', en: 'Laila' },
+      role: { ar: 'مرحلة الحضانة والخيال (٤ سنوات)', en: 'Nursery & Creative World (4 Years)' },
+      ageLabel: { ar: '٤ سنوات', en: '4 yrs' },
       bloodType: 'A+',
       allergies: [{ ar: 'حساسية خفيفة من الفراولة', en: 'Mild strawberry allergy' }],
       vaccinationsNote: {
-        ar: 'تطعيم 18 شهر مكتمل بنجاح',
-        en: '18-month booster vaccination completed',
+        ar: 'مكتمل حتى تطعيم ٤ سنوات + فحص الأسنان الدوري',
+        en: 'Completed up to 4-year vaccines + routine dental checkup',
       },
       healthNotePrivate: {
-        ar: 'نوم مستقر ليلاً مع بداية نطق جمل قصيرة من كلمتين.',
-        en: 'Steady nighttime sleep and starting 2-word phrases.',
+        ar: 'خيال واسع في الحضانة، حب الرسم والألوان المائية، وتكوين جمل حكائية غنية.',
+        en: 'Rich imagination in nursery, loves watercolor painting and expressive storytelling.',
       },
       interests: [
-        { ar: 'الأناشيد الصوتية', en: 'Audio Rhymes' },
         { ar: 'الألوان المائية', en: 'Watercolors' },
-        { ar: 'قصص الحيوانات', en: 'Animal Stories' },
+        { ar: 'مسرح العرائس', en: 'Puppet Theater' },
+        { ar: 'حكايات الخيال', en: 'Imaginative Stories' },
+        { ar: 'الصلصال الطبيعي', en: 'Playdough' },
+      ],
+    },
+    {
+      id: 3,
+      name: { ar: 'يوسف', en: 'Youssef' },
+      role: { ar: 'المدرسة والرياضة ومدار الشغف (٨ سنوات)', en: 'School, Sports & Passions Orbit (8 Years)' },
+      ageLabel: { ar: '٨ سنوات', en: '8 yrs' },
+      bloodType: 'O+',
+      allergies: [{ ar: 'لا توجد حساسية معروفة', en: 'No known allergies' }],
+      vaccinationsNote: {
+        ar: 'مكتمل التطعيمات المدرسية وفحص اللياقة الرياضية',
+        en: 'School vaccinations & sports fitness checkup completed',
+      },
+      healthNotePrivate: {
+        ar: 'تركيز ممتاز في المدرسة، شغف بكرة القدم والسباحة وتجارب العلوم والروبوتات.',
+        en: 'Strong focus at school, passionate about football, swimming, science & robotics.',
+      },
+      interests: [
+        { ar: 'كرة القدم', en: 'Football' },
+        { ar: 'السباحة', en: 'Swimming' },
+        { ar: 'الروبوتات والفضاء', en: 'Robotics & Space' },
+        { ar: 'التجارب العلمية', en: 'Science Experiments' },
       ],
     },
   ],
@@ -434,10 +456,14 @@ export function locText(
   if (enFallback) return enFallback;
   if (BILINGUAL_SEED_DICTIONARY[str]) return BILINGUAL_SEED_DICTIONARY[str];
   return str
-    .replace(/عز/g, 'Ezz')
-    .replace(/نور/g, 'Nour')
-    .replace(/سارة/g, 'Sara')
-    .replace(/أحمد/g, 'Ahmed')
+    .replace(/حمزة/g, 'Hamza')
+    .replace(/ليلى/g, 'Laila')
+    .replace(/يوسف/g, 'Youssef')
+    .replace(/مريم/g, 'Maryam')
+    .replace(/أحمد/g, 'Ahmad')
+    .replace(/عز/g, 'Hamza')
+    .replace(/نور/g, 'Laila')
+    .replace(/سارة/g, 'Maryam')
     .replace(/القاهرة الجديدة/g, 'New Cairo')
     .replace(/القاهرة/g, 'Cairo')
     .replace(/الرياض/g, 'Riyadh')
@@ -5132,7 +5158,7 @@ export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
 
 export const SKELETON_TABS = ['services', 'medical', 'community'] as const;
 export type SkeletonTabId = (typeof SKELETON_TABS)[number];
-export const SKELETON_LOAD_DURATION_MS = 600;
+export const SKELETON_LOAD_DURATION_MS = 700;
 
 export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonTabId {
   return (SKELETON_TABS as readonly string[]).includes(pageId);

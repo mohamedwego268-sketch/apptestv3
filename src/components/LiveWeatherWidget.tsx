@@ -322,7 +322,6 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
     selectedDayIdx === 0 ? weather.weatherCode : activeDay?.weatherCode ?? weather.weatherCode;
   const visual = getWeatherVisualSpec(activeCode, isEn);
   const displayCityName = isEn ? baseline.nameEn : baseline.nameAr;
-  const bgSpec = getCardBackgroundSpec('weather', darkMode);
 
   const quickCities = useMemo(
     () => (country === 'SA' ? COUNTRY_CITIES_MAP.SA.slice(0, 8) : COUNTRY_CITIES_MAP.EG.slice(0, 8)),
@@ -333,154 +332,78 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
     <section
       id="live-weather-widget"
       data-testid="live-weather-widget"
-      data-image-card="true"
-      aria-label={isEn ? 'Live Family Weather Forecast' : 'حالة الطقس المباشرة للأسرة'}
-      className="image-bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 transition-all duration-300 ease-in-out"
-      style={{
-        backgroundImage: bgSpec.backgroundImageCss,
-      }}
+      aria-label={isEn ? 'Live Family Weather Ribbon' : 'شريط حالة الطقس اليومي للأسرة'}
+      className={`rounded-2xl border px-3.5 py-2 transition-all duration-500 ${
+        darkMode
+          ? 'bg-[#142430]/75 border-[#1E3646] text-[#F8FAFC]'
+          : 'bg-teal-50/45 border-teal-200/60 text-[#0B131A]'
+      }`}
     >
-      <div className="image-card-glass-panel rounded-2xl p-3.5 sm:p-4 space-y-3">
-        {/* Top Row: Current City Temperature + Condition + Interactive Quick City Switcher */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 border shadow-2xs transition-transform duration-300 hover:scale-105"
-              style={{
-                backgroundColor: darkMode ? '#142430' : '#FFFFFF',
-                borderColor: darkMode ? '#1E3646' : '#BAE6FD',
-              }}
-            >
-              {visual.icon}
-            </div>
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5">
+        {/* Left: Delicate Weather Icon + Subtle Temperature + Condition + Inline City Selector */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-base shrink-0 border bg-white/90 dark:bg-[#101D26] border-teal-200/50 dark:border-[#1E3646] shadow-2xs"
+            aria-hidden="true"
+          >
+            {visual.icon}
+          </span>
 
-            <div className="min-w-0 flex-1 space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="image-card-badge px-2.5 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1 leading-snug break-words">
-                  <span>📍</span>
-                  <span>{displayCityName}</span>
-                </span>
-                <UnifiedBadge tone="sky">
-                  {selectedDayIdx === 0
-                    ? isEn
-                      ? 'Live Now'
-                      : 'مباشر الآن'
-                    : isEn
-                    ? activeDay?.labelEn
-                    : activeDay?.labelAr}
-                </UnifiedBadge>
-                <button
-                  type="button"
-                  onClick={() => fetchLiveWeather()}
-                  title={isEn ? 'Refresh live weather' : 'تحديث الطقس المباشر'}
-                  className="min-h-[44px] min-w-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-white/85 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#FF8C61] transition-all shrink-0 cursor-pointer inline-flex items-center justify-center gap-1"
-                >
-                  <span>{isRefreshing ? '⏳' : '🔄'}</span>
-                  <span>{isEn ? 'Refresh' : 'تحديث'}</span>
-                </button>
-              </div>
-
-              <div className="flex flex-wrap items-baseline gap-2">
-                <span className="image-card-title text-xl sm:text-2xl font-black tabular-nums tracking-tight">
-                  {displayTemp}°C
-                </span>
-                <span className="text-xs sm:text-sm font-extrabold text-[#0D9488] dark:text-[#2DD4BF] leading-snug break-words">
-                  {visual.label}
-                </span>
-                <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] tabular-nums leading-snug">
-                  {isEn
-                    ? `H: ${activeDay?.maxTempC ?? weather.highTempC}° · L: ${activeDay?.minTempC ?? weather.lowTempC}°`
-                    : `العظمى ${activeDay?.maxTempC ?? weather.highTempC}° · الصغرى ${activeDay?.minTempC ?? weather.lowTempC}°`}
-                </span>
-              </div>
-            </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm sm:text-base font-black tabular-nums tracking-tight text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {displayTemp}°C
+            </span>
+            <span className="text-[11px] sm:text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+              {visual.label}
+            </span>
           </div>
 
-          {/* Metrics Pills with flex-wrap so no Arabic text is clipped */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-xs font-extrabold flex items-center gap-1.5 leading-snug">
-              <span>💧</span>
-              <span className="text-[var(--color-muted)]">{isEn ? 'Humidity' : 'الرطوبة'}:</span>
-              <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">{weather.humidity}%</span>
-            </div>
-            <div className="px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-xs font-extrabold flex items-center gap-1.5 leading-snug">
-              <span>🌬️</span>
-              <span className="text-[var(--color-muted)]">{isEn ? 'Wind' : 'الرياح'}:</span>
-              <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {weather.windKmh} {isEn ? 'km/h' : 'كم/س'}
-              </span>
-            </div>
-            <div className="px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/85 dark:bg-[#142430] text-xs font-extrabold flex items-center gap-1.5 leading-snug">
-              <span>☔</span>
-              <span className="tabular-nums text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {activeDay?.rainProb ?? weather.rainProbability}%
-              </span>
-            </div>
-          </div>
-        </div>
+          <span aria-hidden="true" className="text-slate-300 dark:text-slate-600">
+            ·
+          </span>
 
-        {/* Interactive 5-Day Multi-Day Forecast & Quick City Switcher (Responsive Flex-Wrap) */}
-        <div
-          role="region"
-          aria-label={isEn ? '5-Day Interactive Weather Forecast' : 'توقعات الطقس التفاعلية لـ ٥ أيام'}
-          className="flex flex-wrap items-center gap-2 pt-0.5"
-        >
-          {weather.forecastDays.map((day, idx) => {
-            const isSelected = selectedDayIdx === idx;
-            const dayVisual = getWeatherVisualSpec(day.weatherCode, isEn);
-            return (
-              <button
-                key={day.dateISO || idx}
-                type="button"
-                data-testid={`weather-forecast-day-${idx}`}
-                onClick={() => setSelectedDayIdx(idx)}
-                className={`min-h-[44px] px-3 py-1.5 rounded-xl border text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer leading-snug ${
-                  isSelected
-                    ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                    : 'bg-white/85 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
-                }`}
+          {/* Compact City Selector or Pill */}
+          {onSelectCity ? (
+            <label className="inline-flex items-center gap-1 text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+              <span aria-hidden="true">📍</span>
+              <select
+                aria-label={isEn ? 'Select City' : 'اختر المدينة'}
+                value={baseline.id}
+                onChange={(e) => onSelectCity(country, e.target.value)}
+                className="bg-transparent font-extrabold text-xs text-[var(--color-text)] dark:text-[#A5F3FC] focus:outline-none cursor-pointer pr-1"
               >
-                <span>{dayVisual.icon}</span>
-                <span>{isEn ? day.labelEn : day.labelAr}</span>
-                <span className="tabular-nums font-black">{day.maxTempC}°</span>
-                <span className="opacity-75 tabular-nums text-[11px]">{day.minTempC}°</span>
-              </button>
-            );
-          })}
-
-          {onSelectCity &&
-            quickCities.map((cObj) => {
-              const isCurrentCity = cObj.id === baseline.id || cObj.nameAr === baseline.nameAr;
-              return (
-                <button
-                  key={cObj.id}
-                  type="button"
-                  onClick={() => onSelectCity(country, cObj.id)}
-                  className={`min-h-[44px] px-3 py-1.5 rounded-xl border text-xs font-extrabold transition-all cursor-pointer leading-snug ${
-                    isCurrentCity
-                      ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-2xs'
-                      : 'bg-white/75 dark:bg-[#101D26] text-[var(--color-muted)] dark:text-[#CBD5E1] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
-                  }`}
-                >
-                  📍 {isEn ? cObj.nameEn : cObj.nameAr}
-                </button>
-              );
-            })}
+                {quickCities.map((cObj) => (
+                  <option key={cObj.id} value={cObj.id} className="text-slate-900 bg-white">
+                    {isEn ? cObj.nameEn : cObj.nameAr}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : (
+            <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              📍 {displayCityName}
+            </span>
+          )}
         </div>
 
-        {/* Parenting Tip Banner (Zero Truncation, Full Multi-Line Readability) */}
-        <div
-          className="rounded-xl px-3 py-2.5 border flex items-start justify-between gap-2 text-xs sm:text-sm font-bold"
-          style={{
-            backgroundColor: darkMode ? '#142430' : 'rgba(240, 253, 250, 0.94)',
-            borderColor: darkMode ? '#1E3646' : '#99F6E4',
-            color: darkMode ? '#F8FAFC' : '#134E4A',
-          }}
-        >
-          <p className="leading-relaxed break-words">
-            <span className="font-extrabold">💡 {isEn ? 'Family Tip:' : 'نصيحة اليوم:'} </span>
+        {/* Right: Warm Daily Tip Inline + Subtle Refresh Trigger */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 min-w-0 flex-1">
+          <p className="text-[11px] sm:text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug truncate">
+            <span className="font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+              💡 {isEn ? 'Daily Tip:' : 'همسة الطقس:'}{' '}
+            </span>
             {visual.parentingTip}
           </p>
+
+          <button
+            type="button"
+            onClick={() => fetchLiveWeather()}
+            title={isEn ? 'Refresh weather' : 'تحديث الطقس'}
+            aria-label={isEn ? 'Refresh weather' : 'تحديث الطقس'}
+            className="w-7 h-7 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-white/75 dark:bg-[#101D26] text-[11px] flex items-center justify-center shrink-0 hover:border-[#0d9488] cursor-pointer"
+          >
+            {isRefreshing ? '⏳' : '🔄'}
+          </button>
         </div>
       </div>
     </section>

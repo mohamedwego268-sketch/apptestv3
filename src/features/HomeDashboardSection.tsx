@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   COUNTRY_CITIES_MAP,
   CalendarEvent,
@@ -6,8 +6,9 @@ import {
   FamilySpaceState,
   LanguageCode,
   ParentProfileThemeSpec,
+  VoiceVaultMoment,
   calculateChildAge,
-  isTaskVisibleForParentSession,
+  dateLocalISO,
   locText,
   sanitizeUserText,
 } from '../domain/familySpaceCore';
@@ -43,10 +44,83 @@ export interface HomeDashboardSectionProps {
   onShowToast?: (msg: string) => void;
   onOpenStoreCategory?: (categoryId: string) => void;
   onReplaySplash?: () => void;
-  onOpenSessionLoginGate?: () => void;
   onToggleTaskDone?: (taskId: number) => void;
-  onUpdateParentPersonalNotes?: (notes: string) => void;
+  onAddVoiceMoment?: (kidId: number, moment: VoiceVaultMoment) => void;
 }
+
+interface DailyAudioBriefEpisode {
+  id: string;
+  slotLabelAr: string;
+  slotLabelEn: string;
+  titleAr: string;
+  titleEn: string;
+  hostsAr: string;
+  hostsEn: string;
+  durationSec: number;
+  durationLabel: string;
+  summaryAr: string;
+  summaryEn: string;
+  takeawayAr: string;
+  takeawayEn: string;
+  melodyHz: number[];
+}
+
+const DAILY_AUDIO_BRIEFS: DailyAudioBriefEpisode[] = [
+  {
+    id: 'brief-morning-harmony',
+    slotLabelAr: '☀️ إيجاز الصباح للوالدين',
+    slotLabelEn: '☀️ Morning Parent Brief',
+    titleAr: 'دقيقة صباحية لأحمد ومريم: توزيع هادئ ليوم حمزة وليلى ويوسف',
+    titleEn: '1-Min Morning Sync for Ahmad & Maryam: Calm Flow for Hamza, Laila & Youssef',
+    hostsAr: 'بصوت بوصلة نكبر · لأحمد ومريم',
+    hostsEn: 'Nekbaar Parenting Compass · For Ahmad & Maryam',
+    durationSec: 60,
+    durationLabel: '01:00',
+    summaryAr:
+      'ابدآ الصباح بدقيقة تواصل بصري وابتسامة مع ليلى ويوسف قبل الحديث عن الحضانة والمدرسة، بينما ينعم حمزة برضعته الصباحية الهادئة.',
+    summaryEn:
+      'Start the morning with 60 seconds of warm connection with Laila and Youssef before school prep, while Hamza enjoys his calm morning feed.',
+    takeawayAr: '💡 سر اليوم: هدوء نبرة الوالدين في أول ١٠ دقائق يصنع أمان البيت طوال النهار.',
+    takeawayEn: '💡 Key Takeaway: Calm parent tone in the first 10 minutes sets the household rhythm.',
+    melodyHz: [392.0, 493.88, 587.33, 659.25],
+  },
+  {
+    id: 'brief-midday-passions',
+    slotLabelAr: '🌱 كبسولة الظهيرة والشغف',
+    slotLabelEn: '🌱 Afternoon Growth Brief',
+    titleAr: 'رعاية شغف الأبطال: خيال ليلى الفني، منطق يوسف، واكتشافات حمزة',
+    titleEn: 'Nurturing Passions: Laila’s Art, Youssef’s Sports & Hamza’s Sensory World',
+    hostsAr: 'د. سلمى الكيلاني · علم نفس النمو',
+    hostsEn: 'Dr. Salma El-Kilany · Child Development',
+    durationSec: 60,
+    durationLabel: '01:00',
+    summaryAr:
+      'بعد العودة من الحضانة والمدرسة، يحتاج الطفل ١٥ دقيقة استرخاء حر قبل أي أسئلة، متبوعة بلعب حسي لحمزة وتلوين لليلى ورياضة ليوسف.',
+    summaryEn:
+      'After nursery and school, give kids 15 minutes of unstructured decompression before homework, creative art, or tummy time.',
+    takeawayAr: '💡 سر اليوم: لاحظوا شغف كل طفل وسمّوا نقاط قوته بصوت مسموع أمام العائلة.',
+    takeawayEn: '💡 Key Takeaway: Notice and name each child’s unique passion out loud.',
+    melodyHz: [440.0, 523.25, 659.25, 783.99],
+  },
+  {
+    id: 'brief-evening-serenity',
+    slotLabelAr: '🌙 بودكاست سكينة المساء',
+    slotLabelEn: '🌙 Evening Serenity Podcast',
+    titleAr: 'طقس الـ ٢٠ دقيقة الذهبية قبل النوم وتجديد طاقة أحمد ومريم',
+    titleEn: 'The Golden 20-Minute Bedtime Ritual & Evening Recharge for Ahmad & Maryam',
+    hostsAr: 'همسة المساء · نكبر',
+    hostsEn: 'Evening Whisper · Nekbaar',
+    durationSec: 60,
+    durationLabel: '01:00',
+    summaryAr:
+      'تخفيت الإضاءة، حمام دافئ لحمزة، وحدوتة مشتركة لليلى ويوسف يمنح الأطفال نوماً عميقاً ويترك لأحمد ومريم وقتاً هادئاً معاً.',
+    summaryEn:
+      'Dimming lights, a warm bath for Hamza, and a shared story for Laila & Youssef cues deep sleep and gives Ahmad & Maryam peaceful couple time.',
+    takeawayAr: '💡 سر المساء: لا تبحثا عن الكمال اليوم؛ حبكما واحتواؤكما هو أعظم إنجاز.',
+    takeawayEn: '💡 Evening Note: Let go of perfection tonight—your warmth is what they remember.',
+    melodyHz: [329.63, 392.0, 493.88, 523.25],
+  },
+];
 
 export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   state,
@@ -57,26 +131,63 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   nearestEvent,
   todayFormattedCombined,
   userCoords,
+  bedtimeMode,
+  onToggleBedtimeMode,
   navigateTo,
   onSelectPreciseCity,
   onAddSuggestedRoutineTask,
   onShowToast,
   onOpenStoreCategory,
-  onOpenSessionLoginGate,
-  onToggleTaskDone,
-  onUpdateParentPersonalNotes,
+  onAddVoiceMoment,
 }) => {
   const isEn = lang === 'en';
 
   // Selected Child Index for Dashboard Context
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
 
+  // 1. Top Audio Brief / Podcast Player State
+  const [activeBriefIdx, setActiveBriefIdx] = useState<number>(0);
+  const [isPlayingBrief, setIsPlayingBrief] = useState<boolean>(false);
+  const [briefElapsedSec, setBriefElapsedSec] = useState<number>(18);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // 2. Dynamic Time-Aware Daily Wisdom (بوصلة اليوم) State
+  const [wisdomTimeOverride, setWisdomTimeOverride] = useState<'auto' | 'morning' | 'afternoon' | 'evening'>('auto');
+
+  // 3. Heroes, Passions & Life Arena (عالم الأبطال والشغف) State
+  const [cheeredHeroIds, setCheeredHeroIds] = useState<Record<string, number>>({
+    hamza: 12,
+    laila: 19,
+    youssef: 24,
+  });
+
+  // 4. Micro-Moments Voice Vault (10s Logger) & Bedtime Story Inspiration State
+  const [vaultKidId, setVaultKidId] = useState<number>(() => state.kids[0]?.id ?? 1);
+  const [isRecordingVault, setIsRecordingVault] = useState<boolean>(false);
+  const [vaultElapsedSec, setVaultElapsedSec] = useState<number>(0);
+  const [vaultDraftTitle, setVaultDraftTitle] = useState<string>('');
+  const [vaultSelectedTag, setVaultSelectedTag] = useState<string>('أول ضحكة 👶🏻');
+  const [playingVaultId, setPlayingVaultId] = useState<string | null>(null);
+  const [localVaultMoments, setLocalVaultMoments] = useState<VoiceVaultMoment[]>([
+    {
+      id: 'home-vm-seed-1',
+      title: 'ضحكة حمزة العالية وقت اللعب مع ليلى ويوسف 👶🏻💛',
+      createdAt: dateLocalISO(new Date()),
+      durationSec: 10,
+      tag: 'أول ضحكة 👶🏻',
+      recordedBy: 'mother',
+      melodyHz: [392.0, 493.88, 587.33, 659.25],
+    },
+  ]);
+
+  const [storyThemeIdx, setStoryThemeIdx] = useState<number>(0);
+
   // Daily Essentials Interactive States (Scoped per Child ID)
   const [selectedMealSlot, setSelectedMealSlot] = useState<'breakfast' | 'lunchbox' | 'snack'>('lunchbox');
   const [waterCupsByKid, setWaterCupsByKid] = useState<Record<number, number>>(() => {
     const initial: Record<number, number> = {};
     state.kids.forEach((k, idx) => {
-      initial[k.id] = idx === 0 ? 4 : 3;
+      initial[k.id] = idx === 0 ? 2 : idx === 1 ? 4 : 6;
     });
     return initial;
   });
@@ -84,22 +195,103 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [completedSportByKid, setCompletedSportByKid] = useState<Record<number, boolean>>({});
   const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(false);
 
-  // Context-Aware Dynamic Shell & Parent Burnout Survival Mode States
-  const [contextModeSelection, setContextModeSelection] = useState<'auto' | 'morning' | 'noon' | 'evening'>('auto');
-  const [survivalModeActive, setSurvivalModeActive] = useState<boolean>(false);
-  const [survivalStepsCompleted, setSurvivalStepsCompleted] = useState<Record<number, boolean>>({
-    1: false,
-    2: false,
-    3: false,
-  });
+  const playGentleAudioSynthesizer = (notesHz: number[] = [392.0, 493.88, 587.33, 659.25]) => {
+    try {
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new Ctx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      notesHz.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.2);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime + idx * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.2 + 0.19);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.2);
+        osc.stop(ctx.currentTime + idx * 0.2 + 0.2);
+      });
+    } catch {
+      // Ignore Web Audio errors in headless environments
+    }
+  };
 
-  const activeParentAccountObj = state.parentAccounts[state.activeParentAccount];
-  const isFatherSession = state.activeParentAccount === 'father';
+  // Timer for Top 1-Minute Audio Brief Player
+  useEffect(() => {
+    if (!isPlayingBrief) return;
+    const interval = window.setInterval(() => {
+      setBriefElapsedSec((prev) => {
+        if (prev >= 60) {
+          setIsPlayingBrief(false);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [isPlayingBrief]);
 
-  const parentScopedTasks = useMemo(
-    () => state.tasks.filter((t) => isTaskVisibleForParentSession(t, state.activeParentAccount)),
-    [state.tasks, state.activeParentAccount]
+  // Timer for 10-Second Micro-Moments Voice Vault Logger
+  const targetVaultKid = useMemo(
+    () => state.kids.find((k) => k.id === vaultKidId) || state.kids[0],
+    [state.kids, vaultKidId]
   );
+
+  const finalizeHomeVaultRecording = (durationSec: number) => {
+    const kidName = targetVaultKid ? locText(targetVaultKid.name, lang) : isEn ? 'Child' : 'طفلنا';
+    const cleanTitle =
+      sanitizeUserText(vaultDraftTitle, 120) ||
+      (isEn
+        ? `10s Spontaneous Voice Memory for ${kidName}`
+        : `لقطة صوتية عفوية لـ ${kidName} (${Math.max(1, durationSec)} ثوانٍ)`);
+    const createdMoment: VoiceVaultMoment = {
+      id: `vm-home-${Date.now()}`,
+      title: cleanTitle,
+      createdAt: dateLocalISO(new Date()),
+      durationSec: Math.max(1, Math.min(10, durationSec)),
+      tag: vaultSelectedTag,
+      recordedBy: state.role === 'dad' ? 'father' : 'mother',
+      melodyHz: [440.0, 523.25, 659.25, 783.99],
+    };
+
+    setLocalVaultMoments((prev) => [createdMoment, ...prev]);
+    if (targetVaultKid && onAddVoiceMoment) {
+      onAddVoiceMoment(targetVaultKid.id, createdMoment);
+    } else {
+      onShowToast?.(
+        isEn
+          ? `🎙️ Saved 10s voice memory "${cleanTitle}" to Voice Vault!`
+          : `🎙️ تم حفظ اللقطة الصوتية «${cleanTitle}» في خزينة الذكريات!`
+      );
+    }
+    setVaultDraftTitle('');
+    setIsRecordingVault(false);
+    setVaultElapsedSec(0);
+    playGentleAudioSynthesizer(createdMoment.melodyHz);
+  };
+
+  useEffect(() => {
+    if (!isRecordingVault) return;
+    const timer = window.setInterval(() => {
+      setVaultElapsedSec((prev) => {
+        if (prev >= 9) {
+          window.setTimeout(() => finalizeHomeVaultRecording(10), 40);
+          return 10;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [isRecordingVault, vaultDraftTitle, vaultSelectedTag, targetVaultKid]);
 
   const activeCountryCities = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedHomeCityObj =
@@ -117,59 +309,219 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'Your Child' : 'طفلك';
   const activeKidStageLabel = activeKidAge?.label || (isEn ? '3–5 yrs' : '٣–٥ سنوات');
 
-  const resolvedTimeSlot: 'morning' | 'noon' | 'evening' = useMemo(() => {
-    if (contextModeSelection !== 'auto') return contextModeSelection;
+  const resolvedTimeOfDay: 'morning' | 'afternoon' | 'evening' = useMemo(() => {
+    if (wisdomTimeOverride !== 'auto') return wisdomTimeOverride;
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return 'morning';
-    if (hour >= 12 && hour < 18) return 'noon';
+    if (hour >= 12 && hour < 18) return 'afternoon';
     return 'evening';
-  }, [contextModeSelection]);
+  }, [wisdomTimeOverride]);
 
-  // Time-Aware Greeting & Smart Daily Activity Recommendation
-  const timeAwareSpec = useMemo(() => {
-    if (resolvedTimeSlot === 'morning') {
+  // Dynamic Time-Aware Daily Wisdom (بوصلة اليوم)
+  const dailyCompassWisdom = useMemo(() => {
+    if (resolvedTimeOfDay === 'morning') {
       return {
-        slot: 'morning' as const,
-        icon: '☀️',
-        periodAr: 'سياق الصباح: الاستعداد للمدرسة والحضانة والطقس',
-        periodEn: 'Morning Context: School/Nursery Prep & Weather',
-        recTitleAr: `توصية الصباح لـ ${activeKidName}`,
-        recTitleEn: `Morning Activity Tip for ${activeKidName}`,
-        recBodyAr: `الطقس في ${localizedCity} مناسب لتهوية الغرفة، فطور صحي غني بالبروتين، وتجهيز شنطة المدرسة لـ يوسف والحضانة لـ ليلى بهدوء.`,
-        recBodyEn: `Fresh morning in ${localizedCity} — ideal for protein breakfast and school/nursery prep for Youssef & Laila.`,
-        focusModulesAr: ['🎒 تحضير مدرسة يوسف وحضانة ليلى', '🌤️ طقس الصباح وملابس الخروج', '🥣 فطور الصباح والرضعة الأولى لحمزة'],
-        focusModulesEn: ['🎒 Youssef School & Laila Nursery Prep', '🌤️ Morning Weather & Outfit Check', '🥣 Morning Breakfast & Hamza First Feed'],
+        badgeAr: '☀️ بوصلة الصباح · عقلية البداية الهادئة',
+        badgeEn: '☀️ Morning Compass · Calm Start Mindset',
+        titleAr: '«خمس دقائق من الاحتواء الصباحي تمنح أطفالكم أمان اليوم كله»',
+        titleEn: '“Five Minutes of Morning Connection Anchors Your Children All Day”',
+        bodyAr:
+          'قبل زحمة تحضير شنطة مدرسة يوسف وحضانة ليلى، انزلوا لمستوى نظرهم بابتسامة دافئة وحضن قصير. الطفل الذي يشعر بالارتباط العاطفي صباحاً يتعاون تلقائياً ويمضي يومه بثقة وفضول.',
+        bodyEn:
+          'Before rushing into Youssef’s school bag and Laila’s nursery prep, pause for an eye-level smile and a 10-second hug. Connection before direction builds effortless cooperation.',
+        quoteAr: 'همسة لأحمد ومريم: هدوء نبرتكما صباحاً هو البوصلة التي يضبط عليها الأبناء مشاعرهم.',
+        quoteEn: 'For Ahmad & Maryam: Your calm morning tone is the compass your children tune their emotions to.',
+        actionLabelAr: 'أضف «حضن الصباح الهادئ» للروتين',
+        actionLabelEn: 'Add “Calm Morning Hug” to Routine',
+        actionTaskAr: 'حضن الصباح الهادئ وتسمية هدف جميل لليوم مع ليلى ويوسف وحمزة',
+        actionTaskEn: 'Calm morning hug & positive intention with Laila, Youssef & Hamza',
+        actionTime: '07:15 ص',
       };
     }
-    if (resolvedTimeSlot === 'noon') {
+    if (resolvedTimeOfDay === 'afternoon') {
       return {
-        slot: 'noon' as const,
-        icon: '🍼',
-        periodAr: 'سياق الظهيرة: تتبع الرضيع (حمزة ٦ شهور) والترطيب',
-        periodEn: 'Noon Context: Infant Tracking (Hamza 6m) & Hydration',
-        recTitleAr: `توصية الظهيرة والعصر لـ ${activeKidName}`,
-        recTitleEn: `Afternoon Activity Tip for ${activeKidName}`,
-        recBodyAr: `وقت مثالي لمتابعة وجبة خضار حمزة (٦ شهور) وتمرين وقت البطن، مع شرب المياه وأنشطة اللعب الإبداعي لـ ليلى ويوسف في ${localizedCity}.`,
-        recBodyEn: `Ideal midday window for Hamza's (6m) solid feeding & tummy time, plus hydration and creative play in ${localizedCity}.`,
-        focusModulesAr: ['👶🏻 تتبع رضاعة ووقت البطن لحمزة (٦ شهور)', '💧 شرب المياه والغداء الصحي', '🎨 نشاط بعد الحضانة والمدرسة لليلى ويوسف'],
-        focusModulesEn: ['👶🏻 Hamza (6m) Feeding & Tummy Time Tracker', '💧 Hydration & Balanced Lunch', '🎨 Post-School Creative Play for Laila & Youssef'],
+        badgeAr: '🌤️ بوصلة الظهيرة · محطة تجديد الطاقة والتواصل',
+        badgeEn: '🌤️ Afternoon Compass · Midday Check-In & Reset',
+        titleAr: '«لحظة الالتقاء بعد المدرسة والحضانة هي جسر الأمان العاطفي»',
+        titleEn: '“The Post-School Reunion Is Your Child’s Emotional Reset Bridge”',
+        bodyAr:
+          'عند عودة يوسف من المدرسة وليلى من الحضانة، استبدلوا أسئلة الاختبار («عملت إيه؟») بجملة دافئة («اشتقت لكم جداً، مبسوط بوجودكم»). أمنحوهما ١٥ دقيقة استرخاء ووجبة خفيفة بينما يمارس حمزة وقت البطن.',
+        bodyEn:
+          'When Youssef and Laila return home, lead with warmth (“I missed you so much!”) rather than interrogation. Offer a healthy snack and 15 minutes of calm play alongside Hamza’s tummy time.',
+        quoteAr: 'همسة لأحمد ومريم: الإصغاء لثرثرة ليلى العفوية وحماس يوسف الرياضي يصنع ذكريات لا تُنسى.',
+        quoteEn: 'For Ahmad & Maryam: Listening to Laila’s stories and Youssef’s passions builds lifelong trust.',
+        actionLabelAr: 'أضف «استراحة الظهيرة الهادئة» للروتين',
+        actionLabelEn: 'Add “Afternoon Connection Reset” to Routine',
+        actionTaskAr: 'جلسة فواكه واستماع دافئ لحكايات ليلى ويوسف بعد العودة للبيت',
+        actionTaskEn: 'Fruit snack & warm listening circle with Laila & Youssef',
+        actionTime: '03:30 م',
       };
     }
     return {
-      slot: 'evening' as const,
-      icon: '🌙',
-      periodAr: 'سياق المساء: تهدئة البيت وروتين النوم الهادئ',
-      periodEn: 'Evening Context: Calm Wind-Down & Bedtime Focus',
-      recTitleAr: `توصية المساء الهادئ لـ ${activeKidName}`,
-      recTitleEn: `Evening Wind-Down Tip for ${activeKidName}`,
-      recBodyAr: `أمسية هادئة في ${localizedCity} — حمام دافئ لحمزة (٦ شهور)، إغلاق الشاشات، وقصة ما قبل النوم لـ ليلى ويوسف.`,
-      recBodyEn: `Cozy evening in ${localizedCity} — warm bath for Hamza (6m), screens off, and bedtime story for Laila & Youssef.`,
-      focusModulesAr: ['🛁 حمام دافئ وتتبع نوم حمزة الليلي', '📵 إيقاف الشاشات تماماً قبل النوم بساعة', '📖 قصة المساء المشتركة لـ ليلى ويوسف'],
-      focusModulesEn: ['🛁 Warm Bath & Night Sleep Log for Hamza', '📵 Full Screen-Off 1 Hour Before Bed', '📖 Shared Bedtime Story for Laila & Youssef'],
+      badgeAr: '🌙 بوصلة المساء · سكينة البيت وامتنان آخر اليوم',
+      badgeEn: '🌙 Evening Compass · Calm Wind-Down & Gratitude',
+      titleAr: '«في آخر اليوم.. أطفالكم لا يحتاجون أماً وأباً كاملين، بل قلباً دافئاً»',
+      titleEn: '“At Day’s End, Your Kids Don’t Need Perfection—They Need Your Warmth”',
+      bodyAr:
+        'اتركا أي توتر من تفاصيل النهار خلفكما. حمام دافئ لحمزة (٦ شهور)، تخفيت إضاءة البيت، وسؤال ليلى ويوسف عن «أجمل لحظة أسعدتهم اليوم» يختم النهار بسلام نفسي ونوم عميق.',
+      bodyEn:
+        'Release the day’s unfinished checklists. A warm bath for Hamza, dimmed amber lighting, and asking Laila & Youssef for their favorite moment of the day closes the night in peace.',
+      quoteAr: 'همسة لأحمد ومريم: شكراً لكل جهد بذلتماه اليوم.. وبحبكم يكبر حمزة وليلى ويوسف.',
+      quoteEn: 'For Ahmad & Maryam: Thank you for showing up with love today—through your love, they grow.',
+      actionLabelAr: 'أضف «دائرة امتنان المساء» للروتين',
+      actionLabelEn: 'Add “Evening Gratitude Circle” to Routine',
+      actionTaskAr: 'دائرة امتنان المساء وتخفيت الإضاءة قبل النوم مع العيلة',
+      actionTaskEn: 'Evening gratitude circle & dimmed lights before bedtime',
+      actionTime: '08:00 م',
     };
-  }, [resolvedTimeSlot, activeKidName, localizedCity]);
+  }, [resolvedTimeOfDay]);
 
-  // 1. Stage-Tailored Daily Nutrition & Lunchbox Data for Selected Child (Hamza 6m, Laila 4y, Youssef 8y)
+  // Heroes, Passions & Life Arena (عالم الأبطال والشغف)
+  const heroesPassionsFeed = useMemo(() => {
+    const hamzaKid = state.kids.find((k) => k.id === 1 || k.name.includes('حمزة')) || state.kids[0];
+    const lailaKid = state.kids.find((k) => k.id === 2 || k.name.includes('ليلى')) || state.kids[1] || state.kids[0];
+    const youssefKid = state.kids.find((k) => k.id === 3 || k.name.includes('يوسف')) || state.kids[2] || state.kids[0];
+
+    const hamzaAge = hamzaKid ? calculateChildAge(hamzaKid.birth, lang) : null;
+    const lailaAge = lailaKid ? calculateChildAge(lailaKid.birth, lang) : null;
+    const youssefAge = youssefKid ? calculateChildAge(youssefKid.birth, lang) : null;
+
+    const hamzaInterestsAr = hamzaKid?.interests
+      ? hamzaKid.interests.split(/[،,]/).map((s: string) => s.trim()).filter(Boolean)
+      : ['وقت البطن الحسي', 'أول وجبة خضار', 'تنظيم القيلولة'];
+    const lailaInterestsAr = lailaKid?.interests
+      ? lailaKid.interests.split(/[،,]/).map((s: string) => s.trim()).filter(Boolean)
+      : ['الألوان المائية', 'بطاقات تسمية المشاعر', 'حكايات الحضانة'];
+    const youssefInterestsAr = youssefKid?.interests
+      ? youssefKid.interests.split(/[،,]/).map((s: string) => s.trim()).filter(Boolean)
+      : ['تمرين السباحة والكرة', 'الشطرنج والمنطق', 'علوم الفضاء'];
+
+    return [
+      {
+        id: 'hamza',
+        kidId: hamzaKid?.id ?? 1,
+        nameAr: `${hamzaKid?.name || 'حمزة'} (${hamzaAge?.label || '٦ شهور'})`,
+        nameEn: `${locText(hamzaKid?.name || 'حمزة', 'en')} (${hamzaAge?.label || '6 Months'})`,
+        arenaBadgeAr: '👶🏻 محطات الرضيع والنوم الهادئ (٦ شهور)',
+        arenaBadgeEn: '👶🏻 Infant Milestones & Sleep (6m)',
+        titleAr: 'إنجاز الأسبوع: ثبات الرقبة في تمرين وقت البطن وتذوق مهروس الجزر والبطاطا وانتظام القيلولة!',
+        titleEn: 'Weekly Milestone: Strong Tummy-Time Head Lift, First Sweet Potato Puree & Calm Nap Rhythm!',
+        passionTagsAr: hamzaInterestsAr.slice(0, 3).map((t: string, idx: number) => `${['🧸', '🍼', '🌙'][idx] || '✨'} ${t}`),
+        passionTagsEn: ['🧸 Sensory Tummy Time', '🍼 First Veggie Puree', '🌙 Nap & Sleep Rhythm'],
+        nextGoalAr:
+          hamzaKid?.healthNotePrivate
+            ? `${hamzaKid.healthNotePrivate} · الخطوة القادمة: تحفيز الجلوس المسنود والتقاط الخشخيشة الخشبية.`
+            : 'الخطوة القادمة: تحفيز الجلوس المسنود والتقاط الخشخيشة الخشبية باليدين مع تهدئة المساء.',
+        nextGoalEn: 'Next Horizon: Supported sitting play, two-handed wooden rattle grasp & soothing bedtime.',
+        routineTaskAr: `١٥ دقيقة تمرين وقت البطن والألعاب الحسية لـ ${hamzaKid?.name || 'حمزة'}`,
+        routineTaskEn: `15-min sensory tummy time & rattle reach with ${locText(hamzaKid?.name || 'حمزة', 'en')}`,
+        routineTime: '01:30 م',
+        accentBorder: 'border-teal-500/35',
+        accentBg: 'bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF]',
+      },
+      {
+        id: 'laila',
+        kidId: lailaKid?.id ?? 2,
+        nameAr: `${lailaKid?.name || 'ليلى'} (${lailaAge?.label || '٤ سنوات'})`,
+        nameEn: `${locText(lailaKid?.name || 'ليلى', 'en')} (${lailaAge?.label || '4 Years'})`,
+        arenaBadgeAr: '🎨 الحضانة، الخيال والعالم الإبداعي (٤ سنوات)',
+        arenaBadgeEn: '🎨 Nursery, Imagination & Creative World (4y)',
+        titleAr: 'شغف ليلى: رسمت لوحة «عيلتنا تحت الشمس» بالألوان المائية وسمّت مشاعرها بهدوء في الحضانة!',
+        titleEn: 'Laila’s Creative World: Painted “Our Family Under the Sun” & Named Emotions Calmly at Nursery!',
+        passionTagsAr: lailaInterestsAr.slice(0, 3).map((t: string, idx: number) => `${['🎨', '🌸', '🏫'][idx] || '✨'} ${t}`),
+        passionTagsEn: ['🎨 Watercolors & Art', '🌸 Emotion Naming Cards', '🏫 Nursery Storytelling'],
+        nextGoalAr:
+          lailaKid?.healthNotePrivate
+            ? `${lailaKid.healthNotePrivate} · تأليف حدوتة قصيرة بالدمى المسرحية ومشاركتها قبل النوم.`
+            : 'الخطوة القادمة: تأليف حدوتة قصيرة بالدمى المسرحية ومشاركتها قبل النوم.',
+        nextGoalEn: 'Next Horizon: Creating a short puppet story to share with the family before bedtime.',
+        routineTaskAr: `جلسة ألوان مائية وبطاقات تسمية المشاعر مع ${lailaKid?.name || 'ليلى'}`,
+        routineTaskEn: `Watercolor art & emotion-naming session with ${locText(lailaKid?.name || 'ليلى', 'en')}`,
+        routineTime: '04:30 م',
+        accentBorder: 'border-rose-400/40',
+        accentBg: 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
+      },
+      {
+        id: 'youssef',
+        kidId: youssefKid?.id ?? 3,
+        nameAr: `${youssefKid?.name || 'يوسف'} (${youssefAge?.label || '٨ سنوات'})`,
+        nameEn: `${locText(youssefKid?.name || 'يوسف', 'en')} (${youssefAge?.label || '8 Years'})`,
+        arenaBadgeAr: '🏆 المدرسة، الرياضة ومدار الأبطال والشغف (٨ سنوات)',
+        arenaBadgeEn: '🏆 School, Sports & Heroes/Passions Orbit (8y)',
+        titleAr: 'تألق يوسف: أنهى واجبات المدرسة باستقلالية وفاز بتحدي السباحة والشطرنج مع بابا أحمد!',
+        titleEn: 'Youssef’s Orbit: Independent School Homework Finish + Swimming & Chess Win with Dad Ahmad!',
+        passionTagsAr: youssefInterestsAr.slice(0, 3).map((t: string, idx: number) => `${['🏊‍♂️', '♟️', '🚀'][idx] || '✨'} ${t}`),
+        passionTagsEn: ['🏊‍♂️ Swimming & Football', '♟️ Chess & Logic', '🚀 Space & Robotics Orbit'],
+        nextGoalAr:
+          youssefKid?.healthNotePrivate
+            ? `${youssefKid.healthNotePrivate} · قيادة تحدي القراءة الأسبوعي وتنظيم وقت الشاشات ذاتياً.`
+            : 'الخطوة القادمة: قيادة تحدي القراءة الأسبوعي وتنظيم وقت الشاشات ذاتياً.',
+        nextGoalEn: 'Next Horizon: Leading the weekly reading challenge & self-managed screen timer.',
+        routineTaskAr: `تمرين لياقة وجولة شطرنج وتفكير منطقي مع ${youssefKid?.name || 'يوسف'}`,
+        routineTaskEn: `Fitness drill & strategic chess match with ${locText(youssefKid?.name || 'يوسف', 'en')}`,
+        routineTime: '05:30 م',
+        accentBorder: 'border-amber-500/40',
+        accentBg: 'bg-amber-500/15 text-amber-800 dark:text-amber-300',
+      },
+    ];
+  }, [state.kids, lang]);
+
+  // Bedtime Story Inspiration Prompts (إلهام حدوتة المساء)
+  const bedtimeStoryPrompts = useMemo(
+    () => [
+      {
+        id: 'story-courage-stars',
+        themeAr: '🚀 الشجاعة وحب الاستكشاف',
+        themeEn: '🚀 Courage & Curiosity',
+        titleAr: '«مغامرة الكابتن يوسف والفنانة ليلى والرضيع حمزة في كوكب النجوم المضيئة»',
+        titleEn: '“Captain Youssef, Artist Laila & Baby Hamza on the Planet of Glowing Stars”',
+        promptAr:
+          'يحكي بابا أحمد أو ماما مريم كيف قاد الكابتن يوسف السفينة بذكائه، ولونت ليلى الغيوم بفرشاتها السحرية لتضيء الطريق، بينما أطلقت ضحكة حمزة الصغيرة نجمة ذهبية أعادت الدفء للكوكب.',
+        promptEn:
+          'Tell how Captain Youssef navigated with logic, Laila painted the clouds with her magic brush to light the sky, and baby Hamza’s giggle unlocked a golden star of warmth.',
+        moralAr: 'القيمة التربوية: كل فرد في عيلتنا له موهبة خاصة تكمل إخوته.',
+        moralEn: 'Core Moral: Every sibling brings a unique gift that makes our family complete.',
+      },
+      {
+        id: 'story-kindness-garden',
+        themeAr: '🌸 اللطافة والتعاون بين الإخوة',
+        themeEn: '🌸 Sibling Kindness & Empathy',
+        titleAr: '«حديقة الكلمات الطيبة وشجرة المحبة التي تكبر كل مساء»',
+        titleEn: '“The Garden of Kind Words & the Tree That Grows with Love”',
+        promptAr:
+          'في حديقة سرية خلف بيتنا، كلما ساعد يوسف أخته ليلى، أو غنت ليلى لحمزة الصغير حتى ينام، تتفتح زهرة مضيئة جديدة على شجرة العائلة وتهمس للجميع بأحلام سعيدة.',
+        promptEn:
+          'In a secret garden behind our home, every time Youssef helps Laila or Laila sings softly to baby Hamza, a glowing blossom opens on the family tree.',
+        moralAr: 'القيمة التربوية: الكلمة الطيبة والمساعدة الصغيرة تصنع سعادة كبيرة في البيت.',
+        moralEn: 'Core Moral: Gentle words and small acts of care make our home bloom.',
+      },
+      {
+        id: 'story-gratitude-moon',
+        themeAr: '🌙 السكينة والامتنان قبل النوم',
+        themeEn: '🌙 Calm Gratitude & Sweet Dreams',
+        titleAr: '«قطار الغيوم الدافئ ورسائل الشكر الثلاث للقمر»',
+        titleEn: '“The Cozy Cloud Train & Three Thank-You Notes to the Moon”',
+        promptAr:
+          'يركب يوسف وليلى وحمزة قطار الغيوم الناعم، ويذكر كل واحد منهم شيئاً جميلاً حدث اليوم قبل أن يغمضوا عيونهم على صوت تنفس هادئ ودعاء المساء.',
+        promptEn:
+          'Youssef, Laila, and Hamza board the soft cloud train, each sharing one happy moment from today before drifting to sleep with calm breathing.',
+        moralAr: 'القيمة التربوية: تذكّر النعم الجميلة قبل النوم يملأ القلب بالطمأنينة.',
+        moralEn: 'Core Moral: Remembering today’s blessings fills the heart with deep peace.',
+      },
+    ],
+    []
+  );
+
+  const currentBrief = DAILY_AUDIO_BRIEFS[activeBriefIdx % DAILY_AUDIO_BRIEFS.length];
+  const currentStoryPrompt = bedtimeStoryPrompts[storyThemeIdx % bedtimeStoryPrompts.length];
+
+  // Merged Voice Vault moments across kids + local home recordings
+  const combinedVoiceMoments = useMemo(() => {
+    const fromKids = state.kids.flatMap((k) => k.voiceMoments || []);
+    return [...localVaultMoments, ...fromKids].slice(0, 4);
+  }, [localVaultMoments, state.kids]);
+
+  // 1. Stage-Tailored Daily Nutrition & Lunchbox Data for Selected Child
   const nutritionPlans = useMemo(() => {
     const stageCode = activeKidAge?.stageCode || '2-5';
     if (stageCode === '0-2') {
@@ -509,270 +861,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   return (
     <section
       className="space-y-5 sm:space-y-6"
-      aria-label={isEn ? 'Family Care Dashboard' : 'لوحة رعاية الأسرة والطفل'}
+      aria-label={isEn ? 'The Parenting Compass Family Dashboard' : 'بوصلة الأبوة والأمومة — لوحة العائلة المشتركة'}
     >
       {/* =====================================================================
-          0. INDEPENDENT ACCOUNT ARCHITECTURE BAR & CONTEXT-AWARE / SURVIVAL SHELL
-          ===================================================================== */}
-      <div
-        id="home-context-and-session-shell"
-        data-testid="home-context-and-session-shell"
-        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 shadow-sm"
-      >
-        {/* Top Row: Independent Parent Session Identity + Sign-Out Gate Trigger + Survival Mode Toggle */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]">
-          <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-            <span className="w-11 h-11 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-2xl shrink-0">
-              {isFatherSession ? '👨🏻' : '👩🏻'}
-            </span>
-            <div className="space-y-0.5 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                  {isFatherSession
-                    ? isEn
-                      ? 'Independent Session: Ahmed (Father)'
-                      : 'الجلسة المستقلة النشطة: أحمد (الأب)'
-                    : isEn
-                    ? 'Independent Session: Maryam (Mother)'
-                    : 'الجلسة المستقلة النشطة: مريم (الأم)'}
-                </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-black">
-                  {isEn
-                    ? `${parentScopedTasks.length} Personal & Shared Tasks`
-                    : `${parentScopedTasks.length} مهام شخصية ومشتركة`}
-                </span>
-              </div>
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
-                {isEn
-                  ? 'Isolated personal tasks & settings · Shared central DB for Hamza (6m), Laila (4y) & Youssef (8y)'
-                  : 'مهام وإعدادات شخصية معزولة · قاعدة بيانات مشتركة لـ حمزة (٦ شهور) وليلى (٤ سنوات) ويوسف (٨ سنوات)'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Parent Burnout / Survival Mode Sleek Toggle */}
-            <button
-              id="parent-survival-mode-toggle"
-              data-testid="parent-survival-mode-toggle"
-              type="button"
-              aria-pressed={survivalModeActive}
-              onClick={() => {
-                const next = !survivalModeActive;
-                setSurvivalModeActive(next);
-                onShowToast?.(
-                  next
-                    ? isEn
-                      ? '🛟 Parent Survival Mode Activated: Non-essential clutter hidden.'
-                      : '🛟 تم تفعيل وضع النجاة للطوارئ: تم إخفاء المهام غير الضرورية والاكتفاء بـ ٣ خطوات هادئة.'
-                    : isEn
-                    ? '✨ Standard Full Dashboard Restored.'
-                    : '✨ تمت استعادة عرض اللوحة الكاملة.'
-                );
-              }}
-              className={`min-h-[44px] px-4 py-2 rounded-2xl text-xs sm:text-sm font-black border transition-all inline-flex items-center gap-2 cursor-pointer ${
-                survivalModeActive
-                  ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md'
-                  : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/40'
-              }`}
-            >
-              <span>🛟</span>
-              <span>
-                {survivalModeActive
-                  ? isEn
-                    ? 'Survival Mode: ON'
-                    : 'وضع النجاة للطوارئ: مفعّل ✓'
-                  : isEn
-                  ? 'Survival Mode (Burnout Relief)'
-                  : 'وضع النجاة للطوارئ (تخفيف الإرهاق)'}
-              </span>
-            </button>
-
-            {/* Session Sign-Out / Login Gate Button (No Direct Quick-Switch Toggle) */}
-            {onOpenSessionLoginGate && (
-              <button
-                id="open-independent-session-gate-btn"
-                data-testid="open-independent-session-gate-btn"
-                type="button"
-                onClick={onOpenSessionLoginGate}
-                className="min-h-[44px] px-3.5 py-2 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>🔐</span>
-                <span>{isEn ? 'Sign Out / Session Gate' : 'تسجيل الخروج لبوابة الحساب'}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Context-Aware Dynamic Shell Selector (Morning / Noon / Evening) */}
-        <div
-          id="context-aware-dynamic-shell-bar"
-          data-testid="context-aware-dynamic-shell-bar"
-          className="space-y-3"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
-                🧭 {isEn ? 'Context-Aware Dynamic Shell' : 'واجهة السياق المتكيف حسب الوقت'}
-              </span>
-              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                {isEn ? timeAwareSpec.periodEn : timeAwareSpec.periodAr}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              {[
-                { id: 'auto' as const, labelAr: '⚡ تلقائي', labelEn: '⚡ Auto' },
-                { id: 'morning' as const, labelAr: '☀️ الصباح (المدرسة والطقس)', labelEn: '☀️ Morning (School/Weather)' },
-                { id: 'noon' as const, labelAr: '🍼 الظهيرة (تتبع الرضيع)', labelEn: '🍼 Noon (Infant Care)' },
-                { id: 'evening' as const, labelAr: '🌙 المساء (النوم والهدوء)', labelEn: '🌙 Evening (Bedtime)' },
-              ].map((ctx) => {
-                const isSelected = contextModeSelection === ctx.id;
-                return (
-                  <button
-                    key={ctx.id}
-                    type="button"
-                    data-testid={`context-shell-mode-${ctx.id}`}
-                    onClick={() => setContextModeSelection(ctx.id)}
-                    className={`min-h-[44px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                        : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                    }`}
-                  >
-                    {isEn ? ctx.labelEn : ctx.labelAr}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Context Focus Pills for Current Time of Day */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {(isEn ? timeAwareSpec.focusModulesEn : timeAwareSpec.focusModulesAr).map((modText, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-teal-500/25 bg-teal-500/8 dark:bg-[#142430] px-3.5 py-2.5 text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words flex items-center gap-2"
-              >
-                <span className="text-[#0d9488] dark:text-[#2DD4BF] font-black">#{idx + 1}</span>
-                <span>{modText}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* =====================================================================
-          0B. PARENT BURNOUT / SURVIVAL MODE PANEL (WHEN ACTIVE, STRIPS CLUTTER)
-          ===================================================================== */}
-      {survivalModeActive && (
-        <div
-          id="parent-survival-mode-panel"
-          data-testid="parent-survival-mode-panel"
-          className="rounded-3xl border-2 border-amber-400 bg-gradient-to-br from-amber-50/95 via-white to-teal-50/70 dark:from-[#142430] dark:via-[#101D26] dark:to-[#0B131A] p-5 sm:p-6 space-y-4 shadow-lg animate-fade-in"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs font-black">
-                🛟 {isEn ? 'Emergency Parent Burnout / Survival Mode' : 'وضع النجاة للطوارئ وتخفيف الاحتراق الوالدي'}
-              </span>
-              <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                {isEn
-                  ? 'Take a Deep Breath — Only 3 Calm Essentials Today'
-                  : 'خُذ نفساً عميقاً.. لستما مضطرين لإنجاز كل شيء اليوم'}
-              </h2>
-              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                {isEn
-                  ? 'Non-essential tasks and store banners are paused. Focus only on these 3 calm steps and rotate rest between Ahmed & Maryam.'
-                  : 'تم إخفاء كافة المهام الفرعية والإشعارات غير الضرورية. ركّزوا فقط على هذه الخطوات الثلاث الهادئة مع تبادل الراحة بين أحمد ومريم.'}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setSurvivalModeActive(false)}
-              className="min-h-[44px] px-4 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
-            >
-              {isEn ? 'Exit Survival Mode' : 'إنهاء وضع النجاة'}
-            </button>
-          </div>
-
-          {/* Minimal 3-Step Calm Routine */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              {
-                step: 1,
-                emoji: '🍼',
-                titleAr: '١. إطعام وترطيب بسيط بدون تعقيد',
-                titleEn: '1. Simple Feeding & Hydration Only',
-                descAr: 'رضعة ومهروس جاهز لحمزة، وساندوتش فواكه أو جبن سريع لليلى ويوسف مع كوب ماء.',
-                descEn: 'Milk/puree for Hamza, and a quick fruit/cheese snack with water for Laila & Youssef.',
-              },
-              {
-                step: 2,
-                emoji: '🧸',
-                titleAr: '٢. نشاط هادئ آمن في مكان واحد (٢٠ دقيقة)',
-                titleEn: '2. Safe Single-Room Quiet Play (20m)',
-                descAr: 'سجادة اللعب لحمزة، وبازل أو تلوين حر لليلى ويوسف بجانبكم على الأريكة بدون مجهود.',
-                descEn: 'Floor playmat for Hamza, and quiet coloring/puzzles for Laila & Youssef next to you.',
-              },
-              {
-                step: 3,
-                emoji: '🛋️',
-                titleAr: '٣. تناوب راحة ٢٠ دقيقة بين أحمد ومريم',
-                titleEn: '3. 20-Min Rest Shift for Ahmed & Maryam',
-                descAr: isFatherSession
-                  ? 'يراقب أحمد الأولاد ٢٠ دقيقة بهدوء لتستريح مريم، ثم يتبادلان الدور.'
-                  : 'تستريح مريم ٢٠ دقيقة مع مشروب دافئ بينما يتولى أحمد متابعة الأولاد.',
-                descEn: 'One parent takes a 20-min quiet break with a warm drink while the other supervises.',
-              },
-            ].map((item) => {
-              const isDone = Boolean(survivalStepsCompleted[item.step]);
-              return (
-                <button
-                  key={item.step}
-                  type="button"
-                  data-testid={`survival-step-${item.step}`}
-                  onClick={() =>
-                    setSurvivalStepsCompleted((prev) => ({
-                      ...prev,
-                      [item.step]: !prev[item.step],
-                    }))
-                  }
-                  className={`min-h-[110px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
-                    isDone
-                      ? 'border-emerald-500 bg-emerald-500/12'
-                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26]'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2 w-full">
-                    <span className="text-2xl">{item.emoji}</span>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-black ${
-                        isDone
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
-                      }`}
-                    >
-                      {isDone ? (isEn ? '✓ Done' : '✓ تمت بهدوء') : isEn ? 'Tap when done' : 'اضغط عند الإتمام'}
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                      {isEn ? item.titleEn : item.titleAr}
-                    </div>
-                    <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                      {isEn ? item.descEn : item.descAr}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* =====================================================================
-          1. DYNAMIC TIME-AWARE HERO & LIVE WEATHER ACTIVITY RECOMMENDATION
+          1. UNIFIED FAMILY HERO + COMPACT INLINE WEATHER + TOP AUDIO BRIEF PLAYER
           ===================================================================== */}
       <div
         id="home-core-value-hero"
@@ -781,245 +873,615 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         style={{
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
-        className="rounded-3xl border-2 bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-7 flex flex-col justify-between gap-4 shadow-sm"
+        className="rounded-3xl border-2 bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-sm"
       >
-        <div className="space-y-3">
-          {/* Clean Uncluttered Top Context Line + Official Slogan Pill */}
+        {/* Top Row: Unified Family Compass Identity + Slogan */}
+        <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
             <div className="inline-flex flex-wrap items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
-              <span>{timeAwareSpec.icon}</span>
-              <span>{isEn ? timeAwareSpec.periodEn : timeAwareSpec.periodAr}</span>
+              <span>🧭</span>
+              <span>
+                {isEn
+                  ? 'The Parenting Compass · Ahmad & Maryam Family Space'
+                  : 'بوصلة الأبوة والأمومة · مساحة أحمد ومريم المشتركة'}
+              </span>
               <span aria-hidden="true" className="opacity-50">·</span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-xs font-black">
               <span>✨</span>
-              <span>
-                {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
-              </span>
+              <span>{isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}</span>
             </span>
           </div>
 
-          {/* Main Greeting Heading */}
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h1
-                id="home-main-greeting-heading"
-                className="text-xl sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
-              >
-                {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
-              </h1>
-              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                {todayFormattedCombined}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-              {isEn ? timeAwareSpec.recBodyEn : timeAwareSpec.recBodyAr}
-            </p>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h1
+              id="home-main-greeting-heading"
+              className="text-xl sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
+            >
+              {isEn
+                ? 'Welcome to Your Family Compass, Ahmad & Maryam 👋'
+                : 'أهلاً بكما في بوصلة العيلة يا أحمد ومريم 👋'}
+            </h1>
+            <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+              {todayFormattedCombined}
+            </span>
           </div>
         </div>
 
-        {/* Live Weather Strip (Prioritized in Morning or Standard Mode, Hidden in Survival Mode to reduce clutter) */}
-        {!survivalModeActive && (
-          <LiveWeatherWidget
-            city={activeCity}
-            country={state.country}
-            language={lang}
-            darkMode={Boolean(state.darkMode)}
-            userCoords={userCoords}
-            onSelectCity={(cCode, cName) => onSelectPreciseCity(`${cCode}:${cName}`)}
-          />
-        )}
+        {/* Compact, Minimalist Single-Row Inline Weather Widget */}
+        <LiveWeatherWidget
+          city={activeCity}
+          country={state.country}
+          language={lang}
+          darkMode={Boolean(state.darkMode)}
+          userCoords={userCoords}
+          onSelectCity={(cCode, cName) => onSelectPreciseCity(`${cCode}:${cName}`)}
+        />
+
+        {/* Sleek Top Audio Brief / 1-Minute Daily Podcast Ribbon with Soft Curves & Clean Waveforms */}
+        <div
+          id="home-audio-brief-podcast-player"
+          data-testid="home-audio-brief-podcast-player"
+          className="rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-50/90 via-white to-orange-50/60 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-4 sm:p-4.5 space-y-3 shadow-2xs"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <button
+                type="button"
+                data-testid="audio-brief-play-toggle"
+                onClick={() => {
+                  const nextPlay = !isPlayingBrief;
+                  setIsPlayingBrief(nextPlay);
+                  if (nextPlay) {
+                    playGentleAudioSynthesizer(currentBrief.melodyHz);
+                  }
+                }}
+                aria-label={isPlayingBrief ? (isEn ? 'Pause daily audio brief' : 'إيقاف البودكاست اليومي') : isEn ? 'Play daily audio brief' : 'تشغيل البودكاست اليومي'}
+                className={`w-11 h-11 rounded-2xl flex items-center justify-center text-base font-black shrink-0 transition-all cursor-pointer shadow-xs ${
+                  isPlayingBrief
+                    ? 'bg-[#FF8C61] text-white scale-105'
+                    : 'bg-[#0d9488] hover:bg-[#0f766e] text-white'
+                }`}
+              >
+                {isPlayingBrief ? '⏸' : '▶'}
+              </button>
+
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="flex flex-wrap items-center gap-2 text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                  <span>🎙️ {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
+                    {isEn ? currentBrief.hostsEn : currentBrief.hostsAr}
+                  </span>
+                </div>
+                <h2 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
+                  {isEn ? currentBrief.titleEn : currentBrief.titleAr}
+                </h2>
+              </div>
+            </div>
+
+            {/* Clean Acoustic Waveform Bars + Rotating 1-Minute Episode Switcher Controls */}
+            <div className="flex items-center gap-2.5 shrink-0">
+              <div
+                data-testid="audio-brief-waveforms"
+                aria-hidden="true"
+                className="hidden sm:flex items-center gap-1 h-7 px-2.5 rounded-2xl bg-teal-500/8 dark:bg-[#0B131A]/60 border border-teal-500/15"
+              >
+                {[10, 18, 13, 22, 15, 24, 12, 19, 14, 21, 11, 16].map((barH, idx) => {
+                  const activeBar = Math.floor((briefElapsedSec / 60) * 12);
+                  const isPassed = idx <= activeBar;
+                  return (
+                    <span
+                      key={idx}
+                      style={{
+                        height: isPlayingBrief
+                          ? `${Math.max(6, ((barH + ((briefElapsedSec + idx * 3) % 9)) % 22) + 4)}px`
+                          : `${Math.round(barH * 0.72)}px`,
+                      }}
+                      className={`w-1 rounded-full transition-all duration-300 ${
+                        isPlayingBrief
+                          ? idx % 2 === 0
+                            ? 'bg-[#0d9488] dark:bg-[#2DD4BF]'
+                            : 'bg-[#FF8C61]'
+                          : isPassed
+                          ? 'bg-[#0d9488]/80 dark:bg-[#2DD4BF]/80'
+                          : 'bg-teal-900/20 dark:bg-teal-100/20'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+
+              <span className="text-xs font-black tabular-nums text-[#0d9488] dark:text-[#2DD4BF] px-2.5 py-1 rounded-xl bg-teal-500/10">
+                00:{String(briefElapsedSec).padStart(2, '0')} / {currentBrief.durationLabel}
+              </span>
+              <button
+                type="button"
+                data-testid="audio-brief-next-btn"
+                onClick={() => {
+                  const nextIdx = (activeBriefIdx + 1) % DAILY_AUDIO_BRIEFS.length;
+                  setActiveBriefIdx(nextIdx);
+                  setBriefElapsedSec(0);
+                  playGentleAudioSynthesizer(DAILY_AUDIO_BRIEFS[nextIdx].melodyHz);
+                }}
+                className="min-h-[36px] px-3 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+              >
+                {isEn ? 'Next Brief ⏭' : 'الكبسولة التالية ⏮'}
+              </button>
+            </div>
+          </div>
+
+          {/* Sleek Audio Progress Bar */}
+          <div className="w-full h-1.5 rounded-full bg-teal-950/10 dark:bg-[#0B131A] overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#0d9488] to-[#FF8C61] transition-all duration-300"
+              style={{ width: `${Math.min(100, Math.round((briefElapsedSec / 60) * 100))}%` }}
+            />
+          </div>
+
+          {/* Brief Summary & Takeaway */}
+          <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+            {isEn ? currentBrief.summaryEn : currentBrief.summaryAr}{' '}
+            <strong className="text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn ? currentBrief.takeawayEn : currentBrief.takeawayAr}
+            </strong>
+          </p>
+        </div>
       </div>
 
-      {/* Isolated Personal Tasks & Notes Card for Active Parent Session (Ahmed vs Maryam) */}
+      {/* =====================================================================
+          2. DYNAMIC TIME-AWARE DAILY WISDOM (بوصلة اليوم)
+          ===================================================================== */}
       <div
-        id="home-isolated-parent-session-card"
-        data-testid="home-isolated-parent-session-card"
-        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 space-y-4 shadow-2xs"
+        id="home-daily-parenting-wisdom"
+        data-testid="home-daily-parenting-wisdom"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 shadow-sm"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
+              {isEn ? dailyCompassWisdom.badgeEn : dailyCompassWisdom.badgeAr}
+            </span>
+          </div>
+
+          {/* Time-of-Day Wisdom Preview Switcher */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'auto' as const, labelAr: '⚡ تلقائي', labelEn: '⚡ Auto' },
+              { id: 'morning' as const, labelAr: '☀️ الصباح', labelEn: '☀️ Morning' },
+              { id: 'afternoon' as const, labelAr: '🌤️ الظهيرة', labelEn: '🌤️ Afternoon' },
+              { id: 'evening' as const, labelAr: '🌙 المساء', labelEn: '🌙 Evening' },
+            ].map((slot) => {
+              const active = wisdomTimeOverride === slot.id;
+              return (
+                <button
+                  key={slot.id}
+                  type="button"
+                  data-testid={`wisdom-slot-${slot.id}`}
+                  onClick={() => setWisdomTimeOverride(slot.id)}
+                  className={`min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    active
+                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                  }`}
+                >
+                  {isEn ? slot.labelEn : slot.labelAr}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+            {isEn ? dailyCompassWisdom.titleEn : dailyCompassWisdom.titleAr}
+          </h2>
+          <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+            {isEn ? dailyCompassWisdom.bodyEn : dailyCompassWisdom.bodyAr}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+          <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+            ✨ {isEn ? dailyCompassWisdom.quoteEn : dailyCompassWisdom.quoteAr}
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onAddSuggestedRoutineTask?.(
+                  isEn ? dailyCompassWisdom.actionTaskEn : dailyCompassWisdom.actionTaskAr,
+                  dailyCompassWisdom.actionTime,
+                  null
+                );
+              }}
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold transition-all cursor-pointer"
+            >
+              + {isEn ? dailyCompassWisdom.actionLabelEn : dailyCompassWisdom.actionLabelAr}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigateTo('assistant')}
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold transition-all cursor-pointer"
+            >
+              {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================================
+          3. HEROES, PASSIONS & LIFE ARENA (عالم الأبطال والشغف — حمزة وليلى ويوسف)
+          ===================================================================== */}
+      <div
+        id="home-heroes-passions-arena"
+        data-testid="home-heroes-passions-arena"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 shadow-sm"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-              {isFatherSession
-                ? isEn
-                  ? '👨🏻 Ahmed’s Isolated Personal Tasks & Shared Family Routine'
-                  : '👨🏻 مهام جلسة أحمد (الأب) المستقلة والمشتركة'
-                : isEn
-                ? '👩🏻 Maryam’s Isolated Personal Tasks & Shared Family Routine'
-                : '👩🏻 مهام جلسة مريم (الأم) المستقلة والمشتركة'}
-            </h2>
+          <div className="space-y-0.5">
+            <div className="inline-flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center text-base">
+                🏅
+              </span>
+              <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn
+                  ? 'Heroes, Passions & Life Arena (Hamza, Laila & Youssef)'
+                  : 'عالم الأبطال والشغف · محطات نمو حمزة وليلى ويوسف'}
+              </h2>
+            </div>
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
               {isEn
-                ? 'Only tasks assigned to your session or marked Shared appear here'
-                : 'تظهر هنا فقط المهام المخصصة لحسابك الشخصي أو المشتركة بينكما'}
+                ? 'Live developmental feed tracking infant milestones, nursery creativity, and school/sports passions'
+                : 'متابعة حية لإنجازات حمزة الحسية، عالم ليلى الإبداعي في الحضانة، وشغف يوسف الرياضي والمدرسي'}
             </p>
           </div>
           <button
             type="button"
-            onClick={() => navigateTo('routine')}
-            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-teal-500/35 bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+            onClick={() => navigateTo('children')}
+            className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-teal-500/35 bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
           >
-            {isEn ? 'Full Routine →' : 'جدول الروتين الكامل ←'}
+            {isEn ? '3D Profiles & Growth →' : 'ملفات الأبطال 3D ←'}
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {parentScopedTasks.slice(0, survivalModeActive ? 3 : 6).map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onToggleTaskDone?.(t.id)}
-              className={`min-h-[48px] p-3 rounded-2xl border text-start transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                t.done
-                  ? 'border-emerald-500/40 bg-emerald-500/10 text-[var(--color-text)] dark:text-[#F8FAFC]'
-                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                <span className="text-base shrink-0">{t.done ? '✅' : '⬜'}</span>
-                <span className={`text-xs sm:text-sm font-bold leading-snug break-words ${t.done ? 'line-through opacity-75' : ''}`}>
-                  {locText(t.name, lang)}
-                </span>
-              </div>
-              <span className="px-2 py-0.5 rounded-lg bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-extrabold shrink-0">
-                {t.owner} · {t.time}
-              </span>
-            </button>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {heroesPassionsFeed.map((hero) => {
+            const cheerCount = cheeredHeroIds[hero.id] ?? 10;
+            return (
+              <div
+                key={hero.id}
+                data-testid={`hero-passion-card-${hero.id}`}
+                className={`rounded-2xl border-2 ${hero.accentBorder} bg-[var(--color-control-muted)]/30 dark:bg-[#142430]/80 p-4 flex flex-col justify-between gap-3 transition-all`}
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`px-2.5 py-1 rounded-xl text-[11px] font-black ${hero.accentBg}`}>
+                      {isEn ? hero.arenaBadgeEn : hero.arenaBadgeAr}
+                    </span>
+                    <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? hero.nameEn : hero.nameAr}
+                    </span>
+                  </div>
 
-        {/* Isolated Parent Personal Note Input */}
-        <div className="pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] shrink-0">
-            📝 {isFatherSession ? (isEn ? 'Ahmed Private Note:' : 'مفكرة أحمد الخاصة:') : isEn ? 'Maryam Private Note:' : 'مفكرة مريم الخاصة:'}
-          </span>
-          <input
-            type="text"
-            value={activeParentAccountObj.personalNotes || ''}
-            onChange={(e) => onUpdateParentPersonalNotes?.(sanitizeUserText(e.target.value, 220))}
-            placeholder={
-              isEn
-                ? 'Write a private session note...'
-                : 'اكتب ملاحظة خاصة بجلستك المستقلة...'
-            }
-            className="flex-1 min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs sm:text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
-          />
+                  <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                    {isEn ? hero.titleEn : hero.titleAr}
+                  </h3>
+
+                  {/* Unboxed clean metadata / passion tags with typographic separator */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                    {(isEn ? hero.passionTagsEn : hero.passionTagsAr).map((tag, i, arr) => (
+                      <React.Fragment key={tag}>
+                        <span>{tag}</span>
+                        {i < arr.length - 1 && <span aria-hidden="true">·</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+                    {isEn ? hero.nextGoalEn : hero.nextGoalAr}
+                  </p>
+                </div>
+
+                <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    data-testid={`cheer-hero-btn-${hero.id}`}
+                    onClick={() => {
+                      setCheeredHeroIds((prev) => ({
+                        ...prev,
+                        [hero.id]: (prev[hero.id] ?? 10) + 1,
+                      }));
+                      onShowToast?.(
+                        isEn
+                          ? `🌟 Added family cheer for ${hero.nameEn}!`
+                          : `🌟 تشجيع عائلي جديد للبطل ${hero.nameAr}!`
+                      );
+                    }}
+                    className="min-h-[36px] px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 text-xs font-black cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <span>🌟</span>
+                    <span>
+                      {isEn ? `Cheer (${cheerCount})` : `تشجيع البطل (${cheerCount})`}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onAddSuggestedRoutineTask?.(
+                        isEn ? hero.routineTaskEn : hero.routineTaskAr,
+                        hero.routineTime,
+                        hero.kidId
+                      )
+                    }
+                    className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold cursor-pointer"
+                  >
+                    + {isEn ? 'Add Activity' : 'أضف للروتين'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Interactive Family Pulse & Battery Diagnostic Widget ("اختبار نبض البطارية والبيت اليومي") */}
-      {!survivalModeActive && (
-        <FamilyMoodBarometer
-          language={lang}
-          darkMode={Boolean(state.darkMode)}
-          onSelectMood={(_, msg) => onShowToast?.(msg)}
-          onAddRescueTask={(taskName, timeStr, kidId) => {
-            onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
-            onShowToast?.(
-              isEn
-                ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
-                : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
-            );
-          }}
-        />
-      )}
-
       {/* =====================================================================
-          1B. DAILY HERO CHALLENGE & PARENTING WISDOM (SOLID HIGH-CONTRAST CARDS)
+          4. MICRO-MOMENTS VOICE VAULT (10S) & BEDTIME STORY INSPIRATION
           ===================================================================== */}
-      {!survivalModeActive && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Daily Hero Challenge Card */}
-          <div
-            id="home-daily-hero-challenge"
-            data-testid="home-daily-hero-challenge"
-            className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
-          >
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 text-xs font-black">
-                  🏆 {isEn ? 'Daily Hero Challenge' : 'تحدي بطل اليوم'}
+      <div
+        id="home-soulful-vault-and-story"
+        data-testid="home-soulful-vault-and-story"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+      >
+        {/* Left Card: 10-Second Micro-Moments Voice Vault Logger */}
+        <div
+          id="home-voice-vault-card"
+          data-testid="home-voice-vault-card"
+          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-4 shadow-sm"
+        >
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="inline-flex items-center gap-2">
+                <span className="w-9 h-9 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-lg">
+                  🎙️
                 </span>
-                <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                  +25 ⭐ {isEn ? 'Points' : 'نقطة تشجيع'}
-                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn
+                      ? 'Micro-Moments Voice Vault (10s Logger)'
+                      : 'خزينة اللقطات الصوتية العفوية (١٠ ثوانٍ)'}
+                  </h3>
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                    {isEn
+                      ? 'Preserve first laughs, new words & proud moments in 10 seconds'
+                      : 'وثّق أول ضحكة لحمزة، حكايات ليلى، أو إنجاز يوسف في ١٠ ثوانٍ'}
+                  </p>
+                </div>
               </div>
-              <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                {isEn
-                  ? `15-Minute Tidy-Up & Gratitude Circle with ${activeKidName}`
-                  : `١٥ دقيقة ترتيب الألعاب بمرح + جملة شكر مع ${activeKidName}`}
-              </h3>
-              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                {isEn
-                  ? 'Turn cleanup into a quick team race before dinner and celebrate together!'
-                  : 'حوّلوا ترتيب الغرفة لسباق عائلي مبهج على أنشودة قصيرة واحتفلوا بالإنجاز معاً!'}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
-              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                👶 {activeKidName} ({activeKidStageLabel})
+              <span className="px-2.5 py-1 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black tabular-nums">
+                {isRecordingVault
+                  ? `🔴 00:${String(10 - vaultElapsedSec).padStart(2, '0')}s`
+                  : isEn
+                  ? '10s Memory'
+                  : 'تسجيل فوري ١٠ث'}
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  onShowToast?.(
-                    isEn
-                      ? `🏆 Bravo! ${activeKidName} completed the Daily Hero Challenge (+25 ⭐)!`
-                      : `🏆 بطل رائع! أتمّ ${activeKidName} تحدي بطل اليوم وحصل على +٢٥ نجمة تشجيع!`
-                  );
-                }}
-                className="min-h-[44px] px-4 py-2 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
-              >
-                {isEn ? 'Complete Challenge 🎉' : 'إتمام التحدي 🎉'}
-              </button>
             </div>
-          </div>
 
-          {/* Daily Parenting Wisdom Card */}
-          <div
-            id="home-daily-parenting-wisdom"
-            data-testid="home-daily-parenting-wisdom"
-            className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
-          >
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
-                  💡 {isEn ? 'Daily Parenting Wisdom' : 'حكمة ومعلومة تربوية اليوم'}
-                </span>
-                <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                  {isEn ? 'Positive Discipline' : 'تربية إيجابية ذكية'}
-                </span>
-              </div>
-              <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                {isEn
-                  ? 'Connection Before Correction Builds Lifelong Confidence'
-                  : '«التواصل العاطفي قبل التوجيه» يصنع طفلاً واثقاً ومتعاوناً'}
-              </h3>
-              <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                {isEn
-                  ? `When ${activeKidName} feels heard for 30 seconds at eye level, cooperation increases naturally without power struggles.`
-                  : `النزول لمستوى نظر ${activeKidName} واحتواء مشاعره لمدة ٣٠ ثانية قبل إعطاء التوجيه يضاعف استجابته بهدوء وحب.`}
-              </p>
+            {/* Child Selector + Tag Selector */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {state.kids.map((k) => {
+                const isSelected = k.id === (targetVaultKid?.id ?? 1);
+                return (
+                  <button
+                    key={k.id}
+                    type="button"
+                    onClick={() => setVaultKidId(k.id)}
+                    className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                        : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                    }`}
+                  >
+                    {k.emoji} {locText(k.name, lang)}
+                  </button>
+                );
+              })}
+              {['أول ضحكة 👶🏻', 'كلمة جديدة 💬', 'حكاية الحضانة 🎨', 'فخر وإنجاز 🏆'].map((tg) => (
+                <button
+                  key={tg}
+                  type="button"
+                  onClick={() => setVaultSelectedTag(tg)}
+                  className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
+                    vaultSelectedTag === tg
+                      ? 'border-[#FF8C61] bg-[#FF8C61]/15 text-[#c2410c] dark:text-[#FF8C61]'
+                      : 'border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)]'
+                  }`}
+                >
+                  {tg}
+                </button>
+              ))}
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
-              <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                ✨ {isEn ? 'Verified Pediatric Psychology Tip' : 'توصية خبراء علم نفس الطفل'}
-              </span>
-              <button
-                type="button"
-                onClick={() => navigateTo('assistant')}
-                className="min-h-[44px] px-4 py-2 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold transition-all cursor-pointer"
-              >
-                {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
-              </button>
+
+            {/* Input + 10s Record Button */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <input
+                type="text"
+                value={vaultDraftTitle}
+                onChange={(e) => setVaultDraftTitle(sanitizeUserText(e.target.value, 120))}
+                placeholder={
+                  isEn
+                    ? 'Name this 10-second voice memory...'
+                    : 'اكتب عنوان اللقطة الصوتية (مثال: ضحكة حمزة، جملة ليلى الطريفة)...'
+                }
+                className="flex-1 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+              />
+              {isRecordingVault ? (
+                <button
+                  type="button"
+                  data-testid="home-voice-vault-stop-btn"
+                  onClick={() => finalizeHomeVaultRecording(Math.max(1, vaultElapsedSec))}
+                  className="min-h-[42px] px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black cursor-pointer shrink-0"
+                >
+                  ⏹ {isEn ? `Save (${10 - vaultElapsedSec}s)` : `حفظ اللقطة (${10 - vaultElapsedSec}ث)`}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  data-testid="home-voice-vault-record-btn"
+                  onClick={() => {
+                    setIsRecordingVault(true);
+                    setVaultElapsedSec(0);
+                    playGentleAudioSynthesizer([440.0, 523.25]);
+                  }}
+                  className="min-h-[42px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black cursor-pointer shrink-0"
+                >
+                  🎙️ {isEn ? 'Record 10s' : 'سجّل ١٠ ثوانٍ'}
+                </button>
+              )}
+            </div>
+
+            {/* Latest Recorded Moments Preview */}
+            <div className="space-y-1.5 pt-1">
+              {combinedVoiceMoments.slice(0, 2).map((vm) => {
+                const isPlaying = playingVaultId === vm.id;
+                return (
+                  <div
+                    key={vm.id}
+                    className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] px-3 py-2 flex items-center justify-between gap-2"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                        {vm.title}
+                      </div>
+                      <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                        {vm.tag} · {vm.durationSec}s
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isPlaying) {
+                          setPlayingVaultId(null);
+                        } else {
+                          setPlayingVaultId(vm.id);
+                          playGentleAudioSynthesizer(vm.melodyHz);
+                          window.setTimeout(() => setPlayingVaultId(null), 2000);
+                        }
+                      }}
+                      className="min-h-[34px] px-3 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black cursor-pointer shrink-0"
+                    >
+                      {isPlaying ? (isEn ? '🔊 Playing' : '🔊 يعمل') : isEn ? '▶ Listen' : '▶ استماع'}
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Right Card: Bedtime Story Inspiration & Warm Evening Mode */}
+        <div
+          id="home-bedtime-story-inspiration"
+          data-testid="home-bedtime-story-inspiration"
+          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-4 shadow-sm"
+        >
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="inline-flex items-center gap-2">
+                <span className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center text-lg">
+                  📖
+                </span>
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn
+                      ? 'Bedtime Story Inspiration (Tonight’s Prompt)'
+                      : 'إلهام حدوتة ما قبل النوم (لبطولة حمزة وليلى ويوسف)'}
+                  </h3>
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                    {isEn
+                      ? ' Personalized 3-minute storytelling spark for calm screen-free nights'
+                      : 'فكرة حدوتة دافئة في ٣ دقائق تجمع الأولاد بدون شاشات قبل النوم'}
+                  </p>
+                </div>
+              </div>
+
+              {onToggleBedtimeMode && (
+                <button
+                  type="button"
+                  data-testid="home-bedtime-filter-btn"
+                  onClick={onToggleBedtimeMode}
+                  className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    bedtimeMode
+                      ? 'bg-amber-500 text-slate-950 border-amber-500'
+                      : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/35'
+                  }`}
+                >
+                  🌙 {bedtimeMode ? (isEn ? 'Bedtime Filter: ON' : 'إضاءة المساء: مفعّلة') : isEn ? 'Warm Bedtime Light' : 'تفعيل إضاءة المساء'}
+                </button>
+              )}
+            </div>
+
+            {/* Theme Pills */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {bedtimeStoryPrompts.map((sp, idx) => (
+                <button
+                  key={sp.id}
+                  type="button"
+                  onClick={() => setStoryThemeIdx(idx)}
+                  className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                    storyThemeIdx === idx
+                      ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
+                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                  }`}
+                >
+                  {isEn ? sp.themeEn : sp.themeAr}
+                </button>
+              ))}
+            </div>
+
+            {/* Story Prompt Box */}
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-50/50 dark:bg-[#142430] p-3.5 space-y-1.5">
+              <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                {isEn ? currentStoryPrompt.titleEn : currentStoryPrompt.titleAr}
+              </h4>
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                {isEn ? currentStoryPrompt.promptEn : currentStoryPrompt.promptAr}
+              </p>
+              <div className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] pt-1">
+                ✨ {isEn ? currentStoryPrompt.moralEn : currentStoryPrompt.moralAr}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+            <button
+              type="button"
+              onClick={() => setStoryThemeIdx((prev) => (prev + 1) % bedtimeStoryPrompts.length)}
+              className="min-h-[36px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+            >
+              🔄 {isEn ? 'Another Story Idea' : 'فكرة حدوتة أخرى'}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                onAddSuggestedRoutineTask?.(
+                  isEn ? `Bedtime Story: ${currentStoryPrompt.titleEn}` : `حدوتة المساء: ${currentStoryPrompt.titleAr}`,
+                  '08:15 م',
+                  null
+                )
+              }
+              className="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-xs font-extrabold cursor-pointer"
+            >
+              + {isEn ? 'Schedule Tonight 8:15 PM' : 'جدولة الليلة 8:15 م'}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* =====================================================================
-          2. REFINED KIDS CAROUSEL & ELEVATED MODULAR CARDS (ملفات الأطفال)
+          5. REFINED KIDS CAROUSEL & ELEVATED MODULAR CARDS (ملفات الأطفال)
           ===================================================================== */}
       <div
         id="home-kids-switcher-bar"
@@ -1089,7 +1551,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A]/85 hover:border-[#0d9488]/60 hover:shadow-sm'
                 }`}
               >
-                {/* Card Top Layer: 3D Avatar + Name + Active Pill */}
                 <div className="flex items-start justify-between gap-3 w-full">
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div
@@ -1113,13 +1574,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
                         {displayKidName}
                       </div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="px-2.5 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-[10.5px] font-black">
-                          {ageInfo.label}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500/12 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold">
-                          {ageInfo.stageTitle}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                        <span>{ageInfo.label}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="text-amber-800 dark:text-amber-300">{ageInfo.stageTitle}</span>
                       </div>
                     </div>
                   </div>
@@ -1141,7 +1599,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </span>
                 </div>
 
-                {/* Card Middle Layer: Interests & Star Crown */}
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] w-full">
                   <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug break-words">
                     🎨 {kidInterests}
@@ -1152,7 +1609,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   />
                 </div>
 
-                {/* Card Bottom Layer: Quick Daily Metrics Pills */}
                 <div className="grid grid-cols-2 gap-2 w-full">
                   <div className="rounded-xl bg-[var(--color-control-muted)]/70 dark:bg-[#101D26] border border-[var(--color-border)]/70 dark:border-[#1E3646] px-2.5 py-1.5 flex items-center justify-between text-[10.5px] font-extrabold">
                     <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
@@ -1178,7 +1634,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </div>
 
       {/* =====================================================================
-          3. DAILY ESSENTIALS HUB (3-LAYER MODULAR CARDS: NUTRITION, HYDRATION, SPORTS)
+          6. DAILY ESSENTIALS HUB (3-LAYER MODULAR CARDS: NUTRITION, HYDRATION, SPORTS)
           ===================================================================== */}
       <div
         id="home-daily-essentials-hub"
@@ -1207,7 +1663,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             categoryKey="nutrition"
             itemIdOrIndex={1}
             darkMode={Boolean(state.darkMode)}
-            topLeftBadge={<span>{ isEn ? currentNutrition.badgeEn : currentNutrition.badgeAr }</span>}
+            topLeftBadge={<span>{isEn ? currentNutrition.badgeEn : currentNutrition.badgeAr}</span>}
             topRightBadge={<span>🕒 {currentNutrition.time}</span>}
             title={isEn ? currentNutrition.titleEn : currentNutrition.titleAr}
             metaLeft={
@@ -1222,7 +1678,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
                   {isEn ? currentNutrition.descEn : currentNutrition.descAr}
                 </p>
-                {/* Meal Slot Switcher Buttons */}
                 <div className="grid grid-cols-3 gap-1.5 pt-0.5">
                   {[
                     { id: 'breakfast' as const, labelAr: '🥣 الفطور', labelEn: '🥣 Breakfast' },
@@ -1318,7 +1773,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     : `متبقي ${targetWaterCups - currentWaterCups} أكواب مياه للحفاظ على تركيز ونشاط ${activeKidName} اليوم.`}
                 </p>
 
-                {/* Visual Water Cups Progress Bar */}
                 <div className="space-y-1.5">
                   <div className="w-full h-2.5 rounded-full bg-sky-100 dark:bg-[#142430] overflow-hidden">
                     <div
@@ -1390,7 +1844,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   {isEn ? currentSport.descEn : currentSport.descAr}
                 </p>
 
-                {/* Activity Type Switcher */}
                 <div className="grid grid-cols-3 gap-1.5 pt-0.5">
                   {[
                     { id: 'outdoor' as const, labelAr: '⚽ حديقة/كرة', labelEn: '⚽ Outdoor' },
@@ -1472,7 +1925,24 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </div>
 
       {/* =====================================================================
-          4. MINIMALIST GATEWAYS GRID (Clean, Icon-Driven Navigation Tiles)
+          7. INTERACTIVE FAMILY PULSE BAROMETER
+          ===================================================================== */}
+      <FamilyMoodBarometer
+        language={lang}
+        darkMode={Boolean(state.darkMode)}
+        onSelectMood={(_, msg) => onShowToast?.(msg)}
+        onAddRescueTask={(taskName, timeStr, kidId) => {
+          onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
+          onShowToast?.(
+            isEn
+              ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
+              : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
+          );
+        }}
+      />
+
+      {/* =====================================================================
+          8. MINIMALIST GATEWAYS GRID (Clean, Icon-Driven Navigation Tiles)
           ===================================================================== */}
       <div
         id="home-minimalist-gateways"
@@ -1542,7 +2012,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           ))}
         </div>
 
-        {/* Expandable Store Sub-Categories Drawer (Hidden by default; linked from Slide Bar #home-promotional-showcase) */}
+        {/* Expandable Store Sub-Categories Drawer */}
         <div id="home-promotional-showcase" data-testid="home-promotional-showcase">
           {showPromoShowcase && (
             <div className="pt-3 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 animate-page-enter">

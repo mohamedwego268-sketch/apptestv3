@@ -59,7 +59,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [joinMemberRoleLabel, setJoinMemberRoleLabel] = useState<string>('الأم (Mother)');
 
   // Step 1: Account & OTP
-  const [email, setEmail] = useState<string>('sara.mom@family.app');
+  const [email, setEmail] = useState<string>('maryam.mom@nekbaar.app');
   const [phone, setPhone] = useState<string>('1012345678');
   const [otpInput, setOtpInput] = useState<string>('123456');
 
@@ -69,15 +69,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [selectedCity, setSelectedCity] = useState<string>(initialCity || 'القاهرة');
 
   // Step 3: Parent Profile
-  const [parentName, setParentName] = useState<string>(initialParentName || 'سارة وأحمد');
+  const [parentName, setParentName] = useState<string>(initialParentName || 'أحمد ومريم');
   const [parentRole, setParentRole] = useState<ParentThemeRole>(initialRole);
 
   // Step 4: Child Profile
-  const [childName, setChildName] = useState<string>('ليان');
-  const [childGender, setChildGender] = useState<'boy' | 'girl'>('girl');
-  const [childBirth, setChildBirth] = useState<string>('2023-06-15');
-  const [childInterests, setChildInterests] = useState<string>('القصص المصورة، المكعبات، والرسم');
-  const [childAvatarTheme, setChildAvatarTheme] = useState<AvatarAccessoryTheme>('artist');
+  const [childName, setChildName] = useState<string>('حمزة');
+  const [childGender, setChildGender] = useState<'boy' | 'girl'>('boy');
+  const [childBirth, setChildBirth] = useState<string>('2026-04-20');
+  const [childInterests, setChildInterests] = useState<string>('الألعاب الصوتية، الابتسام التفاعلي، وتمارين البطن');
+  const [childAvatarTheme, setChildAvatarTheme] = useState<AvatarAccessoryTheme>('astronaut');
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -535,8 +535,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {[
-                  { id: 'mom' as ParentThemeRole, titleAr: '🌸 حساب الأم (ماما سارة) — مرجاني ووردي دافئ', titleEn: '🌸 Mother Profile — Soft Coral & Warm Rose' },
-                  { id: 'dad' as ParentThemeRole, titleAr: '🌊 حساب الأب (بابا أحمد) — تيل وأزرق أردوازي', titleEn: '🌊 Father Profile — Teal & Slate Blue' },
+                  { id: 'mom' as ParentThemeRole, titleAr: '🌸 حساب الأم (ماما مريم) — مرجاني ووردي دافئ', titleEn: '🌸 Mother Profile (Maryam) — Soft Coral & Warm Rose' },
+                  { id: 'dad' as ParentThemeRole, titleAr: '🌊 حساب الأب (بابا أحمد) — تيل وأزرق أردوازي', titleEn: '🌊 Father Profile (Ahmad) — Teal & Slate Blue' },
                   { id: 'high-contrast' as ParentThemeRole, titleAr: '👁️ تباين عالٍ للقراءة', titleEn: '👁️ High Contrast' },
                 ].map((r) => (
                   <button
@@ -544,8 +544,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     type="button"
                     onClick={() => {
                       setParentRole(r.id);
-                      if (r.id === 'dad') setParentName('بابا (أحمد)');
-                      if (r.id === 'mom') setParentName('ماما (سارة)');
+                      if (r.id === 'dad') setParentName('أحمد ومريم');
+                      if (r.id === 'mom') setParentName('أحمد ومريم');
                     }}
                     className={`p-3.5 rounded-xl border text-xs font-extrabold text-center ${
                       parentRole === r.id

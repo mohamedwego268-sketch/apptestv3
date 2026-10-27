@@ -16,13 +16,17 @@ export function loadPersistedFamilyState(): FamilySpaceState {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Auto-migrate legacy default seed (Ezz & Nour / Sara) to Ahmad & Maryam + Hamza (6m), Laila (4y), Youssef (8y)
-        const hasLegacyDefaultKids =
+        // Auto-migrate legacy default seed (Ezz & Nour / Sara) or non-grounded kids to Ahmad & Maryam + Hamza (6m), Laila (4y), Youssef (8y)
+        const hasCanonicalThreeKids =
           Array.isArray(parsed.kids) &&
-          parsed.kids.length === 2 &&
-          parsed.kids[0]?.name === 'عز' &&
-          parsed.kids[1]?.name === 'نور';
-        if (hasLegacyDefaultKids) {
+          parsed.kids.length === 3 &&
+          parsed.kids.some((k: { name?: string }) => k?.name === 'حمزة') &&
+          parsed.kids.some((k: { name?: string }) => k?.name === 'ليلى') &&
+          parsed.kids.some((k: { name?: string }) => k?.name === 'يوسف');
+        const hasLegacyParent =
+          typeof parsed.parentName === 'string' &&
+          (parsed.parentName.includes('سارة') || parsed.parentName.toLowerCase().includes('sara'));
+        if (!hasCanonicalThreeKids || hasLegacyParent) {
           const migrated = {
             ...structuredClone(DEFAULT_SEED),
             language: parsed.language === 'en' ? 'en' : 'ar',

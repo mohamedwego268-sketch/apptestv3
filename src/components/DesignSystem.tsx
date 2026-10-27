@@ -2560,9 +2560,10 @@ export interface InteractiveSplashScreenProps {
 }
 
 /**
- * Minimalist 100% Text-Free Opening / Splash Intro Screen for نكبر (Nekbaar).
- * Displays ONLY a prominent, centered animated illustration of a boy and girl
- * over the subtle geometric background pattern (zero text, zero slogans, zero paragraphs).
+ * Opening / Splash Intro Screen for نكبر (Nekbaar).
+ * Shifts the prominent animated boy/girl illustration slightly upwards (upper-middle area)
+ * and renders the brand name "نكبر" and official slogan "مساحة تجمعنا.. وبحبهم نكبر"
+ * cleanly directly underneath in elegant, high-contrast typography.
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
   visible,
@@ -2582,15 +2583,15 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       dir={isEn ? 'ltr' : 'rtl'}
       role="dialog"
       aria-modal="true"
-      aria-label={isEn ? 'Nekbaar Splash Illustration' : 'شاشة ترحيب نكبر'}
+      aria-label={isEn ? 'Nekbaar Splash Screen' : 'شاشة ترحيب نكبر'}
       onClick={onSkipOrFinish}
-      className={`fixed inset-0 z-[130] w-screen h-screen flex items-center justify-center p-6 overflow-hidden select-none cursor-pointer transition-opacity duration-500 ${
+      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-center p-6 pb-14 sm:pb-20 overflow-hidden select-none cursor-pointer transition-opacity duration-700 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 45%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
-          : 'radial-gradient(circle at 50% 45%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
+          ? 'radial-gradient(circle at 50% 38%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
+          : 'radial-gradient(circle at 50% 38%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
       }}
     >
       {/* Subtle Geometric Background Pattern Overlay */}
@@ -2606,208 +2607,39 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
       />
 
-      {/* Prominent Centered Enlarged Animated Boy & Girl Illustration ONLY (Zero Text) */}
-      <div className="relative z-10 flex items-center justify-center">
-        <span
-          aria-hidden="true"
-          className="animate-nav-loader-pulse-ring absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
-        />
-        <div className="relative w-60 h-60 sm:w-72 sm:h-72 rounded-full bg-white/90 dark:bg-[#142430]/90 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
-          <PlayfulBoyAndGirlSplashSvg size={236} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export interface IndependentParentSessionGateProps {
-  visible: boolean;
-  language: LanguageCode;
-  darkMode?: boolean;
-  activeAccount: 'mother' | 'father';
-  onAuthenticateParent: (account: 'mother' | 'father') => void;
-}
-
-/**
- * Independent Account Architecture Login Gate for أحمد (الأب) and مريم (الأم).
- * Provides clean, isolated session authentication upon entry or sign-out,
- * with zero quick-toggle switch buttons inside the app workspace.
- */
-export const IndependentParentSessionGate: React.FC<IndependentParentSessionGateProps> = ({
-  visible,
-  language,
-  darkMode = false,
-  activeAccount,
-  onAuthenticateParent,
-}) => {
-  const isEn = language === 'en';
-  const [selectedParent, setSelectedParent] = useState<'mother' | 'father'>(activeAccount);
-  const [pinCode, setPinCode] = useState('2026');
-
-  useEffect(() => {
-    setSelectedParent(activeAccount);
-  }, [activeAccount]);
-
-  if (!visible) return null;
-
-  return (
-    <div
-      id="independent-parent-session-gate"
-      data-testid="independent-parent-session-gate"
-      dir={isEn ? 'ltr' : 'rtl'}
-      role="dialog"
-      aria-modal="true"
-      aria-label={
-        isEn
-          ? 'Independent Parent Account Sign-In'
-          : 'بوابة تسجيل الدخول المستقلة لحساب الوالدين'
-      }
-      className="fixed inset-0 z-[128] flex items-center justify-center p-4 overflow-y-auto bg-slate-950/80 backdrop-blur-md"
-    >
-      <GeometricBackdropPattern idPrefix="session-gate" darkMode={darkMode} />
-      <div className="relative z-10 w-full max-w-lg rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-6 sm:p-7 shadow-2xl space-y-5">
-        <div className="flex items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-teal-500/15 border border-teal-500/30 flex items-center justify-center shrink-0">
-            <PlayfulBoyAndGirlSplashSvg size={48} />
-          </div>
-          <div className="space-y-1 min-w-0">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]">
-              🔐 {isEn ? 'Isolated Parent Session Gate' : 'بوابة الجلسات المستقلة للوالدين'}
-            </span>
-            <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-              {isEn
-                ? 'Sign In to Your Independent Parent Account'
-                : 'تسجيل الدخول لحسابك المستقل في نكبر'}
-            </h2>
-          </div>
-        </div>
-
-        <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-          {isEn
-            ? 'Each parent maintains isolated personal tasks, preferences, and notes, while seamlessly sharing the central family database for Hamza (6m), Laila (4y), and Youssef (8y).'
-            : 'يحتفظ كل طرف (أحمد أو مريم) بمهامه الشخصية وإعداداته المستقلة تماماً، مع مشاركة قاعدة البيانات العائلية المركزية للأبناء الثلاثة: حمزة (٦ شهور)، ليلى (٤ سنوات)، ويوسف (٨ سنوات).'}
-        </p>
-
-        {/* Selection Cards for Ahmed (Father) & Maryam (Mother) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            data-testid="session-gate-select-father"
-            onClick={() => setSelectedParent('father')}
-            className={`min-h-[88px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
-              selectedParent === 'father'
-                ? 'border-[#0d9488] bg-teal-500/12 shadow-sm'
-                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <span className="text-2xl">👨🏻</span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-sky-500/15 text-sky-700 dark:text-sky-300">
-                {isEn ? 'Father Account' : 'حساب الأب المستقل'}
-              </span>
-            </div>
-            <div>
-              <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Ahmed (Father)' : 'أحمد (الأب)'}
-              </div>
-              <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
-                {isEn
-                  ? 'Personal tasks + Shared 3 kids DB'
-                  : 'مهام أحمد المستقلة + قاعدة بيانات الأولاد'}
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            data-testid="session-gate-select-mother"
-            onClick={() => setSelectedParent('mother')}
-            className={`min-h-[88px] p-4 rounded-2xl border-2 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
-              selectedParent === 'mother'
-                ? 'border-[#0d9488] bg-teal-500/12 shadow-sm'
-                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-2 w-full">
-              <span className="text-2xl">👩🏻</span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-rose-500/15 text-rose-700 dark:text-rose-300">
-                {isEn ? 'Mother Account' : 'حساب الأم المستقل'}
-              </span>
-            </div>
-            <div>
-              <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Maryam (Mother)' : 'مريم (الأم)'}
-              </div>
-              <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
-                {isEn
-                  ? 'Personal tasks + Shared 3 kids DB'
-                  : 'مهام مريم المستقلة + قاعدة بيانات الأولاد'}
-              </div>
-            </div>
-          </button>
-        </div>
-
-        {/* Family Shared Database Summary Badge */}
-        <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/70 p-3.5 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-            <span>👨‍👩‍👧‍👦 {isEn ? 'Shared Central Children Database:' : 'قاعدة بيانات الأبناء المشتركة تلقائياً:'}</span>
-            <span className="text-[#0d9488] dark:text-[#2DD4BF]">
-              {isEn ? 'Real-Time Synced' : 'مزامنة فورية آمنة'}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
-              👶🏻 {isEn ? 'Hamza (6m)' : 'حمزة (٦ شهور)'}
-            </span>
-            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
-              👧🏻 {isEn ? 'Laila (4y)' : 'ليلى (٤ سنوات)'}
-            </span>
-            <span className="px-3 py-1 rounded-xl bg-[var(--color-surface)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">
-              👦🏻 {isEn ? 'Youssef (8y)' : 'يوسف (٨ سنوات)'}
-            </span>
-          </div>
-        </div>
-
-        {/* Session Passcode / PIN Verification */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="parent-session-pin-input"
-            className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
-          >
-            {isEn ? 'Personal Session Passcode (PIN)' : 'رمز حماية الجلسة المستقلة (PIN)'}
-          </label>
-          <input
-            id="parent-session-pin-input"
-            type="password"
-            inputMode="numeric"
-            maxLength={6}
-            value={pinCode}
-            onChange={(e) => setPinCode(e.target.value.replace(/[^\d]/g, '').slice(0, 6))}
-            className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-sm font-black tracking-widest text-[var(--color-text)] dark:text-[#F8FAFC]"
+      {/* Vertical Flow Stack: Upper-Middle Illustration + Brand Name & Slogan Directly Underneath */}
+      <div className="relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-7 -mt-10 sm:-mt-14 text-center max-w-md mx-auto">
+        <div className="relative flex items-center justify-center">
+          <span
+            aria-hidden="true"
+            className="animate-nav-loader-pulse-ring absolute w-60 h-60 sm:w-72 sm:h-72 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
           />
+          <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full bg-white/92 dark:bg-[#142430]/92 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
+            <PlayfulBoyAndGirlSplashSvg size={216} />
+          </div>
         </div>
 
-        <button
-          type="button"
-          data-testid="confirm-parent-session-login-btn"
-          onClick={() => onAuthenticateParent(selectedParent)}
-          className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-        >
-          <span>🔓</span>
-          <span>
-            {selectedParent === 'father'
-              ? isEn
-                ? 'Enter Ahmed (Father) Independent Session'
-                : 'دخول جلسة أحمد (الأب) المستقلة'
-              : isEn
-              ? 'Enter Maryam (Mother) Independent Session'
-              : 'دخول جلسة مريم (الأم) المستقلة'}
-          </span>
-        </button>
+        {/* Brand Title "نكبر" & Official Heartbeat Slogan "مساحة تجمعنا.. وبحبهم نكبر" Directly Underneath */}
+        <div className="space-y-2.5 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
+          <h1
+            data-testid="splash-brand-title"
+            className="text-4xl sm:text-5xl font-black tracking-tight text-[#0B131A] dark:text-[#F8FAFC] leading-tight"
+          >
+            نكبر
+          </h1>
+          <p
+            data-testid="splash-brand-slogan"
+            className="text-lg sm:text-xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed"
+          >
+            مساحة تجمعنا.. وبحبهم نكبر
+          </p>
+          {isEn && (
+            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">
+              Nekbaar · A space that brings us together, growing with love
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
 };
-
-
-
