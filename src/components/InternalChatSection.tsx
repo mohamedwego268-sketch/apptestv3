@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LanguageCode, getEmptyStateCopy } from '../domain/familySpaceCore';
+import { LanguageCode, getEmptyStateCopy, sanitizeUserText } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { FriendlyEmptyState, PrimaryCtaButton, SoftFilledIcon } from './DesignSystem';
 
@@ -148,7 +148,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
     filteredThreads.find((t) => t.id === activeThreadId) || filteredThreads[0] || null;
 
   const handleSendMessage = (customText?: string) => {
-    const text = (customText ?? messageInput).trim();
+    const text = sanitizeUserText(customText ?? messageInput, 500);
     if (!text || !activeThread) return;
 
     const userMsg: ChatMessage = {

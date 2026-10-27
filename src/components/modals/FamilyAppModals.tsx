@@ -1164,10 +1164,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id="roleModalTitle"
                       className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate"
                     >
-                      {isEn ? 'Master Navigation & Quick Controls' : 'القائمة الرئيسية والتحكم السريع'}
+                      {isEn ? 'Nekbaar · Master Navigation' : 'نكبر · القائمة الرئيسية والتحكم'}
                     </h2>
-                    <p className="text-[10.5px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
-                      {todayFormattedCombined}
+                    <p className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] truncate">
+                      {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
                     </p>
                   </div>
                 </div>
@@ -1929,6 +1929,47 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                           icon: '☁️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('settings');
+                            onCloseRoleModal();
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      id: 'contact',
+                      pageId: 'contact',
+                      iconId: 'shield',
+                      titleAr: '١٣. تواصل معنا والدعم',
+                      titleEn: '13. Contact Us & Support Hub',
+                      badgeAr: 'دعم ٢٤/٧',
+                      badgeEn: '24/7 Care',
+                      subItems: [
+                        {
+                          id: 'contact-direct-page',
+                          labelAr: 'نموذج التواصل المباشر والشكاوى والمقترحات',
+                          labelEn: 'Direct Contact & Feedback Form',
+                          icon: '✉️',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('contact');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'contact-whatsapp-hotline',
+                          labelAr: 'خدمة العملاء واتساب وهاتف: +20 100 888 4422',
+                          labelEn: 'Customer Care WhatsApp & Phone: +20 100 888 4422',
+                          icon: '📞',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('contact');
+                            onCloseRoleModal();
+                          },
+                        },
+                        {
+                          id: 'contact-official-email',
+                          labelAr: 'البريد الرسمي: support@nekbaar.com (٩ ص – ١١ م)',
+                          labelEn: 'Official Email: support@nekbaar.com (9 AM – 11 PM)',
+                          icon: '🌐',
+                          onSelect: () => {
+                            onNavigateFromDrawer?.('contact');
                             onCloseRoleModal();
                           },
                         },

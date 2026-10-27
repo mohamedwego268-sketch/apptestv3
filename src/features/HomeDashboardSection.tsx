@@ -9,7 +9,6 @@ import {
   calculateChildAge,
   locText,
 } from '../domain/familySpaceCore';
-import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import {
   FamilyMoodBarometer,
   MasterPatternCard,
@@ -223,11 +222,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const currentSport = sportActivities[selectedSportSlot];
   const isSportDoneToday = Boolean(completedSportByKid[activeKidId]);
 
-  const heroBgSpec = getCardBackgroundSpec(
-    state.role === 'dad' ? 'medical' : 'family',
-    state.darkMode
-  );
-
   // Clean Minimalist Gateways Grid Items
   const minimalistGateways: Array<{
     id: PageId;
@@ -343,13 +337,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         data-testid="home-core-value-hero"
         data-parent-profile={parentProfileSpec.role}
         style={{
-          backgroundImage: heroBgSpec.backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
-        className="image-bg-card rounded-3xl p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-sm"
+        className="rounded-3xl border-2 bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-7 flex flex-col justify-between gap-4 shadow-sm"
       >
-        <div className="space-y-2.5">
-          {/* Clean Uncluttered Top Context Line */}
+        <div className="space-y-3">
+          {/* Clean Uncluttered Top Context Line + Official Slogan Pill */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
             <div className="inline-flex items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
               <span>{timeAwareSpec.icon}</span>
@@ -357,20 +350,28 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <span aria-hidden="true" className="opacity-50">·</span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
             </div>
-            <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-              {todayFormattedCombined}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-[11px] font-black">
+              <span>✨</span>
+              <span>
+                {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+              </span>
             </span>
           </div>
 
           {/* Main Greeting Heading */}
-          <div className="space-y-1">
-            <h1
-              id="home-main-greeting-heading"
-              className="image-card-title text-lg sm:text-2xl font-black leading-snug"
-            >
-              {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
-            </h1>
-            <p className="text-xs sm:text-sm font-bold text-[var(--color-text)]/90 dark:text-[#E2E8F0] leading-relaxed">
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h1
+                id="home-main-greeting-heading"
+                className="text-xl sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
+              >
+                {isEn ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
+              </h1>
+              <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {todayFormattedCombined}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
               {isEn ? timeAwareSpec.recBodyEn : timeAwareSpec.recBodyAr}
             </p>
           </div>
@@ -387,7 +388,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         />
       </div>
 
-      {/* Emotional Family Engagement Barometer */}
+      {/* Emotional Family Energy & Mood Gauge Meter */}
       <FamilyMoodBarometer
         language={lang}
         darkMode={Boolean(state.darkMode)}
@@ -395,47 +396,145 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       />
 
       {/* =====================================================================
-          2. INTERACTIVE KIDS SWITCHER BAR (3D / Real Avatars)
+          1B. DAILY HERO CHALLENGE & PARENTING WISDOM (SOLID HIGH-CONTRAST CARDS)
+          ===================================================================== */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Daily Hero Challenge Card */}
+        <div
+          id="home-daily-hero-challenge"
+          data-testid="home-daily-hero-challenge"
+          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[11px] font-black">
+                🏆 {isEn ? 'Daily Hero Challenge' : 'تحدي بطل اليوم'}
+              </span>
+              <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                +25 ⭐ {isEn ? 'Points' : 'نقطة تشجيع'}
+              </span>
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn
+                ? `15-Minute Tidy-Up & Gratitude Circle with ${activeKidName}`
+                : `١٥ دقيقة ترتيب الألعاب بمرح + جملة شكر مع ${activeKidName}`}
+            </h3>
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+              {isEn
+                ? 'Turn cleanup into a quick team race before dinner and celebrate together!'
+                : 'حوّلوا ترتيب الغرفة لسباق عائلي مبهج على أنشودة قصيرة واحتفلوا بالإنجاز معاً!'}
+            </p>
+          </div>
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+            <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+              👶 {activeKidName} ({activeKidStageLabel})
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onShowToast?.(
+                  isEn
+                    ? `🏆 Bravo! ${activeKidName} completed the Daily Hero Challenge (+25 ⭐)!`
+                    : `🏆 بطل رائع! أتمّ ${activeKidName} تحدي بطل اليوم وحصل على +٢٥ نجمة تشجيع!`
+                );
+              }}
+              className="min-h-[34px] px-3.5 py-1 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer"
+            >
+              {isEn ? 'Complete Challenge 🎉' : 'إتمام التحدي 🎉'}
+            </button>
+          </div>
+        </div>
+
+        {/* Daily Parenting Wisdom Card */}
+        <div
+          id="home-daily-parenting-wisdom"
+          data-testid="home-daily-parenting-wisdom"
+          className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 flex flex-col justify-between gap-3 shadow-2xs"
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-black">
+                💡 {isEn ? 'Daily Parenting Wisdom' : 'حكمة ومعلومة تربوية اليوم'}
+              </span>
+              <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {isEn ? 'Positive Discipline' : 'تربية إيجابية ذكية'}
+              </span>
+            </div>
+            <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn
+                ? 'Connection Before Correction Builds Lifelong Confidence'
+                : '«التواصل العاطفي قبل التوجيه» يصنع طفلاً واثقاً ومتعاوناً'}
+            </h3>
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+              {isEn
+                ? `When ${activeKidName} feels heard for 30 seconds at eye level, cooperation increases naturally without power struggles.`
+                : `النزول لمستوى نظر ${activeKidName} واحتواء مشاعره لمدة ٣٠ ثانية قبل إعطاء التوجيه يضاعف استجابته بهدوء وحب.`}
+            </p>
+          </div>
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+            <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+              ✨ {isEn ? 'Verified Pediatric Psychology Tip' : 'توصية خبراء علم نفس الطفل'}
+            </span>
+            <button
+              type="button"
+              onClick={() => navigateTo('assistant')}
+              className="min-h-[34px] px-3.5 py-1 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-extrabold transition-all cursor-pointer"
+            >
+              {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================================
+          2. REFINED KIDS CAROUSEL & ELEVATED MODULAR CARDS (ملفات الأطفال)
           ===================================================================== */}
       <div
         id="home-kids-switcher-bar"
         data-testid="home-kids-switcher-bar"
-        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3 soft-card-surface shadow-2xs"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 soft-card-surface shadow-sm"
       >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-              👶 {isEn ? 'Select Child Context' : 'اختر طفلك لتخصيص لوحة الرعاية اليومية'}
-            </h2>
-            <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2">
+              <span className="w-8 h-8 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-base">
+                👶
+              </span>
+              <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Our Children · Active Care Context' : 'ملفات أطفالنا · تخصيص لوحة الرعاية اليومية'}
+              </h2>
+            </div>
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
               {isEn
-                ? `Showing nutrition, hydration & sports tailored for ${activeKidName} (${activeKidStageLabel})`
-                : `يتم تحديث التغذية وشرب المياه والنشاط البدني تلقائياً حسب عمر ${activeKidName} (${activeKidStageLabel})`}
+                ? `Tailoring nutrition, hydration & sports for ${activeKidName} (${activeKidStageLabel})`
+                : `يتم تخصيص التغذية وشرب المياه والنشاط البدني تلقائياً حسب مرحلة ${activeKidName} (${activeKidStageLabel})`}
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => navigateTo('children')}
-            className="min-h-[36px] px-3.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer shrink-0"
+            className="min-h-[38px] px-4 py-2 rounded-2xl border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer shrink-0 shadow-2xs"
           >
-            {isEn ? 'Manage 3D Profiles →' : 'ملفات الأطفال 3D ←'}
+            {isEn ? 'Manage 3D Profiles →' : 'إدارة ملفات الأطفال 3D ←'}
           </button>
         </div>
 
-        {/* Horizontal Scrollable Kids Avatar Cards */}
+        {/* Horizontal Carousel of Elevated Modular Child Cards */}
         <div
           role="tablist"
           aria-label={isEn ? 'Children Switcher' : 'شريط اختيار الطفل'}
-          className="flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-1"
+          className="flex items-stretch gap-4 overflow-x-auto no-scrollbar pt-1 pb-2"
         >
           {state.kids.map((kid, idx) => {
             const isSelected = idx === selectedKidIdx;
             const ageInfo = calculateChildAge(kid.birth, lang);
             const displayKidName = locText(kid.name, lang);
+            const kidInterests = locText(kid.interests || 'القصص والمكعبات', lang);
             const kidDoneCount = state.tasks.filter(
               (tItem) => tItem.done && (Number(tItem.kidId) === kid.id || tItem.kidId === null)
             ).length;
+            const kidWaterCups = waterCupsByKid[kid.id] ?? 4;
 
             return (
               <button
@@ -452,40 +551,92 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       : `تم تخصيص لوحة اليوم لـ ${displayKidName} (${ageInfo.label})`
                   );
                 }}
-                className={`min-w-[215px] sm:min-w-[240px] rounded-2xl border p-3 text-start transition-all flex items-center gap-3 shrink-0 cursor-pointer ${
+                className={`min-w-[270px] sm:min-w-[305px] rounded-3xl border-2 p-4 sm:p-5 text-start transition-all duration-300 flex flex-col justify-between gap-3.5 shrink-0 cursor-pointer ${
                   isSelected
-                    ? 'border-[#0d9488] bg-teal-50/75 dark:bg-[#142430] ring-2 ring-[#0d9488]/20 shadow-sm'
-                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#0B131A]/60 hover:border-[#0d9488]/60'
+                    ? 'border-[#0d9488] bg-gradient-to-br from-teal-50/90 via-white to-amber-50/50 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] ring-4 ring-[#0d9488]/15 shadow-md -translate-y-0.5'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A]/85 hover:border-[#0d9488]/60 hover:shadow-sm'
                 }`}
               >
-                <div className="shrink-0">
-                  <ThreeDChildAvatar
-                    name={displayKidName}
-                    gender={kid.gender}
-                    stageCode={ageInfo.stageCode}
-                    accessoryTheme={kid.avatarTheme || 'astronaut'}
-                    photoDataUrl={kid.photoDataUrl}
-                    useIllustratedAvatar={kid.useIllustratedAvatar}
-                    size="sm"
+                {/* Card Top Layer: 3D Avatar + Name + Active Pill */}
+                <div className="flex items-start justify-between gap-3 w-full">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div
+                      className={`p-1 rounded-2xl border transition-transform ${
+                        isSelected
+                          ? 'border-[#0d9488]/40 bg-white dark:bg-[#101D26] scale-105 shadow-xs'
+                          : 'border-transparent'
+                      }`}
+                    >
+                      <ThreeDChildAvatar
+                        name={displayKidName}
+                        gender={kid.gender}
+                        stageCode={ageInfo.stageCode}
+                        accessoryTheme={kid.avatarTheme || 'astronaut'}
+                        photoDataUrl={kid.photoDataUrl}
+                        useIllustratedAvatar={kid.useIllustratedAvatar}
+                        size="sm"
+                      />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                        {displayKidName}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="px-2.5 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/20 text-[10.5px] font-black">
+                          {ageInfo.label}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/12 text-amber-800 dark:text-amber-300 text-[10px] font-extrabold">
+                          {ageInfo.stageTitle}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-black shrink-0 transition-all ${
+                      isSelected
+                        ? 'bg-[#0d9488] text-white shadow-2xs'
+                        : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#94A3B8]'
+                    }`}
+                  >
+                    {isSelected
+                      ? isEn
+                        ? '✓ Active'
+                        : '✓ نشط الآن'
+                      : isEn
+                      ? 'Select'
+                      : 'اختيار'}
+                  </span>
+                </div>
+
+                {/* Card Middle Layer: Interests & Star Crown */}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] w-full">
+                  <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] truncate">
+                    🎨 {kidInterests}
+                  </span>
+                  <StarOfTheDayCrownBadge
+                    language={lang}
+                    completedCount={Math.max(1, kidDoneCount)}
                   />
                 </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
-                      {displayKidName}
+
+                {/* Card Bottom Layer: Quick Daily Metrics Pills */}
+                <div className="grid grid-cols-2 gap-2 w-full">
+                  <div className="rounded-xl bg-[var(--color-control-muted)]/70 dark:bg-[#101D26] border border-[var(--color-border)]/70 dark:border-[#1E3646] px-2.5 py-1.5 flex items-center justify-between text-[10.5px] font-extrabold">
+                    <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
+                      💧 {isEn ? 'Water' : 'المياه'}
                     </span>
-                    {isSelected && (
-                      <span className="w-2 h-2 rounded-full bg-[#0d9488] dark:bg-[#2DD4BF] shrink-0" />
-                    )}
+                    <span className="text-sky-600 dark:text-sky-400 tabular-nums">
+                      {kidWaterCups} {isEn ? 'cups' : 'أكواب'}
+                    </span>
                   </div>
-                  <div className="text-[10.5px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
-                    {ageInfo.label} · {ageInfo.stageTitle}
-                  </div>
-                  <div className="pt-0.5">
-                    <StarOfTheDayCrownBadge
-                      language={lang}
-                      completedCount={Math.max(1, kidDoneCount)}
-                    />
+                  <div className="rounded-xl bg-[var(--color-control-muted)]/70 dark:bg-[#101D26] border border-[var(--color-border)]/70 dark:border-[#1E3646] px-2.5 py-1.5 flex items-center justify-between text-[10.5px] font-extrabold">
+                    <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
+                      ✅ {isEn ? 'Routine' : 'الروتين'}
+                    </span>
+                    <span className="text-[#0d9488] dark:text-[#2DD4BF] tabular-nums">
+                      {kidDoneCount} {isEn ? 'done' : 'مكتمل'}
+                    </span>
                   </div>
                 </div>
               </button>

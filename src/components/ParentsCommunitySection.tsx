@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { LanguageCode } from '../domain/familySpaceCore';
+import { LanguageCode, sanitizeUserText } from '../domain/familySpaceCore';
 import {
   BannerSlideItem,
   CollapsibleSectionCard,
@@ -289,7 +289,31 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   // Short-Form Family Story Reels Preview State
   const [activeStoryReelId, setActiveStoryReelId] = useState<string | null>(null);
 
-  const familyStoryReels = [
+  // Interactive Instagram/Facebook-Style Parent Stories State
+  const [customParentStories, setCustomParentStories] = useState<
+    Array<{
+      id: string;
+      authorAr: string;
+      authorEn: string;
+      roleAr: string;
+      roleEn: string;
+      isExpert: boolean;
+      duration: string;
+      emoji: string;
+      titleAr: string;
+      titleEn: string;
+      summaryAr: string;
+      summaryEn: string;
+      imageUrl: string;
+    }>
+  >([]);
+  const [viewedStoryIds, setViewedStoryIds] = useState<Record<string, boolean>>({});
+  const [storyModalId, setStoryModalId] = useState<string | null>(null);
+  const [addStoryModalOpen, setAddStoryModalOpen] = useState<boolean>(false);
+  const [newStoryText, setNewStoryText] = useState<string>('');
+  const [newStoryEmoji, setNewStoryEmoji] = useState<string>('🌟');
+
+  const defaultStoryReels = [
     {
       id: 'reel-expert-sleep',
       authorAr: 'د. طارق النجار',
@@ -352,7 +376,44 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     },
   ];
 
+  const familyStoryReels = [...customParentStories, ...defaultStoryReels];
   const activeStoryReel = familyStoryReels.find((r) => r.id === activeStoryReelId) || null;
+  const modalStoryIndex = familyStoryReels.findIndex((r) => r.id === storyModalId);
+  const activeModalStory = modalStoryIndex >= 0 ? familyStoryReels[modalStoryIndex] : null;
+
+  const handleCreateParentStory = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanText = sanitizeUserText(newStoryText, 220);
+    if (!cleanText) {
+      onShowToast(
+        isEn ? 'Please enter a short status or parenting moment' : 'يرجى كتابة لحظة أو حالة يومية قصيرة'
+      );
+      return;
+    }
+    const createdStory = {
+      id: `story-user-${Date.now()}`,
+      authorAr: sanitizeUserText(parentName, 60) || 'ولي أمر',
+      authorEn: sanitizeUserText(parentName, 60) || 'Parent',
+      roleAr: '✨ حالتي اليوم',
+      roleEn: '✨ My Daily Story',
+      isExpert: false,
+      duration: '0:15',
+      emoji: newStoryEmoji,
+      titleAr: cleanText,
+      titleEn: cleanText,
+      summaryAr: `لحظة عائلية مشاركة من ${sanitizeUserText(city, 40)} — مساحة تجمعنا.. وبحبهم نكبر.`,
+      summaryEn: `Shared family moment from ${sanitizeUserText(city, 40)} — A space that brings us together.`,
+      imageUrl:
+        'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=80',
+    };
+    setCustomParentStories((prev) => [createdStory, ...prev]);
+    setNewStoryText('');
+    setAddStoryModalOpen(false);
+    setStoryModalId(createdStory.id);
+    onShowToast(
+      isEn ? '✨ Your story is now live in Parents Community!' : '✨ تم نشر حالتك اليومية في لمة الآباء بنجاح!'
+    );
+  };
 
   const filteredPosts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -371,7 +432,9 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
   const handlePublishPost = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPostTitle.trim() || !newPostBody.trim()) {
+    const safeTitle = sanitizeUserText(newPostTitle, 140);
+    const safeBody = sanitizeUserText(newPostBody, 800);
+    if (!safeTitle || !safeBody) {
       onShowToast(isEn ? 'Please enter a title and post content' : 'يرجى كتابة عنوان ومحتوى المشاركة');
       return;
     }
@@ -386,19 +449,19 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
     const created: CommunityPost = {
       id: Date.now(),
-      authorAr: parentName,
-      authorEn: parentName,
-      authorCityAr: city,
-      authorCityEn: city,
-      childAgeLabelAr: newPostAge,
-      childAgeLabelEn: newPostAge,
+      authorAr: sanitizeUserText(parentName, 60),
+      authorEn: sanitizeUserText(parentName, 60),
+      authorCityAr: sanitizeUserText(city, 50),
+      authorCityEn: sanitizeUserText(city, 50),
+      childAgeLabelAr: sanitizeUserText(newPostAge, 40),
+      childAgeLabelEn: sanitizeUserText(newPostAge, 40),
       topicId: newPostTopic,
       topicLabelAr: topicLabels[newPostTopic].ar,
       topicLabelEn: topicLabels[newPostTopic].en,
-      titleAr: newPostTitle.trim(),
-      titleEn: newPostTitle.trim(),
-      bodyAr: newPostBody.trim(),
-      bodyEn: newPostBody.trim(),
+      titleAr: safeTitle,
+      titleEn: safeTitle,
+      bodyAr: safeBody,
+      bodyEn: safeBody,
       timeAgoAr: 'الآن',
       timeAgoEn: 'Just now',
       likes: 1,
@@ -415,7 +478,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   };
 
   const handleAddComment = (postId: number) => {
-    const text = (commentDrafts[postId] || '').trim();
+    const text = sanitizeUserText(commentDrafts[postId] || '', 400);
     if (!text) return;
     setPosts((prev) =>
       prev.map((p) =>
@@ -426,8 +489,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 ...p.comments,
                 {
                   id: Date.now(),
-                  authorAr: parentName,
-                  authorEn: parentName,
+                  authorAr: sanitizeUserText(parentName, 60),
+                  authorEn: sanitizeUserText(parentName, 60),
                   roleBadgeAr: 'ولي أمر',
                   roleBadgeEn: 'Parent',
                   textAr: text,
@@ -493,6 +556,313 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
   return (
     <section className="space-y-3.5" aria-label={isEn ? 'Parents Community' : 'مجتمع الوالدين'}>
+      {/* =====================================================================
+          INSTAGRAM / FACEBOOK STYLE INTERACTIVE STORIES CAROUSEL ("حالات الآباء")
+          ===================================================================== */}
+      <div
+        id="community-stories-carousel"
+        data-testid="community-stories-carousel"
+        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3 soft-card-surface shadow-2xs"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📸</span>
+            <div>
+              <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Parents Daily Stories & Moments' : 'حالات ويوميات الآباء (Stories)'}
+              </h3>
+              <p className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {isEn
+                  ? 'Tap any ring to view daily parenting highlights or share your own'
+                  : 'اضغط على أي دائرة لمشاهدة يوميات العائلات والخبراء أو شارك لحظتك الآن'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            data-testid="community-open-add-story-btn"
+            onClick={() => setAddStoryModalOpen(true)}
+            className="min-h-[34px] px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FF8C61] to-[#0d9488] text-white text-[11px] font-extrabold shadow-2xs hover:opacity-95 active:scale-95 transition-all cursor-pointer shrink-0"
+          >
+            + {isEn ? 'Add Story' : 'أضف حالتك'}
+          </button>
+        </div>
+
+        {/* Horizontal Avatar Stories Carousel with Active Gradient Rings */}
+        <div className="flex items-start gap-3.5 overflow-x-auto no-scrollbar pt-1 pb-1">
+          {/* 1. "+ أضف حالتك / Add Story" Circular Trigger */}
+          <button
+            type="button"
+            data-testid="stories-carousel-add-trigger"
+            onClick={() => setAddStoryModalOpen(true)}
+            className="flex flex-col items-center gap-1.5 shrink-0 w-[76px] group cursor-pointer"
+          >
+            <div className="relative w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-[#0d9488] via-teal-400 to-[#FF8C61] group-hover:scale-105 transition-transform">
+              <div className="w-full h-full rounded-full bg-[var(--color-surface)] dark:bg-[#142430] flex items-center justify-center text-2xl">
+                ➕
+              </div>
+              <span className="absolute -bottom-0.5 -end-0.5 w-6 h-6 rounded-full bg-[#FF8C61] text-white text-xs font-black border-2 border-white dark:border-[#101D26] flex items-center justify-center shadow-xs">
+                +
+              </span>
+            </div>
+            <span className="text-[10.5px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate w-full text-center">
+              {isEn ? 'Add Story' : 'أضف حالتك'}
+            </span>
+          </button>
+
+          {/* 2. Active Parent & Expert Story Circles */}
+          {familyStoryReels.map((story) => {
+            const isViewed = Boolean(viewedStoryIds[story.id]);
+            return (
+              <button
+                key={`circle-${story.id}`}
+                type="button"
+                data-testid={`story-circle-${story.id}`}
+                onClick={() => {
+                  setViewedStoryIds((prev) => ({ ...prev, [story.id]: true }));
+                  setStoryModalId(story.id);
+                }}
+                className="flex flex-col items-center gap-1.5 shrink-0 w-[80px] group cursor-pointer"
+              >
+                <div
+                  className={`relative w-16 h-16 rounded-full p-[3px] transition-transform group-hover:scale-105 ${
+                    isViewed
+                      ? 'bg-slate-300 dark:bg-slate-700'
+                      : 'bg-gradient-to-tr from-[#FF8C61] via-amber-400 to-[#0d9488] shadow-sm'
+                  }`}
+                >
+                  <img
+                    src={story.imageUrl}
+                    alt={isEn ? story.authorEn : story.authorAr}
+                    loading="lazy"
+                    className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#101D26]"
+                  />
+                  <span className="absolute -bottom-0.5 -end-0.5 w-5 h-5 rounded-full bg-white dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] flex items-center justify-center shadow-2xs">
+                    {story.emoji}
+                  </span>
+                </div>
+                <span className="text-[10.5px] font-bold text-[var(--color-text)] dark:text-[#F8FAFC] truncate w-full text-center">
+                  {(isEn ? story.authorEn : story.authorAr).split(' ')[0]}{' '}
+                  {(isEn ? story.authorEn : story.authorAr).split(' ')[1] || ''}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Add Story Composer Modal Popup */}
+      {addStoryModalOpen && (
+        <div
+          id="community-add-story-modal"
+          data-testid="community-add-story-modal"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[120] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setAddStoryModalOpen(false)}
+        >
+          <form
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleCreateParentStory}
+            className="w-full max-w-md rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 shadow-2xl"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                📸 {isEn ? 'Share a Daily Parenting Story' : 'أضف حالتك ولحظتك اليومية مع أطفالك'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setAddStoryModalOpen(false)}
+                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {isEn ? 'Pick a Mood Icon' : 'اختر رمز اللحظة'}
+              </label>
+              <div className="flex items-center gap-2">
+                {['🌟', '🧸', '🍱', '🏅', '❤️', '🌙'].map((em) => (
+                  <button
+                    key={em}
+                    type="button"
+                    onClick={() => setNewStoryEmoji(em)}
+                    className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center border transition-all cursor-pointer ${
+                      newStoryEmoji === em
+                        ? 'border-[#0d9488] bg-teal-500/15 scale-105'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430]'
+                    }`}
+                  >
+                    {em}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {isEn ? 'Your Story Highlight' : 'اكتب حالتك أو إنجاز طفلك اليوم'}
+              </label>
+              <textarea
+                rows={3}
+                maxLength={220}
+                value={newStoryText}
+                onChange={(e) => setNewStoryText(e.target.value)}
+                placeholder={
+                  isEn
+                    ? 'e.g., Ezz finished his healthy lunchbox and read a bedtime story!'
+                    : 'مثال: الحمد لله عز خلص اللانش بوكس الصحي وقرينا قصة قبل النوم بهدوء!'
+                }
+                className="w-full rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-3 text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => setAddStoryModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-muted)] cursor-pointer"
+              >
+                {isEn ? 'Cancel' : 'إلغاء'}
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold shadow-sm cursor-pointer"
+              >
+                {isEn ? 'Publish Story ✨' : 'نشر الحالة الآن ✨'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Full-Screen Interactive Story Viewer Modal (Instagram/Facebook Story Popup) */}
+      {activeModalStory && (
+        <div
+          id="community-story-viewer-modal"
+          data-testid="community-story-viewer-modal"
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-[125] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setStoryModalId(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm rounded-[32px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between min-h-[480px]"
+          >
+            <img
+              src={activeModalStory.imageUrl}
+              alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
+              className="absolute inset-0 w-full h-full object-cover opacity-55"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/35 to-black/90"
+            />
+
+            {/* Story Top Progress Segments & Author Header */}
+            <div className="relative z-10 p-4 space-y-3">
+              <div className="flex items-center gap-1.5">
+                {familyStoryReels.map((s, idx) => (
+                  <div
+                    key={s.id}
+                    className="flex-1 h-1 rounded-full bg-white/25 overflow-hidden"
+                  >
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        idx <= modalStoryIndex ? 'w-full bg-[#2DD4BF]' : 'w-0'
+                      }`}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FF8C61] to-[#0d9488] flex items-center justify-center text-lg shrink-0">
+                    {activeModalStory.emoji}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-black truncate">
+                      {isEn ? activeModalStory.authorEn : activeModalStory.authorAr}
+                    </div>
+                    <div className="text-[10px] font-bold text-amber-300 truncate">
+                      {isEn ? activeModalStory.roleEn : activeModalStory.roleAr}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setStoryModalId(null)}
+                  className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 text-white text-sm font-black flex items-center justify-center cursor-pointer"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Story Center Content */}
+            <div className="relative z-10 px-6 py-8 text-center space-y-3 my-auto">
+              <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
+              <h4 className="text-lg sm:text-xl font-black leading-snug">
+                {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
+              </h4>
+              <p className="text-xs sm:text-sm font-semibold text-slate-200 leading-relaxed">
+                {isEn ? activeModalStory.summaryEn : activeModalStory.summaryAr}
+              </p>
+            </div>
+
+            {/* Story Footer Controls & Quick Reactions */}
+            <div className="relative z-10 p-4 border-t border-white/15 bg-black/50 backdrop-blur-xs flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
+                  <button
+                    key={reactEmoji}
+                    type="button"
+                    onClick={() =>
+                      onShowToast(
+                        isEn
+                          ? `Sent ${reactEmoji} reaction to ${activeModalStory.authorEn}!`
+                          : `تم إرسال تفاعل ${reactEmoji} على حالة ${activeModalStory.authorAr}!`
+                      )
+                    }
+                    className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 text-sm flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
+                  >
+                    {reactEmoji}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const prevIdx =
+                      (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
+                    setStoryModalId(familyStoryReels[prevIdx].id);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-[11px] font-extrabold cursor-pointer"
+                >
+                  {isEn ? 'Prev' : 'السابق'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
+                    setStoryModalId(familyStoryReels[nextIdx].id);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-[11px] font-extrabold cursor-pointer"
+                >
+                  {isEn ? 'Next' : 'التالي'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Swipeable Community Banner Carousel */}
       <SwipeableBannerCarousel
         slides={communityBanners}

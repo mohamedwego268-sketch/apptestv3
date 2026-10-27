@@ -21,6 +21,22 @@ export type CalendarDisplayMode = 'both' | 'gregorian' | 'hijri';
 export type TaskCadence = 'daily' | 'weekly' | 'monthly';
 export type AgeStage = '0-2' | '2-5' | '5-8' | 'all';
 
+/**
+ * Enterprise-grade XSS & injection sanitizer for user-submitted strings
+ * across Community Posts, Stories, Comments, Wishes, Routine Tasks, and Child Profiles.
+ */
+export function sanitizeUserText(raw: string, maxLength = 600): string {
+  if (!raw || typeof raw !== 'string') return '';
+  return raw
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/<\/?[a-z][^>]*>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=/gi, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .trim()
+    .slice(0, maxLength);
+}
+
 export interface BilingualText {
   ar: string;
   en: string;

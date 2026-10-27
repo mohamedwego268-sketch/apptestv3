@@ -737,33 +737,40 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
       role="status"
       aria-live="polite"
       aria-busy={!fadingOut}
-      className={`fixed inset-0 z-[80] pointer-events-none flex items-center justify-center p-5 sm:p-6 transition-all duration-200 ease-out ${
-        fadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+      className={`fixed inset-0 z-[80] pointer-events-none flex flex-col items-center justify-center p-6 sm:p-10 transition-all duration-200 ease-out overflow-hidden ${
+        fadingOut ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
       }`}
       style={{
-        backgroundColor: 'rgba(11, 19, 26, 0.34)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
+        backgroundColor: 'rgba(11, 19, 26, 0.88)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        backgroundImage:
+          'radial-gradient(rgba(45, 212, 191, 0.16) 1.5px, transparent 1.5px), radial-gradient(rgba(255, 140, 97, 0.14) 1.5px, transparent 1.5px)',
+        backgroundSize: '32px 32px',
+        backgroundPosition: '0 0, 16px 16px',
       }}
     >
-      <div className="w-[88vw] max-w-[340px] sm:max-w-[380px] rounded-[34px] border border-white/80 dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-7 py-7 sm:px-9 sm:py-8 shadow-[0_28px_64px_-12px_rgba(11,19,26,0.48)] flex flex-col items-center justify-center gap-4 text-center">
+      <div className="w-[92vw] max-w-[420px] rounded-[36px] border border-white/80 dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-8 py-9 sm:px-10 sm:py-10 shadow-[0_28px_64px_-12px_rgba(11,19,26,0.55)] flex flex-col items-center justify-center gap-5 text-center">
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-[#0d9488]/25 via-[#FF8C61]/20 to-[#FBBF24]/25"
+            className="animate-nav-loader-pulse-ring absolute w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/25 to-[#FBBF24]/30"
           />
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-b from-amber-50/90 to-teal-50/80 dark:from-[#142430] dark:to-[#0B131A] border border-teal-500/25 dark:border-[#1E3646] flex items-center justify-center shadow-md">
-            <PlayfulChildLoaderSvg size={88} />
+          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-b from-amber-50/90 to-teal-50/80 dark:from-[#142430] dark:to-[#0B131A] border border-teal-500/25 dark:border-[#1E3646] flex items-center justify-center shadow-md">
+            <PlayfulChildLoaderSvg size={96} />
           </div>
         </div>
 
         <div className="space-y-2.5 w-full pt-1">
-          <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+          <div className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
             {displayLabel}
           </div>
+          <p className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+            {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+          </p>
 
           {/* Enlarged Glowing Progress Indicator */}
-          <div className="w-48 sm:w-56 mx-auto h-2 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
+          <div className="w-56 sm:w-64 mx-auto h-2.5 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
             <div className="animate-nav-progress h-full w-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61]" />
           </div>
         </div>
@@ -1549,57 +1556,225 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
     onSelectMood?.(opt.id, `${opt.emoji} ${isEn ? opt.vibeEn : opt.vibeAr}`);
   };
 
+  const energyGaugePercent =
+    selectedMood === 'excited'
+      ? 96
+      : selectedMood === 'focused'
+      ? 84
+      : selectedMood === 'calm'
+      ? 68
+      : 48;
+
+  // Needle angle from -90deg (leftmost 0%) to +90deg (rightmost 100%)
+  const needleAngleDeg = Math.round((energyGaugePercent / 100) * 180 - 90);
+  // Semicircle arc path length for radius 80 is pi * 80 ≈ 251.3
+  const arcTotalLen = 251.3;
+  const arcActiveLen = (energyGaugePercent / 100) * arcTotalLen;
+
   return (
     <div
       id="family-mood-barometer"
       data-testid="family-mood-barometer"
-      className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2.5 sm:px-4 sm:py-3 soft-card-surface flex flex-wrap items-center justify-between gap-2.5"
+      className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface shadow-sm"
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <span className="w-8 h-8 rounded-xl bg-amber-400/15 dark:bg-[#142430] border border-amber-400/35 dark:border-[#1E3646] flex items-center justify-center text-base shrink-0">
-          {activeMoodObj.emoji}
-        </span>
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] sm:text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
-              {isEn ? 'Family Mood Barometer' : 'مؤشر مود العيلة اليوم'}
-            </span>
-            <span className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] shrink-0">
-              · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
-            </span>
-          </div>
-          <p className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
-            {isEn ? activeMoodObj.vibeEn : activeMoodObj.vibeAr}
-          </p>
-        </div>
-      </div>
-
-      <div
-        role="radiogroup"
-        aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
-        className="flex flex-wrap items-center gap-1.5 ms-auto"
-      >
-        {FAMILY_MOOD_OPTIONS.map((opt) => {
-          const isSelected = opt.id === selectedMood;
-          return (
-            <button
-              key={opt.id}
-              type="button"
-              role="radio"
-              aria-checked={isSelected}
-              data-testid={`mood-option-${opt.id}`}
-              onClick={() => handleChooseMood(opt)}
-              className={`min-h-[32px] px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
-                isSelected
-                  ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs scale-[1.03]'
-                  : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
-              }`}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+        {/* Left/Start Column: Interactive Half-Circle Speedometer / Gauge Widget (SVG) */}
+        <div className="lg:col-span-5 flex flex-col items-center justify-center rounded-2xl border border-[var(--color-border)]/70 dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/70 p-4">
+          <div className="relative w-full max-w-[250px] flex flex-col items-center">
+            <svg
+              data-testid="half-circle-energy-gauge-svg"
+              viewBox="0 0 220 128"
+              className="w-full h-auto overflow-visible select-none"
+              role="img"
+              aria-label={
+                isEn
+                  ? `Family Energy & Mood Gauge: ${energyGaugePercent}%`
+                  : `عدّاد طاقة ومود العيلة النصف دائري: ${energyGaugePercent}٪`
+              }
             >
-              <span className="text-xs leading-none">{opt.emoji}</span>
-              <span>{isEn ? opt.labelEn : opt.labelAr}</span>
-            </button>
-          );
-        })}
+              <defs>
+                {/* Smooth Color Grading: Green 🌿 -> Yellow ⚡ -> Orange/Red 🔥 */}
+                <linearGradient id="nekbaarHalfCircleGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#10B981" />
+                  <stop offset="35%" stopColor="#34D399" />
+                  <stop offset="62%" stopColor="#FBBF24" />
+                  <stop offset="84%" stopColor="#FF8C61" />
+                  <stop offset="100%" stopColor="#EF4444" />
+                </linearGradient>
+                <filter id="gaugeNeedleShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.28" />
+                </filter>
+              </defs>
+
+              {/* Subtle Outer Scale Ticks */}
+              {[-75, -45, -15, 15, 45, 75].map((deg) => {
+                const rad = ((deg - 90) * Math.PI) / 180;
+                const x1 = 110 + 91 * Math.cos(rad);
+                const y1 = 106 + 91 * Math.sin(rad);
+                const x2 = 110 + 97 * Math.cos(rad);
+                const y2 = 106 + 97 * Math.sin(rad);
+                return (
+                  <line
+                    key={deg}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className="text-slate-300 dark:text-slate-600"
+                  />
+                );
+              })}
+
+              {/* Background Track Arc */}
+              <path
+                d="M 30 106 A 80 80 0 0 1 190 106"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="16"
+                strokeLinecap="round"
+                className="text-slate-200/90 dark:text-[#142430]"
+              />
+
+              {/* Full Color-Graded Reference Track (Soft Opacity) */}
+              <path
+                d="M 30 106 A 80 80 0 0 1 190 106"
+                fill="none"
+                stroke="url(#nekbaarHalfCircleGaugeGrad)"
+                strokeWidth="16"
+                strokeLinecap="round"
+                strokeOpacity="0.25"
+              />
+
+              {/* Active Color-Graded Foreground Arc */}
+              <path
+                d="M 30 106 A 80 80 0 0 1 190 106"
+                fill="none"
+                stroke="url(#nekbaarHalfCircleGaugeGrad)"
+                strokeWidth="16"
+                strokeLinecap="round"
+                strokeDasharray={`${arcActiveLen} ${arcTotalLen}`}
+                style={{
+                  transition: 'stroke-dasharray 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+              />
+
+              {/* Zone Emoji Indicators along the Half-Circle */}
+              <text x="16" y="122" textAnchor="middle" className="text-[11px] font-black fill-emerald-600 dark:fill-emerald-400">
+                🌿
+              </text>
+              <text x="110" y="14" textAnchor="middle" className="text-[11px] font-black fill-amber-500">
+                ⚡
+              </text>
+              <text x="204" y="122" textAnchor="middle" className="text-[11px] font-black fill-rose-500">
+                🔥
+              </text>
+
+              {/* Sleek Interactive Needle / Pointer Anchored at (110, 106) */}
+              <g
+                data-testid="half-circle-gauge-needle"
+                filter="url(#gaugeNeedleShadow)"
+                style={{
+                  transform: `rotate(${needleAngleDeg}deg)`,
+                  transformOrigin: '110px 106px',
+                  transition: 'transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+              >
+                {/* Needle Tapered Shaft */}
+                <polygon
+                  points="106.5,106 110,36 113.5,106"
+                  fill="#0F766E"
+                  className="dark:fill-[#2DD4BF]"
+                />
+                {/* Needle Glowing Tip */}
+                <circle cx="110" cy="39" r="3.5" fill="#FF8C61" />
+              </g>
+
+              {/* Center Pivot Cap */}
+              <circle
+                cx="110"
+                cy="106"
+                r="10"
+                fill="#0B131A"
+                className="dark:fill-[#F8FAFC]"
+              />
+              <circle cx="110" cy="106" r="4.5" fill="#FF8C61" />
+            </svg>
+
+            {/* Digital Readout Under Half-Circle Gauge */}
+            <div className="mt-1 flex items-center justify-between w-full px-2 text-[11px] font-extrabold">
+              <button
+                type="button"
+                onClick={() => handleChooseMood(FAMILY_MOOD_OPTIONS[2])}
+                className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+              >
+                🌿 {isEn ? 'Calm' : 'هدوء'}
+              </button>
+              <span className="px-3 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/25 text-xs font-black tabular-nums">
+                {energyGaugePercent}% · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleChooseMood(FAMILY_MOOD_OPTIONS[1])}
+                className="text-[#E86A3D] dark:text-[#FF8C61] hover:underline cursor-pointer"
+              >
+                🔥 {isEn ? 'Peak Energy' : 'ذروة الحماس'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right/End Column: Mood Context & Interactive Selector Buttons */}
+        <div className="lg:col-span-7 space-y-3.5">
+          <div className="flex items-start gap-3">
+            <span className="w-12 h-12 rounded-2xl bg-amber-400/15 dark:bg-[#142430] border border-amber-400/35 dark:border-[#1E3646] flex items-center justify-center text-2xl shrink-0 shadow-2xs">
+              {activeMoodObj.emoji}
+            </span>
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Interactive Family Energy & Mood Gauge' : 'عدّاد طاقة ومود العيلة النصف دائري'}
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 text-[10.5px] font-black">
+                  {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                {isEn ? activeMoodObj.vibeEn : activeMoodObj.vibeAr}
+              </p>
+            </div>
+          </div>
+
+          <div
+            role="radiogroup"
+            aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+          >
+            {FAMILY_MOOD_OPTIONS.map((opt) => {
+              const isSelected = opt.id === selectedMood;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  data-testid={`mood-option-${opt.id}`}
+                  onClick={() => handleChooseMood(opt)}
+                  className={`min-h-[42px] px-3 py-2 rounded-2xl text-xs font-extrabold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-sm scale-[1.02]'
+                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                  }`}
+                >
+                  <span className="text-sm leading-none">{opt.emoji}</span>
+                  <span className="truncate">{isEn ? opt.labelEn : opt.labelAr}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1721,7 +1896,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
     setActiveSlideIdx(0);
     const interval = window.setInterval(() => {
       setActiveSlideIdx((prev) => (prev + 1) % SPLASH_VALUE_PROPOSITIONS.length);
-    }, 1250);
+    }, 2000);
     return () => window.clearInterval(interval);
   }, [visible]);
 
@@ -1738,13 +1913,14 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       role="dialog"
       aria-modal="true"
       aria-label={isEn ? 'Welcome to Nekbaar' : 'مرحباً بك في نكبر'}
-      className={`fixed inset-0 z-[130] flex flex-col items-center justify-between p-5 sm:p-8 overflow-hidden select-none transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between p-5 sm:p-8 overflow-hidden select-none transition-opacity duration-300 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 22%, rgba(13, 148, 136, 0.28) 0%, rgba(255, 140, 97, 0.16) 38%, rgba(11, 19, 26, 0.98) 82%), #0B131A'
-          : 'radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.85) 0%, rgba(204, 251, 241, 0.65) 45%, rgba(248, 250, 252, 0.98) 88%), #F8FAFC',
+          ? 'radial-gradient(rgba(45, 212, 191, 0.14) 1.5px, transparent 1.5px), radial-gradient(circle at 50% 22%, rgba(13, 148, 136, 0.3) 0%, rgba(255, 140, 97, 0.18) 38%, rgba(11, 19, 26, 0.98) 82%), #0B131A'
+          : 'radial-gradient(rgba(13, 148, 136, 0.13) 1.5px, transparent 1.5px), radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.88) 0%, rgba(204, 251, 241, 0.68) 45%, rgba(248, 250, 252, 0.98) 88%), #F8FAFC',
+        backgroundSize: '28px 28px, 100% 100%',
       }}
     >
       {/* Ambient Floating Decorative Glow Blobs */}
@@ -1773,7 +1949,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           onClick={onSkipOrFinish}
           className="min-h-[44px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/95 dark:bg-[#142430]/95 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
         >
-          <span>{isEn ? 'Skip' : 'تخطي'}</span>
+          <span>{isEn ? 'Skip (6s)' : 'تخطي'}</span>
           <span aria-hidden="true">{isEn ? '→' : '←'}</span>
         </button>
       </div>
@@ -1791,8 +1967,8 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           </div>
         </div>
 
-        {/* Primary Brand Identity */}
-        <div className="space-y-1.5">
+        {/* Primary Brand Identity & Official Slogan */}
+        <div className="space-y-2">
           <div className="inline-flex items-center gap-2.5 justify-center">
             <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
               {isEn ? 'Nekbaar' : 'نكبر'}
@@ -1801,10 +1977,8 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
               {isEn ? 'نكبر' : 'Nekbaar'}
             </span>
           </div>
-          <p className="text-xs sm:text-sm font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-            {isEn
-              ? 'Growing together with love, smart tools & trusted care'
-              : 'بنكبر سوا خطوة بخطوة مع أولادنا بحب ووعي وراحة بال'}
+          <p className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+            {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
           </p>
         </div>
 

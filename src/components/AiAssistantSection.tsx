@@ -4,6 +4,7 @@ import {
   LanguageCode,
   calculateChildAge,
   locText,
+  sanitizeUserText,
 } from '../domain/familySpaceCore';
 import { AiRobotHeadIcon } from './ThreeDVisuals';
 import { PrimaryCtaButton } from './DesignSystem';
@@ -368,7 +369,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   };
 
   const handleSendPrompt = (customText?: string, topicHint?: string) => {
-    const promptText = (customText ?? inputPrompt).trim();
+    const promptText = sanitizeUserText(customText ?? inputPrompt, 500);
     if (!promptText) return;
 
     const nowStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -487,26 +488,26 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
 
   return (
     <section
-      className="space-y-3"
+      className="min-h-[calc(100vh-145px)] flex flex-col"
       aria-label={isEn ? 'In-App AI Parenting Assistant' : 'مساعد نكبر الذكي'}
     >
-      {/* Minimalist ChatGPT / Gemini-Style Unified AI Workspace */}
-      <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-5 space-y-3.5 shadow-2xs soft-card-surface">
-        {/* Clean Single Top Bar: History Drawer Trigger + New Chat + Child Selector + Model Selector */}
+      {/* Full-Page Immersive ChatGPT / Gemini-Standard AI Workspace */}
+      <div className="flex-1 min-h-[calc(100vh-155px)] rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 flex flex-col justify-between gap-4 shadow-sm soft-card-surface relative overflow-hidden">
+        {/* Top Control Bar: History Side-Drawer Trigger + New Chat + Child Selector + Distraction-Free Model Switcher */}
         <div
           id="ai-platform-control-bar"
           data-testid="ai-platform-control-bar"
-          className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]"
+          className="flex flex-wrap items-center justify-between gap-2.5 pb-3.5 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]"
         >
-          {/* Left / Start: Side History Drawer Toggle + New Chat + Compact Child Selector */}
-          <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Left / Start: Side History Drawer Toggle + New Chat + Child Selector */}
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               id="ai-history-drawer-toggle-btn"
               data-testid="ai-history-drawer-toggle-btn"
               type="button"
               onClick={() => setShowHistoryDrawer((prev) => !prev)}
               aria-expanded={showHistoryDrawer}
-              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center gap-1.5 cursor-pointer ${
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center gap-1.5 cursor-pointer ${
                 showHistoryDrawer
                   ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                   : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
@@ -524,7 +525,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
               data-testid="ai-new-chat-btn"
               type="button"
               onClick={handleStartNewChat}
-              className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] transition-all inline-flex items-center gap-1 cursor-pointer"
+              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <span>＋</span>
               <span>{isEn ? 'New Chat' : 'محادثة جديدة'}</span>
@@ -535,7 +536,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 value={selectedKid?.id || 0}
                 onChange={(e) => setSelectedKidId(Number(e.target.value))}
                 aria-label={isEn ? 'Select Child Profile' : 'اختيار ملف الطفل'}
-                className="min-h-[36px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
               >
                 {kids.map((k) => {
                   const ageSpec = calculateChildAge(k.birth, language);
@@ -549,11 +550,11 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
             )}
           </div>
 
-          {/* Right / End: Clean Model Selector (مستشار تربوي | خطط يومية | دعم سلوكي) */}
+          {/* Right / End: Distraction-Free Model Selector (مستشار تربوي | خطط يومية | دعم سلوكي) */}
           <div
             role="tablist"
             aria-label={isEn ? 'Switch AI Assistant Model' : 'تبديل موديل المساعد الذكي'}
-            className="flex items-center gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646] overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
+            className="flex items-center gap-1 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646] overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
           >
             {AI_MODELS_SPEC.map((mod) => {
               const isSelected = activeModelId === mod.id;
@@ -573,7 +574,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                         : `تم تبديل موديل المساعد إلى: «${mod.nameAr}»`
                     );
                   }}
-                  className={`min-h-[32px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
+                  className={`min-h-[34px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all inline-flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     isSelected
                       ? 'bg-[#0d9488] text-white shadow-2xs'
                       : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -587,169 +588,219 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           </div>
         </div>
 
-        {/* Collapsible Side / Top Conversation History Drawer (سجل المحادثات السابقة) */}
-        {showHistoryDrawer && (
-          <div
-            id="ai-history-drawer-panel"
-            data-testid="ai-history-drawer-panel"
-            className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2 animate-tab-enter"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                🗂️ {isEn ? 'Saved Conversations & Past Threads' : 'سجل المحادثات السابقة المحفوظة'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowHistoryDrawer(false)}
-                className="text-[11px] font-bold text-[var(--color-muted)] hover:text-[var(--color-text)] cursor-pointer"
-              >
-                {isEn ? 'Close ×' : 'إغلاق ×'}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {savedThreads.map((th) => {
-                const isCurrent = th.id === activeThreadId;
-                const modSpec = AI_MODELS_SPEC.find((m) => m.id === th.modelId) || AI_MODELS_SPEC[0];
-                return (
-                  <div
-                    key={th.id}
-                    className={`rounded-xl border p-2.5 flex flex-col justify-between gap-1.5 transition-all ${
-                      isCurrent
-                        ? 'border-[#0d9488] bg-teal-50/90 dark:bg-[#101D26] shadow-2xs'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A]'
-                    }`}
+        {/* Main Body Area: Side-Drawer History + Full-Height Chat Stream */}
+        <div className="flex-1 flex flex-col lg:flex-row gap-4 min-h-[420px] overflow-hidden">
+          {/* Collapsible Side-Drawer Conversation History (سجل المحادثات السابقة) */}
+          {showHistoryDrawer && (
+            <aside
+              id="ai-history-drawer-panel"
+              data-testid="ai-history-drawer-panel"
+              className="w-full lg:w-72 shrink-0 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3.5 flex flex-col justify-between gap-3 animate-tab-enter overflow-y-auto max-h-[520px]"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                  <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    🗂️ {isEn ? 'Conversation History' : 'سجل المحادثات المحفوظة'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setShowHistoryDrawer(false)}
+                    className="text-xs font-bold text-[var(--color-muted)] hover:text-[var(--color-text)] cursor-pointer"
                   >
-                    <button
-                      type="button"
-                      onClick={() => handleSelectThread(th)}
-                      className="text-start space-y-1 cursor-pointer min-w-0"
-                    >
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="px-1.5 py-0.5 rounded-md bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-extrabold truncate">
-                          {modSpec.emoji} {isEn ? modSpec.nameEn : modSpec.nameAr}
-                        </span>
-                        <span className="text-[9.5px] font-bold text-[var(--color-muted)] shrink-0">
-                          {isEn ? th.dateLabelEn : th.dateLabelAr}
-                        </span>
-                      </div>
-                      <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] line-clamp-1">
-                        {isEn ? th.titleEn : th.titleAr}
-                      </div>
-                    </button>
+                    {isEn ? 'Close ×' : 'إغلاق ×'}
+                  </button>
+                </div>
 
-                    <div className="flex items-center justify-between gap-1 pt-1 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
-                      <span className="text-[9.5px] font-bold text-[var(--color-muted)]">
-                        {th.messages.length} {isEn ? 'msgs' : 'رسائل'}
-                      </span>
-                      {savedThreads.length > 1 && (
+                <div className="space-y-2">
+                  {savedThreads.map((th) => {
+                    const isCurrent = th.id === activeThreadId;
+                    const modSpec =
+                      AI_MODELS_SPEC.find((m) => m.id === th.modelId) || AI_MODELS_SPEC[0];
+                    return (
+                      <div
+                        key={th.id}
+                        className={`rounded-xl border p-3 flex flex-col justify-between gap-2 transition-all ${
+                          isCurrent
+                            ? 'border-[#0d9488] bg-teal-50/90 dark:bg-[#101D26] shadow-2xs'
+                            : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A]'
+                        }`}
+                      >
                         <button
                           type="button"
-                          onClick={() => handleDeleteThread(th.id)}
-                          className="text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                          onClick={() => handleSelectThread(th)}
+                          className="text-start space-y-1 cursor-pointer min-w-0"
                         >
-                          {isEn ? 'Delete' : 'حذف'}
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="px-2 py-0.5 rounded-md bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-extrabold truncate">
+                              {modSpec.emoji} {isEn ? modSpec.nameEn : modSpec.nameAr}
+                            </span>
+                            <span className="text-[9.5px] font-bold text-[var(--color-muted)] shrink-0">
+                              {isEn ? th.dateLabelEn : th.dateLabelAr}
+                            </span>
+                          </div>
+                          <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] line-clamp-2">
+                            {isEn ? th.titleEn : th.titleAr}
+                          </div>
                         </button>
+
+                        <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-[var(--color-border)]/50 dark:border-[#1E3646]">
+                          <span className="text-[10px] font-bold text-[var(--color-muted)]">
+                            {th.messages.length} {isEn ? 'messages' : 'رسائل'}
+                          </span>
+                          {savedThreads.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteThread(th.id)}
+                              className="text-[10px] font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                            >
+                              {isEn ? 'Delete' : 'حذف'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </aside>
+          )}
+
+          {/* Center Full-Page Conversational Stream with Ample Whitespace */}
+          <div className="flex-1 flex flex-col justify-between gap-4 overflow-y-auto px-1 sm:px-3 py-2">
+            <div className="max-w-3xl w-full mx-auto space-y-4">
+              {messages.map((msg) => {
+                const isParent = msg.sender === 'parent';
+                return (
+                  <div
+                    key={msg.id}
+                    className={`flex flex-col ${isParent ? 'items-end' : 'items-start'}`}
+                  >
+                    <div
+                      className={`max-w-[92%] sm:max-w-[82%] rounded-3xl p-4 sm:p-5 space-y-2.5 shadow-2xs ${
+                        isParent
+                          ? 'bg-[#0e7490] text-white rounded-ee-lg'
+                          : 'bg-[var(--color-control-muted)]/75 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border border-[var(--color-border)] dark:border-[#1E3646] rounded-es-lg'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3 text-[11px] font-extrabold opacity-90">
+                        <span className="inline-flex items-center gap-2">
+                          {!isParent && <AiRobotHeadIcon size={20} />}
+                          <span>
+                            {isParent
+                              ? isEn
+                                ? 'You (Parent)'
+                                : 'أنت (ولي الأمر)'
+                              : isEn
+                              ? msg.modelBadgeEn || activeModelSpec.badgeEn
+                              : msg.modelBadgeAr || activeModelSpec.badgeAr}
+                          </span>
+                        </span>
+                        <span dir="ltr" className="tabular-nums text-[10px] opacity-80">
+                          {msg.timestamp}
+                        </span>
+                      </div>
+
+                      <p className="text-xs sm:text-sm font-semibold leading-relaxed">
+                        {isEn ? msg.textEn : msg.textAr}
+                      </p>
+
+                      {msg.structuredCard && (
+                        <div className="rounded-2xl bg-white dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border border-[var(--color-border)] dark:border-[#1E3646] p-3.5 sm:p-4 space-y-2.5 shadow-2xs">
+                          <div className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                            📋 {isEn ? msg.structuredCard.badgeEn : msg.structuredCard.badgeAr}
+                          </div>
+                          <div className="space-y-1.5 text-xs">
+                            {(isEn ? msg.structuredCard.stepsEn : msg.structuredCard.stepsAr).map(
+                              (step, i) => (
+                                <div
+                                  key={i}
+                                  className="rounded-xl bg-slate-50 dark:bg-[#142430] px-3 py-2 font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                                >
+                                  {step}
+                                </div>
+                              )
+                            )}
+                          </div>
+                          <div className="text-xs font-extrabold text-emerald-700 dark:text-[#A5F3FC]">
+                            💡 {isEn ? msg.structuredCard.activityTipEn : msg.structuredCard.activityTipAr}
+                          </div>
+                          <div className="pt-1">
+                            <PrimaryCtaButton
+                              variant="teal"
+                              size="sm"
+                              onClick={() => {
+                                onAddSuggestedRoutineTask(
+                                  isEn
+                                    ? `Evening Wind-down & Story with ${selectedKid?.name || 'Child'}`
+                                    : `طقس الهدوء والقصة المسائية مع ${selectedKid?.name || 'الطفل'}`,
+                                  '08:00 م',
+                                  selectedKid?.id || null
+                                );
+                                onShowToast(
+                                  isEn
+                                    ? 'Added suggested task to Daily Routine!'
+                                    : 'تمت إضافة المهمة المقترحة إلى جدول الروتين اليومي!'
+                                );
+                              }}
+                            >
+                              + {isEn ? 'Add to Daily Routine' : 'إضافة للروتين اليومي'}
+                            </PrimaryCtaButton>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        )}
 
-        {/* Pristine, Distraction-Free Conversational Thread */}
-        <div className="space-y-3 min-h-[320px] max-h-[480px] overflow-y-auto pe-1">
-          {messages.map((msg) => {
-            const isParent = msg.sender === 'parent';
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${isParent ? 'items-end' : 'items-start'}`}
-              >
-                <div
-                  className={`max-w-[92%] sm:max-w-[84%] rounded-2xl p-3.5 space-y-2 ${
-                    isParent
-                      ? 'bg-[#0e7490] text-white'
-                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border border-[var(--color-border)] dark:border-[#1E3646]'
-                  }`}
+            {/* Quick Suggested Starter Prompts Above Composer Dock */}
+            <div className="max-w-3xl w-full mx-auto pt-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+              {[
+                {
+                  topic: 'sleep',
+                  labelAr: '🌙 جدول نوم مسائي هادئ',
+                  labelEn: '🌙 Calm Bedtime Routine',
+                },
+                {
+                  topic: 'food',
+                  labelAr: '🍱 أفكار لانش بوكس صحي',
+                  labelEn: '🍱 Healthy Lunchbox Ideas',
+                },
+                {
+                  topic: 'behavior',
+                  labelAr: '💛 تهدئة نوبات الغضب والعناد',
+                  labelEn: '💛 Calm Tantrum Co-Regulation',
+                },
+                {
+                  topic: 'play',
+                  labelAr: '🧸 نشاط مونتيسوري ١٥ دقيقة',
+                  labelEn: '🧸 15-Min Montessori Play',
+                },
+              ].map((chip) => (
+                <button
+                  key={chip.topic}
+                  type="button"
+                  onClick={() =>
+                    handleSendPrompt(
+                      isEn ? chip.labelEn : chip.labelAr,
+                      chip.topic
+                    )
+                  }
+                  className="px-3.5 py-1.5 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] hover:border-[#0d9488] text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] whitespace-nowrap shrink-0 transition-all cursor-pointer"
                 >
-                  <div className="flex items-center justify-between gap-2 text-[10.5px] font-extrabold opacity-90">
-                    <span className="inline-flex items-center gap-1.5">
-                      {!isParent && <AiRobotHeadIcon size={18} />}
-                      {isParent
-                        ? isEn
-                          ? 'You (Parent)'
-                          : 'أنت (ولي الأمر)'
-                        : isEn
-                        ? msg.modelBadgeEn || activeModelSpec.badgeEn
-                        : msg.modelBadgeAr || activeModelSpec.badgeAr}
-                    </span>
-                    <span dir="ltr" className="tabular-nums">
-                      {msg.timestamp}
-                    </span>
-                  </div>
-
-                  <p className="text-xs font-semibold leading-relaxed">
-                    {isEn ? msg.textEn : msg.textAr}
-                  </p>
-
-                  {msg.structuredCard && (
-                    <div className="rounded-xl bg-white dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border border-[var(--color-border)] dark:border-[#1E3646] p-2.5 space-y-2 shadow-2xs">
-                      <div className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                        📋 {isEn ? msg.structuredCard.badgeEn : msg.structuredCard.badgeAr}
-                      </div>
-                      <div className="space-y-1 text-[11px]">
-                        {(isEn ? msg.structuredCard.stepsEn : msg.structuredCard.stepsAr).map(
-                          (step, i) => (
-                            <div
-                              key={i}
-                              className="rounded-lg bg-slate-50 dark:bg-[#142430] px-2.5 py-1.5 font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
-                            >
-                              {step}
-                            </div>
-                          )
-                        )}
-                      </div>
-                      <div className="text-[11px] font-extrabold text-emerald-700 dark:text-[#A5F3FC]">
-                        💡 {isEn ? msg.structuredCard.activityTipEn : msg.structuredCard.activityTipAr}
-                      </div>
-                      <div className="pt-0.5">
-                        <PrimaryCtaButton
-                          variant="teal"
-                          size="sm"
-                          onClick={() => {
-                            onAddSuggestedRoutineTask(
-                              isEn
-                                ? `Evening Wind-down & Story with ${selectedKid?.name || 'Child'}`
-                                : `طقس الهدوء والقصة المسائية مع ${selectedKid?.name || 'الطفل'}`,
-                              '08:00 م',
-                              selectedKid?.id || null
-                            );
-                            onShowToast(
-                              isEn
-                                ? 'Added suggested task to Daily Routine!'
-                                : 'تمت إضافة المهمة المقترحة إلى جدول الروتين اليومي!'
-                            );
-                          }}
-                        >
-                          + {isEn ? 'Add to Daily Routine' : 'إضافة للروتين اليومي'}
-                        </PrimaryCtaButton>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                  {isEn ? chip.labelEn : chip.labelAr}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Interactive Voice Simulation Banner when active */}
         {isVoiceSimulating && (
           <div
             id="ai-voice-simulation-banner"
-            className="rounded-2xl border border-teal-300 dark:border-[#1E3646] bg-teal-50/90 dark:bg-[#142430] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 animate-fade-in"
+            className="max-w-3xl w-full mx-auto rounded-2xl border border-teal-300 dark:border-[#1E3646] bg-teal-50/90 dark:bg-[#142430] px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 animate-fade-in"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <span className="relative flex h-3 w-3 shrink-0">
@@ -777,14 +828,14 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                   const nextSample = simulatedVoicePrompts[nextIdx];
                   setInputPrompt(isEn ? nextSample.en : nextSample.ar);
                 }}
-                className="px-2 py-1 rounded-lg text-[10px] font-extrabold border border-teal-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-teal-900 dark:text-[#A5F3FC] cursor-pointer"
+                className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-teal-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-teal-900 dark:text-[#A5F3FC] cursor-pointer"
               >
                 {isEn ? '🔄 Next Sample' : '🔄 جملة أخرى'}
               </button>
               <button
                 type="button"
                 onClick={handleToggleVoiceSimulation}
-                className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs cursor-pointer"
+                className="px-3 py-1 rounded-lg text-[10px] font-extrabold bg-rose-600 hover:bg-rose-700 text-white shadow-2xs cursor-pointer"
               >
                 {isEn ? '✓ Send' : '✓ إرسال'}
               </button>
@@ -792,8 +843,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           </div>
         )}
 
-        {/* Input Composer with Clean Microphone Icon (🎤) */}
-        <div className="pt-2.5 border-t border-[var(--color-border)] dark:border-[#1E3646] flex items-center gap-2">
+        {/* Bottom Dock: ChatGPT/Gemini-Standard Composer Bar */}
+        <div className="max-w-3xl w-full mx-auto pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646] flex items-center gap-2.5">
           <button
             id="ai-voice-input-toggle-btn"
             data-testid="ai-voice-mic-btn"
@@ -806,7 +857,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 ? 'Voice Input (Microphone)'
                 : 'التحدث الصوتي مع المساعد الذكي'
             }
-            className={`w-10 h-10 rounded-xl text-base font-extrabold border transition-all duration-300 ease-in-out inline-flex items-center justify-center shrink-0 cursor-pointer ${
+            className={`w-11 h-11 rounded-2xl text-base font-extrabold border transition-all duration-300 ease-in-out inline-flex items-center justify-center shrink-0 cursor-pointer ${
               isVoiceSimulating
                 ? 'border-rose-500 bg-rose-600 text-white shadow-md scale-105 animate-pulse'
                 : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#A5F3FC] hover:border-[#FF8C61]'
@@ -817,6 +868,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
 
           <input
             type="text"
+            maxLength={500}
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             onKeyDown={(e) => {
@@ -831,7 +883,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 ? `Message ${activeModelSpec.nameEn} (${displayKidName})...`
                 : `اكتب رسالتك لـ «${activeModelSpec.nameAr}» بخصوص ${displayKidName}...`
             }
-            className="flex-1 min-w-0 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+            className="flex-1 min-w-0 min-h-[44px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
           />
           <PrimaryCtaButton
             variant="teal"

@@ -143,13 +143,13 @@ export default function App() {
     setSplashScreen({ visible: true, fadingOut: false });
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 4000);
+    }, 6000);
   }, [handleDismissSplashScreen]);
 
   useEffect(() => {
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 4000);
+    }, 6000);
     return () => {
       if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
       if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
@@ -2221,10 +2221,10 @@ export default function App() {
               className="pt-4 pb-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-normal text-[var(--color-muted)]"
               aria-label={lang === 'en' ? 'Social Media, Policies & Support Footer' : 'تذييل التواصل الاجتماعي والسياسات'}
             >
-              {/* Official Social Media Brand SVG Icons (Theme-Colored, Zero Text Clutter) */}
+              {/* Official Social Media Brand SVG Icons (Compact Single Row in Theme Colors) */}
               <div
                 data-testid="social-media-footer-links"
-                className="flex flex-wrap items-center justify-center gap-2"
+                className="flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto no-scrollbar max-w-full py-0.5"
               >
                 {[
                   {
@@ -2343,7 +2343,7 @@ export default function App() {
                     }}
                     title={lang === 'en' ? social.name : social.labelAr}
                     aria-label={lang === 'en' ? social.name : social.labelAr}
-                    className="w-9 h-9 rounded-xl border border-teal-500/25 dark:border-[#1E3646] bg-teal-50/60 dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] dark:hover:text-white flex items-center justify-center shadow-2xs transition-all active:scale-90"
+                    className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl border border-teal-500/25 dark:border-[#1E3646] bg-teal-50/60 dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] dark:hover:text-white flex items-center justify-center shadow-2xs transition-all active:scale-90"
                   >
                     {social.svg}
                   </a>
