@@ -376,13 +376,13 @@ export default function App() {
         setIsTabLoading(false);
       }
 
-      const renderReadyMs = isHeavyTab ? SKELETON_LOAD_DURATION_MS : 160;
+      const renderReadyMs = 520;
       navFadeTimerRef.current = window.setTimeout(() => {
         setNavLoader((prev) => ({ ...prev, fadingOut: true }));
         navHideTimerRef.current = window.setTimeout(() => {
           setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
           navHideTimerRef.current = null;
-        }, 190);
+        }, 200);
         navFadeTimerRef.current = null;
       }, renderReadyMs);
     } else {
@@ -2545,7 +2545,7 @@ export default function App() {
           type="button"
           onClick={() => navigateTo('assistant')}
           aria-label={lang === 'en' ? 'AI Robot Assistant' : 'مساعد الذكاء الاصطناعي'}
-          className="hidden lg:flex fixed bottom-6 end-6 z-40 items-center gap-2.5 pe-4 ps-2.5 py-2.5 rounded-full glass-bottom-nav border border-[var(--color-border)] shadow-xl hover:scale-105 active:scale-95 transition-all group"
+          className="hidden lg:flex fixed bottom-6 end-6 z-40 items-center gap-2.5 pe-4 ps-2.5 py-2.5 rounded-full glass-bottom-nav border border-[#FF8C61]/40 hover:border-[#FF8C61] hover:scale-105 active:scale-95 transition-all group cursor-pointer"
         >
           <span className="ai-robot-fab-pulse w-12 h-12 rounded-full bg-gradient-to-tr from-[#0d9488] via-[#0e7490] to-[#FF8C61] flex items-center justify-center shrink-0">
             <AiRobotHeadIcon size={28} onDarkSurface={true} />

@@ -166,7 +166,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
               </span>
             </div>
-            <p className="text-[10.5px] sm:text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-tight mt-0.5 truncate max-w-[185px] sm:max-w-[320px]">
+            <p className="text-[10.5px] sm:text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-snug mt-0.5 break-words">
               {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
             </p>
           </div>

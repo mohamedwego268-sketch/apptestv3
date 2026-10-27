@@ -727,7 +727,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       />
                     </div>
                     <div className="min-w-0 space-y-1">
-                      <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                      <div className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
                         {displayKidName}
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5">
@@ -759,8 +759,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 </div>
 
                 {/* Card Middle Layer: Interests & Star Crown */}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] w-full">
-                  <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] truncate">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] w-full">
+                  <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug break-words">
                     🎨 {kidInterests}
                   </span>
                   <StarOfTheDayCrownBadge
@@ -1138,20 +1138,20 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               onClick={() => navigateTo(gw.id)}
               className={`rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/80 p-3.5 text-start flex flex-col justify-between gap-2.5 transition-all hover:scale-[1.01] active:scale-98 cursor-pointer group ${gw.accentClass}`}
             >
-              <div className="flex items-center justify-between gap-2 w-full">
+              <div className="flex flex-wrap items-center justify-between gap-1.5 w-full">
                 <SoftFilledIcon id={gw.iconId} boxSize="sm" />
-                <span className="text-[10px] font-bold text-[#0d9488] dark:text-[#2DD4BF] truncate">
+                <span className="text-[10.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug break-words">
                   {isEn ? gw.statEn : gw.statAr}
                 </span>
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate flex items-center justify-between gap-1">
-                  <span className="truncate">{isEn ? gw.titleEn : gw.titleAr}</span>
+              <div className="space-y-1 min-w-0">
+                <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words flex items-center justify-between gap-1">
+                  <span className="leading-snug break-words">{isEn ? gw.titleEn : gw.titleAr}</span>
                   <span className="text-[11px] opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
                     {isEn ? '→' : '←'}
                   </span>
                 </div>
-                <p className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] line-clamp-1">
+                <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug break-words">
                   {isEn ? gw.subEn : gw.subAr}
                 </p>
               </div>
@@ -1226,10 +1226,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] hover:border-[#0d9488] p-3 text-start flex flex-col justify-between gap-1.5 transition-all cursor-pointer"
                 >
                   <span className="text-lg leading-none">{promo.emoji}</span>
-                  <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                  <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
                     {isEn ? promo.titleEn : promo.titleAr}
                   </div>
-                  <div className="text-[9.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                  <div className="text-[10px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
                     {isEn ? promo.ageEn : promo.ageAr}
                   </div>
                 </button>

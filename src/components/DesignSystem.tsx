@@ -546,11 +546,11 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
         <SoftFilledIcon id={iconId} boxSize="sm" />
 
         <div className="min-w-0 flex-1">
-          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-tight truncate">
+          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-snug break-words">
             {title}
           </h1>
           {(subtitle || badge) && (
-            <div className="text-[10.5px] font-bold text-[var(--color-muted)] truncate mt-0.5">
+            <div className="text-[11px] font-bold text-[var(--color-muted)] leading-snug break-words mt-0.5">
               {subtitle || badge}
             </div>
           )}
@@ -1116,9 +1116,9 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           {resolvedIcon && <div className="shrink-0">{resolvedIcon}</div>}
-          <div className="min-w-0 space-y-0.5">
-            <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar">
-              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] truncate">
+          <div className="min-w-0 space-y-1 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] leading-snug break-words">
                 {title}
               </h3>
               {resolvedBadge && (
@@ -1130,7 +1130,7 @@ export const CollapsibleSectionCard: React.FC<CollapsibleSectionCardProps> = ({
               )}
             </div>
             {subtitle && (
-              <p className="text-[10px] font-semibold text-[var(--color-muted)] leading-snug line-clamp-1">
+              <p className="text-[11px] font-semibold text-[var(--color-muted)] leading-relaxed break-words">
                 {subtitle}
               </p>
             )}
@@ -1364,24 +1364,24 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
             }}
           />
 
-          <div className="relative z-10 flex items-center justify-between gap-1.5 min-w-0">
-            <span className="image-card-badge px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold truncate shadow-2xs inline-flex items-center gap-1 max-w-[68%]">
-              <span className="truncate inline-flex items-center gap-1">{topLeftBadge}</span>
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-1.5 min-w-0">
+            <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-2xs inline-flex items-center gap-1 leading-snug break-words">
+              <span className="inline-flex items-center gap-1 leading-snug break-words">{topLeftBadge}</span>
             </span>
             {topRightBadge && (
               <span
                 data-keep-dark-text="true"
-                className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
+                className="image-card-rating-pill px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
               >
                 {topRightBadge}
               </span>
             )}
           </div>
 
-          <div className="relative z-10 image-card-glass-panel rounded-lg px-2 py-1 flex items-center justify-between gap-1.5">
+          <div className="relative z-10 image-card-glass-panel rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               {titlePrefixSlot && <div className="shrink-0">{titlePrefixSlot}</div>}
-              <h3 className="image-card-title text-[11.5px] sm:text-xs font-extrabold leading-tight line-clamp-1">
+              <h3 className="image-card-title text-xs sm:text-sm font-extrabold leading-snug break-words">
                 {title}
               </h3>
             </div>
@@ -1395,7 +1395,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
                   setShowMetaDetails((prev) => !prev);
                 }}
                 aria-expanded={showMetaDetails}
-                className="px-1.5 py-0.5 rounded-md bg-black/15 dark:bg-white/10 text-[9px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC] hover:opacity-90 shrink-0 cursor-pointer"
+                className="px-2 py-0.5 rounded-md bg-black/15 dark:bg-white/10 text-[10px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC] hover:opacity-90 shrink-0 cursor-pointer"
               >
                 {showMetaDetails ? '▴' : 'ℹ️'}
               </button>
@@ -1407,9 +1407,9 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
         {showMetaDetails && (metaLeft || metaRightAction) && (
           <div
             data-card-layer="3-metadata-carousel"
-            className="flex items-center justify-between gap-2 text-[9.5px] font-bold text-[var(--color-muted)] px-0.5 min-w-0 animate-fade-in"
+            className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)] px-1 py-1 min-w-0 animate-fade-in"
           >
-            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5">
+            <div className="flex flex-wrap items-center gap-1.5 min-w-0 flex-1 leading-snug break-words">
               {metaLeft}
             </div>
             {metaRightAction && <div className="shrink-0 ms-auto">{metaRightAction}</div>}
@@ -1418,7 +1418,7 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
 
         {/* Optional Body Content */}
         {bodyContent && (
-          <div className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug px-0.5">
+          <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed px-0.5 break-words">
             {bodyContent}
           </div>
         )}
@@ -1428,10 +1428,10 @@ export const MasterPatternCard: React.FC<MasterPatternCardProps> = ({
       {(footerLeft || footerRight) && (
         <div
           data-card-layer="2-action-footer"
-          className="pt-2.5 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-2 min-w-0"
+          className="pt-3 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2.5 min-w-0"
         >
-          <div className="min-w-0 flex-1 truncate">{footerLeft}</div>
-          <div className="flex items-center justify-end gap-1.5 shrink-0 ms-auto">
+          <div className="min-w-0 flex-1 leading-snug break-words">{footerLeft}</div>
+          <div className="flex flex-wrap items-center justify-end gap-1.5 shrink-0 ms-auto">
             {footerRight}
           </div>
         </div>
@@ -1984,7 +1984,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
         <div
           role="radiogroup"
           aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
-          className="flex items-center gap-1.5 flex-wrap"
+          className="flex items-center gap-2 flex-wrap"
         >
           {FAMILY_MOOD_OPTIONS.map((opt) => {
             const isSelected = opt.id === selectedMood;
@@ -1996,13 +1996,13 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                 aria-checked={isSelected}
                 data-testid={`mood-option-${opt.id}`}
                 onClick={() => handleChooseMood(opt)}
-                className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all inline-flex items-center gap-1 cursor-pointer ${
+                className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center gap-1.5 whitespace-normal break-words leading-snug cursor-pointer ${
                   isSelected
                     ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                     : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
                 }`}
               >
-                <span>{opt.emoji}</span>
+                <span aria-hidden="true">{opt.emoji}</span>
                 <span>{isEn ? opt.labelEn : opt.labelAr}</span>
               </button>
             );
@@ -2151,7 +2151,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
           </div>
 
           {/* 4 Per-Member Live Battery Summary Pills */}
-          <div className="w-full grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
             {DIAGNOSTIC_MEMBERS_SPEC.map((m) => {
               const pct = memberPercentages[m.id];
               const isFocused = activeMemberTab === m.id;
@@ -2161,17 +2161,17 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                   type="button"
                   data-testid={`diagnostic-member-pill-${m.id}`}
                   onClick={() => setActiveMemberTab(m.id)}
-                  className={`px-3 py-2 rounded-xl border text-start transition-all flex items-center justify-between gap-1.5 cursor-pointer ${
+                  className={`px-3 py-2 rounded-xl border text-start transition-all flex items-center justify-between gap-2 cursor-pointer ${
                     isFocused
                       ? 'border-[#0d9488] bg-teal-500/12 text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs'
                       : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] hover:border-[#0d9488]/60'
                   }`}
                 >
-                  <span className="text-[11px] font-black truncate">
+                  <span className="text-xs font-black leading-snug break-words">
                     {m.emoji} {isEn ? m.nameEn : m.nameAr}
                   </span>
                   <span
-                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums ${
+                    className={`px-2 py-0.5 rounded-lg text-[11px] font-black tabular-nums shrink-0 ${
                       pct >= 75
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                         : pct >= 50
@@ -2188,7 +2188,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
         </div>
 
         {/* Right/End Column: 2x2 Interactive Member Diagnostic Check-In Cards */}
-        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {DIAGNOSTIC_MEMBERS_SPEC.map((member) => {
             const memberPct = memberPercentages[member.id];
             const isHighlighted = activeMemberTab === member.id;
@@ -2197,26 +2197,26 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                 key={member.id}
                 data-testid={`diagnostic-card-${member.id}`}
                 onClick={() => setActiveMemberTab(member.id)}
-                className={`rounded-2xl border p-3.5 flex flex-col justify-between gap-2.5 transition-all ${
+                className={`rounded-2xl border p-4 flex flex-col justify-between gap-3.5 transition-all ${
                   isHighlighted
                     ? 'border-[#0d9488] bg-teal-50/40 dark:bg-[#142430]/90 shadow-2xs'
                     : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/25 dark:bg-[#0B131A]/60'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-lg leading-none">{member.emoji}</span>
-                    <div className="min-w-0">
-                      <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="text-xl leading-none shrink-0">{member.emoji}</span>
+                    <div className="min-w-0 space-y-0.5">
+                      <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug break-words">
                         {isEn ? member.nameEn : member.nameAr}
                       </div>
-                      <div className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+                      <div className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug break-words">
                         {isEn ? member.stageEn : member.stageAr}
                       </div>
                     </div>
                   </div>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums ${
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-black tabular-nums shrink-0 ${
                       memberPct >= 75
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                         : memberPct >= 50
@@ -2228,15 +2228,15 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {member.questions.map((q) => {
                     const currentVal = diagnosticScores[q.id];
                     return (
-                      <div key={q.id} className="space-y-1">
-                        <div className="text-[10.5px] font-extrabold text-[var(--color-text)] dark:text-[#CBD5E1]">
+                      <div key={q.id} className="space-y-1.5">
+                        <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#CBD5E1] leading-snug break-words">
                           {isEn ? q.labelEn : q.labelAr}
                         </div>
-                        <div className="grid grid-cols-3 gap-1">
+                        <div className="flex flex-wrap items-stretch gap-1.5">
                           {q.options.map((opt) => {
                             const isPicked = currentVal === opt.score;
                             return (
@@ -2254,14 +2254,16 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                                     isEn ? opt.textEn : opt.textAr
                                   );
                                 }}
-                                className={`min-h-[28px] px-1.5 py-1 rounded-lg text-[10px] font-extrabold border transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                className={`flex-1 min-w-[88px] min-h-[34px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center justify-center gap-1.5 text-center whitespace-normal break-words leading-snug cursor-pointer ${
                                   isPicked
                                     ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                                     : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
                                 }`}
                               >
-                                <span aria-hidden="true">{opt.icon}</span>
-                                <span className="truncate">{isEn ? opt.textEn : opt.textAr}</span>
+                                <span aria-hidden="true" className="shrink-0">{opt.icon}</span>
+                                <span className="leading-snug break-words">
+                                  {isEn ? opt.textEn : opt.textAr}
+                                </span>
                               </button>
                             );
                           })}
@@ -2280,21 +2282,21 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
       <div
         id="family-pulse-rescue-plan"
         data-testid="family-pulse-rescue-plan"
-        className="rounded-2xl border border-teal-500/30 dark:border-[#1E3646] bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 dark:from-[#142430] dark:to-[#0B131A] p-4 flex flex-wrap items-center justify-between gap-3"
+        className="rounded-2xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 dark:from-[#142430] dark:to-[#0B131A] p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-2xs"
       >
-        <div className="space-y-1 min-w-0 flex-1">
+        <div className="space-y-2.5 min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] text-[10.5px] font-black">
+            <span className="px-3 py-1 rounded-full bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] text-xs font-black leading-snug">
               🛟 {isEn ? 'Instant Daily Operational Rescue Plan' : 'خطة الإنقاذ والتشغيل اليومية الفورية'}
             </span>
-            <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+            <span className="px-3 py-1 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold leading-snug">
               {priorityRescueMember.emoji}{' '}
               {isEn
                 ? `Priority Focus: ${priorityRescueMember.nameEn} (${memberPercentages[priorityRescueMember.id]}%)`
                 : `الأولوية الآن: ${priorityRescueMember.nameAr} (${memberPercentages[priorityRescueMember.id]}%)`}
             </span>
           </div>
-          <p className="text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+          <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed break-words">
             {isEn ? priorityRescueMember.rescuePlanEn : priorityRescueMember.rescuePlanAr}
           </p>
         </div>
@@ -2310,10 +2312,10 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
                 priorityRescueMember.kidId
               );
             }}
-            className="min-h-[38px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 inline-flex items-center gap-1.5"
+            className="w-full lg:w-auto min-h-[42px] px-5 py-2.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs sm:text-sm font-black shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 inline-flex items-center justify-center gap-2"
           >
-            <span>＋</span>
-            <span>
+            <span aria-hidden="true">＋</span>
+            <span className="leading-snug">
               {isEn ? 'Add Rescue Task to Routine' : 'أضف خطة الإنقاذ للروتين اليومي'}
             </span>
           </button>
@@ -2377,53 +2379,10 @@ export interface InteractiveSplashScreenProps {
   onSkipOrFinish: () => void;
 }
 
-const SPLASH_VALUE_PROPOSITIONS: Array<{
-  id: string;
-  badgeAr: string;
-  badgeEn: string;
-  titleAr: string;
-  titleEn: string;
-  descAr: string;
-  descEn: string;
-  icon: string;
-}> = [
-  {
-    id: 'vp-smart',
-    badgeAr: '✨ رعاية ذكية متكاملة',
-    badgeEn: '✨ Smart Family Care',
-    titleAr: 'رفيقك الذكي لتربية صحية',
-    titleEn: 'Your Smart Companion for Healthy Parenting',
-    descAr: 'خطط يومية مخصصة، متابعة نمو ثلاثية الأبعاد، ومساعد ذكي يفهم احتياجات طفلك من يوم لـ ٨ سنين.',
-    descEn: 'Personalized daily plans, 3D growth tracking, and a smart AI assistant for ages 0–8.',
-    icon: '🧸',
-  },
-  {
-    id: 'vp-all-in-one',
-    badgeAr: '🏡 منظومة العيلة الشاملة',
-    badgeEn: '🏡 All-in-One Family Hub',
-    titleAr: 'كل احتياجات أسرتك في مكان واحد',
-    titleEn: 'All Your Family Needs in One Place',
-    descAr: 'روتين يومي، تقويم مشترك، شات العيلة، ريلز تربوية، وألعاب مونتيسوري وتنمية مهارات.',
-    descEn: 'Daily routines, shared calendar, family chat, parenting reels, and Montessori toys.',
-    icon: '🌟',
-  },
-  {
-    id: 'vp-trusted',
-    badgeAr: '🩺 شبكة موثوقة ومعتمدة',
-    badgeEn: '🩺 Verified & Trusted Network',
-    titleAr: 'دكاترة، حضانات ومتاجر موثوقة',
-    titleEn: 'Verified Doctors, Nurseries & Trusted Stores',
-    descAr: 'احجز أقرب دكتور أطفال أو حضانة معتمدة واطلب مستلزمات طفلك بتوصيل سريع لباب البيت.',
-    descEn: 'Book top pediatricians & verified nurseries or order baby essentials with express delivery.',
-    icon: '🚀',
-  },
-];
-
 /**
- * 6-Second Immersive Full-Screen Opening / Splash Intro Screen for نكبر (Nekbaar).
- * Renders directly in full-screen viewport mode (no boxed card wrapper) over a vibrant
- * geometric SVG background pattern, featuring cycling value-proposition subtitles,
- * official bilingual slogan, and a touch-friendly "تخطي / Skip" button.
+ * Minimalist Full-Screen Opening / Splash Intro Screen for نكبر (Nekbaar).
+ * Keeps only the primary Brand Wordmark (نكبر · Nekbaar), the official bilingual slogan
+ * ("مساحة تجمعنا.. وبحبهم نكبر" / "Growing Together with Love"), and a clean visual loader.
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
   visible,
@@ -2433,21 +2392,20 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
   onSkipOrFinish,
 }) => {
   const isEn = language === 'en';
-  const [activeSlideIdx, setActiveSlideIdx] = useState(0);
+  const [progressPct, setProgressPct] = useState(18);
 
   useEffect(() => {
     if (!visible) return;
-    setActiveSlideIdx(0);
-    const interval = window.setInterval(() => {
-      setActiveSlideIdx((prev) => (prev + 1) % SPLASH_VALUE_PROPOSITIONS.length);
-    }, 2000);
-    return () => window.clearInterval(interval);
+    setProgressPct(22);
+    const t1 = window.setTimeout(() => setProgressPct(65), 1400);
+    const t2 = window.setTimeout(() => setProgressPct(100), 3800);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, [visible]);
 
   if (!visible) return null;
-
-  const currentSlide =
-    SPLASH_VALUE_PROPOSITIONS[activeSlideIdx] || SPLASH_VALUE_PROPOSITIONS[0];
 
   return (
     <div
@@ -2462,8 +2420,8 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 25%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.2) 42%, rgba(11, 19, 26, 0.98) 85%), #0B131A'
-          : 'radial-gradient(circle at 50% 25%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 46%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
+          ? 'radial-gradient(circle at 50% 35%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 42%, rgba(11, 19, 26, 0.98) 85%), #0B131A'
+          : 'radial-gradient(circle at 50% 35%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 46%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
       }}
     >
       {/* Vibrant Geometric Background Pattern Overlay */}
@@ -2479,43 +2437,36 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
       />
 
-      {/* Top Row: Brand Pill & Interactive Skip Button */}
-      <div className="relative z-10 w-full max-w-3xl flex items-center justify-between gap-3">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal-500/35 bg-white/80 dark:bg-[#101D26]/85 backdrop-blur-md shadow-xs">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488] animate-ping" />
-          <span className="text-xs sm:text-sm font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-            {isEn ? 'Super Family Platform · Ages 0–8' : 'منصة الأسرة الذكية · من يوم لـ ٨ سنوات'}
-          </span>
-        </div>
-
+      {/* Top Row: Clean Skip Action */}
+      <div className="relative z-10 w-full max-w-3xl flex items-center justify-end">
         <button
           id="splash-skip-btn"
           data-testid="splash-skip-btn"
           type="button"
           onClick={onSkipOrFinish}
-          className="min-h-[44px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430]/90 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
+          className="min-h-[42px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430]/90 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
         >
-          <span>{isEn ? 'Skip (6s)' : 'تخطي'}</span>
+          <span>{isEn ? 'Skip' : 'تخطي'}</span>
           <span aria-hidden="true">{isEn ? '→' : '←'}</span>
         </button>
       </div>
 
-      {/* Center Stage: Open Full-Screen Hero Showcase (No Boxed Card Wrapper) */}
-      <div className="relative z-10 w-full max-w-2xl my-auto flex flex-col items-center text-center space-y-6 px-2">
-        {/* Enlarged Animated Playful Child SVG with Warm Glowing Aura */}
+      {/* Center Stage: Minimalist Brand Identity, Official Slogan & Clean Visual Loader */}
+      <div className="relative z-10 w-full max-w-xl my-auto flex flex-col items-center text-center space-y-8 px-4">
+        {/* Animated Playful Child Visual Loader with Glowing Aura */}
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
+            className="animate-nav-loader-pulse-ring absolute w-44 h-44 sm:w-52 sm:h-52 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
           />
-          <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-white/85 dark:bg-[#142430]/90 border-2 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-xl backdrop-blur-md">
-            <PlayfulChildLoaderSvg size={120} />
+          <div className="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-white/90 dark:bg-[#142430]/90 border-2 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
+            <PlayfulChildLoaderSvg size={124} />
           </div>
         </div>
 
-        {/* Primary Brand Identity & Official Slogan */}
-        <div className="space-y-2.5">
-          <div className="inline-flex items-center gap-3 justify-center">
+        {/* Primary Brand Wordmark & Official Slogan Only */}
+        <div className="space-y-3.5">
+          <div className="inline-flex flex-wrap items-center gap-3 justify-center">
             <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
               {isEn ? 'Nekbaar' : 'نكبر'}
             </h1>
@@ -2523,70 +2474,22 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
               {isEn ? 'نكبر' : 'Nekbaar'}
             </span>
           </div>
-          <p className="text-base sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+          <p className="text-lg sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
             {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
           </p>
         </div>
 
-        {/* Cycling Value Proposition Showcase with Smooth Keyed Fade Transition */}
-        <div
-          key={currentSlide.id}
-          className="w-full max-w-xl rounded-3xl border border-teal-500/25 dark:border-[#1E3646] bg-white/75 dark:bg-[#101D26]/80 backdrop-blur-md p-6 sm:p-7 space-y-2.5 animate-page-enter min-h-[148px] flex flex-col items-center justify-center shadow-sm"
-        >
-          <span className="px-3.5 py-1 rounded-full text-xs font-extrabold bg-[#0d9488]/15 text-[#0f766e] dark:text-[#5EEAD4]">
-            {isEn ? currentSlide.badgeEn : currentSlide.badgeAr}
-          </span>
-          <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-            {currentSlide.icon} {isEn ? currentSlide.titleEn : currentSlide.titleAr}
-          </h2>
-          <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed max-w-lg">
-            {isEn ? currentSlide.descEn : currentSlide.descAr}
-          </p>
-        </div>
-
-        {/* Interactive Slide Dots + 6-Second Progress Bar */}
-        <div className="w-full max-w-md space-y-3.5 pt-1">
-          <div className="flex items-center justify-center gap-2.5">
-            {SPLASH_VALUE_PROPOSITIONS.map((sl, idx) => {
-              const isActive = idx === activeSlideIdx;
-              return (
-                <button
-                  key={sl.id}
-                  type="button"
-                  onClick={() => setActiveSlideIdx(idx)}
-                  aria-label={isEn ? sl.titleEn : sl.titleAr}
-                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                    isActive
-                      ? 'w-10 bg-[#0d9488] dark:bg-[#2DD4BF]'
-                      : 'w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-teal-400'
-                  }`}
-                />
-              );
-            })}
-          </div>
-
-          <div className="w-full h-2.5 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#FF8C61] to-[#FBBF24] transition-all duration-500"
-              style={{ width: `${((activeSlideIdx + 1) / SPLASH_VALUE_PROPOSITIONS.length) * 100}%` }}
-            />
-          </div>
+        {/* Clean Visual Loader Bar */}
+        <div className="w-64 sm:w-80 mx-auto h-3 rounded-full bg-slate-200/85 dark:bg-[#142430] border border-teal-500/25 overflow-hidden shadow-inner">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61] transition-all duration-1000 ease-out"
+            style={{ width: `${progressPct}%` }}
+          />
         </div>
       </div>
 
-      {/* Bottom Enter CTA */}
-      <div className="relative z-10 w-full max-w-xl flex items-center justify-center">
-        <button
-          type="button"
-          onClick={onSkipOrFinish}
-          className="w-full min-h-[54px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0d9488] to-[#0f766e] hover:from-[#0f766e] hover:to-[#115e59] text-white font-black text-sm sm:text-base shadow-lg transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-        >
-          <span>
-            {isEn ? 'Enter Nekbaar Now' : 'ابدأ رحلتك الآن في نكبر'}
-          </span>
-          <span aria-hidden="true">✨</span>
-        </button>
-      </div>
+      {/* Bottom Subtle Spacer for Vertical Balance */}
+      <div className="h-6" aria-hidden="true" />
     </div>
   );
 };
