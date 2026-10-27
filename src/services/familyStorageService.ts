@@ -15,7 +15,25 @@ export function loadPersistedFamilyState(): FamilySpaceState {
     if (typeof window !== 'undefined') {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return normalizeAppData({ ...structuredClone(DEFAULT_SEED), ...JSON.parse(saved) });
+        const parsed = JSON.parse(saved);
+        // Auto-migrate legacy default seed (Ezz & Nour / Sara) to Ahmad & Maryam + Hamza (6m), Laila (4y), Youssef (8y)
+        const hasLegacyDefaultKids =
+          Array.isArray(parsed.kids) &&
+          parsed.kids.length === 2 &&
+          parsed.kids[0]?.name === 'عز' &&
+          parsed.kids[1]?.name === 'نور';
+        if (hasLegacyDefaultKids) {
+          const migrated = {
+            ...structuredClone(DEFAULT_SEED),
+            language: parsed.language === 'en' ? 'en' : 'ar',
+            darkMode: Boolean(parsed.darkMode),
+            country: parsed.country === 'SA' ? 'SA' : 'EG',
+            currency: parsed.currency === 'SAR' ? 'SAR' : 'EGP',
+          };
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return normalizeAppData(migrated);
+        }
+        return normalizeAppData({ ...structuredClone(DEFAULT_SEED), ...parsed });
       }
     }
   } catch {

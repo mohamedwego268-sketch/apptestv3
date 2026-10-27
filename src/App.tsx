@@ -46,6 +46,7 @@ import {
   shouldTriggerSkeletonForTab,
   findNearestCityByCoords,
   getParentProfileThemeSpec,
+  sanitizeUserText,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
 import { t } from './domain/i18n';
@@ -126,16 +127,10 @@ export default function App() {
     if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
     if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
     setSplashScreen((prev) => (prev.visible ? { visible: true, fadingOut: true } : prev));
-    // Trigger subtle center-screen navigation loader transition into main app
-    setNavLoader({ visible: true, fadingOut: false, targetPage: activePage });
     splashHideTimerRef.current = window.setTimeout(() => {
       setSplashScreen({ visible: false, fadingOut: false });
-      setNavLoader((prev) => ({ ...prev, fadingOut: true }));
-      window.setTimeout(() => {
-        setNavLoader((prev) => ({ ...prev, visible: false, fadingOut: false }));
-      }, 220);
-    }, 320);
-  }, [activePage]);
+    }, 300);
+  }, []);
 
   const handleReplaySplashScreen = React.useCallback(() => {
     if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
@@ -551,13 +546,13 @@ export default function App() {
   const handleSaveChild = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const name = String(fd.get('name') || '').trim();
+    const name = sanitizeUserText(String(fd.get('name') || ''), 80);
     const gender = fd.get('gender') === 'girl' ? 'girl' : 'boy';
     const birth = String(fd.get('birth') || '').trim();
-    const interests = String(fd.get('interests') || '').trim();
-    const bloodType = String(fd.get('bloodType') || '').trim();
-    const vaccinationsNote = String(fd.get('vaccinationsNote') || '').trim();
-    const healthNotePrivate = String(fd.get('healthNotePrivate') || '').trim();
+    const interests = sanitizeUserText(String(fd.get('interests') || ''), 240);
+    const bloodType = sanitizeUserText(String(fd.get('bloodType') || ''), 16);
+    const vaccinationsNote = sanitizeUserText(String(fd.get('vaccinationsNote') || ''), 280);
+    const healthNotePrivate = sanitizeUserText(String(fd.get('healthNotePrivate') || ''), 280);
     const growthHeightCm = Number(fd.get('growthHeightCm')) || undefined;
     const growthWeightKg = Number(fd.get('growthWeightKg')) || undefined;
     const avatarTheme =
@@ -636,16 +631,16 @@ export default function App() {
   const handleSaveTask = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const name = String(fd.get('name') || '').trim();
+    const name = sanitizeUserText(String(fd.get('name') || ''), 180);
     if (!name) {
       showToast('اكتب اسم المهمة قبل الحفظ');
       return;
     }
-    const time = String(fd.get('time') || '').trim();
+    const time = sanitizeUserText(String(fd.get('time') || ''), 40);
     const kidIdRaw = String(fd.get('kidId') || '');
     const kidId = kidIdRaw ? Number(kidIdRaw) : null;
-    const category = String(fd.get('category') || 'روتين عام');
-    const owner = String(fd.get('owner') || 'مشترك');
+    const category = sanitizeUserText(String(fd.get('category') || 'روتين عام'), 60);
+    const owner = sanitizeUserText(String(fd.get('owner') || 'مشترك'), 60);
     const cadenceRaw = String(fd.get('cadence') || 'daily');
     const cadence: TaskCadence =
       cadenceRaw === 'weekly' || cadenceRaw === 'monthly' ? cadenceRaw : 'daily';
@@ -728,10 +723,10 @@ export default function App() {
   const handleSaveEvent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const title = String(fd.get('title') || '').trim();
+    const title = sanitizeUserText(String(fd.get('title') || ''), 160);
     const date = String(fd.get('date') || '').trim();
-    const time = String(fd.get('time') || '').trim();
-    const type = String(fd.get('type') || 'موعد عائلي');
+    const time = sanitizeUserText(String(fd.get('time') || ''), 40);
+    const type = sanitizeUserText(String(fd.get('type') || 'موعد عائلي'), 60);
     const childIdRaw = String(fd.get('childId') || '');
     const childId = childIdRaw ? Number(childIdRaw) : null;
     const repeatRaw = String(fd.get('repeat') || 'none');
@@ -739,7 +734,7 @@ export default function App() {
       repeatRaw === 'weekly' || repeatRaw === 'monthly' || repeatRaw === 'yearly'
         ? repeatRaw
         : 'none';
-    const note = String(fd.get('note') || '').trim();
+    const note = sanitizeUserText(String(fd.get('note') || ''), 300);
 
     if (!title) {
       showToast('اكتب اسم الحدث قبل الحفظ');
@@ -805,12 +800,12 @@ export default function App() {
   const handleSaveWish = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const name = String(fd.get('name') || '').trim();
+    const name = sanitizeUserText(String(fd.get('name') || ''), 160);
     const price = Number(fd.get('price'));
     const kid = Number(fd.get('kid'));
     const progress = Number(fd.get('progress') ?? 40);
-    const goalType = String(fd.get('goalType') || 'هدية / أمنية').trim();
-    const emoji = String(fd.get('emoji') || '🎁');
+    const goalType = sanitizeUserText(String(fd.get('goalType') || 'هدية / أمنية'), 80);
+    const emoji = sanitizeUserText(String(fd.get('emoji') || '🎁'), 16);
 
     const validation = validateWishInput({ name, price, kid, progress }, state.kids);
     if (!validation.valid) {

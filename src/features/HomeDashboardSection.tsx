@@ -128,52 +128,128 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     };
   }, [activeKidName, localizedCity]);
 
-  // 1. Daily Nutrition & Lunchbox Data for Selected Child
+  // 1. Stage-Tailored Daily Nutrition & Lunchbox Data for Selected Child (Hamza 6m, Laila 4y, Youssef 8y)
   const nutritionPlans = useMemo(() => {
+    const stageCode = activeKidAge?.stageCode || '2-5';
+    if (stageCode === '0-2') {
+      return {
+        breakfast: {
+          badgeAr: '🍼 رضعة الصباح وبداية التغذية (٦ شهور)',
+          badgeEn: '🍼 Morning Milk & First Cereal (6m)',
+          titleAr: `رضعة الصباح المشبعة + ملعقتين سيريلاك شوفان ناعم لـ ${activeKidName}`,
+          titleEn: `Morning Milk Feed + 2 Spoons Smooth Oat Cereal for ${activeKidName}`,
+          descAr: 'بداية لطيفة وسهلة الهضم تناسب معدة الرضيع في سن ٦ شهور وتدعم النمو الحركي.',
+          descEn: 'Gentle, iron-fortified first solid feeding tailored for a 6-month infant.',
+          time: '07:30 ص',
+          calories: '180 kcal',
+        },
+        lunchbox: {
+          badgeAr: '🥕 وجبة إدخال الخضار المهروس',
+          badgeEn: '🥕 First Veggie Puree Meal',
+          titleAr: `مهروس الجزر والبطاطا الحلوة والكوسة بالبخار لـ ${activeKidName}`,
+          titleEn: `Steamed Carrot, Sweet Potato & Zucchini Puree for ${activeKidName}`,
+          descAr: 'قوام كريمي ناعم غني بفيتامين A والبيتا كاروتين بدون ملح أو سكر مضاف.',
+          descEn: 'Silky steamed puree rich in beta-carotene with zero added salt or sugar.',
+          time: '12:30 م',
+          calories: '140 kcal',
+        },
+        snack: {
+          badgeAr: '🍎 مهروس الفواكه المسائي الهادئ',
+          badgeEn: '🍎 Gentle Evening Fruit Puree',
+          titleAr: `مهروس التفاح المطهو على البخار مع الكمثرى لـ ${activeKidName}`,
+          titleEn: `Steamed Apple & Pear Smooth Puree for ${activeKidName}`,
+          descAr: 'مريح للمعدة قبل روتين المساء ويساعد على نوم ليلي هادئ بدون مغص.',
+          descEn: 'Soothing on the tummy before bedtime to support peaceful infant sleep.',
+          time: '04:30 م',
+          calories: '110 kcal',
+        },
+      };
+    }
+
+    if (stageCode === '5-8') {
+      return {
+        breakfast: {
+          badgeAr: '🥣 فطور التركيز والاستقلالية للمدرسة',
+          badgeEn: '🥣 School Brain & Focus Breakfast',
+          titleAr: `بيض أومليت بالخضار + توست حبوب كاملة وحليب لـ ${activeKidName}`,
+          titleEn: `Veggie Omelet + Whole-Grain Toast & Milk for ${activeKidName}`,
+          descAr: 'بروتين عالي وكربوهيدرات معقدة تمنح يوسف تركيزاً ذهنياً طوال الحصص الدراسية.',
+          descEn: 'Sustained protein and complex carbs fueling school focus and logic.',
+          time: '06:45 ص',
+          calories: '420 kcal',
+        },
+        lunchbox: {
+          badgeAr: '🍱 لانش بوكس الأبطال للمدرسة',
+          badgeEn: '🍱 School Champion Lunchbox',
+          titleAr: `ساندويتش دجاج مشوي + خيار وجزر + تفاح ومكسرات لـ ${activeKidName}`,
+          titleEn: `Grilled Chicken Wrap + Veggie Sticks, Apple & Nuts for ${activeKidName}`,
+          descAr: 'وجبة متوازنة يشارك يوسف في تحضيرها بنفسه لتعزيز الاستقلالية والمسؤولية.',
+          descEn: 'Balanced school lunchbox encouraging self-prep and afternoon energy.',
+          time: '11:30 ص',
+          calories: '490 kcal',
+        },
+        snack: {
+          badgeAr: '🍌 سناك الطاقة قبل التمرين والمذاكرة',
+          badgeEn: '🍌 Pre-Sport & Homework Boost Snack',
+          titleAr: `زبادي يوناني بالعسل والموز والشوفان لـ ${activeKidName}`,
+          titleEn: `Greek Yogurt with Honey, Banana & Oats for ${activeKidName}`,
+          descAr: 'يجدد نشاط الدماغ بعد المدرسة مباشرة قبل بدء وقت الواجبات أو تمرين السباحة.',
+          descEn: 'Recharges brain focus after school right before homework or swimming.',
+          time: '04:00 م',
+          calories: '280 kcal',
+        },
+      };
+    }
+
     return {
       breakfast: {
-        badgeAr: '🥣 فطور الطاقة والتركيز',
-        badgeEn: '🥣 Morning Brain Breakfast',
-        titleAr: `شوفان بالحليب والفواكه مع بيضة مسلوقة لـ ${activeKidName}`,
-        titleEn: `Oatmeal with Berries & Boiled Egg for ${activeKidName}`,
-        descAr: 'غني بالحديد والكالسيوم وفيتامين D لدعم التركيز والذاكرة طوال الصباح.',
-        descEn: 'Rich in iron, calcium & vitamin D to fuel morning focus and immunity.',
-        time: '08:00 ص',
-        calories: '320 kcal',
+        badgeAr: '🥣 فطور الطاقة المبهج للحضانة',
+        badgeEn: '🥣 Joyful Nursery Breakfast',
+        titleAr: `بان كيك الشوفان والموز بأشكال مرحة مع الحليب لـ ${activeKidName}`,
+        titleEn: `Playful Banana Oat Pancakes & Warm Milk for ${activeKidName}`,
+        descAr: 'فطور ملون يشجع ليلى على الأكل بنفسها وبداية يوم الحضانة بابتسامة.',
+        descEn: 'Fun finger-food breakfast boosting happy nursery transitions.',
+        time: '07:45 ص',
+        calories: '310 kcal',
       },
       lunchbox: {
-        badgeAr: '🍱 اللانش بوكس المتوازن',
-        badgeEn: '🍱 Balanced Healthy Lunchbox',
-        titleAr: `ساندويتش حبوب كاملة + خيار وجزر + تفاح ومكسرات لـ ${activeKidName}`,
-        titleEn: `Whole-Grain Wrap + Veggie Sticks & Apple Slices for ${activeKidName}`,
-        descAr: 'وجبة متكاملة ألوانها مبهجة للطفل بدون سكريات مصنعة أو مواد حافظة.',
-        descEn: 'Colorful, zero-preservative lunchbox packed with fiber and natural energy.',
+        badgeAr: '🍱 لانش بوكس الحضانة الملون',
+        badgeEn: '🍱 Colorful Nursery Lunchbox',
+        titleAr: `رول التورتيلا بالجبن الكريمي + خيار على شكل نجوم وفراولة لـ ${activeKidName}`,
+        titleEn: `Cream Cheese Pinwheels + Star Cucumbers & Berries for ${activeKidName}`,
+        descAr: 'مقسم بألوان مبهجة تفتح الشهية في الحضانة بدون سكريات مصنعة.',
+        descEn: 'Bite-sized colorful sections easy for 4-year-old hands at nursery.',
         time: '11:30 ص',
-        calories: '410 kcal',
+        calories: '360 kcal',
       },
       snack: {
-        badgeAr: '🍎 سناك المناعة والحيوية',
-        badgeEn: '🍎 Immunity Afternoon Snack',
-        titleAr: `زبادي يوناني بالعسل الطبيعي وشرائح الموز لـ ${activeKidName}`,
-        titleEn: `Greek Yogurt with Natural Honey & Banana for ${activeKidName}`,
-        descAr: 'خفيف وسريع الهضم ويمد الطفل بالبروبيوتيك والطاقة قبل التمرين.',
-        descEn: 'Probiotic-rich, gentle snack boosting energy before afternoon play.',
-        time: '04:00 م',
+        badgeAr: '🍎 سناك الإبداع والهدوء بعد الحضانة',
+        badgeEn: '🍎 Post-Nursery Creative Snack',
+        titleAr: `شرائح التفاح بزبدة الفول السوداني الطبيعية والزبادي لـ ${activeKidName}`,
+        titleEn: `Apple Slices with Natural Peanut Butter & Yogurt for ${activeKidName}`,
+        descAr: 'يمنح ليلى طاقة هادئة ومستقرة قبل جلسة التلوين وبطاقات تسمية المشاعر.',
+        descEn: 'Steadies afternoon mood before creative play and emotion-naming cards.',
+        time: '03:45 م',
         calories: '210 kcal',
       },
     };
-  }, [activeKidName]);
+  }, [activeKidAge?.stageCode, activeKidName]);
 
   const currentNutrition = nutritionPlans[selectedMealSlot];
 
   // 2. Hydration / Water Goal Data for Selected Child
-  const targetWaterCups = activeKidAge && activeKidAge.years < 3 ? 5 : 6;
-  const currentWaterCups = waterCupsByKid[activeKidId] ?? 4;
+  const targetWaterCups =
+    activeKidAge && activeKidAge.months < 12
+      ? 2
+      : activeKidAge && activeKidAge.years < 5
+      ? 5
+      : 7;
+  const currentWaterCups = waterCupsByKid[activeKidId] ?? (targetWaterCups > 2 ? 4 : 1);
   const waterProgressPct = Math.min(100, Math.round((currentWaterCups / targetWaterCups) * 100));
 
   const handleAdjustWater = (delta: number) => {
     setWaterCupsByKid((prev) => {
-      const current = prev[activeKidId] ?? 4;
+      const current = prev[activeKidId] ?? (targetWaterCups > 2 ? 4 : 1);
       const next = Math.max(0, Math.min(10, current + delta));
       if (delta > 0 && next === targetWaterCups) {
         onShowToast?.(
@@ -186,38 +262,103 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     });
   };
 
-  // 3. Physical Sports & Activity Data for Selected Child
+  // 3. Stage-Tailored Physical Sports & Motor Activity Data for Selected Child
   const sportActivities = useMemo(() => {
+    const stageCode = activeKidAge?.stageCode || '2-5';
+    if (stageCode === '0-2') {
+      return {
+        outdoor: {
+          badgeAr: '👶🏻 تمرين وقت البطن (Tummy Time)',
+          badgeEn: '👶🏻 Guided Tummy Time & Reach',
+          titleAr: `١٥ دقيقة تمرين وقت البطن على سجادة اللعب الحسية لـ ${activeKidName}`,
+          titleEn: `15-Min Sensory Mat Tummy Time & Toy Reach for ${activeKidName}`,
+          descAr: 'يقوّي عضلات الرقبة والأكتاف والظهر ويمهّد لمرحلة الجلوس والحبي بأمان.',
+          descEn: 'Strengthens neck, shoulder, and core muscles preparing for sitting & crawling.',
+          time: '01:30 م',
+        },
+        balance: {
+          badgeAr: '🧸 تتبع بصري ومهارات القبض باليد',
+          badgeEn: '🧸 Visual Tracking & Grasp Play',
+          titleAr: `١٠ دقائق لعب بالخشخيشة الخشبية والركل بالقدمين مع ${activeKidName}`,
+          titleEn: `10-Min Wooden Rattle Grasp & Leg Kick Play with ${activeKidName}`,
+          descAr: 'ينمّي التآزر البصري الحركي واستكشاف الأصوات والملمس الطبيعي.',
+          descEn: 'Develops hand-eye coordination, sensory curiosity, and joyful babbling.',
+          time: '04:00 م',
+        },
+        cardio: {
+          badgeAr: '🌙 تدليك مسائي وتمارين إطالة الرضيع',
+          badgeEn: '🌙 Soothing Infant Massage & Stretch',
+          titleAr: `١٠ دقائق تدليك دافئ وحركة الدراجة اللطيفة للساقين لـ ${activeKidName}`,
+          titleEn: `10-Min Warm Oil Massage & Gentle Bicycle Legs for ${activeKidName}`,
+          descAr: 'يريح الجهاز الهضمي من الغازات ويهيئ حمزة لنوم ليلي عميق ومستقر.',
+          descEn: 'Relieves tummy gas and cues deep, restorative nighttime sleep.',
+          time: '07:15 م',
+        },
+      };
+    }
+
+    if (stageCode === '5-8') {
+      return {
+        outdoor: {
+          badgeAr: '🏊‍♂️ رياضة واستقلالية حركية',
+          badgeEn: '🏊‍♂️ Swimming & Athletic Agility',
+          titleAr: `٤٠ دقيقة تمرين سباحة أو كرة قدم وتفريغ طاقة بدون شاشات لـ ${activeKidName}`,
+          titleEn: `40-Min Swimming or Football Practice (Screen-Free) for ${activeKidName}`,
+          descAr: 'يعزز اللياقة البدنية، الثقة بالنفس، والالتزام بجدول توازن اللعب والمذاكرة.',
+          descEn: 'Builds stamina, teamwork discipline, and healthy screen-time balance.',
+          time: '05:00 م',
+        },
+        balance: {
+          badgeAr: '♟️ تحدي التركيز والتوازن البدني',
+          badgeEn: '♟️ Core Balance & Logic Circuit',
+          titleAr: `٢٠ دقيقة تمارين توازن وإطالة + جولة تفكير منطقي مع ${activeKidName}`,
+          titleEn: `20-Min Core Stretching + Logic Challenge with ${activeKidName}`,
+          descAr: 'يجمع بين تنشيط الجسم بعد الجلوس للمذاكرة وتقوية مهارات التخطيط.',
+          descEn: 'Refreshes posture after homework while sharpening strategic thinking.',
+          time: '06:15 م',
+        },
+        cardio: {
+          badgeAr: '🚴‍♂️ سباق اللياقة العائلي السريع',
+          badgeEn: '🚴‍♂️ Family Fitness & Bike Sprint',
+          titleAr: `٢٥ دقيقة ركوب دراجة أو تحدي قفز الحبل مع بابا أحمد لـ ${activeKidName}`,
+          titleEn: `25-Min Bike Ride or Jump-Rope Challenge with Dad Ahmed for ${activeKidName}`,
+          descAr: 'نشاط مشترك يقوّي علاقة الأب بالابن الأكبر ويضمن نوماً صحياً مبكراً.',
+          descEn: 'Active father-son bonding that guarantees restful sleep.',
+          time: '05:30 م',
+        },
+      };
+    }
+
     return {
       outdoor: {
-        badgeAr: '⚽ نشاط خارجي وحركة',
-        badgeEn: '⚽ Outdoor Park & Ball Play',
-        titleAr: `٢٥ دقيقة جري ولعب بالكرة أو الدراجة مع ${activeKidName}`,
-        titleEn: `25-Min Bike Ride & Ball Play with ${activeKidName}`,
-        descAr: 'ينمّي التآزر الحركي والعضلي ويفرغ طاقة الطفل بشكل إيجابي وممتع.',
-        descEn: 'Builds gross motor coordination, cardiovascular health, and joyful sleep.',
-        time: '05:00 م',
-      },
-      balance: {
-        badgeAr: '🧘‍♂️ توازن ومرونة بدنية',
-        badgeEn: '🧘‍♂️ Balance & Core Flexibility',
-        titleAr: `١٥ دقيقة تمارين توازن وإطالة مرحة في البيت لـ ${activeKidName}`,
-        titleEn: `15-Min Fun Indoor Balance & Stretching for ${activeKidName}`,
-        descAr: 'يقوّي عضلات الظهر والوقوف السليم ويزيد التركيز الذهني بدون شاشات.',
-        descEn: 'Strengthens posture, core stability, and screen-free mindfulness.',
+        badgeAr: '🎨 لعب حركي وإبداعي (مرحلة الحضانة)',
+        badgeEn: '🎨 Active Creative Play (4 yrs)',
+        titleAr: `٢٠ دقيقة مسار توازن الألوان والقفز المرح في البيت مع ${activeKidName}`,
+        titleEn: `20-Min Color Hopscotch & Creative Movement with ${activeKidName}`,
+        descAr: 'يدمج الحركة بتسمية الألوان والمشاعر لتفريغ طاقة ليلى بعد الحضانة بمرح.',
+        descEn: 'Combines gross motor hopping with color and emotion naming after nursery.',
         time: '04:30 م',
       },
+      balance: {
+        badgeAr: '🧘‍♀️ يوجا الأطفال وتهدئة المشاعر',
+        badgeEn: '🧘‍♀️ Kids Yoga & Emotion Breathing',
+        titleAr: `١٥ دقيقة تمارين تنفس الفراشة وتوازن الشجرة مع بطاقات المشاعر لـ ${activeKidName}`,
+        titleEn: `15-Min Butterfly Breathing & Tree Pose with Emotion Cards for ${activeKidName}`,
+        descAr: 'تدرّب ليلى على تهدئة النفس عند الإحباط والتعبير بالكلمات بدلاً من البكاء.',
+        descEn: 'Teaches self-regulation and calm emotional expression without tantrums.',
+        time: '05:15 م',
+      },
       cardio: {
-        badgeAr: '🏃‍♂️ تحدي اللياقة السريع',
-        badgeEn: '🏃‍♂️ Active Fitness Circuit',
-        titleAr: `تحدي القفز والحركة الموسيقية (٢٠ دقيقة) لـ ${activeKidName}`,
-        titleEn: `20-Min Musical Jump & Agility Circuit for ${activeKidName}`,
-        descAr: 'ثلاث جولات قصيرة من القفز والتقاط الكرات لتنشيط الدورة الدموية.',
-        descEn: 'Three playful rounds of jumping jacks and ball-toss agility.',
+        badgeAr: '💃 رقص وحركة إيقاعية مبهجة',
+        badgeEn: '💃 Musical Freeze Dance & Agility',
+        titleAr: `١٥ دقيقة لعبة الحركة والتوقف الموسيقية مع ماما مريم لـ ${activeKidName}`,
+        titleEn: `15-Min Musical Freeze Dance with Mom Maryam for ${activeKidName}`,
+        descAr: 'تقوّي التحكم في الاندفاع والانتباه السمعي وتملأ البيت بالضحك.',
+        descEn: 'Boosts impulse control, listening skills, and joyful mother-daughter bonding.',
         time: '06:00 م',
       },
     };
-  }, [activeKidName]);
+  }, [activeKidAge?.stageCode, activeKidName]);
 
   const currentSport = sportActivities[selectedSportSlot];
   const isSportDoneToday = Boolean(completedSportByKid[activeKidId]);
@@ -388,11 +529,19 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         />
       </div>
 
-      {/* Emotional Family Energy & Mood Gauge Meter */}
+      {/* Interactive Family Pulse & Battery Diagnostic Widget ("اختبار نبض البطارية والبيت اليومي") */}
       <FamilyMoodBarometer
         language={lang}
         darkMode={Boolean(state.darkMode)}
         onSelectMood={(_, msg) => onShowToast?.(msg)}
+        onAddRescueTask={(taskName, timeStr, kidId) => {
+          onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
+          onShowToast?.(
+            isEn
+              ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
+              : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
+          );
+        }}
       />
 
       {/* =====================================================================

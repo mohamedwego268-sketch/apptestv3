@@ -315,6 +315,21 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
   const defaultStoryReels = [
     {
+      id: 'reel-maryam-ahmed-family',
+      authorAr: 'مريم وأحمد (عائلة حمزة وليلى ويوسف)',
+      authorEn: 'Maryam & Ahmed (Hamza, Laila & Youssef)',
+      roleAr: '💛 يوميات عيلتنا في نكبر',
+      roleEn: '💛 Our Family Daily Moment',
+      isExpert: false,
+      duration: '0:35',
+      emoji: '👨‍👩‍👧‍👦',
+      titleAr: 'كيف ننسق يومنا بين نوم حمزة (٦ شهور)، حضانة ليلى (٤ س)، ومدرسة يوسف (٨ س)',
+      titleEn: 'Balancing Hamza (6m), Laila (4y) nursery & Youssef (8y) school as a team',
+      summaryAr: 'توزيع الصباح بين أحمد (شنطة يوسف وتمرين حمزة) ومريم (بطاقات مشاعر ليلى وتغذية حمزة) خلى البيت هادي ومتناغم!',
+      summaryEn: 'Splitting morning duties between Ahmed and Maryam keeps our 3-stage household calm and joyful!',
+      imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=80',
+    },
+    {
       id: 'reel-expert-sleep',
       authorAr: 'د. طارق النجار',
       authorEn: 'Dr. Tarek El-Naggar',

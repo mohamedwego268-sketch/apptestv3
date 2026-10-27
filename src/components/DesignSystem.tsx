@@ -712,10 +712,71 @@ export interface FullScreenNavigationLoaderProps {
 }
 
 /**
- * Full-Screen Center-Screen Navigation Transition Loader.
- * Appears immediately on page/tab switch with an adorable walking toddler SVG,
- * glowing pulse rings, and a minimal progress bar, then smoothly fades out
- * the exact moment the new page finishes rendering.
+ * Vibrant Geometric SVG Backdrop Pattern used across Full-Screen Splash & Page Transition Loaders.
+ */
+const GeometricBackdropPattern: React.FC<{ idPrefix: string; darkMode?: boolean }> = ({
+  idPrefix,
+  darkMode = false,
+}) => (
+  <svg
+    aria-hidden="true"
+    className="pointer-events-none absolute inset-0 w-full h-full opacity-55 dark:opacity-45"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <pattern
+        id={`${idPrefix}-geo-grid`}
+        width="64"
+        height="64"
+        patternUnits="userSpaceOnUse"
+      >
+        {/* Subtle geometric diamond & cross lattice */}
+        <path
+          d="M 32 4 L 60 32 L 32 60 L 4 32 Z"
+          fill="none"
+          stroke={darkMode ? 'rgba(45, 212, 191, 0.22)' : 'rgba(13, 148, 136, 0.18)'}
+          strokeWidth="1.2"
+        />
+        <circle
+          cx="32"
+          cy="32"
+          r="3.2"
+          fill={darkMode ? 'rgba(255, 140, 97, 0.35)' : 'rgba(255, 140, 97, 0.28)'}
+        />
+        <circle
+          cx="0"
+          cy="0"
+          r="2"
+          fill={darkMode ? 'rgba(251, 191, 36, 0.32)' : 'rgba(13, 148, 136, 0.25)'}
+        />
+        <circle
+          cx="64"
+          cy="0"
+          r="2"
+          fill={darkMode ? 'rgba(251, 191, 36, 0.32)' : 'rgba(13, 148, 136, 0.25)'}
+        />
+        <circle
+          cx="0"
+          cy="64"
+          r="2"
+          fill={darkMode ? 'rgba(251, 191, 36, 0.32)' : 'rgba(13, 148, 136, 0.25)'}
+        />
+        <circle
+          cx="64"
+          cy="64"
+          r="2"
+          fill={darkMode ? 'rgba(251, 191, 36, 0.32)' : 'rgba(13, 148, 136, 0.25)'}
+        />
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill={`url(#${idPrefix}-geo-grid)`} />
+  </svg>
+);
+
+/**
+ * Full-Screen Viewport Navigation Transition Loader.
+ * Activates ONLY when navigating between internal application pages.
+ * Renders across the full viewport with a vibrant geometric background pattern (no modal box wrapper).
  */
 export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProps> = ({
   visible,
@@ -737,40 +798,39 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
       role="status"
       aria-live="polite"
       aria-busy={!fadingOut}
-      className={`fixed inset-0 z-[80] pointer-events-none flex flex-col items-center justify-center p-6 sm:p-10 transition-all duration-200 ease-out overflow-hidden ${
+      className={`fixed inset-0 z-[80] w-screen h-screen pointer-events-none flex flex-col items-center justify-center p-6 sm:p-12 transition-all duration-200 ease-out overflow-hidden ${
         fadingOut ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
       }`}
       style={{
-        backgroundColor: 'rgba(11, 19, 26, 0.88)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        backgroundImage:
-          'radial-gradient(rgba(45, 212, 191, 0.16) 1.5px, transparent 1.5px), radial-gradient(rgba(255, 140, 97, 0.14) 1.5px, transparent 1.5px)',
-        backgroundSize: '32px 32px',
-        backgroundPosition: '0 0, 16px 16px',
+        background:
+          'radial-gradient(circle at 50% 30%, rgba(13, 148, 136, 0.32) 0%, rgba(255, 140, 97, 0.2) 42%, rgba(11, 19, 26, 0.96) 88%), #0B131A',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       }}
     >
-      <div className="w-[92vw] max-w-[420px] rounded-[36px] border border-white/80 dark:border-[#1E3646] bg-[#F8FAFC]/95 dark:bg-[#101D26]/95 px-8 py-9 sm:px-10 sm:py-10 shadow-[0_28px_64px_-12px_rgba(11,19,26,0.55)] flex flex-col items-center justify-center gap-5 text-center">
+      <GeometricBackdropPattern idPrefix="nav-loader" darkMode={true} />
+
+      <div className="relative z-10 flex flex-col items-center justify-center gap-6 text-center max-w-lg w-full px-4">
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/25 to-[#FBBF24]/30"
+            className="animate-nav-loader-pulse-ring absolute w-40 h-40 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-[#2DD4BF]/35 via-[#FF8C61]/30 to-[#FBBF24]/35"
           />
-          <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-b from-amber-50/90 to-teal-50/80 dark:from-[#142430] dark:to-[#0B131A] border border-teal-500/25 dark:border-[#1E3646] flex items-center justify-center shadow-md">
-            <PlayfulChildLoaderSvg size={96} />
+          <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-b from-teal-900/60 to-slate-900/80 border-2 border-[#2DD4BF]/45 flex items-center justify-center shadow-2xl">
+            <PlayfulChildLoaderSvg size={108} />
           </div>
         </div>
 
-        <div className="space-y-2.5 w-full pt-1">
-          <div className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+        <div className="space-y-3 w-full">
+          <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight">
             {displayLabel}
           </div>
-          <p className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+          <p className="text-sm sm:text-base font-extrabold text-[#2DD4BF]">
             {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
           </p>
 
           {/* Enlarged Glowing Progress Indicator */}
-          <div className="w-56 sm:w-64 mx-auto h-2.5 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
+          <div className="w-64 sm:w-80 mx-auto h-3 rounded-full bg-slate-800/90 border border-teal-500/30 overflow-hidden shadow-inner">
             <div className="animate-nav-progress h-full w-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61]" />
           </div>
         </div>
@@ -1478,6 +1538,7 @@ export interface FamilyMoodBarometerProps {
   language: LanguageCode;
   darkMode?: boolean;
   onSelectMood?: (moodId: FamilyMoodId, message: string) => void;
+  onAddRescueTask?: (taskName: string, timeStr: string, kidId: number | null) => void;
 }
 
 const FAMILY_MOOD_OPTIONS: Array<{
@@ -1487,48 +1548,285 @@ const FAMILY_MOOD_OPTIONS: Array<{
   labelEn: string;
   vibeAr: string;
   vibeEn: string;
+  presetScores: Record<DiagnosticQuestionId, 0 | 50 | 100>;
 }> = [
   {
     id: 'calm',
     emoji: '😊',
-    labelAr: 'هادئ وممتن',
-    labelEn: 'Calm & Grateful',
-    vibeAr: 'جو البيت هادئ ومريح النهارده — وقت لطيف لحكاية قصيرة مع الأولاد',
-    vibeEn: 'Calm & peaceful family vibe today — great time for a cozy story',
+    labelAr: 'هادئ ومتوازن (75%)',
+    labelEn: 'Calm & Balanced (75%)',
+    vibeAr: 'جو البيت هادئ ومريح — تنسيق متوازن بين أحمد ومريم مع الأولاد',
+    vibeEn: 'Calm & peaceful household vibe — smooth coordination between Ahmed & Maryam',
+    presetScores: {
+      hamza_sleep: 50,
+      hamza_mood: 100,
+      laila_coop: 50,
+      laila_energy: 100,
+      youssef_school: 50,
+      youssef_mood: 100,
+      parents_energy: 50,
+      parents_teamwork: 100,
+    },
   },
   {
     id: 'excited',
     emoji: '🤩',
-    labelAr: 'نشيط ومتحمس',
-    labelEn: 'Joyful & Active',
-    vibeAr: 'طاقة حلوة وحماس في البيت! مثالي لأنشطة اللعب والتحديات السريعة',
-    vibeEn: 'High energy & smiles! Perfect for interactive play and milestones',
+    labelAr: 'بطارية مشحونة (100%)',
+    labelEn: 'Full Battery (100%)',
+    vibeAr: 'طاقة البيت مشحونة بالكامل! حمزة وليلى ويوسف في أفضل حالاتهم مع أحمد ومريم',
+    vibeEn: '100% Full Family Battery! Hamza, Laila & Youssef are thriving with Ahmed & Maryam',
+    presetScores: {
+      hamza_sleep: 100,
+      hamza_mood: 100,
+      laila_coop: 100,
+      laila_energy: 100,
+      youssef_school: 100,
+      youssef_mood: 100,
+      parents_energy: 100,
+      parents_teamwork: 100,
+    },
   },
   {
     id: 'cozy',
     emoji: '🧸',
-    labelAr: 'دافئ وحنون',
-    labelEn: 'Cozy & Cuddly',
-    vibeAr: 'مود دافئ وحنون — حضن كبير للأولاد وروتين مسائي هادئ',
-    vibeEn: 'Warm & cuddly mood — extra hugs and a gentle evening routine',
+    labelAr: 'يحتاج دعم وهدوء (45%)',
+    labelEn: 'Needs Gentle Support (45%)',
+    vibeAr: 'البطارية متوسطة وتميل للإرهاق — تفعيل خطة التهدئة وتبادل الراحة بين أحمد ومريم',
+    vibeEn: 'Moderate battery — activating calm wind-down and duty rotation for Ahmed & Maryam',
+    presetScores: {
+      hamza_sleep: 50,
+      hamza_mood: 50,
+      laila_coop: 0,
+      laila_energy: 50,
+      youssef_school: 50,
+      youssef_mood: 50,
+      parents_energy: 50,
+      parents_teamwork: 50,
+    },
   },
   {
     id: 'focused',
-    emoji: '🌿',
-    labelAr: 'تركيز وروقان',
-    labelEn: 'Focused & Zen',
-    vibeAr: 'تركيز وترتيب مريح — يوم مناسب لإنجاز مهام الروتين خطوة بخطوة',
-    vibeEn: 'Focused & organized — ideal for checking off daily routine goals',
+    emoji: '🪫',
+    labelAr: 'إنقاذ البطارية (25%)',
+    labelEn: 'Rescue Mode (25%)',
+    vibeAr: 'بطارية البيت منخفضة — تفعيل خطة الطوارئ السريعة لتخفيف الضغط فوراً',
+    vibeEn: 'Low household battery — activating emergency 20-minute family rescue plan',
+    presetScores: {
+      hamza_sleep: 0,
+      hamza_mood: 50,
+      laila_coop: 0,
+      laila_energy: 0,
+      youssef_school: 50,
+      youssef_mood: 0,
+      parents_energy: 0,
+      parents_teamwork: 50,
+    },
+  },
+];
+
+type DiagnosticMemberId = 'hamza' | 'laila' | 'youssef' | 'parents';
+type DiagnosticQuestionId =
+  | 'hamza_sleep'
+  | 'hamza_mood'
+  | 'laila_coop'
+  | 'laila_energy'
+  | 'youssef_school'
+  | 'youssef_mood'
+  | 'parents_energy'
+  | 'parents_teamwork';
+
+interface DiagnosticMemberSpec {
+  id: DiagnosticMemberId;
+  kidId: number | null;
+  emoji: string;
+  nameAr: string;
+  nameEn: string;
+  stageAr: string;
+  stageEn: string;
+  questions: Array<{
+    id: DiagnosticQuestionId;
+    labelAr: string;
+    labelEn: string;
+    options: Array<{
+      score: 0 | 50 | 100;
+      textAr: string;
+      textEn: string;
+      icon: string;
+    }>;
+  }>;
+  rescuePlanAr: string;
+  rescuePlanEn: string;
+  rescueTaskAr: string;
+  rescueTaskEn: string;
+  rescueTime: string;
+}
+
+const DIAGNOSTIC_MEMBERS_SPEC: DiagnosticMemberSpec[] = [
+  {
+    id: 'hamza',
+    kidId: 1,
+    emoji: '👶🏻',
+    nameAr: 'حمزة',
+    nameEn: 'Hamza',
+    stageAr: 'رضيع · ٦ شهور',
+    stageEn: 'Infant · 6m',
+    questions: [
+      {
+        id: 'hamza_sleep',
+        labelAr: '١. جودة النوم والقيلولة:',
+        labelEn: '1. Sleep & Nap Quality:',
+        options: [
+          { score: 0, textAr: 'متقطع', textEn: 'Restless', icon: '😴' },
+          { score: 50, textAr: 'متوسط', textEn: 'Moderate', icon: '🌙' },
+          { score: 100, textAr: 'عميق ومريح', textEn: 'Deep & Calm', icon: '✨' },
+        ],
+      },
+      {
+        id: 'hamza_mood',
+        labelAr: '٢. المزاج والرضاعة/الأكل:',
+        labelEn: '2. Mood & First Feeding:',
+        options: [
+          { score: 0, textAr: 'مغص/بكاء', textEn: 'Fussy', icon: '🍼' },
+          { score: 50, textAr: 'هادئ نسبياً', textEn: 'Calm-ish', icon: '🙂' },
+          { score: 100, textAr: 'مبتسم ومرتاح', textEn: 'Happy & Fed', icon: '🥰' },
+        ],
+      },
+    ],
+    rescuePlanAr:
+      'خطة إنقاذ حمزة (٦ شهور): يتولى أحمد حمل حمزة وتمرين التهدئة الحسي ١٥ دقيقة لتأخذ مريم قسط راحة، مع حمام دافئ وتدليك البطن قبل النوم.',
+    rescuePlanEn:
+      'Hamza (6m) Rescue Plan: Ahmed takes over 15-min soothing sensory hold while Maryam rests, followed by a warm bath and gentle tummy massage.',
+    rescueTaskAr: 'حمام دافئ وتدليك تهدئة المساء لـ حمزة بالتناوب بين أحمد ومريم',
+    rescueTaskEn: 'Warm soothing bath & tummy massage for Hamza (Ahmed & Maryam)',
+    rescueTime: '07:15 م',
+  },
+  {
+    id: 'laila',
+    kidId: 2,
+    emoji: '👧🏻',
+    nameAr: 'ليلى',
+    nameEn: 'Laila',
+    stageAr: 'طفلة · ٤ سنوات',
+    stageEn: 'Daughter · 4y',
+    questions: [
+      {
+        id: 'laila_coop',
+        labelAr: '١. التعاون ونوبات الغضب:',
+        labelEn: '1. Cooperation & Tantrums:',
+        options: [
+          { score: 0, textAr: 'عناد/غضب', textEn: 'Tantrums', icon: '🌩️' },
+          { score: 50, textAr: 'تحتاج تمهيد', textEn: 'Needs Prep', icon: '🤝' },
+          { score: 100, textAr: 'متعاونة جداً', textEn: 'Cooperative', icon: '🌸' },
+        ],
+      },
+      {
+        id: 'laila_energy',
+        labelAr: '٢. طاقة اللعب والحضانة:',
+        labelEn: '2. Creative Play & Nursery:',
+        options: [
+          { score: 0, textAr: 'مرهقة/متعلقة', textEn: 'Clingy/Tired', icon: '🧸' },
+          { score: 50, textAr: 'طاقة معتدلة', textEn: 'Balanced', icon: '🎨' },
+          { score: 100, textAr: 'مبدعة ومنطلقة', textEn: 'Creative', icon: '🌟' },
+        ],
+      },
+    ],
+    rescuePlanAr:
+      'خطة إنقاذ ليلى (٤ سنوات): تجلس مريم مع ليلى ١٠ دقائق بـ «بطاقات تسمية المشاعر» والتخيير الإيجابي بين نشاطين فنيين بدون أوامر مباشرة.',
+    rescuePlanEn:
+      'Laila (4y) Rescue Plan: Maryam spends 10 mins using Emotion Naming Cards & offering 2 gentle creative choices to dissolve resistance.',
+    rescueTaskAr: 'جلسة بطاقات تسمية المشاعر والتلوين الهادئ مع ليلى (مريم)',
+    rescueTaskEn: 'Emotion Naming Cards & calm coloring session with Laila (Maryam)',
+    rescueTime: '04:30 م',
+  },
+  {
+    id: 'youssef',
+    kidId: 3,
+    emoji: '👦🏻',
+    nameAr: 'يوسف',
+    nameEn: 'Youssef',
+    stageAr: 'الابن الأكبر · ٨ سنوات',
+    stageEn: 'Eldest Son · 8y',
+    questions: [
+      {
+        id: 'youssef_school',
+        labelAr: '١. استقلالية المدرسة والواجبات:',
+        labelEn: '1. School & Homework:',
+        options: [
+          { score: 0, textAr: 'مشتت', textEn: 'Distracted', icon: '📚' },
+          { score: 50, textAr: 'ينجز بتذكير', textEn: 'With Prompts', icon: '✏️' },
+          { score: 100, textAr: 'مستقل ومنظم', textEn: 'Independent', icon: '🏆' },
+        ],
+      },
+      {
+        id: 'youssef_mood',
+        labelAr: '٢. المزاج وتوازن الشاشات:',
+        labelEn: '2. Mood & Screen Balance:',
+        options: [
+          { score: 0, textAr: 'شد على الشاشات', textEn: 'Screen Struggle', icon: '📱' },
+          { score: 50, textAr: 'متوازن نسبياً', textEn: 'Balanced', icon: '⚽' },
+          { score: 100, textAr: 'نشيط وإيجابي', textEn: 'Active & Great', icon: '🚀' },
+        ],
+      },
+    ],
+    rescuePlanAr:
+      'خطة إنقاذ يوسف (٨ سنوات): يضبط أحمد مع يوسف مؤقت ٢٥ دقيقة لإنهاء الواجب مقابل تحدي شطرنج أو كورة مشترك بدون شاشات.',
+    rescuePlanEn:
+      'Youssef (8y) Rescue Plan: Ahmed sets a 25-min focus timer with Youssef followed by a screen-free father-son chess or ball match.',
+    rescueTaskAr: 'تحدي ٢٥ دقيقة تركيز للواجب + مباراة بدون شاشات مع يوسف (أحمد)',
+    rescueTaskEn: '25-min homework sprint + screen-free match with Youssef (Ahmed)',
+    rescueTime: '05:30 م',
+  },
+  {
+    id: 'parents',
+    kidId: null,
+    emoji: '💑',
+    nameAr: 'أحمد ومريم',
+    nameEn: 'Ahmed & Maryam',
+    stageAr: 'الأب والأم · قيادة البيت',
+    stageEn: 'Parents · Family Team',
+    questions: [
+      {
+        id: 'parents_energy',
+        labelAr: '١. مستوى طاقة أحمد ومريم:',
+        labelEn: '1. Parents Energy Level:',
+        options: [
+          { score: 0, textAr: 'إرهاق عالي', textEn: 'Exhausted', icon: '🪫' },
+          { score: 50, textAr: 'طاقة متوسطة', textEn: 'Moderate', icon: '☕' },
+          { score: 100, textAr: 'نشاط وروقان', textEn: 'Energized', icon: '🔋' },
+        ],
+      },
+      {
+        id: 'parents_teamwork',
+        labelAr: '٢. التنسيق وتوزيع المهام:',
+        labelEn: '2. Teamwork Coordination:',
+        options: [
+          { score: 0, textAr: 'ضغط غير موزع', textEn: 'Overloaded', icon: '⚠️' },
+          { score: 50, textAr: 'تنسيق جيد', textEn: 'Coordinated', icon: '🤝' },
+          { score: 100, textAr: 'تناغم كامل', textEn: 'Full Synergy', icon: '💚' },
+        ],
+      },
+    ],
+    rescuePlanAr:
+      'خطة إنقاذ أحمد ومريم: تطبيق «تناوب الـ ٣٠ دقيقة» فوراً — يستلم أحد الزوجين الأولاد بينما يحصل الآخر على استراحة هادئة مع قهوة بدون مقاطعة.',
+    rescuePlanEn:
+      'Ahmed & Maryam Rescue Plan: Activate the "30-Minute Tag-Team Relay" — one parent takes the kids while the other enjoys an uninterrupted coffee break.',
+    rescueTaskAr: 'تفعيل تناوب الراحة المسائي (٣٠ دقيقة لكل من أحمد ومريم)',
+    rescueTaskEn: '30-Minute Evening Tag-Team Rest Relay (Ahmed & Maryam)',
+    rescueTime: '08:00 م',
   },
 ];
 
 /**
- * Interactive Family Mood Barometer Widget (😊 / 🤩 / 🧸 / 🌿).
- * Lets parents set the family's daily vibe with instant visual & emotional feedback.
+ * Interactive Family Pulse & Battery Diagnostic Widget ("اختبار نبض البطارية والبيت اليومي").
+ * Parents (Ahmad or Maryam) complete a 30-second check-in answering 2 targeted questions
+ * for Hamza (6m), Laila (4y), Youssef (8y), and Ahmad & Maryam.
+ * Dynamically calculates an aggregate household percentage (0% to 100%) driving the SVG Half-Circle
+ * Gauge Needle & outputting a contextual daily operational rescue plan.
  */
 export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
   language,
   onSelectMood,
+  onAddRescueTask,
 }) => {
   const isEn = language === 'en';
   const [selectedMood, setSelectedMood] = useState<FamilyMoodId>(() => {
@@ -1543,27 +1841,107 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
     return 'calm';
   });
 
-  const activeMoodObj =
-    FAMILY_MOOD_OPTIONS.find((m) => m.id === selectedMood) || FAMILY_MOOD_OPTIONS[0];
+  const [diagnosticScores, setDiagnosticScores] = useState<Record<DiagnosticQuestionId, 0 | 50 | 100>>(() => {
+    try {
+      const raw = window.localStorage.getItem('nekbaar_family_pulse_scores_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            hamza_sleep: parsed.hamza_sleep ?? 50,
+            hamza_mood: parsed.hamza_mood ?? 100,
+            laila_coop: parsed.laila_coop ?? 50,
+            laila_energy: parsed.laila_energy ?? 100,
+            youssef_school: parsed.youssef_school ?? 100,
+            youssef_mood: parsed.youssef_mood ?? 50,
+            parents_energy: parsed.parents_energy ?? 50,
+            parents_teamwork: parsed.parents_teamwork ?? 100,
+          };
+        }
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return {
+      hamza_sleep: 50,
+      hamza_mood: 100,
+      laila_coop: 50,
+      laila_energy: 100,
+      youssef_school: 100,
+      youssef_mood: 50,
+      parents_energy: 50,
+      parents_teamwork: 100,
+    };
+  });
+
+  const [activeMemberTab, setActiveMemberTab] = useState<DiagnosticMemberId>('hamza');
+
+  const handleAnswerQuestion = (
+    qId: DiagnosticQuestionId,
+    score: 0 | 50 | 100,
+    memberName: string,
+    optLabel: string
+  ) => {
+    setDiagnosticScores((prev) => {
+      const next = { ...prev, [qId]: score };
+      try {
+        window.localStorage.setItem('nekbaar_family_pulse_scores_v1', JSON.stringify(next));
+      } catch {
+        // ignore storage errors
+      }
+      const totalVals = Object.values(next) as number[];
+      const avg = Math.round(totalVals.reduce((acc, v) => acc + v, 0) / totalVals.length);
+      onSelectMood?.(
+        avg >= 85 ? 'excited' : avg >= 65 ? 'calm' : avg >= 40 ? 'cozy' : 'focused',
+        isEn
+          ? `🔋 Updated ${memberName} check-in (${optLabel}) · Household Battery: ${avg}%`
+          : `🔋 تم تحديث تشخيص ${memberName} (${optLabel}) · نبض بطارية البيت الآن: ${avg}%`
+      );
+      return next;
+    });
+  };
 
   const handleChooseMood = (opt: (typeof FAMILY_MOOD_OPTIONS)[number]) => {
     setSelectedMood(opt.id);
+    setDiagnosticScores(opt.presetScores);
     try {
       window.localStorage.setItem('nekbaar_family_mood_v1', opt.id);
+      window.localStorage.setItem('nekbaar_family_pulse_scores_v1', JSON.stringify(opt.presetScores));
     } catch {
       // ignore storage errors
     }
     onSelectMood?.(opt.id, `${opt.emoji} ${isEn ? opt.vibeEn : opt.vibeAr}`);
   };
 
-  const energyGaugePercent =
-    selectedMood === 'excited'
-      ? 96
-      : selectedMood === 'focused'
-      ? 84
-      : selectedMood === 'calm'
-      ? 68
-      : 48;
+  // Calculate per-member battery percentages & aggregate household battery percentage (0% to 100%)
+  const memberPercentages: Record<DiagnosticMemberId, number> = {
+    hamza: Math.round((diagnosticScores.hamza_sleep + diagnosticScores.hamza_mood) / 2),
+    laila: Math.round((diagnosticScores.laila_coop + diagnosticScores.laila_energy) / 2),
+    youssef: Math.round((diagnosticScores.youssef_school + diagnosticScores.youssef_mood) / 2),
+    parents: Math.round((diagnosticScores.parents_energy + diagnosticScores.parents_teamwork) / 2),
+  };
+
+  const energyGaugePercent = Math.round(
+    (memberPercentages.hamza +
+      memberPercentages.laila +
+      memberPercentages.youssef +
+      memberPercentages.parents) /
+      4
+  );
+
+  // Identify lowest-battery family member to tailor the instant operational rescue plan
+  const priorityRescueMember = DIAGNOSTIC_MEMBERS_SPEC.reduce((lowest, curr) =>
+    memberPercentages[curr.id] < memberPercentages[lowest.id] ? curr : lowest
+  , DIAGNOSTIC_MEMBERS_SPEC[0]);
+
+  const activeMoodObj =
+    energyGaugePercent >= 85
+      ? FAMILY_MOOD_OPTIONS[1]
+      : energyGaugePercent >= 65
+      ? FAMILY_MOOD_OPTIONS[0]
+      : energyGaugePercent >= 40
+      ? FAMILY_MOOD_OPTIONS[2]
+      : FAMILY_MOOD_OPTIONS[3];
 
   // Needle angle from -90deg (leftmost 0%) to +90deg (rightmost 100%)
   const needleAngleDeg = Math.round((energyGaugePercent / 100) * 180 - 90);
@@ -1575,11 +1953,67 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
     <div
       id="family-mood-barometer"
       data-testid="family-mood-barometer"
-      className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface shadow-sm"
+      className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 soft-card-surface shadow-sm space-y-5"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-        {/* Left/Start Column: Interactive Half-Circle Speedometer / Gauge Widget (SVG) */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center rounded-2xl border border-[var(--color-border)]/70 dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/70 p-4">
+      {/* Top Header Row: Title + Quick 1-Tap Household Presets */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-11 h-11 rounded-2xl bg-teal-500/15 dark:bg-[#142430] border border-teal-500/30 dark:border-[#1E3646] flex items-center justify-center text-2xl shrink-0">
+            🔋
+          </span>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn
+                  ? 'Daily Family Battery & Pulse Diagnostic (30s Check-In)'
+                  : 'اختبار نبض البطارية والبيت اليومي (تشخيص ٣٠ ثانية)'}
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[10.5px] font-black tabular-nums">
+                {energyGaugePercent}% · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+              </span>
+            </div>
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              {isEn
+                ? 'Answer 2 quick questions for Hamza (6m), Laila (4y), Youssef (8y) & Ahmed/Maryam to generate today’s rescue plan'
+                : 'أجب عن سؤالين سريعين لـ حمزة (٦ شهور)، ليلى (٤ سنوات)، يوسف (٨ سنوات)، وأحمد ومريم لحساب نبض البيت وخطة الإنقاذ الفورية'}
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Preset Buttons */}
+        <div
+          role="radiogroup"
+          aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
+          className="flex items-center gap-1.5 flex-wrap"
+        >
+          {FAMILY_MOOD_OPTIONS.map((opt) => {
+            const isSelected = opt.id === selectedMood;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                data-testid={`mood-option-${opt.id}`}
+                onClick={() => handleChooseMood(opt)}
+                className={`min-h-[34px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all inline-flex items-center gap-1 cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                }`}
+              >
+                <span>{opt.emoji}</span>
+                <span>{isEn ? opt.labelEn : opt.labelAr}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Grid: Left Half-Circle Speedometer Gauge + Right 4-Member Interactive Check-In */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        {/* Left/Start Column: Interactive Half-Circle Speedometer / Battery Gauge Widget (SVG) */}
+        <div className="lg:col-span-5 flex flex-col items-center justify-between rounded-2xl border border-[var(--color-border)]/70 dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/70 p-4 gap-3">
           <div className="relative w-full max-w-[250px] flex flex-col items-center">
             <svg
               data-testid="half-circle-energy-gauge-svg"
@@ -1589,7 +2023,7 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
               aria-label={
                 isEn
                   ? `Family Energy & Mood Gauge: ${energyGaugePercent}%`
-                  : `عدّاد طاقة ومود العيلة النصف دائري: ${energyGaugePercent}٪`
+                  : `عدّاد نبض وبطارية العيلة النصف دائري: ${energyGaugePercent}٪`
               }
             >
               <defs>
@@ -1704,77 +2138,186 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
             </svg>
 
             {/* Digital Readout Under Half-Circle Gauge */}
-            <div className="mt-1 flex items-center justify-between w-full px-2 text-[11px] font-extrabold">
-              <button
-                type="button"
-                onClick={() => handleChooseMood(FAMILY_MOOD_OPTIONS[2])}
-                className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+            <div className="mt-1 flex items-center justify-between w-full px-1 text-[11px] font-extrabold">
+              <span className="text-emerald-600 dark:text-emerald-400">🌿 0%</span>
+              <span
+                data-testid="family-battery-aggregate-pct"
+                className="px-3 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/30 text-xs font-black tabular-nums"
               >
-                🌿 {isEn ? 'Calm' : 'هدوء'}
-              </button>
-              <span className="px-3 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/25 text-xs font-black tabular-nums">
-                {energyGaugePercent}% · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+                🔋 {isEn ? `Household Pulse: ${energyGaugePercent}%` : `نبض بطارية البيت: ${energyGaugePercent}%`}
               </span>
-              <button
-                type="button"
-                onClick={() => handleChooseMood(FAMILY_MOOD_OPTIONS[1])}
-                className="text-[#E86A3D] dark:text-[#FF8C61] hover:underline cursor-pointer"
-              >
-                🔥 {isEn ? 'Peak Energy' : 'ذروة الحماس'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right/End Column: Mood Context & Interactive Selector Buttons */}
-        <div className="lg:col-span-7 space-y-3.5">
-          <div className="flex items-start gap-3">
-            <span className="w-12 h-12 rounded-2xl bg-amber-400/15 dark:bg-[#142430] border border-amber-400/35 dark:border-[#1E3646] flex items-center justify-center text-2xl shrink-0 shadow-2xs">
-              {activeMoodObj.emoji}
-            </span>
-            <div className="space-y-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? 'Interactive Family Energy & Mood Gauge' : 'عدّاد طاقة ومود العيلة النصف دائري'}
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 text-[10.5px] font-black">
-                  {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
-                </span>
-              </div>
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                {isEn ? activeMoodObj.vibeEn : activeMoodObj.vibeAr}
-              </p>
+              <span className="text-[#E86A3D] dark:text-[#FF8C61]">🔥 100%</span>
             </div>
           </div>
 
-          <div
-            role="radiogroup"
-            aria-label={isEn ? 'Select Family Daily Mood' : 'اختر مود العيلة اليوم'}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-2"
-          >
-            {FAMILY_MOOD_OPTIONS.map((opt) => {
-              const isSelected = opt.id === selectedMood;
+          {/* 4 Per-Member Live Battery Summary Pills */}
+          <div className="w-full grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+            {DIAGNOSTIC_MEMBERS_SPEC.map((m) => {
+              const pct = memberPercentages[m.id];
+              const isFocused = activeMemberTab === m.id;
               return (
                 <button
-                  key={opt.id}
+                  key={m.id}
                   type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  data-testid={`mood-option-${opt.id}`}
-                  onClick={() => handleChooseMood(opt)}
-                  className={`min-h-[42px] px-3 py-2 rounded-2xl text-xs font-extrabold border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-sm scale-[1.02]'
-                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                  data-testid={`diagnostic-member-pill-${m.id}`}
+                  onClick={() => setActiveMemberTab(m.id)}
+                  className={`px-3 py-2 rounded-xl border text-start transition-all flex items-center justify-between gap-1.5 cursor-pointer ${
+                    isFocused
+                      ? 'border-[#0d9488] bg-teal-500/12 text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs'
+                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] hover:border-[#0d9488]/60'
                   }`}
                 >
-                  <span className="text-sm leading-none">{opt.emoji}</span>
-                  <span className="truncate">{isEn ? opt.labelEn : opt.labelAr}</span>
+                  <span className="text-[11px] font-black truncate">
+                    {m.emoji} {isEn ? m.nameEn : m.nameAr}
+                  </span>
+                  <span
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums ${
+                      pct >= 75
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        : pct >= 50
+                        ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                    }`}
+                  >
+                    {pct}%
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
+
+        {/* Right/End Column: 2x2 Interactive Member Diagnostic Check-In Cards */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {DIAGNOSTIC_MEMBERS_SPEC.map((member) => {
+            const memberPct = memberPercentages[member.id];
+            const isHighlighted = activeMemberTab === member.id;
+            return (
+              <div
+                key={member.id}
+                data-testid={`diagnostic-card-${member.id}`}
+                onClick={() => setActiveMemberTab(member.id)}
+                className={`rounded-2xl border p-3.5 flex flex-col justify-between gap-2.5 transition-all ${
+                  isHighlighted
+                    ? 'border-[#0d9488] bg-teal-50/40 dark:bg-[#142430]/90 shadow-2xs'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/25 dark:bg-[#0B131A]/60'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg leading-none">{member.emoji}</span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                        {isEn ? member.nameEn : member.nameAr}
+                      </div>
+                      <div className="text-[10px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+                        {isEn ? member.stageEn : member.stageAr}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums ${
+                      memberPct >= 75
+                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                        : memberPct >= 50
+                        ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                    }`}
+                  >
+                    ⚡ {memberPct}%
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {member.questions.map((q) => {
+                    const currentVal = diagnosticScores[q.id];
+                    return (
+                      <div key={q.id} className="space-y-1">
+                        <div className="text-[10.5px] font-extrabold text-[var(--color-text)] dark:text-[#CBD5E1]">
+                          {isEn ? q.labelEn : q.labelAr}
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          {q.options.map((opt) => {
+                            const isPicked = currentVal === opt.score;
+                            return (
+                              <button
+                                key={opt.score}
+                                type="button"
+                                data-testid={`diag-q-${q.id}-${opt.score}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMemberTab(member.id);
+                                  handleAnswerQuestion(
+                                    q.id,
+                                    opt.score,
+                                    isEn ? member.nameEn : member.nameAr,
+                                    isEn ? opt.textEn : opt.textAr
+                                  );
+                                }}
+                                className={`min-h-[28px] px-1.5 py-1 rounded-lg text-[10px] font-extrabold border transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                  isPicked
+                                    ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                                    : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                                }`}
+                              >
+                                <span aria-hidden="true">{opt.icon}</span>
+                                <span className="truncate">{isEn ? opt.textEn : opt.textAr}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Operational Rescue Plan Banner Driven Dynamically by Diagnostic Scores */}
+      <div
+        id="family-pulse-rescue-plan"
+        data-testid="family-pulse-rescue-plan"
+        className="rounded-2xl border border-teal-500/30 dark:border-[#1E3646] bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 dark:from-[#142430] dark:to-[#0B131A] p-4 flex flex-wrap items-center justify-between gap-3"
+      >
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="px-2.5 py-0.5 rounded-full bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] text-[10.5px] font-black">
+              🛟 {isEn ? 'Instant Daily Operational Rescue Plan' : 'خطة الإنقاذ والتشغيل اليومية الفورية'}
+            </span>
+            <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+              {priorityRescueMember.emoji}{' '}
+              {isEn
+                ? `Priority Focus: ${priorityRescueMember.nameEn} (${memberPercentages[priorityRescueMember.id]}%)`
+                : `الأولوية الآن: ${priorityRescueMember.nameAr} (${memberPercentages[priorityRescueMember.id]}%)`}
+            </span>
+          </div>
+          <p className="text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+            {isEn ? priorityRescueMember.rescuePlanEn : priorityRescueMember.rescuePlanAr}
+          </p>
+        </div>
+
+        {onAddRescueTask && (
+          <button
+            type="button"
+            data-testid="apply-rescue-plan-btn"
+            onClick={() => {
+              onAddRescueTask(
+                isEn ? priorityRescueMember.rescueTaskEn : priorityRescueMember.rescueTaskAr,
+                priorityRescueMember.rescueTime,
+                priorityRescueMember.kidId
+              );
+            }}
+            className="min-h-[38px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 inline-flex items-center gap-1.5"
+          >
+            <span>＋</span>
+            <span>
+              {isEn ? 'Add Rescue Task to Routine' : 'أضف خطة الإنقاذ للروتين اليومي'}
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1877,9 +2420,10 @@ const SPLASH_VALUE_PROPOSITIONS: Array<{
 ];
 
 /**
- * 4-Second Interactive Opening / Splash Intro Screen for نكبر (Nekbaar).
- * Features warm glassmorphic gradients, central animated child SVG, cycling value-proposition subtitles,
- * interactive pill selector, and a touch-friendly "تخطي / Skip" button.
+ * 6-Second Immersive Full-Screen Opening / Splash Intro Screen for نكبر (Nekbaar).
+ * Renders directly in full-screen viewport mode (no boxed card wrapper) over a vibrant
+ * geometric SVG background pattern, featuring cycling value-proposition subtitles,
+ * official bilingual slogan, and a touch-friendly "تخطي / Skip" button.
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
   visible,
@@ -1913,29 +2457,31 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       role="dialog"
       aria-modal="true"
       aria-label={isEn ? 'Welcome to Nekbaar' : 'مرحباً بك في نكبر'}
-      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between p-5 sm:p-8 overflow-hidden select-none transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between px-6 py-8 sm:px-12 sm:py-10 overflow-hidden select-none transition-opacity duration-300 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(rgba(45, 212, 191, 0.14) 1.5px, transparent 1.5px), radial-gradient(circle at 50% 22%, rgba(13, 148, 136, 0.3) 0%, rgba(255, 140, 97, 0.18) 38%, rgba(11, 19, 26, 0.98) 82%), #0B131A'
-          : 'radial-gradient(rgba(13, 148, 136, 0.13) 1.5px, transparent 1.5px), radial-gradient(circle at 50% 22%, rgba(254, 243, 199, 0.88) 0%, rgba(204, 251, 241, 0.68) 45%, rgba(248, 250, 252, 0.98) 88%), #F8FAFC',
-        backgroundSize: '28px 28px, 100% 100%',
+          ? 'radial-gradient(circle at 50% 25%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.2) 42%, rgba(11, 19, 26, 0.98) 85%), #0B131A'
+          : 'radial-gradient(circle at 50% 25%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 46%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
       }}
     >
+      {/* Vibrant Geometric Background Pattern Overlay */}
+      <GeometricBackdropPattern idPrefix="splash-screen" darkMode={darkMode} />
+
       {/* Ambient Floating Decorative Glow Blobs */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -start-24 w-72 h-72 rounded-full bg-teal-400/20 dark:bg-teal-500/15 blur-3xl"
+        className="pointer-events-none absolute -top-24 -start-24 w-80 h-80 rounded-full bg-teal-400/25 dark:bg-teal-500/20 blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -end-24 w-80 h-80 rounded-full bg-orange-400/20 dark:bg-orange-500/15 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
       />
 
       {/* Top Row: Brand Pill & Interactive Skip Button */}
-      <div className="relative z-10 w-full max-w-xl flex items-center justify-between gap-3 pt-1">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal-500/30 bg-white/85 dark:bg-[#101D26]/90 backdrop-blur-md shadow-xs">
+      <div className="relative z-10 w-full max-w-3xl flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-teal-500/35 bg-white/80 dark:bg-[#101D26]/85 backdrop-blur-md shadow-xs">
           <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488] animate-ping" />
           <span className="text-xs sm:text-sm font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
             {isEn ? 'Super Family Platform · Ages 0–8' : 'منصة الأسرة الذكية · من يوم لـ ٨ سنوات'}
@@ -1947,59 +2493,59 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           data-testid="splash-skip-btn"
           type="button"
           onClick={onSkipOrFinish}
-          className="min-h-[44px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/95 dark:bg-[#142430]/95 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
+          className="min-h-[44px] px-5 py-2 rounded-full border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#142430]/90 hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm backdrop-blur-md transition-all active:scale-95 cursor-pointer inline-flex items-center gap-1.5"
         >
           <span>{isEn ? 'Skip (6s)' : 'تخطي'}</span>
           <span aria-hidden="true">{isEn ? '→' : '←'}</span>
         </button>
       </div>
 
-      {/* Center Stage: Enlarged Mobile-First Glassmorphic Showcase Card */}
-      <div className="relative z-10 w-full max-w-xl my-auto rounded-[36px] border border-white/85 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26]/92 backdrop-blur-xl px-6 py-8 sm:px-10 sm:py-10 shadow-[0_28px_70px_-15px_rgba(13,148,136,0.3)] dark:shadow-[0_28px_70px_-15px_rgba(0,0,0,0.8)] flex flex-col items-center text-center space-y-6">
+      {/* Center Stage: Open Full-Screen Hero Showcase (No Boxed Card Wrapper) */}
+      <div className="relative z-10 w-full max-w-2xl my-auto flex flex-col items-center text-center space-y-6 px-2">
         {/* Enlarged Animated Playful Child SVG with Warm Glowing Aura */}
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-[#0d9488]/28 via-[#FF8C61]/25 to-[#FBBF24]/30"
+            className="animate-nav-loader-pulse-ring absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
           />
-          <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-[32px] bg-gradient-to-b from-amber-50/95 to-teal-50/85 dark:from-[#142430] dark:to-[#0B131A] border-2 border-amber-200/80 dark:border-[#1E3646] flex items-center justify-center shadow-lg">
-            <PlayfulChildLoaderSvg size={110} />
+          <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full bg-white/85 dark:bg-[#142430]/90 border-2 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-xl backdrop-blur-md">
+            <PlayfulChildLoaderSvg size={120} />
           </div>
         </div>
 
         {/* Primary Brand Identity & Official Slogan */}
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2.5 justify-center">
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
+        <div className="space-y-2.5">
+          <div className="inline-flex items-center gap-3 justify-center">
+            <h1 className="text-5xl sm:text-6xl font-black tracking-tight text-[#0f766e] dark:text-[#2DD4BF]">
               {isEn ? 'Nekbaar' : 'نكبر'}
             </h1>
-            <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-black bg-[#FF8C61]/15 text-[#E86A3D] dark:text-[#FF8C61] border border-[#FF8C61]/30">
+            <span className="px-3.5 py-1 rounded-full text-xs sm:text-sm font-black bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] border border-[#FF8C61]/35">
               {isEn ? 'نكبر' : 'Nekbaar'}
             </span>
           </div>
-          <p className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+          <p className="text-base sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
           </p>
         </div>
 
-        {/* Cycling Value Proposition Card with Smooth Keyed Fade Transition */}
+        {/* Cycling Value Proposition Showcase with Smooth Keyed Fade Transition */}
         <div
           key={currentSlide.id}
-          className="w-full rounded-3xl border border-teal-500/25 dark:border-[#1E3646] bg-gradient-to-br from-teal-50/80 via-white to-amber-50/70 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-5 sm:p-6 space-y-2 animate-page-enter min-h-[146px] flex flex-col items-center justify-center shadow-xs"
+          className="w-full max-w-xl rounded-3xl border border-teal-500/25 dark:border-[#1E3646] bg-white/75 dark:bg-[#101D26]/80 backdrop-blur-md p-6 sm:p-7 space-y-2.5 animate-page-enter min-h-[148px] flex flex-col items-center justify-center shadow-sm"
         >
-          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold bg-[#0d9488]/12 text-[#0f766e] dark:text-[#5EEAD4]">
+          <span className="px-3.5 py-1 rounded-full text-xs font-extrabold bg-[#0d9488]/15 text-[#0f766e] dark:text-[#5EEAD4]">
             {isEn ? currentSlide.badgeEn : currentSlide.badgeAr}
           </span>
-          <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+          <h2 className="text-lg sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             {currentSlide.icon} {isEn ? currentSlide.titleEn : currentSlide.titleAr}
           </h2>
-          <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed max-w-md">
+          <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed max-w-lg">
             {isEn ? currentSlide.descEn : currentSlide.descAr}
           </p>
         </div>
 
-        {/* Interactive Slide Dots + 4-Second Progress Bar */}
-        <div className="w-full space-y-3.5 pt-1">
+        {/* Interactive Slide Dots + 6-Second Progress Bar */}
+        <div className="w-full max-w-md space-y-3.5 pt-1">
           <div className="flex items-center justify-center gap-2.5">
             {SPLASH_VALUE_PROPOSITIONS.map((sl, idx) => {
               const isActive = idx === activeSlideIdx;
@@ -2011,7 +2557,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
                   aria-label={isEn ? sl.titleEn : sl.titleAr}
                   className={`h-2.5 rounded-full transition-all cursor-pointer ${
                     isActive
-                      ? 'w-9 bg-[#0d9488] dark:bg-[#2DD4BF]'
+                      ? 'w-10 bg-[#0d9488] dark:bg-[#2DD4BF]'
                       : 'w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-teal-400'
                   }`}
                 />
@@ -2019,7 +2565,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
             })}
           </div>
 
-          <div className="w-full h-2 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden">
+          <div className="w-full h-2.5 rounded-full bg-slate-200/85 dark:bg-[#142430] overflow-hidden shadow-inner">
             <div
               className="h-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#FF8C61] to-[#FBBF24] transition-all duration-500"
               style={{ width: `${((activeSlideIdx + 1) / SPLASH_VALUE_PROPOSITIONS.length) * 100}%` }}
@@ -2029,11 +2575,11 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       </div>
 
       {/* Bottom Enter CTA */}
-      <div className="relative z-10 w-full max-w-xl flex items-center justify-center pb-1">
+      <div className="relative z-10 w-full max-w-xl flex items-center justify-center">
         <button
           type="button"
           onClick={onSkipOrFinish}
-          className="w-full min-h-[52px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0d9488] to-[#0f766e] hover:from-[#0f766e] hover:to-[#115e59] text-white font-black text-sm sm:text-base shadow-lg transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+          className="w-full min-h-[54px] py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#0d9488] to-[#0f766e] hover:from-[#0f766e] hover:to-[#115e59] text-white font-black text-sm sm:text-base shadow-lg transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-2"
         >
           <span>
             {isEn ? 'Enter Nekbaar Now' : 'ابدأ رحلتك الآن في نكبر'}

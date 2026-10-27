@@ -209,7 +209,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   const [savedThreads, setSavedThreads] = useState<AiConversationThread[]>([
     {
       id: 'thread-current',
-      titleAr: `خطة روتين وتربية ${selectedKid?.name || 'عز'} اليومية`,
+      titleAr: `خطة روتين وتربية ${selectedKid?.name || 'حمزة'} اليومية`,
       titleEn: `${displayKidName}'s Daily Routine & Parenting Plan`,
       dateLabelAr: 'اليوم · نشط الآن',
       dateLabelEn: 'Today · Active Now',
@@ -714,9 +714,29 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                               (step, i) => (
                                 <div
                                   key={i}
-                                  className="rounded-xl bg-slate-50 dark:bg-[#142430] px-3 py-2 font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                                  className="rounded-xl bg-slate-50 dark:bg-[#142430] px-3 py-2 font-bold text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-2"
                                 >
-                                  {step}
+                                  <span>{step}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const cleanStep = step.replace(/^[٠-٩0-9]+[.\-)]\s*/, '').trim();
+                                      onAddSuggestedRoutineTask(
+                                        `${cleanStep} (${selectedKid?.name || 'الطفل'})`,
+                                        '07:30 م',
+                                        selectedKid?.id || null
+                                      );
+                                      onShowToast(
+                                        isEn
+                                          ? `✨ Added step to ${displayKidName}'s Daily Routine!`
+                                          : `✨ تمت إضافة الخطوة مباشرة إلى الروتين اليومي لـ ${selectedKid?.name || 'طفلك'}!`
+                                      );
+                                    }}
+                                    className="px-2 py-0.5 rounded-lg bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black shrink-0 transition-all cursor-pointer"
+                                    title={isEn ? 'Add this step to Daily Routine' : 'أضف هذه الخطوة للروتين اليومي'}
+                                  >
+                                    + {isEn ? 'Add' : 'أضف'}
+                                  </button>
                                 </div>
                               )
                             )}
@@ -726,24 +746,26 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                           </div>
                           <div className="pt-1">
                             <PrimaryCtaButton
+                              data-testid="ai-magic-add-routine-btn"
                               variant="teal"
                               size="sm"
                               onClick={() => {
+                                const badgeTaskTitle = isEn
+                                  ? `${msg.structuredCard?.badgeEn || 'AI Plan'} — ${displayKidName}`
+                                  : `${msg.structuredCard?.badgeAr || 'خطة المساعد الذكي'} — ${selectedKid?.name || 'الطفل'}`;
                                 onAddSuggestedRoutineTask(
-                                  isEn
-                                    ? `Evening Wind-down & Story with ${selectedKid?.name || 'Child'}`
-                                    : `طقس الهدوء والقصة المسائية مع ${selectedKid?.name || 'الطفل'}`,
+                                  badgeTaskTitle,
                                   '08:00 م',
                                   selectedKid?.id || null
                                 );
                                 onShowToast(
                                   isEn
-                                    ? 'Added suggested task to Daily Routine!'
-                                    : 'تمت إضافة المهمة المقترحة إلى جدول الروتين اليومي!'
+                                    ? `✨ Magic Action: Added "${badgeTaskTitle}" to shared Daily Routine!`
+                                    : `✨ تم تحويل نصيحة المساعد الذكي «${badgeTaskTitle}» إلى مهمة مشتركة في الروتين اليومي!`
                                 );
                               }}
                             >
-                              + {isEn ? 'Add to Daily Routine' : 'إضافة للروتين اليومي'}
+                              ✨ {isEn ? 'Add to Daily Routine' : 'أضف إلى الروتين اليومي'}
                             </PrimaryCtaButton>
                           </div>
                         </div>
