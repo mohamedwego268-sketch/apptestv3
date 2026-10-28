@@ -1,6 +1,6 @@
 import { CountryCode, DEFAULT_SEED, ParentThemeRole } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
-import { SHARED_FAMILY_ID } from './supabaseService';
+import { SHARED_FAMILY_ID, supabaseClient, withSupabaseTimeout } from './supabaseService';
 
 /**
  * Full lifecycle steps for the progressive 5-step Nekbaar onboarding state machine.
@@ -202,10 +202,10 @@ export class OnboardingFlowController {
   }
 
   /**
-   * Step 0: Smart Startup Detection
-   * Checks if a saved user session profile exists in `localStorage`.
-   * - If found: returns `{ step: 'DASHBOARD', profile }` so the app greets the user by name and routes directly to `/dashboard`.
-   * - If not found: checks if a mid-onboarding draft exists in `localStorage` and restores that exact step, or starts at `'LOCATION'` (Step 1).
+   * Step 0: Smart Startup & Session Bypass Detection
+   * Checks if a valid session/profile exists in `localStorage` OR live Supabase Auth.
+   * - If found: syncs `localStorage` and returns `{ step: 'DASHBOARD', profile }` so the app bypasses the gateway and routes directly to the dashboard.
+   * - If not found: returns `{ step: 'WELCOME_PROFILE', draft }` so new/logged-out users see the Welcome & Auth Gateway screen.
    */
   public static async detectInitialState(): Promise<{
     step: OnboardingStep;
@@ -213,11 +213,61 @@ export class OnboardingFlowController {
     draft?: OnboardingDraftData;
   }> {
     try {
+      // 1. Check persisted localStorage profile first (instant F5 refresh persistence)
       const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
       if (savedProfileRaw) {
         const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
         if (profile && profile.userId && profile.fullName) {
-          return { step: 'DASHBOARD', profile };
+          return {
+            step: 'DASHBOARD',
+            profile: {
+              ...profile,
+              familyId: profile.familyId || String(SHARED_FAMILY_ID),
+            },
+          };
+        }
+      }
+
+      // 2. Check live Supabase Auth session if available
+      if (supabaseClient) {
+        try {
+          const { data: sessionRes } = await withSupabaseTimeout(
+            supabaseClient.auth.getSession(),
+            2500
+          );
+          const sessionUser = sessionRes?.session?.user;
+          if (sessionUser && sessionUser.id) {
+            const meta = (sessionUser.user_metadata || {}) as Record<string, unknown>;
+            const rawRole = typeof meta.role === 'string' ? meta.role.toLowerCase() : '';
+            const isDad =
+              rawRole === 'father' ||
+              rawRole === 'dad' ||
+              (sessionUser.email || '').toLowerCase().includes('ahmad');
+            const resolvedProfile: UserSessionProfile = {
+              userId: sessionUser.id,
+              familyId: String(meta.family_id || SHARED_FAMILY_ID),
+              fullName:
+                (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+                (isDad ? 'أحمد (الأب)' : 'مريم (الأم)'),
+              role: isDad ? 'dad' : 'mom',
+              email: sessionUser.email || (isDad ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app'),
+              phone:
+                (typeof meta.phone === 'string' && meta.phone.trim()) ||
+                sessionUser.phone ||
+                '551234567',
+              city:
+                (typeof meta.city === 'string' && meta.city.trim()) ||
+                'الدمام',
+              country: meta.country === 'EG' ? 'EG' : 'SA',
+              childrenCount: 3,
+              isCoParentLinked: true,
+              updatedAt: new Date().toISOString(),
+            };
+            this.persistUserSession(resolvedProfile, false);
+            return { step: 'DASHBOARD', profile: resolvedProfile };
+          }
+        } catch {
+          // Proceed gracefully to local draft / gateway check if offline
         }
       }
 
@@ -226,10 +276,10 @@ export class OnboardingFlowController {
         return { step: draft.currentStep, draft };
       }
 
-      return { step: 'LOCATION' };
+      return { step: 'WELCOME_PROFILE' };
     } catch (error) {
       console.error('Error detecting initial state:', error);
-      return { step: 'LOCATION' };
+      return { step: 'WELCOME_PROFILE' };
     }
   }
 

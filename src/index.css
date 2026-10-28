@@ -1393,3 +1393,44 @@ h1, h2, h3, h4 {
 .animate-star-crown-badge {
   animation: starCrownGlow 2.4s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   EXCLUSIVE WELCOME GATEWAY & ONBOARDING PATTERN BACKGROUND (.bg-pattern)
+   Distinct Arabesque geometric lattice + warm aurora glow, completely
+   separate from the main dashboard canvas.
+   ========================================================================== */
+.bg-pattern {
+  background-color: #07171e;
+  background-image:
+    radial-gradient(circle at 18% 18%, rgba(13, 148, 136, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 84% 20%, rgba(232, 106, 61, 0.24) 0%, transparent 42%),
+    radial-gradient(circle at 50% 88%, rgba(20, 184, 166, 0.22) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(13, 148, 136, 0.09) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(13, 148, 136, 0.09) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(232, 106, 61, 0.07) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(232, 106, 61, 0.07) 25%, #07171e 25%);
+  background-position: 0 0, 0 0, 0 0, 24px 0, 24px 0, 0 0, 0 0;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px, 48px 48px, 48px 48px;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, repeat, repeat;
+}
+
+/* Smooth horizontal scroll container for Onboarding Step Navigation Tabs */
+.step-tabs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.45) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.step-tabs-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+
+.step-tabs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.step-tabs-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(13, 148, 136, 0.4);
+  border-radius: 9999px;
+}
+

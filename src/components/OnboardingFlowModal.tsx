@@ -128,38 +128,40 @@ const WIZARD_STEPS_META: Array<{
     num: 1,
     stepKey: 'LOCATION',
     icon: '📍',
-    labelAr: '١. الدولة والمدينة',
-    labelEn: '1. Location',
+    labelAr: '1. الدولة والمدينة',
+    labelEn: '1. Country & City',
   },
   {
     num: 2,
     stepKey: 'CREDENTIALS',
     icon: '🔐',
-    labelAr: '٢. بيانات الحساب',
-    labelEn: '2. Credentials',
+    labelAr: '2. بيانات الحساب',
+    labelEn: '2. Account Credentials',
   },
   {
     num: 3,
     stepKey: 'VERIFY_METHOD',
     icon: '📲',
-    labelAr: '٣. طريقة التحقق',
-    labelEn: '3. Verify OTP',
+    labelAr: '3. طريقة التحقق',
+    labelEn: '3. Verification Method',
   },
   {
     num: 4,
     stepKey: 'CHILDREN',
     icon: '👶🏻',
-    labelAr: '٤. ملفات الأطفال',
-    labelEn: '4. Children',
+    labelAr: '4. ملفات الأطفال',
+    labelEn: '4. Children Profiles',
   },
   {
     num: 5,
     stepKey: 'CO_PARENT',
     icon: '🤝',
-    labelAr: '٥. ربط الشريك',
-    labelEn: '5. Co-Parent',
+    labelAr: '5. ربط الشريك',
+    labelEn: '5. Co-Parent Link',
   },
 ];
+
+export type EntryGatewayFlowMode = 'GATEWAY' | 'FAST_LOGIN' | 'WIZARD';
 
 /**
  * Generates a deterministic 15x15 QR Code matrix with 3 standard finder patterns
@@ -219,6 +221,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 }) => {
   const isEn = language === 'en';
   const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
+
+  // Landing Flow Mode: starts at the Welcome & Auth Gateway ('GATEWAY') so new/logged-out users
+  // can choose between "تسجيل دخول (لديك حساب مسبق)" and "إنشاء حساب جديد (ابدأ رحلة نكبر)"
+  const [flowMode, setFlowMode] = useState<EntryGatewayFlowMode>('GATEWAY');
+  const [fastLoginMethod, setFastLoginMethod] = useState<'password' | 'otp'>('password');
+  const [fastLoginIdentifier, setFastLoginIdentifier] = useState<string>(
+    cachedDraft?.email || 'maryam.mom@nekbaar.app'
+  );
+  const [fastLoginPassword, setFastLoginPassword] = useState<string>('Nekbaar#2026');
+  const [fastLoginOtp, setFastLoginOtp] = useState<string>(DEMO_OTP_CODE);
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(cachedDraft?.stepNumber ?? 1);
   const [restoredFromCache, setRestoredFromCache] = useState<boolean>(Boolean(cachedDraft));
@@ -808,131 +820,657 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
   };
 
+  /**
+   * Fast Login Handler ("تسجيل دخول — لديك حساب مسبق"):
+   * Authenticates via Phone/Email + Password or OTP, maps to Shared Family ID #1,
+   * persists the permanent session to localStorage, and routes directly to Dashboard.
+   */
+  const handleFastLoginSubmit = async () => {
+    setErrorMsg(null);
+    const trimmedIdentifier = fastLoginIdentifier.trim();
+    if (!trimmedIdentifier) {
+      setErrorMsg(
+        isEn
+          ? 'Please enter your registered email address or mobile phone number.'
+          : 'يرجى إدخال البريد الإلكتروني أو رقم الجوال المسجل.'
+      );
+      return;
+    }
+
+    if (fastLoginMethod === 'password' && fastLoginPassword.trim().length < 4) {
+      setErrorMsg(
+        isEn
+          ? 'Please enter your account password.'
+          : 'يرجى إدخال كلمة المرور الخاصة بحسابك.'
+      );
+      return;
+    }
+
+    if (fastLoginMethod === 'otp' && fastLoginOtp.trim().length < 4) {
+      setErrorMsg(
+        isEn
+          ? `Please enter the 4-digit OTP code (${DEMO_OTP_CODE}).`
+          : `يرجى إدخال رمز التحقق المكون من ٤ أرقام (${DEMO_OTP_CODE}).`
+      );
+      return;
+    }
+
+    const lowerId = trimmedIdentifier.toLowerCase();
+    const isDadLogin =
+      parentRole === 'dad' ||
+      lowerId.includes('ahmad') ||
+      lowerId.includes('ahmed') ||
+      trimmedIdentifier.includes('أحمد');
+
+    const resolvedRole: ParentThemeRole = isDadLogin ? 'dad' : 'mom';
+    const resolvedName = isDadLogin ? 'أحمد (الأب)' : 'مريم (الأم)';
+    const resolvedEmail = trimmedIdentifier.includes('@')
+      ? trimmedIdentifier
+      : isDadLogin
+      ? 'ahmad.dad@nekbaar.app'
+      : 'maryam.mom@nekbaar.app';
+    const resolvedPhone = !trimmedIdentifier.includes('@')
+      ? trimmedIdentifier
+      : phone || '551234567';
+
+    setIsSavingStep(true);
+    const authRes = await authenticateParentWithSupabase({
+      mode: 'signin',
+      email: resolvedEmail,
+      password: fastLoginPassword || 'Nekbaar#2026',
+      phone: resolvedPhone,
+      parentName: resolvedName,
+      role: isDadLogin ? 'father' : 'mother',
+      country: selectedCountry,
+    });
+    setIsSavingStep(false);
+
+    const syncedSession: UserSessionProfile = {
+      userId: authRes.userId || `usr-${resolvedRole}-${authRes.familyId}`,
+      familyId: String(authRes.familyId || SHARED_FAMILY_ID),
+      fullName: resolvedName,
+      role: resolvedRole,
+      email: resolvedEmail,
+      phone: resolvedPhone,
+      city: selectedCity || 'الدمام',
+      country: selectedCountry,
+      childrenCount: Math.max(1, safeChildrenList.length),
+      isCoParentLinked: true,
+      verificationChannel: fastLoginMethod === 'otp' ? 'sms' : 'email',
+      coParentName: isDadLogin ? 'مريم (الأم)' : 'أحمد (الأب)',
+      coParentEmail: isDadLogin ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app',
+      coParentPhone: coParentPhone || '559876543',
+      updatedAt: new Date().toISOString(),
+    };
+
+    OnboardingFlowController.persistUserSession(syncedSession, true);
+
+    const primaryChild =
+      safeChildrenList[0] || INITIAL_CANONICAL_ONBOARDING_CHILDREN[0];
+
+    onCompleteOnboarding({
+      parentName: resolvedName,
+      role: resolvedRole,
+      country: selectedCountry,
+      city: selectedCity || 'الدمام',
+      currency: getSuggestedCurrencyForCountry(selectedCountry),
+      phoneNumber: resolvedPhone,
+      email: resolvedEmail,
+      childProfile: {
+        name: primaryChild.name,
+        gender: primaryChild.gender,
+        birth: primaryChild.birth,
+        interests: primaryChild.interests,
+        avatarTheme: primaryChild.avatarTheme,
+      },
+      childrenProfiles: safeChildrenList,
+      skippedForLater: false,
+      isCoParentLinked: true,
+      coParentName: syncedSession.coParentName,
+      coParentEmail: syncedSession.coParentEmail,
+      coParentPhone: syncedSession.coParentPhone,
+      persistedSession: syncedSession,
+    });
+  };
+
   return (
     <div
       dir={isEn ? 'ltr' : 'rtl'}
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4"
+      data-testid="onboarding-gateway-backdrop"
+      className="fixed inset-0 z-50 bg-pattern flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-wizard-title"
     >
-      <div className="soft-card-surface w-full max-w-2xl rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
-        {/* Top Wizard Header */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
-                <span>✨</span>
-                <span>
-                  {isEn
-                    ? `Progressive Family Setup · Step ${step} of 5`
-                    : `التسجيل المتدرج الذكي · الخطوة ${step} من 5`}
-                </span>
-              </span>
-              {restoredFromCache && (
-                <span
-                  data-testid="onboarding-cache-restored-badge"
-                  className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
-                >
-                  {isEn
-                    ? '✓ Auto-restored after refresh'
-                    : '✓ تم استرجاع خطوتك تلقائياً بعد التحديث'}
-                </span>
-              )}
-            </div>
-            <h2
-              id="onboarding-wizard-title"
-              className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
-            >
-              {step === 1 &&
-                (isEn
-                  ? 'Step 1: Select Country & City'
-                  : 'الخطوة ١: اختيار الدولة والمدينة أولاً')}
-              {step === 2 &&
-                (isEn
-                  ? 'Step 2: Phone Number & Email Credentials'
-                  : 'الخطوة ٢: إدخال رقم الجوال والبريد الإلكتروني')}
-              {step === 3 &&
-                (isEn
-                  ? 'Step 3: Choose Verification Channel (SMS vs. Email)'
-                  : 'الخطوة ٣: اختيار طريقة التحقق (رسالة SMS أو بريد إلكتروني)')}
-              {step === 4 &&
-                (isEn
-                  ? 'Step 4: Children Profiles Setup (At Least 1 Required)'
-                  : 'الخطوة ٤: إضافة ملفات الأطفال (طفل واحد على الأقل لتفعيل الحساب)')}
-              {step === 5 &&
-                (isEn
-                  ? 'Step 5: Link Co-Parent / Partner Account (Optional)'
-                  : 'الخطوة ٥: ربط حساب الشريك / الأم أو الأب (اختياري)')}
-            </h2>
-          </div>
+      {/* Subtle Decorative Arabesque Geometric SVG Pattern Exclusive to Entry & Onboarding */}
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 w-full h-full opacity-20"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <pattern
+            id="nekbaar-arabesque-entry-pattern"
+            width="64"
+            height="64"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M32 0 L64 32 L32 64 L0 32 Z M32 12 L52 32 L32 52 L12 32 Z"
+              fill="none"
+              stroke="#2DD4BF"
+              strokeWidth="0.8"
+            />
+            <circle cx="32" cy="32" r="3.5" fill="none" stroke="#FF8C61" strokeWidth="0.9" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#nekbaar-arabesque-entry-pattern)" />
+      </svg>
 
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              type="button"
-              data-testid="onboarding-complete-later-top-btn"
-              onClick={() =>
-                finalizeAndRouteToDashboard({
-                  skippedCoParent: true,
-                  skippedForLater: true,
-                })
-              }
-              className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/35 transition cursor-pointer"
-            >
-              {isEn ? '⏳ Complete Later' : '⏳ تخطي مؤقت / إكمال لاحقاً'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={isEn ? 'Close' : 'إغلاق'}
-              className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
+      <div className="relative z-10 soft-card-surface w-full max-w-2xl rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+        {/* ===================================================================
+            MODE 1: WELCOME & AUTH GATEWAY SCREEN (LANDING FLOW)
+            =================================================================== */}
+        {flowMode === 'GATEWAY' && (
+          <div data-testid="welcome-auth-gateway-screen" className="space-y-5 py-1">
+            {/* Top Brand & Skip Row */}
+            <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-xl font-black shadow-md">
+                  🌱
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                    {isEn ? 'Nekbaar Family Super App' : 'تطبيق العائلة الذكي — نكبر'}
+                  </div>
+                  <h2
+                    id="onboarding-wizard-title"
+                    className="text-base sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  >
+                    {isEn
+                      ? 'Welcome to Nekbaar Family Space'
+                      : 'أهلاً بك في نكبر — مساحة العائلة المتكاملة'}
+                  </h2>
+                </div>
+              </div>
 
-        {/* 5-Step Progress Indicator Bar */}
-        <div
-          data-testid="onboarding-step-progress-bar"
-          className="grid grid-cols-5 gap-1.5"
-        >
-          {WIZARD_STEPS_META.map((item) => {
-            const isActive = step === item.num;
-            const isCompleted = step > item.num;
-            return (
               <button
-                key={item.num}
                 type="button"
-                data-testid={`onboarding-step-pill-${item.num}`}
+                onClick={onClose}
+                aria-label={isEn ? 'Close' : 'إغلاق'}
+                className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Greeting Card */}
+            <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 sm:p-5 space-y-2">
+              <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+                {isEn
+                  ? 'Manage your children’s daily routine, growth milestones, bedtime stories, and shared co-parent schedule in one secure space.'
+                  : 'كل ما تحتاجه أسرتك في مكان واحد آمن: متابعة نمو الأطفال (حمزة، ليلى، يوسف)، الروتين اليومي، قصص ما قبل النوم، ومزامنة الحساب بين الأم والأب لحظياً.'}
+              </p>
+              <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                {isEn
+                  ? 'Select how you would like to continue:'
+                  : 'اختر طريقة المتابعة المناسبة لك للبدء فوراً:'}
+              </div>
+            </div>
+
+            {/* Two Primary Entry Choice Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Primary Action 1: تسجيل دخول (لديك حساب مسبق) */}
+              <button
+                type="button"
+                data-testid="gateway-login-btn"
                 onClick={() => {
                   setErrorMsg(null);
-                  setStep(item.num);
+                  setStepSyncNotice(null);
+                  setFlowMode('FAST_LOGIN');
                 }}
-                className={`rounded-xl px-2 py-2 text-center border transition-all cursor-pointer ${
-                  isActive
-                    ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-xs'
-                    : isCompleted
-                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
-                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#94A3B8]'
-                }`}
+                className="group rounded-2xl border-2 border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/70 dark:hover:bg-[#182C3A] p-4 sm:p-5 text-start transition-all cursor-pointer shadow-sm flex flex-col justify-between gap-3"
               >
-                <div className="text-[11px] font-black truncate">
-                  {isCompleted ? '✓ ' : `${item.icon} `}
-                  {isEn ? item.labelEn : item.labelAr}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-10 h-10 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-lg font-black">
+                      🔑
+                    </span>
+                    <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                      {isEn ? 'Existing Account →' : 'دخول سريع ←'}
+                    </span>
+                  </div>
+                  <div className="text-sm sm:text-base font-black text-gray-900 dark:text-[#F8FAFC]">
+                    {isEn
+                      ? 'Sign In (Already have an account)'
+                      : 'تسجيل دخول (لديك حساب مسبق)'}
+                  </div>
+                  <p className="text-xs font-medium text-gray-600 dark:text-[#CBD5E1] leading-relaxed">
+                    {isEn
+                      ? 'Fast sign-in using your Phone or Email + Password or OTP code to load your shared family profile.'
+                      : 'دخول فوري باستخدام رقم الجوال أو البريد الإلكتروني مع كلمة المرور أو رمز التحقق OTP.'}
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-slate-200 dark:border-[#1E3646] text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                  {isEn ? 'Sign In Now →' : 'تسجيل الدخول الآن ←'}
                 </div>
               </button>
-            );
-          })}
-        </div>
 
-        {/* Step Sync Notice */}
-        {stepSyncNotice && (
-          <div
-            data-testid="onboarding-step-sync-notice"
-            className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2"
-          >
-            <span>✅ {stepSyncNotice}</span>
+              {/* Primary Action 2: إنشاء حساب جديد (ابدأ رحلة نكبر) */}
+              <button
+                type="button"
+                data-testid="gateway-register-btn"
+                onClick={() => {
+                  setErrorMsg(null);
+                  setStepSyncNotice(null);
+                  setStep(1);
+                  setFlowMode('WIZARD');
+                }}
+                className="group rounded-2xl border-2 border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-4 sm:p-5 text-start transition-all cursor-pointer shadow-md flex flex-col justify-between gap-3"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-lg font-black">
+                      🚀
+                    </span>
+                    <span className="text-xs font-extrabold text-teal-100">
+                      {isEn ? '5 Progressive Steps →' : '٥ خطوات متدرجة ←'}
+                    </span>
+                  </div>
+                  <div className="text-sm sm:text-base font-black text-white">
+                    {isEn
+                      ? 'Create New Account (Start Nekbaar Journey)'
+                      : 'إنشاء حساب جديد (ابدأ رحلة نكبر)'}
+                  </div>
+                  <p className="text-xs font-medium text-teal-50/95 leading-relaxed">
+                    {isEn
+                      ? 'Step-by-step guided setup: Country & City, Account, OTP Verification, Children Profiles, and Co-Parent Link.'
+                      : 'إعداد متدرج وسهل: الدولة والمدينة، بيانات الحساب، التحقق، ملفات الأطفال، وربط الشريك.'}
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-white/25 text-xs font-extrabold text-white">
+                  {isEn ? 'Start 5-Step Setup →' : 'ابدأ رحلة نكبر الآن ←'}
+                </div>
+              </button>
+            </div>
+
+            {/* Resume Draft or Complete Later Footer */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+              {cachedDraft && (
+                <button
+                  type="button"
+                  data-testid="gateway-resume-draft-btn"
+                  onClick={() => {
+                    setStep(cachedDraft.stepNumber || 1);
+                    setFlowMode('WIZARD');
+                  }}
+                  className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/35 hover:bg-emerald-500/25 transition cursor-pointer"
+                >
+                  {isEn
+                    ? `✓ Resume Saved Step (${cachedDraft.stepNumber} of 5)`
+                    : `✓ استكمال التسجيل من الخطوة المحفوظة (${cachedDraft.stepNumber} من 5)`}
+                </button>
+              )}
+
+              <button
+                type="button"
+                data-testid="gateway-skip-later-btn"
+                onClick={() =>
+                  finalizeAndRouteToDashboard({
+                    skippedCoParent: true,
+                    skippedForLater: true,
+                  })
+                }
+                className="ms-auto px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/35 transition cursor-pointer"
+              >
+                {isEn ? '⏳ Complete Later / Preview App' : '⏳ تخطي مؤقت / إكمال لاحقاً'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            MODE 2: FAST LOGIN SCREEN ("تسجيل دخول — لديك حساب مسبق")
+            =================================================================== */}
+        {flowMode === 'FAST_LOGIN' && (
+          <div data-testid="fast-login-screen" className="space-y-4 py-1">
+            <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+              <div>
+                <div className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                  {isEn ? 'Fast Family Account Sign-In' : 'تسجيل الدخول السريع لحساب العائلة'}
+                </div>
+                <h2
+                  id="onboarding-wizard-title"
+                  className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  {isEn
+                    ? 'Sign In (Already have an account)'
+                    : 'تسجيل دخول (لديك حساب مسبق)'}
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  data-testid="fast-login-back-gateway-btn"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setFlowMode('GATEWAY');
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:bg-teal-500/10 cursor-pointer"
+                >
+                  {isEn ? '← Welcome Gateway' : '→ بوابة الترحيب'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={isEn ? 'Close' : 'إغلاق'}
+                  className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {errorMsg && (
+              <div
+                data-testid="fast-login-error-banner"
+                className="rounded-2xl border border-red-500/40 bg-red-500/10 px-3.5 py-2.5 text-xs font-bold text-red-700 dark:text-red-300"
+              >
+                ⚠️ {errorMsg}
+              </div>
+            )}
+
+            {/* Quick Account Presets (Maryam Mom vs Ahmad Dad) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Quick Parent Profile Selection:' : 'اختيار سريع لحساب الوالدين:'}
+              </label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  data-testid="fast-login-preset-mom"
+                  onClick={() => {
+                    setParentRole('mom');
+                    setParentName('مريم (الأم)');
+                    setFastLoginIdentifier('maryam.mom@nekbaar.app');
+                  }}
+                  className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                    parentRole === 'mom'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC] border-slate-300 dark:border-[#1E3646]'
+                  }`}
+                >
+                  👩🏻 {isEn ? 'Maryam (Mother)' : 'حساب الأم — مريم'}
+                </button>
+                <button
+                  type="button"
+                  data-testid="fast-login-preset-dad"
+                  onClick={() => {
+                    setParentRole('dad');
+                    setParentName('أحمد (الأب)');
+                    setFastLoginIdentifier('ahmad.dad@nekbaar.app');
+                  }}
+                  className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                    parentRole === 'dad'
+                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC] border-slate-300 dark:border-[#1E3646]'
+                  }`}
+                >
+                  👨🏻 {isEn ? 'Ahmad (Father)' : 'حساب الأب — أحمد'}
+                </button>
+              </div>
+            </div>
+
+            {/* Identifier Input (Phone or Email) */}
+            <div className="space-y-1">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn
+                  ? 'Email Address or Mobile Phone Number:'
+                  : 'البريد الإلكتروني أو رقم الجوال المسجل:'}
+              </label>
+              <input
+                type="text"
+                dir="ltr"
+                data-testid="fast-login-identifier-input"
+                value={fastLoginIdentifier}
+                onChange={(e) => setFastLoginIdentifier(e.target.value)}
+                placeholder="maryam.mom@nekbaar.app / 551234567"
+                className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+              />
+            </div>
+
+            {/* Auth Method Toggle: Password vs OTP */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFastLoginMethod('password')}
+                className={`flex-1 py-2 rounded-xl text-xs font-extrabold border transition cursor-pointer ${
+                  fastLoginMethod === 'password'
+                    ? 'border-[#0d9488] bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
+                    : 'border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-gray-900 dark:text-[#CBD5E1]'
+                }`}
+              >
+                🔒 {isEn ? 'Sign In with Password' : 'الدخول بكلمة المرور'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFastLoginMethod('otp')}
+                className={`flex-1 py-2 rounded-xl text-xs font-extrabold border transition cursor-pointer ${
+                  fastLoginMethod === 'otp'
+                    ? 'border-[#0d9488] bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
+                    : 'border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-gray-900 dark:text-[#CBD5E1]'
+                }`}
+              >
+                📲 {isEn ? 'Sign In with OTP Code' : 'الدخول برمز التحقق OTP'}
+              </button>
+            </div>
+
+            {fastLoginMethod === 'password' ? (
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Password:' : 'كلمة المرور:'}
+                </label>
+                <input
+                  type="password"
+                  dir="ltr"
+                  data-testid="fast-login-password-input"
+                  value={fastLoginPassword}
+                  onChange={(e) => setFastLoginPassword(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn ? '4-Digit Verification Code (OTP):' : 'رمز التحقق السريع (OTP):'}
+                  </label>
+                  <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                    {isEn ? `Instant Code: ${DEMO_OTP_CODE}` : `الرمز الفوري: ${DEMO_OTP_CODE}`}
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  dir="ltr"
+                  maxLength={6}
+                  data-testid="fast-login-otp-input"
+                  value={fastLoginOtp}
+                  onChange={(e) => setFastLoginOtp(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-center text-sm font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
+                />
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMsg(null);
+                  setStep(1);
+                  setFlowMode('WIZARD');
+                }}
+                className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] underline cursor-pointer"
+              >
+                {isEn
+                  ? 'New to Nekbaar? Create a New Family Account →'
+                  : 'ليس لديك حساب؟ إنشاء حساب جديد (ابدأ رحلة نكبر)'}
+              </button>
+
+              <button
+                type="button"
+                data-testid="fast-login-submit-btn"
+                disabled={isSavingStep}
+                onClick={handleFastLoginSubmit}
+                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+              >
+                {isSavingStep
+                  ? isEn
+                    ? 'Signing in...'
+                    : 'جاري تسجيل الدخول...'
+                  : isEn
+                  ? '🔑 Sign In to Dashboard →'
+                  : '🔑 تسجيل الدخول إلى لوحة العائلة ←'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            MODE 3: PROGRESSIVE 5-STEP ONBOARDING WIZARD
+            =================================================================== */}
+        {flowMode === 'WIZARD' && (
+          <>
+            {/* Top Wizard Header */}
+            <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
+                    <span>✨</span>
+                    <span>
+                      {isEn
+                        ? `Progressive Family Setup · Step ${step} of 5`
+                        : `التسجيل المتدرج الذكي · الخطوة ${step} من 5`}
+                    </span>
+                  </span>
+                  {restoredFromCache && (
+                    <span
+                      data-testid="onboarding-cache-restored-badge"
+                      className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                    >
+                      {isEn
+                        ? '✓ Auto-restored after refresh'
+                        : '✓ تم استرجاع خطوتك تلقائياً بعد التحديث'}
+                    </span>
+                  )}
+                </div>
+                <h2
+                  id="onboarding-wizard-title"
+                  className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  {step === 1 &&
+                    (isEn
+                      ? '1. Country & City Selection'
+                      : '1. الدولة والمدينة — تخصيص منطقتك أولاً')}
+                  {step === 2 &&
+                    (isEn
+                      ? '2. Account Credentials (Phone & Email)'
+                      : '2. بيانات الحساب — رقم الجوال والبريد الإلكتروني')}
+                  {step === 3 &&
+                    (isEn
+                      ? '3. Verification Method (SMS vs. Email)'
+                      : '3. طريقة التحقق — رسالة SMS أو بريد إلكتروني')}
+                  {step === 4 &&
+                    (isEn
+                      ? '4. Children Profiles (At Least 1 Required)'
+                      : '4. ملفات الأطفال — طفل واحد على الأقل لتفعيل الحساب')}
+                  {step === 5 &&
+                    (isEn
+                      ? '5. Co-Parent Link (Phone OTP or QR Code)'
+                      : '5. ربط الشريك — عبر رمز OTP أو مسح QR (اختياري)')}
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  data-testid="onboarding-switch-gateway-btn"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setFlowMode('GATEWAY');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer"
+                >
+                  {isEn ? '⇄ Gateway' : '⇄ بوابة الدخول'}
+                </button>
+                <button
+                  type="button"
+                  data-testid="onboarding-complete-later-top-btn"
+                  onClick={() =>
+                    finalizeAndRouteToDashboard({
+                      skippedCoParent: true,
+                      skippedForLater: true,
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/35 transition cursor-pointer"
+                >
+                  {isEn ? '⏳ Complete Later' : '⏳ تخطي مؤقت / إكمال لاحقاً'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={isEn ? 'Close' : 'إغلاق'}
+                  className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Redesigned Horizontal Scrollable Step Navigation Tabs (Zero Truncation, High-Contrast Text) */}
+            <nav
+              aria-label={isEn ? 'Onboarding Steps' : 'خطوات التسجيل المتدرج'}
+              data-testid="onboarding-step-progress-bar"
+              className="flex items-center gap-2 overflow-x-auto flex-nowrap step-tabs-scroll pb-2 pt-0.5"
+            >
+              {WIZARD_STEPS_META.map((item) => {
+                const isActive = step === item.num;
+                const isCompleted = step > item.num;
+                return (
+                  <button
+                    key={item.num}
+                    type="button"
+                    data-testid={`onboarding-step-pill-${item.num}`}
+                    onClick={() => {
+                      setErrorMsg(null);
+                      setStep(item.num);
+                    }}
+                    className={`shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-xs sm:text-sm border transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? 'border-[#0d9488] bg-[#0d9488] text-white font-bold shadow-sm'
+                        : isCompleted
+                        ? 'border-emerald-600/50 bg-emerald-50 text-gray-900 font-semibold'
+                        : 'border-slate-300 bg-white hover:border-[#0d9488] text-gray-900 font-semibold'
+                    }`}
+                  >
+                    <span aria-hidden="true">
+                      {isCompleted ? '✓' : item.icon}
+                    </span>
+                    <span className={isActive ? 'text-white font-bold' : 'text-gray-900 font-semibold'}>
+                      {isEn ? item.labelEn : item.labelAr}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Step Sync Notice */}
+            {stepSyncNotice && (
+              <div
+                data-testid="onboarding-step-sync-notice"
+                className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2"
+              >
+                <span>✅ {stepSyncNotice}</span>
             <button
               type="button"
               onClick={() => setStepSyncNotice(null)}
@@ -1918,75 +2456,77 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           </div>
         )}
 
-        {/* Sequential Back / Skip / Next Footer Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-          <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--color-muted)]">
-            <span>
-              {isSavingStep
-                ? isEn
-                  ? '⏳ Syncing step...'
-                  : '⏳ جاري حفظ ومزامنة الخطوة...'
-                : isEn
-                ? `Step ${step} of 5 · Auto-cached in localStorage`
-                : `الخطوة ${step} من 5 · محفوظة تلقائياً ضد التحديث (F5)`}
-            </span>
-          </div>
+            {/* Sequential Back / Skip / Next Footer Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--color-muted)]">
+                <span>
+                  {isSavingStep
+                    ? isEn
+                      ? '⏳ Syncing step...'
+                      : '⏳ جاري حفظ ومزامنة الخطوة...'
+                    : isEn
+                    ? `Step ${step} of 5 · Auto-cached in localStorage`
+                    : `الخطوة ${step} من 5 · محفوظة تلقائياً ضد التحديث (F5)`}
+                </span>
+              </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {step > 1 && (
-              <button
-                type="button"
-                data-testid="onboarding-back-btn"
-                disabled={isSavingStep}
-                onClick={handlePreviousStep}
-                className="px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
-              >
-                {isEn ? '← Back' : '→ السابق'}
-              </button>
-            )}
+              <div className="flex flex-wrap items-center gap-2">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    data-testid="onboarding-back-btn"
+                    disabled={isSavingStep}
+                    onClick={handlePreviousStep}
+                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isEn ? '← Back' : '→ السابق'}
+                  </button>
+                )}
 
-            {step === 5 && (
-              <button
-                type="button"
-                data-testid="onboarding-footer-skip-coparent-btn"
-                disabled={isSavingStep}
-                onClick={() =>
-                  finalizeAndRouteToDashboard({
-                    skippedCoParent: true,
-                    skippedForLater: false,
-                  })
-                }
-                className="px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
-              >
-                {isEn ? 'Skip for Later' : 'تخطي مؤقت / إكمال لاحقاً'}
-              </button>
-            )}
+                {step === 5 && (
+                  <button
+                    type="button"
+                    data-testid="onboarding-footer-skip-coparent-btn"
+                    disabled={isSavingStep}
+                    onClick={() =>
+                      finalizeAndRouteToDashboard({
+                        skippedCoParent: true,
+                        skippedForLater: false,
+                      })
+                    }
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
+                  >
+                    {isEn ? 'Skip for Later' : 'تخطي مؤقت / إكمال لاحقاً'}
+                  </button>
+                )}
 
-            <button
-              type="button"
-              data-testid="onboarding-next-btn"
-              disabled={isSavingStep}
-              onClick={handleNextStep}
-              className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
-            >
-              {isSavingStep
-                ? isEn
-                  ? 'Saving...'
-                  : 'جاري الحفظ...'
-                : step < 4
-                ? isEn
-                  ? 'Next Step →'
-                  : 'الخطوة التالية ←'
-                : step === 4
-                ? isEn
-                  ? 'Save Children & Unlock App →'
-                  : 'حفظ الأطفال وتثبيت الجلسة ←'
-                : isEn
-                ? '🤝 Link Partner & Enter Dashboard'
-                : '🤝 ربط الشريك والدخول للوحة العائلة'}
-            </button>
-          </div>
-        </div>
+                <button
+                  type="button"
+                  data-testid="onboarding-next-btn"
+                  disabled={isSavingStep}
+                  onClick={handleNextStep}
+                  className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                >
+                  {isSavingStep
+                    ? isEn
+                      ? 'Saving...'
+                      : 'جاري الحفظ...'
+                    : step < 4
+                    ? isEn
+                      ? 'Next Step →'
+                      : 'الخطوة التالية ←'
+                    : step === 4
+                    ? isEn
+                      ? 'Save Children & Unlock App →'
+                      : 'حفظ الأطفال وتثبيت الجلسة ←'
+                    : isEn
+                    ? '🤝 Link Partner & Enter Dashboard'
+                    : '🤝 ربط الشريك والدخول للوحة العائلة'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Bottom Copyright Ownership */}
         <div

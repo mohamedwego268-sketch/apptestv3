@@ -370,13 +370,28 @@ export default function App() {
         setRecognizedProfile(profile);
         setOnboardingModalOpen(false);
         setActivePage('home');
+        setState((prev) => {
+          const nextCountry =
+            profile.country === 'SA' || profile.country === 'EG' ? profile.country : prev.country;
+          const nextRole = profile.role === 'dad' || profile.role === 'mom' ? profile.role : prev.role;
+          const pid = nextRole === 'dad' ? 'father' : 'mother';
+          return {
+            ...prev,
+            parentName: profile.fullName || prev.parentName,
+            role: nextRole,
+            country: nextCountry,
+            city: profile.city || prev.city,
+            currency: getSuggestedCurrencyForCountry(nextCountry),
+            activeParentAccount: pid,
+          };
+        });
         showToast(
           state.language === 'en'
             ? `👋 Welcome back, ${profile.fullName}! Routed directly to your Family Dashboard.`
             : `👋 أهلاً بعودتك، ${profile.fullName}! تم التعرف على حسابك المحفوظ وتوجيهك مباشرة للوحة العائلة.`
         );
-      } else if (draft && draft.currentStep) {
-        // Restore in-progress onboarding draft after refresh (F5)
+      } else if (step === 'WELCOME_PROFILE' || (draft && draft.currentStep)) {
+        // Open Welcome & Auth Gateway for new/logged-out users or restore in-progress draft
         setOnboardingModalOpen(true);
       }
     });
@@ -1875,11 +1890,11 @@ export default function App() {
                   >
                     {recognizedProfile
                       ? lang === 'en'
-                        ? '⚙️ Edit Setup / Co-Parent'
-                        : '⚙️ تعديل الإعداد أو ربط الشريك'
+                        ? '🔑 Auth Gateway / Edit Setup'
+                        : '🔑 بوابة الدخول / تعديل الإعداد'
                       : lang === 'en'
-                      ? '🚀 Start 5-Step Onboarding'
-                      : '🚀 ابدأ التسجيل المتدرج (٥ خطوات)'}
+                      ? '🚀 Open Auth Gateway & Onboarding'
+                      : '🚀 فتح بوابة الدخول والتسجيل المتدرج'}
                   </button>
                   <button
                     type="button"
