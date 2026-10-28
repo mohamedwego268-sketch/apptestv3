@@ -812,14 +812,34 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     };
   }, [effectiveTimeBucket]);
 
-  // Heroes, Passions & Life Arena (Strictly Hamza 6m, Laila 4y, Youssef 8y)
+  // Live Children Names & Ages from Supabase `children` table via `state.kids`
+  const liveKidHamza = state.kids.find((k) => k.id === 1) || state.kids[0];
+  const liveKidLaila = state.kids.find((k) => k.id === 2) || state.kids[1] || state.kids[0];
+  const liveKidYoussef = state.kids.find((k) => k.id === 3) || state.kids[2] || state.kids[0];
+
+  const liveHamzaNameAr = liveKidHamza ? locText(liveKidHamza.name, 'ar') : 'حمزة';
+  const liveHamzaNameEn = liveKidHamza ? locText(liveKidHamza.name, 'en') : 'Hamza';
+  const liveHamzaAgeAr = liveKidHamza ? calculateChildAge(liveKidHamza.birth, 'ar').label : '٦ شهور';
+  const liveHamzaAgeEn = liveKidHamza ? calculateChildAge(liveKidHamza.birth, 'en').label : '6 Months';
+
+  const liveLailaNameAr = liveKidLaila ? locText(liveKidLaila.name, 'ar') : 'ليلى';
+  const liveLailaNameEn = liveKidLaila ? locText(liveKidLaila.name, 'en') : 'Laila';
+  const liveLailaAgeAr = liveKidLaila ? calculateChildAge(liveKidLaila.birth, 'ar').label : '٤ سنوات';
+  const liveLailaAgeEn = liveKidLaila ? calculateChildAge(liveKidLaila.birth, 'en').label : '4 Years';
+
+  const liveYoussefNameAr = liveKidYoussef ? locText(liveKidYoussef.name, 'ar') : 'يوسف';
+  const liveYoussefNameEn = liveKidYoussef ? locText(liveKidYoussef.name, 'en') : 'Youssef';
+  const liveYoussefAgeAr = liveKidYoussef ? calculateChildAge(liveKidYoussef.birth, 'ar').label : '٨ سنوات';
+  const liveYoussefAgeEn = liveKidYoussef ? calculateChildAge(liveKidYoussef.birth, 'en').label : '8 Years';
+
+  // Heroes, Passions & Life Arena (Dynamically bound to live Supabase `children` rows)
   const heroesPassionsFeed = useMemo(
     () => [
       {
         id: 'hero-hamza',
-        kidId: 1,
-        nameAr: 'حمزة (٦ شهور)',
-        nameEn: 'Hamza (6 Months)',
+        kidId: liveKidHamza?.id ?? 1,
+        nameAr: `${liveHamzaNameAr} (${liveHamzaAgeAr})`,
+        nameEn: `${liveHamzaNameEn} (${liveHamzaAgeEn})`,
         arenaBadgeAr: '👶🏻 عالم الرضيع الحسي والحركي',
         arenaBadgeEn: '👶🏻 Infant Sensory & Motor World',
         accentBorder: 'border-sky-500/45',
@@ -831,15 +851,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         passionTagsEn: ['Tummy Time', 'Sensory Wooden Rattle', 'Joyful Babbling'],
         nextGoalAr: '🎯 الهدف القادم: الجلوس المستقل لمدة ٣٠ ثانية + فحص تطعيم الـ ٦ شهور',
         nextGoalEn: '🎯 Next Goal: 30s Independent Sitting + 6-Month Pediatric Checkup',
-        routineTaskAr: '١٥ دقيقة تمرين وقت البطن وتتبع بصري لحمزة',
-        routineTaskEn: '15-Min Tummy Time & Visual Tracking with Hamza',
+        routineTaskAr: `١٥ دقيقة تمرين وقت البطن وتتبع بصري لـ ${liveHamzaNameAr}`,
+        routineTaskEn: `15-Min Tummy Time & Visual Tracking with ${liveHamzaNameEn}`,
         routineTime: '01:30 م',
       },
       {
         id: 'hero-laila',
-        kidId: 2,
-        nameAr: 'ليلى (٤ سنوات)',
-        nameEn: 'Laila (4 Years)',
+        kidId: liveKidLaila?.id ?? 2,
+        nameAr: `${liveLailaNameAr} (${liveLailaAgeAr})`,
+        nameEn: `${liveLailaNameEn} (${liveLailaAgeEn})`,
         arenaBadgeAr: '🎨 عالم الإبداع والحضانة والخيال',
         arenaBadgeEn: '🎨 Nursery, Art & Creative World',
         accentBorder: 'border-rose-500/45',
@@ -851,15 +871,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         passionTagsEn: ['Watercolors & Clay', 'Nursery Rhymes', 'Picture Stories'],
         nextGoalAr: '🎯 الهدف القادم: ترتيب ركن الألوان بنفسها + مشاركة أصدقائها في الحضانة',
         nextGoalEn: '🎯 Next Goal: Tidying Art Corner Independently + Sharing at Nursery',
-        routineTaskAr: 'جلسة تلوين وبطاقات تسمية المشاعر مع ليلى',
-        routineTaskEn: 'Watercolor Art & Emotion Cards Session with Laila',
+        routineTaskAr: `جلسة تلوين وبطاقات تسمية المشاعر مع ${liveLailaNameAr}`,
+        routineTaskEn: `Watercolor Art & Emotion Cards Session with ${liveLailaNameEn}`,
         routineTime: '04:30 م',
       },
       {
         id: 'hero-youssef',
-        kidId: 3,
-        nameAr: 'يوسف (٨ سنوات)',
-        nameEn: 'Youssef (8 Years)',
+        kidId: liveKidYoussef?.id ?? 3,
+        nameAr: `${liveYoussefNameAr} (${liveYoussefAgeAr})`,
+        nameEn: `${liveYoussefNameEn} (${liveYoussefAgeEn})`,
         arenaBadgeAr: '🏆 عالم الأبطال والمدرسة والرياضة',
         arenaBadgeEn: '🏆 School, Sports & Champions Arena',
         accentBorder: 'border-amber-500/45',
@@ -871,12 +891,28 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         passionTagsEn: ['Swimming & Football', 'Logic & Chess Puzzles', 'Space & Science'],
         nextGoalAr: '🎯 الهدف القادم: شارة القراءة الأسبوعية + تحدي اللياقة العائلي يوم الجمعة',
         nextGoalEn: '🎯 Next Goal: Weekly Reading Badge + Friday Family Fitness Challenge',
-        routineTaskAr: '٤٠ دقيقة تمرين رياضي وتفريغ طاقة ليوسف',
-        routineTaskEn: '40-Min Sports Practice & Energy Session for Youssef',
+        routineTaskAr: `٤٠ دقيقة تمرين رياضي وتفريغ طاقة لـ ${liveYoussefNameAr}`,
+        routineTaskEn: `40-Min Sports Practice & Energy Session for ${liveYoussefNameEn}`,
         routineTime: '05:00 م',
       },
     ],
-    []
+    [
+      liveKidHamza?.id,
+      liveHamzaNameAr,
+      liveHamzaNameEn,
+      liveHamzaAgeAr,
+      liveHamzaAgeEn,
+      liveKidLaila?.id,
+      liveLailaNameAr,
+      liveLailaNameEn,
+      liveLailaAgeAr,
+      liveLailaAgeEn,
+      liveKidYoussef?.id,
+      liveYoussefNameAr,
+      liveYoussefNameEn,
+      liveYoussefAgeAr,
+      liveYoussefAgeEn,
+    ]
   );
 
   // Stage-Tailored Nutrition & Lunchbox Data
@@ -1213,15 +1249,21 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     },
   ];
 
-  // Personalized Active Parent Profile Details (Ahmad = Teal, Maryam = Coral/Rose)
+  // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
   const isMotherActive =
     state.activeParentAccount === 'mother' ||
     state.role === 'mom' ||
     parentProfileSpec.role === 'mom';
 
-  const activeParentNameEn = isMotherActive ? 'Maryam' : 'Ahmad';
-  const partnerParentNameAr = isMotherActive ? 'أحمد' : 'مريم';
-  const partnerParentNameEn = isMotherActive ? 'Ahmad' : 'Maryam';
+  const fatherShortAr =
+    (state.parentAccounts.father?.fullName || 'أحمد').replace(/\s*\(.*?\)\s*/g, '').trim() || 'أحمد';
+  const motherShortAr =
+    (state.parentAccounts.mother?.fullName || 'مريم').replace(/\s*\(.*?\)\s*/g, '').trim() || 'مريم';
+
+  const activeParentNameAr = isMotherActive ? motherShortAr : fatherShortAr;
+  const activeParentNameEn = isMotherActive ? locText(motherShortAr, 'en') : locText(fatherShortAr, 'en');
+  const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
+  const partnerParentNameEn = isMotherActive ? locText(fatherShortAr, 'en') : locText(motherShortAr, 'en');
 
   return (
     <section
@@ -1259,11 +1301,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               >
                 {isMotherActive
                   ? isEn
-                    ? '👩🏻‍🍼 Active Profile: Mom Maryam'
-                    : '👩🏻‍🍼 الحساب النشط: ماما مريم'
+                    ? `👩🏻‍🍼 Active Profile: Mom ${activeParentNameEn}`
+                    : `👩🏻‍🍼 الحساب النشط: ماما ${activeParentNameAr}`
                   : isEn
-                  ? '👨🏻‍🍼 Active Profile: Dad Ahmad'
-                  : '👨🏻‍🍼 الحساب النشط: بابا أحمد'}
+                  ? `👨🏻‍🍼 Active Profile: Dad ${activeParentNameEn}`
+                  : `👨🏻‍🍼 الحساب النشط: بابا ${activeParentNameAr}`}
               </span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
               <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
@@ -1296,17 +1338,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               className="text-lg sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
             >
               {isEn
-                ? `Welcome back, ${activeParentNameEn} 👋 Wishing you a calm, joyful day with Hamza, Laila & Youssef`
-                : `أهلاً بعودتك ${isMotherActive ? 'يا مريم 🌸' : 'يا أحمد 🌟'}.. يوم دافئ يجمعك مع حمزة وليلى ويوسف`}
+                ? `Welcome back, ${activeParentNameEn} 👋 Wishing you a calm, joyful day with ${liveHamzaNameEn}, ${liveLailaNameEn} & ${liveYoussefNameEn}`
+                : `أهلاً بعودتك يا ${activeParentNameAr} ${isMotherActive ? '🌸' : '🌟'}.. يوم دافئ يجمعك مع ${liveHamzaNameAr} و${liveLailaNameAr} و${liveYoussefNameAr}`}
             </h1>
             <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
               {isMotherActive
                 ? isEn
-                  ? 'Everything for baby Hamza (6m), creative Laila (4y), and champion Youssef (8y) is organized and synced with Dad Ahmad.'
-                  : 'كل تفاصيل رعاية الرضيع حمزة (٦ شهور)، وإبداع ليلى (٤ سنوات)، ومدرسة ورياضة يوسف (٨ سنوات) مرتبة ومتزامنة مع بابا أحمد.'
+                  ? `Everything for baby ${liveHamzaNameEn} (${liveHamzaAgeEn}), creative ${liveLailaNameEn} (${liveLailaAgeEn}), and champion ${liveYoussefNameEn} (${liveYoussefAgeEn}) is organized and synced with Dad ${partnerParentNameEn}.`
+                  : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr} (${liveHamzaAgeAr})، وإبداع ${liveLailaNameAr} (${liveLailaAgeAr})، ومدرسة ورياضة ${liveYoussefNameAr} (${liveYoussefAgeAr}) مرتبة ومتزامنة مع بابا ${partnerParentNameAr}.`
                 : isEn
-                ? 'Everything for baby Hamza (6m), creative Laila (4y), and champion Youssef (8y) is organized and synced with Mom Maryam.'
-                : 'كل تفاصيل رعاية الرضيع حمزة (٦ شهور)، وإبداع ليلى (٤ سنوات)، ومدرسة ورياضة يوسف (٨ سنوات) مرتبة ومتزامنة مع ماما مريم.'}
+                ? `Everything for baby ${liveHamzaNameEn} (${liveHamzaAgeEn}), creative ${liveLailaNameEn} (${liveLailaAgeEn}), and champion ${liveYoussefNameEn} (${liveYoussefAgeEn}) is organized and synced with Mom ${partnerParentNameEn}.`
+                : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr} (${liveHamzaAgeAr})، وإبداع ${liveLailaNameAr} (${liveLailaAgeAr})، ومدرسة ورياضة ${liveYoussefNameAr} (${liveYoussefAgeAr}) مرتبة ومتزامنة مع ماما ${partnerParentNameAr}.`}
             </p>
           </div>
         </div>

@@ -61,6 +61,10 @@ import {
   exportFamilySpaceJsonBackup,
   resetFamilySpaceState,
 } from './services/familyStorageService';
+import {
+  fetchFamilySpaceFromSupabase,
+  syncFamilySpaceToSupabase,
+} from './services/supabaseService';
 import { getLocalizedDocumentTitle } from './utils/familyFormatters';
 import { FamilyAppProvider, PageId } from './context/FamilyAppContext';
 import { HomeDashboardSection } from './features/HomeDashboardSection';
@@ -309,6 +313,48 @@ export default function App() {
       showToast('تعذر الحفظ في المتصفح. صدّر نسخة احتياطية من الإعدادات.');
     }
   }, [state]);
+
+  // Supabase loading & network fallback states
+  const [supabaseStatus, setSupabaseStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [supabaseErrorMsg, setSupabaseErrorMsg] = useState<string | null>(null);
+
+  const loadFromSupabase = React.useCallback(async () => {
+    setSupabaseStatus('loading');
+    setSupabaseErrorMsg(null);
+    const result = await fetchFamilySpaceFromSupabase(state);
+    setState(result.nextState);
+    if (result.error) {
+      setSupabaseStatus('error');
+      setSupabaseErrorMsg(result.error);
+    } else {
+      setSupabaseStatus('ready');
+    }
+  }, []);
+
+  // Hydrate & synchronize with Supabase tables (Users: Ahmed/Mariam, Families, Children: Hamza/Laila/Youssef, Extended Family, Catalog Items)
+  useEffect(() => {
+    let isMounted = true;
+    fetchFamilySpaceFromSupabase(state).then((result) => {
+      if (!isMounted) return;
+      setState(result.nextState);
+      if (result.error) {
+        setSupabaseStatus('error');
+        setSupabaseErrorMsg(result.error);
+      } else {
+        setSupabaseStatus('ready');
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncTimer = setTimeout(() => {
+      syncFamilySpaceToSupabase(state);
+    }, 1500);
+    return () => clearTimeout(syncTimer);
+  }, [state.kids, state.family, state.parentAccounts, state.city, state.country, state.currency]);
 
   // Sync settings inputs when state changes externally
   useEffect(() => {
@@ -1696,6 +1742,42 @@ export default function App() {
               );
             })()}
 
+            {/* SUPABASE NETWORK ERROR FALLBACK BANNER */}
+            {supabaseStatus === 'error' && supabaseErrorMsg && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="supabase-fallback-banner"
+                className="mb-4 rounded-2xl border border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-amber-900 dark:text-amber-200 shadow-2xs"
+              >
+                <div className="flex items-center gap-2">
+                  <span aria-hidden="true" className="text-base">☁️</span>
+                  <span>
+                    {lang === 'en'
+                      ? 'Working in offline-safe mode with local family profiles (Ahmad, Maryam, Hamza, Laila & Youssef).'
+                      : 'يعمل التطبيق حالياً بالنسخة المحلية الآمنة لملفات العائلة (أحمد، مريم، حمزة، ليلى، ويوسف) لحين استعادة الاتصال.'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={loadFromSupabase}
+                    className="px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-extrabold transition cursor-pointer"
+                  >
+                    {lang === 'en' ? 'Retry Sync' : 'إعادة المزامنة'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSupabaseErrorMsg(null)}
+                    aria-label={lang === 'en' ? 'Dismiss notice' : 'إغلاق التنبيه'}
+                    className="px-2 py-1 rounded-lg text-amber-800 dark:text-amber-300 hover:bg-amber-500/15 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* PAGE 1: HOME DASHBOARD */}
             {activePage === 'home' && (
               <HomeDashboardSection
@@ -2664,24 +2746,37 @@ export default function App() {
             phoneNumber,
             email,
             childProfile,
+            childrenProfiles,
           }) => {
             setState((prev) => {
               const pid = role === 'dad' ? 'father' : 'mother';
-              const nextKids = childProfile?.name
-                ? [
-                    ...prev.kids,
-                    {
-                      id: Date.now() + Math.floor(Math.random() * 100),
-                      name: childProfile.name,
-                      gender: childProfile.gender,
-                      birth: childProfile.birth,
-                      interests: childProfile.interests,
-                      emoji: childProfile.gender === 'girl' ? '👧🏻' : '👦🏻',
-                      avatarTheme: childProfile.avatarTheme,
+              const nextKids =
+                Array.isArray(childrenProfiles) && childrenProfiles.length > 0
+                  ? childrenProfiles.map((item, idx) => ({
+                      id: item.id || idx + 1,
+                      name: item.name,
+                      gender: item.gender,
+                      birth: item.birth,
+                      interests: item.interests,
+                      emoji: item.gender === 'girl' ? '👧🏻' : '👦🏻',
+                      avatarTheme: item.avatarTheme,
                       useIllustratedAvatar: true,
-                    },
-                  ]
-                : prev.kids;
+                    }))
+                  : childProfile?.name
+                  ? [
+                      ...prev.kids,
+                      {
+                        id: Date.now() + Math.floor(Math.random() * 100),
+                        name: childProfile.name,
+                        gender: childProfile.gender,
+                        birth: childProfile.birth,
+                        interests: childProfile.interests,
+                        emoji: childProfile.gender === 'girl' ? '👧🏻' : '👦🏻',
+                        avatarTheme: childProfile.avatarTheme,
+                        useIllustratedAvatar: true,
+                      },
+                    ]
+                  : prev.kids;
               return {
                 ...prev,
                 parentName,
@@ -2713,10 +2808,11 @@ export default function App() {
               };
             });
             setOnboardingModalOpen(false);
+            navigateTo('home');
             showToast(
               lang === 'en'
-                ? `Welcome ${parentName}! Location set to ${city} (${currency}).`
-                : `أهلًا بك ${parentName}! تم ضبط الموقع على ${city} (${currency}).`
+                ? `Welcome ${parentName}! Location set to ${city} (${currency}) & children synced.`
+                : `أهلًا بك ${parentName}! تم ضبط الموقع على ${city} (${currency}) ومزامنة ملفات الأطفال بنجاح.`
             );
           }}
         />
