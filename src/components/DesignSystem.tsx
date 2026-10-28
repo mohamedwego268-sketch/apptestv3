@@ -2010,196 +2010,44 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
         </div>
       </div>
 
-      {/* Main Grid: Left Half-Circle Speedometer Gauge + Right 4-Member Interactive Check-In */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left/Start Column: Interactive Half-Circle Speedometer / Battery Gauge Widget (SVG) */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-between rounded-2xl border border-[var(--color-border)]/70 dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/70 p-4 gap-3">
-          <div className="relative w-full max-w-[250px] flex flex-col items-center">
-            <svg
-              data-testid="half-circle-energy-gauge-svg"
-              viewBox="0 0 220 128"
-              className="w-full h-auto overflow-visible select-none"
-              role="img"
-              aria-label={
-                isEn
-                  ? `Family Energy & Mood Gauge: ${energyGaugePercent}%`
-                  : `عدّاد نبض وبطارية العيلة النصف دائري: ${energyGaugePercent}٪`
-              }
-            >
-              <defs>
-                {/* Smooth Color Grading: Green 🌿 -> Yellow ⚡ -> Orange/Red 🔥 */}
-                <linearGradient id="nekbaarHalfCircleGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#10B981" />
-                  <stop offset="35%" stopColor="#34D399" />
-                  <stop offset="62%" stopColor="#FBBF24" />
-                  <stop offset="84%" stopColor="#FF8C61" />
-                  <stop offset="100%" stopColor="#EF4444" />
-                </linearGradient>
-                <filter id="gaugeNeedleShadow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.28" />
-                </filter>
-              </defs>
-
-              {/* Subtle Outer Scale Ticks */}
-              {[-75, -45, -15, 15, 45, 75].map((deg) => {
-                const rad = ((deg - 90) * Math.PI) / 180;
-                const x1 = 110 + 91 * Math.cos(rad);
-                const y1 = 106 + 91 * Math.sin(rad);
-                const x2 = 110 + 97 * Math.cos(rad);
-                const y2 = 106 + 97 * Math.sin(rad);
-                return (
-                  <line
-                    key={deg}
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    className="text-slate-300 dark:text-slate-600"
-                  />
-                );
-              })}
-
-              {/* Background Track Arc */}
-              <path
-                d="M 30 106 A 80 80 0 0 1 190 106"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="16"
-                strokeLinecap="round"
-                className="text-slate-200/90 dark:text-[#142430]"
-              />
-
-              {/* Full Color-Graded Reference Track (Soft Opacity) */}
-              <path
-                d="M 30 106 A 80 80 0 0 1 190 106"
-                fill="none"
-                stroke="url(#nekbaarHalfCircleGaugeGrad)"
-                strokeWidth="16"
-                strokeLinecap="round"
-                strokeOpacity="0.25"
-              />
-
-              {/* Active Color-Graded Foreground Arc */}
-              <path
-                d="M 30 106 A 80 80 0 0 1 190 106"
-                fill="none"
-                stroke="url(#nekbaarHalfCircleGaugeGrad)"
-                strokeWidth="16"
-                strokeLinecap="round"
-                strokeDasharray={`${arcActiveLen} ${arcTotalLen}`}
-                style={{
-                  transition: 'stroke-dasharray 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
-              />
-
-              {/* Zone Emoji Indicators along the Half-Circle */}
-              <text x="16" y="122" textAnchor="middle" className="text-[11px] font-black fill-emerald-600 dark:fill-emerald-400">
-                🌿
-              </text>
-              <text x="110" y="14" textAnchor="middle" className="text-[11px] font-black fill-amber-500">
-                ⚡
-              </text>
-              <text x="204" y="122" textAnchor="middle" className="text-[11px] font-black fill-rose-500">
-                🔥
-              </text>
-
-              {/* Sleek Interactive Needle / Pointer Anchored at (110, 106) */}
-              <g
-                data-testid="half-circle-gauge-needle"
-                filter="url(#gaugeNeedleShadow)"
-                style={{
-                  transform: `rotate(${needleAngleDeg}deg)`,
-                  transformOrigin: '110px 106px',
-                  transition: 'transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-                }}
-              >
-                {/* Needle Tapered Shaft */}
-                <polygon
-                  points="106.5,106 110,36 113.5,106"
-                  fill="#0F766E"
-                  className="dark:fill-[#2DD4BF]"
-                />
-                {/* Needle Glowing Tip */}
-                <circle cx="110" cy="39" r="3.5" fill="#FF8C61" />
-              </g>
-
-              {/* Center Pivot Cap */}
-              <circle
-                cx="110"
-                cy="106"
-                r="10"
-                fill="#0B131A"
-                className="dark:fill-[#F8FAFC]"
-              />
-              <circle cx="110" cy="106" r="4.5" fill="#FF8C61" />
-            </svg>
-
-            {/* Digital Readout Under Half-Circle Gauge */}
-            <div className="mt-1 flex items-center justify-between w-full px-1 text-[11px] font-extrabold">
-              <span className="text-emerald-600 dark:text-emerald-400">🌿 0%</span>
-              <span
-                data-testid="family-battery-aggregate-pct"
-                className="px-3 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/30 text-xs font-black tabular-nums"
-              >
-                🔋 {isEn ? `Household Pulse: ${energyGaugePercent}%` : `نبض بطارية البيت: ${energyGaugePercent}%`}
-              </span>
-              <span className="text-[#E86A3D] dark:text-[#FF8C61]">🔥 100%</span>
-            </div>
-          </div>
-
-          {/* 4 Per-Member Live Battery Summary Pills */}
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
-            {DIAGNOSTIC_MEMBERS_SPEC.map((m) => {
-              const pct = memberPercentages[m.id];
-              const isFocused = activeMemberTab === m.id;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  data-testid={`diagnostic-member-pill-${m.id}`}
-                  onClick={() => setActiveMemberTab(m.id)}
-                  className={`min-h-[44px] px-3 py-2 rounded-xl border text-start transition-all flex flex-wrap items-center justify-between gap-2 cursor-pointer ${
-                    isFocused
-                      ? 'border-[#0d9488] bg-teal-500/12 text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs'
-                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] hover:border-[#0d9488]/60'
-                  }`}
-                >
-                  <span className="text-xs sm:text-sm font-black leading-snug break-words">
-                    {m.emoji} {isEn ? m.nameEn : m.nameAr}
-                  </span>
-                  <span
-                    className={`px-2 py-0.5 rounded-lg text-[11px] font-black tabular-nums shrink-0 ${
-                      pct >= 75
-                        ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                        : pct >= 50
-                        ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
-                        : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
-                    }`}
-                  >
-                    {pct}%
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+      {/* STEP 1 (FIRST): 2x2 Interactive Member Diagnostic Questions (Hamza 6m, Laila 4y, Youssef 8y, Ahmad & Maryam) */}
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <span className="text-xs font-black text-[#0d9488] dark:text-[#2DD4BF]">
+            {isEn
+              ? '1. First: Answer 2 Quick Questions Per Family Member'
+              : '١. أولاً: أجب عن سؤالين سريعين لكل فرد في العيلة'}
+          </span>
+          <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+            {isEn ? 'Tap any answer to update result below ↓' : 'اضغط على أي إجابة لتحديث النتيجة بالأسفل ↓'}
+          </span>
         </div>
 
-        {/* Right/End Column: 2x2 Interactive Member Diagnostic Check-In Cards */}
-        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div
+          id="family-battery-questions-grid"
+          data-testid="family-battery-questions-grid"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3.5"
+        >
           {DIAGNOSTIC_MEMBERS_SPEC.map((member) => {
             const memberPct = memberPercentages[member.id];
             const isHighlighted = activeMemberTab === member.id;
+            const memberAccentBorder =
+              member.id === 'hamza'
+                ? 'border-sky-400/55 bg-sky-50/35 dark:bg-[#142430]/90'
+                : member.id === 'laila'
+                ? 'border-rose-400/55 bg-rose-50/35 dark:bg-[#142430]/90'
+                : member.id === 'youssef'
+                ? 'border-amber-400/55 bg-amber-50/35 dark:bg-[#142430]/90'
+                : 'border-teal-500/55 bg-teal-50/35 dark:bg-[#142430]/90';
+
             return (
               <div
                 key={member.id}
                 data-testid={`diagnostic-card-${member.id}`}
                 onClick={() => setActiveMemberTab(member.id)}
-                className={`rounded-2xl border p-4 flex flex-col justify-between gap-3.5 transition-all ${
+                className={`rounded-2xl border-2 p-4 flex flex-col justify-between gap-3.5 transition-all ${
                   isHighlighted
-                    ? 'border-[#0d9488] bg-teal-50/40 dark:bg-[#142430]/90 shadow-2xs'
+                    ? `${memberAccentBorder} shadow-xs`
                     : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/25 dark:bg-[#0B131A]/60'
                 }`}
               >
@@ -2278,48 +2126,233 @@ export const FamilyMoodBarometer: React.FC<FamilyMoodBarometerProps> = ({
         </div>
       </div>
 
-      {/* Bottom Operational Rescue Plan Banner Driven Dynamically by Diagnostic Scores */}
+      {/* STEP 2 (BELOW QUESTIONS): Diagnostic Result, Half-Circle Battery Gauge & Instant Rescue Plan */}
       <div
-        id="family-pulse-rescue-plan"
-        data-testid="family-pulse-rescue-plan"
-        className="rounded-2xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 dark:from-[#142430] dark:to-[#0B131A] p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-2xs"
+        id="family-battery-diagnostic-result"
+        data-testid="family-battery-diagnostic-result"
+        className="pt-3 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] space-y-4"
       >
-        <div className="space-y-2.5 min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] text-xs font-black leading-snug">
-              🛟 {isEn ? 'Instant Daily Operational Rescue Plan' : 'خطة الإنقاذ والتشغيل اليومية الفورية'}
-            </span>
-            <span className="px-3 py-1 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold leading-snug">
-              {priorityRescueMember.emoji}{' '}
-              {isEn
-                ? `Priority Focus: ${priorityRescueMember.nameEn} (${memberPercentages[priorityRescueMember.id]}%)`
-                : `الأولوية الآن: ${priorityRescueMember.nameAr} (${memberPercentages[priorityRescueMember.id]}%)`}
-            </span>
-          </div>
-          <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed break-words">
-            {isEn ? priorityRescueMember.rescuePlanEn : priorityRescueMember.rescuePlanAr}
-          </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+          <span className="text-xs font-black text-[#E86A3D] dark:text-[#FF8C61]">
+            {isEn
+              ? '2. Diagnostic Result & Household Battery Index'
+              : '٢. نتيجة التشخيص ومؤشر بطارية البيت الآن'}
+          </span>
+          <span className="px-3 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black tabular-nums">
+            {energyGaugePercent}% · {isEn ? activeMoodObj.labelEn : activeMoodObj.labelAr}
+          </span>
         </div>
 
-        {onAddRescueTask && (
-          <button
-            type="button"
-            data-testid="apply-rescue-plan-btn"
-            onClick={() => {
-              onAddRescueTask(
-                isEn ? priorityRescueMember.rescueTaskEn : priorityRescueMember.rescueTaskAr,
-                priorityRescueMember.rescueTime,
-                priorityRescueMember.kidId
-              );
-            }}
-            className="w-full lg:w-auto min-h-[42px] px-5 py-2.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs sm:text-sm font-black shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 inline-flex items-center justify-center gap-2"
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          {/* Half-Circle Speedometer / Battery Gauge Widget (SVG) + Member Summary Pills */}
+          <div className="lg:col-span-5 flex flex-col items-center justify-between rounded-2xl border border-[var(--color-border)]/70 dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#0B131A]/70 p-4 gap-3">
+            <div className="relative w-full max-w-[250px] flex flex-col items-center">
+              <svg
+                data-testid="half-circle-energy-gauge-svg"
+                viewBox="0 0 220 128"
+                className="w-full h-auto overflow-visible select-none"
+                role="img"
+                aria-label={
+                  isEn
+                    ? `Family Energy & Mood Gauge: ${energyGaugePercent}%`
+                    : `عدّاد نبض وبطارية العيلة النصف دائري: ${energyGaugePercent}٪`
+                }
+              >
+                <defs>
+                  <linearGradient id="nekbaarHalfCircleGaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#10B981" />
+                    <stop offset="35%" stopColor="#34D399" />
+                    <stop offset="62%" stopColor="#FBBF24" />
+                    <stop offset="84%" stopColor="#FF8C61" />
+                    <stop offset="100%" stopColor="#EF4444" />
+                  </linearGradient>
+                  <filter id="gaugeNeedleShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.28" />
+                  </filter>
+                </defs>
+
+                {[-75, -45, -15, 15, 45, 75].map((deg) => {
+                  const rad = ((deg - 90) * Math.PI) / 180;
+                  const x1 = 110 + 91 * Math.cos(rad);
+                  const y1 = 106 + 91 * Math.sin(rad);
+                  const x2 = 110 + 97 * Math.cos(rad);
+                  const y2 = 106 + 97 * Math.sin(rad);
+                  return (
+                    <line
+                      key={deg}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      className="text-slate-300 dark:text-slate-600"
+                    />
+                  );
+                })}
+
+                <path
+                  d="M 30 106 A 80 80 0 0 1 190 106"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  className="text-slate-200/90 dark:text-[#142430]"
+                />
+
+                <path
+                  d="M 30 106 A 80 80 0 0 1 190 106"
+                  fill="none"
+                  stroke="url(#nekbaarHalfCircleGaugeGrad)"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  strokeOpacity="0.25"
+                />
+
+                <path
+                  d="M 30 106 A 80 80 0 0 1 190 106"
+                  fill="none"
+                  stroke="url(#nekbaarHalfCircleGaugeGrad)"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                  strokeDasharray={`${arcActiveLen} ${arcTotalLen}`}
+                  style={{
+                    transition: 'stroke-dasharray 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
+                />
+
+                <text x="16" y="122" textAnchor="middle" className="text-[11px] font-black fill-emerald-600 dark:fill-emerald-400">
+                  🌿
+                </text>
+                <text x="110" y="14" textAnchor="middle" className="text-[11px] font-black fill-amber-500">
+                  ⚡
+                </text>
+                <text x="204" y="122" textAnchor="middle" className="text-[11px] font-black fill-rose-500">
+                  🔥
+                </text>
+
+                <g
+                  data-testid="half-circle-gauge-needle"
+                  filter="url(#gaugeNeedleShadow)"
+                  style={{
+                    transform: `rotate(${needleAngleDeg}deg)`,
+                    transformOrigin: '110px 106px',
+                    transition: 'transform 600ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  }}
+                >
+                  <polygon
+                    points="106.5,106 110,36 113.5,106"
+                    fill="#0F766E"
+                    className="dark:fill-[#2DD4BF]"
+                  />
+                  <circle cx="110" cy="39" r="3.5" fill="#FF8C61" />
+                </g>
+
+                <circle
+                  cx="110"
+                  cy="106"
+                  r="10"
+                  fill="#0B131A"
+                  className="dark:fill-[#F8FAFC]"
+                />
+                <circle cx="110" cy="106" r="4.5" fill="#FF8C61" />
+              </svg>
+
+              <div className="mt-1 flex items-center justify-between w-full px-1 text-[11px] font-extrabold">
+                <span className="text-emerald-600 dark:text-emerald-400">🌿 0%</span>
+                <span
+                  data-testid="family-battery-aggregate-pct"
+                  className="px-3 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/30 text-xs font-black tabular-nums"
+                >
+                  🔋 {isEn ? `Household Pulse: ${energyGaugePercent}%` : `نبض بطارية البيت: ${energyGaugePercent}%`}
+                </span>
+                <span className="text-[#E86A3D] dark:text-[#FF8C61]">🔥 100%</span>
+              </div>
+            </div>
+
+            <div className="w-full grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+              {DIAGNOSTIC_MEMBERS_SPEC.map((m) => {
+                const pct = memberPercentages[m.id];
+                const isFocused = activeMemberTab === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    data-testid={`diagnostic-member-pill-${m.id}`}
+                    onClick={() => setActiveMemberTab(m.id)}
+                    className={`min-h-[42px] px-2.5 py-1.5 rounded-xl border text-start transition-all flex items-center justify-between gap-1.5 cursor-pointer ${
+                      isFocused
+                        ? 'border-[#0d9488] bg-teal-500/12 text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] hover:border-[#0d9488]/60'
+                    }`}
+                  >
+                    <span className="text-xs font-black leading-snug truncate">
+                      {m.emoji} {isEn ? m.nameEn : m.nameAr}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-lg text-[10.5px] font-black tabular-nums shrink-0 ${
+                        pct >= 75
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                          : pct >= 50
+                          ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+                          : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                      }`}
+                    >
+                      {pct}%
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Operational Rescue Plan Card Driven Dynamically by Diagnostic Scores */}
+          <div
+            id="family-pulse-rescue-plan"
+            data-testid="family-pulse-rescue-plan"
+            className="lg:col-span-7 rounded-2xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 dark:from-[#142430] dark:to-[#0B131A] p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-2xs"
           >
-            <span aria-hidden="true">＋</span>
-            <span className="leading-snug">
-              {isEn ? 'Add Rescue Task to Routine' : 'أضف خطة الإنقاذ للروتين اليومي'}
-            </span>
-          </button>
-        )}
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-[#FF8C61]/20 text-[#E86A3D] dark:text-[#FF8C61] text-xs font-black leading-snug">
+                  🛟 {isEn ? 'Instant Daily Operational Rescue Plan' : 'نتيجة التشخيص وخطة الإنقاذ الفورية'}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold leading-snug">
+                  {priorityRescueMember.emoji}{' '}
+                  {isEn
+                    ? `Priority Focus: ${priorityRescueMember.nameEn} (${memberPercentages[priorityRescueMember.id]}%)`
+                    : `الأولوية الآن: ${priorityRescueMember.nameAr} (${memberPercentages[priorityRescueMember.id]}%)`}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed break-words">
+                {isEn ? priorityRescueMember.rescuePlanEn : priorityRescueMember.rescuePlanAr}
+              </p>
+            </div>
+
+            {onAddRescueTask && (
+              <div className="pt-2 border-t border-teal-500/20 flex items-center justify-end">
+                <button
+                  type="button"
+                  data-testid="apply-rescue-plan-btn"
+                  onClick={() => {
+                    onAddRescueTask(
+                      isEn ? priorityRescueMember.rescueTaskEn : priorityRescueMember.rescueTaskAr,
+                      priorityRescueMember.rescueTime,
+                      priorityRescueMember.kidId
+                    );
+                  }}
+                  className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs sm:text-sm font-black shadow-xs transition-all active:scale-95 cursor-pointer shrink-0 inline-flex items-center justify-center gap-2"
+                >
+                  <span aria-hidden="true">＋</span>
+                  <span className="leading-snug">
+                    {isEn ? 'Add Rescue Task to Routine' : 'أضف خطة الإنقاذ للروتين اليومي'}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -2373,7 +2406,7 @@ export const StarOfTheDayCrownBadge: React.FC<StarOfTheDayCrownBadgeProps> = ({
 
 /**
  * Prominent, joyful animated SVG illustration of a Boy and a Girl (طفل وطفلة بشكل مكبر ومبهج)
- * used exclusively on the minimalist, 100% text-free initial entry splash screen.
+ * used on the initial entry splash / login screen.
  */
 export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size = 260 }) => (
   <svg
@@ -2412,7 +2445,7 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
     {/* Soft Radiant Ambient Halo */}
     <circle cx="130" cy="130" r="122" fill="url(#splashAuraGrad)" />
 
-    {/* Floating Joyful Stars & Sparkles (No Text) */}
+    {/* Floating Joyful Stars & Sparkles */}
     <path
       d="M130 22 L134 32 L145 33 L136 40 L139 51 L130 45 L121 51 L124 40 L115 33 L126 32 Z"
       fill="#FBBF24"
@@ -2427,18 +2460,15 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
 
     {/* ================= LEFT CHARACTER: JOYFUL BOY ================= */}
     <g>
-      {/* Boy Legs & Shoes */}
       <rect x="68" y="186" width="11" height="28" rx="5.5" fill="#1E293B" />
       <rect x="87" y="186" width="11" height="28" rx="5.5" fill="#1E293B" />
       <rect x="63" y="208" width="18" height="10" rx="5" fill="#0D9488" />
       <rect x="85" y="208" width="18" height="10" rx="5" fill="#0D9488" />
 
-      {/* Boy Torso (Teal Overalls & Shirt) */}
       <path
         d="M58 140 C58 126 108 126 108 140 L112 190 C112 195 54 195 54 190 Z"
         fill="url(#boyShirtGrad)"
       />
-      {/* Boy Waving Left Arm */}
       <path
         d="M60 142 C42 130 34 112 40 102"
         stroke="url(#skinWarmGrad)"
@@ -2446,7 +2476,6 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
         strokeLinecap="round"
       />
       <circle cx="40" cy="100" r="8" fill="url(#skinWarmGrad)" />
-      {/* Boy Inner Arm Holding Heart with Sister */}
       <path
         d="M104 146 C116 152 122 150 128 144"
         stroke="url(#skinWarmGrad)"
@@ -2454,9 +2483,7 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
         strokeLinecap="round"
       />
 
-      {/* Boy Head */}
       <circle cx="83" cy="96" r="32" fill="url(#skinWarmGrad)" />
-      {/* Boy Curly Hair */}
       <path
         d="M52 92 C50 64 72 54 90 58 C108 58 118 74 114 92 C106 78 94 74 82 75 C68 75 58 82 52 92 Z"
         fill="#1E293B"
@@ -2465,7 +2492,6 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
       <circle cx="84" cy="60" r="11" fill="#1E293B" />
       <circle cx="101" cy="66" r="9" fill="#1E293B" />
 
-      {/* Boy Rosy Cheeks, Bright Eyes & Big Laughing Smile */}
       <ellipse cx="66" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.55" />
       <ellipse cx="100" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.55" />
       <circle cx="71" cy="92" r="4.2" fill="#0F172A" />
@@ -2483,25 +2509,20 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
 
     {/* ================= RIGHT CHARACTER: JOYFUL GIRL ================= */}
     <g>
-      {/* Girl Legs & Shoes */}
       <rect x="162" y="186" width="11" height="28" rx="5.5" fill="url(#skinWarmGrad)" />
       <rect x="181" y="186" width="11" height="28" rx="5.5" fill="url(#skinWarmGrad)" />
       <rect x="158" y="208" width="18" height="10" rx="5" fill="#F43F5E" />
       <rect x="179" y="208" width="18" height="10" rx="5" fill="#F43F5E" />
 
-      {/* Girl Pigtails */}
       <circle cx="142" cy="84" r="13" fill="#292524" />
       <circle cx="212" cy="84" r="13" fill="#292524" />
-      {/* Hair Ribbons */}
       <circle cx="149" cy="80" r="5" fill="#FBBF24" />
       <circle cx="205" cy="80" r="5" fill="#FBBF24" />
 
-      {/* Girl Cheerful Dress */}
       <path
         d="M154 138 C158 126 196 126 200 138 L212 192 C212 196 142 196 142 192 Z"
         fill="url(#girlDressGrad)"
       />
-      {/* Girl Waving Right Arm */}
       <path
         d="M198 142 C216 130 226 112 220 100"
         stroke="url(#skinWarmGrad)"
@@ -2509,7 +2530,6 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
         strokeLinecap="round"
       />
       <circle cx="220" cy="98" r="8" fill="url(#skinWarmGrad)" />
-      {/* Girl Inner Arm Holding Heart with Brother */}
       <path
         d="M156 146 C144 152 138 150 132 144"
         stroke="url(#skinWarmGrad)"
@@ -2517,15 +2537,12 @@ export const PlayfulBoyAndGirlSplashSvg: React.FC<{ size?: number }> = ({ size =
         strokeLinecap="round"
       />
 
-      {/* Girl Head */}
       <circle cx="177" cy="96" r="32" fill="url(#skinWarmGrad)" />
-      {/* Girl Hair Bangs */}
       <path
         d="M146 92 C146 64 166 56 184 58 C202 60 210 74 208 92 C198 78 188 74 177 74 C164 74 154 80 146 92 Z"
         fill="#292524"
       />
 
-      {/* Girl Rosy Cheeks, Bright Eyes & Big Laughing Smile */}
       <ellipse cx="160" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.6" />
       <ellipse cx="194" cy="102" rx="6" ry="3.8" fill="#FB7185" fillOpacity="0.6" />
       <circle cx="165" cy="92" r="4.2" fill="#0F172A" />
@@ -2560,10 +2577,11 @@ export interface InteractiveSplashScreenProps {
 }
 
 /**
- * Opening / Splash Intro Screen for نكبر (Nekbaar).
- * Shifts the prominent animated boy/girl illustration slightly upwards (upper-middle area)
- * and renders the brand name "نكبر" and official slogan "مساحة تجمعنا.. وبحبهم نكبر"
- * cleanly directly underneath in elegant, high-contrast typography.
+ * First Login / Splash Intro Screen for نكبر (Nekbaar).
+ * Positions the central boy/girl illustration in the upper-middle space,
+ * renders the app name in Arabic & English ("نكبر / Nekbaar") and the official slogan
+ * in Arabic & English ("مساحة تجمعنا.. وبحبهم نكبر / A space that brings us together.. and through love we grow")
+ * directly underneath, and places copyright ownership strictly at the very bottom.
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
   visible,
@@ -2585,13 +2603,13 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       aria-modal="true"
       aria-label={isEn ? 'Nekbaar Splash Screen' : 'شاشة ترحيب نكبر'}
       onClick={onSkipOrFinish}
-      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-center p-6 pb-14 sm:pb-20 overflow-hidden select-none cursor-pointer transition-opacity duration-700 ${
+      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between p-6 overflow-hidden select-none cursor-pointer transition-opacity duration-700 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 38%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
-          : 'radial-gradient(circle at 50% 38%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
+          ? 'radial-gradient(circle at 50% 36%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
+          : 'radial-gradient(circle at 50% 36%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
       }}
     >
       {/* Subtle Geometric Background Pattern Overlay */}
@@ -2607,39 +2625,56 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
       />
 
-      {/* Vertical Flow Stack: Upper-Middle Illustration + Brand Name & Slogan Directly Underneath */}
-      <div className="relative z-10 flex flex-col items-center justify-center gap-6 sm:gap-7 -mt-10 sm:-mt-14 text-center max-w-md mx-auto">
+      {/* Top Spacer to Balance Upper-Middle Positioning */}
+      <div aria-hidden="true" className="h-4 sm:h-6 shrink-0" />
+
+      {/* Upper-Middle Central Stack: Boy/Girl Illustration + Bilingual App Name & Bilingual Slogan Directly Underneath */}
+      <div className="relative z-10 flex flex-col items-center justify-center gap-5 sm:gap-6 my-auto -mt-6 sm:-mt-10 text-center max-w-lg mx-auto">
         <div className="relative flex items-center justify-center">
           <span
             aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-60 h-60 sm:w-72 sm:h-72 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
+            className="animate-nav-loader-pulse-ring absolute w-56 h-56 sm:w-68 sm:h-68 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
           />
-          <div className="relative w-52 h-52 sm:w-64 sm:h-64 rounded-full bg-white/92 dark:bg-[#142430]/92 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
-            <PlayfulBoyAndGirlSplashSvg size={216} />
+          <div className="relative w-48 h-48 sm:w-60 sm:h-60 rounded-full bg-white/92 dark:bg-[#142430]/92 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
+            <PlayfulBoyAndGirlSplashSvg size={208} />
           </div>
         </div>
 
-        {/* Brand Title "نكبر" & Official Heartbeat Slogan "مساحة تجمعنا.. وبحبهم نكبر" Directly Underneath */}
-        <div className="space-y-2.5 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
+        {/* Bilingual App Name ("نكبر / Nekbaar") & Official Bilingual Slogan Directly Underneath */}
+        <div className="space-y-2 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
           <h1
             data-testid="splash-brand-title"
-            className="text-4xl sm:text-5xl font-black tracking-tight text-[#0B131A] dark:text-[#F8FAFC] leading-tight"
+            className="text-3xl sm:text-5xl font-black tracking-tight text-[#0B131A] dark:text-[#F8FAFC] leading-tight flex flex-wrap items-center justify-center gap-2.5"
           >
-            نكبر
+            <span>نكبر</span>
+            <span className="text-teal-500/50 font-light">/</span>
+            <span className="text-2xl sm:text-4xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+              Nekbaar
+            </span>
           </h1>
           <p
             data-testid="splash-brand-slogan"
-            className="text-lg sm:text-xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed"
+            className="text-base sm:text-xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed"
           >
             مساحة تجمعنا.. وبحبهم نكبر
           </p>
-          {isEn && (
-            <p className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">
-              Nekbaar · A space that brings us together, growing with love
-            </p>
-          )}
+          <p
+            data-testid="splash-brand-slogan-en"
+            className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed"
+          >
+            A space that brings us together.. and through love we grow
+          </p>
         </div>
       </div>
+
+      {/* Strictly Bottom Copyright Ownership Details */}
+      <footer
+        data-testid="splash-bottom-copyright"
+        className="relative z-10 w-full pt-3 border-t border-teal-500/15 dark:border-[#1E3646] text-center text-[11px] sm:text-xs font-extrabold text-slate-600 dark:text-slate-400 shrink-0"
+      >
+        نكبر (Nekbaar) © 2026 — جميع حقوق الملكية محفوظة · All Rights Reserved
+      </footer>
     </div>
   );
 };
+

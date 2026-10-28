@@ -49,6 +49,9 @@ import {
   sanitizeUserText,
   isTaskVisibleForParentSession,
   VoiceVaultMoment,
+  ALLOWED_IMAGE_MIME_TYPES,
+  MAX_CHILD_PHOTO_BYTES,
+  validateAndSanitizeImageDataUrl,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
 import { t } from './domain/i18n';
@@ -116,7 +119,14 @@ export default function App() {
   const [splashScreen, setSplashScreen] = useState<{
     visible: boolean;
     fadingOut: boolean;
-  }>({ visible: true, fadingOut: false });
+  }>(() => {
+    try {
+      const seen = window.sessionStorage.getItem('nekbaar_splash_seen_v1') === '1';
+      return { visible: !seen, fadingOut: false };
+    } catch {
+      return { visible: true, fadingOut: false };
+    }
+  });
   const splashFadeTimerRef = React.useRef<number | null>(null);
   const splashHideTimerRef = React.useRef<number | null>(null);
   const [storeInitialCategoryId, setStoreInitialCategoryId] = useState<string | null>(null);
@@ -127,10 +137,15 @@ export default function App() {
   const handleDismissSplashScreen = React.useCallback(() => {
     if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
     if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
+    try {
+      window.sessionStorage.setItem('nekbaar_splash_seen_v1', '1');
+    } catch {
+      // Ignore storage restrictions
+    }
     setSplashScreen((prev) => (prev.visible ? { visible: true, fadingOut: true } : prev));
     splashHideTimerRef.current = window.setTimeout(() => {
       setSplashScreen({ visible: false, fadingOut: false });
-    }, 300);
+    }, 220);
   }, []);
 
   const handleReplaySplashScreen = React.useCallback(() => {
@@ -139,18 +154,19 @@ export default function App() {
     setSplashScreen({ visible: true, fadingOut: false });
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 3500);
+    }, 1400);
   }, [handleDismissSplashScreen]);
 
   useEffect(() => {
+    if (!splashScreen.visible) return;
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 3500);
+    }, 1200);
     return () => {
       if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
       if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
     };
-  }, [handleDismissSplashScreen]);
+  }, [handleDismissSplashScreen, splashScreen.visible]);
 
   const [festivalCelebration, setFestivalCelebration] = useState<{
     id: number;
@@ -534,10 +550,37 @@ export default function App() {
   const handleChildPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!(ALLOWED_IMAGE_MIME_TYPES as readonly string[]).includes(file.type)) {
+      showToast(
+        lang === 'en'
+          ? 'Unsupported format. Please upload a JPG, PNG, or WebP photo.'
+          : 'صيغة الصورة غير مدعومة أمنياً. يُسمح فقط بـ JPG أو PNG أو WebP.'
+      );
+      e.target.value = '';
+      return;
+    }
+    if (file.size > MAX_CHILD_PHOTO_BYTES) {
+      showToast(
+        lang === 'en'
+          ? 'Photo is too large (max 2 MB) to protect safe local storage.'
+          : 'حجم الصورة يتجاوز الحد الآمن (٢ ميجابايت). يرجى اختيار صورة أصغر.'
+      );
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') {
-        setChildPhotoDraft(reader.result);
+        const validation = validateAndSanitizeImageDataUrl(reader.result);
+        if (!validation.valid || !validation.sanitized) {
+          showToast(
+            lang === 'en'
+              ? validation.errorEn || 'Invalid image file'
+              : validation.errorAr || 'ملف الصورة غير صالح'
+          );
+          return;
+        }
+        setChildPhotoDraft(validation.sanitized);
         setChildUse3DAvatarDraft(false);
       }
     };
@@ -1020,15 +1063,18 @@ export default function App() {
   const handleSavePerson = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const name = String(fd.get('name') || '').trim();
+    const name = sanitizeUserText(String(fd.get('name') || ''), 80);
     if (!name) {
       showToast('اكتب اسم الفرد قبل الإضافة');
       return;
     }
-    const role = String(fd.get('role') || 'فرد آخر');
-    const side = String(fd.get('side') || 'الأسرة الأساسية');
+    const role = sanitizeUserText(String(fd.get('role') || 'فرد آخر'), 60) || 'فرد آخر';
+    const side = sanitizeUserText(String(fd.get('side') || 'الأسرة الأساسية'), 60) || 'الأسرة الأساسية';
     const isCore = role === 'الأب' || role === 'الأم';
-    const perms = getDefaultPermissions(isCore);
+    const basePerms = getDefaultPermissions(isCore);
+    const perms = state.disputeFreezeActive
+      ? { ...basePerms, health: false, privatePhotos: false }
+      : basePerms;
 
     setState((prev) => ({
       ...prev,
@@ -1459,6 +1505,10 @@ export default function App() {
           isScrolled={isScrolled}
           bedtimeMode={bedtimeMode}
           onToggleBedtimeMode={handleToggleBedtimeMode}
+          country={state.country}
+          city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+          userCoords={userCoords}
+          onSelectCity={(cCode, cName) => handleSelectPreciseCity(`${cCode}:${cName}`)}
         />
 
 
@@ -2386,8 +2436,8 @@ export default function App() {
                 >
                   <span>
                     {lang === 'en'
-                      ? 'نكبر (Nekbaar) © 2026 - A Space That Unites Us.. With Their Love We Grow'
-                      : 'نكبر (Nekbaar) © 2026 - مساحة تجمعنا.. وبحبهم نكبر'}
+                      ? 'نكبر (Nekbaar) © 2026'
+                      : 'نكبر (Nekbaar) © 2026'}
                   </span>
                 </div>
                 <span aria-hidden="true" className="opacity-50">·</span>

@@ -11,6 +11,7 @@ import {
   ParentAccountProfile,
   getDefaultPermissions,
   locText,
+  sanitizeUserText,
   validatePhoneForCountry,
 } from '../domain/familySpaceCore';
 import { PrimaryCtaButton } from './DesignSystem';
@@ -314,23 +315,27 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     setScannerStatus('scanning');
     window.setTimeout(() => {
       const preset = SIX_FAMILY_ROLES.find((r) => r.id === joinRole) || SIX_FAMILY_ROLES[1];
-      const memberName = joinName.trim() || (isEn ? preset.labelEn : preset.labelAr);
+      const memberName =
+        sanitizeUserText(joinName, 80) || (isEn ? preset.labelEn : preset.labelAr);
+      const effectivePerms = {
+        ...getDefaultPermissions(joinRole === 'father' || joinRole === 'mother'),
+        ...preset.defaultPerms,
+        health: disputeFreezeActive ? false : preset.defaultPerms.health,
+        privatePhotos: disputeFreezeActive ? false : preset.defaultPerms.privatePhotos,
+        receiveReminders: true,
+        viewEducational: true,
+      };
       if (onInstantJoinFamilyMember) {
         onInstantJoinFamilyMember({
           name: memberName,
           role: isEn ? preset.labelEn : preset.labelAr,
           side: preset.sideAr,
           emoji: preset.emoji,
-          wishes: preset.defaultPerms.wishes,
-          events: preset.defaultPerms.calendar,
+          wishes: effectivePerms.wishes,
+          events: effectivePerms.calendar,
           roleCategory: preset.category,
           assignedKidIds: kids.map((k) => k.id),
-          permissions: {
-            ...getDefaultPermissions(joinRole === 'father' || joinRole === 'mother'),
-            ...preset.defaultPerms,
-            receiveReminders: true,
-            viewEducational: true,
-          },
+          permissions: effectivePerms,
         });
       }
       setScannerStatus('linked');
@@ -343,35 +348,40 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   };
 
   const handleManualCodeJoin = () => {
-    if (!manualCodeInput.trim()) {
+    const cleanCode = sanitizeUserText(manualCodeInput, 32);
+    if (!cleanCode) {
       setLinkCopiedMsg(isEn ? '⚠️ Please enter the family code first.' : '⚠️ أدخل كود الأسرة اليدوي أولاً.');
       return;
     }
     const preset = SIX_FAMILY_ROLES.find((r) => r.id === joinRole) || SIX_FAMILY_ROLES[1];
-    const memberName = joinName.trim() || (isEn ? preset.labelEn : preset.labelAr);
+    const memberName =
+      sanitizeUserText(joinName, 80) || (isEn ? preset.labelEn : preset.labelAr);
+    const effectivePerms = {
+      ...getDefaultPermissions(joinRole === 'father' || joinRole === 'mother'),
+      ...preset.defaultPerms,
+      health: disputeFreezeActive ? false : preset.defaultPerms.health,
+      privatePhotos: disputeFreezeActive ? false : preset.defaultPerms.privatePhotos,
+      receiveReminders: true,
+      viewEducational: true,
+    };
     if (onInstantJoinFamilyMember) {
       onInstantJoinFamilyMember({
         name: memberName,
         role: isEn ? preset.labelEn : preset.labelAr,
         side: preset.sideAr,
         emoji: preset.emoji,
-        wishes: preset.defaultPerms.wishes,
-        events: preset.defaultPerms.calendar,
+        wishes: effectivePerms.wishes,
+        events: effectivePerms.calendar,
         roleCategory: preset.category,
         assignedKidIds: kids.map((k) => k.id),
-        permissions: {
-          ...getDefaultPermissions(joinRole === 'father' || joinRole === 'mother'),
-          ...preset.defaultPerms,
-          receiveReminders: true,
-          viewEducational: true,
-        },
+        permissions: effectivePerms,
       });
     }
     setScannerStatus('linked');
     setLinkCopiedMsg(
       isEn
-        ? `✅ Linked via code ${manualCodeInput}! ${memberName} (${preset.labelEn}) joined!`
-        : `✅ تم الربط بالكود ${manualCodeInput}! انضم «${memberName}» بصفة (${preset.labelAr})!`
+        ? `✅ Linked via code ${cleanCode}! ${memberName} (${preset.labelEn}) joined!`
+        : `✅ تم الربط بالكود ${cleanCode}! انضم «${memberName}» بصفة (${preset.labelAr})!`
     );
   };
 
@@ -463,19 +473,23 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     }
 
     const preset = SIX_FAMILY_ROLES.find((r) => r.id === invRoleCat) || SIX_FAMILY_ROLES[3];
+    const cleanInvName = sanitizeUserText(invName, 80);
+    const cleanInvEmail = sanitizeUserText(invEmail, 120);
 
     onCreateInvitation({
-      recipientName: invName.trim(),
+      recipientName: cleanInvName,
       roleLabel: isEn ? preset.labelEn : preset.labelAr,
       roleCategory: preset.category,
       side: preset.sideAr,
       phoneCountry: invCountry,
       phoneNumber: phoneCheck.normalized,
-      email: invEmail.trim() || undefined,
+      email: cleanInvEmail || undefined,
       assignedKidIds: invKidIds.length ? invKidIds : kids.map((k) => k.id),
       permissions: {
         ...getDefaultPermissions(invRoleCat === 'father' || invRoleCat === 'mother'),
         ...preset.defaultPerms,
+        health: disputeFreezeActive ? false : preset.defaultPerms.health,
+        privatePhotos: disputeFreezeActive ? false : preset.defaultPerms.privatePhotos,
         receiveReminders: true,
         viewEducational: true,
       },

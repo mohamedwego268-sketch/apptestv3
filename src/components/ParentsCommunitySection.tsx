@@ -753,21 +753,21 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         </div>
       )}
 
-      {/* Full-Screen Interactive Story Viewer Modal (Strictly Mobile Viewport Bounded & Hovering Above Nav Bar) */}
+      {/* Full-Screen Interactive Story Viewer Modal (Strictly Instagram Stories 9:16 Mobile Sizing & Viewport Bounded) */}
       {activeModalStory && (
         <div
           id="community-story-viewer-modal"
           data-testid="community-story-viewer-modal"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md animate-fade-in"
           onClick={() => setStoryModalId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="fixed inset-0 z-50 max-w-md mx-auto flex flex-col justify-between overflow-hidden pt-[max(env(safe-area-inset-top,12px),12px)] pb-[calc(env(safe-area-inset-bottom,12px)+5rem)] lg:pb-6 px-3 sm:px-4"
+            className="fixed inset-0 z-50 max-w-md mx-auto flex items-center justify-center p-3 sm:p-4 overflow-hidden"
           >
-            <div className="relative w-full h-full rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between">
+            <div className="relative w-full max-w-[380px] aspect-[9/16] max-h-[86vh] rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between">
               <img
                 src={activeModalStory.imageUrl}
                 alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
@@ -820,8 +820,33 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 </div>
               </div>
 
-              {/* Story Center Content (Scrollable safely if content is long on compact screens) */}
-              <div className="relative z-10 px-5 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
+              {/* Left / Right Instagram Story Tap Navigation Arrows */}
+              <button
+                type="button"
+                aria-label={isEn ? 'Previous story' : 'الستوري السابقة'}
+                onClick={() => {
+                  const prevIdx =
+                    (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
+                  setStoryModalId(familyStoryReels[prevIdx].id);
+                }}
+                className="absolute start-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/45 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center text-sm font-black cursor-pointer"
+              >
+                {isEn ? '‹' : '›'}
+              </button>
+              <button
+                type="button"
+                aria-label={isEn ? 'Next story' : 'الستوري التالية'}
+                onClick={() => {
+                  const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
+                  setStoryModalId(familyStoryReels[nextIdx].id);
+                }}
+                className="absolute end-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-black/45 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center text-sm font-black cursor-pointer"
+              >
+                {isEn ? '›' : '‹'}
+              </button>
+
+              {/* Story Center Content */}
+              <div className="relative z-10 px-6 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
                 <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
                 <h4 className="text-base sm:text-xl font-black leading-snug break-words">
                   {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
@@ -845,7 +870,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                             : `تم إرسال تفاعل ${reactEmoji} على حالة ${activeModalStory.authorAr}!`
                         )
                       }
-                      className="min-h-[44px] min-w-[44px] rounded-full bg-white/15 hover:bg-white/25 text-base flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
+                      className="min-h-[42px] min-w-[42px] rounded-full bg-white/15 hover:bg-white/25 text-base flex items-center justify-center transition-transform active:scale-125 cursor-pointer"
                     >
                       {reactEmoji}
                     </button>
@@ -860,7 +885,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                         (modalStoryIndex - 1 + familyStoryReels.length) % familyStoryReels.length;
                       setStoryModalId(familyStoryReels[prevIdx].id);
                     }}
-                    className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold cursor-pointer"
+                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-extrabold cursor-pointer"
                   >
                     {isEn ? 'Prev' : 'السابق'}
                   </button>
@@ -870,7 +895,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                       const nextIdx = (modalStoryIndex + 1) % familyStoryReels.length;
                       setStoryModalId(familyStoryReels[nextIdx].id);
                     }}
-                    className="min-h-[44px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-xs font-extrabold cursor-pointer"
+                    className="min-h-[40px] px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-xs font-extrabold cursor-pointer"
                   >
                     {isEn ? 'Next' : 'التالي'}
                   </button>

@@ -5158,7 +5158,7 @@ export function resolveColorMode(darkMode?: boolean): 'light' | 'dark' {
 
 export const SKELETON_TABS = ['services', 'medical', 'community'] as const;
 export type SkeletonTabId = (typeof SKELETON_TABS)[number];
-export const SKELETON_LOAD_DURATION_MS = 700;
+export const SKELETON_LOAD_DURATION_MS = 180;
 
 export function shouldTriggerSkeletonForTab(pageId: string): pageId is SkeletonTabId {
   return (SKELETON_TABS as readonly string[]).includes(pageId);
@@ -5288,5 +5288,31 @@ export function getEmptyStateCopy(
   }
 }
 
+export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export const MAX_CHILD_PHOTO_BYTES = 2 * 1024 * 1024; // 2 MB upload limit
+export const MAX_DATA_URL_CHAR_LENGTH = 750_000; // ~550 KB base64 safe localStorage ceiling
 
-
+export function validateAndSanitizeImageDataUrl(
+  dataUrl: string | undefined | null
+): { valid: boolean; sanitized?: string; errorAr?: string; errorEn?: string } {
+  if (!dataUrl || typeof dataUrl !== 'string') {
+    return { valid: false, errorAr: 'لا توجد صورة صالحة', errorEn: 'No valid image provided' };
+  }
+  const trimmed = dataUrl.trim();
+  const safePrefixRegex = /^data:image\/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=\s]+$/i;
+  if (!safePrefixRegex.test(trimmed)) {
+    return {
+      valid: false,
+      errorAr: 'صيغة الصورة غير مدعومة أمنياً. يُسمح فقط بـ JPG أو PNG أو WebP.',
+      errorEn: 'Unsupported image format. Only JPG, PNG, or WebP are allowed for security.',
+    };
+  }
+  if (trimmed.length > MAX_DATA_URL_CHAR_LENGTH) {
+    return {
+      valid: false,
+      errorAr: 'حجم الصورة كبير جداً للتخزين الآمن. يرجى اختيار صورة أقل من ٢ ميجابايت.',
+      errorEn: 'Image exceeds safe storage quota. Please choose a photo under 2 MB.',
+    };
+  }
+  return { valid: true, sanitized: trimmed };
+}

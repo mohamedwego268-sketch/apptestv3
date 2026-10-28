@@ -187,7 +187,7 @@ html.dark body {
   color: #F8FAFC !important;
 }
 
-/* Smooth fade transition when toggling between Light and Dark modes */
+/* Smooth fade transition when toggling between Light and Dark modes (scoped to surfaces & controls to keep 60fps scroll) */
 html,
 body,
 header,
@@ -197,16 +197,12 @@ nav,
 footer,
 section,
 article,
-div,
-span,
-p,
-h1,
-h2,
-h3,
-h4,
-label {
+button,
+input,
+select,
+textarea {
   transition-property: background-color, color, border-color, box-shadow;
-  transition-duration: 260ms;
+  transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

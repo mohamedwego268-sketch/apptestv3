@@ -296,15 +296,18 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                     </span>
                   }
                   titlePrefixSlot={
-                    <input
-                      type="checkbox"
-                      checked={task.done}
-                      onChange={(e) => {
-                        e.stopPropagation();
-                        onToggleTask(task.id, e.target.checked);
-                      }}
-                      className="w-4 h-4 accent-[var(--color-task-accent)] shrink-0 cursor-pointer"
-                    />
+                    <label className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] -m-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={task.done}
+                        aria-label={locText(task.name, lang)}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          onToggleTask(task.id, e.target.checked);
+                        }}
+                        className="w-5 h-5 accent-[var(--color-task-accent)] shrink-0 cursor-pointer"
+                      />
+                    </label>
                   }
                   title={
                     <span className={task.done ? 'line-through opacity-75' : ''}>
@@ -334,7 +337,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                       <button
                         type="button"
                         onClick={() => onOpenEditTask(task)}
-                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                        className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-bold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
                       >
                         {isEn ? 'Edit' : 'تعديل'}
                       </button>
@@ -342,7 +345,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                         type="button"
                         onClick={() => onDeleteTask(task.id)}
                         aria-label={`${isEn ? 'Delete task' : 'حذف المهمة'} ${locText(task.name, lang)}`}
-                        className="min-h-[34px] px-2.5 py-1 rounded-xl text-xs font-bold border border-red-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-red-700 dark:text-rose-400 transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+                        className="min-h-[44px] min-w-[44px] px-3 py-1.5 rounded-xl text-sm font-bold border border-red-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-red-700 dark:text-rose-400 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
                       >
                         ×
                       </button>

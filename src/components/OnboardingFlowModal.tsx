@@ -685,6 +685,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Strict Bottom Login Screen Copyright Ownership */}
+        <div
+          data-testid="onboarding-login-bottom-copyright"
+          className="pt-2 text-center text-[11px] font-bold text-[var(--color-muted)] opacity-85"
+        >
+          {isEn
+            ? 'نكبر (Nekbaar) © 2026 — All Intellectual Property & Copyright Reserved'
+            : 'نكبر (Nekbaar) © 2026 — جميع حقوق الملكية الفكرية محفوظة'}
+        </div>
       </div>
     </div>
   );
