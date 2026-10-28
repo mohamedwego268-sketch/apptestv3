@@ -130,10 +130,11 @@ export default function App() {
     fadingOut: boolean;
   }>(() => {
     try {
+      const hasSession = Boolean(OnboardingFlowController.getSavedProfile());
       const seen = window.sessionStorage.getItem('nekbaar_splash_seen_v1') === '1';
-      return { visible: !seen, fadingOut: false };
+      return { visible: hasSession && !seen, fadingOut: false };
     } catch {
-      return { visible: true, fadingOut: false };
+      return { visible: false, fadingOut: false };
     }
   });
   const splashFadeTimerRef = React.useRef<number | null>(null);
@@ -266,10 +267,12 @@ export default function App() {
   const [settingsOtpStep, setSettingsOtpStep] = useState<boolean>(false);
   const [settingsOtpCode, setSettingsOtpCode] = useState<string>('');
 
-  // Active Modals & Smart Startup Profile Recognition (`OnboardingFlowController`)
-  const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(false);
+  // Active Modals & Mandatory Auth Gateway / Smart Startup Profile Recognition (`OnboardingFlowController`)
   const [recognizedProfile, setRecognizedProfile] = useState<UserSessionProfile | null>(() =>
     OnboardingFlowController.getSavedProfile()
+  );
+  const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(
+    () => !Boolean(OnboardingFlowController.getSavedProfile())
   );
   const [showSmartGreetingBanner, setShowSmartGreetingBanner] = useState<boolean>(true);
   const [childModalOpen, setChildModalOpen] = useState<boolean>(false);
@@ -1896,6 +1899,25 @@ export default function App() {
                       ? '🚀 Open Auth Gateway & Onboarding'
                       : '🚀 فتح بوابة الدخول والتسجيل المتدرج'}
                   </button>
+                  {recognizedProfile && (
+                    <button
+                      type="button"
+                      data-testid="sign-out-open-gateway-btn"
+                      onClick={() => {
+                        OnboardingFlowController.clearSession();
+                        setRecognizedProfile(null);
+                        setOnboardingModalOpen(true);
+                        showToast(
+                          lang === 'en'
+                            ? 'Signed out. Mandatory Auth Gateway active.'
+                            : 'تم تسجيل الخروج وفتح بوابة الدخول الإلزامية.'
+                        );
+                      }}
+                      className="min-h-[36px] px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
+                    >
+                      {lang === 'en' ? '🚪 Sign Out' : '🚪 تسجيل خروج'}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowSmartGreetingBanner(false)}
@@ -2861,12 +2883,17 @@ export default function App() {
         {/* Registration, Login, Country & City Selection, Parent & Child Onboarding Wizard */}
         <OnboardingFlowModal
           isOpen={onboardingModalOpen}
+          isMandatoryGateway={!recognizedProfile}
           initialCountry={state.country}
           initialCity={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
           initialParentName={state.parentName}
           initialRole={state.role}
           language={state.language}
-          onClose={() => setOnboardingModalOpen(false)}
+          onClose={() => {
+            if (recognizedProfile) {
+              setOnboardingModalOpen(false);
+            }
+          }}
           onCompleteOnboarding={({
             parentName,
             role,

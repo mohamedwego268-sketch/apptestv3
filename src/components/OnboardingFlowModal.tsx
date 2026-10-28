@@ -13,13 +13,17 @@ import {
 } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
+  AuthProviderType,
   CoParentPairingMethod,
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  bindPhoneAndFinalizeAuthInSupabase,
   generateFamilyPairingToken,
+  initiateGatewayEmailOrOAuthInSupabase,
   linkCoParentAccountInSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
+  verifyGatewayEmailOtpInSupabase,
 } from '../services/supabaseService';
 import {
   INITIAL_CANONICAL_ONBOARDING_CHILDREN,
@@ -64,6 +68,7 @@ export interface OnboardingCompletionPayload {
 
 interface OnboardingFlowModalProps {
   isOpen: boolean;
+  isMandatoryGateway?: boolean;
   initialCountry: CountryCode;
   initialCity: string;
   initialParentName: string;
@@ -161,7 +166,8 @@ const WIZARD_STEPS_META: Array<{
   },
 ];
 
-export type EntryGatewayFlowMode = 'GATEWAY' | 'FAST_LOGIN' | 'WIZARD';
+export type EntryGatewayFlowMode = 'GATEWAY' | 'AUTH_PIPELINE' | 'WIZARD';
+export type GatewayAuthSubStep = 'STEP_A_IDENTITY' | 'STEP_B_EMAIL_OTP' | 'STEP_C_PHONE_LINK';
 
 /**
  * Generates a deterministic 15x15 QR Code matrix with 3 standard finder patterns
@@ -211,6 +217,7 @@ function buildDeterministicQrMatrix(token: string): boolean[][] {
 
 export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   isOpen,
+  isMandatoryGateway = false,
   initialCountry,
   initialCity,
   initialParentName,
@@ -222,15 +229,25 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const isEn = language === 'en';
   const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
 
-  // Landing Flow Mode: starts at the Welcome & Auth Gateway ('GATEWAY') so new/logged-out users
-  // can choose between "تسجيل دخول (لديك حساب مسبق)" and "إنشاء حساب جديد (ابدأ رحلة نكبر)"
+  // Mandatory Landing Flow Mode: starts at the Auth Gateway ('GATEWAY') as the absolute first screen
+  // for unauthenticated visitors, with two main actions:
+  // 1) "تسجيل دخول (لديك حساب مسبق)"
+  // 2) "إنشاء حساب جديد"
   const [flowMode, setFlowMode] = useState<EntryGatewayFlowMode>('GATEWAY');
-  const [fastLoginMethod, setFastLoginMethod] = useState<'password' | 'otp'>('password');
-  const [fastLoginIdentifier, setFastLoginIdentifier] = useState<string>(
+  const [gatewayAuthIntent, setGatewayAuthIntent] = useState<'signin' | 'signup'>('signin');
+  const [authSubStep, setAuthSubStep] = useState<GatewayAuthSubStep>('STEP_A_IDENTITY');
+  const [selectedProvider, setSelectedProvider] = useState<AuthProviderType>('email');
+  const [usePasswordInStepA, setUsePasswordInStepA] = useState<boolean>(true);
+  const [gatewayEmail, setGatewayEmail] = useState<string>(
     cachedDraft?.email || 'maryam.mom@nekbaar.app'
   );
-  const [fastLoginPassword, setFastLoginPassword] = useState<string>('Nekbaar#2026');
-  const [fastLoginOtp, setFastLoginOtp] = useState<string>(DEMO_OTP_CODE);
+  const [gatewayPassword, setGatewayPassword] = useState<string>('Nekbaar#2026');
+  const [gatewayEmailOtp, setGatewayEmailOtp] = useState<string>(DEMO_OTP_CODE);
+  const [gatewayEmailVerified, setGatewayEmailVerified] = useState<boolean>(false);
+  const [gatewayPhone, setGatewayPhone] = useState<string>(
+    cachedDraft?.phone || (initialCountry === 'SA' ? '551234567' : '1012345678')
+  );
+  const [gatewayResolvedUserId, setGatewayResolvedUserId] = useState<string>('');
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(cachedDraft?.stepNumber ?? 1);
   const [restoredFromCache, setRestoredFromCache] = useState<boolean>(Boolean(cachedDraft));
@@ -821,89 +838,234 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   };
 
   /**
-   * Fast Login Handler ("تسجيل دخول — لديك حساب مسبق"):
-   * Authenticates via Phone/Email + Password or OTP, maps to Shared Family ID #1,
-   * persists the permanent session to localStorage, and routes directly to Dashboard.
+   * Step A Handler (Email / Password or Google OAuth / Apple Sign-In):
+   * Validates or resolves email, triggers OAuth or Email OTP in Supabase, and advances to Step B (Email OTP verification).
    */
-  const handleFastLoginSubmit = async () => {
+  const handleStepASubmit = async (providerOverride?: AuthProviderType) => {
     setErrorMsg(null);
-    const trimmedIdentifier = fastLoginIdentifier.trim();
-    if (!trimmedIdentifier) {
+    setStepSyncNotice(null);
+    const activeProvider: AuthProviderType = providerOverride || selectedProvider || 'email';
+    setSelectedProvider(activeProvider);
+
+    let resolvedEmail = gatewayEmail.trim();
+    if (activeProvider === 'google' && (!resolvedEmail || !resolvedEmail.includes('@'))) {
+      resolvedEmail =
+        parentRole === 'dad' ? 'ahmad.dad@gmail.com' : 'maryam.mom@gmail.com';
+      setGatewayEmail(resolvedEmail);
+    } else if (activeProvider === 'apple' && (!resolvedEmail || !resolvedEmail.includes('@'))) {
+      resolvedEmail =
+        parentRole === 'dad' ? 'ahmad.dad@icloud.com' : 'maryam.mom@icloud.com';
+      setGatewayEmail(resolvedEmail);
+    }
+
+    if (!resolvedEmail || !resolvedEmail.includes('@')) {
       setErrorMsg(
         isEn
-          ? 'Please enter your registered email address or mobile phone number.'
-          : 'يرجى إدخال البريد الإلكتروني أو رقم الجوال المسجل.'
+          ? 'Please enter a valid email address to receive your verification code.'
+          : 'يرجى إدخال بريد إلكتروني صحيح لاستلام رمز التحقق الفوري.'
       );
       return;
     }
 
-    if (fastLoginMethod === 'password' && fastLoginPassword.trim().length < 4) {
+    if (
+      activeProvider === 'email' &&
+      usePasswordInStepA &&
+      gatewayPassword.trim().length < 4
+    ) {
       setErrorMsg(
         isEn
-          ? 'Please enter your account password.'
-          : 'يرجى إدخال كلمة المرور الخاصة بحسابك.'
+          ? 'Please enter a valid password (at least 4 characters).'
+          : 'يرجى إدخال كلمة مرور صالحة (٤ أحرف على الأقل).'
       );
       return;
     }
 
-    if (fastLoginMethod === 'otp' && fastLoginOtp.trim().length < 4) {
-      setErrorMsg(
-        isEn
-          ? `Please enter the 4-digit OTP code (${DEMO_OTP_CODE}).`
-          : `يرجى إدخال رمز التحقق المكون من ٤ أرقام (${DEMO_OTP_CODE}).`
-      );
-      return;
-    }
-
-    const lowerId = trimmedIdentifier.toLowerCase();
-    const isDadLogin =
+    const lowerEmail = resolvedEmail.toLowerCase();
+    const isDadAccount =
       parentRole === 'dad' ||
-      lowerId.includes('ahmad') ||
-      lowerId.includes('ahmed') ||
-      trimmedIdentifier.includes('أحمد');
+      lowerEmail.includes('ahmad') ||
+      lowerEmail.includes('ahmed');
+    const resolvedName =
+      parentName.trim() || (isDadAccount ? 'أحمد (الأب)' : 'مريم (الأم)');
 
-    const resolvedRole: ParentThemeRole = isDadLogin ? 'dad' : 'mom';
-    const resolvedName = isDadLogin ? 'أحمد (الأب)' : 'مريم (الأم)';
-    const resolvedEmail = trimmedIdentifier.includes('@')
-      ? trimmedIdentifier
-      : isDadLogin
-      ? 'ahmad.dad@nekbaar.app'
-      : 'maryam.mom@nekbaar.app';
-    const resolvedPhone = !trimmedIdentifier.includes('@')
-      ? trimmedIdentifier
-      : phone || '551234567';
+    setEmail(resolvedEmail);
+    setParentName(resolvedName);
+    setParentRole(isDadAccount ? 'dad' : 'mom');
 
     setIsSavingStep(true);
-    const authRes = await authenticateParentWithSupabase({
-      mode: 'signin',
+    const stepARes = await initiateGatewayEmailOrOAuthInSupabase({
+      provider: activeProvider,
+      mode: gatewayAuthIntent,
       email: resolvedEmail,
-      password: fastLoginPassword || 'Nekbaar#2026',
-      phone: resolvedPhone,
+      password: usePasswordInStepA ? gatewayPassword : 'Nekbaar#2026',
       parentName: resolvedName,
-      role: isDadLogin ? 'father' : 'mother',
+      role: isDadAccount ? 'father' : 'mother',
       country: selectedCountry,
     });
     setIsSavingStep(false);
 
+    if (stepARes.userId) {
+      setGatewayResolvedUserId(stepARes.userId);
+    }
+    setGatewayEmailOtp(stepARes.demoOtpCode || DEMO_OTP_CODE);
+    setAuthSubStep('STEP_B_EMAIL_OTP');
+    setStepSyncNotice(
+      activeProvider === 'google'
+        ? isEn
+          ? `Google account connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب Google (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+        : activeProvider === 'apple'
+        ? isEn
+          ? `Apple ID connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب Apple (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+        : isEn
+        ? `Verification code sent to ${resolvedEmail}. Please confirm the code in Step B.`
+        : `تم إرسال رمز التحقق الفوري (OTP) إلى بريدك الإلكتروني (${resolvedEmail}).`
+    );
+  };
+
+  /**
+   * Step B Handler (Email OTP Verification):
+   * Verifies the OTP code sent to the user's email and advances immediately to Step C ("ربط وتوثيق رقم الجوال").
+   */
+  const handleStepBVerifyEmailOtp = async () => {
+    setErrorMsg(null);
+    setStepSyncNotice(null);
+
+    if (gatewayEmailOtp.trim().length < 4) {
+      setErrorMsg(
+        isEn
+          ? `Please enter the 4-digit email verification code (Instant code: ${DEMO_OTP_CODE}).`
+          : `يرجى إدخال رمز التحقق المرسل للبريد الإلكتروني (الرمز الفوري: ${DEMO_OTP_CODE}).`
+      );
+      return;
+    }
+
+    setIsSavingStep(true);
+    const verifyRes = await verifyGatewayEmailOtpInSupabase({
+      email: gatewayEmail.trim(),
+      otpCode: gatewayEmailOtp.trim(),
+    });
+    setIsSavingStep(false);
+
+    if (!verifyRes.verified) {
+      setErrorMsg(
+        verifyRes.error ||
+          (isEn
+            ? 'Invalid verification code. Please try again.'
+            : 'رمز التحقق غير صحيح. يرجى المحاولة مرة أخرى.')
+      );
+      return;
+    }
+
+    if (verifyRes.userId) {
+      setGatewayResolvedUserId(verifyRes.userId);
+    }
+
+    setGatewayEmailVerified(true);
+    setIsOtpVerified(true);
+    setAuthSubStep('STEP_C_PHONE_LINK');
+    setStepSyncNotice(
+      isEn
+        ? `Email (${gatewayEmail.trim()}) verified! Now complete Step C: Link & verify your mobile number for co-parent pairing.`
+        : `تم توثيق البريد الإلكتروني (${gatewayEmail.trim()}) بنجاح! انتقلنا للخطوة (ج): ربط وتوثيق رقم الجوال.`
+    );
+  };
+
+  /**
+   * Step C Handler ("ربط وتوثيق رقم الجوال" — Phone Linking & Co-Parent Prep):
+   * Validates and binds the user's primary mobile number, syncs with Supabase `users` & `families`
+   * (`auth.uid() = id`, `family_id = 1`), permanently persists the session in `localStorage`,
+   * and either enters the Dashboard directly or continues to the 5-step customization wizard.
+   */
+  const handleStepCCompletePhoneBinding = async (options?: {
+    openCustomizationWizard?: boolean;
+  }) => {
+    setErrorMsg(null);
+    setStepSyncNotice(null);
+
+    const phoneValidation = validatePhoneForCountry(gatewayPhone, selectedCountry);
+    if (!phoneValidation.valid) {
+      setErrorMsg(
+        isEn
+          ? phoneValidation.errorEn || 'Please enter a valid primary mobile phone number.'
+          : phoneValidation.errorAr || 'يرجى إدخال رقم جوال أساسي صحيح للدولة المختارة.'
+      );
+      return;
+    }
+
+    const normalizedPhone = phoneValidation.normalized;
+    setPhone(normalizedPhone);
+
+    const lowerEmail = gatewayEmail.trim().toLowerCase();
+    const isDadLogin =
+      parentRole === 'dad' ||
+      lowerEmail.includes('ahmad') ||
+      lowerEmail.includes('ahmed') ||
+      parentName.includes('أحمد');
+
+    const resolvedRole: ParentThemeRole = isDadLogin ? 'dad' : 'mom';
+    const resolvedName =
+      parentName.trim() || (isDadLogin ? 'أحمد (الأب)' : 'مريم (الأم)');
+    const resolvedEmail =
+      gatewayEmail.trim() ||
+      (isDadLogin ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app');
+
+    setIsSavingStep(true);
+    const authRes = await bindPhoneAndFinalizeAuthInSupabase({
+      mode: gatewayAuthIntent,
+      provider: selectedProvider,
+      email: resolvedEmail,
+      password: gatewayPassword || 'Nekbaar#2026',
+      phone: normalizedPhone,
+      parentName: resolvedName,
+      role: isDadLogin ? 'father' : 'mother',
+      country: selectedCountry,
+      city: selectedCity || 'الدمام',
+    });
+    setIsSavingStep(false);
+
     const syncedSession: UserSessionProfile = {
-      userId: authRes.userId || `usr-${resolvedRole}-${authRes.familyId}`,
+      userId:
+        authRes.userId ||
+        gatewayResolvedUserId ||
+        `usr-${resolvedRole}-${authRes.familyId || SHARED_FAMILY_ID}`,
       familyId: String(authRes.familyId || SHARED_FAMILY_ID),
       fullName: resolvedName,
       role: resolvedRole,
       email: resolvedEmail,
-      phone: resolvedPhone,
+      phone: normalizedPhone,
       city: selectedCity || 'الدمام',
       country: selectedCountry,
       childrenCount: Math.max(1, safeChildrenList.length),
       isCoParentLinked: true,
-      verificationChannel: fastLoginMethod === 'otp' ? 'sms' : 'email',
+      emailVerified: true,
+      phoneVerified: true,
+      authProvider: selectedProvider,
+      verificationChannel: 'email',
       coParentName: isDadLogin ? 'مريم (الأم)' : 'أحمد (الأب)',
       coParentEmail: isDadLogin ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app',
       coParentPhone: coParentPhone || '559876543',
       updatedAt: new Date().toISOString(),
     };
 
-    OnboardingFlowController.persistUserSession(syncedSession, true);
+    // Requirement 3: Once the user completes email verification and phone linking,
+    // persist the session permanently in `localStorage` so future app launches bypass the gateway!
+    OnboardingFlowController.persistUserSession(
+      syncedSession,
+      !options?.openCustomizationWizard
+    );
+
+    if (options?.openCustomizationWizard) {
+      setStep(1);
+      setFlowMode('WIZARD');
+      setStepSyncNotice(
+        isEn
+          ? `Session permanently saved & phone (${normalizedPhone}) linked! You can now customize location, children, and co-parent settings.`
+          : `تم توثيق الجوال (${normalizedPhone}) وتثبيت جلستك الدائمة بنجاح! يمكنك الآن تخصيص الموقع وملفات الأطفال والشريك.`
+      );
+      return;
+    }
 
     const primaryChild =
       safeChildrenList[0] || INITIAL_CANONICAL_ONBOARDING_CHILDREN[0];
@@ -914,7 +1076,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       country: selectedCountry,
       city: selectedCity || 'الدمام',
       currency: getSuggestedCurrencyForCountry(selectedCountry),
-      phoneNumber: resolvedPhone,
+      phoneNumber: normalizedPhone,
       email: resolvedEmail,
       childProfile: {
         name: primaryChild.name,
@@ -929,6 +1091,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       coParentName: syncedSession.coParentName,
       coParentEmail: syncedSession.coParentEmail,
       coParentPhone: syncedSession.coParentPhone,
+      verificationChannel: 'email',
       persistedSession: syncedSession,
     });
   };
@@ -937,7 +1100,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     <div
       dir={isEn ? 'ltr' : 'rtl'}
       data-testid="onboarding-gateway-backdrop"
-      className="fixed inset-0 z-50 bg-pattern flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+      className="fixed inset-0 z-[110] bg-pattern flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-wizard-title"
@@ -969,19 +1132,24 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
       <div className="relative z-10 soft-card-surface w-full max-w-2xl rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
         {/* ===================================================================
-            MODE 1: WELCOME & AUTH GATEWAY SCREEN (LANDING FLOW)
+            MODE 1: MANDATORY AUTH GATEWAY (LANDING SCREEN)
             =================================================================== */}
         {flowMode === 'GATEWAY' && (
           <div data-testid="welcome-auth-gateway-screen" className="space-y-5 py-1">
-            {/* Top Brand & Skip Row */}
+            {/* Top Brand Header */}
             <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-xl font-black shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-2xl font-black shadow-md">
                   🌱
                 </div>
                 <div>
-                  <div className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                    {isEn ? 'Nekbaar Family Super App' : 'تطبيق العائلة الذكي — نكبر'}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                      {isEn ? 'Nekbaar Family Super App' : 'تطبيق العائلة الذكي — نكبر'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black">
+                      {isEn ? 'Secure Auth Gateway' : 'بوابة المصادقة الآمنة'}
+                    </span>
                   </div>
                   <h2
                     id="onboarding-wizard-title"
@@ -989,45 +1157,50 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   >
                     {isEn
                       ? 'Welcome to Nekbaar Family Space'
-                      : 'أهلاً بك في نكبر — مساحة العائلة المتكاملة'}
+                      : 'أهلاً بك في نكبر — بوابة الدخول الآمنة للعائلة'}
                   </h2>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={onClose}
-                aria-label={isEn ? 'Close' : 'إغلاق'}
-                className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
-              >
-                ✕
-              </button>
+              {!isMandatoryGateway && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={isEn ? 'Close' : 'إغلاق'}
+                  className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
-            {/* Greeting Card */}
+            {/* Greeting & Security Explanation Card */}
             <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 sm:p-5 space-y-2">
               <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
                 {isEn
-                  ? 'Manage your children’s daily routine, growth milestones, bedtime stories, and shared co-parent schedule in one secure space.'
-                  : 'كل ما تحتاجه أسرتك في مكان واحد آمن: متابعة نمو الأطفال (حمزة، ليلى، يوسف)، الروتين اليومي، قصص ما قبل النوم، ومزامنة الحساب بين الأم والأب لحظياً.'}
+                  ? 'Please sign in or create a new family account to access your children’s profiles (Hamza, Laila, Youssef), daily routines, bedtime stories, and instant co-parent sync.'
+                  : 'يرجى تسجيل الدخول أو إنشاء حساب عائلي جديد للوصول إلى ملفات أطفالك (حمزة، ليلى، يوسف)، الروتين اليومي، قصص ما قبل النوم، والربط الفوري مع الشريك.'}
               </p>
               <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
                 {isEn
-                  ? 'Select how you would like to continue:'
-                  : 'اختر طريقة المتابعة المناسبة لك للبدء فوراً:'}
+                  ? 'Supports Google / Apple OAuth, instant Email OTP verification, and primary mobile binding:'
+                  : 'يدعم الدخول عبر Google و Apple، رمز التحقق الفوري عبر البريد الإلكتروني (OTP)، وتوثيق رقم الجوال لربط الشريك:'}
               </div>
             </div>
 
-            {/* Two Primary Entry Choice Cards */}
+            {/* Two Primary Main Action Buttons (Requirement 1) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Primary Action 1: تسجيل دخول (لديك حساب مسبق) */}
+              {/* Main Action 1: تسجيل دخول (لديك حساب مسبق) */}
               <button
                 type="button"
                 data-testid="gateway-login-btn"
                 onClick={() => {
                   setErrorMsg(null);
                   setStepSyncNotice(null);
-                  setFlowMode('FAST_LOGIN');
+                  setGatewayAuthIntent('signin');
+                  setAuthMode('signin');
+                  setAuthSubStep('STEP_A_IDENTITY');
+                  setFlowMode('AUTH_PIPELINE');
                 }}
                 className="group rounded-2xl border-2 border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/70 dark:hover:bg-[#182C3A] p-4 sm:p-5 text-start transition-all cursor-pointer shadow-sm flex flex-col justify-between gap-3"
               >
@@ -1037,7 +1210,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       🔑
                     </span>
                     <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? 'Existing Account →' : 'دخول سريع ←'}
+                      {isEn ? 'Existing Account →' : 'حساب مسجل ←'}
                     </span>
                   </div>
                   <div className="text-sm sm:text-base font-black text-gray-900 dark:text-[#F8FAFC]">
@@ -1047,24 +1220,26 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </div>
                   <p className="text-xs font-medium text-gray-600 dark:text-[#CBD5E1] leading-relaxed">
                     {isEn
-                      ? 'Fast sign-in using your Phone or Email + Password or OTP code to load your shared family profile.'
-                      : 'دخول فوري باستخدام رقم الجوال أو البريد الإلكتروني مع كلمة المرور أو رمز التحقق OTP.'}
+                      ? 'Sign in with Google, Apple, or Email + instant OTP verification and phone binding.'
+                      : 'الدخول عبر البريد الإلكتروني أو Google/Apple مع رمز التحقق الفوري وتوثيق الجوال.'}
                   </p>
                 </div>
                 <div className="pt-2 border-t border-slate-200 dark:border-[#1E3646] text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                  {isEn ? 'Sign In Now →' : 'تسجيل الدخول الآن ←'}
+                  {isEn ? 'تسجيل دخول (لديك حساب مسبق) →' : 'تسجيل دخول (لديك حساب مسبق) ←'}
                 </div>
               </button>
 
-              {/* Primary Action 2: إنشاء حساب جديد (ابدأ رحلة نكبر) */}
+              {/* Main Action 2: إنشاء حساب جديد */}
               <button
                 type="button"
                 data-testid="gateway-register-btn"
                 onClick={() => {
                   setErrorMsg(null);
                   setStepSyncNotice(null);
-                  setStep(1);
-                  setFlowMode('WIZARD');
+                  setGatewayAuthIntent('signup');
+                  setAuthMode('signup');
+                  setAuthSubStep('STEP_A_IDENTITY');
+                  setFlowMode('AUTH_PIPELINE');
                 }}
                 className="group rounded-2xl border-2 border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-4 sm:p-5 text-start transition-all cursor-pointer shadow-md flex flex-col justify-between gap-3"
               >
@@ -1074,265 +1249,655 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       🚀
                     </span>
                     <span className="text-xs font-extrabold text-teal-100">
-                      {isEn ? '5 Progressive Steps →' : '٥ خطوات متدرجة ←'}
+                      {isEn ? 'New Family Account →' : 'حساب عائلي جديد ←'}
                     </span>
                   </div>
                   <div className="text-sm sm:text-base font-black text-white">
-                    {isEn
-                      ? 'Create New Account (Start Nekbaar Journey)'
-                      : 'إنشاء حساب جديد (ابدأ رحلة نكبر)'}
+                    {isEn ? 'Create New Account' : 'إنشاء حساب جديد'}
                   </div>
                   <p className="text-xs font-medium text-teal-50/95 leading-relaxed">
                     {isEn
-                      ? 'Step-by-step guided setup: Country & City, Account, OTP Verification, Children Profiles, and Co-Parent Link.'
-                      : 'إعداد متدرج وسهل: الدولة والمدينة، بيانات الحساب، التحقق، ملفات الأطفال، وربط الشريك.'}
+                      ? 'Register with Email or Google/Apple, verify Email OTP, and link your phone for instant co-parent pairing.'
+                      : 'تسجيل حساب جديد بالبريد أو Google/Apple، تأكيد رمز البريد، وربط وتوثيق رقم الجوال للشريك.'}
                   </p>
                 </div>
                 <div className="pt-2 border-t border-white/25 text-xs font-extrabold text-white">
-                  {isEn ? 'Start 5-Step Setup →' : 'ابدأ رحلة نكبر الآن ←'}
+                  {isEn ? 'إنشاء حساب جديد →' : 'إنشاء حساب جديد ←'}
                 </div>
               </button>
             </div>
 
-            {/* Resume Draft or Complete Later Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-              {cachedDraft && (
+            {/* Direct Quick OAuth Shortcuts (Google & Apple) */}
+            <div className="rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#142430]/75 p-3.5 space-y-2.5">
+              <div className="text-[11px] font-extrabold text-gray-700 dark:text-[#CBD5E1] text-center">
+                {isEn
+                  ? 'Or continue instantly with your Google or Apple account:'
+                  : 'أو المتابعة المباشرة السريعة باستخدام حساب Google أو Apple:'}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
                   type="button"
-                  data-testid="gateway-resume-draft-btn"
+                  data-testid="gateway-quick-google-btn"
                   onClick={() => {
-                    setStep(cachedDraft.stepNumber || 1);
-                    setFlowMode('WIZARD');
+                    setGatewayAuthIntent('signin');
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('google');
                   }}
-                  className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/35 hover:bg-emerald-500/25 transition cursor-pointer"
+                  className="min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-3.5 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
                 >
-                  {isEn
-                    ? `✓ Resume Saved Step (${cachedDraft.stepNumber} of 5)`
-                    : `✓ استكمال التسجيل من الخطوة المحفوظة (${cachedDraft.stepNumber} من 5)`}
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#EA4335"
+                      d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"
+                    />
+                  </svg>
+                  <span className="text-gray-900 font-semibold">
+                    {isEn ? 'Continue with Google' : 'المتابعة باستخدام Google'}
+                  </span>
                 </button>
-              )}
 
-              <button
-                type="button"
-                data-testid="gateway-skip-later-btn"
-                onClick={() =>
-                  finalizeAndRouteToDashboard({
-                    skippedCoParent: true,
-                    skippedForLater: true,
-                  })
-                }
-                className="ms-auto px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/35 transition cursor-pointer"
-              >
-                {isEn ? '⏳ Complete Later / Preview App' : '⏳ تخطي مؤقت / إكمال لاحقاً'}
-              </button>
+                <button
+                  type="button"
+                  data-testid="gateway-quick-apple-btn"
+                  onClick={() => {
+                    setGatewayAuthIntent('signin');
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('apple');
+                  }}
+                  className="min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-3.5 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                >
+                  <span className="text-base leading-none text-gray-900" aria-hidden="true">
+                    
+                  </span>
+                  <span className="text-gray-900 font-semibold">
+                    {isEn ? 'Continue with Apple' : 'المتابعة باستخدام Apple'}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* ===================================================================
-            MODE 2: FAST LOGIN SCREEN ("تسجيل دخول — لديك حساب مسبق")
+            MODE 2: 3-STEP AUTHENTICATION & SIGNUP PIPELINE
+            Step A (Email / Google / Apple) -> Step B (Email OTP) -> Step C (Phone Linking)
             =================================================================== */}
-        {flowMode === 'FAST_LOGIN' && (
-          <div data-testid="fast-login-screen" className="space-y-4 py-1">
+        {flowMode === 'AUTH_PIPELINE' && (
+          <div data-testid="auth-pipeline-screen" className="space-y-4 py-1">
+            {/* Top Header */}
             <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
               <div>
                 <div className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                  {isEn ? 'Fast Family Account Sign-In' : 'تسجيل الدخول السريع لحساب العائلة'}
+                  {gatewayAuthIntent === 'signup'
+                    ? isEn
+                      ? 'New Family Account Registration'
+                      : 'إنشاء حساب عائلي جديد — خطوات التوثيق المتدرجة'
+                    : isEn
+                    ? 'Existing Family Account Sign-In'
+                    : 'تسجيل دخول (لديك حساب مسبق) — خطوات التوثيق الآمن'}
                 </div>
                 <h2
                   id="onboarding-wizard-title"
                   className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
                 >
-                  {isEn
-                    ? 'Sign In (Already have an account)'
-                    : 'تسجيل دخول (لديك حساب مسبق)'}
+                  {authSubStep === 'STEP_A_IDENTITY' &&
+                    (gatewayAuthIntent === 'signup'
+                      ? isEn
+                        ? 'Step A: Create New Account (Email or Google/Apple)'
+                        : 'الخطوة (أ): إنشاء حساب جديد (البريد أو Google / Apple)'
+                      : isEn
+                      ? 'Step A: Sign In (Email or Google/Apple)'
+                      : 'الخطوة (أ): تسجيل دخول (البريد أو Google / Apple)')}
+                  {authSubStep === 'STEP_B_EMAIL_OTP' &&
+                    (isEn
+                      ? 'Step B: Instant Email OTP Verification'
+                      : 'الخطوة (ب): التحقق الفوري من البريد الإلكتروني (OTP)')}
+                  {authSubStep === 'STEP_C_PHONE_LINK' &&
+                    (isEn
+                      ? 'Step C: ربط وتوثيق رقم الجوال (Phone Linking)'
+                      : 'الخطوة (ج): ربط وتوثيق رقم الجوال')}
                 </h2>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
-                  data-testid="fast-login-back-gateway-btn"
+                  data-testid="auth-pipeline-back-gateway-btn"
                   onClick={() => {
                     setErrorMsg(null);
+                    setStepSyncNotice(null);
                     setFlowMode('GATEWAY');
                   }}
-                  className="px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:bg-teal-500/10 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white text-xs font-semibold text-gray-900 hover:border-[#0d9488] cursor-pointer"
                 >
-                  {isEn ? '← Welcome Gateway' : '→ بوابة الترحيب'}
+                  {isEn ? '← Auth Gateway' : '→ بوابة الدخول'}
                 </button>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label={isEn ? 'Close' : 'إغلاق'}
-                  className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
-                >
-                  ✕
-                </button>
+                {!isMandatoryGateway && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label={isEn ? 'Close' : 'إغلاق'}
+                    className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             </div>
 
+            {/* Horizontal Scrollable 3-Step Auth Progress Bar (High Contrast, Zero Truncation) */}
+            <nav
+              aria-label={isEn ? 'Authentication Steps' : 'مراحل المصادقة وتوثيق الجوال'}
+              data-testid="auth-pipeline-progress-bar"
+              className="flex items-center gap-2 overflow-x-auto flex-nowrap step-tabs-scroll pb-2 pt-0.5"
+            >
+              {[
+                {
+                  id: 'STEP_A_IDENTITY' as GatewayAuthSubStep,
+                  icon: '📧',
+                  labelAr: 'أ. البريد الإلكتروني أو Google/Apple',
+                  labelEn: 'A. Email or Google/Apple',
+                },
+                {
+                  id: 'STEP_B_EMAIL_OTP' as GatewayAuthSubStep,
+                  icon: '🔐',
+                  labelAr: 'ب. رمز التحقق للبريد (OTP)',
+                  labelEn: 'B. Email OTP Code',
+                },
+                {
+                  id: 'STEP_C_PHONE_LINK' as GatewayAuthSubStep,
+                  icon: '📱',
+                  labelAr: 'ج. ربط وتوثيق رقم الجوال',
+                  labelEn: 'C. Phone Linking & Co-Parent Prep',
+                },
+              ].map((tabItem, idx) => {
+                const orderMap: Record<GatewayAuthSubStep, number> = {
+                  STEP_A_IDENTITY: 1,
+                  STEP_B_EMAIL_OTP: 2,
+                  STEP_C_PHONE_LINK: 3,
+                };
+                const currentOrder = orderMap[authSubStep];
+                const itemOrder = idx + 1;
+                const isActive = authSubStep === tabItem.id;
+                const isDone = currentOrder > itemOrder;
+                return (
+                  <button
+                    key={tabItem.id}
+                    type="button"
+                    data-testid={`auth-pipeline-tab-${itemOrder}`}
+                    onClick={() => {
+                      setErrorMsg(null);
+                      setAuthSubStep(tabItem.id);
+                    }}
+                    className={`shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm border transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isActive
+                        ? 'border-[#0d9488] bg-[#0d9488] text-white font-bold shadow-xs'
+                        : isDone
+                        ? 'border-emerald-600/50 bg-emerald-50 text-gray-900 font-semibold'
+                        : 'border-slate-300 bg-white hover:border-[#0d9488] text-gray-900 font-semibold'
+                    }`}
+                  >
+                    <span aria-hidden="true">{isDone ? '✓' : tabItem.icon}</span>
+                    <span className={isActive ? 'text-white font-bold' : 'text-gray-900 font-semibold'}>
+                      {isEn ? tabItem.labelEn : tabItem.labelAr}
+                    </span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Step Sync Notice */}
+            {stepSyncNotice && (
+              <div
+                data-testid="auth-pipeline-sync-notice"
+                className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300"
+              >
+                ✅ {stepSyncNotice}
+              </div>
+            )}
+
+            {/* Error Banner */}
             {errorMsg && (
               <div
-                data-testid="fast-login-error-banner"
+                data-testid="auth-pipeline-error-banner"
                 className="rounded-2xl border border-red-500/40 bg-red-500/10 px-3.5 py-2.5 text-xs font-bold text-red-700 dark:text-red-300"
               >
                 ⚠️ {errorMsg}
               </div>
             )}
 
-            {/* Quick Account Presets (Maryam Mom vs Ahmad Dad) */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Quick Parent Profile Selection:' : 'اختيار سريع لحساب الوالدين:'}
-              </label>
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  data-testid="fast-login-preset-mom"
-                  onClick={() => {
-                    setParentRole('mom');
-                    setParentName('مريم (الأم)');
-                    setFastLoginIdentifier('maryam.mom@nekbaar.app');
-                  }}
-                  className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
-                    parentRole === 'mom'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
-                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC] border-slate-300 dark:border-[#1E3646]'
-                  }`}
-                >
-                  👩🏻 {isEn ? 'Maryam (Mother)' : 'حساب الأم — مريم'}
-                </button>
-                <button
-                  type="button"
-                  data-testid="fast-login-preset-dad"
-                  onClick={() => {
-                    setParentRole('dad');
-                    setParentName('أحمد (الأب)');
-                    setFastLoginIdentifier('ahmad.dad@nekbaar.app');
-                  }}
-                  className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
-                    parentRole === 'dad'
-                      ? 'bg-[#0d9488] text-white border-[#0d9488]'
-                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC] border-slate-300 dark:border-[#1E3646]'
-                  }`}
-                >
-                  👨🏻 {isEn ? 'Ahmad (Father)' : 'حساب الأب — أحمد'}
-                </button>
-              </div>
-            </div>
-
-            {/* Identifier Input (Phone or Email) */}
-            <div className="space-y-1">
-              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn
-                  ? 'Email Address or Mobile Phone Number:'
-                  : 'البريد الإلكتروني أو رقم الجوال المسجل:'}
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                data-testid="fast-login-identifier-input"
-                value={fastLoginIdentifier}
-                onChange={(e) => setFastLoginIdentifier(e.target.value)}
-                placeholder="maryam.mom@nekbaar.app / 551234567"
-                className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
-              />
-            </div>
-
-            {/* Auth Method Toggle: Password vs OTP */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setFastLoginMethod('password')}
-                className={`flex-1 py-2 rounded-xl text-xs font-extrabold border transition cursor-pointer ${
-                  fastLoginMethod === 'password'
-                    ? 'border-[#0d9488] bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
-                    : 'border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-gray-900 dark:text-[#CBD5E1]'
-                }`}
-              >
-                🔒 {isEn ? 'Sign In with Password' : 'الدخول بكلمة المرور'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setFastLoginMethod('otp')}
-                className={`flex-1 py-2 rounded-xl text-xs font-extrabold border transition cursor-pointer ${
-                  fastLoginMethod === 'otp'
-                    ? 'border-[#0d9488] bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
-                    : 'border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-gray-900 dark:text-[#CBD5E1]'
-                }`}
-              >
-                📲 {isEn ? 'Sign In with OTP Code' : 'الدخول برمز التحقق OTP'}
-              </button>
-            </div>
-
-            {fastLoginMethod === 'password' ? (
-              <div className="space-y-1">
-                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? 'Password:' : 'كلمة المرور:'}
-                </label>
-                <input
-                  type="password"
-                  dir="ltr"
-                  data-testid="fast-login-password-input"
-                  value={fastLoginPassword}
-                  onChange={(e) => setFastLoginPassword(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
-                />
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {isEn ? '4-Digit Verification Code (OTP):' : 'رمز التحقق السريع (OTP):'}
-                  </label>
-                  <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
-                    {isEn ? `Instant Code: ${DEMO_OTP_CODE}` : `الرمز الفوري: ${DEMO_OTP_CODE}`}
-                  </span>
+            {/* ---------------------------------------------------------------
+                STEP A: EMAIL / PASSWORD OR GOOGLE / APPLE SIGN-IN
+                --------------------------------------------------------------- */}
+            {authSubStep === 'STEP_A_IDENTITY' && (
+              <div data-testid="auth-step-a-screen" className="space-y-4">
+                {/* Mode Switcher: تسجيل دخول vs إنشاء حساب جديد */}
+                <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-100 dark:bg-[#142430] border border-slate-200 dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    data-testid="auth-mode-signin-tab"
+                    onClick={() => {
+                      setGatewayAuthIntent('signin');
+                      setAuthMode('signin');
+                      setErrorMsg(null);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition cursor-pointer ${
+                      gatewayAuthIntent === 'signin'
+                        ? 'bg-[#0d9488] text-white shadow-xs'
+                        : 'bg-white text-gray-900 font-semibold'
+                    }`}
+                  >
+                    {isEn ? '🔑 Sign In (Existing Account)' : '🔑 تسجيل دخول (لديك حساب مسبق)'}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="auth-mode-signup-tab"
+                    onClick={() => {
+                      setGatewayAuthIntent('signup');
+                      setAuthMode('signup');
+                      setErrorMsg(null);
+                    }}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition cursor-pointer ${
+                      gatewayAuthIntent === 'signup'
+                        ? 'bg-[#0d9488] text-white shadow-xs'
+                        : 'bg-white text-gray-900 font-semibold'
+                    }`}
+                  >
+                    {isEn ? '🚀 Create New Account' : '🚀 إنشاء حساب جديد'}
+                  </button>
                 </div>
-                <input
-                  type="text"
-                  dir="ltr"
-                  maxLength={6}
-                  data-testid="fast-login-otp-input"
-                  value={fastLoginOtp}
-                  onChange={(e) => setFastLoginOtp(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-center text-sm font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
-                />
+
+                {/* Google OAuth & Apple Sign-In Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    data-testid="oauth-google-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepASubmit('google')}
+                    className="min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-gray-900 flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#EA4335"
+                        d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"
+                      />
+                    </svg>
+                    <span className="text-gray-900 font-semibold">
+                      {isEn ? 'Continue with Google' : 'المتابعة باستخدام Google'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-testid="oauth-apple-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepASubmit('apple')}
+                    className="min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-gray-900 flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                  >
+                    <span className="text-base leading-none text-gray-900" aria-hidden="true">
+                      
+                    </span>
+                    <span className="text-gray-900 font-semibold">
+                      {isEn ? 'Continue with Apple' : 'المتابعة باستخدام Apple'}
+                    </span>
+                  </button>
+                </div>
+
+                <div className="relative flex items-center justify-center py-0.5">
+                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
+                  <span className="px-3 bg-[var(--color-surface)] dark:bg-[#101D26] text-[11px] font-bold text-[var(--color-muted)] shrink-0">
+                    {isEn ? 'or with Email & Instant OTP' : 'أو عبر البريد الإلكتروني ورمز التحقق'}
+                  </span>
+                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
+                </div>
+
+                {/* Parent Profile Selection (Maryam Mom vs Ahmad Dad) */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    data-testid="fast-login-preset-mom"
+                    onClick={() => {
+                      setParentRole('mom');
+                      setParentName('مريم (الأم)');
+                      setGatewayEmail('maryam.mom@nekbaar.app');
+                      setEmail('maryam.mom@nekbaar.app');
+                    }}
+                    className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs transition cursor-pointer ${
+                      parentRole === 'mom'
+                        ? 'bg-[#0d9488] text-white font-bold border-[#0d9488]'
+                        : 'bg-white text-gray-900 font-semibold border-slate-300'
+                    }`}
+                  >
+                    👩🏻 {isEn ? 'Mother Profile (Maryam)' : 'حساب الأم — مريم'}
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="fast-login-preset-dad"
+                    onClick={() => {
+                      setParentRole('dad');
+                      setParentName('أحمد (الأب)');
+                      setGatewayEmail('ahmad.dad@nekbaar.app');
+                      setEmail('ahmad.dad@nekbaar.app');
+                    }}
+                    className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs transition cursor-pointer ${
+                      parentRole === 'dad'
+                        ? 'bg-[#0d9488] text-white font-bold border-[#0d9488]'
+                        : 'bg-white text-gray-900 font-semibold border-slate-300'
+                    }`}
+                  >
+                    👨🏻 {isEn ? 'Father Profile (Ahmad)' : 'حساب الأب — أحمد'}
+                  </button>
+                </div>
+
+                {gatewayAuthIntent === 'signup' && (
+                  <div className="space-y-1">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? 'Full Name (Parent):' : 'الاسم الكامل (الأم أو الأب):'}
+                    </label>
+                    <input
+                      type="text"
+                      data-testid="auth-step-a-name-input"
+                      value={parentName}
+                      onChange={(e) => setParentName(e.target.value)}
+                      placeholder={isEn ? 'e.g. Maryam / Ahmad' : 'مثال: مريم (الأم) أو أحمد (الأب)'}
+                      className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn ? 'Email Address:' : 'البريد الإلكتروني:'}
+                  </label>
+                  <input
+                    type="email"
+                    dir="ltr"
+                    data-testid="auth-step-a-email-input"
+                    value={gatewayEmail}
+                    onChange={(e) => {
+                      setGatewayEmail(e.target.value);
+                      setEmail(e.target.value);
+                    }}
+                    placeholder="maryam.mom@nekbaar.app"
+                    className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? 'Password (or Email OTP Only):' : 'كلمة المرور (أو رمز تحقق البريد فقط):'}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setUsePasswordInStepA((prev) => !prev)}
+                      className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] underline cursor-pointer"
+                    >
+                      {usePasswordInStepA
+                        ? isEn
+                          ? 'Use Email OTP without password'
+                          : 'الاكتفاء برمز التحقق للبريد بدون كلمة مرور'
+                        : isEn
+                        ? 'Include password'
+                        : 'إدخال كلمة المرور أيضاً'}
+                    </button>
+                  </div>
+                  {usePasswordInStepA && (
+                    <input
+                      type="password"
+                      dir="ltr"
+                      data-testid="auth-step-a-password-input"
+                      value={gatewayPassword}
+                      onChange={(e) => {
+                        setGatewayPassword(e.target.value);
+                        setPassword(e.target.value);
+                      }}
+                      className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                    />
+                  )}
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    data-testid="auth-step-a-submit-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepASubmit('email')}
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                  >
+                    {isSavingStep
+                      ? isEn
+                        ? 'Sending Email OTP...'
+                        : 'جاري إرسال رمز التحقق للبريد...'
+                      : isEn
+                      ? '📨 Send Email Verification Code (Step B) →'
+                      : '📨 إرسال رمز التحقق للبريد الإلكتروني (الخطوة ب) ←'}
+                  </button>
+                </div>
               </div>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-              <button
-                type="button"
-                onClick={() => {
-                  setErrorMsg(null);
-                  setStep(1);
-                  setFlowMode('WIZARD');
-                }}
-                className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] underline cursor-pointer"
-              >
-                {isEn
-                  ? 'New to Nekbaar? Create a New Family Account →'
-                  : 'ليس لديك حساب؟ إنشاء حساب جديد (ابدأ رحلة نكبر)'}
-              </button>
+            {/* ---------------------------------------------------------------
+                STEP B: INSTANT EMAIL OTP VERIFICATION
+                --------------------------------------------------------------- */}
+            {authSubStep === 'STEP_B_EMAIL_OTP' && (
+              <div data-testid="auth-step-b-screen" className="space-y-4">
+                <div className="rounded-2xl border border-teal-500/35 bg-teal-500/10 p-4 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      📧{' '}
+                      {isEn
+                        ? `Instant Verification Code Sent to:`
+                        : 'تم إرسال رمز التحقق الفوري (OTP) إلى البريد:'}
+                    </span>
+                    <code
+                      dir="ltr"
+                      className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#142430] border border-teal-500/30 text-xs font-black text-[#0d9488] dark:text-[#2DD4BF]"
+                    >
+                      {gatewayEmail}
+                    </code>
+                  </div>
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                    {isEn
+                      ? 'Enter the verification code sent to your email to confirm your account ownership and proceed to phone number linking.'
+                      : 'أدخل رمز التحقق المرسل إلى بريدك الإلكتروني لتأكيد ملكية الحساب والانتقال فوراً لخطوة ربط وتوثيق رقم الجوال.'}
+                  </p>
+                </div>
 
-              <button
-                type="button"
-                data-testid="fast-login-submit-btn"
-                disabled={isSavingStep}
-                onClick={handleFastLoginSubmit}
-                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
-              >
-                {isSavingStep
-                  ? isEn
-                    ? 'Signing in...'
-                    : 'جاري تسجيل الدخول...'
-                  : isEn
-                  ? '🔑 Sign In to Dashboard →'
-                  : '🔑 تسجيل الدخول إلى لوحة العائلة ←'}
-              </button>
-            </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn
+                        ? 'Email OTP Verification Code:'
+                        : 'رمز التحقق المرسل للبريد الإلكتروني (OTP):'}
+                    </label>
+                    <span className="text-[11px] font-black text-amber-700 dark:text-amber-300">
+                      {isEn ? `Instant Code: ${DEMO_OTP_CODE}` : `الرمز الفوري: ${DEMO_OTP_CODE}`}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      maxLength={6}
+                      data-testid="auth-step-b-otp-input"
+                      value={gatewayEmailOtp}
+                      onChange={(e) => setGatewayEmailOtp(e.target.value)}
+                      placeholder={DEMO_OTP_CODE}
+                      className="flex-1 min-w-[160px] min-h-[44px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2 text-center text-base font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setGatewayEmailOtp(DEMO_OTP_CODE)}
+                      className="min-h-[44px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+                    >
+                      {isEn ? 'Auto-Fill (1234)' : 'تعبئة تلقائية (1234)'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleStepASubmit(selectedProvider)}
+                      className="min-h-[44px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                    >
+                      {isEn ? '🔄 Resend Code' : '🔄 إعادة إرسال الرمز'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMsg(null);
+                      setAuthSubStep('STEP_A_IDENTITY');
+                    }}
+                    className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                  >
+                    {isEn ? '← Back to Email (Step A)' : '→ تعديل البريد (الخطوة أ)'}
+                  </button>
+
+                  <button
+                    type="button"
+                    data-testid="auth-step-b-verify-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepBVerifyEmailOtp()}
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                  >
+                    {isSavingStep
+                      ? isEn
+                        ? 'Verifying OTP...'
+                        : 'جاري التحقق من الرمز...'
+                      : isEn
+                      ? '✓ Verify Email Code & Continue to Phone Linking →'
+                      : '✓ تأكيد رمز البريد والانتقال لربط الجوال (الخطوة ج) ←'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ---------------------------------------------------------------
+                STEP C: PHONE LINKING & CO-PARENT PREP ("ربط وتوثيق رقم الجوال")
+                --------------------------------------------------------------- */}
+            {authSubStep === 'STEP_C_PHONE_LINK' && (
+              <div data-testid="auth-step-c-phone-screen" className="space-y-4">
+                {/* Explicit Guidance Banner (Requirement 2 — Step C) */}
+                <div
+                  data-testid="phone-linking-coparent-guidance"
+                  className="rounded-2xl border-2 border-[#0d9488]/45 bg-gradient-to-br from-teal-500/12 via-emerald-500/5 to-amber-500/10 p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center gap-2">
+                      <span>📱</span>
+                      <span>ربط وتوثيق رقم الجوال</span>
+                    </h3>
+                    {gatewayEmailVerified && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black">
+                        ✓ {isEn ? 'Email Verified' : 'تم توثيق البريد'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs sm:text-sm font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed">
+                    (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك والطرف الثاني لاحقاً)
+                  </p>
+                </div>
+
+                {/* Country Code & Primary Mobile Phone Input */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? 'Country & Dial Code:' : 'الدولة ومفتاح الاتصال:'}
+                    </label>
+                    <select
+                      data-testid="auth-step-c-country-select"
+                      value={selectedCountry}
+                      onChange={(e) => handleSelectCountry(e.target.value as CountryCode)}
+                      className="w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900"
+                    >
+                      <option value="SA" className="text-gray-900 bg-white font-bold">
+                        🇸🇦 السعودية (+966)
+                      </option>
+                      <option value="EG" className="text-gray-900 bg-white font-bold">
+                        🇪🇬 مصر (+20)
+                      </option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? 'Primary Mobile Phone Number:' : 'رقم الجوال الأساسي:'}
+                    </label>
+                    <div className="flex items-center gap-2" dir="ltr">
+                      <span className="min-h-[44px] px-3.5 rounded-xl border border-slate-300 bg-slate-100 text-gray-900 text-xs font-black flex items-center">
+                        {selectedCountry === 'SA' ? '+966' : '+20'}
+                      </span>
+                      <input
+                        type="tel"
+                        data-testid="auth-step-c-phone-input"
+                        value={gatewayPhone}
+                        onChange={(e) => {
+                          setGatewayPhone(e.target.value);
+                          setPhone(e.target.value);
+                        }}
+                        placeholder={selectedCountry === 'SA' ? '551234567' : '1012345678'}
+                        className="flex-1 min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-black text-gray-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Footer for Step C */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMsg(null);
+                      setAuthSubStep('STEP_B_EMAIL_OTP');
+                    }}
+                    className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                  >
+                    {isEn ? '← Back to Step B' : '→ السابق (الخطوة ب)'}
+                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      data-testid="auth-step-c-continue-wizard-btn"
+                      disabled={isSavingStep}
+                      onClick={() =>
+                        void handleStepCCompletePhoneBinding({
+                          openCustomizationWizard: true,
+                        })
+                      }
+                      className="px-3.5 py-2.5 rounded-xl border border-[#0d9488] bg-white hover:bg-teal-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
+                    >
+                      {isEn
+                        ? '⚙️ Verify Phone & Customize 5-Step Setup'
+                        : '⚙️ توثيق الجوال وتخصيص ملفات الأطفال والشريك (٥ خطوات)'}
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="auth-step-c-complete-btn"
+                      disabled={isSavingStep}
+                      onClick={() =>
+                        void handleStepCCompletePhoneBinding({
+                          openCustomizationWizard: false,
+                        })
+                      }
+                      className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                    >
+                      {isSavingStep
+                        ? isEn
+                          ? 'Binding Phone & Syncing...'
+                          : 'جاري توثيق الجوال وتثبيت الجلسة...'
+                        : isEn
+                        ? '✓ Verify Phone & Enter Family Dashboard →'
+                        : '✓ توثيق رقم الجوال والدخول للوحة العائلة ←'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1694,7 +2259,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? 'Mobile Phone Number:' : 'رقم الجوال:'}
+                  {isEn ? 'ربط وتوثيق رقم الجوال:' : 'ربط وتوثيق رقم الجوال:'}
                 </label>
                 <div className="flex items-center gap-2" dir="ltr">
                   <span className="min-h-[42px] px-3 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-black flex items-center">
@@ -1709,6 +2274,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     className="flex-1 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                   />
                 </div>
+                <p className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                  (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك والطرف الثاني لاحقاً)
+                </p>
               </div>
             </div>
 

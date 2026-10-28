@@ -236,35 +236,51 @@ ALTER TABLE public.co_parent_pairings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "families_select_own_family" ON public.families;
 CREATE POLICY "families_select_own_family"
   ON public.families FOR SELECT
-  USING (id = public.get_authenticated_family_id());
+  USING (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "families_insert_own_family" ON public.families;
 CREATE POLICY "families_insert_own_family"
   ON public.families FOR INSERT
-  WITH CHECK (id = public.get_authenticated_family_id());
+  WITH CHECK (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
 
 DROP POLICY IF EXISTS "families_update_own_family" ON public.families;
 CREATE POLICY "families_update_own_family"
   ON public.families FOR UPDATE
-  USING (id = public.get_authenticated_family_id())
-  WITH CHECK (id = public.get_authenticated_family_id());
+  USING (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL)
+  WITH CHECK (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
 
--- 2. Policies for `users`
+-- 2. Policies for `users` (Enforces strict `auth.uid() = id` / `auth_uid = auth.uid()` and shared `family_id` linkage)
 DROP POLICY IF EXISTS "users_select_own_family" ON public.users;
 CREATE POLICY "users_select_own_family"
   ON public.users FOR SELECT
-  USING (family_id = public.get_authenticated_family_id());
+  USING (
+    id = auth.uid()::text
+    OR auth_uid = auth.uid()
+    OR family_id = public.get_authenticated_family_id()
+  );
 
 DROP POLICY IF EXISTS "users_insert_own_family" ON public.users;
 CREATE POLICY "users_insert_own_family"
   ON public.users FOR INSERT
-  WITH CHECK (family_id = public.get_authenticated_family_id());
+  WITH CHECK (
+    id = auth.uid()::text
+    OR auth_uid = auth.uid()
+    OR family_id = public.get_authenticated_family_id()
+  );
 
 DROP POLICY IF EXISTS "users_update_own_family" ON public.users;
 CREATE POLICY "users_update_own_family"
   ON public.users FOR UPDATE
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
+  USING (
+    id = auth.uid()::text
+    OR auth_uid = auth.uid()
+    OR family_id = public.get_authenticated_family_id()
+  )
+  WITH CHECK (
+    id = auth.uid()::text
+    OR auth_uid = auth.uid()
+    OR family_id = public.get_authenticated_family_id()
+  );
 
 -- 3. Policies for `children`
 DROP POLICY IF EXISTS "children_select_own_family" ON public.children;

@@ -38,6 +38,9 @@ export interface UserSessionProfile {
   country: CountryCode;
   childrenCount: number;
   isCoParentLinked: boolean;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  authProvider?: 'email' | 'google' | 'apple';
   verificationChannel?: VerificationChannel;
   coParentName?: string;
   coParentEmail?: string;
@@ -202,10 +205,10 @@ export class OnboardingFlowController {
   }
 
   /**
-   * Step 0: Smart Startup & Session Bypass Detection
-   * Checks if a valid session/profile exists in `localStorage` OR live Supabase Auth.
+   * Step 0: Smart Startup & Mandatory Auth Gateway Detection
+   * Checks if a valid active session (`auth.uid` or local persistence) exists.
    * - If found: syncs `localStorage` and returns `{ step: 'DASHBOARD', profile }` so the app bypasses the gateway and routes directly to the dashboard.
-   * - If not found: returns `{ step: 'WELCOME_PROFILE', draft }` so new/logged-out users see the Welcome & Auth Gateway screen.
+   * - If not found: returns `{ step: 'WELCOME_PROFILE', draft }` so unauthenticated visitors see the mandatory Auth Gateway screen first.
    */
   public static async detectInitialState(): Promise<{
     step: OnboardingStep;
@@ -261,22 +264,20 @@ export class OnboardingFlowController {
               country: meta.country === 'EG' ? 'EG' : 'SA',
               childrenCount: 3,
               isCoParentLinked: true,
+              emailVerified: true,
+              phoneVerified: true,
               updatedAt: new Date().toISOString(),
             };
             this.persistUserSession(resolvedProfile, false);
             return { step: 'DASHBOARD', profile: resolvedProfile };
           }
         } catch {
-          // Proceed gracefully to local draft / gateway check if offline
+          // Proceed gracefully to local draft / mandatory gateway check if offline
         }
       }
 
       const draft = this.loadDraft();
-      if (draft && draft.currentStep) {
-        return { step: draft.currentStep, draft };
-      }
-
-      return { step: 'WELCOME_PROFILE' };
+      return { step: 'WELCOME_PROFILE', draft: draft || undefined };
     } catch (error) {
       console.error('Error detecting initial state:', error);
       return { step: 'WELCOME_PROFILE' };
@@ -426,8 +427,9 @@ export class OnboardingFlowController {
   }
 
   /**
-   * Permanently persists the authenticated family session once Step 4 (at least 1 child) is completed,
-   * ensuring future app launches recognize the profile immediately and route to `/dashboard`.
+   * Permanently persists the authenticated family session once Email OTP + Phone Linking
+   * (or Step 4 Children Setup) is completed, ensuring future app launches bypass the gateway
+   * and load `/dashboard` immediately.
    */
   public static persistUserSession(
     profile: UserSessionProfile,
@@ -454,6 +456,9 @@ export class OnboardingFlowController {
     try {
       window.localStorage.removeItem(this.STORAGE_KEY);
       window.localStorage.removeItem(this.DRAFT_KEY);
+      if (supabaseClient) {
+        void supabaseClient.auth.signOut().catch(() => null);
+      }
     } catch (e) {
       console.error('Failed to clear session:', e);
     }
