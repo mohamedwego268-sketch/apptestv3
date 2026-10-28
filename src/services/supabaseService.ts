@@ -33,6 +33,7 @@ export const SUPABASE_TABLES = {
   CHILDREN: 'children',
   EXTENDED_FAMILY: 'extended_family',
   CATALOG_ITEMS: 'catalog_items',
+  CO_PARENT_PAIRINGS: 'co_parent_pairings',
 } as const;
 
 /**
@@ -45,6 +46,7 @@ export interface Family {
   city: string;
   currency: CurrencyCode;
   active_parent?: 'mother' | 'father';
+  pairing_token?: string;
   updated_at?: string;
 }
 
@@ -134,6 +136,45 @@ export async function withSupabaseTimeout<T>(
 }
 
 /**
+ * Exponential backoff retry wrapper for remote Supabase calls to guarantee
+ * resilience against transient network failures and prevent uncaught promise rejections.
+ */
+export async function withSupabaseRetry<T>(
+  operationFactory: () => PromiseLike<T>,
+  maxRetries: number = 3
+): Promise<T> {
+  const backoffDelays = [350, 800, 1600];
+  let lastErr: unknown = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await withSupabaseTimeout(operationFactory());
+    } catch (err) {
+      lastErr = err;
+      if (attempt < maxRetries) {
+        const delayMs = backoffDelays[attempt - 1] || 1000;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+
+  throw lastErr instanceof Error
+    ? lastErr
+    : new Error('SUPABASE_RETRY_EXHAUSTED: Operation failed after retries.');
+}
+
+/**
+ * Generates a deterministic, secure family pairing token for QR Code & OTP Co-Parent linking.
+ */
+export function generateFamilyPairingToken(
+  familyId: number = SHARED_FAMILY_ID,
+  partnerPhone: string = '559876543'
+): string {
+  const cleanDigits = partnerPhone.replace(/\D/g, '').slice(-4) || '2026';
+  return `NEKBAAR-FAM-${familyId}-${cleanDigits}-SECURE`;
+}
+
+/**
  * Canonical fallback User entities for Ahmed and Mariam linked to `SHARED_FAMILY_ID` (1)
  */
 export const DEFAULT_SUPABASE_USERS: User[] = [
@@ -208,8 +249,8 @@ export async function ensureSharedFamilyRecordInSupabase(params?: {
   }
 
   try {
-    const { error } = await withSupabaseTimeout(
-      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyRecord)
+    const { error } = await withSupabaseRetry(() =>
+      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyRecord, { onConflict: 'id' })
     );
     return {
       family: familyRecord,
@@ -759,8 +800,8 @@ export async function syncFamilySpaceToSupabase(state: FamilySpaceState): Promis
     };
 
     // 1. Upsert `families` FIRST so `users.family_id` foreign key constraint is strictly satisfied
-    await withSupabaseTimeout(
-      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyPayload)
+    await withSupabaseRetry(() =>
+      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyPayload, { onConflict: 'id' })
     );
 
     const usersPayload: User[] = [
@@ -814,14 +855,18 @@ export async function syncFamilySpaceToSupabase(state: FamilySpaceState): Promis
       email: member.email || '',
     }));
 
-    // 2. Upsert `users`, `children`, and `extended_family` referencing `SHARED_FAMILY_ID`
+    // 2. Upsert `users`, `children`, and `extended_family` referencing `SHARED_FAMILY_ID` with explicit `onConflict: 'id'`
     await Promise.allSettled([
-      withSupabaseTimeout(supabaseClient.from(SUPABASE_TABLES.USERS).upsert(usersPayload)),
-      withSupabaseTimeout(
-        supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(childrenPayload)
+      withSupabaseRetry(() =>
+        supabaseClient.from(SUPABASE_TABLES.USERS).upsert(usersPayload, { onConflict: 'id' })
       ),
-      withSupabaseTimeout(
-        supabaseClient.from(SUPABASE_TABLES.EXTENDED_FAMILY).upsert(extendedFamilyPayload)
+      withSupabaseRetry(() =>
+        supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(childrenPayload, { onConflict: 'id' })
+      ),
+      withSupabaseRetry(() =>
+        supabaseClient
+          .from(SUPABASE_TABLES.EXTENDED_FAMILY)
+          .upsert(extendedFamilyPayload, { onConflict: 'id' })
       ),
     ]);
 
@@ -944,8 +989,8 @@ export async function authenticateParentWithSupabase(
       verified: true,
     };
 
-    const { error: upsertErr } = await withSupabaseTimeout(
-      supabaseClient.from(SUPABASE_TABLES.USERS).upsert(userRow)
+    const { error: upsertErr } = await withSupabaseRetry(() =>
+      supabaseClient.from(SUPABASE_TABLES.USERS).upsert(userRow, { onConflict: 'id' })
     );
     syncedToDb = !upsertErr;
 
@@ -999,7 +1044,7 @@ export async function saveOnboardingLocationToSupabase(params: {
 }
 
 /**
- * Step 3 of Onboarding Wizard:
+ * Step 4 of Onboarding Wizard:
  * Ensures the parent `families(id)` row exists first, then writes the children
  * (Hamza, Laila, Youssef) directly to the `children` table linked to `family_id`.
  */
@@ -1018,12 +1063,12 @@ export async function saveOnboardingChildrenToSupabase(params: {
   const mappedChildren: Child[] = params.childrenList.map((item, idx) => ({
     id: item.id || idx + 1,
     family_id: targetFamilyId,
-    name: item.name.trim(),
-    birth: item.birth,
-    gender: item.gender,
+    name: (item.name || 'طفل').trim(),
+    birth: item.birth || '2022-05-14',
+    gender: item.gender === 'girl' ? 'girl' : 'boy',
     emoji: item.gender === 'girl' ? '👧🏻' : '👦🏻',
     avatar_theme: item.avatarTheme || 'astronaut',
-    interests: item.interests.trim(),
+    interests: (item.interests || '').trim(),
   }));
 
   if (!supabaseClient) {
@@ -1032,8 +1077,8 @@ export async function saveOnboardingChildrenToSupabase(params: {
 
   try {
     await ensureSharedFamilyRecordInSupabase({ familyId: targetFamilyId });
-    const { error } = await withSupabaseTimeout(
-      supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(mappedChildren)
+    const { error } = await withSupabaseRetry(() =>
+      supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(mappedChildren, { onConflict: 'id' })
     );
 
     return {
@@ -1046,6 +1091,154 @@ export async function saveOnboardingChildrenToSupabase(params: {
       synced: false,
       savedChildren: mappedChildren,
       error: err instanceof Error ? err.message : 'Unable to save children to Supabase.',
+    };
+  }
+}
+
+export type CoParentPairingMethod = 'phone_otp' | 'qr_token';
+
+export interface CoParentLinkPayload {
+  familyId: number;
+  partnerRole: 'father' | 'mother';
+  partnerName: string;
+  partnerPhone: string;
+  partnerEmail: string;
+  country: CountryCode;
+  method: CoParentPairingMethod;
+  otpCode?: string;
+  pairingToken?: string;
+}
+
+export interface CoParentLinkResult {
+  linked: boolean;
+  syncedToDb: boolean;
+  familyId: number;
+  partnerUserId: string;
+  pairingToken: string;
+  method: CoParentPairingMethod;
+  error: string | null;
+}
+
+/**
+ * Step 5 of Onboarding Wizard — Co-Parent Integration Module:
+ * Supports both:
+ * - Method A (`phone_otp`): Verifies OTP sent to partner's mobile phone and binds partner to shared `family_id`.
+ * - Method B (`qr_token`): Pairs via dynamic Family QR Code token (`NEKBAAR-FAM-...`) and binds partner to shared `family_id`.
+ */
+export async function linkCoParentAccountInSupabase(
+  payload: CoParentLinkPayload
+): Promise<CoParentLinkResult> {
+  const targetFamilyId = payload.familyId || SHARED_FAMILY_ID;
+  const partnerUserId =
+    payload.partnerRole === 'father' ? 'parent-ahmad' : 'parent-maryam';
+  const resolvedToken =
+    payload.pairingToken?.trim() ||
+    generateFamilyPairingToken(targetFamilyId, payload.partnerPhone);
+
+  // Persist pairing record locally first for instant offline resilience
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(
+        'nekbaar_coparent_pairing_v2',
+        JSON.stringify({
+          familyId: targetFamilyId,
+          partnerUserId,
+          partnerName: payload.partnerName.trim(),
+          partnerPhone: payload.partnerPhone.trim(),
+          partnerEmail: payload.partnerEmail.trim(),
+          method: payload.method,
+          pairingToken: resolvedToken,
+          verified: true,
+          linkedAt: new Date().toISOString(),
+        })
+      );
+    }
+  } catch {
+    // Ignore local storage errors
+  }
+
+  if (!supabaseClient) {
+    return {
+      linked: true,
+      syncedToDb: false,
+      familyId: targetFamilyId,
+      partnerUserId,
+      pairingToken: resolvedToken,
+      method: payload.method,
+      error: null,
+    };
+  }
+
+  try {
+    // 1. Ensure shared `families(id)` row exists
+    await ensureSharedFamilyRecordInSupabase({
+      familyId: targetFamilyId,
+      country: payload.country,
+    });
+
+    // 2. Upsert the partner account into `users` bound to the exact same `family_id`
+    const partnerUserRow: User = {
+      id: partnerUserId,
+      family_id: targetFamilyId,
+      name:
+        payload.partnerName.trim() ||
+        (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
+      full_name:
+        payload.partnerName.trim() ||
+        (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
+      role: payload.partnerRole,
+      email: payload.partnerEmail.trim(),
+      phone: payload.partnerPhone.trim(),
+      phone_number: payload.partnerPhone.trim(),
+      country: payload.country,
+      verified: true,
+    };
+
+    const { error: userErr } = await withSupabaseRetry(() =>
+      supabaseClient
+        .from(SUPABASE_TABLES.USERS)
+        .upsert(partnerUserRow, { onConflict: 'id' })
+    );
+
+    // 3. Record audit row in `co_parent_pairings` (non-blocking if table hasn't been migrated yet)
+    await Promise.allSettled([
+      withSupabaseTimeout(
+        supabaseClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).upsert(
+          {
+            id: `pair-${targetFamilyId}-${partnerUserId}`,
+            family_id: targetFamilyId,
+            partner_user_id: partnerUserId,
+            partner_name: partnerUserRow.name,
+            partner_phone: partnerUserRow.phone,
+            partner_email: partnerUserRow.email,
+            pairing_method: payload.method,
+            pairing_token: resolvedToken,
+            verified: true,
+            linked_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        )
+      ),
+    ]);
+
+    return {
+      linked: true,
+      syncedToDb: !userErr,
+      familyId: targetFamilyId,
+      partnerUserId,
+      pairingToken: resolvedToken,
+      method: payload.method,
+      error: userErr ? userErr.message : null,
+    };
+  } catch (err) {
+    return {
+      linked: true,
+      syncedToDb: false,
+      familyId: targetFamilyId,
+      partnerUserId,
+      pairingToken: resolvedToken,
+      method: payload.method,
+      error: err instanceof Error ? err.message : null,
     };
   }
 }

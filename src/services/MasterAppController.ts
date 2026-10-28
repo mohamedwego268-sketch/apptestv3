@@ -633,7 +633,9 @@ export class MasterBackendService implements MasterControllerAPI {
           routine_score: diag.routineCompletionScore,
           updated_at: diag.updatedAt,
         }));
-        await supabaseClient.from('wellness_diagnostics').upsert(rows);
+        await supabaseClient
+          .from('wellness_diagnostics')
+          .upsert(rows, { onConflict: 'id' });
         return nextSummary;
       },
       nextSummary,
@@ -938,21 +940,24 @@ export class MasterBackendService implements MasterControllerAPI {
       async () => {
         if (!supabaseClient) return newStory;
         await ensureSharedFamilyRecordInSupabase({ familyId: this.familyId });
-        await supabaseClient.from('bedtime_stories').upsert({
-          id: newStory.id,
-          sequence_code: newStory.sequenceCode,
-          family_id: newStory.familyId,
-          child_id: newStory.childId,
-          child_name: newStory.childName,
-          age_stage: newStory.ageStage,
-          title_ar: newStory.titleAr,
-          title_en: newStory.titleEn,
-          story_body_ar: newStory.storyBodyAr,
-          story_body_en: newStory.storyBodyEn,
-          moral_tag_ar: newStory.moralTagAr,
-          moral_tag_en: newStory.moralTagEn,
-          created_at: newStory.createdAt,
-        });
+        await supabaseClient.from('bedtime_stories').upsert(
+          {
+            id: newStory.id,
+            sequence_code: newStory.sequenceCode,
+            family_id: newStory.familyId,
+            child_id: newStory.childId,
+            child_name: newStory.childName,
+            age_stage: newStory.ageStage,
+            title_ar: newStory.titleAr,
+            title_en: newStory.titleEn,
+            story_body_ar: newStory.storyBodyAr,
+            story_body_en: newStory.storyBodyEn,
+            moral_tag_ar: newStory.moralTagAr,
+            moral_tag_en: newStory.moralTagEn,
+            created_at: newStory.createdAt,
+          },
+          { onConflict: 'id' }
+        );
         return newStory;
       },
       newStory,

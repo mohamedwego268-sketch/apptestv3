@@ -513,13 +513,14 @@ export const ThreeDIcon: React.FC<ThreeDIconProps> = ({ id, size = 26, className
 };
 
 interface ThreeDChildAvatarProps {
-  name: string;
+  name?: string;
   gender: 'boy' | 'girl';
   stageCode?: '0-2' | '2-5' | '5-8';
   accessoryTheme?: AvatarAccessoryTheme;
+  theme?: AvatarAccessoryTheme;
   photoDataUrl?: string;
   useIllustratedAvatar?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | number;
 }
 
 /**
@@ -529,26 +530,34 @@ interface ThreeDChildAvatarProps {
  *   and chosen 3D personality/accessory theme (astronaut, artist, scientist, athlete, reader, nature).
  */
 export const ThreeDChildAvatar: React.FC<ThreeDChildAvatarProps> = ({
-  name,
+  name = '',
   gender,
   stageCode = '2-5',
-  accessoryTheme = 'astronaut',
+  accessoryTheme,
+  theme,
   photoDataUrl,
   useIllustratedAvatar = false,
   size = 'md',
 }) => {
-  const dims = size === 'lg' ? 'w-20 h-20' : size === 'sm' ? 'w-11 h-11' : 'w-14 h-14';
+  const safeName = typeof name === 'string' ? name : '';
+  const resolvedTheme: AvatarAccessoryTheme = accessoryTheme || theme || 'astronaut';
+  const dims =
+    size === 'lg' || (typeof size === 'number' && size >= 64)
+      ? 'w-20 h-20'
+      : size === 'sm' || (typeof size === 'number' && size <= 48)
+      ? 'w-11 h-11'
+      : 'w-14 h-14';
   const showRealPhoto = Boolean(photoDataUrl && !useIllustratedAvatar);
 
   if (showRealPhoto) {
     return (
       <div
         className={`${dims} relative rounded-2xl overflow-hidden border-2 border-white shadow-md shrink-0 bg-[var(--color-control-muted)]`}
-        title={name}
+        title={safeName}
       >
         <img
           src={photoDataUrl}
-          alt={name}
+          alt={safeName}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
@@ -556,7 +565,7 @@ export const ThreeDChildAvatar: React.FC<ThreeDChildAvatarProps> = ({
     );
   }
 
-  const uid = `avatar3d-${gender}-${stageCode}-${accessoryTheme}-${name.length}`;
+  const uid = `avatar3d-${gender}-${stageCode}-${resolvedTheme}-${safeName.length}`;
   const isGirl = gender === 'girl';
 
   const bgGradient = isGirl
@@ -664,7 +673,7 @@ export const ThreeDChildAvatar: React.FC<ThreeDChildAvatarProps> = ({
         className="absolute -bottom-1 -left-1 w-6 h-6 rounded-full bg-white shadow-sm border border-[var(--color-border)] flex items-center justify-center text-xs"
         aria-hidden="true"
       >
-        {accessoryEmoji[accessoryTheme] || '🌟'}
+        {accessoryEmoji[resolvedTheme] || '🌟'}
       </span>
     </div>
   );

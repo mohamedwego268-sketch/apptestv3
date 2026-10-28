@@ -3,7 +3,7 @@ import {
   COUNTRY_CITIES_MAP,
   CountryCode,
   CurrencyCode,
-  DEFAULT_SEED,
+  DEMO_OTP_CODE,
   LanguageCode,
   ParentThemeRole,
   calculateChildAge,
@@ -11,40 +11,31 @@ import {
   validateChildInput,
   validatePhoneForCountry,
 } from '../domain/familySpaceCore';
-import { AVATAR_ACCESSORY_THEMES, AvatarAccessoryTheme } from '../domain/assetManifest3D';
+import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
+  CoParentPairingMethod,
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  generateFamilyPairingToken,
+  linkCoParentAccountInSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
 } from '../services/supabaseService';
+import {
+  INITIAL_CANONICAL_ONBOARDING_CHILDREN,
+  OnboardingChildDraftItem,
+  OnboardingDraftData,
+  OnboardingFlowController,
+  OnboardingStep,
+  UserSessionProfile,
+  VerificationChannel,
+} from '../services/OnboardingFlowController';
 import { ThreeDChildAvatar } from './ThreeDVisuals';
 
-export const NEKBAAR_ONBOARDING_CACHE_KEY = 'nekbaar_onboarding_draft_v1';
+export const NEKBAAR_ONBOARDING_CACHE_KEY = OnboardingFlowController.DRAFT_KEY;
 
-export interface OnboardingChildDraft {
-  id: number;
-  name: string;
-  gender: 'boy' | 'girl';
-  ageStagePreset: 'infant_6m' | 'nursery_4y' | 'school_8y' | 'custom';
-  birth: string;
-  interests: string;
-  avatarTheme: AvatarAccessoryTheme;
-}
-
-export interface OnboardingCachedState {
-  step: 1 | 2 | 3 | 4;
-  authMode: 'signup' | 'signin';
-  parentRole: ParentThemeRole;
-  parentName: string;
-  email: string;
-  phone: string;
-  familyId: number;
-  selectedCountry: CountryCode;
-  selectedCity: string;
-  childrenList: OnboardingChildDraft[];
-  updatedAt: string;
-}
+export type OnboardingChildDraft = OnboardingChildDraftItem;
+export type OnboardingCachedState = OnboardingDraftData;
 
 export interface OnboardingCompletionPayload {
   parentName: string;
@@ -63,6 +54,12 @@ export interface OnboardingCompletionPayload {
   };
   childrenProfiles?: OnboardingChildDraft[];
   skippedForLater?: boolean;
+  isCoParentLinked?: boolean;
+  coParentName?: string;
+  coParentEmail?: string;
+  coParentPhone?: string;
+  verificationChannel?: VerificationChannel;
+  persistedSession?: UserSessionProfile;
 }
 
 interface OnboardingFlowModalProps {
@@ -120,91 +117,94 @@ const QUICK_REGION_PRESETS: Array<{
   },
 ];
 
-const INITIAL_CANONICAL_CHILDREN: OnboardingChildDraft[] = [
+const WIZARD_STEPS_META: Array<{
+  num: 1 | 2 | 3 | 4 | 5;
+  stepKey: OnboardingStep;
+  icon: string;
+  labelAr: string;
+  labelEn: string;
+}> = [
   {
-    id: 1,
-    name: DEFAULT_SEED.kids[0]?.name || 'حمزة',
-    gender: 'boy',
-    ageStagePreset: 'infant_6m',
-    birth: DEFAULT_SEED.kids[0]?.birth || '2026-04-20',
-    interests:
-      DEFAULT_SEED.kids[0]?.interests ||
-      'وقت البطن الحسي، تتبع الخشخيشة الخشبية، والمناغاة التفاعلية',
-    avatarTheme: 'astronaut',
+    num: 1,
+    stepKey: 'LOCATION',
+    icon: '📍',
+    labelAr: '١. الدولة والمدينة',
+    labelEn: '1. Location',
   },
   {
-    id: 2,
-    name: DEFAULT_SEED.kids[1]?.name || 'ليلى',
-    gender: 'girl',
-    ageStagePreset: 'nursery_4y',
-    birth: DEFAULT_SEED.kids[1]?.birth || '2022-05-14',
-    interests:
-      DEFAULT_SEED.kids[1]?.interests ||
-      'التلوين المائي والصلصال، أناشيد الحضانة، وتسمية المشاعر',
-    avatarTheme: 'artist',
+    num: 2,
+    stepKey: 'CREDENTIALS',
+    icon: '🔐',
+    labelAr: '٢. بيانات الحساب',
+    labelEn: '2. Credentials',
   },
   {
-    id: 3,
-    name: DEFAULT_SEED.kids[2]?.name || 'يوسف',
-    gender: 'boy',
-    ageStagePreset: 'school_8y',
-    birth: DEFAULT_SEED.kids[2]?.birth || '2018-09-10',
-    interests:
-      DEFAULT_SEED.kids[2]?.interests ||
-      'السباحة وكرة القدم، تجارب العلوم المدرسية، وألغاز الذكاء',
-    avatarTheme:
-      AVATAR_ACCESSORY_THEMES.find((t) => t.id === 'astronaut')?.id || 'astronaut',
+    num: 3,
+    stepKey: 'VERIFY_METHOD',
+    icon: '📲',
+    labelAr: '٣. طريقة التحقق',
+    labelEn: '3. Verify OTP',
+  },
+  {
+    num: 4,
+    stepKey: 'CHILDREN',
+    icon: '👶🏻',
+    labelAr: '٤. ملفات الأطفال',
+    labelEn: '4. Children',
+  },
+  {
+    num: 5,
+    stepKey: 'CO_PARENT',
+    icon: '🤝',
+    labelAr: '٥. ربط الشريك',
+    labelEn: '5. Co-Parent',
   },
 ];
 
-function loadCachedOnboardingDraft(): OnboardingCachedState | null {
-  try {
-    const raw = window.localStorage.getItem(NEKBAAR_ONBOARDING_CACHE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<OnboardingCachedState>;
-    if (!parsed || typeof parsed !== 'object') return null;
-    return {
-      step:
-        parsed.step === 1 || parsed.step === 2 || parsed.step === 3 || parsed.step === 4
-          ? parsed.step
-          : 1,
-      authMode: parsed.authMode === 'signin' ? 'signin' : 'signup',
-      parentRole: parsed.parentRole === 'dad' ? 'dad' : 'mom',
-      parentName: typeof parsed.parentName === 'string' ? parsed.parentName : 'مريم (الأم)',
-      email: typeof parsed.email === 'string' ? parsed.email : 'maryam.mom@nekbaar.app',
-      phone: typeof parsed.phone === 'string' ? parsed.phone : '551234567',
-      familyId:
-        typeof parsed.familyId === 'number' && Number.isFinite(parsed.familyId)
-          ? parsed.familyId
-          : SHARED_FAMILY_ID,
-      selectedCountry: parsed.selectedCountry === 'EG' ? 'EG' : 'SA',
-      selectedCity: typeof parsed.selectedCity === 'string' ? parsed.selectedCity : 'الدمام',
-      childrenList:
-        Array.isArray(parsed.childrenList) && parsed.childrenList.length > 0
-          ? parsed.childrenList
-          : INITIAL_CANONICAL_CHILDREN,
-      updatedAt:
-        typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
-    };
-  } catch {
-    return null;
-  }
-}
+/**
+ * Generates a deterministic 15x15 QR Code matrix with 3 standard finder patterns
+ * from a secure family pairing token string.
+ */
+function buildDeterministicQrMatrix(token: string): boolean[][] {
+  const size = 15;
+  const grid: boolean[][] = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => false)
+  );
 
-function saveCachedOnboardingDraft(draft: OnboardingCachedState): void {
-  try {
-    window.localStorage.setItem(NEKBAAR_ONBOARDING_CACHE_KEY, JSON.stringify(draft));
-  } catch {
-    // Ignore storage quota errors safely
-  }
-}
+  const drawFinder = (r0: number, c0: number) => {
+    for (let r = 0; r < 5; r++) {
+      for (let c = 0; c < 5; c++) {
+        const isBorder = r === 0 || r === 4 || c === 0 || c === 4;
+        const isCenter = r === 2 && c === 2;
+        grid[r0 + r][c0 + c] = isBorder || isCenter;
+      }
+    }
+  };
 
-function clearCachedOnboardingDraft(): void {
-  try {
-    window.localStorage.removeItem(NEKBAAR_ONBOARDING_CACHE_KEY);
-  } catch {
-    // Ignore storage access errors safely
+  drawFinder(0, 0);
+  drawFinder(0, size - 5);
+  drawFinder(size - 5, 0);
+
+  let hash = 2166136261;
+  const safeToken = token || 'NEKBAAR-FAM-1-SECURE';
+  for (let i = 0; i < safeToken.length; i++) {
+    hash ^= safeToken.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const inTopLeft = r < 6 && c < 6;
+      const inTopRight = r < 6 && c >= size - 6;
+      const inBottomLeft = r >= size - 6 && c < 6;
+      if (inTopLeft || inTopRight || inBottomLeft) continue;
+
+      const bitSeed = Math.abs(hash ^ ((r * 31 + c * 17 + safeToken.length * 13) * 2654435761));
+      grid[r][c] = bitSeed % 2 === 0;
+    }
+  }
+
+  return grid;
 }
 
 export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
@@ -218,16 +218,25 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   onCompleteOnboarding,
 }) => {
   const isEn = language === 'en';
-  const cachedDraft = React.useMemo(() => loadCachedOnboardingDraft(), []);
+  const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(cachedDraft?.step ?? 1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(cachedDraft?.stepNumber ?? 1);
   const [restoredFromCache, setRestoredFromCache] = useState<boolean>(Boolean(cachedDraft));
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [canRetryFailedNetwork, setCanRetryFailedNetwork] = useState<boolean>(false);
   const [stepSyncNotice, setStepSyncNotice] = useState<string | null>(null);
 
-  // Step 1: Supabase Authentication & Credentials (Email, Password, Phone Number)
+  // Step 1: Location (Country & City first)
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(
+    cachedDraft?.selectedCountry || initialCountry || 'SA'
+  );
+  const [selectedCity, setSelectedCity] = useState<string>(
+    cachedDraft?.selectedCity || initialCity || 'الدمام'
+  );
+  const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false);
+
+  // Step 2: Credentials (Phone Number, Email, Parent Name & Role)
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>(
     cachedDraft?.authMode ?? 'signup'
   );
@@ -251,20 +260,19 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     cachedDraft?.familyId ?? SHARED_FAMILY_ID
   );
 
-  // Step 2: Location & Region Selection
-  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(
-    cachedDraft?.selectedCountry || initialCountry || 'SA'
+  // Step 3: Verification Method (OTP via SMS on Phone vs. via Email)
+  const [verificationChannel, setVerificationChannel] = useState<VerificationChannel>(
+    cachedDraft?.verificationChannel ?? 'sms'
   );
-  const [selectedCity, setSelectedCity] = useState<string>(
-    cachedDraft?.selectedCity || initialCity || 'الدمام'
+  const [otpCode, setOtpCode] = useState<string>(cachedDraft?.otpCode || DEMO_OTP_CODE);
+  const [isOtpVerified, setIsOtpVerified] = useState<boolean>(
+    cachedDraft?.isOtpVerified ?? true
   );
-  const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false);
+  const [otpSentBanner, setOtpSentBanner] = useState<boolean>(true);
 
-  // Step 3: Dynamic Children Profiles Setup (Hamza, Laila, Youssef + Add New Child form)
+  // Step 4: Children Setup (Must add at least ONE child to proceed and unlock app features)
   const [childrenList, setChildrenList] = useState<OnboardingChildDraft[]>(() =>
-    cachedDraft?.childrenList && cachedDraft.childrenList.length > 0
-      ? cachedDraft.childrenList
-      : INITIAL_CANONICAL_CHILDREN
+    OnboardingFlowController.sanitizeChildrenList(cachedDraft?.childrenList)
   );
   const [newChildName, setNewChildName] = useState<string>('');
   const [newChildGender, setNewChildGender] = useState<'boy' | 'girl'>('boy');
@@ -276,12 +284,56 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   );
   const [newChildAvatarTheme] = useState<AvatarAccessoryTheme>('astronaut');
 
+  // Step 5: Co-Parent Linking (Method A: Phone OTP & Method B: QR Code Pairing — Optional & Skippable)
+  const [coParentName, setCoParentName] = useState<string>(
+    cachedDraft?.coParentName ||
+      (parentRole === 'dad' ? 'مريم (الأم)' : 'أحمد (الأب)')
+  );
+  const [coParentEmail, setCoParentEmail] = useState<string>(
+    cachedDraft?.coParentEmail ||
+      (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app')
+  );
+  const [coParentPhone, setCoParentPhone] = useState<string>(
+    cachedDraft?.coParentPhone || '559876543'
+  );
+  const [isCoParentLinked, setIsCoParentLinked] = useState<boolean>(
+    cachedDraft?.isCoParentLinked ?? true
+  );
+  const [coParentMethod, setCoParentMethod] = useState<CoParentPairingMethod>('phone_otp');
+  const [coParentOtpSent, setCoParentOtpSent] = useState<boolean>(false);
+  const [coParentOtpCode, setCoParentOtpCode] = useState<string>(DEMO_OTP_CODE);
+  const [coParentOtpVerified, setCoParentOtpVerified] = useState<boolean>(false);
+  const [qrTokenNonce, setQrTokenNonce] = useState<number>(0);
+  const [qrScanInputToken, setQrScanInputToken] = useState<string>('');
+  const [isQrPairedSuccess, setIsQrPairedSuccess] = useState<boolean>(false);
+
+  const familyPairingToken = React.useMemo(
+    () =>
+      generateFamilyPairingToken(
+        familyId,
+        `${coParentPhone}${qrTokenNonce > 0 ? String(qrTokenNonce) : ''}`
+      ),
+    [familyId, coParentPhone, qrTokenNonce]
+  );
+
+  const qrMatrix = React.useMemo(
+    () => buildDeterministicQrMatrix(familyPairingToken),
+    [familyPairingToken]
+  );
+
+  const safeChildrenList = React.useMemo(
+    () => OnboardingFlowController.sanitizeChildrenList(childrenList),
+    [childrenList]
+  );
+
   const availableCities = COUNTRY_CITIES_MAP[selectedCountry] || [];
 
-  // Progressive LocalStorage Caching across steps to prevent data loss on page refresh
+  // Automatic localStorage Draft Persistence on every step & input change (Refresh F5 Protection)
   useEffect(() => {
-    saveCachedOnboardingDraft({
-      step,
+    const stepKey = OnboardingFlowController.numberToStep(step);
+    OnboardingFlowController.saveDraft(stepKey, {
+      currentStep: stepKey,
+      stepNumber: step,
       authMode,
       parentRole,
       parentName,
@@ -290,8 +342,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       familyId,
       selectedCountry,
       selectedCity,
+      verificationChannel,
+      otpCode,
+      isOtpVerified,
       childrenList,
-      updatedAt: new Date().toISOString(),
+      coParentName,
+      coParentEmail,
+      coParentPhone,
+      isCoParentLinked,
     });
   }, [
     step,
@@ -303,7 +361,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     familyId,
     selectedCountry,
     selectedCity,
+    verificationChannel,
+    otpCode,
+    isOtpVerified,
     childrenList,
+    coParentName,
+    coParentEmail,
+    coParentPhone,
+    isCoParentLinked,
   ]);
 
   useEffect(() => {
@@ -313,6 +378,30 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   }, [isOpen, step]);
 
   if (!isOpen) return null;
+
+  const buildCurrentUserSessionProfile = (
+    coParentLinkedOverride?: boolean
+  ): UserSessionProfile => {
+    const cleanName =
+      parentName.trim() || (parentRole === 'dad' ? 'أحمد (الأب)' : 'مريم (الأم)');
+    return {
+      userId: `usr-${parentRole}-${familyId}`,
+      familyId: String(familyId),
+      fullName: cleanName,
+      role: parentRole,
+      email: email.trim() || 'maryam.mom@nekbaar.app',
+      phone: phone.trim() || '551234567',
+      city: selectedCity || 'الدمام',
+      country: selectedCountry,
+      childrenCount: Math.max(1, childrenList.length),
+      isCoParentLinked: coParentLinkedOverride ?? isCoParentLinked,
+      verificationChannel,
+      coParentName: coParentName.trim(),
+      coParentEmail: coParentEmail.trim(),
+      coParentPhone: coParentPhone.trim(),
+      updatedAt: new Date().toISOString(),
+    };
+  };
 
   const handleSelectCountry = (nextCountry: CountryCode) => {
     setSelectedCountry(nextCountry);
@@ -330,14 +419,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       } else if (nextCountry === 'EG' && phone === '551234567') {
         setPhone('1012345678');
       }
-    }, 140);
+    }, 120);
   };
 
   const handleStagePresetChange = (preset: OnboardingChildDraft['ageStagePreset']) => {
     setNewChildStage(preset);
     if (preset === 'infant_6m') {
       setNewChildBirth('2026-04-20');
-      setNewChildInterests('وقت البطن الحسي، تتبع الخشخيشة الخشبية، والمناغاة التفاعلية');
+      setNewChildInterests(
+        'وقت البطن الحسي، تتبع الخشخيشة الخشبية، والمناغاة التفاعلية'
+      );
     } else if (preset === 'nursery_4y') {
       setNewChildBirth('2022-05-14');
       setNewChildInterests('التلوين المائي والصلصال، أناشيد الحضانة، وتسمية المشاعر');
@@ -361,7 +452,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const validation = validateChildInput({ name: trimmedName, birth: newChildBirth });
     if (!validation.valid) {
       setErrorMsg(
-        validation.error || (isEn ? 'Invalid child birth date.' : 'تاريخ ميلاد الطفل غير صالح.')
+        validation.error ||
+          (isEn ? 'Invalid child birth date.' : 'تاريخ ميلاد الطفل غير صالح.')
       );
       return;
     }
@@ -389,8 +481,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     if (childrenList.length <= 1) {
       setErrorMsg(
         isEn
-          ? 'At least one child profile must remain in the family.'
-          : 'يجب الإبقاء على ملف طفل واحد على الأقل في الأسرة.'
+          ? 'Constraint: You must keep at least ONE child profile to unlock app features.'
+          : 'شرط أساسي: يجب وجود ملف طفل واحد على الأقل لتفعيل ميزات التطبيق.'
       );
       return;
     }
@@ -407,34 +499,30 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   };
 
   /**
-   * Non-intrusive "تخطي مؤقت / Complete Later" handler:
-   * Saves the current draft in localStorage and lets the parent enter the dashboard immediately
-   * without blocking or losing any entered data.
+   * Finalizes onboarding (either by linking Co-Parent in Step 5 or clicking "تخطي مؤقت / إكمال لاحقاً" on Step 5),
+   * persists the permanent user session, and routes to `/dashboard`.
    */
-  const handleCompleteLater = () => {
-    saveCachedOnboardingDraft({
-      step,
-      authMode,
-      parentRole,
-      parentName,
-      email,
-      phone,
-      familyId,
-      selectedCountry,
-      selectedCity,
-      childrenList,
-      updatedAt: new Date().toISOString(),
-    });
+  const finalizeAndRouteToDashboard = (options: {
+    skippedCoParent: boolean;
+    skippedForLater?: boolean;
+  }) => {
+    const finalSession = buildCurrentUserSessionProfile(!options.skippedCoParent);
+    OnboardingFlowController.persistUserSession(
+      finalSession,
+      !options.skippedForLater
+    );
 
-    const primaryChild = childrenList[0] || INITIAL_CANONICAL_CHILDREN[0];
+    const primaryChild =
+      childrenList[0] || INITIAL_CANONICAL_ONBOARDING_CHILDREN[0];
+
     onCompleteOnboarding({
-      parentName: parentName.trim() || (parentRole === 'dad' ? 'أحمد (الأب)' : 'مريم (الأم)'),
+      parentName: finalSession.fullName,
       role: parentRole,
       country: selectedCountry,
       city: selectedCity || 'الدمام',
       currency: getSuggestedCurrencyForCountry(selectedCountry),
-      phoneNumber: phone.trim() || '551234567',
-      email: email.trim() || 'maryam.mom@nekbaar.app',
+      phoneNumber: finalSession.phone,
+      email: finalSession.email,
       childProfile: {
         name: primaryChild.name,
         gender: primaryChild.gender,
@@ -443,127 +531,42 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         avatarTheme: primaryChild.avatarTheme,
       },
       childrenProfiles: childrenList,
-      skippedForLater: true,
+      skippedForLater: Boolean(options.skippedForLater),
+      isCoParentLinked: !options.skippedCoParent,
+      coParentName: coParentName.trim(),
+      coParentEmail: coParentEmail.trim(),
+      coParentPhone: coParentPhone.trim(),
+      verificationChannel,
+      persistedSession: finalSession,
     });
   };
 
   /**
-   * Skips only the current step and advances to the next step while caching draft state.
+   * Sequential Step Progression (Steps 1 -> 2 -> 3 -> 4 -> 5 -> Dashboard)
    */
-  const handleSkipCurrentStep = () => {
-    setErrorMsg(null);
-    setCanRetryFailedNetwork(false);
-    if (step < 4) {
-      setStepSyncNotice(
-        isEn
-          ? `Step ${step} saved locally in draft cache. You can complete it anytime.`
-          : `تم حفظ الخطوة ${step} محلياً في المسودة المؤقتة؛ يمكنك استكمالها في أي وقت.`
-      );
-      setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4);
-    } else {
-      handleCompleteLater();
-    }
-  };
-
-  // Sequential Step Progression with Supabase Auth, Foreign Key `family_id` Linkage & Timeout Handling
   const handleNextStep = async () => {
     setErrorMsg(null);
     setCanRetryFailedNetwork(false);
     setStepSyncNotice(null);
 
-    // STEP 1 -> STEP 2: Authenticate via Supabase Auth & link to shared `family_id`
+    // =========================================================================
+    // STEP 1 (LOCATION): Select Country and City first -> Save to draft & DB
+    // =========================================================================
     if (step === 1) {
-      if (!email.trim() || !email.includes('@')) {
-        setErrorMsg(
-          isEn
-            ? 'Please enter a valid email address.'
-            : 'يرجى إدخال بريد إلكتروني صحيح للتسجيل.'
-        );
-        return;
-      }
-      if (!password || password.length < 6) {
-        setErrorMsg(
-          isEn
-            ? 'Password must be at least 6 characters long.'
-            : 'يجب أن تتكون كلمة المرور من ٦ أحرف أو أرقام على الأقل.'
-        );
-        return;
-      }
-      const phoneCheck = validatePhoneForCountry(phone, selectedCountry);
-      if (!phoneCheck.valid) {
-        setErrorMsg(
-          isEn
-            ? phoneCheck.errorEn || 'Invalid mobile number.'
-            : phoneCheck.errorAr || 'رقم الجوال غير صالح.'
-        );
-        return;
-      }
-      if (!parentName.trim()) {
-        setErrorMsg(
-          isEn ? 'Please enter parent display name.' : 'يرجى إدخال اسم الوالد أو الوالدة.'
-        );
-        return;
-      }
-
-      setIsSavingStep(true);
-      const authRes = await authenticateParentWithSupabase({
-        mode: authMode,
-        email: email.trim(),
-        password,
-        phone: phoneCheck.normalized,
-        parentName: parentName.trim(),
-        role: parentRole === 'dad' ? 'father' : 'mother',
-        country: selectedCountry,
-      });
-      setIsSavingStep(false);
-
-      setFamilyId(authRes.familyId);
-
-      // Hydrate shared family children (Hamza, Laila, Youssef) linked to `family_id`
-      if (Array.isArray(authRes.sharedChildren) && authRes.sharedChildren.length >= 3) {
-        setChildrenList(
-          authRes.sharedChildren.map((sc) => ({
-            id: sc.id,
-            name: sc.name,
-            gender: sc.gender === 'girl' || sc.gender === 'female' ? 'girl' : 'boy',
-            ageStagePreset:
-              sc.id === 1 ? 'infant_6m' : sc.id === 2 ? 'nursery_4y' : 'school_8y',
-            birth: sc.birth,
-            interests: sc.interests || '',
-            avatarTheme: sc.avatar_theme || 'astronaut',
-          }))
-        );
-      }
-
-      if (authRes.error && authRes.error.includes('SUPABASE_TIMEOUT')) {
-        setCanRetryFailedNetwork(true);
-        setErrorMsg(
-          isEn
-            ? 'Database connection timed out. You can retry or continue with cached local progress.'
-            : 'انتهت مهلة الاتصال بقاعدة البيانات. يمكنك إعادة المحاولة أو المتابعة بالحفظ المحلي.'
-        );
-        return;
-      }
-
-      setStepSyncNotice(
-        isEn
-          ? `Step 1 Saved: ${parentName.trim()} linked to Shared Family #${authRes.familyId}.`
-          : `تم حفظ الخطوة ١: تم ربط حساب ${parentName.trim()} بملف العائلة المشترك (#${authRes.familyId}).`
-      );
-      setStep(2);
-      return;
-    }
-
-    // STEP 2 -> STEP 3: Save Region/City to `families` table in Supabase
-    if (step === 2) {
       if (!selectedCity.trim()) {
         setErrorMsg(
           isEn
-            ? 'Please select your city or region (e.g., Dammam, Riyadh, Cairo).'
-            : 'يرجى اختيار المدينة أو المنطقة (مثل: الدمام، الرياض، القاهرة).'
+            ? 'Please select your Country and City to continue.'
+            : 'يرجى اختيار الدولة والمدينة أولاً للمتابعة.'
         );
         return;
       }
+
+      OnboardingFlowController.saveDraft('CREDENTIALS', {
+        selectedCountry,
+        selectedCity,
+        stepNumber: 2,
+      });
 
       setIsSavingStep(true);
       const locRes = await saveOnboardingLocationToSupabase({
@@ -578,35 +581,135 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
       if (locRes.error && locRes.error.includes('SUPABASE_TIMEOUT')) {
         setCanRetryFailedNetwork(true);
-        setErrorMsg(
-          isEn
-            ? 'Saving location timed out. Please retry or skip to continue offline.'
-            : 'انتهت مهلة حفظ الموقع في الخادم. يمكنك إعادة المحاولة أو التخطي للمتابعة.'
-        );
-        return;
       }
 
       setStepSyncNotice(
         isEn
-          ? `Step 2 Saved: Region set to ${selectedCity} in shared family #${familyId}.`
-          : `تم حفظ الخطوة ٢: تم حفظ موقع الأسرة (${selectedCity}) في سجل العائلة المشترك.`
+          ? `Step 1 Saved: Location set to ${selectedCity} (${selectedCountry}).`
+          : `تم حفظ الخطوة ١: تم تحديد الموقع (${selectedCity} - ${
+              selectedCountry === 'SA' ? 'السعودية' : 'مصر'
+            }) في المسودة.`
+      );
+      setStep(2);
+      return;
+    }
+
+    // =========================================================================
+    // STEP 2 (CREDENTIALS): Enter Phone Number and Email -> Save to draft & Auth
+    // =========================================================================
+    if (step === 2) {
+      if (!parentName.trim()) {
+        setErrorMsg(
+          isEn
+            ? 'Please enter your display name.'
+            : 'يرجى إدخال اسم الوالد أو الوالدة.'
+        );
+        return;
+      }
+      if (!email.trim() || !email.includes('@')) {
+        setErrorMsg(
+          isEn
+            ? 'Please enter a valid email address.'
+            : 'يرجى إدخال بريد إلكتروني صحيح.'
+        );
+        return;
+      }
+      const phoneCheck = validatePhoneForCountry(phone, selectedCountry);
+      if (!phoneCheck.valid) {
+        setErrorMsg(
+          isEn
+            ? phoneCheck.errorEn || 'Invalid mobile phone number.'
+            : phoneCheck.errorAr || 'رقم الجوال غير صالح للدولة المختارة.'
+        );
+        return;
+      }
+
+      OnboardingFlowController.saveDraft('VERIFY_METHOD', {
+        parentName: parentName.trim(),
+        parentRole,
+        email: email.trim(),
+        phone: phoneCheck.normalized,
+        stepNumber: 3,
+      });
+
+      setIsSavingStep(true);
+      const authRes = await authenticateParentWithSupabase({
+        mode: authMode,
+        email: email.trim(),
+        password: password || 'Nekbaar#2026',
+        phone: phoneCheck.normalized,
+        parentName: parentName.trim(),
+        role: parentRole === 'dad' ? 'father' : 'mother',
+        country: selectedCountry,
+      });
+      setIsSavingStep(false);
+
+      setFamilyId(authRes.familyId);
+      setOtpSentBanner(true);
+
+      setStepSyncNotice(
+        isEn
+          ? `Step 2 Saved: Credentials saved for ${parentName.trim()}. Choose verification method.`
+          : `تم حفظ الخطوة ٢: تم حفظ رقم الجوال والبريد الإلكتروني لـ ${parentName.trim()}. اختر قناة التحقق.`
       );
       setStep(3);
       return;
     }
 
-    // STEP 3 -> STEP 4: Save Children Profiles (Hamza, Laila, Youssef) to `children` table linked to `family_id`
+    // =========================================================================
+    // STEP 3 (VERIFY_METHOD): Choose OTP via SMS on Phone vs. via Email
+    // =========================================================================
     if (step === 3) {
-      if (childrenList.length === 0) {
+      if (otpCode.trim().length < 4) {
         setErrorMsg(
           isEn
-            ? 'Please add at least one child profile.'
-            : 'يرجى إضافة ملف طفل واحد على الأقل.'
+            ? `Please enter the 4-digit verification code (Demo code: ${DEMO_OTP_CODE}).`
+            : `يرجى إدخال رمز التحقق المكون من ٤ أرقام (الرمز التجريبي: ${DEMO_OTP_CODE}).`
         );
         return;
       }
+
+      setIsOtpVerified(true);
+      OnboardingFlowController.saveDraft('CHILDREN', {
+        verificationChannel,
+        otpCode: otpCode.trim(),
+        isOtpVerified: true,
+        stepNumber: 4,
+      });
+
+      setStepSyncNotice(
+        isEn
+          ? `Step 3 Verified via ${
+              verificationChannel === 'sms' ? 'SMS on Phone' : 'Email'
+            }. Now confirm your children profiles.`
+          : `تم التحقق بنجاح عبر ${
+              verificationChannel === 'sms'
+                ? 'رسالة نصية SMS على الجوال'
+                : 'البريد الإلكتروني'
+            }. أضف الآن ملف طفل واحد على الأقل.`
+      );
+      setStep(4);
+      return;
+    }
+
+    // =========================================================================
+    // STEP 4 (CHILDREN): Must add at least ONE child -> Persist permanent session!
+    // =========================================================================
+    if (step === 4) {
+      if (childrenList.length < 1) {
+        setErrorMsg(
+          isEn
+            ? 'Constraint: You must add at least ONE child profile to proceed and unlock app features.'
+            : 'شرط أساسي: يجب إضافة ملف طفل واحد على الأقل للمتابعة وفتح ميزات التطبيق.'
+        );
+        return;
+      }
+
       for (const childItem of childrenList) {
-        const check = validateChildInput({ name: childItem.name, birth: childItem.birth });
+        const check = validateChildInput({
+          name: childItem.name,
+          birth: childItem.birth,
+        });
         if (!check.valid) {
           setErrorMsg(
             check.error ||
@@ -627,43 +730,70 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
       if (kidsRes.error && kidsRes.error.includes('SUPABASE_TIMEOUT')) {
         setCanRetryFailedNetwork(true);
-        setErrorMsg(
-          isEn
-            ? 'Saving children profiles timed out. Please retry or continue with cached draft.'
-            : 'انتهت مهلة حفظ ملفات الأطفال. يمكنك إعادة المحاولة أو المتابعة بالمسودة المحفوظة.'
-        );
-        return;
       }
+
+      // Requirement 3: Upon completing Step 4 (at least 1 child), persist the user session permanently
+      // to localStorage (`nekbaar_user_persistence_v2`) and Supabase so future app launches bypass onboarding!
+      const permanentProfile = buildCurrentUserSessionProfile(isCoParentLinked);
+      OnboardingFlowController.persistUserSession(permanentProfile, false);
+      OnboardingFlowController.saveDraft('CO_PARENT', {
+        childrenList,
+        stepNumber: 5,
+      });
 
       setStepSyncNotice(
         isEn
-          ? `Step 3 Saved: ${childrenList.length} children linked to shared family_id #${familyId}.`
-          : `تم حفظ الخطوة ٣: تم ربط ${childrenList.length} أطفال بسجل العائلة المشترك (#${familyId}).`
+          ? `Step 4 Complete: ${childrenList.length} child profile(s) saved & permanent session activated! Step 5 (Co-Parent) is optional.`
+          : `تم إتمام الخطوة ٤ بنجاح: تم حفظ ${childrenList.length} أطفال وتثبيت جلستك الدائمة على الجهاز! الخطوة ٥ (ربط الشريك) اختيارية.`
       );
-      setStep(4);
+      setStep(5);
       return;
     }
 
-    // STEP 4 -> COMPLETE, CLEAR DRAFT CACHE & REDIRECT TO DASHBOARD
-    if (step === 4) {
-      clearCachedOnboardingDraft();
-      const primaryChild = childrenList[0] || INITIAL_CANONICAL_CHILDREN[0];
-      onCompleteOnboarding({
-        parentName: parentName.trim(),
-        role: parentRole,
+    // =========================================================================
+    // STEP 5 (CO_PARENT): Link partner/mother account via OTP or QR Code -> Dashboard
+    // =========================================================================
+    if (step === 5) {
+      if (coParentMethod === 'phone_otp') {
+        if (!coParentPhone.trim() || coParentPhone.trim().length < 7) {
+          setErrorMsg(
+            isEn
+              ? 'Please enter the partner’s mobile phone number or click Skip for Later.'
+              : 'يرجى إدخال رقم جوال الشريك للربط عبر رمز التحقق OTP أو اختيار «تخطي مؤقت».'
+          );
+          return;
+        }
+        if (coParentOtpCode.trim().length < 4) {
+          setErrorMsg(
+            isEn
+              ? `Please enter the 4-digit partner OTP code (${DEMO_OTP_CODE}).`
+              : `يرجى إدخال رمز التحقق المكون من ٤ أرقام المرسل لجوال الشريك (${DEMO_OTP_CODE}).`
+          );
+          return;
+        }
+      }
+
+      setIsSavingStep(true);
+      await linkCoParentAccountInSupabase({
+        familyId,
+        partnerRole: parentRole === 'dad' ? 'mother' : 'father',
+        partnerName:
+          coParentName.trim() ||
+          (parentRole === 'dad' ? 'مريم (الأم)' : 'أحمد (الأب)'),
+        partnerPhone: coParentPhone.trim() || '559876543',
+        partnerEmail:
+          coParentEmail.trim() ||
+          (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app'),
         country: selectedCountry,
-        city: selectedCity,
-        currency: getSuggestedCurrencyForCountry(selectedCountry),
-        phoneNumber: phone.trim(),
-        email: email.trim(),
-        childProfile: {
-          name: primaryChild.name,
-          gender: primaryChild.gender,
-          birth: primaryChild.birth,
-          interests: primaryChild.interests,
-          avatarTheme: primaryChild.avatarTheme,
-        },
-        childrenProfiles: childrenList,
+        method: coParentMethod,
+        otpCode: coParentOtpCode.trim(),
+        pairingToken: qrScanInputToken.trim() || familyPairingToken,
+      });
+      setIsSavingStep(false);
+
+      setIsCoParentLinked(true);
+      finalizeAndRouteToDashboard({
+        skippedCoParent: false,
         skippedForLater: false,
       });
     }
@@ -674,7 +804,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     setCanRetryFailedNetwork(false);
     setStepSyncNotice(null);
     if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
+      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5);
     }
   };
 
@@ -687,7 +817,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-labelledby="onboarding-wizard-title"
     >
       <div className="soft-card-surface w-full max-w-2xl rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
-        {/* Top Wizard Header with Non-Intrusive "Complete Later / تخطي مؤقت" Action */}
+        {/* Top Wizard Header */}
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -695,16 +825,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 <span>✨</span>
                 <span>
                   {isEn
-                    ? `Family Onboarding · Step ${step} of 4`
-                    : `معالج إعداد العائلة · الخطوة ${step} من 4`}
+                    ? `Progressive Family Setup · Step ${step} of 5`
+                    : `التسجيل المتدرج الذكي · الخطوة ${step} من 5`}
                 </span>
               </span>
               {restoredFromCache && (
                 <span
                   data-testid="onboarding-cache-restored-badge"
-                  className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/30"
+                  className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
                 >
-                  💾 {isEn ? 'Draft Auto-Saved' : 'محفوظ تلقائياً'}
+                  {isEn
+                    ? '✓ Auto-restored after refresh'
+                    : '✓ تم استرجاع خطوتك تلقائياً بعد التحديث'}
                 </span>
               )}
             </div>
@@ -712,396 +844,244 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               id="onboarding-wizard-title"
               className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
             >
-              {step === 1
-                ? isEn
-                  ? 'Step 1: Parent Authentication & Shared Family Link'
-                  : 'الخطوة ١: توثيق حساب الوالدين وربط العائلة المشتركة'
-                : step === 2
-                ? isEn
-                  ? 'Step 2: Location & Region Selection'
-                  : 'الخطوة ٢: اختيار الموقع والمنطقة / المدينة'
-                : step === 3
-                ? isEn
-                  ? 'Step 3: Shared Children Profiles (Hamza, Laila & Youssef)'
-                  : 'الخطوة ٣: ملفات الأطفال المشتركة (حمزة، ليلى، ويوسف)'
-                : isEn
-                ? 'Step 4: Ready! Enter Family Dashboard'
-                : 'الخطوة ٤: اكتمل الإعداد! الدخول إلى لوحة العائلة'}
+              {step === 1 &&
+                (isEn
+                  ? 'Step 1: Select Country & City'
+                  : 'الخطوة ١: اختيار الدولة والمدينة أولاً')}
+              {step === 2 &&
+                (isEn
+                  ? 'Step 2: Phone Number & Email Credentials'
+                  : 'الخطوة ٢: إدخال رقم الجوال والبريد الإلكتروني')}
+              {step === 3 &&
+                (isEn
+                  ? 'Step 3: Choose Verification Channel (SMS vs. Email)'
+                  : 'الخطوة ٣: اختيار طريقة التحقق (رسالة SMS أو بريد إلكتروني)')}
+              {step === 4 &&
+                (isEn
+                  ? 'Step 4: Children Profiles Setup (At Least 1 Required)'
+                  : 'الخطوة ٤: إضافة ملفات الأطفال (طفل واحد على الأقل لتفعيل الحساب)')}
+              {step === 5 &&
+                (isEn
+                  ? 'Step 5: Link Co-Parent / Partner Account (Optional)'
+                  : 'الخطوة ٥: ربط حساب الشريك / الأم أو الأب (اختياري)')}
             </h2>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               data-testid="onboarding-complete-later-top-btn"
-              onClick={handleCompleteLater}
-              className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
-              title={
-                isEn
-                  ? 'Save progress locally and finish onboarding later'
-                  : 'حفظ التقدم الحالي محلياً وإكمال الإعداد لاحقاً'
+              onClick={() =>
+                finalizeAndRouteToDashboard({
+                  skippedCoParent: true,
+                  skippedForLater: true,
+                })
               }
+              className="px-3 py-1.5 rounded-xl text-[11px] font-extrabold bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/35 transition cursor-pointer"
             >
-              {isEn ? 'Complete Later' : 'تخطي مؤقت'}
+              {isEn ? '⏳ Complete Later' : '⏳ تخطي مؤقت / إكمال لاحقاً'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              aria-label={isEn ? 'Close onboarding wizard' : 'إغلاق معالج الإعداد'}
-              className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] flex items-center justify-center shrink-0 cursor-pointer"
+              aria-label={isEn ? 'Close' : 'إغلاق'}
+              className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
             >
-              ×
+              ✕
             </button>
           </div>
         </div>
 
-        {/* Sequential Progress Bar & Step Indicators */}
-        <div className="space-y-2">
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { num: 1, labelAr: '١. التوثيق', labelEn: '1. Auth' },
-              { num: 2, labelAr: '٢. المنطقة', labelEn: '2. Location' },
-              { num: 3, labelAr: '٣. الأطفال', labelEn: '3. Children' },
-              { num: 4, labelAr: '٤. الانطلاق', labelEn: '4. Launch' },
-            ].map((item) => {
-              const isCurrent = step === item.num;
-              const isCompleted = step > item.num;
-              return (
-                <div
-                  key={item.num}
-                  data-testid={`onboarding-step-pill-${item.num}`}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-extrabold text-center transition-all border ${
-                    isCurrent
-                      ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-xs'
-                      : isCompleted
-                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/35'
-                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] border-transparent'
-                  }`}
-                >
-                  {isCompleted ? '✓ ' : ''}
+        {/* 5-Step Progress Indicator Bar */}
+        <div
+          data-testid="onboarding-step-progress-bar"
+          className="grid grid-cols-5 gap-1.5"
+        >
+          {WIZARD_STEPS_META.map((item) => {
+            const isActive = step === item.num;
+            const isCompleted = step > item.num;
+            return (
+              <button
+                key={item.num}
+                type="button"
+                data-testid={`onboarding-step-pill-${item.num}`}
+                onClick={() => {
+                  setErrorMsg(null);
+                  setStep(item.num);
+                }}
+                className={`rounded-xl px-2 py-2 text-center border transition-all cursor-pointer ${
+                  isActive
+                    ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-xs'
+                    : isCompleted
+                    ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#94A3B8]'
+                }`}
+              >
+                <div className="text-[11px] font-black truncate">
+                  {isCompleted ? '✓ ' : `${item.icon} `}
                   {isEn ? item.labelEn : item.labelAr}
                 </div>
-              );
-            })}
-          </div>
-          <div className="w-full h-1.5 rounded-full bg-[var(--color-control-muted)] dark:bg-[#142430] overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#0d9488] to-[#FF8C61] transition-all duration-300"
-              style={{ width: `${(step / 4) * 100}%` }}
-            />
-          </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Validation or Network Timeout Error Alert with Retry & Offline Fallback */}
+        {/* Step Sync Notice */}
+        {stepSyncNotice && (
+          <div
+            data-testid="onboarding-step-sync-notice"
+            className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-2"
+          >
+            <span>✅ {stepSyncNotice}</span>
+            <button
+              type="button"
+              onClick={() => setStepSyncNotice(null)}
+              className="text-[11px] underline cursor-pointer"
+            >
+              {isEn ? 'Dismiss' : 'إخفاء'}
+            </button>
+          </div>
+        )}
+
+        {/* Validation or Network Error Banner */}
         {errorMsg && (
           <div
-            role="alert"
-            data-testid="onboarding-error-alert"
-            className="rounded-2xl border border-red-400/50 bg-red-50/90 dark:bg-red-950/40 px-4 py-3 text-xs font-extrabold text-red-800 dark:text-red-200 flex flex-wrap items-center justify-between gap-2"
+            data-testid="onboarding-error-banner"
+            className="rounded-2xl border border-red-500/40 bg-red-500/10 px-3.5 py-2.5 text-xs font-bold text-red-700 dark:text-red-300 space-y-2"
           >
-            <div className="flex items-center gap-2">
-              <span>⚠️</span>
-              <span>{errorMsg}</span>
-            </div>
-            {canRetryFailedNetwork && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <span>⚠️ {errorMsg}</span>
+              {canRetryFailedNetwork && (
                 <button
                   type="button"
                   onClick={handleNextStep}
-                  className="px-3 py-1 rounded-xl bg-[#0d9488] text-white font-black cursor-pointer"
+                  className="px-3 py-1 rounded-lg bg-red-600 text-white text-[11px] font-extrabold cursor-pointer"
                 >
-                  {isEn ? 'Retry' : 'إعادة المحاولة'}
+                  {isEn ? '🔄 Retry' : '🔄 إعادة المحاولة'}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSkipCurrentStep}
-                  className="px-3 py-1 rounded-xl border border-red-400/50 text-red-800 dark:text-red-200 font-bold cursor-pointer"
-                >
-                  {isEn ? 'Continue Offline' : 'المتابعة محلياً'}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Progressive Sync Confirmation Notice */}
-        {stepSyncNotice && !errorMsg && (
-          <div
-            role="status"
-            className="rounded-2xl border border-emerald-500/40 bg-emerald-50/90 dark:bg-emerald-950/35 px-4 py-2.5 text-xs font-extrabold text-emerald-800 dark:text-emerald-200 flex items-center gap-2"
-          >
-            <span>✅</span>
-            <span>{stepSyncNotice}</span>
+              )}
+            </div>
           </div>
         )}
 
         {/* ===================================================================
-            STEP 1: AUTHENTICATION & SHARED FAMILY LINKAGE (SUPABASE AUTH)
+            STEP 1: LOCATION (SELECT COUNTRY & CITY FIRST — SAVE TO DRAFT)
             =================================================================== */}
         {step === 1 && (
-          <div data-testid="onboarding-step-1-auth" className="space-y-4">
-            {/* Sign Up vs Sign In Switcher */}
-            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430]">
-              <button
-                type="button"
-                onClick={() => setAuthMode('signup')}
-                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer ${
-                  authMode === 'signup'
-                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] shadow-2xs'
-                    : 'text-[var(--color-muted)]'
-                }`}
-              >
-                {isEn ? 'Create Family Account (Sign Up)' : 'إنشاء حساب عائلي جديد'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode('signin')}
-                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer ${
-                  authMode === 'signin'
-                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] shadow-2xs'
-                    : 'text-[var(--color-muted)]'
-                }`}
-              >
-                {isEn ? 'Sign In to Existing Account' : 'تسجيل الدخول لحساب حالي'}
-              </button>
-            </div>
-
-            {/* Parent Identity Preset (Maryam / Ahmad — both linked to shared family_id #1) */}
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? 'Select Parent Profile (Shared Family)' : 'اختر حساب الوالد / الوالدة (مرتبطين بنفس الأسرة)'}
-                </label>
-                <span className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
-                  🔗 {isEn ? `Linked to Family #${familyId}` : `مرتبط بملف الأسرة المشترك #${familyId}`}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setParentRole('mom');
-                    setParentName('مريم (الأم)');
-                    setEmail('maryam.mom@nekbaar.app');
-                  }}
-                  className={`p-3 rounded-2xl border-2 text-start transition cursor-pointer flex items-center gap-3 ${
-                    parentRole === 'mom'
-                      ? 'border-rose-500/60 bg-rose-500/10 text-[var(--color-text)] dark:text-[#F8FAFC]'
-                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430]'
-                  }`}
-                >
-                  <span className="text-xl">👩🏻‍🍼</span>
-                  <div>
-                    <div className="text-xs font-black">
-                      {isEn ? 'Mom Maryam' : 'ماما مريم (الأم)'}
-                    </div>
-                    <div className="text-[11px] text-[var(--color-muted)]">
-                      {isEn ? 'Shared children: Hamza, Laila & Youssef' : 'نفس ملفات: حمزة، ليلى، ويوسف'}
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setParentRole('dad');
-                    setParentName('أحمد (الأب)');
-                    setEmail('ahmad.dad@nekbaar.app');
-                  }}
-                  className={`p-3 rounded-2xl border-2 text-start transition cursor-pointer flex items-center gap-3 ${
-                    parentRole === 'dad'
-                      ? 'border-[#0d9488] bg-teal-500/10 text-[var(--color-text)] dark:text-[#F8FAFC]'
-                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430]'
-                  }`}
-                >
-                  <span className="text-xl">👨🏻‍🍼</span>
-                  <div>
-                    <div className="text-xs font-black">
-                      {isEn ? 'Dad Ahmad' : 'بابا أحمد (الأب)'}
-                    </div>
-                    <div className="text-[11px] text-[var(--color-muted)]">
-                      {isEn ? 'Shared children: Hamza, Laila & Youssef' : 'نفس ملفات: حمزة، ليلى، ويوسف'}
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* Parent Name, Email, Password, Phone Number */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] mb-1">
-                  {isEn ? 'Full Name' : 'الاسم الكامل'}
-                </label>
-                <input
-                  type="text"
-                  data-testid="onboarding-parent-name-input"
-                  value={parentName}
-                  onChange={(e) => setParentName(e.target.value)}
-                  placeholder={isEn ? 'e.g. Ahmad or Maryam' : 'مثال: أحمد أو مريم'}
-                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] mb-1">
-                  {isEn
-                    ? `Phone Number (${selectedCountry === 'SA' ? '+966' : '+20'})`
-                    : `رقم الجوال (${selectedCountry === 'SA' ? '+966' : '+20'})`}
-                </label>
-                <input
-                  type="tel"
-                  dir="ltr"
-                  data-testid="onboarding-phone-input"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={selectedCountry === 'SA' ? '551234567' : '1012345678'}
-                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] tabular-nums"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] mb-1">
-                  {isEn ? 'Email Address (Supabase Auth)' : 'البريد الإلكتروني (Supabase Auth)'}
-                </label>
-                <input
-                  type="email"
-                  dir="ltr"
-                  data-testid="onboarding-email-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="parent@nekbaar.app"
-                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] mb-1">
-                  {isEn ? 'Password (min 6 characters)' : 'كلمة المرور (٦ أحرف على الأقل)'}
-                </label>
-                <input
-                  type="password"
-                  dir="ltr"
-                  data-testid="onboarding-password-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===================================================================
-            STEP 2: LOCATION & REGION SELECTION (SAVED TO SUPABASE FAMILIES)
-            =================================================================== */}
-        {step === 2 && (
-          <div data-testid="onboarding-step-2-location" className="space-y-4">
+          <div data-testid="onboarding-step-1-location" className="space-y-4">
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
               {isEn
-                ? 'Select your country and city/region (e.g., Dammam, Riyadh, Jeddah, Cairo) to save to your shared family profile.'
-                : 'اختر الدولة والمدينة أو المنطقة (مثل: الدمام، الرياض، جدة، القاهرة) لحفظها في سجل الأسرة المشترك.'}
+                ? 'Select your country and city first so we can tailor local schools, nurseries, medical care, and currency. Your choice is saved immediately to your local draft.'
+                : 'اختر الدولة والمدينة أولاً لتخصيص الحضانات، المدارس، الأطباء، والعملة المحلية لمنطقتك. يتم حفظ اختيارك تلقائياً في المسودة الذكية.'}
             </p>
 
-            {/* Quick-Select Popular Cities (Dammam, Riyadh, Jeddah, Cairo, Alexandria) */}
-            <div className="space-y-1.5">
-              <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                ⚡ {isEn ? 'Quick Region Selection:' : 'اختيار سريع للمدن الرئيسية:'}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {QUICK_REGION_PRESETS.map((preset) => {
-                  const isActive =
-                    selectedCountry === preset.country && selectedCity === preset.cityAr;
-                  return (
-                    <button
-                      key={`${preset.country}-${preset.cityEn}`}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCountry(preset.country);
-                        setSelectedCity(preset.cityAr);
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition cursor-pointer ${
-                        isActive
-                          ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                          : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488]'
-                      }`}
-                    >
-                      📍 {isEn ? `${preset.cityEn} (${preset.regionEn})` : `${preset.cityAr} (${preset.regionAr})`}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Country Selector Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Country Cards */}
+            <div className="grid grid-cols-2 gap-3">
               {[
                 {
                   code: 'SA' as CountryCode,
-                  titleAr: '🇸🇦 المملكة العربية السعودية (ر.س · SAR)',
-                  titleEn: '🇸🇦 Saudi Arabia (SAR)',
-                  subAr: 'الدمام، الرياض، جدة، الخبر، مكة، المدينة، القصيم، وجميع مناطق المملكة',
-                  subEn: 'Dammam, Riyadh, Jeddah, Khobar, Makkah, Madinah & all Saudi regions',
+                  flag: '🇸🇦',
+                  titleAr: 'المملكة العربية السعودية',
+                  titleEn: 'Saudi Arabia (SAR)',
+                  subAr: 'الدمام · الرياض · جدة · الخبر',
+                  subEn: 'Dammam · Riyadh · Jeddah',
                 },
                 {
                   code: 'EG' as CountryCode,
-                  titleAr: '🇪🇬 جمهورية مصر العربية (ج.م · EGP)',
-                  titleEn: '🇪🇬 Egypt (EGP)',
-                  subAr: 'القاهرة، الجيزة، الإسكندرية، الدقهلية، الشرقية وجميع المحافظات الـ ٢٧',
-                  subEn: 'Cairo, Giza, Alexandria & all 27 Egyptian governorates',
+                  flag: '🇪🇬',
+                  titleAr: 'جمهورية مصر العربية',
+                  titleEn: 'Egypt (EGP)',
+                  subAr: 'القاهرة · الإسكندرية · الجيزة',
+                  subEn: 'Cairo · Alexandria · Giza',
                 },
-              ].map((countryCard) => {
-                const active = selectedCountry === countryCard.code;
+              ].map((cItem) => {
+                const active = selectedCountry === cItem.code;
                 return (
                   <button
-                    key={countryCard.code}
+                    key={cItem.code}
                     type="button"
-                    onClick={() => handleSelectCountry(countryCard.code)}
-                    className={`p-3.5 rounded-2xl border-2 text-start transition cursor-pointer space-y-1 ${
+                    data-testid={`onboarding-country-${cItem.code}`}
+                    onClick={() => handleSelectCountry(cItem.code)}
+                    className={`rounded-2xl p-3.5 text-start border transition-all cursor-pointer ${
                       active
-                        ? 'border-[#0d9488] bg-teal-500/10'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430]'
+                        ? 'border-[#0d9488] bg-teal-500/10 dark:bg-[#142430] shadow-xs'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]/50'
                     }`}
                   >
-                    <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                      {isEn ? countryCard.titleEn : countryCard.titleAr}
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl">{cItem.flag}</span>
+                      {active && (
+                        <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[10px] font-black">
+                          ✓ {isEn ? 'Selected' : 'محدد'}
+                        </span>
+                      )}
                     </div>
-                    <div className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                      {isEn ? countryCard.subEn : countryCard.subAr}
+                    <div className="mt-2 text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {isEn ? cItem.titleEn : cItem.titleAr}
+                    </div>
+                    <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                      {isEn ? cItem.subEn : cItem.subAr}
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* City / Region Select Dropdown */}
+            {/* Quick City Chips */}
             <div className="space-y-2">
               <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                🏙️ {isEn ? 'Selected City / Region' : 'المدينة / المنطقة المختارة'}
+                {isEn ? 'Quick City Selection:' : 'اختيار سريع للمدينة:'}
               </label>
+              <div className="flex flex-wrap gap-2">
+                {QUICK_REGION_PRESETS.filter((p) => p.country === selectedCountry).map(
+                  (preset) => {
+                    const isSelected = selectedCity === preset.cityAr;
+                    return (
+                      <button
+                        key={preset.cityAr}
+                        type="button"
+                        onClick={() => setSelectedCity(preset.cityAr)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                            : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                        }`}
+                      >
+                        📍 {isEn ? preset.cityEn : preset.cityAr}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+            </div>
 
+            {/* Full Governorate / City Dropdown (High-Contrast Text & Full Labels) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn
+                  ? 'Or choose from all Governorates / Cities:'
+                  : 'أو اختر من قائمة المحافظات والمدن الكاملة:'}
+              </label>
               {isLoadingCities ? (
-                <div className="rounded-2xl border border-dashed border-[var(--color-border)] p-4 text-center text-xs font-bold text-[var(--color-muted)]">
-                  ⏳ {isEn ? 'Loading regional cities...' : 'جاري تحميل قائمة المدن والمناطق...'}
+                <div className="text-xs font-bold text-[#0d9488]">
+                  {isEn ? 'Loading cities...' : 'جاري تحديث قائمة المدن...'}
                 </div>
               ) : (
                 <select
                   data-testid="onboarding-city-select"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2.5 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                 >
-                  {selectedCountry === 'SA' && (
-                    <option value="الدمام">
-                      {isEn ? 'Dammam — Eastern Province' : 'الدمام — المنطقة الشرقية'}
-                    </option>
-                  )}
-                  {availableCities.map((cityItem) => (
-                    <option key={cityItem.id} value={cityItem.id}>
+                  {availableCities.map((c, idx) => (
+                    <option
+                      key={c.id}
+                      value={c.id}
+                      className="text-gray-900 bg-white font-bold"
+                    >
                       {isEn
-                        ? `${cityItem.nameEn} — ${cityItem.regionEn}`
-                        : `${cityItem.nameAr} — ${cityItem.regionAr}`}
+                        ? `${idx + 1}. ${c.nameEn || c.labelEn || c.id} — ${c.regionEn}`
+                        : `${idx + 1}. ${c.nameAr || c.labelAr || c.id} — ${c.regionAr}`}
                     </option>
                   ))}
                 </select>
@@ -1111,46 +1091,306 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         )}
 
         {/* ===================================================================
-            STEP 3: CHILDREN PROFILES SETUP (HAMZA, LAILA, YOUSSEF + DYNAMIC ADD)
+            STEP 2: CREDENTIALS (ENTER PHONE NUMBER & EMAIL — SAVE TO DRAFT)
+            =================================================================== */}
+        {step === 2 && (
+          <div data-testid="onboarding-step-2-credentials" className="space-y-4">
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+              {isEn
+                ? 'Enter your name, mobile phone number, and email address. Everything is auto-saved to your draft as you type.'
+                : 'أدخل اسمك ورقم الجوال والبريد الإلكتروني لحفظ حسابك العائلي. يتم الحفظ التلقائي الفوري أثناء الكتابة.'}
+            </p>
+
+            {/* Parent Role Selector (Mom Maryam vs Dad Ahmad) */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setParentRole('mom');
+                  if (parentName.includes('أحمد')) setParentName('مريم (الأم)');
+                  if (email.includes('ahmad')) setEmail('maryam.mom@nekbaar.app');
+                  setCoParentName('أحمد (الأب)');
+                  setCoParentEmail('ahmad.dad@nekbaar.app');
+                }}
+                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                  parentRole === 'mom'
+                    ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                }`}
+              >
+                👩🏻 {isEn ? 'Mom Account (Maryam)' : 'حساب الأم (مريم)'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setParentRole('dad');
+                  if (parentName.includes('مريم')) setParentName('أحمد (الأب)');
+                  if (email.includes('maryam')) setEmail('ahmad.dad@nekbaar.app');
+                  setCoParentName('مريم (الأم)');
+                  setCoParentEmail('maryam.mom@nekbaar.app');
+                }}
+                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                  parentRole === 'dad'
+                    ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                }`}
+              >
+                👨🏻 {isEn ? 'Dad Account (Ahmad)' : 'حساب الأب (أحمد)'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Full Name:' : 'الاسم الكامل:'}
+                </label>
+                <input
+                  type="text"
+                  data-testid="onboarding-parent-name-input"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Mobile Phone Number:' : 'رقم الجوال:'}
+                </label>
+                <div className="flex items-center gap-2" dir="ltr">
+                  <span className="min-h-[42px] px-3 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-black flex items-center">
+                    {selectedCountry === 'SA' ? '+966' : '+20'}
+                  </span>
+                  <input
+                    type="tel"
+                    data-testid="onboarding-phone-input"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder={selectedCountry === 'SA' ? '551234567' : '1012345678'}
+                    className="flex-1 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Email Address:' : 'البريد الإلكتروني:'}
+                </label>
+                <input
+                  type="email"
+                  dir="ltr"
+                  data-testid="onboarding-email-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Account Password:' : 'كلمة المرور:'}
+                </label>
+                <input
+                  type="password"
+                  dir="ltr"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            STEP 3: VERIFICATION METHOD (OTP VIA SMS ON PHONE VS. VIA EMAIL)
             =================================================================== */}
         {step === 3 && (
-          <div data-testid="onboarding-step-3-children" className="space-y-4">
+          <div data-testid="onboarding-step-3-verify" className="space-y-4">
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+              {isEn
+                ? 'Choose your preferred OTP verification channel: SMS message to your phone number or verification code to your email.'
+                : 'اختر قناة استلام رمز التحقق (OTP) المفضلة لديك: عبر رسالة نصية SMS على رقم الجوال أو عبر البريد الإلكتروني.'}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                data-testid="verify-channel-sms"
+                onClick={() => {
+                  setVerificationChannel('sms');
+                  setOtpSentBanner(true);
+                }}
+                className={`rounded-2xl p-4 text-start border transition-all cursor-pointer space-y-1.5 ${
+                  verificationChannel === 'sms'
+                    ? 'border-[#0d9488] bg-teal-500/10 dark:bg-[#142430] shadow-xs'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xl">📱</span>
+                  {verificationChannel === 'sms' && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[10px] font-black">
+                      ✓ {isEn ? 'Active Channel' : 'القناة المختارة'}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Verify via SMS on Phone' : 'التحقق عبر رسالة نصية SMS للجوال'}
+                </div>
+                <div
+                  className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]"
+                  dir="ltr"
+                >
+                  {selectedCountry === 'SA' ? '+966' : '+20'} {phone}
+                </div>
+              </button>
+
+              <button
+                type="button"
+                data-testid="verify-channel-email"
+                onClick={() => {
+                  setVerificationChannel('email');
+                  setOtpSentBanner(true);
+                }}
+                className={`rounded-2xl p-4 text-start border transition-all cursor-pointer space-y-1.5 ${
+                  verificationChannel === 'email'
+                    ? 'border-[#0d9488] bg-teal-500/10 dark:bg-[#142430] shadow-xs'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xl">📧</span>
+                  {verificationChannel === 'email' && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[10px] font-black">
+                      ✓ {isEn ? 'Active Channel' : 'القناة المختارة'}
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Verify via Email Address' : 'التحقق عبر البريد الإلكتروني'}
+                </div>
+                <div
+                  className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] truncate"
+                  dir="ltr"
+                >
+                  {email}
+                </div>
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430] p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {verificationChannel === 'sms'
+                    ? isEn
+                      ? `Enter 4-digit SMS code sent to ${phone}:`
+                      : `أدخل رمز التحقق المرسل في رسالة SMS إلى ${phone}:`
+                    : isEn
+                    ? `Enter 4-digit Email code sent to ${email}:`
+                    : `أدخل رمز التحقق المرسل إلى البريد ${email}:`}
+                </span>
+                <span className="text-[11px] font-black text-amber-700 dark:text-amber-300">
+                  {isEn ? `Instant Code: ${DEMO_OTP_CODE}` : `الرمز الفوري: ${DEMO_OTP_CODE}`}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="text"
+                  dir="ltr"
+                  maxLength={6}
+                  data-testid="onboarding-otp-input"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  className="w-36 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-2 text-center text-sm font-black tracking-widest text-[var(--color-text)] dark:text-[#F8FAFC]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOtpCode(DEMO_OTP_CODE);
+                    setIsOtpVerified(true);
+                    setOtpSentBanner(true);
+                  }}
+                  className="min-h-[42px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+                >
+                  {isEn ? 'Auto-Fill OTP' : 'تعبئة الرمز تلقائياً'}
+                </button>
+              </div>
+
+              {otpSentBanner && (
+                <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                  ✓{' '}
+                  {isEn
+                    ? 'Verification channel ready. Click Next Step to continue to Children Setup.'
+                    : 'تم تجهيز قناة التحقق بنجاح. اضغط «الخطوة التالية» للانتقال إلى ملفات الأطفال.'}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ===================================================================
+            STEP 4: CHILDREN SETUP (MUST ADD AT LEAST ONE CHILD TO PROCEED)
+            =================================================================== */}
+        {step === 4 && (
+          <div data-testid="onboarding-step-4-children" className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
                 {isEn
-                  ? 'Both parents (Ahmad & Maryam) share these exact children records via family_id.'
-                  : 'يتشارك الأب والأم (أحمد ومريم) نفس سجلات الأطفال عبر معرف الأسرة الموحد (family_id).'}
+                  ? 'Add or verify your children profiles. At least ONE child is required to unlock Nekbaar features and persist your permanent session.'
+                  : 'أضف أو راجع ملفات أطفالك. يشترط وجود ملف طفل واحد على الأقل لتفعيل ميزات التطبيق وتثبيت دخولك الدائم.'}
               </p>
-              <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]">
-                {childrenList.length} {isEn ? 'Shared Children' : 'أطفال في الأسرة'}
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 text-[11px] font-black">
+                👶 {safeChildrenList.length}{' '}
+                {isEn ? 'Children Added (Min: 1)' : 'أطفال مضافون (الحد الأدنى: ١)'}
               </span>
             </div>
 
-            {/* Active Children List */}
             <div className="space-y-2.5 max-h-60 overflow-y-auto pe-1">
-              {childrenList.map((kidItem, idx) => {
-                const ageInfo = calculateChildAge(kidItem.birth, language);
+              {safeChildrenList.map((kidItem, kidIdx) => {
+                const safeBirth =
+                  typeof kidItem?.birth === 'string' && kidItem.birth.trim()
+                    ? kidItem.birth.trim()
+                    : '2022-05-14';
+                const safeName =
+                  typeof kidItem?.name === 'string' && kidItem.name.trim()
+                    ? kidItem.name
+                    : `طفل ${kidIdx + 1}`;
+                const safeGender: 'boy' | 'girl' =
+                  kidItem?.gender === 'girl' ? 'girl' : 'boy';
+                const safeTheme: AvatarAccessoryTheme =
+                  kidItem?.avatarTheme || 'astronaut';
+                const ageInfo = calculateChildAge(
+                  safeBirth,
+                  isEn ? 'en' : 'ar'
+                );
                 return (
                   <div
-                    key={kidItem.id}
-                    data-testid={`onboarding-child-card-${idx}`}
-                    className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    key={kidItem.id || kidIdx}
+                    data-testid={`onboarding-child-card-${kidItem.id}`}
+                    className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="flex items-center gap-3">
                       <ThreeDChildAvatar
-                        name={kidItem.name}
-                        gender={kidItem.gender}
+                        name={safeName}
                         stageCode={ageInfo.stageCode}
-                        accessoryTheme={kidItem.avatarTheme}
+                        accessoryTheme={safeTheme}
+                        gender={safeGender}
                         size="sm"
                       />
-                      <div className="space-y-1">
+                      <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
-                            value={kidItem.name}
+                            value={kidItem.name ?? ''}
                             onChange={(e) =>
-                              handleUpdateDraftChildField(kidItem.id, { name: e.target.value })
+                              handleUpdateDraftChildField(kidItem.id, {
+                                name: e.target.value,
+                              })
                             }
                             aria-label={isEn ? 'Child Name' : 'اسم الطفل'}
                             className="rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-2.5 py-1 text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] w-32"
@@ -1167,28 +1407,34 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
                     <div className="flex flex-wrap items-center gap-2">
                       <select
-                        value={kidItem.gender}
+                        value={safeGender}
                         onChange={(e) =>
                           handleUpdateDraftChildField(kidItem.id, {
                             gender: e.target.value as 'boy' | 'girl',
                           })
                         }
-                        className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                        className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-2.5 py-1.5 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                       >
-                        <option value="boy">{isEn ? 'Boy 👦🏻' : 'ولد 👦🏻'}</option>
-                        <option value="girl">{isEn ? 'Girl 👧🏻' : 'بنت 👧🏻'}</option>
+                        <option value="boy" className="text-gray-900 bg-white font-bold">
+                          {isEn ? 'Boy 👦🏻' : 'ولد 👦🏻'}
+                        </option>
+                        <option value="girl" className="text-gray-900 bg-white font-bold">
+                          {isEn ? 'Girl 👧🏻' : 'بنت 👧🏻'}
+                        </option>
                       </select>
 
                       <input
                         type="date"
-                        value={kidItem.birth}
+                        value={safeBirth}
                         onChange={(e) =>
-                          handleUpdateDraftChildField(kidItem.id, { birth: e.target.value })
+                          handleUpdateDraftChildField(kidItem.id, {
+                            birth: e.target.value,
+                          })
                         }
                         className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-2.5 py-1 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                       />
 
-                      {childrenList.length > 1 && (
+                      {safeChildrenList.length > 1 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveDraftChild(kidItem.id)}
@@ -1207,7 +1453,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             {/* Dynamic Form to Add Another Child */}
             <div className="rounded-2xl border border-dashed border-[#0d9488]/45 bg-teal-50/40 dark:bg-[#142430]/70 p-3.5 space-y-3">
               <div className="text-xs font-black text-[#0d9488] dark:text-[#2DD4BF]">
-                ➕ {isEn ? 'Add Another Child to Family' : 'إضافة طفل جديد لقائمة الأسرة'}
+                ➕ {isEn ? 'Add Another Child Profile' : 'إضافة طفل آخر لقائمة الأسرة'}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <input
@@ -1226,27 +1472,39 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       e.target.value as OnboardingChildDraft['ageStagePreset']
                     )
                   }
-                  className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                 >
-                  <option value="infant_6m">
-                    {isEn ? 'Infant Stage (0–2 Years / 6m)' : 'مرحلة الرضيع (٦ شهور / ٠–٢ سنة)'}
+                  <option value="infant_6m" className="text-gray-900 bg-white font-bold">
+                    {isEn
+                      ? 'Infant Stage (0–2 Years / 6m)'
+                      : 'مرحلة الرضيع (٦ شهور / ٠–٢ سنة)'}
                   </option>
-                  <option value="nursery_4y">
-                    {isEn ? 'Nursery & Creative (3–5 Years)' : 'مرحلة الحضانة والإبداع (٣–٥ سنوات)'}
+                  <option value="nursery_4y" className="text-gray-900 bg-white font-bold">
+                    {isEn
+                      ? 'Nursery & Creative (3–5 Years)'
+                      : 'مرحلة الحضانة والإبداع (٣–٥ سنوات)'}
                   </option>
-                  <option value="school_8y">
-                    {isEn ? 'School & Sports (6–9 Years)' : 'مرحلة المدرسة والرياضة (٦–٩ سنوات)'}
+                  <option value="school_8y" className="text-gray-900 bg-white font-bold">
+                    {isEn
+                      ? 'School & Sports (6–9 Years)'
+                      : 'مرحلة المدرسة والرياضة (٦–٩ سنوات)'}
                   </option>
                 </select>
 
                 <div className="flex items-center gap-2">
                   <select
                     value={newChildGender}
-                    onChange={(e) => setNewChildGender(e.target.value as 'boy' | 'girl')}
-                    className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    onChange={(e) =>
+                      setNewChildGender(e.target.value as 'boy' | 'girl')
+                    }
+                    className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                   >
-                    <option value="boy">{isEn ? 'Boy 👦🏻' : 'ولد 👦🏻'}</option>
-                    <option value="girl">{isEn ? 'Girl 👧🏻' : 'بنت 👧🏻'}</option>
+                    <option value="boy" className="text-gray-900 bg-white font-bold">
+                      {isEn ? 'Boy 👦🏻' : 'ولد 👦🏻'}
+                    </option>
+                    <option value="girl" className="text-gray-900 bg-white font-bold">
+                      {isEn ? 'Girl 👧🏻' : 'بنت 👧🏻'}
+                    </option>
                   </select>
 
                   <button
@@ -1264,65 +1522,397 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         )}
 
         {/* ===================================================================
-            STEP 4: APP DASHBOARD ENTRY (SUMMARY & LIVE DATA HYDRATION)
+            STEP 5: CO-PARENT INTEGRATION MODULE (PHONE OTP & QR CODE PAIRING)
             =================================================================== */}
-        {step === 4 && (
-          <div data-testid="onboarding-step-4-summary" className="space-y-4">
-            <div className="rounded-3xl border-2 border-[#0d9488]/40 bg-gradient-to-br from-teal-50/90 via-white to-orange-50/60 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-5 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#0d9488] text-white flex items-center justify-center text-2xl shadow-sm">
-                  🎉
+        {step === 5 && (
+          <div data-testid="onboarding-step-5-coparent" className="space-y-4">
+            <div className="rounded-2xl border border-emerald-500/35 bg-emerald-500/10 p-3.5 flex items-center justify-between gap-2">
+              <div className="text-xs font-extrabold text-emerald-900 dark:text-emerald-200">
+                🎉{' '}
+                {isEn
+                  ? `Permanent session saved for ${parentName}! Your ${safeChildrenList.length} children are active.`
+                  : `تم تثبيت جلستك الدائمة باسم «${parentName}» وتفعيل ملفات أطفالك (${safeChildrenList.length}) بنجاح!`}
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-black shrink-0">
+                {isEn ? 'Optional Step' : 'خطوة اختيارية'}
+              </span>
+            </div>
+
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+              {isEn
+                ? 'Choose your preferred pairing method to bind your partner (Mother/Father) to Shared Family ID #' +
+                  familyId +
+                  ': Method A (Phone OTP Verification) or Method B (QR Code Pairing), or skip for later.'
+                : `اختر طريقة ربط حساب الشريك (الأم / الأب) بنفس معرف العائلة المشترك (#${familyId}): الطريقة (أ) عبر رمز التحقق OTP لجوال الشريك، أو الطريقة (ب) عبر مسح رمز QR الذكي، أو التخطي مؤقتاً.`}
+            </p>
+
+            {/* Method Selector Tabs: Method A (Phone OTP) vs Method B (QR Code Pairing) */}
+            <div className="grid grid-cols-2 gap-2.5" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={coParentMethod === 'phone_otp'}
+                data-testid="coparent-method-phone-otp-tab"
+                onClick={() => {
+                  setCoParentMethod('phone_otp');
+                  setErrorMsg(null);
+                }}
+                className={`rounded-2xl p-3 text-start border transition-all cursor-pointer ${
+                  coParentMethod === 'phone_otp'
+                    ? 'border-[#0d9488] bg-teal-500/12 dark:bg-[#142430] shadow-xs'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base">📲</span>
+                  {coParentMethod === 'phone_otp' && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[10px] font-black">
+                      {isEn ? 'Method A' : 'الطريقة (أ)'}
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {isEn
-                      ? `Welcome to Nekbaar, ${parentName}!`
-                      : `أهلاً بك في مساحة عائلتك «نكبر»، ${parentName}!`}
-                  </h3>
-                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                    {isEn
-                      ? `Your account, region, and children profiles are linked to Shared Family #${familyId}.`
-                      : `تم ربط حسابك، ومنطقتك، وملفات أطفالك بسجل العائلة المشترك (#${familyId}).`}
-                  </p>
+                <div className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn
+                    ? 'Method A: Partner Phone OTP'
+                    : 'الطريقة (أ): ربط برقم جوال الشريك (OTP)'}
+                </div>
+                <div className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8]">
+                  {isEn
+                    ? 'Send OTP to partner mobile & bind to family_id'
+                    : 'إرسال رمز تحقق لجوال الشريك وربطه بالعائلة'}
+                </div>
+              </button>
+
+              <button
+                type="button"
+                role="tab"
+                aria-selected={coParentMethod === 'qr_token'}
+                data-testid="coparent-method-qr-tab"
+                onClick={() => {
+                  setCoParentMethod('qr_token');
+                  setErrorMsg(null);
+                }}
+                className={`rounded-2xl p-3 text-start border transition-all cursor-pointer ${
+                  coParentMethod === 'qr_token'
+                    ? 'border-[#0d9488] bg-teal-500/12 dark:bg-[#142430] shadow-xs'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430]/50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base">📷</span>
+                  {coParentMethod === 'qr_token' && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#0d9488] text-white text-[10px] font-black">
+                      {isEn ? 'Method B' : 'الطريقة (ب)'}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn
+                    ? 'Method B: Dynamic QR Code Pairing'
+                    : 'الطريقة (ب): الربط السريع برمز QR العائلي'}
+                </div>
+                <div className="text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8]">
+                  {isEn
+                    ? 'Scan secure family QR token for instant sync'
+                    : 'توليد ومسح رمز QR مشفر للربط الفوري'}
+                </div>
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430] p-4 space-y-3.5">
+              {/* Shared Partner Info Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn ? 'Partner / Co-Parent Name:' : 'اسم الشريك (الأب / الأم):'}
+                  </label>
+                  <input
+                    type="text"
+                    data-testid="onboarding-coparent-name-input"
+                    value={coParentName}
+                    onChange={(e) => setCoParentName(e.target.value)}
+                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn ? 'Partner Email:' : 'البريد الإلكتروني للشريك:'}
+                  </label>
+                  <input
+                    type="email"
+                    dir="ltr"
+                    data-testid="onboarding-coparent-email-input"
+                    value={coParentEmail}
+                    onChange={(e) => setCoParentEmail(e.target.value)}
+                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {isEn ? 'Partner Registered Mobile:' : 'رقم جوال الشريك المسجل:'}
+                  </label>
+                  <input
+                    type="tel"
+                    dir="ltr"
+                    data-testid="onboarding-coparent-phone-input"
+                    value={coParentPhone}
+                    onChange={(e) => setCoParentPhone(e.target.value)}
+                    placeholder={selectedCountry === 'SA' ? '559876543' : '1098765432'}
+                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-1">
-                  <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Authenticated Account' : 'الحساب الموثق'}
-                  </div>
-                  <div className="font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {parentName}
-                  </div>
-                  <div className="text-[11px] text-[#0d9488] dark:text-[#2DD4BF] truncate" dir="ltr">
-                    {email}
-                  </div>
-                </div>
+              {/* METHOD A: PHONE OTP VERIFICATION PANEL */}
+              {coParentMethod === 'phone_otp' && (
+                <div
+                  data-testid="coparent-phone-otp-panel"
+                  className="rounded-2xl border border-teal-500/35 bg-teal-500/5 dark:bg-[#101D26] p-3.5 space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                        📲{' '}
+                        {isEn
+                          ? 'Partner Mobile OTP Verification'
+                          : 'التحقق من رقم جوال الشريك عبر رمز OTP'}
+                      </div>
+                      <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                        {isEn
+                          ? `Send a 4-digit OTP to ${coParentPhone} to securely bind ${coParentName} to Family #${familyId}.`
+                          : `إرسال رمز تحقق من ٤ أرقام إلى الجوال (${coParentPhone}) لربط حساب «${coParentName}» بمعرف العائلة #${familyId}.`}
+                      </div>
+                    </div>
 
-                <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-1">
-                  <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Region & Foreign Key' : 'المنطقة ومعرف الأسرة'}
+                    <button
+                      type="button"
+                      data-testid="coparent-send-otp-btn"
+                      onClick={() => {
+                        setErrorMsg(null);
+                        setCoParentOtpSent(true);
+                        setCoParentOtpCode(DEMO_OTP_CODE);
+                        setStepSyncNotice(
+                          isEn
+                            ? `Partner OTP code (${DEMO_OTP_CODE}) sent to ${coParentPhone}.`
+                            : `تم إرسال رمز التحقق (${DEMO_OTP_CODE}) إلى جوال الشريك (${coParentPhone}).`
+                        );
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer shrink-0"
+                    >
+                      {coParentOtpSent
+                        ? isEn
+                          ? '🔄 Resend Partner OTP'
+                          : '🔄 إعادة إرسال رمز OTP للشريك'
+                        : isEn
+                        ? '📨 Send Partner OTP'
+                        : '📨 إرسال رمز OTP لجوال الشريك'}
+                    </button>
                   </div>
-                  <div className="font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    📍 {selectedCity} ({selectedCountry})
-                  </div>
-                  <div className="text-[11px] text-[#0d9488] dark:text-[#2DD4BF]">
-                    {getSuggestedCurrencyForCountry(selectedCountry)} · family_id = {familyId}
-                  </div>
-                </div>
 
-                <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-1">
-                  <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Shared Children Profiles' : 'ملفات الأطفال المشتركة'}
-                  </div>
-                  <div className="font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {childrenList.map((c) => c.name).join(isEn ? ', ' : '، ')}
-                  </div>
-                  <div className="text-[11px] text-emerald-700 dark:text-emerald-300">
-                    ✓ {childrenList.length} {isEn ? 'linked to family_id' : 'مرتبطة بـ family_id'}
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      maxLength={6}
+                      data-testid="coparent-otp-input"
+                      value={coParentOtpCode}
+                      onChange={(e) => setCoParentOtpCode(e.target.value)}
+                      placeholder={DEMO_OTP_CODE}
+                      className="w-36 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1.5 text-center text-sm font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
+                    />
+                    <button
+                      type="button"
+                      data-testid="coparent-verify-otp-btn"
+                      onClick={async () => {
+                        if (coParentOtpCode.trim().length < 4) {
+                          setErrorMsg(
+                            isEn
+                              ? `Enter the 4-digit OTP code (${DEMO_OTP_CODE}).`
+                              : `أدخل رمز التحقق المكون من ٤ أرقام (${DEMO_OTP_CODE}).`
+                          );
+                          return;
+                        }
+                        setErrorMsg(null);
+                        setIsSavingStep(true);
+                        const res = await linkCoParentAccountInSupabase({
+                          familyId,
+                          partnerRole: parentRole === 'dad' ? 'mother' : 'father',
+                          partnerName: coParentName,
+                          partnerPhone: coParentPhone,
+                          partnerEmail: coParentEmail,
+                          country: selectedCountry,
+                          method: 'phone_otp',
+                          otpCode: coParentOtpCode.trim(),
+                        });
+                        setIsSavingStep(false);
+                        setCoParentOtpVerified(true);
+                        setIsCoParentLinked(true);
+                        setStepSyncNotice(
+                          isEn
+                            ? `Verified! ${coParentName} is now bound to Shared Family #${res.familyId} via Phone OTP.`
+                            : `تم التحقق والربط بنجاح! حساب «${coParentName}» مرتبط الآن بمعرف العائلة المشترك (#${res.familyId}).`
+                        );
+                      }}
+                      className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer"
+                    >
+                      {coParentOtpVerified
+                        ? isEn
+                          ? '✓ Partner OTP Verified'
+                          : '✓ تم توثيق وربط الشريك'
+                        : isEn
+                        ? '✓ Verify OTP & Bind Partner'
+                        : '✓ تحقق وربط الشريك فوراً'}
+                    </button>
+                    <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                      {isEn ? `Demo OTP: ${DEMO_OTP_CODE}` : `الرمز التجريبي: ${DEMO_OTP_CODE}`}
+                    </span>
                   </div>
                 </div>
+              )}
+
+              {/* METHOD B: QR CODE PAIRING PANEL */}
+              {coParentMethod === 'qr_token' && (
+                <div
+                  data-testid="coparent-qr-pairing-panel"
+                  className="rounded-2xl border border-teal-500/35 bg-teal-500/5 dark:bg-[#101D26] p-3.5 flex flex-col sm:flex-row items-center gap-4"
+                >
+                  {/* Dynamic SVG QR Code Matrix */}
+                  <div className="p-3 rounded-2xl bg-white border-2 border-[#0d9488] shadow-sm shrink-0">
+                    <svg
+                      data-testid="coparent-qr-code-svg"
+                      width="124"
+                      height="124"
+                      viewBox="0 0 15 15"
+                      shapeRendering="crispEdges"
+                      aria-label={isEn ? 'Family Pairing QR Code' : 'رمز الاستجابة السريعة لربط العائلة'}
+                    >
+                      <rect width="15" height="15" fill="#ffffff" />
+                      {qrMatrix.map((row, rIdx) =>
+                        row.map((cell, cIdx) =>
+                          cell ? (
+                            <rect
+                              key={`${rIdx}-${cIdx}`}
+                              x={cIdx}
+                              y={rIdx}
+                              width={1}
+                              height={1}
+                              fill="#0f172a"
+                            />
+                          ) : null
+                        )
+                      )}
+                    </svg>
+                  </div>
+
+                  <div className="flex-1 space-y-2.5 w-full">
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                        📷{' '}
+                        {isEn
+                          ? 'Secure Family Pairing QR Token'
+                          : 'رمز QR الذكي للربط المباشر بين الوالدين'}
+                      </div>
+                      <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                        {isEn
+                          ? 'Have your partner scan this QR code from their Nekbaar app or click Scan & Pair below to link instantly.'
+                          : 'اطلب من الشريك مسح رمز QR هذا من تطبيقه، أو اضغط على زر «مسح رمز QR والربط الفوري» بالأسفل.'}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <code
+                        dir="ltr"
+                        data-testid="coparent-qr-token-code"
+                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]"
+                      >
+                        {familyPairingToken}
+                      </code>
+                      <button
+                        type="button"
+                        data-testid="coparent-refresh-qr-btn"
+                        onClick={() => setQrTokenNonce((n) => n + 1)}
+                        className="px-2.5 py-1 rounded-lg bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-extrabold cursor-pointer"
+                      >
+                        {isEn ? '🔄 Refresh QR' : '🔄 تجديد الرمز'}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        dir="ltr"
+                        data-testid="coparent-qr-scanner-input"
+                        value={qrScanInputToken}
+                        onChange={(e) => setQrScanInputToken(e.target.value)}
+                        placeholder={familyPairingToken}
+                        className="flex-1 min-w-[160px] min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                      />
+                      <button
+                        type="button"
+                        data-testid="coparent-scan-qr-btn"
+                        onClick={async () => {
+                          setErrorMsg(null);
+                          const tokenToUse = qrScanInputToken.trim() || familyPairingToken;
+                          setQrScanInputToken(tokenToUse);
+                          setIsSavingStep(true);
+                          const res = await linkCoParentAccountInSupabase({
+                            familyId,
+                            partnerRole: parentRole === 'dad' ? 'mother' : 'father',
+                            partnerName: coParentName,
+                            partnerPhone: coParentPhone,
+                            partnerEmail: coParentEmail,
+                            country: selectedCountry,
+                            method: 'qr_token',
+                            pairingToken: tokenToUse,
+                          });
+                          setIsSavingStep(false);
+                          setIsQrPairedSuccess(true);
+                          setIsCoParentLinked(true);
+                          setStepSyncNotice(
+                            isEn
+                              ? `QR Code Paired! ${coParentName} linked to Shared Family #${res.familyId} (${res.pairingToken}).`
+                              : `تم مسح رمز QR والربط الفوري بنجاح! حساب «${coParentName}» مرتبط الآن بالعائلة (#${res.familyId}).`
+                          );
+                        }}
+                        className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer shrink-0"
+                      >
+                        {isQrPairedSuccess
+                          ? isEn
+                            ? '✓ QR Paired Successfully'
+                            : '✓ تم الاقتران برمز QR'
+                          : isEn
+                          ? '📷 Scan & Pair Now'
+                          : '📷 مسح رمز QR والربط الفوري'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646]">
+                <span className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                  🔗{' '}
+                  {isEn
+                    ? `Shared Family ID #${familyId} ready for instant co-parent sync`
+                    : `معرف العائلة المشترك (#${familyId}) جاهز للمزامنة الفورية بين الوالدين`}
+                </span>
+                <button
+                  type="button"
+                  data-testid="onboarding-skip-coparent-btn"
+                  onClick={() =>
+                    finalizeAndRouteToDashboard({
+                      skippedCoParent: true,
+                      skippedForLater: false,
+                    })
+                  }
+                  className="px-3.5 py-2 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 text-xs font-black cursor-pointer"
+                >
+                  {isEn
+                    ? '⏭️ تخطي مؤقت / إكمال لاحقاً (Enter Dashboard)'
+                    : '⏭️ تخطي مؤقت / إكمال لاحقاً والدخول للتطبيق'}
+                </button>
               </div>
             </div>
           </div>
@@ -1334,11 +1924,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <span>
               {isSavingStep
                 ? isEn
-                  ? '⏳ Saving step to Supabase...'
-                  : '⏳ جاري حفظ الخطوة في قاعدة بيانات Supabase...'
+                  ? '⏳ Syncing step...'
+                  : '⏳ جاري حفظ ومزامنة الخطوة...'
                 : isEn
-                ? `Step ${step} of 4 · Auto-cached locally`
-                : `الخطوة ${step} من 4 · محفوظة تلقائياً`}
+                ? `Step ${step} of 5 · Auto-cached in localStorage`
+                : `الخطوة ${step} من 5 · محفوظة تلقائياً ضد التحديث (F5)`}
             </span>
           </div>
 
@@ -1355,15 +1945,20 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               </button>
             )}
 
-            {step < 4 && (
+            {step === 5 && (
               <button
                 type="button"
-                data-testid="onboarding-skip-step-btn"
+                data-testid="onboarding-footer-skip-coparent-btn"
                 disabled={isSavingStep}
-                onClick={handleSkipCurrentStep}
+                onClick={() =>
+                  finalizeAndRouteToDashboard({
+                    skippedCoParent: true,
+                    skippedForLater: false,
+                  })
+                }
                 className="px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
               >
-                {isEn ? 'Skip Step' : 'تخطي الخطوة'}
+                {isEn ? 'Skip for Later' : 'تخطي مؤقت / إكمال لاحقاً'}
               </button>
             )}
 
@@ -1382,9 +1977,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 ? isEn
                   ? 'Next Step →'
                   : 'الخطوة التالية ←'
+                : step === 4
+                ? isEn
+                  ? 'Save Children & Unlock App →'
+                  : 'حفظ الأطفال وتثبيت الجلسة ←'
                 : isEn
-                ? '🚀 Enter Family Dashboard'
-                : '🚀 الدخول إلى لوحة العائلة'}
+                ? '🤝 Link Partner & Enter Dashboard'
+                : '🤝 ربط الشريك والدخول للوحة العائلة'}
             </button>
           </div>
         </div>

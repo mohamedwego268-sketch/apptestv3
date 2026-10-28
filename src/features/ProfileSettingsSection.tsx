@@ -492,13 +492,17 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     id="settingsCity"
                     value={settingsCity}
                     onChange={(e) => onChangeSettingsCity(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-sm font-bold text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                   >
                     {(COUNTRY_CITIES_MAP[settingsCountry] || []).map((cItem, idx) => (
-                      <option key={cItem.id} value={cItem.id}>
+                      <option
+                        key={cItem.id}
+                        value={cItem.id}
+                        className="text-gray-900 bg-white font-bold"
+                      >
                         {lang === 'en'
-                          ? `${idx + 1}. ${cItem.nameEn}`
-                          : `${idx + 1}. ${cItem.nameAr}`}
+                          ? `${idx + 1}. ${cItem.nameEn || cItem.labelEn || cItem.id} — ${cItem.regionEn}`
+                          : `${idx + 1}. ${cItem.nameAr || cItem.labelAr || cItem.id} — ${cItem.regionAr}`}
                       </option>
                     ))}
                   </select>
@@ -512,10 +516,10 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     id="settingsCurrency"
                     value={settingsCurrency}
                     onChange={(e) => onChangeSettingsCurrency(e.target.value as CurrencyCode)}
-                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#142430] px-3 py-2 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                   >
-                    <option value="EGP">{t(lang, 'currencyEGP')}</option>
-                    <option value="SAR">{t(lang, 'currencySAR')}</option>
+                    <option value="EGP" className="text-gray-900 bg-white font-bold">{t(lang, 'currencyEGP')}</option>
+                    <option value="SAR" className="text-gray-900 bg-white font-bold">{t(lang, 'currencySAR')}</option>
                   </select>
                 </div>
 

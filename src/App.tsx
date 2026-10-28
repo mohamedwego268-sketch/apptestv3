@@ -81,6 +81,10 @@ import { ParentsCommunitySection } from './components/ParentsCommunitySection';
 import { InternalChatSection } from './components/InternalChatSection';
 import { AiAssistantSection, AiModelId } from './components/AiAssistantSection';
 import { OnboardingFlowModal } from './components/OnboardingFlowModal';
+import {
+  OnboardingFlowController,
+  UserSessionProfile,
+} from './services/OnboardingFlowController';
 import { CommercialEcosystemSection } from './components/CommercialEcosystemSection';
 import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
 import { NotificationsCenterSection } from './components/NotificationsCenterSection';
@@ -262,8 +266,12 @@ export default function App() {
   const [settingsOtpStep, setSettingsOtpStep] = useState<boolean>(false);
   const [settingsOtpCode, setSettingsOtpCode] = useState<string>('');
 
-  // Active Modals
+  // Active Modals & Smart Startup Profile Recognition (`OnboardingFlowController`)
   const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(false);
+  const [recognizedProfile, setRecognizedProfile] = useState<UserSessionProfile | null>(() =>
+    OnboardingFlowController.getSavedProfile()
+  );
+  const [showSmartGreetingBanner, setShowSmartGreetingBanner] = useState<boolean>(true);
   const [childModalOpen, setChildModalOpen] = useState<boolean>(false);
   const [editingChild, setEditingChild] = useState<ChildProfile | null>(null);
   const [childPhotoDraft, setChildPhotoDraft] = useState<string | undefined>(undefined);
@@ -352,6 +360,30 @@ export default function App() {
       isMounted = false;
     };
   }, [master.controller]);
+
+  // Smart Startup Profile Recognition (`OnboardingFlowController.detectInitialState()`)
+  useEffect(() => {
+    let active = true;
+    OnboardingFlowController.detectInitialState().then(({ step, profile, draft }) => {
+      if (!active) return;
+      if (step === 'DASHBOARD' && profile) {
+        setRecognizedProfile(profile);
+        setOnboardingModalOpen(false);
+        setActivePage('home');
+        showToast(
+          state.language === 'en'
+            ? `👋 Welcome back, ${profile.fullName}! Routed directly to your Family Dashboard.`
+            : `👋 أهلاً بعودتك، ${profile.fullName}! تم التعرف على حسابك المحفوظ وتوجيهك مباشرة للوحة العائلة.`
+        );
+      } else if (draft && draft.currentStep) {
+        // Restore in-progress onboarding draft after refresh (F5)
+        setOnboardingModalOpen(true);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Autonomous Debounced Sync & Battery Diagnostics Recomputation via MasterAppController
   useEffect(() => {
@@ -1325,6 +1357,8 @@ export default function App() {
   };
 
   const handleResetAllData = () => {
+    OnboardingFlowController.clearSession();
+    setRecognizedProfile(null);
     const fresh = resetFamilySpaceState();
     setState(fresh);
     setConfirmResetModal(false);
@@ -1785,6 +1819,73 @@ export default function App() {
                     onClick={() => setSupabaseErrorMsg(null)}
                     aria-label={lang === 'en' ? 'Dismiss notice' : 'إغلاق التنبيه'}
                     className="px-2 py-1 rounded-lg text-amber-800 dark:text-amber-300 hover:bg-amber-500/15 cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* SMART STARTUP PROFILE RECOGNITION & PROGRESSIVE ONBOARDING BAR */}
+            {activePage === 'home' && showSmartGreetingBanner && (
+              <div
+                data-testid="smart-startup-profile-banner"
+                className="mb-4 rounded-2xl border border-[#0d9488]/35 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-amber-500/10 dark:bg-[#142430] p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-2xl bg-[#0d9488] text-white flex items-center justify-center text-lg shadow-xs shrink-0">
+                    {recognizedProfile ? '👋' : '✨'}
+                  </span>
+                  <div className="space-y-0.5">
+                    <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {recognizedProfile
+                        ? lang === 'en'
+                          ? `Welcome back, ${recognizedProfile.fullName}! (${recognizedProfile.city})`
+                          : `أهلاً بعودتك، ${recognizedProfile.fullName}! (${recognizedProfile.city})`
+                        : lang === 'en'
+                        ? `Hello ${state.parentName} — Complete your 5-Step Family Setup`
+                        : `مرحباً ${state.parentName} — أكمل إعداد حساب العائلة المكون من ٥ خطوات`}
+                    </div>
+                    <div className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                      {recognizedProfile
+                        ? lang === 'en'
+                          ? `Permanent Session Active · ${recognizedProfile.childrenCount} Children · ${
+                              recognizedProfile.isCoParentLinked
+                                ? 'Co-Parent Linked ✓'
+                                : 'Co-Parent Link Pending'
+                            }`
+                          : `جلسة دائمة مفعّلة على الجهاز · ${recognizedProfile.childrenCount} أطفال · ${
+                              recognizedProfile.isCoParentLinked
+                                ? 'تم ربط حساب الشريك ✓'
+                                : 'ربط حساب الشريك متاح في أي وقت'
+                            }`
+                        : lang === 'en'
+                        ? '1. Location → 2. Credentials → 3. Verify OTP → 4. Children → 5. Co-Parent'
+                        : '١. الموقع ← ٢. بيانات الحساب ← ٣. التحقق ← ٤. الأطفال ← ٥. ربط الشريك'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    data-testid="open-progressive-onboarding-btn"
+                    onClick={() => setOnboardingModalOpen(true)}
+                    className="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black transition cursor-pointer"
+                  >
+                    {recognizedProfile
+                      ? lang === 'en'
+                        ? '⚙️ Edit Setup / Co-Parent'
+                        : '⚙️ تعديل الإعداد أو ربط الشريك'
+                      : lang === 'en'
+                      ? '🚀 Start 5-Step Onboarding'
+                      : '🚀 ابدأ التسجيل المتدرج (٥ خطوات)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSmartGreetingBanner(false)}
+                    aria-label={lang === 'en' ? 'Dismiss greeting' : 'إخفاء الترحيب'}
+                    className="px-2 py-1 rounded-lg text-xs font-bold text-[var(--color-muted)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -2762,7 +2863,11 @@ export default function App() {
             childProfile,
             childrenProfiles,
             skippedForLater,
+            persistedSession,
           }) => {
+            if (persistedSession) {
+              setRecognizedProfile(persistedSession);
+            }
             setState((prev) => {
               const pid = role === 'dad' ? 'father' : 'mother';
               const nextKids =
@@ -2830,8 +2935,8 @@ export default function App() {
                   ? 'Progress saved locally! You can resume onboarding anytime from Settings.'
                   : 'تم حفظ تقدمك محلياً! يمكنك استكمال إعداد الحساب في أي وقت من الإعدادات.'
                 : lang === 'en'
-                ? `Welcome ${parentName}! Location set to ${city} (${currency}) & children synced.`
-                : `أهلًا بك ${parentName}! تم ضبط الموقع على ${city} (${currency}) ومزامنة ملفات الأطفال بنجاح.`
+                ? `Welcome ${parentName}! Permanent session saved & routed to Dashboard.`
+                : `أهلاً بك ${parentName}! تم تثبيت جلستك الدائمة ومزامنة ملفات الأطفال بنجاح.`
             );
           }}
         />
