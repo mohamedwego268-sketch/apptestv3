@@ -28,10 +28,10 @@ export interface HomeDashboardSectionProps {
   parentProfileSpec: HeaderBarProfileSpec;
   cartItemCount: number;
   completedTasksCount: number;
-  nearestEvent?: CalendarEvent;
+  nearestEvent?: CalendarEvent | null;
   todayFormattedCombined: string;
   userCoords?: { lat: number; lng: number } | null;
-  geoStatus: 'idle' | 'loading' | 'success' | 'error';
+  geoStatus: 'idle' | 'loading' | 'success' | 'error' | 'active' | 'locating';
   navigateTo: (pageId: PageId) => void;
   onSelectPreciseCity: (val: string) => void;
   onUseCurrentLocation: () => void;
@@ -45,6 +45,7 @@ export interface HomeDashboardSectionProps {
   onOpenStoreCategory?: (catId: string) => void;
   onReplaySplash?: () => void;
   onAddVoiceMoment?: (kidId: number, moment: VoiceVaultMoment) => void;
+  onToggleTaskDone?: (taskId: number) => void;
 }
 
 interface DailyAudioBriefEpisode {
@@ -346,7 +347,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
   isOpen,
   onToggle,
   headerExtraAction,
-  borderClass = 'border-[var(--color-border)] dark:border-[#1E3646]',
+  borderClass = 'border-gray-100 dark:border-[#1E3646]',
   isEn,
   children,
 }) => {
@@ -356,34 +357,34 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
       data-testid={testId}
       data-collapsible-section="true"
       dir={isEn ? 'ltr' : 'rtl'}
-      className={`rounded-3xl border ${borderClass} bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 shadow-sm transition-all`}
+      className={`bg-white dark:bg-[#101D26] shadow-sm rounded-2xl p-4 border ${borderClass} space-y-4 transition-all duration-300 ease-in-out`}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2.5">
         <button
           type="button"
           data-testid={`${testId}-toggle-btn`}
           aria-expanded={isOpen}
           onClick={onToggle}
-          className="flex-1 min-w-[220px] flex items-center justify-between gap-3 text-start cursor-pointer group"
+          className="min-h-[48px] flex-1 min-w-[200px] flex items-center justify-between gap-3 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer group"
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span
-              className={`w-10 h-10 rounded-2xl ${iconBgClass} flex items-center justify-center text-lg shrink-0 shadow-2xs`}
+              className={`w-11 h-11 rounded-2xl ${iconBgClass} flex items-center justify-center text-lg shrink-0 shadow-2xs`}
             >
               {iconEmoji}
             </span>
             <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                <h2 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
                   {title}
                 </h2>
                 {badgeText && (
-                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black ${badgeClass}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${badgeClass}`}>
                     {badgeText}
                   </span>
                 )}
               </div>
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+              <p className="text-xs text-gray-500 dark:text-[#94A3B8] leading-relaxed">
                 {subtitle}
               </p>
             </div>
@@ -393,7 +394,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
           <span
             data-testid={`${testId}-arrow`}
             aria-hidden="true"
-            className={`w-9 h-9 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black transition-transform duration-300 shrink-0 ${
+            className={`w-10 h-10 rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black transition-transform duration-300 shrink-0 ${
               isOpen ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
             }`}
           >
@@ -401,13 +402,13 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
           </span>
         </button>
 
-        {headerExtraAction && <div className="shrink-0">{headerExtraAction}</div>}
+        {headerExtraAction && <div className="shrink-0 w-full sm:w-auto">{headerExtraAction}</div>}
       </div>
 
       {isOpen && (
         <div
           data-testid={`${testId}-content`}
-          className="pt-3 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-4 animate-page-enter"
+          className="pt-3 border-t border-gray-100 dark:border-[#1E3646] space-y-4 animate-page-enter transition-all duration-300 ease-in-out"
         >
           {children}
         </div>
@@ -1297,13 +1298,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         style={{
           borderColor: isMotherActive ? 'rgba(225, 29, 72, 0.35)' : 'rgba(13, 148, 136, 0.38)',
         }}
-        className="rounded-3xl border-2 bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 flex flex-col justify-between gap-4 shadow-sm"
+        className="bg-white dark:bg-[#101D26] shadow-sm rounded-2xl p-4 border border-gray-100 dark:border-[#1E3646] flex flex-col justify-between gap-4 transition-all duration-300 ease-in-out"
       >
         {/* Top Accordion Header for Personalized Welcome Banner */}
         <div
           id="home-personalized-welcome-banner"
           data-testid="home-personalized-welcome-banner"
-          className="space-y-2"
+          className="space-y-2.5"
         >
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
             <div className="inline-flex flex-wrap items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
@@ -1323,13 +1324,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   : `👨🏻‍🍼 الحساب النشط: بابا ${activeParentNameAr}`}
               </span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
-              <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
+              <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
                 · {isEn ? `Synced with ${partnerParentNameEn}` : `متصل مع ${partnerParentNameAr}`}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+              <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
                 {todayFormattedCombined}
               </span>
               <button
@@ -1338,7 +1339,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 aria-expanded={openAccordions.welcomeAudio}
                 onClick={() => toggleAccordion('welcomeAudio')}
                 title={isEn ? 'Toggle Audio Brief Card' : 'طي / فتح بطاقة الرسالة الصوتية'}
-                className={`w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black transition-transform duration-300 cursor-pointer ${
+                className={`min-w-[48px] min-h-[48px] rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
                   openAccordions.welcomeAudio ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
                 }`}
               >
@@ -1347,16 +1348,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <h1
               id="home-main-greeting-heading"
-              className="text-lg sm:text-2xl font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
+              className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
             >
               {isEn
                 ? `Welcome back, ${activeParentNameEn} 👋 Wishing you a calm, joyful day with ${liveHamzaNameEn}, ${liveLailaNameEn} & ${liveYoussefNameEn}`
                 : `أهلاً بعودتك يا ${activeParentNameAr} ${isMotherActive ? '🌸' : '🌟'}.. يوم دافئ يجمعك مع ${liveHamzaNameAr} و${liveLailaNameAr} و${liveYoussefNameAr}`}
             </h1>
-            <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+            <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
               {isMotherActive
                 ? isEn
                   ? `Everything for baby ${liveHamzaNameEn} (${liveHamzaAgeEn}), creative ${liveLailaNameEn} (${liveLailaAgeEn}), and champion ${liveYoussefNameEn} (${liveYoussefAgeEn}) is organized and synced with Dad ${partnerParentNameEn}.`
@@ -2915,29 +2916,29 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {minimalistGateways.map((gw) => (
               <button
                 key={gw.id}
                 type="button"
                 data-testid={`home-gateway-${gw.id}`}
                 onClick={() => navigateTo(gw.id)}
-                className={`rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/80 p-3.5 text-start flex flex-col justify-between gap-2.5 transition-all hover:scale-[1.01] active:scale-98 cursor-pointer group ${gw.accentClass}`}
+                className={`min-h-[48px] bg-white dark:bg-[#142430]/80 shadow-sm rounded-2xl p-4 border border-gray-100 dark:border-[#1E3646] text-start flex flex-col justify-between gap-2.5 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer group ${gw.accentClass}`}
               >
                 <div className="flex flex-wrap items-center justify-between gap-1.5 w-full">
                   <SoftFilledIcon id={gw.iconId} boxSize="sm" />
-                  <span className="text-[10.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug">
+                  <span className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug">
                     {isEn ? gw.statEn : gw.statAr}
                   </span>
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug flex items-center justify-between gap-1">
+                  <div className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug flex items-center justify-between gap-1">
                     <span className="leading-snug">{isEn ? gw.titleEn : gw.titleAr}</span>
-                    <span className="text-[11px] opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
+                    <span className="text-xs opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
                       {isEn ? '→' : '←'}
                     </span>
                   </div>
-                  <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-snug">
+                  <p className="text-xs text-gray-500 dark:text-[#94A3B8] leading-snug">
                     {isEn ? gw.subEn : gw.subAr}
                   </p>
                 </div>
@@ -2947,7 +2948,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
           <div id="home-promotional-showcase" data-testid="home-promotional-showcase">
             {showPromoShowcase && (
-              <div className="pt-3 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 animate-page-enter">
+              <div className="pt-3 border-t border-gray-100 dark:border-[#1E3646] grid grid-cols-2 gap-2.5 animate-page-enter">
                 {[
                   {
                     catId: 'toys',

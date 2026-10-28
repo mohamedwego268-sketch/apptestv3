@@ -1434,3 +1434,166 @@ h1, h2, h3, h4 {
   border-radius: 9999px;
 }
 
+/* ==========================================================================
+   1% PURE MOBILE APPLICATION EXPERIENCE (MOBILE-FIRST NATIVE FEEL)
+   - Strict Mobile Viewport & Container (max-w-[430px] mx-auto)
+   - Mobile Safe Areas (pt-safe / pt-12, pb-safe / pb-8)
+   - 48px Minimum Touch Targets & Active Scale-95 Micro-Interactions
+   - Arabic RTL Mobile Typography Hierarchy & Zero-Truncation Wrapping
+   - Native Slide/Fade Screen & Wizard Step Transitions
+   ========================================================================== */
+
+/* Outer ambient backdrop when viewed on desktop/tablet screens */
+@media (min-width: 460px) {
+  body {
+    background-color: #0f172a !important;
+    background-image:
+      radial-gradient(circle at 20% 15%, rgba(13, 148, 136, 0.18) 0%, transparent 45%),
+      radial-gradient(circle at 80% 85%, rgba(232, 106, 61, 0.14) 0%, transparent 45%) !important;
+    background-attachment: fixed;
+  }
+}
+
+/* Strict Mobile Viewport Frame Container */
+.mobile-app-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #f8fafc;
+  transition: all 300ms ease-in-out;
+}
+
+:root[data-color-mode="dark"] .mobile-app-shell {
+  background-color: #111827;
+}
+
+@media (min-width: 460px) {
+  .mobile-app-shell {
+    border-inline: 1px solid rgba(226, 232, 240, 0.85);
+    box-shadow:
+      0 25px 60px -15px rgba(2, 6, 23, 0.55),
+      0 0 0 1px rgba(148, 163, 184, 0.15);
+  }
+
+  :root[data-color-mode="dark"] .mobile-app-shell {
+    border-inline: 1px solid #1E3646;
+    box-shadow:
+      0 25px 60px -15px rgba(0, 0, 0, 0.8),
+      0 0 0 1px rgba(45, 212, 191, 0.14);
+  }
+}
+
+/* Safe Area Spacing Utilities (Notch / Dynamic Island & Home Indicator) */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 3rem);
+}
+
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 2rem);
+}
+
+.pb-safe-nav {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.75rem);
+}
+
+/* Force single-column or 2-column mobile layouts inside the 430px frame even on wide desktop monitors */
+.mobile-app-shell .lg\:grid-cols-12,
+.mobile-app-shell .lg\:grid-cols-4,
+.mobile-app-shell .lg\:grid-cols-3,
+.mobile-app-shell .xl\:grid-cols-4,
+.mobile-app-shell .xl\:grid-cols-3,
+.mobile-app-shell .md\:grid-cols-4,
+.mobile-app-shell .md\:grid-cols-3,
+.mobile-app-shell .sm\:grid-cols-4,
+.mobile-app-shell .sm\:grid-cols-3 {
+  grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+.mobile-app-shell .lg\:col-span-8,
+.mobile-app-shell .lg\:col-span-7,
+.mobile-app-shell .lg\:col-span-6,
+.mobile-app-shell .lg\:col-span-5,
+.mobile-app-shell .lg\:col-span-4 {
+  grid-column: span 1 / span 1 !important;
+}
+
+/* Enforce Minimum 48px Touch Targets & Ergonomic Micro-Interactions */
+.mobile-app-shell button,
+.mobile-app-shell [role="button"],
+.mobile-app-shell [role="tab"],
+.mobile-app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+.mobile-app-shell select {
+  min-height: 48px;
+  transition: all 300ms ease-in-out;
+  touch-action: manipulation;
+}
+
+.mobile-app-shell input[type="checkbox"],
+.mobile-app-shell input[type="radio"] {
+  min-width: 22px;
+  min-height: 22px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mobile-app-shell button:active:not(:disabled),
+.mobile-app-shell [role="button"]:active:not(:disabled),
+.mobile-app-shell [role="tab"]:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.mobile-app-shell input:focus-visible,
+.mobile-app-shell select:focus-visible,
+.mobile-app-shell textarea:focus-visible,
+.mobile-app-shell button:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+/* Strict Mobile Typography Hierarchy (Arabic RTL Optimized) */
+.mobile-app-shell h1 {
+  font-size: 1.375rem; /* text-xl to text-2xl */
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.mobile-app-shell h2 {
+  font-size: 1.25rem; /* text-xl */
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.mobile-app-shell h3,
+.mobile-app-shell h4 {
+  font-size: 1rem; /* text-base */
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+.mobile-app-shell p {
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.625; /* leading-relaxed */
+}
+
+/* Native Step Slide & Fade Transitions without CLS */
+@keyframes mobileStepSlideFade {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.animate-mobile-step {
+  animation: mobileStepSlideFade 300ms ease-in-out both;
+}
+

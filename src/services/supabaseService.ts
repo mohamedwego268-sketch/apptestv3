@@ -669,8 +669,7 @@ export async function fetchFamilySpaceFromSupabase(
           : currentState.city,
       currency:
         primaryFamilyRow?.currency === 'SAR' ||
-        primaryFamilyRow?.currency === 'EGP' ||
-        primaryFamilyRow?.currency === 'USD'
+        primaryFamilyRow?.currency === 'EGP'
           ? primaryFamilyRow.currency
           : currentState.currency,
       active_parent:

@@ -140,28 +140,28 @@ const WIZARD_STEPS_META: Array<{
     num: 2,
     stepKey: 'CREDENTIALS',
     icon: '🔐',
-    labelAr: '2. بيانات الحساب',
+    labelAr: '2. الحساب (بيانات الحساب)',
     labelEn: '2. Account Credentials',
   },
   {
     num: 3,
     stepKey: 'VERIFY_METHOD',
     icon: '📲',
-    labelAr: '3. طريقة التحقق',
+    labelAr: '3. التحقق (طريقة التحقق)',
     labelEn: '3. Verification Method',
   },
   {
     num: 4,
     stepKey: 'CHILDREN',
     icon: '👶🏻',
-    labelAr: '4. ملفات الأطفال',
+    labelAr: '4. الأطفال (ملفات الأطفال)',
     labelEn: '4. Children Profiles',
   },
   {
     num: 5,
     stepKey: 'CO_PARENT',
     icon: '🤝',
-    labelAr: '5. ربط الشريك',
+    labelAr: '5. الشريك (ربط الشريك)',
     labelEn: '5. Co-Parent Link',
   },
 ];
@@ -1100,7 +1100,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     <div
       dir={isEn ? 'ltr' : 'rtl'}
       data-testid="onboarding-gateway-backdrop"
-      className="fixed inset-0 z-[110] bg-pattern flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+      className="fixed inset-0 z-[110] bg-pattern flex justify-center overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-wizard-title"
@@ -1130,20 +1130,22 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <rect width="100%" height="100%" fill="url(#nekbaar-arabesque-entry-pattern)" />
       </svg>
 
-      <div className="relative z-10 soft-card-surface w-full max-w-2xl rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
+      {/* Strict Mobile App Frame Container (max-w-[430px] mx-auto with Safe Areas pt-safe / pt-12 and pb-safe / pb-8) */}
+      <div className="mobile-app-shell relative z-10 w-full max-w-[430px] mx-auto min-h-dvh pt-12 pb-8 px-3.5 flex flex-col justify-between bg-pattern transition-all duration-300 ease-in-out">
+        <div className="soft-card-surface w-full rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-white/95 dark:bg-[#101D26]/95 backdrop-blur-md p-4 space-y-4 shadow-2xl transition-all duration-300 ease-in-out">
         {/* ===================================================================
             MODE 1: MANDATORY AUTH GATEWAY (LANDING SCREEN)
             =================================================================== */}
         {flowMode === 'GATEWAY' && (
-          <div data-testid="welcome-auth-gateway-screen" className="space-y-5 py-1">
+          <div data-testid="welcome-auth-gateway-screen" className="space-y-4 py-1 animate-mobile-step transition-all duration-300 ease-in-out">
             {/* Top Brand Header */}
             <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-2xl font-black shadow-md">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-2xl font-black shadow-md shrink-0">
                   🌱
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="space-y-0.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                       {isEn ? 'Nekbaar Family Super App' : 'تطبيق العائلة الذكي — نكبر'}
                     </span>
@@ -1153,7 +1155,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </div>
                   <h2
                     id="onboarding-wizard-title"
-                    className="text-base sm:text-xl font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
                   >
                     {isEn
                       ? 'Welcome to Nekbaar Family Space'
@@ -1167,7 +1169,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   type="button"
                   onClick={onClose}
                   aria-label={isEn ? 'Close' : 'إغلاق'}
-                  className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                  className="min-w-[48px] min-h-[48px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] text-sm font-bold flex items-center justify-center hover:bg-teal-500/10 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shrink-0"
                 >
                   ✕
                 </button>
@@ -1175,21 +1177,21 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             </div>
 
             {/* Greeting & Security Explanation Card */}
-            <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 sm:p-5 space-y-2">
-              <p className="text-xs sm:text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
+            <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 space-y-1.5">
+              <p className="text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
                 {isEn
                   ? 'Please sign in or create a new family account to access your children’s profiles (Hamza, Laila, Youssef), daily routines, bedtime stories, and instant co-parent sync.'
                   : 'يرجى تسجيل الدخول أو إنشاء حساب عائلي جديد للوصول إلى ملفات أطفالك (حمزة، ليلى، يوسف)، الروتين اليومي، قصص ما قبل النوم، والربط الفوري مع الشريك.'}
               </p>
-              <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              <div className="text-xs text-gray-500 dark:text-[#CBD5E1]">
                 {isEn
                   ? 'Supports Google / Apple OAuth, instant Email OTP verification, and primary mobile binding:'
                   : 'يدعم الدخول عبر Google و Apple، رمز التحقق الفوري عبر البريد الإلكتروني (OTP)، وتوثيق رقم الجوال لربط الشريك:'}
               </div>
             </div>
 
-            {/* Two Primary Main Action Buttons (Requirement 1) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* Two Primary Main Action Buttons (Requirement 1 - Mobile Stacked for Thumb Ergonomics) */}
+            <div className="grid grid-cols-1 gap-3">
               {/* Main Action 1: تسجيل دخول (لديك حساب مسبق) */}
               <button
                 type="button"
@@ -1202,9 +1204,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setAuthSubStep('STEP_A_IDENTITY');
                   setFlowMode('AUTH_PIPELINE');
                 }}
-                className="group rounded-2xl border-2 border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/70 dark:hover:bg-[#182C3A] p-4 sm:p-5 text-start transition-all cursor-pointer shadow-sm flex flex-col justify-between gap-3"
+                className="group min-h-[48px] rounded-2xl border-2 border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/70 dark:hover:bg-[#182C3A] p-4 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shadow-sm flex flex-col justify-between gap-2.5"
               >
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="w-10 h-10 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-lg font-black">
                       🔑
@@ -1213,12 +1215,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       {isEn ? 'Existing Account →' : 'حساب مسجل ←'}
                     </span>
                   </div>
-                  <div className="text-sm sm:text-base font-black text-gray-900 dark:text-[#F8FAFC]">
+                  <div className="text-base font-semibold text-gray-900 dark:text-[#F8FAFC]">
                     {isEn
                       ? 'Sign In (Already have an account)'
                       : 'تسجيل دخول (لديك حساب مسبق)'}
                   </div>
-                  <p className="text-xs font-medium text-gray-600 dark:text-[#CBD5E1] leading-relaxed">
+                  <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
                     {isEn
                       ? 'Sign in with Google, Apple, or Email + instant OTP verification and phone binding.'
                       : 'الدخول عبر البريد الإلكتروني أو Google/Apple مع رمز التحقق الفوري وتوثيق الجوال.'}
@@ -1241,9 +1243,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setAuthSubStep('STEP_A_IDENTITY');
                   setFlowMode('AUTH_PIPELINE');
                 }}
-                className="group rounded-2xl border-2 border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-4 sm:p-5 text-start transition-all cursor-pointer shadow-md flex flex-col justify-between gap-3"
+                className="group min-h-[48px] rounded-2xl border-2 border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-4 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shadow-md flex flex-col justify-between gap-2.5"
               >
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-lg font-black">
                       🚀
@@ -1252,10 +1254,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       {isEn ? 'New Family Account →' : 'حساب عائلي جديد ←'}
                     </span>
                   </div>
-                  <div className="text-sm sm:text-base font-black text-white">
+                  <div className="text-base font-semibold text-white">
                     {isEn ? 'Create New Account' : 'إنشاء حساب جديد'}
                   </div>
-                  <p className="text-xs font-medium text-teal-50/95 leading-relaxed">
+                  <p className="text-sm leading-relaxed text-teal-50/95">
                     {isEn
                       ? 'Register with Email or Google/Apple, verify Email OTP, and link your phone for instant co-parent pairing.'
                       : 'تسجيل حساب جديد بالبريد أو Google/Apple، تأكيد رمز البريد، وربط وتوثيق رقم الجوال للشريك.'}
@@ -1267,14 +1269,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               </button>
             </div>
 
-            {/* Direct Quick OAuth Shortcuts (Google & Apple) */}
+            {/* Direct Quick OAuth Shortcuts (Google & Apple) + 5-Step Wizard Direct Trigger */}
             <div className="rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#142430]/75 p-3.5 space-y-2.5">
-              <div className="text-[11px] font-extrabold text-gray-700 dark:text-[#CBD5E1] text-center">
+              <div className="text-xs text-gray-500 dark:text-[#CBD5E1] text-center font-semibold">
                 {isEn
                   ? 'Or continue instantly with your Google or Apple account:'
                   : 'أو المتابعة المباشرة السريعة باستخدام حساب Google أو Apple:'}
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5">
                 <button
                   type="button"
                   data-testid="gateway-quick-google-btn"
@@ -1283,7 +1285,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setFlowMode('AUTH_PIPELINE');
                     void handleStepASubmit('google');
                   }}
-                  className="min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-3.5 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                  className="min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
                 >
                   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -1304,13 +1306,31 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setFlowMode('AUTH_PIPELINE');
                     void handleStepASubmit('apple');
                   }}
-                  className="min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-3.5 py-2 text-xs font-black flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                  className="min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
                 >
                   <span className="text-base leading-none text-gray-900" aria-hidden="true">
                     
                   </span>
                   <span className="text-gray-900 font-semibold">
                     {isEn ? 'Continue with Apple' : 'المتابعة باستخدام Apple'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  data-testid="gateway-open-5step-wizard-btn"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setStepSyncNotice(null);
+                    setFlowMode('WIZARD');
+                  }}
+                  className="min-h-[48px] rounded-xl border border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] px-4 py-2.5 text-xs font-extrabold flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
+                >
+                  <span>✨</span>
+                  <span>
+                    {isEn
+                      ? 'Start 5-Step Family Onboarding Wizard (1. الدولة → 5. الشريك)'
+                      : 'بدء معالج الإعداد المتدرج من ٥ خطوات (1. الدولة ← 5. الشريك)'}
                   </span>
                 </button>
               </div>
@@ -2005,12 +2025,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   <button
                     key={item.num}
                     type="button"
+                    role="tab"
+                    aria-selected={isActive}
                     data-testid={`onboarding-step-pill-${item.num}`}
                     onClick={() => {
                       setErrorMsg(null);
                       setStep(item.num);
                     }}
-                    className={`shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2.5 text-xs sm:text-sm border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`min-h-[48px] shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs sm:text-sm border active:scale-95 transition-all duration-300 ease-in-out cursor-pointer flex items-center gap-1.5 ${
                       isActive
                         ? 'border-[#0d9488] bg-[#0d9488] text-white font-bold shadow-sm'
                         : isCompleted
@@ -2067,12 +2089,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           </div>
         )}
 
+        {/* Smooth Horizontal/Fade Step Container */}
+        <div key={step} className="animate-mobile-step transition-all duration-300 ease-in-out space-y-4">
         {/* ===================================================================
             STEP 1: LOCATION (SELECT COUNTRY & CITY FIRST — SAVE TO DRAFT)
             =================================================================== */}
         {step === 1 && (
           <div data-testid="onboarding-step-1-location" className="space-y-4">
-            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+            <p className="text-sm font-normal text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
               {isEn
                 ? 'Select your country and city first so we can tailor local schools, nurseries, medical care, and currency. Your choice is saved immediately to your local draft.'
                 : 'اختر الدولة والمدينة أولاً لتخصيص الحضانات، المدارس، الأطباء، والعملة المحلية لمنطقتك. يتم حفظ اختيارك تلقائياً في المسودة الذكية.'}
@@ -3073,7 +3097,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   data-testid="onboarding-next-btn"
                   disabled={isSavingStep}
                   onClick={handleNextStep}
-                  className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-xs transition cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                  className="min-h-[48px] px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-xs active:scale-95 transition-all duration-300 ease-in-out cursor-pointer disabled:opacity-60 whitespace-nowrap"
                 >
                   {isSavingStep
                     ? isEn
@@ -3093,17 +3117,19 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </button>
               </div>
             </div>
+            </div>
           </>
         )}
 
         {/* Bottom Copyright Ownership */}
         <div
           data-testid="onboarding-login-bottom-copyright"
-          className="pt-1 text-center text-[11px] font-bold text-[var(--color-muted)] opacity-85"
+          className="pt-2 text-center text-xs text-gray-500 dark:text-[#94A3B8]"
         >
           {isEn
             ? 'نكبر (Nekbaar) © 2026 — All Intellectual Property & Copyright Reserved'
             : 'نكبر (Nekbaar) © 2026 — جميع حقوق الملكية الفكرية محفوظة'}
+        </div>
         </div>
       </div>
     </div>

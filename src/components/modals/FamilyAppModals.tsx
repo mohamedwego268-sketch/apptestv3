@@ -1139,7 +1139,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
           id="master-control-slidebar-backdrop"
           data-testid="master-control-slidebar-backdrop"
           dir={isEn ? 'ltr' : 'rtl'}
-          className="fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-xs flex justify-start"
+          className="fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-xs flex justify-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) onCloseRoleModal();
           }}
@@ -1150,23 +1150,23 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="roleModalTitle"
-            className="w-full max-w-[390px] sm:max-w-[420px] h-full overflow-y-auto bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] p-4 sm:p-5 space-y-4 shadow-2xl flex flex-col justify-between animate-page-enter"
+            className="w-full max-w-[430px] h-full overflow-y-auto bg-[var(--color-surface)] dark:bg-[#0B131A] border-x border-[var(--color-border)] dark:border-[#1E3646] px-4 pt-safe pb-safe space-y-4 shadow-2xl flex flex-col justify-between animate-page-enter transition-all duration-300 ease-in-out"
           >
             <div className="space-y-4">
               {/* Top Header Row */}
               <div className="flex items-center justify-between border-b border-[var(--color-border)] dark:border-[#1E3646] pb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs shrink-0">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs shrink-0">
                     <ThreeDIcon id="home" size={20} />
                   </div>
                   <div className="min-w-0">
                     <h2
                       id="roleModalTitle"
-                      className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate"
+                      className="text-base font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
                     >
                       {isEn ? 'Nekbaar · Master Navigation' : 'نكبر · القائمة الرئيسية والتحكم'}
                     </h2>
-                    <p className="text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] truncate">
+                    <p className="text-xs text-[#0d9488] dark:text-[#2DD4BF]">
                       {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
                     </p>
                   </div>
@@ -1175,7 +1175,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   type="button"
                   onClick={onCloseRoleModal}
                   aria-label={isEn ? 'Close' : 'إغلاق'}
-                  className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer hover:border-[#0d9488]"
+                  className="min-w-[48px] min-h-[48px] rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center active:scale-95 transition-all duration-300 ease-in-out cursor-pointer hover:border-[#0d9488] shrink-0"
                 >
                   ×
                 </button>
@@ -1191,7 +1191,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   type="button"
                   onClick={() => setQuickControlsAccordionOpen((prev) => !prev)}
                   aria-expanded={quickControlsAccordionOpen}
-                  className="w-full p-3 flex items-center justify-between gap-2 text-start cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
+                  className="w-full min-h-[48px] p-3.5 flex items-center justify-between gap-2 text-start cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] active:scale-95 transition-all duration-300 ease-in-out"
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="w-7 h-7 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-xs font-black shrink-0">

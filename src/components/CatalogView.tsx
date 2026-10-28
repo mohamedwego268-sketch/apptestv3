@@ -46,8 +46,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       return (
         item.sequenceCode.toLowerCase().includes(q) ||
         item.name.toLowerCase().includes(q) ||
-        item.summary.toLowerCase().includes(q) ||
-        item.provider.toLowerCase().includes(q)
+        (item.description || '').toLowerCase().includes(q) ||
+        (item.partnerBrand || item.sellerName || '').toLowerCase().includes(q)
       );
     });
   }, [items, selectedCategory, searchQuery]);
@@ -84,7 +84,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       id="master-catalog-view"
       data-testid="master-catalog-view"
       dir={isEn ? 'ltr' : 'rtl'}
-      className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0F1B24] p-4 sm:p-5 space-y-4 shadow-xs"
+      className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-white dark:bg-[#0F1B24] p-4 space-y-4 shadow-sm"
     >
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
@@ -97,7 +97,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 : 'كتالوج الأسرة المرّقم تلقائياً (PRD-XXXX) · متصل بـ MasterController'}
             </span>
           </div>
-          <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+          <h3 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn
               ? 'Verified Products & Quick Family Actions (Ages 0–8)'
               : 'منتجات وخدمات موثوقة مع إجراءات سريعة لأطفالكم (حمزة · ليلى · يوسف)'}
@@ -110,7 +110,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             data-testid="catalog-refresh-btn"
             disabled={isRefreshing}
             onClick={handleRefreshCatalog}
-            className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition-all cursor-pointer"
+            className="min-h-[48px] px-3.5 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
           >
             {isRefreshing
               ? isEn
@@ -124,8 +124,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       </div>
 
       {/* Search & Category Filter Row */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-col items-stretch justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto flex-nowrap step-tabs-scroll pb-1">
           {categories.slice(0, 7).map((cat) => {
             const active = selectedCategory === cat;
             return (
@@ -134,7 +134,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 type="button"
                 data-testid={`catalog-filter-${cat}`}
                 onClick={() => setSelectedCategory(cat)}
-                className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                className={`min-h-[48px] shrink-0 whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-extrabold border active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
                   active
                     ? 'bg-[#0d9488] text-white border-[#0d9488]'
                     : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -156,17 +156,17 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               ? 'Search by PRD-XXXX or product name...'
               : 'ابحث برمز PRD-XXXX أو اسم المنتج...'
           }
-          className="sm:w-64 min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+          className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
         />
       </div>
 
       {/* Sequenced Catalog Items Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 gap-3.5">
         {filteredItems.slice(0, 6).map((item) => (
           <div
             key={item.id}
             data-testid={`catalog-item-card-${item.sequenceCode}`}
-            className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/75 p-4 flex flex-col justify-between gap-3 hover:border-[#0d9488] transition-all"
+            className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50/75 dark:bg-[#142430]/75 p-4 flex flex-col justify-between gap-3 hover:border-[#0d9488] transition-all duration-300 ease-in-out"
           >
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
@@ -177,30 +177,31 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   {item.sequenceCode}
                 </span>
                 <span className="text-[11px] font-bold text-amber-600 dark:text-amber-300 tabular-nums">
-                  ★ {item.rating.toFixed(1)}
+                  ★ {item.rating}
                 </span>
               </div>
 
               <div className="flex items-start gap-2.5">
-                <span className="text-2xl shrink-0">{item.icon}</span>
+                <span className="text-2xl shrink-0">{item.emoji}</span>
                 <div className="min-w-0">
-                  <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                    {locText(item.name, lang)}
+                  <h4 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                    {isEn ? item.nameEn || locText(item.name, lang) : item.name}
                   </h4>
-                  <p className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                    {locText(item.provider, lang)} · {locText(item.ageFit, lang)}
+                  <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
+                    {locText(item.partnerBrand || item.sellerName || item.categoryLabel, lang)} ·{' '}
+                    {item.ageStage || '0-8'}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
-                {locText(item.summary, lang)}
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1] line-clamp-2">
+                {isEn ? item.descriptionEn || locText(item.description, lang) : item.description}
               </p>
             </div>
 
             <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex items-center justify-between gap-2">
               <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] tabular-nums">
-                {item.price} {isEn ? 'EGP' : 'ج.م'}
+                {item.priceEGP} {isEn ? 'EGP' : 'ج.م'}
               </div>
 
               <div className="flex items-center gap-1.5">

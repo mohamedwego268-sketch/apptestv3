@@ -1325,7 +1325,7 @@ export function useMasterController(): MasterControllerContextValue {
       saveDiagnosticAssessment: save,
       recordChildWellnessBoost: boost,
       generateBedtimeStoryForChild: generate,
-      getStoriesForChild,
+      getStoriesForChild: getForChild,
       refreshCatalogWithSequences: refresh,
       allocateNextProductSequenceCode: allocateCode,
       forceSyncNow: (s) => masterAppController.forceSyncNow(s),

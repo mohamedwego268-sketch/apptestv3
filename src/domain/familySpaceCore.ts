@@ -846,6 +846,8 @@ export interface CommercialCatalogItem {
   deliveryEstimateEn?: string;
 }
 
+export type CommercialItem = CommercialCatalogItem;
+
 export const STORAGE_KEY = 'family-space-v1';
 export const DEMO_OTP_CODE = '123456';
 

@@ -143,8 +143,7 @@ export class OnboardingFlowController {
           item.avatarTheme === 'astronaut' ||
           item.avatarTheme === 'artist' ||
           item.avatarTheme === 'scientist' ||
-          item.avatarTheme === 'athlete' ||
-          item.avatarTheme === 'explorer'
+          item.avatarTheme === 'athlete'
             ? item.avatarTheme
             : fallback.avatarTheme;
 

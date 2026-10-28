@@ -290,15 +290,15 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
 }) => {
   const sizeClasses =
     size === 'sm'
-      ? 'min-h-[38px] px-4 py-1.5 rounded-xl text-[11.5px] font-extrabold tracking-tight'
+      ? 'min-h-[48px] px-4 py-2 rounded-xl text-xs font-extrabold tracking-tight'
       : size === 'lg'
-      ? 'min-h-[46px] px-5.5 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold tracking-tight'
-      : 'min-h-[42px] px-4.5 py-2 rounded-xl text-xs font-extrabold tracking-tight';
+      ? 'min-h-[48px] px-5 py-2.5 rounded-2xl text-sm font-extrabold tracking-tight'
+      : 'min-h-[48px] px-4.5 py-2.5 rounded-xl text-xs font-extrabold tracking-tight';
   const variantTone = CTA_BUTTON_VARIANTS[variant] || CTA_BUTTON_VARIANTS.orange;
   return (
     <button
       type="button"
-      className={`${sizeClasses} ${variantTone} hover:scale-[1.02] active:scale-[0.97] transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${className}`}
+      className={`${sizeClasses} ${variantTone} active:scale-95 transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${className}`}
       {...rest}
     >
       {children}
@@ -530,14 +530,14 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   return (
     <div
       data-sticky-topbar="true"
-      className={`sticky top-[52px] z-20 glass-sticky-subheader backdrop-blur-md rounded-[22px] border ${toneClasses.card} px-3.5 py-2.5 sm:px-5 sm:py-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out`}
+      className={`sticky top-[64px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border ${toneClasses.card} p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 transition-all duration-300 ease-in-out`}
     >
-      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[36px] sm:min-h-[38px] px-2.5 sm:px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
+          className="min-h-[48px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
         >
           <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
           <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
@@ -546,26 +546,18 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
         <SoftFilledIcon id={iconId} boxSize="sm" />
 
         <div className="min-w-0 flex-1">
-          <h1 className="text-xs sm:text-base font-extrabold text-[var(--color-text)] leading-snug break-words">
+          <h1 className="text-xl font-bold text-[var(--color-text)] leading-snug break-words">
             {title}
           </h1>
           {(subtitle || badge) && (
-            <div className="text-[11px] font-bold text-[var(--color-muted)] leading-snug break-words mt-0.5">
+            <div className="text-xs text-gray-500 dark:text-[#94A3B8] leading-snug break-words mt-0.5">
               {subtitle || badge}
             </div>
           )}
         </div>
       </div>
 
-      {badge && (
-        <span
-          className={`hidden md:inline-flex px-2.5 py-1 rounded-xl text-[10.5px] font-extrabold ${toneClasses.badge} shrink-0 tabular-nums`}
-        >
-          {badge}
-        </span>
-      )}
-
-      {rightSlot && <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 ms-auto">{rightSlot}</div>}
+      {rightSlot && <div className="flex flex-wrap items-center gap-1.5 shrink-0 ms-auto">{rightSlot}</div>}
     </div>
   );
 };
