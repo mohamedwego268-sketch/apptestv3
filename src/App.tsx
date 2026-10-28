@@ -65,6 +65,7 @@ import {
   fetchFamilySpaceFromSupabase,
   syncFamilySpaceToSupabase,
 } from './services/supabaseService';
+import { useMasterController } from './services/MasterAppController';
 import { getLocalizedDocumentTitle } from './utils/familyFormatters';
 import { FamilyAppProvider, PageId } from './context/FamilyAppContext';
 import { HomeDashboardSection } from './features/HomeDashboardSection';
@@ -314,32 +315,35 @@ export default function App() {
     }
   }, [state]);
 
-  // Supabase loading & network fallback states
+  // Autonomous Master Controller hook (`Initializing` | `Synced` | `Offline-Fallback` | `Error-Recovery`)
+  const master = useMasterController();
+
+  // Supabase loading & network fallback states driven by MasterAppController
   const [supabaseStatus, setSupabaseStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [supabaseErrorMsg, setSupabaseErrorMsg] = useState<string | null>(null);
 
   const loadFromSupabase = React.useCallback(async () => {
     setSupabaseStatus('loading');
     setSupabaseErrorMsg(null);
-    const result = await fetchFamilySpaceFromSupabase(state);
-    setState(result.nextState);
-    if (result.error) {
+    const { hydratedState, snapshot } = await master.controller.bootstrapWithAppState(state);
+    setState(hydratedState);
+    if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
       setSupabaseStatus('error');
-      setSupabaseErrorMsg(result.error);
+      setSupabaseErrorMsg(snapshot.retryTelemetry.lastError);
     } else {
       setSupabaseStatus('ready');
     }
-  }, []);
+  }, [master.controller]);
 
-  // Hydrate & synchronize with Supabase tables (Users: Ahmed/Mariam, Families, Children: Hamza/Laila/Youssef, Extended Family, Catalog Items)
+  // Autonomous Bootstrapping & Hydration via MasterAppController on mount
   useEffect(() => {
     let isMounted = true;
-    fetchFamilySpaceFromSupabase(state).then((result) => {
+    master.controller.bootstrapWithAppState(state).then(({ hydratedState, snapshot }) => {
       if (!isMounted) return;
-      setState(result.nextState);
-      if (result.error) {
+      setState(hydratedState);
+      if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
         setSupabaseStatus('error');
-        setSupabaseErrorMsg(result.error);
+        setSupabaseErrorMsg(snapshot.retryTelemetry.lastError);
       } else {
         setSupabaseStatus('ready');
       }
@@ -347,14 +351,24 @@ export default function App() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [master.controller]);
 
+  // Autonomous Debounced Sync & Battery Diagnostics Recomputation via MasterAppController
   useEffect(() => {
     const syncTimer = setTimeout(() => {
-      syncFamilySpaceToSupabase(state);
+      void master.forceSyncNow(state);
     }, 1500);
     return () => clearTimeout(syncTimer);
-  }, [state.kids, state.family, state.parentAccounts, state.city, state.country, state.currency]);
+  }, [
+    master,
+    state.kids,
+    state.tasks,
+    state.family,
+    state.parentAccounts,
+    state.city,
+    state.country,
+    state.currency,
+  ]);
 
   // Sync settings inputs when state changes externally
   useEffect(() => {
@@ -2747,6 +2761,7 @@ export default function App() {
             email,
             childProfile,
             childrenProfiles,
+            skippedForLater,
           }) => {
             setState((prev) => {
               const pid = role === 'dad' ? 'father' : 'mother';
@@ -2798,10 +2813,10 @@ export default function App() {
                     country,
                     phoneCode: country === 'SA' ? '+966' : '+20',
                     phoneNumber,
-                    phoneVerified: true,
+                    phoneVerified: !skippedForLater,
                     email,
-                    emailVerified: true,
-                    onboardingCompleted: true,
+                    emailVerified: !skippedForLater,
+                    onboardingCompleted: !skippedForLater,
                   },
                 },
                 kids: nextKids,
@@ -2810,7 +2825,11 @@ export default function App() {
             setOnboardingModalOpen(false);
             navigateTo('home');
             showToast(
-              lang === 'en'
+              skippedForLater
+                ? lang === 'en'
+                  ? 'Progress saved locally! You can resume onboarding anytime from Settings.'
+                  : 'تم حفظ تقدمك محلياً! يمكنك استكمال إعداد الحساب في أي وقت من الإعدادات.'
+                : lang === 'en'
                 ? `Welcome ${parentName}! Location set to ${city} (${currency}) & children synced.`
                 : `أهلًا بك ${parentName}! تم ضبط الموقع على ${city} (${currency}) ومزامنة ملفات الأطفال بنجاح.`
             );

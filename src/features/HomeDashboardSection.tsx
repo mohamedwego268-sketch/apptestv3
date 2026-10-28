@@ -17,6 +17,10 @@ import {
 } from '../components/DesignSystem';
 import { ThreeDIconId } from '../components/ThreeDVisuals';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
+import { useMaster } from '../services/MasterAppController';
+import { BatteryDiagnosticsView } from '../components/BatteryDiagnosticsView';
+import { StoriesLibraryView } from '../components/StoriesLibraryView';
+import { CatalogView } from '../components/CatalogView';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -421,6 +425,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   nearestEvent,
   todayFormattedCombined,
   navigateTo,
+  onAddToCart,
+  onInspectCommercialItem,
+  onAddProductToWishes,
   onAddSuggestedRoutineTask,
   onShowToast,
   bedtimeMode = false,
@@ -664,14 +671,22 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     ];
   }
 
+  const master = useMaster();
+
   const handleGenerateCustomStory = () => {
     const lines = buildFifteenLineStory(storyCustomTopic, storySelectedMoral, isEn);
     setGeneratedStoryLines(lines);
+    void master.generateBedtimeStoryForChild({
+      childId: activeKidId,
+      childName: activeKid?.name || 'حمزة',
+      themePrompt: storyCustomTopic,
+      moralFocus: storySelectedMoral,
+    });
     playGentleAudioSynthesizer([392.0, 440.0, 523.25]);
     onShowToast?.(
       isEn
-        ? '✨ Generated custom 15-line bedtime story for Hamza, Laila & Youssef!'
-        : '✨ تم تأليف حدوتة مخصصة من ١٥ سطراً لبطولة حمزة وليلى ويوسف!'
+        ? '✨ Generated & saved custom 15-line bedtime story in library!'
+        : '✨ تم تأليف وحفظ الحدوتة المخصصة (١٥ سطراً) في مكتبة حواديت الطفل!'
     );
   };
 
@@ -1830,6 +1845,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         ...prev,
                         [activeKidId]: { ...pulse, sleepLogged: next },
                       }));
+                      if (next) {
+                        void master.recordChildWellnessBoost(activeKidId, 'sleep', 4);
+                      }
                       onShowToast?.(
                         isEn
                           ? `🌙 ${activeKidName}: Sleep/Nap rhythm ${next ? 'logged ✓' : 'reset'}`
@@ -1858,6 +1876,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         ...prev,
                         [activeKidId]: { ...pulse, mealLogged: next },
                       }));
+                      if (next) {
+                        void master.recordChildWellnessBoost(activeKidId, 'nutrition', 4);
+                      }
                       onShowToast?.(
                         isEn
                           ? `🥣 ${activeKidName}: Meal/Feed ${next ? 'logged ✓' : 'reset'}`
@@ -1887,6 +1908,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         ...prev,
                         [activeKidId]: { ...pulse, moodEmoji: nextEmoji },
                       }));
+                      void master.recordChildWellnessBoost(activeKidId, 'mood', 3);
                       onShowToast?.(
                         isEn
                           ? `💛 ${activeKidName}’s mood updated to ${nextEmoji}`
@@ -1911,6 +1933,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         ...prev,
                         [activeKidId]: { ...pulse, careLogged: next },
                       }));
+                      if (next) {
+                        void master.recordChildWellnessBoost(activeKidId, 'routine', 4);
+                      }
                       onShowToast?.(
                         isEn
                           ? `🩺 ${activeKidName}: Daily vitamin/care check ${next ? 'completed ✓' : 'reset'}`
@@ -1933,6 +1958,30 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               );
             })()}
           </div>
+
+          {/* Autonomous Battery Diagnostics Engine Live Bar for Active Child */}
+          {(() => {
+            const childDiag = master.batterySummary.childrenDiagnostics[activeKidId];
+            if (!childDiag) return null;
+            return (
+              <div
+                data-testid="child-battery-diagnostic-strip"
+                className="rounded-2xl border border-teal-500/30 bg-teal-50/55 dark:bg-[#142430] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs"
+              >
+                <div className="flex items-center gap-2 font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  <span>🔋</span>
+                  <span>
+                    {isEn
+                      ? `${activeKidName} Wellness Battery: ${childDiag.overallScore}%`
+                      : `مؤشر طاقة وعافية ${activeKidName}: ${childDiag.overallScore}%`}
+                  </span>
+                </div>
+                <span className="text-[11px] font-semibold text-[#0d9488] dark:text-[#2DD4BF]">
+                  {isEn ? childDiag.recommendationEn : childDiag.recommendationAr}
+                </span>
+              </div>
+            );
+          })()}
         </div>
       </HomeAccordionCard>
 
@@ -2277,6 +2326,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               ))}
             </div>
           </div>
+
+          <StoriesLibraryView
+            lang={lang}
+            onShowToast={onShowToast}
+            onScheduleStoryTask={onAddSuggestedRoutineTask}
+          />
         </div>
       </HomeAccordionCard>
 
@@ -2619,19 +2674,27 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onToggle={() => toggleAccordion('batteryDiagnostic')}
         isEn={isEn}
       >
-        <FamilyMoodBarometer
-          language={lang}
-          darkMode={Boolean(state.darkMode)}
-          onSelectMood={(_, msg) => onShowToast?.(msg)}
-          onAddRescueTask={(taskName, timeStr, kidId) => {
-            onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
-            onShowToast?.(
-              isEn
-                ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
-                : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
-            );
-          }}
-        />
+        <div className="space-y-4">
+          <BatteryDiagnosticsView
+            lang={lang}
+            onShowToast={onShowToast}
+            onAddRescueTask={onAddSuggestedRoutineTask}
+          />
+
+          <FamilyMoodBarometer
+            language={lang}
+            darkMode={Boolean(state.darkMode)}
+            onSelectMood={(_, msg) => onShowToast?.(msg)}
+            onAddRescueTask={(taskName, timeStr, kidId) => {
+              onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
+              onShowToast?.(
+                isEn
+                  ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
+                  : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
+              );
+            }}
+          />
+        </div>
       </HomeAccordionCard>
 
       {/* =====================================================================
@@ -2959,6 +3022,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </div>
             )}
           </div>
+
+          <CatalogView
+            lang={lang}
+            onAddToCart={onAddToCart}
+            onInspectItem={onInspectCommercialItem}
+            onAddToWishes={onAddProductToWishes}
+            onShowToast={onShowToast}
+          />
         </div>
       </HomeAccordionCard>
     </section>

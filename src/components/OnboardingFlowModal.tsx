@@ -13,11 +13,14 @@ import {
 } from '../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES, AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
+  SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
 } from '../services/supabaseService';
 import { ThreeDChildAvatar } from './ThreeDVisuals';
+
+export const NEKBAAR_ONBOARDING_CACHE_KEY = 'nekbaar_onboarding_draft_v1';
 
 export interface OnboardingChildDraft {
   id: number;
@@ -27,6 +30,20 @@ export interface OnboardingChildDraft {
   birth: string;
   interests: string;
   avatarTheme: AvatarAccessoryTheme;
+}
+
+export interface OnboardingCachedState {
+  step: 1 | 2 | 3 | 4;
+  authMode: 'signup' | 'signin';
+  parentRole: ParentThemeRole;
+  parentName: string;
+  email: string;
+  phone: string;
+  familyId: number;
+  selectedCountry: CountryCode;
+  selectedCity: string;
+  childrenList: OnboardingChildDraft[];
+  updatedAt: string;
 }
 
 export interface OnboardingCompletionPayload {
@@ -45,6 +62,7 @@ export interface OnboardingCompletionPayload {
     avatarTheme: AvatarAccessoryTheme;
   };
   childrenProfiles?: OnboardingChildDraft[];
+  skippedForLater?: boolean;
 }
 
 interface OnboardingFlowModalProps {
@@ -134,9 +152,60 @@ const INITIAL_CANONICAL_CHILDREN: OnboardingChildDraft[] = [
     interests:
       DEFAULT_SEED.kids[2]?.interests ||
       'السباحة وكرة القدم، تجارب العلوم المدرسية، وألغاز الذكاء',
-    avatarTheme: 'Explorer' as AvatarAccessoryTheme,
+    avatarTheme:
+      AVATAR_ACCESSORY_THEMES.find((t) => t.id === 'astronaut')?.id || 'astronaut',
   },
 ];
+
+function loadCachedOnboardingDraft(): OnboardingCachedState | null {
+  try {
+    const raw = window.localStorage.getItem(NEKBAAR_ONBOARDING_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<OnboardingCachedState>;
+    if (!parsed || typeof parsed !== 'object') return null;
+    return {
+      step:
+        parsed.step === 1 || parsed.step === 2 || parsed.step === 3 || parsed.step === 4
+          ? parsed.step
+          : 1,
+      authMode: parsed.authMode === 'signin' ? 'signin' : 'signup',
+      parentRole: parsed.parentRole === 'dad' ? 'dad' : 'mom',
+      parentName: typeof parsed.parentName === 'string' ? parsed.parentName : 'مريم (الأم)',
+      email: typeof parsed.email === 'string' ? parsed.email : 'maryam.mom@nekbaar.app',
+      phone: typeof parsed.phone === 'string' ? parsed.phone : '551234567',
+      familyId:
+        typeof parsed.familyId === 'number' && Number.isFinite(parsed.familyId)
+          ? parsed.familyId
+          : SHARED_FAMILY_ID,
+      selectedCountry: parsed.selectedCountry === 'EG' ? 'EG' : 'SA',
+      selectedCity: typeof parsed.selectedCity === 'string' ? parsed.selectedCity : 'الدمام',
+      childrenList:
+        Array.isArray(parsed.childrenList) && parsed.childrenList.length > 0
+          ? parsed.childrenList
+          : INITIAL_CANONICAL_CHILDREN,
+      updatedAt:
+        typeof parsed.updatedAt === 'string' ? parsed.updatedAt : new Date().toISOString(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedOnboardingDraft(draft: OnboardingCachedState): void {
+  try {
+    window.localStorage.setItem(NEKBAAR_ONBOARDING_CACHE_KEY, JSON.stringify(draft));
+  } catch {
+    // Ignore storage quota errors safely
+  }
+}
+
+function clearCachedOnboardingDraft(): void {
+  try {
+    window.localStorage.removeItem(NEKBAAR_ONBOARDING_CACHE_KEY);
+  } catch {
+    // Ignore storage access errors safely
+  }
+}
 
 export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   isOpen,
@@ -149,37 +218,53 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   onCompleteOnboarding,
 }) => {
   const isEn = language === 'en';
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const cachedDraft = React.useMemo(() => loadCachedOnboardingDraft(), []);
+
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(cachedDraft?.step ?? 1);
+  const [restoredFromCache, setRestoredFromCache] = useState<boolean>(Boolean(cachedDraft));
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [canRetryFailedNetwork, setCanRetryFailedNetwork] = useState<boolean>(false);
   const [stepSyncNotice, setStepSyncNotice] = useState<string | null>(null);
 
   // Step 1: Supabase Authentication & Credentials (Email, Password, Phone Number)
-  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>(
+    cachedDraft?.authMode ?? 'signup'
+  );
   const [parentRole, setParentRole] = useState<ParentThemeRole>(
-    initialRole === 'dad' ? 'dad' : 'mom'
+    cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom')
   );
   const [parentName, setParentName] = useState<string>(
-    initialParentName || (initialRole === 'dad' ? 'أحمد (الأب)' : 'مريم (الأم)')
+    cachedDraft?.parentName ||
+      initialParentName ||
+      (initialRole === 'dad' ? 'أحمد (الأب)' : 'مريم (الأم)')
   );
-  const [email, setEmail] = useState<string>('maryam.mom@nekbaar.app');
+  const [email, setEmail] = useState<string>(
+    cachedDraft?.email ||
+      (initialRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app')
+  );
   const [password, setPassword] = useState<string>('Nekbaar#2026');
-  const [phone, setPhone] = useState<string>(initialCountry === 'SA' ? '551234567' : '1012345678');
-  const [familyId, setFamilyId] = useState<number>(1);
-  const [authenticatedUserId, setAuthenticatedUserId] = useState<string>('parent-maryam');
+  const [phone, setPhone] = useState<string>(
+    cachedDraft?.phone || (initialCountry === 'SA' ? '551234567' : '1012345678')
+  );
+  const [familyId, setFamilyId] = useState<number>(
+    cachedDraft?.familyId ?? SHARED_FAMILY_ID
+  );
 
   // Step 2: Location & Region Selection
-  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(initialCountry || 'SA');
-  const [selectedCity, setSelectedCity] = useState<string>(initialCity || 'الدمام');
+  const [selectedCountry, setSelectedCountry] = useState<CountryCode>(
+    cachedDraft?.selectedCountry || initialCountry || 'SA'
+  );
+  const [selectedCity, setSelectedCity] = useState<string>(
+    cachedDraft?.selectedCity || initialCity || 'الدمام'
+  );
   const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false);
 
   // Step 3: Dynamic Children Profiles Setup (Hamza, Laila, Youssef + Add New Child form)
   const [childrenList, setChildrenList] = useState<OnboardingChildDraft[]>(() =>
-    INITIAL_CANONICAL_CHILDREN.map((c) => ({
-      ...c,
-      avatarTheme:
-        AVATAR_ACCESSORY_THEMES.find((t) => t.id === c.avatarTheme)?.id || 'astronaut',
-    }))
+    cachedDraft?.childrenList && cachedDraft.childrenList.length > 0
+      ? cachedDraft.childrenList
+      : INITIAL_CANONICAL_CHILDREN
   );
   const [newChildName, setNewChildName] = useState<string>('');
   const [newChildGender, setNewChildGender] = useState<'boy' | 'girl'>('boy');
@@ -189,14 +274,42 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [newChildInterests, setNewChildInterests] = useState<string>(
     'وقت البطن الحسي، الألعاب الخشبية، والقصص المصورة'
   );
-  const [newChildAvatarTheme, setNewChildAvatarTheme] =
-    useState<AvatarAccessoryTheme>('astronaut');
+  const [newChildAvatarTheme] = useState<AvatarAccessoryTheme>('astronaut');
 
   const availableCities = COUNTRY_CITIES_MAP[selectedCountry] || [];
+
+  // Progressive LocalStorage Caching across steps to prevent data loss on page refresh
+  useEffect(() => {
+    saveCachedOnboardingDraft({
+      step,
+      authMode,
+      parentRole,
+      parentName,
+      email,
+      phone,
+      familyId,
+      selectedCountry,
+      selectedCity,
+      childrenList,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [
+    step,
+    authMode,
+    parentRole,
+    parentName,
+    email,
+    phone,
+    familyId,
+    selectedCountry,
+    selectedCity,
+    childrenList,
+  ]);
 
   useEffect(() => {
     if (!isOpen) return;
     setErrorMsg(null);
+    setCanRetryFailedNetwork(false);
   }, [isOpen, step]);
 
   if (!isOpen) return null;
@@ -293,12 +406,72 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     );
   };
 
-  // Sequential Step Progression with Supabase Auth & Progressive Table Persistence
+  /**
+   * Non-intrusive "تخطي مؤقت / Complete Later" handler:
+   * Saves the current draft in localStorage and lets the parent enter the dashboard immediately
+   * without blocking or losing any entered data.
+   */
+  const handleCompleteLater = () => {
+    saveCachedOnboardingDraft({
+      step,
+      authMode,
+      parentRole,
+      parentName,
+      email,
+      phone,
+      familyId,
+      selectedCountry,
+      selectedCity,
+      childrenList,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const primaryChild = childrenList[0] || INITIAL_CANONICAL_CHILDREN[0];
+    onCompleteOnboarding({
+      parentName: parentName.trim() || (parentRole === 'dad' ? 'أحمد (الأب)' : 'مريم (الأم)'),
+      role: parentRole,
+      country: selectedCountry,
+      city: selectedCity || 'الدمام',
+      currency: getSuggestedCurrencyForCountry(selectedCountry),
+      phoneNumber: phone.trim() || '551234567',
+      email: email.trim() || 'maryam.mom@nekbaar.app',
+      childProfile: {
+        name: primaryChild.name,
+        gender: primaryChild.gender,
+        birth: primaryChild.birth,
+        interests: primaryChild.interests,
+        avatarTheme: primaryChild.avatarTheme,
+      },
+      childrenProfiles: childrenList,
+      skippedForLater: true,
+    });
+  };
+
+  /**
+   * Skips only the current step and advances to the next step while caching draft state.
+   */
+  const handleSkipCurrentStep = () => {
+    setErrorMsg(null);
+    setCanRetryFailedNetwork(false);
+    if (step < 4) {
+      setStepSyncNotice(
+        isEn
+          ? `Step ${step} saved locally in draft cache. You can complete it anytime.`
+          : `تم حفظ الخطوة ${step} محلياً في المسودة المؤقتة؛ يمكنك استكمالها في أي وقت.`
+      );
+      setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4);
+    } else {
+      handleCompleteLater();
+    }
+  };
+
+  // Sequential Step Progression with Supabase Auth, Foreign Key `family_id` Linkage & Timeout Handling
   const handleNextStep = async () => {
     setErrorMsg(null);
+    setCanRetryFailedNetwork(false);
     setStepSyncNotice(null);
 
-    // STEP 1 -> STEP 2: Authenticate via Supabase Auth & upsert `users`
+    // STEP 1 -> STEP 2: Authenticate via Supabase Auth & link to shared `family_id`
     if (step === 1) {
       if (!email.trim() || !email.includes('@')) {
         setErrorMsg(
@@ -344,12 +517,38 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       });
       setIsSavingStep(false);
 
-      setAuthenticatedUserId(authRes.userId);
       setFamilyId(authRes.familyId);
+
+      // Hydrate shared family children (Hamza, Laila, Youssef) linked to `family_id`
+      if (Array.isArray(authRes.sharedChildren) && authRes.sharedChildren.length >= 3) {
+        setChildrenList(
+          authRes.sharedChildren.map((sc) => ({
+            id: sc.id,
+            name: sc.name,
+            gender: sc.gender === 'girl' || sc.gender === 'female' ? 'girl' : 'boy',
+            ageStagePreset:
+              sc.id === 1 ? 'infant_6m' : sc.id === 2 ? 'nursery_4y' : 'school_8y',
+            birth: sc.birth,
+            interests: sc.interests || '',
+            avatarTheme: sc.avatar_theme || 'astronaut',
+          }))
+        );
+      }
+
+      if (authRes.error && authRes.error.includes('SUPABASE_TIMEOUT')) {
+        setCanRetryFailedNetwork(true);
+        setErrorMsg(
+          isEn
+            ? 'Database connection timed out. You can retry or continue with cached local progress.'
+            : 'انتهت مهلة الاتصال بقاعدة البيانات. يمكنك إعادة المحاولة أو المتابعة بالحفظ المحلي.'
+        );
+        return;
+      }
+
       setStepSyncNotice(
         isEn
-          ? 'Step 1 Saved: Account authenticated & synced with Supabase Auth.'
-          : 'تم حفظ الخطوة ١: تم توثيق الحساب وربطه بقاعدة بيانات Supabase بنجاح.'
+          ? `Step 1 Saved: ${parentName.trim()} linked to Shared Family #${authRes.familyId}.`
+          : `تم حفظ الخطوة ١: تم ربط حساب ${parentName.trim()} بملف العائلة المشترك (#${authRes.familyId}).`
       );
       setStep(2);
       return;
@@ -367,9 +566,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       }
 
       setIsSavingStep(true);
-      await saveOnboardingLocationToSupabase({
+      const locRes = await saveOnboardingLocationToSupabase({
         familyId,
-        familyName: `أسرة ${parentName.trim()} — نكبر`,
+        familyName: 'أسرة أحمد ومريم — نكبر',
         country: selectedCountry,
         city: selectedCity,
         currency: getSuggestedCurrencyForCountry(selectedCountry),
@@ -377,16 +576,26 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       });
       setIsSavingStep(false);
 
+      if (locRes.error && locRes.error.includes('SUPABASE_TIMEOUT')) {
+        setCanRetryFailedNetwork(true);
+        setErrorMsg(
+          isEn
+            ? 'Saving location timed out. Please retry or skip to continue offline.'
+            : 'انتهت مهلة حفظ الموقع في الخادم. يمكنك إعادة المحاولة أو التخطي للمتابعة.'
+        );
+        return;
+      }
+
       setStepSyncNotice(
         isEn
-          ? `Step 2 Saved: Region set to ${selectedCity} in Supabase families table.`
-          : `تم حفظ الخطوة ٢: تم حفظ موقع الأسرة (${selectedCity}) في جدول العائلات.`
+          ? `Step 2 Saved: Region set to ${selectedCity} in shared family #${familyId}.`
+          : `تم حفظ الخطوة ٢: تم حفظ موقع الأسرة (${selectedCity}) في سجل العائلة المشترك.`
       );
       setStep(3);
       return;
     }
 
-    // STEP 3 -> STEP 4: Save Children Profiles (Hamza, Laila, Youssef) to `children` table in Supabase
+    // STEP 3 -> STEP 4: Save Children Profiles (Hamza, Laila, Youssef) to `children` table linked to `family_id`
     if (step === 3) {
       if (childrenList.length === 0) {
         setErrorMsg(
@@ -410,23 +619,34 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       }
 
       setIsSavingStep(true);
-      await saveOnboardingChildrenToSupabase({
+      const kidsRes = await saveOnboardingChildrenToSupabase({
         familyId,
         childrenList,
       });
       setIsSavingStep(false);
 
+      if (kidsRes.error && kidsRes.error.includes('SUPABASE_TIMEOUT')) {
+        setCanRetryFailedNetwork(true);
+        setErrorMsg(
+          isEn
+            ? 'Saving children profiles timed out. Please retry or continue with cached draft.'
+            : 'انتهت مهلة حفظ ملفات الأطفال. يمكنك إعادة المحاولة أو المتابعة بالمسودة المحفوظة.'
+        );
+        return;
+      }
+
       setStepSyncNotice(
         isEn
-          ? `Step 3 Saved: ${childrenList.length} children profiles linked to family_id #${familyId}.`
-          : `تم حفظ الخطوة ٣: تم ربط ${childrenList.length} ملفات أطفال بقاعدة بيانات الأسرة بنجاح.`
+          ? `Step 3 Saved: ${childrenList.length} children linked to shared family_id #${familyId}.`
+          : `تم حفظ الخطوة ٣: تم ربط ${childrenList.length} أطفال بسجل العائلة المشترك (#${familyId}).`
       );
       setStep(4);
       return;
     }
 
-    // STEP 4 -> COMPLETE & REDIRECT TO DASHBOARD
+    // STEP 4 -> COMPLETE, CLEAR DRAFT CACHE & REDIRECT TO DASHBOARD
     if (step === 4) {
+      clearCachedOnboardingDraft();
       const primaryChild = childrenList[0] || INITIAL_CANONICAL_CHILDREN[0];
       onCompleteOnboarding({
         parentName: parentName.trim(),
@@ -444,12 +664,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           avatarTheme: primaryChild.avatarTheme,
         },
         childrenProfiles: childrenList,
+        skippedForLater: false,
       });
     }
   };
 
   const handlePreviousStep = () => {
     setErrorMsg(null);
+    setCanRetryFailedNetwork(false);
     setStepSyncNotice(null);
     if (step > 1) {
       setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4);
@@ -465,16 +687,26 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-labelledby="onboarding-wizard-title"
     >
       <div className="soft-card-surface w-full max-w-2xl rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto shadow-2xl">
-        {/* Top Wizard Header */}
+        {/* Top Wizard Header with Non-Intrusive "Complete Later / تخطي مؤقت" Action */}
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
           <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
-              <span>✨</span>
-              <span>
-                {isEn
-                  ? `Sequential Family Onboarding · Step ${step} of 4`
-                  : `معالج إعداد العائلة المتسلسل · الخطوة ${step} من 4`}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
+                <span>✨</span>
+                <span>
+                  {isEn
+                    ? `Family Onboarding · Step ${step} of 4`
+                    : `معالج إعداد العائلة · الخطوة ${step} من 4`}
+                </span>
               </span>
+              {restoredFromCache && (
+                <span
+                  data-testid="onboarding-cache-restored-badge"
+                  className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border border-teal-500/30"
+                >
+                  💾 {isEn ? 'Draft Auto-Saved' : 'محفوظ تلقائياً'}
+                </span>
+              )}
             </div>
             <h2
               id="onboarding-wizard-title"
@@ -482,30 +714,45 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             >
               {step === 1
                 ? isEn
-                  ? 'Step 1: Supabase Authentication & Parent Credentials'
-                  : 'الخطوة ١: توثيق الحساب وبيانات الوالدين (Supabase Auth)'
+                  ? 'Step 1: Parent Authentication & Shared Family Link'
+                  : 'الخطوة ١: توثيق حساب الوالدين وربط العائلة المشتركة'
                 : step === 2
                 ? isEn
                   ? 'Step 2: Location & Region Selection'
                   : 'الخطوة ٢: اختيار الموقع والمنطقة / المدينة'
                 : step === 3
                 ? isEn
-                  ? 'Step 3: Children Profiles Setup (Hamza, Laila & Youssef)'
-                  : 'الخطوة ٣: إعداد ملفات الأطفال (حمزة، ليلى، ويوسف)'
+                  ? 'Step 3: Shared Children Profiles (Hamza, Laila & Youssef)'
+                  : 'الخطوة ٣: ملفات الأطفال المشتركة (حمزة، ليلى، ويوسف)'
                 : isEn
                 ? 'Step 4: Ready! Enter Family Dashboard'
                 : 'الخطوة ٤: اكتمل الإعداد! الدخول إلى لوحة العائلة'}
             </h2>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={isEn ? 'Close onboarding wizard' : 'إغلاق معالج الإعداد'}
-            className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] flex items-center justify-center shrink-0 cursor-pointer"
-          >
-            ×
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              data-testid="onboarding-complete-later-top-btn"
+              onClick={handleCompleteLater}
+              className="px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
+              title={
+                isEn
+                  ? 'Save progress locally and finish onboarding later'
+                  : 'حفظ التقدم الحالي محلياً وإكمال الإعداد لاحقاً'
+              }
+            >
+              {isEn ? 'Complete Later' : 'تخطي مؤقت'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={isEn ? 'Close onboarding wizard' : 'إغلاق معالج الإعداد'}
+              className="w-8 h-8 rounded-xl text-lg font-black leading-none border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61] flex items-center justify-center shrink-0 cursor-pointer"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Sequential Progress Bar & Step Indicators */}
@@ -545,15 +792,35 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           </div>
         </div>
 
-        {/* Validation Error Alert */}
+        {/* Validation or Network Timeout Error Alert with Retry & Offline Fallback */}
         {errorMsg && (
           <div
             role="alert"
             data-testid="onboarding-error-alert"
-            className="rounded-2xl border border-red-400/50 bg-red-50/90 dark:bg-red-950/40 px-4 py-3 text-xs font-extrabold text-red-800 dark:text-red-200 flex items-center gap-2"
+            className="rounded-2xl border border-red-400/50 bg-red-50/90 dark:bg-red-950/40 px-4 py-3 text-xs font-extrabold text-red-800 dark:text-red-200 flex flex-wrap items-center justify-between gap-2"
           >
-            <span>⚠️</span>
-            <span>{errorMsg}</span>
+            <div className="flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{errorMsg}</span>
+            </div>
+            {canRetryFailedNetwork && (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="px-3 py-1 rounded-xl bg-[#0d9488] text-white font-black cursor-pointer"
+                >
+                  {isEn ? 'Retry' : 'إعادة المحاولة'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSkipCurrentStep}
+                  className="px-3 py-1 rounded-xl border border-red-400/50 text-red-800 dark:text-red-200 font-bold cursor-pointer"
+                >
+                  {isEn ? 'Continue Offline' : 'المتابعة محلياً'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -569,7 +836,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         )}
 
         {/* ===================================================================
-            STEP 1: AUTHENTICATION & CREDENTIALS (SUPABASE AUTH)
+            STEP 1: AUTHENTICATION & SHARED FAMILY LINKAGE (SUPABASE AUTH)
             =================================================================== */}
         {step === 1 && (
           <div data-testid="onboarding-step-1-auth" className="space-y-4">
@@ -599,11 +866,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               </button>
             </div>
 
-            {/* Parent Identity Preset (Maryam / Ahmad) */}
+            {/* Parent Identity Preset (Maryam / Ahmad — both linked to shared family_id #1) */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Select Active Parent Identity' : 'اختر هوية الوالد / الوالدة'}
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Select Parent Profile (Shared Family)' : 'اختر حساب الوالد / الوالدة (مرتبطين بنفس الأسرة)'}
+                </label>
+                <span className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                  🔗 {isEn ? `Linked to Family #${familyId}` : `مرتبط بملف الأسرة المشترك #${familyId}`}
+                </span>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
                   type="button"
@@ -624,7 +896,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       {isEn ? 'Mom Maryam' : 'ماما مريم (الأم)'}
                     </div>
                     <div className="text-[11px] text-[var(--color-muted)]">
-                      {isEn ? 'Warm Rose & Coral Theme' : 'السمة الوردية الدافئة'}
+                      {isEn ? 'Shared children: Hamza, Laila & Youssef' : 'نفس ملفات: حمزة، ليلى، ويوسف'}
                     </div>
                   </div>
                 </button>
@@ -648,7 +920,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       {isEn ? 'Dad Ahmad' : 'بابا أحمد (الأب)'}
                     </div>
                     <div className="text-[11px] text-[var(--color-muted)]">
-                      {isEn ? 'Calm Teal & Slate Theme' : 'السمة التركوازية الهادئة'}
+                      {isEn ? 'Shared children: Hamza, Laila & Youssef' : 'نفس ملفات: حمزة، ليلى، ويوسف'}
                     </div>
                   </div>
                 </button>
@@ -728,8 +1000,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           <div data-testid="onboarding-step-2-location" className="space-y-4">
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
               {isEn
-                ? 'Select your country and city/region (e.g., Dammam, Riyadh, Jeddah, Cairo) to personalize local pediatric clinics, nurseries, weather, and currency.'
-                : 'اختر الدولة والمدينة أو المنطقة (مثل: الدمام، الرياض، جدة، القاهرة) لحفظها في ملف الأسرة وتخصيص الأطباء والحضانات وحالة الطقس.'}
+                ? 'Select your country and city/region (e.g., Dammam, Riyadh, Jeddah, Cairo) to save to your shared family profile.'
+                : 'اختر الدولة والمدينة أو المنطقة (مثل: الدمام، الرياض، جدة، القاهرة) لحفظها في سجل الأسرة المشترك.'}
             </p>
 
             {/* Quick-Select Popular Cities (Dammam, Riyadh, Jeddah, Cairo, Alexandria) */}
@@ -846,11 +1118,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
                 {isEn
-                  ? 'Review or customize your children profiles (Hamza 6m, Laila 4y, Youssef 8y) or add another child. All records are saved to the Supabase children table.'
-                  : 'راجع أو عدّل ملفات أطفالك (حمزة ٦ شهور، ليلى ٤ سنوات، يوسف ٨ سنوات) أو أضف طفلاً جديداً ليتم حفظهم مباشرة في جدول children بقاعدة البيانات.'}
+                  ? 'Both parents (Ahmad & Maryam) share these exact children records via family_id.'
+                  : 'يتشارك الأب والأم (أحمد ومريم) نفس سجلات الأطفال عبر معرف الأسرة الموحد (family_id).'}
               </p>
               <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]">
-                {childrenList.length} {isEn ? 'Children' : 'أطفال مسجلين'}
+                {childrenList.length} {isEn ? 'Shared Children' : 'أطفال في الأسرة'}
               </span>
             </div>
 
@@ -1009,8 +1281,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </h3>
                   <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
                     {isEn
-                      ? 'Your account, region, and children profiles are synced with Supabase and ready.'
-                      : 'تم ربط حسابك، ومنطقتك، وملفات أطفالك بقاعدة بيانات Supabase بنجاح.'}
+                      ? `Your account, region, and children profiles are linked to Shared Family #${familyId}.`
+                      : `تم ربط حسابك، ومنطقتك، وملفات أطفالك بسجل العائلة المشترك (#${familyId}).`}
                   </p>
                 </div>
               </div>
@@ -1030,25 +1302,25 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
                 <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-1">
                   <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Region & Currency' : 'المنطقة والعملة'}
+                    {isEn ? 'Region & Foreign Key' : 'المنطقة ومعرف الأسرة'}
                   </div>
                   <div className="font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                     📍 {selectedCity} ({selectedCountry})
                   </div>
                   <div className="text-[11px] text-[#0d9488] dark:text-[#2DD4BF]">
-                    {getSuggestedCurrencyForCountry(selectedCountry)} · Family #{familyId}
+                    {getSuggestedCurrencyForCountry(selectedCountry)} · family_id = {familyId}
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-1">
                   <div className="text-[11px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Synced Children Profiles' : 'ملفات الأطفال المتزامنة'}
+                    {isEn ? 'Shared Children Profiles' : 'ملفات الأطفال المشتركة'}
                   </div>
                   <div className="font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                     {childrenList.map((c) => c.name).join(isEn ? ', ' : '، ')}
                   </div>
                   <div className="text-[11px] text-emerald-700 dark:text-emerald-300">
-                    ✓ {childrenList.length} {isEn ? 'linked to children table' : 'في جدول الأطفال'}
+                    ✓ {childrenList.length} {isEn ? 'linked to family_id' : 'مرتبطة بـ family_id'}
                   </div>
                 </div>
               </div>
@@ -1056,28 +1328,42 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           </div>
         )}
 
-        {/* Sequential Back / Next Footer Controls */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-          <div className="text-[11px] font-bold text-[var(--color-muted)]">
-            {isSavingStep
-              ? isEn
-                ? '⏳ Saving step to Supabase...'
-                : '⏳ جاري حفظ الخطوة في قاعدة بيانات Supabase...'
-              : isEn
-              ? `Step ${step} of 4 · Progressive Supabase Sync`
-              : `الخطوة ${step} من 4 · حفظ تدريجي مباشر في Supabase`}
+        {/* Sequential Back / Skip / Next Footer Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-[var(--color-muted)]">
+            <span>
+              {isSavingStep
+                ? isEn
+                  ? '⏳ Saving step to Supabase...'
+                  : '⏳ جاري حفظ الخطوة في قاعدة بيانات Supabase...'
+                : isEn
+                ? `Step ${step} of 4 · Auto-cached locally`
+                : `الخطوة ${step} من 4 · محفوظة تلقائياً`}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {step > 1 && (
               <button
                 type="button"
                 data-testid="onboarding-back-btn"
                 disabled={isSavingStep}
                 onClick={handlePreviousStep}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
+                className="px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
               >
                 {isEn ? '← Back' : '→ السابق'}
+              </button>
+            )}
+
+            {step < 4 && (
+              <button
+                type="button"
+                data-testid="onboarding-skip-step-btn"
+                disabled={isSavingStep}
+                onClick={handleSkipCurrentStep}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
+              >
+                {isEn ? 'Skip Step' : 'تخطي الخطوة'}
               </button>
             )}
 

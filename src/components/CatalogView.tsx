@@ -1,0 +1,250 @@
+import React, { useMemo, useState } from 'react';
+import { CommercialItem, LanguageCode, locText } from '../domain/familySpaceCore';
+import {
+  SequencedCatalogItem,
+  useMasterController,
+} from '../services/MasterAppController';
+
+export interface CatalogViewProps {
+  lang?: LanguageCode;
+  onAddToCart?: (item: CommercialItem, variant?: string) => void;
+  onInspectItem?: (item: CommercialItem) => void;
+  onAddToWishes?: (item: CommercialItem) => void;
+  onShowToast?: (msg: string) => void;
+}
+
+export const CatalogView: React.FC<CatalogViewProps> = ({
+  lang = 'ar',
+  onAddToCart,
+  onInspectItem,
+  onAddToWishes,
+  onShowToast,
+}) => {
+  const isEn = lang === 'en';
+  const master = useMasterController();
+  const items = master.catalog.items;
+
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((item) => {
+      if (item.category) set.add(item.category);
+    });
+    return ['all', ...Array.from(set)];
+  }, [items]);
+
+  const filteredItems = useMemo<SequencedCatalogItem[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return items.filter((item) => {
+      const catMatch =
+        selectedCategory === 'all' || item.category === selectedCategory;
+      if (!catMatch) return false;
+      if (!q) return true;
+      return (
+        item.sequenceCode.toLowerCase().includes(q) ||
+        item.name.toLowerCase().includes(q) ||
+        item.summary.toLowerCase().includes(q) ||
+        item.provider.toLowerCase().includes(q)
+      );
+    });
+  }, [items, selectedCategory, searchQuery]);
+
+  const handleRefreshCatalog = async () => {
+    setIsRefreshing(true);
+    try {
+      const refreshed = await master.catalog.refresh();
+      onShowToast?.(
+        isEn
+          ? `🔄 Synced ${refreshed.length} sequenced catalog items via MasterAppController`
+          : `🔄 تمت مزامنة ${refreshed.length} منتجاً بترقيم PRD-XXXX عبر المتحكم الذاتي`
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const categoryLabel = (cat: string) => {
+    if (cat === 'all') return isEn ? 'All Items' : 'الكل';
+    const map: Record<string, { ar: string; en: string }> = {
+      toys: { ar: '🧸 ألعاب مونتيسوري', en: '🧸 Montessori Toys' },
+      essentials: { ar: '🍼 مستلزمات الرضع (حمزة)', en: '🍼 Infant Essentials' },
+      clothing: { ar: '👟 أزياء قطنية', en: '👟 Cotton Apparel' },
+      nursery: { ar: '🏫 حضانات ومدارس', en: '🏫 Nurseries & Schools' },
+      courses: { ar: '🎨 كورسات وأنشطة', en: '🎨 Courses & Sports' },
+      books: { ar: '📚 قصص ومنصات', en: '📚 Books & Platforms' },
+    };
+    return map[cat] ? (isEn ? map[cat].en : map[cat].ar) : cat;
+  };
+
+  return (
+    <div
+      id="master-catalog-view"
+      data-testid="master-catalog-view"
+      dir={isEn ? 'ltr' : 'rtl'}
+      className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0F1B24] p-4 sm:p-5 space-y-4 shadow-xs"
+    >
+      {/* Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
+        <div className="space-y-0.5">
+          <div className="inline-flex items-center gap-2">
+            <span className="text-sm">🛍️</span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#0d9488] dark:text-[#2DD4BF]">
+              {isEn
+                ? 'Live Sequenced Catalog (PRD-XXXX) · MasterController'
+                : 'كتالوج الأسرة المرّقم تلقائياً (PRD-XXXX) · متصل بـ MasterController'}
+            </span>
+          </div>
+          <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+            {isEn
+              ? 'Verified Products & Quick Family Actions (Ages 0–8)'
+              : 'منتجات وخدمات موثوقة مع إجراءات سريعة لأطفالكم (حمزة · ليلى · يوسف)'}
+          </h3>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            data-testid="catalog-refresh-btn"
+            disabled={isRefreshing}
+            onClick={handleRefreshCatalog}
+            className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition-all cursor-pointer"
+          >
+            {isRefreshing
+              ? isEn
+                ? 'Syncing...'
+                : 'جاري التحديث...'
+              : isEn
+              ? '🔄 Refresh PRD Codes'
+              : '🔄 تحديث الكتالوج (PRD-XXXX)'}
+          </button>
+        </div>
+      </div>
+
+      {/* Search & Category Filter Row */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categories.slice(0, 7).map((cat) => {
+            const active = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                data-testid={`catalog-filter-${cat}`}
+                onClick={() => setSelectedCategory(cat)}
+                className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                  active
+                    ? 'bg-[#0d9488] text-white border-[#0d9488]'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                }`}
+              >
+                {categoryLabel(cat)}
+              </button>
+            );
+          })}
+        </div>
+
+        <input
+          type="search"
+          data-testid="catalog-search-input"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={
+            isEn
+              ? 'Search by PRD-XXXX or product name...'
+              : 'ابحث برمز PRD-XXXX أو اسم المنتج...'
+          }
+          className="sm:w-64 min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] px-3.5 py-1.5 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+        />
+      </div>
+
+      {/* Sequenced Catalog Items Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        {filteredItems.slice(0, 6).map((item) => (
+          <div
+            key={item.id}
+            data-testid={`catalog-item-card-${item.sequenceCode}`}
+            className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/75 p-4 flex flex-col justify-between gap-3 hover:border-[#0d9488] transition-all"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span
+                  data-testid={`catalog-sequence-code-${item.id}`}
+                  className="px-2.5 py-0.5 rounded-lg bg-[#0d9488]/15 border border-[#0d9488]/30 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-black tabular-nums"
+                >
+                  {item.sequenceCode}
+                </span>
+                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-300 tabular-nums">
+                  ★ {item.rating.toFixed(1)}
+                </span>
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <span className="text-2xl shrink-0">{item.icon}</span>
+                <div className="min-w-0">
+                  <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                    {locText(item.name, lang)}
+                  </h4>
+                  <p className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                    {locText(item.provider, lang)} · {locText(item.ageFit, lang)}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed line-clamp-2">
+                {locText(item.summary, lang)}
+              </p>
+            </div>
+
+            <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex items-center justify-between gap-2">
+              <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] tabular-nums">
+                {item.price} {isEn ? 'EGP' : 'ج.م'}
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {onAddToWishes && (
+                  <button
+                    type="button"
+                    onClick={() => onAddToWishes(item)}
+                    title={isEn ? 'Add to Wishes' : 'أضف للأمنيات'}
+                    className="min-h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-xs cursor-pointer hover:border-rose-400"
+                  >
+                    💝
+                  </button>
+                )}
+
+                {onInspectItem && (
+                  <button
+                    type="button"
+                    onClick={() => onInspectItem(item)}
+                    className="min-h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                  >
+                    {isEn ? 'Details' : 'تفاصيل'}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  data-testid={`catalog-add-cart-${item.sequenceCode}`}
+                  onClick={() => {
+                    onAddToCart?.(item);
+                    onShowToast?.(
+                      isEn
+                        ? `🛒 Added ${item.sequenceCode} to Family Cart`
+                        : `🛒 تمت إضافة المنتج (${item.sequenceCode}) إلى سلة الأسرة`
+                    );
+                  }}
+                  className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-black cursor-pointer"
+                >
+                  + {isEn ? 'Add' : 'أضف للسلة'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

@@ -31,6 +31,7 @@ import {
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
+import { formatProductSequenceCode, useMaster } from '../services/MasterAppController';
 
 interface CommercialEcosystemSectionProps {
   country: CountryCode;
@@ -698,7 +699,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     );
   };
 
-  const filtered = COMMERCIAL_CATALOG.filter((item) => {
+  const master = useMaster();
+  const activeCatalogSource =
+    master.sequencedCatalog && master.sequencedCatalog.length > 0
+      ? master.sequencedCatalog
+      : COMMERCIAL_CATALOG;
+
+  const filtered = activeCatalogSource.filter((item) => {
     if (segment !== 'all' && item.kind !== segment) return false;
     if (collectionFilter !== 'all' && item.collectionTag !== collectionFilter) return false;
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
@@ -721,7 +728,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     if (availabilityFilter === 'offers' && item.kind !== 'offer' && item.collectionTag !== 'deal') return false;
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
+      const seqCode = formatProductSequenceCode(item.id).toLowerCase();
       const match =
+        seqCode.includes(q) ||
         item.name.toLowerCase().includes(q) ||
         item.nameEn.toLowerCase().includes(q) ||
         item.categoryLabel.toLowerCase().includes(q) ||
