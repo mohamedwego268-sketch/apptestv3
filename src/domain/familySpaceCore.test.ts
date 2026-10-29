@@ -32,6 +32,12 @@ import {
   saveOnboardingLocationToSupabase,
   syncFamilySpaceToSupabase,
 } from '../services/supabaseService';
+import {
+  VERIFIED_LIVE_TABLE_COLUMNS,
+  evaluateAuthSessionResponse,
+  mapChildProfileToContractRow,
+  verifyDatabaseFamilyMembership,
+} from './supabaseDatabaseContract';
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -489,5 +495,165 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     const unauthSyncOk = await syncFamilySpaceToSupabase(customUnauthState);
     assert.equal(unauthSyncOk, false);
   });
+
+  it('9. Phase 2 Contract: evaluates signup session vs pending email confirmation and rejects demo/non-UUID accounts', () => {
+    const validAuthUuid = '550e8400-e29b-41d4-a716-446655440000';
+
+    // Case 1: Signup created auth.users record, but email confirmation is pending (session === null)
+    const pendingConfirm = evaluateAuthSessionResponse({
+      user: { id: validAuthUuid, email: 'parent@nekbaar.app' },
+      session: null,
+      error: null,
+    });
+    assert.equal(pendingConfirm.status, 'PENDING_EMAIL_CONFIRMATION');
+    assert.equal(pendingConfirm.authUserId, validAuthUuid);
+    assert.equal(pendingConfirm.canProceedToFamilyBootstrap, false);
+    assert.equal(pendingConfirm.requiresEmailVerificationPrompt, true);
+
+    // Case 2: Active session with valid UUID and access_token
+    const activeReady = evaluateAuthSessionResponse({
+      user: { id: validAuthUuid, email: 'parent@nekbaar.app' },
+      session: {
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.valid',
+        user: { id: validAuthUuid, email: 'parent@nekbaar.app' },
+      },
+      error: null,
+    });
+    assert.equal(activeReady.status, 'ACTIVE_SESSION_READY');
+    assert.equal(activeReady.canProceedToFamilyBootstrap, true);
+    assert.equal(activeReady.requiresEmailVerificationPrompt, false);
+
+    // Case 3: Demo IDs ("parent-ahmad", "1") are strictly rejected
+    const demoRejected = evaluateAuthSessionResponse({
+      user: { id: 'parent-ahmad', email: 'ahmad.dad@nekbaar.app' },
+      session: { access_token: 'demo-token', user: { id: 'parent-ahmad' } },
+      error: null,
+    });
+    assert.equal(demoRejected.status, 'UNAUTHENTICATED_OR_INVALID');
+    assert.equal(demoRejected.canProceedToFamilyBootstrap, false);
+  });
+
+  it('10. Phase 2 Contract: enforces auth_user_id + family_id database ownership and isolates legacy orphaned rows', () => {
+    const authUid = '550e8400-e29b-41d4-a716-446655440000';
+    const otherAuthUid = '660e8400-e29b-41d4-a716-446655440999';
+    const profileId = '770e8400-e29b-41d4-a716-446655440111';
+    const familyUuid = '99999999-8888-4777-8666-555555555555';
+
+    // 1. Live pre-migration public.users row has no family_id -> must not trust localStorage or user_metadata
+    const liveRowWithoutFamilyId = verifyDatabaseFamilyMembership({
+      sessionAuthUid: authUid,
+      dbUserRow: {
+        id: profileId,
+        auth_user_id: authUid,
+        full_name: 'أحمد المنصور',
+        role: 'father',
+      },
+      localStorageFamilyId: familyUuid,
+      userMetadataFamilyId: familyUuid,
+    });
+    assert.equal(liveRowWithoutFamilyId.verified, false);
+    assert.equal(liveRowWithoutFamilyId.verifiedFamilyId, null);
+    assert.equal(liveRowWithoutFamilyId.needsFamilyBootstrap, true);
+
+    // 2. Quarantined legacy orphan row cannot be claimed even if family_id is present
+    const orphanRowCheck = verifyDatabaseFamilyMembership({
+      sessionAuthUid: authUid,
+      dbUserRow: {
+        id: profileId,
+        auth_user_id: authUid,
+        family_id: familyUuid,
+        full_name: 'سجل يتيم قديم',
+        role: 'father',
+        is_legacy_orphan: true,
+      },
+    });
+    assert.equal(orphanRowCheck.verified, false);
+    assert.equal(orphanRowCheck.verifiedFamilyId, null);
+
+    // 3. Mismatched auth_user_id is rejected
+    const mismatchedAuthCheck = verifyDatabaseFamilyMembership({
+      sessionAuthUid: authUid,
+      dbUserRow: {
+        id: profileId,
+        auth_user_id: otherAuthUid,
+        family_id: familyUuid,
+        full_name: 'مستخدم آخر',
+        role: 'mother',
+      },
+    });
+    assert.equal(mismatchedAuthCheck.verified, false);
+
+    // 4. Valid authenticated session + matching auth_user_id + verified UUID family_id succeeds
+    const verifiedCheck = verifyDatabaseFamilyMembership({
+      sessionAuthUid: authUid,
+      dbUserRow: {
+        id: profileId,
+        auth_user_id: authUid,
+        family_id: familyUuid,
+        full_name: 'أحمد المنصور',
+        role: 'father',
+        is_legacy_orphan: false,
+      },
+    });
+    assert.equal(verifiedCheck.verified, true);
+    assert.equal(verifiedCheck.authUserId, authUid);
+    assert.equal(verifiedCheck.profileUserId, profileId);
+    assert.equal(verifiedCheck.verifiedFamilyId, familyUuid);
+    assert.equal(verifiedCheck.needsFamilyBootstrap, false);
+  });
+
+  it('11. Phase 2 Contract: maps ChildProfile to live (age_stage, passions_or_heroes) and Phase 2 columns without leaking numeric local IDs', () => {
+    assert.deepEqual(VERIFIED_LIVE_TABLE_COLUMNS.users, [
+      'id',
+      'auth_user_id',
+      'full_name',
+      'role',
+      'created_at',
+    ]);
+
+    const familyUuid = '99999999-8888-4777-8666-555555555555';
+    const remoteChildUuid = '11111111-2222-4333-8444-555555555551';
+
+    // New child without remoteId -> must omit `id` so DB generates UUID, while populating age_stage & passions_or_heroes
+    const liveMinimalNewChild = mapChildProfileToContractRow(
+      {
+        id: 1, // local UI numeric ID must NOT be sent as DB id
+        name: 'ليان',
+        birth: '2022-05-14',
+        gender: 'girl',
+        interests: 'الرسم بالألوان المائية والقصص',
+      },
+      familyUuid,
+      'live_minimal'
+    );
+    assert.equal('id' in liveMinimalNewChild, false);
+    assert.equal(liveMinimalNewChild.family_id, familyUuid);
+    assert.equal(liveMinimalNewChild.name, 'ليان');
+    assert.equal(liveMinimalNewChild.gender, 'girl');
+    assert.equal(liveMinimalNewChild.passions_or_heroes, 'الرسم بالألوان المائية والقصص');
+    assert.equal(typeof liveMinimalNewChild.age_stage, 'string');
+    assert.ok(liveMinimalNewChild.age_stage.length > 0);
+
+    // Existing child with verified UUID remoteId -> includes `id` and mirrors `passions_or_heroes` + `interests`
+    const phase2ExistingChild = mapChildProfileToContractRow(
+      {
+        id: 2,
+        remoteId: remoteChildUuid,
+        name: 'عمر',
+        birth: '2018-09-10',
+        gender: 'boy',
+        interests: 'السباحة والعلوم',
+        avatarTheme: 'scientist',
+      },
+      familyUuid,
+      'phase2_full'
+    );
+    assert.equal(phase2ExistingChild.id, remoteChildUuid);
+    assert.equal(phase2ExistingChild.family_id, familyUuid);
+    assert.equal(phase2ExistingChild.passions_or_heroes, 'السباحة والعلوم');
+    assert.equal(phase2ExistingChild.interests, 'السباحة والعلوم');
+    assert.equal(phase2ExistingChild.birth, '2018-09-10');
+  });
 });
+
 

@@ -279,12 +279,14 @@ export async function resolveVerifiedFamilyContext(): Promise<VerifiedSupabaseFa
     const authUid = sessionUser.id.trim();
     const userEmail = sessionUser.email?.trim() || null;
 
-    // Verify real family ownership from the `users` table by authenticated `id`
+    // Verify real family ownership from the `users` table by authenticated `auth_user_id`
+    // Uses `.select('*')` so pre-migration live schemas without `family_id` do not throw 42703 column errors,
+    // and enforces `row.auth_user_id === authUid` + `isValidUuid(row.family_id)` + `!row.is_legacy_orphan`.
     const { data: userRows, error: userErr } = await withSupabaseTimeout(
       supabaseClient
         .from(SUPABASE_TABLES.USERS)
-        .select('id, family_id')
-        .eq('id', authUid)
+        .select('*')
+        .eq('auth_user_id', authUid)
         .limit(1),
       2500
     );
@@ -299,16 +301,33 @@ export async function resolveVerifiedFamilyContext(): Promise<VerifiedSupabaseFa
       };
     }
 
-    const row = Array.isArray(userRows) && userRows.length > 0 ? (userRows[0] as Record<string, unknown>) : null;
-    const dbFamilyId = row && typeof row.family_id === 'string' ? row.family_id.trim() : null;
+    const row =
+      Array.isArray(userRows) && userRows.length > 0
+        ? (userRows[0] as Record<string, unknown>)
+        : null;
 
-    if (!isValidUuid(dbFamilyId)) {
+    if (row?.is_legacy_orphan === true) {
       return {
         authenticated: true,
         userId: authUid,
         email: userEmail,
         verifiedFamilyId: null,
-        error: 'No verified UUID family_id linked to authenticated user in database.',
+        error: 'Profile row is quarantined as a legacy orphan and cannot grant family ownership.',
+      };
+    }
+
+    const rowAuthUserId =
+      row && typeof row.auth_user_id === 'string' ? row.auth_user_id.trim() : null;
+    const dbFamilyId =
+      row && typeof row.family_id === 'string' ? row.family_id.trim() : null;
+
+    if (!isValidUuid(rowAuthUserId) || rowAuthUserId.toLowerCase() !== authUid.toLowerCase() || !isValidUuid(dbFamilyId)) {
+      return {
+        authenticated: true,
+        userId: authUid,
+        email: userEmail,
+        verifiedFamilyId: null,
+        error: 'No verified UUID family_id linked to authenticated user (auth_user_id) in database.',
       };
     }
 
@@ -638,7 +657,9 @@ export async function fetchChildrenFromSupabase(
               : canonicalMatch?.avatar_theme) || (isGirl ? 'artist' : 'astronaut'),
           interests:
             typeof row.interests === 'string' && row.interests.trim()
-              ? row.interests
+              ? row.interests.trim()
+              : typeof row.passions_or_heroes === 'string' && row.passions_or_heroes.trim()
+              ? row.passions_or_heroes.trim()
               : canonicalMatch?.interests || '',
           vaccinations_note:
             typeof row.vaccinations_note === 'string' && row.vaccinations_note.trim()
