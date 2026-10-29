@@ -32,6 +32,11 @@ export type OnboardingCachedState = OnboardingDraftData;
 
 export type AllowedGCCOrEgyptCountry = 'EG' | 'SA' | 'AE' | 'KW' | 'QA' | 'BH' | 'OM';
 
+export interface CityChoice {
+  ar: string;
+  en: string;
+}
+
 export interface AllowedCountryOption {
   code: AllowedGCCOrEgyptCountry;
   mappedCoreCountry: CountryCode;
@@ -41,6 +46,7 @@ export interface AllowedCountryOption {
   nameAr: string;
   nameEn: string;
   phonePlaceholder: string;
+  cities: CityChoice[];
 }
 
 /**
@@ -57,6 +63,14 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'مصر',
     nameEn: 'Egypt',
     phonePlaceholder: '1012345678',
+    cities: [
+      { ar: 'القاهرة', en: 'Cairo' },
+      { ar: 'الإسكندرية', en: 'Alexandria' },
+      { ar: 'الجيزة', en: 'Giza' },
+      { ar: 'المنصورة', en: 'Mansoura' },
+      { ar: 'طنطا', en: 'Tanta' },
+      { ar: 'أسيوط', en: 'Asyut' },
+    ],
   },
   {
     code: 'SA',
@@ -67,6 +81,14 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'السعودية',
     nameEn: 'Saudi Arabia',
     phonePlaceholder: '551234567',
+    cities: [
+      { ar: 'الرياض', en: 'Riyadh' },
+      { ar: 'جدة', en: 'Jeddah' },
+      { ar: 'الدمام', en: 'Dammam' },
+      { ar: 'مكة المكرمة', en: 'Makkah' },
+      { ar: 'المدينة المنورة', en: 'Madinah' },
+      { ar: 'الخبر', en: 'Khobar' },
+    ],
   },
   {
     code: 'AE',
@@ -77,6 +99,12 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'الإمارات',
     nameEn: 'United Arab Emirates',
     phonePlaceholder: '501234567',
+    cities: [
+      { ar: 'دبي', en: 'Dubai' },
+      { ar: 'أبوظبي', en: 'Abu Dhabi' },
+      { ar: 'الشارقة', en: 'Sharjah' },
+      { ar: 'العين', en: 'Al Ain' },
+    ],
   },
   {
     code: 'KW',
@@ -87,6 +115,12 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'الكويت',
     nameEn: 'Kuwait',
     phonePlaceholder: '50123456',
+    cities: [
+      { ar: 'مدينة الكويت', en: 'Kuwait City' },
+      { ar: 'حولي', en: 'Hawalli' },
+      { ar: 'السالمية', en: 'Salmiya' },
+      { ar: 'الفروانية', en: 'Farwaniya' },
+    ],
   },
   {
     code: 'QA',
@@ -97,6 +131,12 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'قطر',
     nameEn: 'Qatar',
     phonePlaceholder: '33123456',
+    cities: [
+      { ar: 'الدوحة', en: 'Doha' },
+      { ar: 'الوكرة', en: 'Al Wakrah' },
+      { ar: 'الريان', en: 'Al Rayyan' },
+      { ar: 'لوسيل', en: 'Lusail' },
+    ],
   },
   {
     code: 'BH',
@@ -107,6 +147,11 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'البحرين',
     nameEn: 'Bahrain',
     phonePlaceholder: '33123456',
+    cities: [
+      { ar: 'المنامة', en: 'Manama' },
+      { ar: 'المحرق', en: 'Muharraq' },
+      { ar: 'الرفاع', en: 'Riffa' },
+    ],
   },
   {
     code: 'OM',
@@ -117,6 +162,11 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
     nameAr: 'عمان',
     nameEn: 'Oman',
     phonePlaceholder: '91234567',
+    cities: [
+      { ar: 'مسقط', en: 'Muscat' },
+      { ar: 'صلالة', en: 'Salalah' },
+      { ar: 'صحار', en: 'Sohar' },
+    ],
   },
 ];
 
@@ -157,10 +207,13 @@ interface OnboardingFlowModalProps {
   onCompleteOnboarding: (payload: OnboardingCompletionPayload) => void;
 }
 
+type SocialProviderId = 'gmail' | 'icloud' | 'facebook' | 'outlook';
+
 export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   isOpen,
   isMandatoryGateway = false,
   initialCountry,
+  initialCity,
   initialParentName,
   initialRole,
   language,
@@ -170,13 +223,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const isEn = language === 'en';
   const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
 
-  // Step 1: Minimalist Sign-In / Registration
-  // Step 2: Minimalist Children Profiles / Setup
-  const [activeView, setActiveView] = useState<'AUTH' | 'CHILDREN'>('AUTH');
+  // Progressive Flow Views:
+  // 1. 'AUTH'     -> Minimalist Card-Based Sign-In / Registration Gateway
+  // 2. 'CHILDREN' -> Children Profiles Setup (ملفات الأطفال)
+  // 3. 'PARTNER'  -> Optional Co-Parent Linking (ربط حساب الشريك)
+  const [activeView, setActiveView] = useState<'AUTH' | 'CHILDREN' | 'PARTNER'>('AUTH');
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>(
     cachedDraft?.authMode ?? 'signup'
   );
 
+  const [parentRole, setParentRole] = useState<ParentThemeRole>(
+    cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom')
+  );
   const [fullName, setFullName] = useState<string>(
     cachedDraft?.parentName ||
       initialParentName ||
@@ -189,23 +247,37 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [selectedCountryCode, setSelectedCountryCode] = useState<AllowedGCCOrEgyptCountry>(
     cachedDraft?.selectedCountry === 'SA' || initialCountry === 'SA' ? 'SA' : 'EG'
   );
+  const [locationMode, setLocationMode] = useState<'gps' | 'manual'>('manual');
+  const [selectedCityAr, setSelectedCityAr] = useState<string>(
+    cachedDraft?.selectedCity || initialCity || (initialCountry === 'SA' ? 'الرياض' : 'القاهرة')
+  );
+  const [isLocatingGps, setIsLocatingGps] = useState<boolean>(false);
   const [phone, setPhone] = useState<string>(
     cachedDraft?.phone || (initialCountry === 'SA' ? '551234567' : '1012345678')
-  );
-  const [parentRole, setParentRole] = useState<ParentThemeRole>(
-    cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom')
   );
   const [familyId, setFamilyId] = useState<number>(
     cachedDraft?.familyId ?? SHARED_FAMILY_ID
   );
 
-  // Children Profiles state (Step 2)
+  // Step 2: Children Profiles Setup
   const [childrenList, setChildrenList] = useState<OnboardingChildDraft[]>(() =>
     OnboardingFlowController.sanitizeChildrenList(cachedDraft?.childrenList)
   );
   const [newChildName, setNewChildName] = useState<string>('');
   const [newChildGender, setNewChildGender] = useState<'boy' | 'girl'>('boy');
   const [newChildBirth, setNewChildBirth] = useState<string>('2022-05-14');
+
+  // Step 3: Optional Co-Parent Linking
+  const [coParentName, setCoParentName] = useState<string>(
+    cachedDraft?.coParentName || (parentRole === 'dad' ? 'مريم' : 'أحمد')
+  );
+  const [coParentEmail, setCoParentEmail] = useState<string>(
+    cachedDraft?.coParentEmail ||
+      (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app')
+  );
+  const [coParentPhone, setCoParentPhone] = useState<string>(
+    cachedDraft?.coParentPhone || '559876543'
+  );
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -222,12 +294,29 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     [childrenList]
   );
 
+  const officialSlogan = isEn
+    ? 'Our shared space.. growing with love'
+    : 'مساحة تجمعنا.. وبحبهم نكبر';
+
+  // Ensure selected city belongs to active country
+  useEffect(() => {
+    const existsInCountry = activeCountryObj.cities.some((c) => c.ar === selectedCityAr);
+    if (!existsInCountry) {
+      setSelectedCityAr(activeCountryObj.defaultCityAr);
+    }
+  }, [activeCountryObj, selectedCityAr]);
+
   useEffect(() => {
     const coreCountry = activeCountryObj.mappedCoreCountry;
-    const stepKey = activeView === 'AUTH' ? 'CREDENTIALS' : 'CHILDREN';
+    const stepKey =
+      activeView === 'AUTH'
+        ? 'CREDENTIALS'
+        : activeView === 'CHILDREN'
+        ? 'CHILDREN'
+        : 'COPARENT';
     OnboardingFlowController.saveDraft(stepKey, {
       currentStep: stepKey,
-      stepNumber: activeView === 'AUTH' ? 2 : 4,
+      stepNumber: activeView === 'AUTH' ? 2 : activeView === 'CHILDREN' ? 4 : 5,
       authMode,
       parentRole,
       parentName: fullName,
@@ -235,15 +324,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       phone,
       familyId,
       selectedCountry: coreCountry,
-      selectedCity: activeCountryObj.defaultCityAr,
+      selectedCity: selectedCityAr || activeCountryObj.defaultCityAr,
       verificationChannel: 'email',
       otpCode: '123456',
       isOtpVerified: true,
       childrenList: safeChildrenList,
-      coParentName: parentRole === 'dad' ? 'مريم' : 'أحمد',
-      coParentEmail:
-        parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app',
-      coParentPhone: '559876543',
+      coParentName,
+      coParentEmail,
+      coParentPhone,
       isCoParentLinked: true,
     });
   }, [
@@ -255,214 +343,272 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     phone,
     familyId,
     activeCountryObj,
+    selectedCityAr,
     safeChildrenList,
+    coParentName,
+    coParentEmail,
+    coParentPhone,
   ]);
 
   if (!isOpen) return null;
 
-  const handleCountryChange = (nextCode: AllowedGCCOrEgyptCountry) => {
-    setSelectedCountryCode(nextCode);
-    setErrorMsg(null);
-    const nextOption = EGYPT_AND_GCC_COUNTRIES.find((c) => c.code === nextCode);
-    if (nextOption && (!phone.trim() || phone === '1012345678' || phone === '551234567')) {
-      setPhone(nextOption.phonePlaceholder);
+  const handleSelectRole = (nextRole: ParentThemeRole) => {
+    setParentRole(nextRole);
+    if (nextRole === 'dad') {
+      if (!fullName.trim() || fullName.trim() === 'مريم') setFullName('أحمد');
+      if (email.includes('maryam')) setEmail('ahmad.dad@nekbaar.app');
+      setCoParentName('مريم');
+      setCoParentEmail('maryam.mom@nekbaar.app');
+    } else {
+      if (!fullName.trim() || fullName.trim() === 'أحمد') setFullName('مريم');
+      if (email.includes('ahmad')) setEmail('maryam.mom@nekbaar.app');
+      setCoParentName('أحمد');
+      setCoParentEmail('ahmad.dad@nekbaar.app');
     }
   };
 
-  /**
-   * Step 1 Submit ("متابعة" / "Next"):
-   * Validates the minimalist form and immediately transitions to Children Profiles (ملفات الأطفال).
-   */
-  const handleAuthNext = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDetectCurrentLocationGps = () => {
+    setLocationMode('gps');
+    setErrorMsg(null);
+    setIsLocatingGps(true);
+
+    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          // Heuristic bounding box for Egypt vs GCC
+          if (latitude >= 22 && latitude <= 32 && longitude >= 25 && longitude <= 35) {
+            setSelectedCountryCode('EG');
+            setSelectedCityAr(latitude > 30.8 ? 'الإسكندرية' : 'القاهرة');
+          } else {
+            setSelectedCityAr(activeCountryObj.defaultCityAr);
+          }
+          setIsLocatingGps(false);
+        },
+        () => {
+          setSelectedCityAr(activeCountryObj.defaultCityAr);
+          setIsLocatingGps(false);
+        },
+        { timeout: 3500 }
+      );
+    } else {
+      setSelectedCityAr(activeCountryObj.defaultCityAr);
+      setIsLocatingGps(false);
+    }
+  };
+
+  const handleSocialQuickAuth = async (provider: SocialProviderId) => {
+    setErrorMsg(null);
+    const providerProfiles: Record<
+      SocialProviderId,
+      { email: string; nameAr: string; nameEn: string }
+    > = {
+      gmail: {
+        email: parentRole === 'dad' ? 'ahmad.family@gmail.com' : 'maryam.family@gmail.com',
+        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
+        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
+      },
+      icloud: {
+        email: parentRole === 'dad' ? 'ahmad.parent@icloud.com' : 'maryam.parent@icloud.com',
+        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
+        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
+      },
+      facebook: {
+        email: parentRole === 'dad' ? 'ahmad.fb@nekbaar.app' : 'maryam.fb@nekbaar.app',
+        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
+        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
+      },
+      outlook: {
+        email: parentRole === 'dad' ? 'ahmad.family@outlook.com' : 'maryam.family@outlook.com',
+        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
+        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
+      },
+    };
+
+    const chosen = providerProfiles[provider];
+    const cleanName = fullName.trim() || (isEn ? chosen.nameEn : chosen.nameAr);
+    setFullName(cleanName);
+    setEmail(chosen.email);
+
+    setIsSubmitting(true);
+    try {
+      const authRes = await authenticateParentWithSupabase({
+        mode: authMode,
+        role: parentRole,
+        fullName: cleanName,
+        email: chosen.email,
+        phone: phone.trim() || activeCountryObj.phonePlaceholder,
+      });
+
+      if (authRes.user.family_id) {
+        setFamilyId(authRes.user.family_id);
+      }
+
+      const coreCountry = activeCountryObj.mappedCoreCountry;
+      await saveOnboardingLocationToSupabase({
+        familyId: authRes.user.family_id || familyId,
+        country: coreCountry,
+        city: selectedCityAr || activeCountryObj.defaultCityAr,
+      });
+
+      setActiveView('CHILDREN');
+    } catch {
+      setActiveView('CHILDREN');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAuthNext = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMsg(null);
 
-    if (authMode === 'signup' && !fullName.trim()) {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedName =
+      fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
+    const trimmedPhone = phone.replace(/[^\d+]/g, '').trim();
+
+    if (!trimmedEmail || !trimmedEmail.includes('@')) {
+      setErrorMsg(
+        isEn ? 'Please enter a valid email address.' : 'يرجى إدخال البريد الإلكتروني بشكل صحيح.'
+      );
+      return;
+    }
+
+    if (authMode === 'signup' && !trimmedName) {
       setErrorMsg(isEn ? 'Please enter your full name.' : 'يرجى إدخال الاسم الكامل.');
       return;
     }
 
-    if (!email.trim() || !email.includes('@')) {
-      setErrorMsg(isEn ? 'Please enter a valid email address.' : 'يرجى إدخال البريد الإلكتروني.');
-      return;
-    }
-
-    const digitsOnly = phone
-      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-      .replace(/\D/g, '');
-
-    if (digitsOnly.length < 7) {
+    if (authMode === 'signup' && trimmedPhone.length < 7) {
       setErrorMsg(isEn ? 'Please enter a valid phone number.' : 'يرجى إدخال رقم هاتف صحيح.');
       return;
     }
 
-    const lowerEmail = email.trim().toLowerCase();
-    const isDad =
-      parentRole === 'dad' ||
-      lowerEmail.includes('ahmad') ||
-      lowerEmail.includes('ahmed') ||
-      fullName.includes('أحمد');
-    const resolvedRole: ParentThemeRole = isDad ? 'dad' : 'mom';
-    const resolvedName = fullName.trim() || (isDad ? 'أحمد' : 'مريم');
-
-    setParentRole(resolvedRole);
-    setFullName(resolvedName);
-
     setIsSubmitting(true);
-    const coreCountry = activeCountryObj.mappedCoreCountry;
+    try {
+      const authRes = await authenticateParentWithSupabase({
+        mode: authMode,
+        role: parentRole,
+        fullName: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone || activeCountryObj.phonePlaceholder,
+      });
 
-    await saveOnboardingLocationToSupabase({
-      familyId,
-      familyName: `أسرة ${resolvedName}`,
-      country: coreCountry,
-      city: activeCountryObj.defaultCityAr,
-      currency: getSuggestedCurrencyForCountry(coreCountry),
-      activeParent: isDad ? 'father' : 'mother',
-    });
+      if (authRes.user.family_id) {
+        setFamilyId(authRes.user.family_id);
+      }
 
-    const authRes = await authenticateParentWithSupabase({
-      mode: authMode,
-      email: email.trim(),
-      password: 'Nekbaar#2026',
-      phone: digitsOnly,
-      parentName: resolvedName,
-      role: isDad ? 'father' : 'mother',
-      country: coreCountry,
-    });
-    setIsSubmitting(false);
+      const coreCountry = activeCountryObj.mappedCoreCountry;
+      await saveOnboardingLocationToSupabase({
+        familyId: authRes.user.family_id || familyId,
+        country: coreCountry,
+        city: selectedCityAr || activeCountryObj.defaultCityAr,
+      });
 
-    if (authRes.familyId) {
-      setFamilyId(authRes.familyId);
+      setActiveView('CHILDREN');
+    } catch {
+      setActiveView('CHILDREN');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // Immediately transition to Step 2: Children Profiles (ملفات الأطفال)
-    setActiveView('CHILDREN');
   };
 
   const handleAddChild = () => {
     setErrorMsg(null);
     const trimmed = newChildName.trim();
     if (!trimmed) {
-      setErrorMsg(isEn ? 'Please enter the child’s name.' : 'يرجى إدخال اسم الطفل.');
+      setErrorMsg(isEn ? 'Enter child name first.' : 'يرجى إدخال اسم الطفل أولاً.');
       return;
     }
-    const validation = validateChildInput({ name: trimmed, birth: newChildBirth });
+    const validation = validateChildInput(trimmed, newChildBirth, language);
     if (!validation.valid) {
-      setErrorMsg(
-        validation.error || (isEn ? 'Invalid birth date.' : 'تاريخ الميلاد غير صالح.')
-      );
+      setErrorMsg(validation.message);
       return;
     }
 
-    const nextChild: OnboardingChildDraft = {
-      id: Date.now() + Math.floor(Math.random() * 100),
+    const newItem: OnboardingChildDraft = {
+      id: `child-${Date.now()}`,
       name: trimmed,
       gender: newChildGender,
-      ageStagePreset: 'nursery_4y',
       birth: newChildBirth,
-      interests: 'اللعب التفاعلي وتنمية المهارات',
-      avatarTheme: newChildGender === 'girl' ? 'artist' : 'astronaut',
+      interests: newChildGender === 'girl' ? 'الرسم والقصص' : 'السباحة والتركيب',
+      avatarTheme: newChildGender === 'girl' ? 'art_apron' : 'sports_cap',
     };
 
-    setChildrenList((prev) => [...prev, nextChild]);
+    setChildrenList((prev) => [...OnboardingFlowController.sanitizeChildrenList(prev), newItem]);
     setNewChildName('');
   };
 
-  const handleUpdateChild = (
-    childId: number,
-    patch: Partial<OnboardingChildDraft>
-  ) => {
-    setChildrenList((prev) =>
-      prev.map((c) => (c.id === childId ? { ...c, ...patch } : c))
-    );
-  };
-
-  const handleRemoveChild = (childId: number) => {
-    if (safeChildrenList.length <= 1) {
-      setErrorMsg(
-        isEn
-          ? 'At least one child profile is required.'
-          : 'يجب وجود ملف طفل واحد على الأقل.'
-      );
-      return;
-    }
-    setChildrenList((prev) => prev.filter((c) => c.id !== childId));
-  };
-
-  /**
-   * Step 2 Submit ("متابعة" / "Next" on Children Profiles):
-   * Saves children & user session and transitions into the main app.
-   */
-  const handleCompleteChildrenSetup = async () => {
-    setErrorMsg(null);
-
-    if (safeChildrenList.length < 1) {
-      setErrorMsg(
-        isEn
-          ? 'Please add at least one child profile to continue.'
-          : 'يرجى إضافة ملف طفل واحد على الأقل للمتابعة.'
-      );
-      return;
-    }
-
-    for (const childItem of safeChildrenList) {
-      const check = validateChildInput({
-        name: childItem.name,
-        birth: childItem.birth,
-      });
-      if (!check.valid) {
-        setErrorMsg(
-          check.error ||
-            (isEn ? 'Please enter valid child details.' : 'يرجى التأكد من بيانات الطفل.')
-        );
-        return;
-      }
-    }
-
-    setIsSubmitting(true);
-    await saveOnboardingChildrenToSupabase({
-      familyId,
-      childrenList: safeChildrenList,
+  const handleRemoveChild = (id: string) => {
+    setChildrenList((prev) => {
+      const filtered = prev.filter((c) => c.id !== id);
+      return filtered.length > 0 ? filtered : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
     });
-    setIsSubmitting(false);
+  };
+
+  const handleFinalizeFlow = async (linkCoParent: boolean) => {
+    setErrorMsg(null);
+    setIsSubmitting(true);
+
+    const listToSave =
+      safeChildrenList.length > 0
+        ? safeChildrenList
+        : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
+
+    try {
+      await saveOnboardingChildrenToSupabase(
+        listToSave.map((item) => ({
+          name: item.name,
+          birth: item.birth,
+          gender: item.gender,
+          interests: item.interests,
+          avatarTheme: item.avatarTheme,
+          familyId,
+        })),
+        familyId
+      );
+    } catch {
+      // Local fallback keeps flow smooth
+    }
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
-    const digitsOnly =
-      phone
-        .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-        .replace(/\D/g, '') || activeCountryObj.phonePlaceholder;
+    const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    const primaryChild = listToSave[0];
 
-    const cleanName = fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
-    const finalSession: UserSessionProfile = {
-      userId: `usr-${parentRole}-${familyId}`,
-      familyId: String(familyId),
-      fullName: cleanName,
-      role: parentRole,
-      email: email.trim() || 'maryam.mom@nekbaar.app',
-      phone: digitsOnly,
-      city: activeCountryObj.defaultCityAr,
+    const sessionProfile: UserSessionProfile = {
+      sessionToken: `nk_sess_${familyId}_${Date.now()}`,
+      authenticatedAt: new Date().toISOString(),
+      onboardingCompleted: true,
+      familyId,
+      parentRole,
+      parentName: fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم'),
+      email: email.trim(),
+      phone: `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`,
       country: coreCountry,
-      childrenCount: safeChildrenList.length,
-      isCoParentLinked: true,
-      emailVerified: true,
-      phoneVerified: true,
+      city: finalCity,
       verificationChannel: 'email',
-      updatedAt: new Date().toISOString(),
+      isOtpVerified: true,
+      isCoParentLinked: linkCoParent,
+      coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
+      coParentEmail:
+        coParentEmail.trim() ||
+        (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app'),
+      coParentPhone: coParentPhone.trim() || '559876543',
+      childrenCount: listToSave.length,
     };
 
-    OnboardingFlowController.persistUserSession(finalSession, true);
+    OnboardingFlowController.saveAuthenticatedSession(sessionProfile);
 
-    const primaryChild =
-      safeChildrenList[0] || INITIAL_CANONICAL_ONBOARDING_CHILDREN[0];
-
+    setIsSubmitting(false);
     onCompleteOnboarding({
-      parentName: cleanName,
+      parentName: sessionProfile.parentName,
       role: parentRole,
       country: coreCountry,
-      city: activeCountryObj.defaultCityAr,
+      city: finalCity,
       currency: getSuggestedCurrencyForCountry(coreCountry),
-      phoneNumber: digitsOnly,
-      email: finalSession.email,
+      phoneNumber: sessionProfile.phone,
+      email: sessionProfile.email,
       childProfile: {
         name: primaryChild.name,
         gender: primaryChild.gender,
@@ -470,412 +616,626 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         interests: primaryChild.interests,
         avatarTheme: primaryChild.avatarTheme,
       },
-      childrenProfiles: safeChildrenList,
-      skippedForLater: false,
-      isCoParentLinked: true,
+      childrenProfiles: listToSave,
+      isCoParentLinked: linkCoParent,
+      coParentName: sessionProfile.coParentName,
+      coParentEmail: sessionProfile.coParentEmail,
+      coParentPhone: sessionProfile.coParentPhone,
       verificationChannel: 'email',
-      persistedSession: finalSession,
+      persistedSession: sessionProfile,
     });
   };
 
   return (
     <div
-      dir={isEn ? 'ltr' : 'rtl'}
-      data-testid="onboarding-gateway-backdrop"
-      className="fixed inset-0 z-[110] bg-[#F8FAFC] dark:bg-[#0B131A] flex justify-center overflow-y-auto"
+      id="onboarding-wizard-modal"
+      data-testid="onboarding-wizard-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="onboarding-wizard-title"
+      aria-label={isEn ? 'Nekbaar Authentication' : 'نكبر'}
+      dir={isEn ? 'ltr' : 'rtl'}
+      className="fixed inset-0 z-50 bg-slate-100/95 dark:bg-[#0B131A] overflow-y-auto flex flex-col items-center justify-start sm:justify-center p-3 pt-safe pb-safe"
     >
-      {/* Mobile-First Container (max-w-[430px] mx-auto) */}
-      <div className="w-full max-w-[430px] mx-auto min-h-dvh pt-safe pb-safe px-6 py-8 flex flex-col justify-between">
-        {/* Optional Close Button when opened from inside the app */}
-        {!isMandatoryGateway && (
-          <div className="flex justify-end">
+      <div className="w-full max-w-[430px] mx-auto my-auto flex flex-col justify-center">
+        {/* Minimalist Card Container */}
+        <div className="w-full rounded-3xl bg-white dark:bg-[#101D26] border border-slate-200/80 dark:border-[#1E3646] shadow-xl p-5 sm:p-6 space-y-5 relative">
+          {!isMandatoryGateway && (
             <button
               type="button"
               onClick={onClose}
               aria-label={isEn ? 'Close' : 'إغلاق'}
-              className="min-w-[48px] min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-slate-700 dark:text-[#F8FAFC] text-sm font-bold flex items-center justify-center active:scale-95 transition-transform duration-150 cursor-pointer"
+              className="absolute top-4 end-4 min-w-[48px] min-h-[48px] rounded-full bg-slate-100 dark:bg-[#142430] text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm font-bold hover:bg-slate-200 transition-colors cursor-pointer"
             >
               ✕
             </button>
-          </div>
-        )}
+          )}
 
-        <div className="my-auto w-full space-y-7">
-          {/* Centered App Logo & Brand Header */}
-          <div className="flex flex-col items-center text-center space-y-2">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#0d9488] to-[#FF8C61] text-white flex items-center justify-center text-3xl shadow-md">
-              🌱
+          {/* Centered Brand Logo, Title & Official Slogan */}
+          <div className="flex flex-col items-center text-center space-y-1.5 pt-1">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-md">
+              <span className="text-2xl font-black text-white select-none">ن</span>
             </div>
-            <h1
-              id="onboarding-wizard-title"
-              className="text-2xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight"
-            >
+            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
               {isEn ? 'Nekbaar' : 'نكبر'}
             </h1>
             <p
-              data-testid="gateway-official-slogan-badge"
-              className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF]"
+              data-testid="auth-official-slogan"
+              className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug"
             >
-              {isEn
-                ? 'Our shared space.. growing with love'
-                : 'مساحة تجمعنا.. وبحبهم نكبر'}
+              {officialSlogan}
             </p>
           </div>
 
           {errorMsg && (
             <div
-              data-testid="onboarding-error-banner"
-              className="rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-center text-xs font-bold text-red-600 dark:text-red-300"
+              role="alert"
+              className="rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 px-4 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-300 text-center"
             >
               {errorMsg}
             </div>
           )}
 
           {/* =================================================================
-              VIEW 1: MINIMALIST SIGN-IN / REGISTRATION SCREEN
+              VIEW 1: MINIMALIST CARD-BASED SIGN-IN / REGISTRATION GATEWAY
               ================================================================= */}
           {activeView === 'AUTH' && (
-            <form
-              data-testid="welcome-auth-gateway-screen"
-              onSubmit={handleAuthNext}
-              className="space-y-3.5"
-            >
-              {/* Full Name (Registration Mode) */}
-              {authMode === 'signup' && (
-                <div>
-                  <label htmlFor="auth-full-name" className="sr-only">
-                    {isEn ? 'Full Name' : 'الاسم الكامل'}
-                  </label>
-                  <input
-                    id="auth-full-name"
-                    type="text"
-                    name="name"
-                    autoComplete="name"
-                    data-testid="onboarding-parent-name-input"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder={isEn ? 'Full Name' : 'الاسم الكامل'}
-                    className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-5 py-3 text-sm font-bold text-slate-900 dark:text-[#F8FAFC] placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] shadow-2xs transition"
-                  />
-                </div>
-              )}
-
-              {/* Email */}
-              <div>
-                <label htmlFor="auth-email" className="sr-only">
-                  {isEn ? 'Email' : 'البريد الإلكتروني'}
-                </label>
-                <input
-                  id="auth-email"
-                  type="email"
-                  name="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  dir="ltr"
-                  data-testid="gateway-email-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={isEn ? 'Email' : 'البريد الإلكتروني'}
-                  className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-5 py-3 text-sm font-bold text-slate-900 dark:text-[#F8FAFC] placeholder:text-slate-400 text-start focus:outline-none focus:border-[#0d9488] shadow-2xs transition"
-                />
-              </div>
-
-              {/* Country Selector Dropdown (Strictly Egypt & GCC Countries Only) */}
-              {authMode === 'signup' && (
-                <div>
-                  <label htmlFor="auth-country" className="sr-only">
-                    {isEn ? 'Country' : 'الدولة'}
-                  </label>
-                  <select
-                    id="auth-country"
-                    data-testid="onboarding-country-select"
-                    value={selectedCountryCode}
-                    onChange={(e) =>
-                      handleCountryChange(e.target.value as AllowedGCCOrEgyptCountry)
-                    }
-                    className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-5 py-3 text-sm font-bold text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488] shadow-2xs transition cursor-pointer"
-                  >
-                    {EGYPT_AND_GCC_COUNTRIES.map((countryItem) => (
-                      <option
-                        key={countryItem.code}
-                        value={countryItem.code}
-                        className="text-slate-900 bg-white font-bold"
-                      >
-                        {isEn
-                          ? `${countryItem.nameEn} (${countryItem.dialCode})`
-                          : `${countryItem.nameAr} (${countryItem.dialCode})`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Phone Number */}
-              <div>
-                <label htmlFor="auth-phone" className="sr-only">
-                  {isEn ? 'Phone Number' : 'رقم الهاتف'}
-                </label>
-                <div className="flex items-center gap-2" dir="ltr">
-                  <span className="min-h-[48px] px-4 rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] text-slate-700 dark:text-[#CBD5E1] text-sm font-bold flex items-center justify-center shadow-2xs shrink-0">
-                    {activeCountryObj.dialCode}
-                  </span>
-                  <input
-                    id="auth-phone"
-                    type="tel"
-                    name="phone"
-                    autoComplete="tel"
-                    data-testid="onboarding-phone-input"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder={isEn ? 'Phone Number' : 'رقم الهاتف'}
-                    className="flex-1 min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-5 py-3 text-sm font-bold text-slate-900 dark:text-[#F8FAFC] placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] shadow-2xs transition"
-                  />
-                </div>
-              </div>
-
-              {/* Primary Smooth Pill Action Button ("متابعة" / "Next") */}
-              <div className="pt-2">
+            <form onSubmit={handleAuthNext} className="space-y-3.5" noValidate>
+              {/* Clean Top Segmented Toggle: Registration vs Sign-In */}
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full bg-slate-100 dark:bg-[#142430] border border-slate-200/70 dark:border-[#1E3646]">
                 <button
-                  type="submit"
-                  data-testid="gateway-email-otp-submit-btn"
-                  disabled={isSubmitting}
-                  className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-extrabold px-6 py-3 shadow-md active:scale-95 transition-transform duration-150 cursor-pointer disabled:opacity-60"
+                  type="button"
+                  data-testid="auth-tab-signup"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setAuthMode('signup');
+                  }}
+                  className={`min-h-[48px] rounded-full text-xs font-black transition-all cursor-pointer ${
+                    authMode === 'signup'
+                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
                 >
-                  {isSubmitting
-                    ? isEn
-                      ? 'Loading...'
-                      : 'جاري المتابعة...'
-                    : isEn
-                    ? 'Next'
-                    : 'متابعة'}
+                  {isEn ? 'Create Account' : 'إنشاء حساب'}
+                </button>
+                <button
+                  type="button"
+                  data-testid="auth-tab-signin"
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setAuthMode('signin');
+                  }}
+                  className={`min-h-[48px] rounded-full text-xs font-black transition-all cursor-pointer ${
+                    authMode === 'signin'
+                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 dark:text-slate-400'
+                  }`}
+                >
+                  {isEn ? 'Sign In' : 'تسجيل الدخول'}
                 </button>
               </div>
 
-              {/* Clean Toggle Link at the Bottom for Switching Between Login and Registration */}
-              <div className="pt-3 text-center">
+              {/* Family Role Selector Quick Toggle: [أب / Father] or [أم / Mother] */}
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  data-testid={
-                    authMode === 'signup'
-                      ? 'gateway-toggle-signin'
-                      : 'gateway-toggle-signup'
-                  }
+                  data-testid="role-toggle-dad"
+                  onClick={() => handleSelectRole('dad')}
+                  className={`min-h-[48px] rounded-full border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    parentRole === 'dad'
+                      ? 'border-[#0d9488] bg-[#0d9488]/10 text-[#0d9488] dark:text-[#2DD4BF]'
+                      : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  <span>👨🏻‍🍼</span>
+                  <span>{isEn ? 'Father' : 'أب'}</span>
+                </button>
+                <button
+                  type="button"
+                  data-testid="role-toggle-mom"
+                  onClick={() => handleSelectRole('mom')}
+                  className={`min-h-[48px] rounded-full border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    parentRole === 'mom'
+                      ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-300'
+                      : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  <span>👩🏻‍🍼</span>
+                  <span>{isEn ? 'Mother' : 'أم'}</span>
+                </button>
+              </div>
+
+              {/* Full Name (الاسم الكامل) */}
+              {authMode === 'signup' && (
+                <div>
+                  <input
+                    id="auth-full-name-input"
+                    data-testid="auth-full-name-input"
+                    type="text"
+                    autoComplete="name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder={isEn ? 'Full Name' : 'الاسم الكامل'}
+                    aria-label={isEn ? 'Full Name' : 'الاسم الكامل'}
+                    className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
+                  />
+                </div>
+              )}
+
+              {/* Email (البريد الإلكتروني) */}
+              <div>
+                <input
+                  id="auth-email-input"
+                  data-testid="auth-email-input"
+                  type="email"
+                  dir="ltr"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={isEn ? 'Email Address' : 'البريد الإلكتروني'}
+                  aria-label={isEn ? 'Email Address' : 'البريد الإلكتروني'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
+                />
+              </div>
+
+              {/* Phone Number + Restricted Country Selector (Egypt & GCC Only) */}
+              {authMode === 'signup' && (
+                <>
+                  {/* Country Dropdown (Strictly Egypt & GCC) */}
+                  <div>
+                    <select
+                      id="auth-country-select"
+                      data-testid="auth-country-select"
+                      value={selectedCountryCode}
+                      onChange={(e) =>
+                        setSelectedCountryCode(e.target.value as AllowedGCCOrEgyptCountry)
+                      }
+                      aria-label={isEn ? 'Country' : 'الدولة'}
+                      className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
+                    >
+                      {EGYPT_AND_GCC_COUNTRIES.map((countryItem) => (
+                        <option key={countryItem.code} value={countryItem.code}>
+                          {isEn ? countryItem.nameEn : countryItem.nameAr} ({countryItem.dialCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Dynamic Location Feature: Current Location GPS vs Manual City Selection */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        data-testid="location-mode-gps-btn"
+                        onClick={handleDetectCurrentLocationGps}
+                        className={`min-h-[48px] px-3 rounded-full border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          locationMode === 'gps'
+                            ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
+                            : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                        }`}
+                      >
+                        <span>📍</span>
+                        <span>
+                          {isLocatingGps
+                            ? isEn
+                              ? 'Locating...'
+                              : 'جاري التحديد...'
+                            : isEn
+                            ? 'Current Location'
+                            : 'الموقع الحالي'}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        data-testid="location-mode-manual-btn"
+                        onClick={() => setLocationMode('manual')}
+                        className={`min-h-[48px] px-3 rounded-full border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          locationMode === 'manual'
+                            ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
+                            : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                        }`}
+                      >
+                        <span>🏙️</span>
+                        <span>{isEn ? 'Select City' : 'اختيار المدينة يدوياً'}</span>
+                      </button>
+                    </div>
+
+                    {locationMode === 'manual' ? (
+                      <select
+                        id="auth-city-select"
+                        data-testid="auth-city-select"
+                        value={selectedCityAr}
+                        onChange={(e) => setSelectedCityAr(e.target.value)}
+                        aria-label={isEn ? 'City' : 'المدينة'}
+                        className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
+                      >
+                        {activeCountryObj.cities.map((cityItem) => (
+                          <option key={cityItem.ar} value={cityItem.ar}>
+                            {isEn ? cityItem.en : cityItem.ar}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="min-h-[48px] px-5 rounded-full border border-teal-500/30 bg-teal-500/8 flex items-center justify-between text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                        <span>
+                          📍{' '}
+                          {isEn
+                            ? activeCountryObj.cities.find((c) => c.ar === selectedCityAr)?.en ||
+                              activeCountryObj.defaultCityEn
+                            : selectedCityAr}
+                        </span>
+                        <span className="text-[11px] opacity-80">GPS</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Phone Number Input */}
+                  <div className="flex items-center gap-2" dir="ltr">
+                    <span className="min-h-[48px] px-4 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-100 dark:bg-[#142430] text-xs font-black text-slate-700 dark:text-slate-200 inline-flex items-center justify-center shrink-0 tabular-nums">
+                      {activeCountryObj.dialCode}
+                    </span>
+                    <input
+                      id="auth-phone-input"
+                      data-testid="auth-phone-input"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder={isEn ? 'Phone Number' : 'رقم الهاتف'}
+                      aria-label={isEn ? 'Phone Number' : 'رقم الهاتف'}
+                      className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Smooth Pill Primary Action Button ("متابعة" / "Next") */}
+              <button
+                type="submit"
+                id="auth-primary-submit-btn"
+                data-testid="auth-primary-submit-btn"
+                disabled={isSubmitting}
+                className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center"
+              >
+                {isSubmitting
+                  ? isEn
+                    ? 'Loading...'
+                    : 'جاري المتابعة...'
+                  : isEn
+                  ? 'Next'
+                  : 'متابعة'}
+              </button>
+
+              {/* Official Branded Social Logins: Gmail, iCloud, Facebook, Outlook */}
+              <div className="pt-2 space-y-2.5">
+                <div className="relative flex items-center justify-center">
+                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
+                  <span className="bg-white dark:bg-[#101D26] px-3 text-[11px] font-bold text-slate-400 shrink-0">
+                    {isEn ? 'Or continue with' : 'أو المتابعة السريعة عبر'}
+                  </span>
+                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
+                </div>
+
+                <div className="grid grid-cols-4 gap-2">
+                  {/* Gmail */}
+                  <button
+                    type="button"
+                    data-testid="social-auth-gmail"
+                    onClick={() => handleSocialQuickAuth('gmail')}
+                    title="Gmail"
+                    aria-label="Gmail"
+                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#EA4335"
+                        d="M12 10.2v3.6h5.1c-.2 1.2-.9 2.2-1.9 2.9l3.1 2.4c1.8-1.7 2.8-4.1 2.8-7 0-.7-.1-1.3-.2-1.9H12z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M6.6 14.3l-.7.5-2.5 1.9C5 19.8 8.2 22 12 22c2.7 0 5-.9 6.6-2.4l-3.1-2.4c-.9.6-2 .9-3.5.9-2.7 0-5-1.8-5.8-4.3z"
+                      />
+                      <path
+                        fill="#4A90E2"
+                        d="M3.4 7.3C2.5 9 2 10.9 2 13s.5 4 1.4 5.7l3.2-2.4c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L3.4 7.3z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M12 5.8c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 2.8 14.7 2 12 2 8.2 2 5 4.2 3.4 7.3l3.2 2.4c.8-2.5 3.1-3.9 5.4-3.9z"
+                      />
+                    </svg>
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      Gmail
+                    </span>
+                  </button>
+
+                  {/* iCloud */}
+                  <button
+                    type="button"
+                    data-testid="social-auth-icloud"
+                    onClick={() => handleSocialQuickAuth('icloud')}
+                    title="iCloud"
+                    aria-label="iCloud"
+                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <svg
+                      className="w-4 h-4 text-slate-900 dark:text-white"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                    </svg>
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      iCloud
+                    </span>
+                  </button>
+
+                  {/* Facebook */}
+                  <button
+                    type="button"
+                    data-testid="social-auth-facebook"
+                    onClick={() => handleSocialQuickAuth('facebook')}
+                    title="Facebook"
+                    aria-label="Facebook"
+                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#1877F2"
+                        d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"
+                      />
+                    </svg>
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      Facebook
+                    </span>
+                  </button>
+
+                  {/* Outlook */}
+                  <button
+                    type="button"
+                    data-testid="social-auth-outlook"
+                    onClick={() => handleSocialQuickAuth('outlook')}
+                    title="Outlook"
+                    aria-label="Outlook"
+                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fill="#F25022" d="M3 3h8.5v8.5H3z" />
+                      <path fill="#7FBA00" d="M12.5 3H21v8.5h-8.5z" />
+                      <path fill="#00A4EF" d="M3 12.5h8.5V21H3z" />
+                      <path fill="#FFB900" d="M12.5 12.5H21V21h-8.5z" />
+                    </svg>
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      Outlook
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Toggle between Login and Registration */}
+              <div className="pt-1 text-center">
+                <button
+                  type="button"
+                  data-testid="auth-mode-toggle-btn"
                   onClick={() => {
                     setErrorMsg(null);
                     setAuthMode((prev) => (prev === 'signup' ? 'signin' : 'signup'));
                   }}
-                  className="min-h-[48px] px-4 inline-flex items-center justify-center text-xs font-extrabold text-slate-600 dark:text-[#CBD5E1] hover:text-[#0d9488] dark:hover:text-[#2DD4BF] active:scale-95 transition-transform duration-150 cursor-pointer"
+                  className="min-h-[48px] px-4 rounded-full text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] hover:underline inline-flex items-center justify-center cursor-pointer"
                 >
                   {authMode === 'signup'
                     ? isEn
                       ? 'Already have an account? Sign In'
                       : 'لديك حساب بالفعل؟ تسجيل الدخول'
                     : isEn
-                    ? "Don't have an account? Create Account"
-                    : 'ليس لديك حساب؟ إنشاء حساب جديد'}
+                    ? 'Create a new account'
+                    : 'إنشاء حساب جديد'}
                 </button>
               </div>
             </form>
           )}
 
           {/* =================================================================
-              VIEW 2: MINIMALIST CHILDREN PROFILES / SETUP (ملفات الأطفال)
+              VIEW 2: MINIMALIST CHILDREN PROFILES SETUP (ملفات الأطفال)
               ================================================================= */}
           {activeView === 'CHILDREN' && (
-            <div
-              data-testid="onboarding-step-4-children"
-              className="space-y-4 animate-mobile-step"
-            >
+            <div className="space-y-4">
               <div className="text-center">
-                <h2 className="text-base font-extrabold text-slate-900 dark:text-[#F8FAFC]">
+                <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
                   {isEn ? 'Children Profiles' : 'ملفات الأطفال'}
                 </h2>
               </div>
 
-              {/* Existing Children List */}
-              <div className="space-y-2.5 max-h-64 overflow-y-auto pe-1">
-                {safeChildrenList.map((kidItem, kidIdx) => {
-                  const safeBirth =
-                    typeof kidItem?.birth === 'string' && kidItem.birth.trim()
-                      ? kidItem.birth.trim()
-                      : '2022-05-14';
-                  const safeName =
-                    typeof kidItem?.name === 'string' && kidItem.name.trim()
-                      ? kidItem.name
-                      : `طفل ${kidIdx + 1}`;
-                  const safeGender: 'boy' | 'girl' =
-                    kidItem?.gender === 'girl' ? 'girl' : 'boy';
-                  const safeTheme: AvatarAccessoryTheme =
-                    kidItem?.avatarTheme || 'astronaut';
-                  const ageInfo = calculateChildAge(
-                    safeBirth,
-                    isEn ? 'en' : 'ar'
-                  );
-
+              {/* Existing Children Pills */}
+              <div className="space-y-2 max-h-[210px] overflow-y-auto pr-0.5">
+                {safeChildrenList.map((child) => {
+                  const ageInfo = calculateChildAge(child.birth, language);
                   return (
                     <div
-                      key={kidItem.id || kidIdx}
-                      data-testid={`onboarding-child-card-${kidItem.id}`}
-                      className="rounded-3xl border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-3.5 space-y-2.5 shadow-2xs"
+                      key={child.id}
+                      className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430]"
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-teal-500/10 flex items-center justify-center shrink-0">
                           <ThreeDChildAvatar
-                            name={safeName}
-                            stageCode={ageInfo.stageCode}
-                            accessoryTheme={safeTheme}
-                            gender={safeGender}
-                            size="sm"
-                          />
-                          <input
-                            type="text"
-                            value={kidItem.name ?? ''}
-                            onChange={(e) =>
-                              handleUpdateChild(kidItem.id, {
-                                name: e.target.value,
-                              })
-                            }
-                            aria-label={isEn ? 'Child Name' : 'اسم الطفل'}
-                            placeholder={isEn ? 'Child Name' : 'اسم الطفل'}
-                            className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#101D26] px-4 py-2 text-xs font-extrabold text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
+                            gender={child.gender}
+                            theme={child.avatarTheme}
+                            size={28}
                           />
                         </div>
-
-                        {safeChildrenList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveChild(kidItem.id)}
-                            aria-label={isEn ? 'Remove child' : 'حذف'}
-                            className="min-w-[48px] min-h-[48px] rounded-full text-xs font-bold text-red-500 hover:bg-red-500/10 flex items-center justify-center active:scale-95 transition-transform duration-150 cursor-pointer shrink-0"
-                          >
-                            ✕
-                          </button>
-                        )}
+                        <div className="min-w-0">
+                          <p className="text-sm font-black text-slate-900 dark:text-white truncate">
+                            {child.name}
+                          </p>
+                          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                            {ageInfo.label}
+                          </p>
+                        </div>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <select
-                          value={safeGender}
-                          onChange={(e) =>
-                            handleUpdateChild(kidItem.id, {
-                              gender: e.target.value as 'boy' | 'girl',
-                            })
-                          }
-                          className="min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#101D26] px-4 py-2 text-xs font-bold text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
-                        >
-                          <option value="boy" className="text-slate-900 bg-white font-bold">
-                            {isEn ? 'Boy' : 'ولد'}
-                          </option>
-                          <option value="girl" className="text-slate-900 bg-white font-bold">
-                            {isEn ? 'Girl' : 'بنت'}
-                          </option>
-                        </select>
-
-                        <input
-                          type="date"
-                          value={safeBirth}
-                          onChange={(e) =>
-                            handleUpdateChild(kidItem.id, {
-                              birth: e.target.value,
-                            })
-                          }
-                          className="min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#101D26] px-4 py-2 text-xs font-bold text-slate-900 dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
-                        />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveChild(child.id)}
+                        aria-label={isEn ? 'Remove child' : 'حذف'}
+                        className="min-w-[48px] min-h-[48px] rounded-full text-slate-400 hover:text-rose-500 flex items-center justify-center text-xs font-bold cursor-pointer"
+                      >
+                        ✕
+                      </button>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Minimalist Add Another Child Row */}
-              <div className="rounded-3xl border border-dashed border-slate-300 dark:border-[#1E3646] bg-white/70 dark:bg-[#142430]/60 p-3.5 space-y-2.5">
+              {/* Add Child Form */}
+              <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-[#1E3646]">
                 <input
+                  id="onboarding-child-name-input"
+                  data-testid="onboarding-child-name-input"
                   type="text"
-                  data-testid="onboarding-new-child-name"
                   value={newChildName}
                   onChange={(e) => setNewChildName(e.target.value)}
-                  placeholder={isEn ? 'Add child name' : 'إضافة اسم طفل جديد'}
-                  className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-4 py-2 text-xs font-bold text-slate-900 dark:text-[#F8FAFC] placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488]"
+                  placeholder={isEn ? 'Child Name' : 'اسم الطفل'}
+                  aria-label={isEn ? 'Child Name' : 'اسم الطفل'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488]"
                 />
-                <div className="grid grid-cols-3 gap-2">
-                  <select
-                    value={newChildGender}
-                    onChange={(e) =>
-                      setNewChildGender(e.target.value as 'boy' | 'girl')
-                    }
-                    className="min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-slate-900 dark:text-[#F8FAFC]"
-                  >
-                    <option value="boy" className="text-slate-900 bg-white font-bold">
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setNewChildGender('boy')}
+                      className={`min-h-[48px] rounded-full border text-xs font-black cursor-pointer transition-colors ${
+                        newChildGender === 'boy'
+                          ? 'border-[#0d9488] bg-[#0d9488]/10 text-[#0d9488] dark:text-[#2DD4BF]'
+                          : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
                       {isEn ? 'Boy' : 'ولد'}
-                    </option>
-                    <option value="girl" className="text-slate-900 bg-white font-bold">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewChildGender('girl')}
+                      className={`min-h-[48px] rounded-full border text-xs font-black cursor-pointer transition-colors ${
+                        newChildGender === 'girl'
+                          ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-300'
+                          : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
                       {isEn ? 'Girl' : 'بنت'}
-                    </option>
-                  </select>
+                    </button>
+                  </div>
 
                   <input
                     type="date"
                     value={newChildBirth}
                     onChange={(e) => setNewChildBirth(e.target.value)}
-                    className="min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-slate-900 dark:text-[#F8FAFC]"
+                    aria-label={isEn ? 'Birth Date' : 'تاريخ الميلاد'}
+                    className="w-full min-h-[48px] px-3 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488]"
                   />
-
-                  <button
-                    type="button"
-                    data-testid="onboarding-add-child-btn"
-                    onClick={handleAddChild}
-                    className="min-h-[48px] rounded-full bg-teal-500/15 hover:bg-teal-500/25 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold px-3 py-2 active:scale-95 transition-transform duration-150 cursor-pointer"
-                  >
-                    {isEn ? '+ Add' : '+ إضافة'}
-                  </button>
                 </div>
-              </div>
 
-              {/* Primary Smooth Pill Action Button ("متابعة" / "Next") */}
-              <div className="pt-2 space-y-2">
                 <button
                   type="button"
-                  data-testid="onboarding-next-btn"
+                  onClick={handleAddChild}
+                  className="w-full min-h-[48px] rounded-full border border-[#0d9488]/40 bg-[#0d9488]/10 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black hover:bg-[#0d9488]/20 transition-colors cursor-pointer"
+                >
+                  + {isEn ? 'Add Child' : 'إضافة طفل'}
+                </button>
+              </div>
+
+              {/* Navigation Buttons */}
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  id="onboarding-children-next-btn"
+                  data-testid="onboarding-children-next-btn"
+                  onClick={() => setActiveView('PARTNER')}
+                  className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center"
+                >
+                  {isEn ? 'Next' : 'متابعة'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveView('AUTH')}
+                  className="w-full min-h-[48px] rounded-full text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  {isEn ? 'Back' : 'رجوع'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* =================================================================
+              VIEW 3: OPTIONAL CO-PARENT LINKING (ربط حساب الشريك)
+              ================================================================= */}
+          {activeView === 'PARTNER' && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
+                  {isEn ? 'Co-Parent Account' : 'ربط حساب الشريك'}
+                </h2>
+              </div>
+
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={coParentName}
+                  onChange={(e) => setCoParentName(e.target.value)}
+                  placeholder={isEn ? 'Partner Name' : 'اسم الشريك'}
+                  aria-label={isEn ? 'Partner Name' : 'اسم الشريك'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488]"
+                />
+                <input
+                  type="email"
+                  dir="ltr"
+                  value={coParentEmail}
+                  onChange={(e) => setCoParentEmail(e.target.value)}
+                  placeholder={isEn ? 'Partner Email' : 'البريد الإلكتروني للشريك'}
+                  aria-label={isEn ? 'Partner Email' : 'البريد الإلكتروني للشريك'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] text-start"
+                />
+                <input
+                  type="tel"
+                  dir="ltr"
+                  value={coParentPhone}
+                  onChange={(e) => setCoParentPhone(e.target.value)}
+                  placeholder={isEn ? 'Partner Phone' : 'رقم هاتف الشريك'}
+                  aria-label={isEn ? 'Partner Phone' : 'رقم هاتف الشريك'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] text-start"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  type="button"
+                  id="onboarding-complete-btn"
+                  data-testid="onboarding-complete-btn"
                   disabled={isSubmitting}
-                  onClick={() => void handleCompleteChildrenSetup()}
-                  className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-extrabold px-6 py-3 shadow-md active:scale-95 transition-transform duration-150 cursor-pointer disabled:opacity-60"
+                  onClick={() => handleFinalizeFlow(true)}
+                  className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center"
                 >
                   {isSubmitting
                     ? isEn
                       ? 'Saving...'
                       : 'جاري الحفظ...'
                     : isEn
-                    ? 'Next'
-                    : 'متابعة'}
+                    ? 'Link & Start'
+                    : 'ربط الحساب والبدء'}
                 </button>
 
-                <div className="text-center">
-                  <button
-                    type="button"
-                    data-testid="onboarding-back-btn"
-                    onClick={() => {
-                      setErrorMsg(null);
-                      setActiveView('AUTH');
-                    }}
-                    className="min-h-[48px] px-4 inline-flex items-center justify-center text-xs font-bold text-slate-500 dark:text-[#94A3B8] hover:text-slate-800 dark:hover:text-[#F8FAFC] active:scale-95 transition-transform duration-150 cursor-pointer"
-                  >
-                    {isEn ? 'Back' : 'رجوع'}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  data-testid="onboarding-skip-coparent-btn"
+                  disabled={isSubmitting}
+                  onClick={() => handleFinalizeFlow(false)}
+                  className="w-full min-h-[48px] rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 cursor-pointer flex items-center justify-center"
+                >
+                  {isEn ? 'Skip for now' : 'تخطي في الوقت الحالي'}
+                </button>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Minimal Footer */}
-        <div
-          data-testid="onboarding-login-bottom-copyright"
-          className="pt-4 text-center text-[11px] text-slate-400 dark:text-[#64748B]"
-        >
-          {isEn ? 'Nekbaar © 2026' : 'نكبر © 2026'}
         </div>
       </div>
     </div>

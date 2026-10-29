@@ -778,9 +778,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         titleAr: '٥ دقائق من التواصل البصري والابتسامة قبل انطلاق اليوم تصنع أماناً نفسياً طوال النهار',
         titleEn: '5 Minutes of Eye Contact & Warm Smiles Before the Day Begins Anchors Emotional Safety',
         bodyAr:
-          'ابدأوا صباحكم بلمسة حانية لحمزة (٦ شهور)، وتشجيع ليلى (٤ سنوات) على اختيار ألوان يومها في الحضانة، وتذكير يوسف (٨ سنوات) بأنه بطل مسؤول في مدرسته.',
+          'ابدأوا صباحكم بلمسة حانية لحمزة، وتشجيع ليلى على اختيار ألوان يومها في الحضانة، وتذكير يوسف بأنه بطل مسؤول في مدرسته.',
         bodyEn:
-          'Start the morning with gentle cuddles for baby Hamza (6m), let Laila (4y) pick her nursery creative goal, and empower Youssef (8y) with confidence for school.',
+          'Start the morning with gentle cuddles for baby Hamza, let Laila pick her nursery creative goal, and empower Youssef with confidence for school.',
         quoteAr: '«الأطفال لا يحتاجون صباحاً مثالياً، بل يحتاجون صباحاً دافئاً يشعرون فيه أنهم محبوبون.»',
         quoteEn: '“Children don’t need a perfect morning; they need a warm morning where they feel deeply loved.”',
         actionLabelAr: 'تطبيق عادة الصباح الدافئ',
@@ -947,7 +947,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           calories: '180 kcal',
         },
         lunchbox: {
-          badgeAr: '🥕 أول وجبة خضار مهروس طازج (٦ شهور)',
+          badgeAr: '🥕 أول وجبة خضار مهروس طازج',
           badgeEn: '🥕 First Veggie Puree Meal',
           titleAr: `مهروس الجزر والبطاطا الحلوة والكوسة بالبخار لـ ${activeKidName}`,
           titleEn: `Steamed Carrot, Sweet Potato & Zucchini Puree for ${activeKidName}`,
@@ -1069,7 +1069,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     if (stageCode === '0-2') {
       return {
         outdoor: {
-          badgeAr: '👶🏻 تمرين وقت البطن (Tummy Time)',
+          badgeAr: '👶🏻 تمرين وقت البطن الحسي',
           badgeEn: '👶🏻 Guided Tummy Time & Reach',
           titleAr: `١٥ دقيقة تمرين وقت البطن على سجادة اللعب الحسية لـ ${activeKidName}`,
           titleEn: `15-Min Sensory Mat Tummy Time & Toy Reach for ${activeKidName}`,
@@ -1104,7 +1104,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           badgeAr: '🏊‍♂️ رياضة واستقلالية حركية',
           badgeEn: '🏊‍♂️ Swimming & Athletic Agility',
           titleAr: `٤٠ دقيقة تمرين سباحة أو كرة قدم وتفريغ طاقة بدون شاشات لـ ${activeKidName}`,
-          titleEn: `40-Min Swimming or Football Practice (Screen-Free) for ${activeKidName}`,
+          titleEn: `40-Min Screen-Free Swimming or Football Practice for ${activeKidName}`,
           descAr: 'يعزز اللياقة البدنية، الثقة بالنفس، والالتزام بجدول توازن اللعب والمذاكرة.',
           descEn: 'Builds stamina, teamwork discipline, and healthy screen-time balance.',
           time: '05:00 م',
@@ -1132,8 +1132,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
     return {
       outdoor: {
-        badgeAr: '🎨 لعب حركي وإبداعي (مرحلة الحضانة)',
-        badgeEn: '🎨 Active Creative Play (4 yrs)',
+        badgeAr: '🎨 لعب حركي وإبداعي للحضانة',
+        badgeEn: '🎨 Active Creative Play',
         titleAr: `٢٠ دقيقة مسار توازن الألوان والقفز المرح في البيت مع ${activeKidName}`,
         titleEn: `20-Min Color Hopscotch & Creative Movement with ${activeKidName}`,
         descAr: 'يدمج الحركة بتسمية الألوان والمشاعر لتفريغ طاقة ليلى بعد الحضانة بمرح.',
@@ -1360,11 +1360,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
               {isMotherActive
                 ? isEn
-                  ? `Everything for baby ${liveHamzaNameEn} (${liveHamzaAgeEn}), creative ${liveLailaNameEn} (${liveLailaAgeEn}), and champion ${liveYoussefNameEn} (${liveYoussefAgeEn}) is organized and synced with Dad ${partnerParentNameEn}.`
-                  : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr} (${liveHamzaAgeAr})، وإبداع ${liveLailaNameAr} (${liveLailaAgeAr})، ومدرسة ورياضة ${liveYoussefNameAr} (${liveYoussefAgeAr}) مرتبة ومتزامنة مع بابا ${partnerParentNameAr}.`
+                  ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Dad ${partnerParentNameEn}.`
+                  : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع بابا ${partnerParentNameAr}.`
                 : isEn
-                ? `Everything for baby ${liveHamzaNameEn} (${liveHamzaAgeEn}), creative ${liveLailaNameEn} (${liveLailaAgeEn}), and champion ${liveYoussefNameEn} (${liveYoussefAgeEn}) is organized and synced with Mom ${partnerParentNameEn}.`
-                : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr} (${liveHamzaAgeAr})، وإبداع ${liveLailaNameAr} (${liveLailaAgeAr})، ومدرسة ورياضة ${liveYoussefNameAr} (${liveYoussefAgeAr}) مرتبة ومتزامنة مع ماما ${partnerParentNameAr}.`}
+                ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Mom ${partnerParentNameEn}.`
+                : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع ماما ${partnerParentNameAr}.`}
             </p>
           </div>
         </div>
@@ -1398,11 +1398,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 aria-label={
                   isPlayingBrief
                     ? isEn
-                      ? 'Pause 30s audio brief'
-                      : 'إيقاف الرسالة الصوتية (٣٠ ثانية)'
+                      ? 'Pause audio brief'
+                      : 'إيقاف الرسالة الصوتية'
                     : isEn
-                    ? 'Play 30s audio brief'
-                    : 'تشغيل الرسالة الصوتية (٣٠ ثانية)'
+                    ? 'Play audio brief'
+                    : 'تشغيل الرسالة الصوتية'
                 }
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center text-base font-black shrink-0 transition-all cursor-pointer shadow-xs ${
                   isPlayingBrief
@@ -2399,7 +2399,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               title={isEn ? currentNutrition.titleEn : currentNutrition.titleAr}
               metaLeft={
                 <>
-                  <span>👶 {activeKidName} ({activeKidStageLabel})</span>
+                  <span>👶 {activeKidName} · {activeKidStageLabel}</span>
                   <span aria-hidden="true">·</span>
                   <span>🔥 {currentNutrition.calories}</span>
                 </>
@@ -2478,8 +2478,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               }
               title={
                 isEn
-                  ? `${activeKidName}'s Daily Water Intake (${waterProgressPct}%)`
-                  : `معدل شرب المياه اليومي لـ ${activeKidName} (${waterProgressPct}٪)`
+                  ? `${activeKidName}'s Daily Water Intake · ${waterProgressPct}%`
+                  : `معدل شرب المياه اليومي لـ ${activeKidName} · ${waterProgressPct}٪`
               }
               metaLeft={
                 <>

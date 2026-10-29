@@ -1596,7 +1596,7 @@ export default function App() {
     >
       <div
         data-testid="mobile-app-viewport-frame"
-        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-between overflow-x-hidden pb-28 transition-all duration-300 ease-in-out"
+        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-24 transition-all duration-300 ease-in-out"
       >
         {isDashboardUnlocked && (
           <>
@@ -1631,9 +1631,9 @@ export default function App() {
             />
 
             {/* Main Mobile Workspace Container */}
-            <div className="w-full max-w-[430px] mx-auto px-3.5 pt-4 pb-8 flex-1">
+            <div className="w-full max-w-[430px] mx-auto px-3 pt-2.5 pb-6 flex-1">
               {/* Main Viewport */}
-              <main key={activePage} className="min-w-0 space-y-5 animate-page-enter transition-all duration-300 ease-in-out">
+              <main key={activePage} className="min-w-0 space-y-4 animate-page-enter transition-all duration-300 ease-in-out">
             {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
             {(() => {
               const innerScreenMeta: Partial<

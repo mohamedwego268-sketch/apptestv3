@@ -210,7 +210,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     type="button"
                     onClick={() => onAddToWishes(item)}
                     title={isEn ? 'Add to Wishes' : 'أضف للأمنيات'}
-                    className="min-h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-xs cursor-pointer hover:border-rose-400"
+                    className="min-h-[48px] min-w-[48px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-xs cursor-pointer hover:border-rose-400 inline-flex items-center justify-center"
                   >
                     💝
                   </button>
@@ -220,7 +220,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onInspectItem(item)}
-                    className="min-h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                    className="min-h-[48px] px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer inline-flex items-center justify-center"
                   >
                     {isEn ? 'Details' : 'تفاصيل'}
                   </button>
@@ -237,7 +237,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                         : `🛒 تمت إضافة ${item.name} إلى سلة الأسرة`
                     );
                   }}
-                  className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-black cursor-pointer"
+                  className="min-h-[48px] px-3.5 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black cursor-pointer inline-flex items-center justify-center"
                 >
                   + {isEn ? 'Add' : 'أضف للسلة'}
                 </button>

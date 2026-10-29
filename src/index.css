@@ -1474,7 +1474,7 @@ h1, h2, h3, h4 {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   background-color: #f8fafc;
   transition: all 300ms ease-in-out;
 }
@@ -1501,11 +1501,11 @@ h1, h2, h3, h4 {
 
 /* Safe Area Spacing Utilities (Notch / Dynamic Island & Home Indicator) */
 .pt-safe {
-  padding-top: max(env(safe-area-inset-top, 0px), 3rem);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 2rem);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 1.25rem);
 }
 
 .pb-safe-nav {
