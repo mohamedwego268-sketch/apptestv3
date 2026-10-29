@@ -1515,7 +1515,7 @@ export default function App() {
     { id: 'assistant', label: lang === 'en' ? '2. Smart AI Assistant' : '٢. مساعد نكبر الذكي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد نكبر الذكي', iconId: 'assistant' },
     { id: 'children', label: lang === 'en' ? '3. Our Kids 3D' : '٣. أولادنا 3D', shortLabel: lang === 'en' ? 'Kids 3D' : 'أولادنا 3D', iconId: 'children' },
     { id: 'routine', label: lang === 'en' ? '4. Daily Routine' : '٤. الروتين اليومي', shortLabel: lang === 'en' ? 'Routine' : 'الروتين اليومي', iconId: 'routine' },
-    { id: 'services', label: lang === 'en' ? '5. Quick Store (0–8 Yrs)' : '٥. المتجر السريع (٠–٨ سنوات)', shortLabel: lang === 'en' ? 'Store' : 'المتجر السريع', iconId: 'services' },
+    { id: 'services', label: lang === 'en' ? '5. Quick Store' : '٥. المتجر السريع', shortLabel: lang === 'en' ? 'Store' : 'المتجر السريع', iconId: 'services' },
     { id: 'calendar', label: lang === 'en' ? '6. Calendar & Events' : '٦. التقويم والمواعيد', shortLabel: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد', iconId: 'calendar' },
     { id: 'medical', label: lang === 'en' ? '7. Doctor & Clinic' : '٧. الدكتور والعيادة', shortLabel: lang === 'en' ? 'Clinic' : 'الدكتور والعيادة', iconId: 'health' },
     { id: 'media', label: lang === 'en' ? '8. Parenting Reels & Videos' : '٨. ريلز وفيديوهات التربية', shortLabel: lang === 'en' ? 'Reels' : 'ريلز التربية', iconId: 'video' },
@@ -1545,7 +1545,7 @@ export default function App() {
 
   const handleSelectParentProfile = (targetRole: 'mom' | 'dad') => {
     const isDad = targetRole === 'dad';
-    const nextName = isDad ? 'بابا (أحمد)' : 'ماما (مريم)';
+    const nextName = isDad ? 'بابا أحمد' : 'ماما مريم';
     setState((prev) => ({
       ...prev,
       role: targetRole,
@@ -1555,11 +1555,11 @@ export default function App() {
     showToast(
       isDad
         ? lang === 'en'
-          ? 'Switched to Father View: Ahmad — Unified Family Compass'
-          : 'تم التبديل إلى عرض الأب: أحمد — في مساحة الأسرة المشتركة'
+          ? 'Switched to Father View: Ahmad'
+          : 'تم التبديل إلى حساب الأب: أحمد'
         : lang === 'en'
-        ? 'Switched to Mother View: Maryam — Unified Family Compass'
-        : 'تم التبديل إلى عرض الأم: مريم — في مساحة الأسرة المشتركة'
+        ? 'Switched to Mother View: Maryam'
+        : 'تم التبديل إلى حساب الأم: مريم'
     );
   };
 
@@ -1849,60 +1849,60 @@ export default function App() {
               </div>
             )}
 
-            {/* SMART STARTUP PROFILE RECOGNITION & PROGRESSIVE ONBOARDING BAR */}
+            {/* COMPACT ACCOUNT QUICK BAR */}
             {activePage === 'home' && showSmartGreetingBanner && (
               <div
                 data-testid="smart-startup-profile-banner"
-                className="mb-4 rounded-2xl border border-[#0d9488]/35 bg-gradient-to-r from-teal-500/10 via-emerald-500/5 to-amber-500/10 dark:bg-[#142430] p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs"
+                className="mb-3 rounded-2xl border border-[#0d9488]/30 bg-teal-500/8 dark:bg-[#142430] px-3 py-2.5 flex items-center justify-between gap-2 shadow-2xs"
               >
-                <div className="flex items-center gap-3">
-                  <span className="w-10 h-10 rounded-2xl bg-[#0d9488] text-white flex items-center justify-center text-lg shadow-xs shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-8 h-8 rounded-xl bg-[#0d9488] text-white flex items-center justify-center text-sm shadow-2xs shrink-0">
                     {recognizedProfile ? '👋' : '✨'}
                   </span>
-                  <div className="space-y-0.5">
-                    <div className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  <div className="min-w-0">
+                    <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                       {recognizedProfile
                         ? lang === 'en'
-                          ? `Welcome back, ${recognizedProfile.fullName}! (${recognizedProfile.city})`
-                          : `أهلاً بعودتك، ${recognizedProfile.fullName}! (${recognizedProfile.city})`
+                          ? `${recognizedProfile.fullName} · ${locText(recognizedProfile.city, lang)}`
+                          : `${recognizedProfile.fullName} · ${recognizedProfile.city}`
                         : lang === 'en'
-                        ? `Hello ${state.parentName} — Complete your 5-Step Family Setup`
-                        : `مرحباً ${state.parentName} — أكمل إعداد حساب العائلة المكون من ٥ خطوات`}
+                        ? `Welcome, ${state.parentName}`
+                        : `مرحباً، ${state.parentName}`}
                     </div>
-                    <div className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                    <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] truncate">
                       {recognizedProfile
                         ? lang === 'en'
-                          ? `Permanent Session Active · ${recognizedProfile.childrenCount} Children · ${
+                          ? `${recognizedProfile.childrenCount} Children · ${
                               recognizedProfile.isCoParentLinked
                                 ? 'Co-Parent Linked ✓'
-                                : 'Co-Parent Link Pending'
+                                : 'Co-Parent Link Available'
                             }`
-                          : `جلسة دائمة مفعّلة على الجهاز · ${recognizedProfile.childrenCount} أطفال · ${
+                          : `${recognizedProfile.childrenCount} أطفال · ${
                               recognizedProfile.isCoParentLinked
-                                ? 'تم ربط حساب الشريك ✓'
-                                : 'ربط حساب الشريك متاح في أي وقت'
+                                ? 'تم ربط الشريك ✓'
+                                : 'ربط الشريك متاح'
                             }`
                         : lang === 'en'
-                        ? '1. الدولة والمدينة → 2. الحساب → 3. التحقق → 4. الأطفال → 5. ربط الشريك'
-                        : '1. الدولة والمدينة ← 2. الحساب ← 3. التحقق ← 4. الأطفال ← 5. ربط الشريك'}
+                        ? 'Complete your family setup'
+                        : 'أكمل إعداد ملفات العائلة'}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     data-testid="open-progressive-onboarding-btn"
                     onClick={() => setOnboardingModalOpen(true)}
-                    className="min-h-[48px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black transition cursor-pointer"
+                    className="h-9 px-3 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold transition cursor-pointer"
                   >
                     {recognizedProfile
                       ? lang === 'en'
-                        ? '🔑 Auth Gateway / Edit Setup'
-                        : '🔑 بوابة الدخول / تعديل الإعداد'
+                        ? 'Account'
+                        : 'الحساب'
                       : lang === 'en'
-                      ? '🚀 Open Auth Gateway & Onboarding'
-                      : '🚀 فتح بوابة الدخول والتسجيل المتدرج'}
+                        ? 'Setup'
+                        : 'الإعداد'}
                   </button>
                   {recognizedProfile && (
                     <button
@@ -1914,20 +1914,20 @@ export default function App() {
                         setOnboardingModalOpen(true);
                         showToast(
                           lang === 'en'
-                            ? 'Signed out. Mandatory Auth Gateway active.'
-                            : 'تم تسجيل الخروج وفتح بوابة الدخول الإلزامية.'
+                            ? 'Signed out successfully.'
+                            : 'تم تسجيل الخروج بنجاح.'
                         );
                       }}
-                      className="min-h-[48px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
+                      className="h-9 px-2.5 rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-gray-900 dark:text-[#F8FAFC] text-[11px] font-semibold transition cursor-pointer"
                     >
-                      {lang === 'en' ? '🚪 Sign Out' : '🚪 تسجيل خروج'}
+                      {lang === 'en' ? 'Sign Out' : 'خروج'}
                     </button>
                   )}
                   <button
                     type="button"
                     onClick={() => setShowSmartGreetingBanner(false)}
-                    aria-label={lang === 'en' ? 'Dismiss greeting' : 'إخفاء الترحيب'}
-                    className="min-h-[48px] min-w-[48px] px-2 py-1 rounded-lg text-xs font-bold text-[var(--color-muted)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                    aria-label={lang === 'en' ? 'Dismiss' : 'إخفاء'}
+                    className="h-9 w-8 rounded-lg text-xs font-bold text-[var(--color-muted)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer flex items-center justify-center"
                   >
                     ✕
                   </button>

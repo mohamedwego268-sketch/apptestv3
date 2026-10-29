@@ -257,11 +257,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <span>
               {state.darkMode
                 ? lang === 'en'
-                  ? 'Dark Mode On (Switch to Light)'
-                  : 'الوضع الليلي شغال (حوّل للنهاري)'
+                  ? 'Switch to Light Mode'
+                  : 'التبديل للوضع النهاري'
                 : lang === 'en'
                 ? 'Enable Dark Mode'
-                : 'شغّل الوضع الليلي'}
+                : 'تشغيل الوضع الليلي'}
             </span>
           </button>
         }
@@ -482,11 +482,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                   <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     {settingsCountry === 'EG'
                       ? lang === 'en'
-                        ? 'Governorate (All 27 Egyptian Governorates)'
-                        : 'المحافظة (جميع الـ ٢٧ محافظة المصرية بالترتيب)'
+                        ? 'Governorate'
+                        : 'المحافظة'
                       : lang === 'en'
-                      ? 'Region / Governorate (Saudi Arabia)'
-                      : 'المنطقة والمحافظة الرئيسية (المملكة العربية السعودية)'}
+                      ? 'Region / City'
+                      : 'المنطقة والمدينة'}
                   </label>
                   <select
                     id="settingsCity"

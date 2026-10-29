@@ -148,16 +148,16 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
       const targetLabel =
         scope === 'family'
           ? isEn
-            ? 'Family Home Battery (Ahmad, Maryam & Kids)'
-            : 'بطارية البيت العائلية (أحمد ومريم والأطفال)'
+            ? 'Family Home Battery'
+            : 'بطارية البيت العائلية'
           : isEn
           ? CHILD_META[scope].nameEn
           : CHILD_META[scope].nameAr;
 
       onShowToast?.(
         isEn
-          ? `🔋 Saved diagnostic assessment for ${targetLabel} (${livePreviewScore}%)`
-          : `🔋 تم حفظ التقييم التشخيصي لـ ${targetLabel} بنجاح (${livePreviewScore}٪)`
+          ? `🔋 Saved assessment for ${targetLabel} — ${livePreviewScore}%`
+          : `🔋 تم حفظ تقييم ${targetLabel} بنجاح — ${livePreviewScore}٪`
       );
     } finally {
       setIsSaving(false);
@@ -196,45 +196,37 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-[11px] font-black uppercase tracking-wider text-[#0d9488] dark:text-[#2DD4BF]">
               {isEn
-                ? 'Autonomous Battery Diagnostics Engine'
-                : 'محرك تشخيص بطارية البيت الذاتي · متصل بـ MasterController'}
+                ? 'Family Energy & Well-Being'
+                : 'مؤشر طاقة البيت والأسرة'}
             </span>
           </div>
           <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn
               ? 'Interactive Family & Child Well-Being Assessment'
-              : 'التقييم التفاعلي لطاقة البيت والأطفال (حمزة · ليلى · يوسف)'}
+              : 'التقييم التفاعلي لطاقة البيت والأطفال'}
           </h3>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {master.lifecycleState === 'Offline-Fallback' && (
-            <span
-              data-testid="battery-offline-badge"
-              className="px-2.5 py-1 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-800 dark:text-amber-300 text-[11px] font-extrabold"
-            >
-              📡 {isEn ? 'Offline Cache Active' : 'وضع الحفظ المحلي الذكي'}
-            </span>
-          )}
           <div className="px-3 py-1.5 rounded-2xl bg-teal-500/15 border border-teal-500/35 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black tabular-nums">
             🔋 {isEn ? 'Family Avg:' : 'متوسط طاقة البيت:'} {summary.familyAverageScore}%
           </div>
         </div>
       </div>
 
-      {/* Scope Selector Pills: Family vs Hamza (6m) vs Laila (4y) vs Youssef (8y) */}
+      {/* Scope Selector Pills */}
       <div className="space-y-2">
         <label className="block text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
           {isEn
-            ? '1. Select Assessment Target (Family-Wide or Specific Child):'
-            : '١. اختر نطاق التقييم (البيت بالكامل أو طفل محدد):'}
+            ? 'Select Assessment Target:'
+            : 'اختر نطاق التقييم:'}
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <button
             type="button"
             data-testid="battery-scope-family"
             onClick={() => setScope('family')}
-            className={`min-h-[46px] px-3 py-2 rounded-2xl border text-xs font-black transition-all flex items-center justify-between gap-2 cursor-pointer ${
+            className={`min-h-[48px] px-3 py-2 rounded-2xl border text-xs font-black transition-all flex items-center justify-between gap-2 cursor-pointer ${
               scope === 'family'
                 ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-xs'
                 : 'bg-[var(--color-control-muted)]/60 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -242,7 +234,7 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
           >
             <span className="inline-flex items-center gap-1.5">
               <span>🏡</span>
-              <span>{isEn ? 'All Family (Ahmad & Maryam)' : 'البيت بالكامل (أحمد ومريم)'}</span>
+              <span>{isEn ? 'All Family' : 'البيت بالكامل'}</span>
             </span>
             <span className="tabular-nums text-[11px] font-extrabold opacity-90">
               {summary.familyAverageScore}%
@@ -285,11 +277,11 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
             <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
               {scope === 'family'
                 ? isEn
-                  ? 'Household & Co-Parenting Energy Sliders'
-                  : 'مؤشرات طاقة البيت والوالدين (أحمد ومريم)'
+                  ? 'Household & Co-Parenting Energy'
+                  : 'مؤشرات طاقة البيت والوالدين'
                 : isEn
-                ? `${CHILD_META[scope].emoji} ${CHILD_META[scope].nameEn} (${CHILD_META[scope].ageBadgeEn})`
-                : `${CHILD_META[scope].emoji} ${CHILD_META[scope].nameAr} (${CHILD_META[scope].ageBadgeAr})`}
+                ? `${CHILD_META[scope].emoji} ${CHILD_META[scope].nameEn} · ${CHILD_META[scope].ageBadgeEn}`
+                : `${CHILD_META[scope].emoji} ${CHILD_META[scope].nameAr} · ${CHILD_META[scope].ageBadgeAr}`}
             </span>
             <span
               data-testid="battery-live-preview-score"
@@ -400,10 +392,10 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
               onChange={(e) => setCustomNote(e.target.value)}
               placeholder={
                 isEn
-                  ? 'Optional note (e.g. Hamza slept well after warm bath)...'
-                  : 'ملاحظة اختيارية (مثال: نام حمزة بعمق بعد الحمام الدافئ)...'
+                  ? 'Add a brief note...'
+                  : 'أضف ملاحظة سريعة...'
               }
-              className="flex-1 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
+              className="flex-1 min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
             />
 
             <button
@@ -411,15 +403,15 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
               data-testid="battery-save-assessment-btn"
               disabled={isSaving}
               onClick={handleSaveAssessment}
-              className="min-h-[42px] px-5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] disabled:opacity-60 text-white text-xs font-black shadow-xs transition-all cursor-pointer shrink-0"
+              className="min-h-[48px] px-5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] disabled:opacity-60 text-white text-xs font-black shadow-xs transition-all cursor-pointer shrink-0"
             >
               {isSaving
                 ? isEn
                   ? 'Saving...'
                   : 'جاري الحفظ...'
                 : isEn
-                ? '💾 Save Diagnostic Assessment'
-                : '💾 حفظ التقييم في السجل الذكي'}
+                ? '💾 Save Assessment'
+                : '💾 حفظ التقييم'}
             </button>
           </div>
 
@@ -431,8 +423,8 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
               <span>
                 ✓{' '}
                 {isEn
-                  ? `Assessment saved and synced via MasterAppController at ${justSavedAt}`
-                  : `تم حفظ التقييم ومزامنته عبر المتحكم الذاتي في تمام ${justSavedAt}`}
+                  ? `Assessment saved at ${justSavedAt}`
+                  : `تم حفظ التقييم بنجاح في ${justSavedAt}`}
               </span>
               {onAddRescueTask && (
                 <button
@@ -462,8 +454,8 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {isEn
-                  ? 'Children Live Readiness (Hamza · Laila · Youssef)'
-                  : 'مؤشر جاهزية الأطفال الآن (حمزة · ليلى · يوسف)'}
+                  ? 'Children Readiness Overview'
+                  : 'مؤشر جاهزية الأطفال الآن'}
               </h4>
               <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8]">
                 {selectedChildDiag
@@ -539,7 +531,7 @@ export const BatteryDiagnosticsView: React.FC<BatteryDiagnosticsViewProps> = ({
           >
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                📈 {isEn ? 'Battery Score Trends' : 'اتجاهات مؤشر بطارية البيت (Score Trends)'}
+                📈 {isEn ? 'Battery Score Trends' : 'اتجاهات مؤشر طاقة البيت'}
               </h4>
               <span className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
                 {historyPoints.length} {isEn ? 'snapshots' : 'قراءات مسجلة'}

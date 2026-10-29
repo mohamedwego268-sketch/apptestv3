@@ -67,8 +67,8 @@ const MORAL_OPTIONS: Array<{ ar: string; en: string }> = [
     en: 'Responsibility, Confidence & Evening Gratitude',
   },
   {
-    ar: 'التعاون والمحبة بين الإخوة (حمزة وليلى ويوسف)',
-    en: 'Sibling Harmony (Hamza, Laila & Youssef)',
+    ar: 'التعاون والمحبة بين الإخوة',
+    en: 'Sibling Harmony & Kindness',
   },
 ];
 
@@ -127,8 +127,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
 
       onShowToast?.(
         isEn
-          ? `✨ Generated new bedtime story (${created.sequenceCode}) for ${childMeta.nameEn}!`
-          : `✨ تم تأليف وحفظ حدوتة جديدة (${created.sequenceCode}) لـ ${childMeta.nameAr}!`
+          ? `✨ Generated new bedtime story for ${childMeta.nameEn}!`
+          : `✨ تم تأليف وحفظ حدوتة جديدة لـ ${childMeta.nameAr}!`
       );
     } finally {
       setIsGenerating(false);
@@ -149,14 +149,14 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
             <span className="text-sm">🌙</span>
             <span className="text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">
               {isEn
-                ? 'AI Bedtime Stories Library · MasterAppController'
-                : 'مكتبة حواديت قبل النوم الذكية · متصلة بـ MasterController'}
+                ? 'AI Bedtime Stories Library'
+                : 'مكتبة حواديت قبل النوم'}
             </span>
           </div>
           <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn
-              ? 'Tailored Stories for Hamza (6m), Laila (4y) & Youssef (8y)'
-              : 'قصص وحواديت مخصصة لمراحل حمزة (٦ شهور) وليلى (٤ سنوات) ويوسف (٨ سنوات)'}
+              ? 'Tailored Stories for Every Age Stage'
+              : 'قصص وحواديت مخصصة لكل مرحلة عمرية'}
           </h3>
         </div>
 
@@ -173,11 +173,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             ✨{' '}
             {isEn
-              ? 'Generate New AI Story Tailored to Age Stage & Moral Value'
-              : 'تأليف حدوتة جديدة بالذكاء الاصطناعي حسب المرحلة العمرية والقيمة التربوية'}
-          </span>
-          <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300">
-            {isEn ? 'Auto-numbered STR-XXXX' : 'ترقيم تلقائي STR-XXXX'}
+              ? 'Create a Personalized Bedtime Story'
+              : 'تأليف حدوتة جديدة حسب المرحلة العمرية والقيمة التربوية'}
           </span>
         </div>
 
@@ -394,7 +391,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                   }
                   className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold cursor-pointer"
                 >
-                  + {isEn ? 'Add to Evening Routine (8:15 PM)' : 'جدولة في روتين المساء (8:15 م)'}
+                  + {isEn ? 'Add to Evening Routine' : 'جدولة في روتين المساء'}
                 </button>
               )}
             </div>

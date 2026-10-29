@@ -70,8 +70,8 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-morning-30s',
     timeBucket: 'morning',
-    slotLabelAr: '☀️ رسالة الصباح الصوتية (٣٠ ثانية)',
-    slotLabelEn: '☀️ Morning Support Audio (30s)',
+    slotLabelAr: '☀️ رسالة الصباح الصوتية',
+    slotLabelEn: '☀️ Morning Support Audio',
     titleAr: 'بداية هادئة ليومكم مع حمزة وليلى ويوسف',
     titleEn: 'A Calm Morning Start with Hamza, Laila & Youssef',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
@@ -79,9 +79,9 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
-      'ابتسامة هادئة وحضن ٣٠ ثانية قبل خروج يوسف للمدرسة وليلى للحضانة يمنحان أطفالكم أماناً عاطفياً يمتد طوال اليوم.',
+      'ابتسامة هادئة وحضن قصير قبل خروج يوسف للمدرسة وليلى للحضانة يمنحان أطفالكم أماناً عاطفياً يمتد طوال اليوم.',
     summaryEn:
-      'A calm smile and a 30-second hug before Youssef heads to school and Laila to nursery anchors their emotional safety all day.',
+      'A calm smile and a warm hug before Youssef heads to school and Laila to nursery anchors their emotional safety all day.',
     takeawayAr: '💡 تذكير الصباح: الهدوء يبدأ من نبرة صوتنا في أول ١٠ دقائق.',
     takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
     melodyHz: [392.0, 440.0, 493.88, 523.25],
@@ -89,8 +89,8 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-afternoon-30s',
     timeBucket: 'afternoon',
-    slotLabelAr: '🌤️ رسالة الظهيرة الصوتية (٣٠ ثانية)',
-    slotLabelEn: '🌤️ Afternoon Support Audio (30s)',
+    slotLabelAr: '🌤️ رسالة الظهيرة الصوتية',
+    slotLabelEn: '🌤️ Afternoon Support Audio',
     titleAr: 'استقبال دافئ بعد المدرسة والحضانة بدون أسئلة ضاغطة',
     titleEn: 'Warm Post-School & Nursery Reconnection Without Pressure',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
@@ -108,8 +108,8 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-evening-30s',
     timeBucket: 'evening',
-    slotLabelAr: '🌙 رسالة المساء الصوتية (٣٠ ثانية)',
-    slotLabelEn: '🌙 Evening Wind-Down Audio (30s)',
+    slotLabelAr: '🌙 رسالة المساء الصوتية',
+    slotLabelEn: '🌙 Evening Wind-Down Audio',
     titleAr: 'امتنان المساء وتهدئة الإضاءة لنوم عميق ومريح',
     titleEn: 'Evening Gratitude & Dimmed Lights for Deep Sleep',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
@@ -151,8 +151,8 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-hamza-sensory',
     durationSec: 45,
     durationLabel: '00:45',
-    stageBadgeAr: '👶🏻 حمزة · ٦ شهور (الرضع)',
-    stageBadgeEn: '👶🏻 Hamza · 6 Months (Infant)',
+    stageBadgeAr: '👶🏻 حمزة · ٦ شهور',
+    stageBadgeEn: '👶🏻 Hamza · 6 Months',
     childFocusAr: 'النمو الحسي والحركي للرضيع',
     childFocusEn: 'Infant Sensory & Motor Milestones',
     titleAr: '٣ حركات بسيطة في وقت البطن تقوّي عضلات حمزة وتساعده على الجلوس',
@@ -172,8 +172,8 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-laila-emotions',
     durationSec: 52,
     durationLabel: '00:52',
-    stageBadgeAr: '🎨 ليلى · ٤ سنوات (الحضانة والإبداع)',
-    stageBadgeEn: '🎨 Laila · 4 Years (Nursery & Creativity)',
+    stageBadgeAr: '🎨 ليلى · ٤ سنوات',
+    stageBadgeEn: '🎨 Laila · 4 Years',
     childFocusAr: 'تسمية المشاعر والخيال الإبداعي',
     childFocusEn: 'Emotion Naming & Creative Expression',
     titleAr: 'كيف تحولين لحظة عناد ليلى بعد الحضانة إلى لعبة رسم وتسمية مشاعر؟',
@@ -193,8 +193,8 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-youssef-champions',
     durationSec: 55,
     durationLabel: '00:55',
-    stageBadgeAr: '🏆 يوسف · ٨ سنوات (المدرسة والرياضة)',
-    stageBadgeEn: '🏆 Youssef · 8 Years (School & Sports)',
+    stageBadgeAr: '🏆 يوسف · ٨ سنوات',
+    stageBadgeEn: '🏆 Youssef · 8 Years',
     childFocusAr: 'التركيز الدراسي وبناء شخصية البطل',
     childFocusEn: 'School Focus & Athletic Confidence',
     titleAr: 'قاعدة ٢٥ دقيقة مذاكرة + ١٠ دقائق حركة لتركيز يوسف بدون ملل أو شاشات',
@@ -854,8 +854,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {
         id: 'hero-hamza',
         kidId: liveKidHamza?.id ?? 1,
-        nameAr: `${liveHamzaNameAr} (${liveHamzaAgeAr})`,
-        nameEn: `${liveHamzaNameEn} (${liveHamzaAgeEn})`,
+        nameAr: `${liveHamzaNameAr} · ${liveHamzaAgeAr}`,
+        nameEn: `${liveHamzaNameEn} · ${liveHamzaAgeEn}`,
         arenaBadgeAr: '👶🏻 عالم الرضيع الحسي والحركي',
         arenaBadgeEn: '👶🏻 Infant Sensory & Motor World',
         accentBorder: 'border-sky-500/45',
@@ -863,7 +863,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         progressBarClass: 'from-sky-500 to-teal-500',
         titleAr: 'محطة الأسبوع: تقوية عضلات الجلوس، تتبع الخشخيشة الخشبية، وأول تجربة تذوق مهروس الجزر',
         titleEn: 'Weekly Milestone: Assisted Sitting Core Strength, Wooden Rattle Tracking & First Carrot Puree',
-        passionTagsAr: ['وقت البطن (Tummy Time)', 'الألعاب الخشبية الحسية', 'المناغاة والابتسامة'],
+        passionTagsAr: ['وقت البطن', 'الألعاب الخشبية الحسية', 'المناغاة والابتسامة'],
         passionTagsEn: ['Tummy Time', 'Sensory Wooden Rattle', 'Joyful Babbling'],
         nextGoalAr: '🎯 الهدف القادم: الجلوس المستقل لمدة ٣٠ ثانية + فحص تطعيم الـ ٦ شهور',
         nextGoalEn: '🎯 Next Goal: 30s Independent Sitting + 6-Month Pediatric Checkup',
@@ -874,8 +874,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {
         id: 'hero-laila',
         kidId: liveKidLaila?.id ?? 2,
-        nameAr: `${liveLailaNameAr} (${liveLailaAgeAr})`,
-        nameEn: `${liveLailaNameEn} (${liveLailaAgeEn})`,
+        nameAr: `${liveLailaNameAr} · ${liveLailaAgeAr}`,
+        nameEn: `${liveLailaNameEn} · ${liveLailaAgeEn}`,
         arenaBadgeAr: '🎨 عالم الإبداع والحضانة والخيال',
         arenaBadgeEn: '🎨 Nursery, Art & Creative World',
         accentBorder: 'border-rose-500/45',
@@ -894,8 +894,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {
         id: 'hero-youssef',
         kidId: liveKidYoussef?.id ?? 3,
-        nameAr: `${liveYoussefNameAr} (${liveYoussefAgeAr})`,
-        nameEn: `${liveYoussefNameEn} (${liveYoussefAgeEn})`,
+        nameAr: `${liveYoussefNameAr} · ${liveYoussefAgeAr}`,
+        nameEn: `${liveYoussefNameEn} · ${liveYoussefAgeEn}`,
         arenaBadgeAr: '🏆 عالم الأبطال والمدرسة والرياضة',
         arenaBadgeEn: '🏆 School, Sports & Champions Arena',
         accentBorder: 'border-amber-500/45',
@@ -1535,14 +1535,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </span>
               <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {isEn
-                  ? 'Quick Parenting Reels (< 60 Seconds)'
-                  : 'ريلز نصائح التربية السريعة (أقل من ٦٠ ثانية)'}
+                  ? 'Quick Parenting Reels'
+                  : 'ريلز نصائح التربية السريعة'}
               </h2>
             </div>
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
               {isEn
-                ? 'Swipe or use the left and right arrows to browse bite-sized visual tips for Hamza, Laila & Youssef'
-                : 'تنقّل بالأسهم يميناً ويساراً لمشاهدة كبسولات فيديو سريعة مخصصة لمراحل حمزة وليلى ويوسف'}
+                ? 'Bite-sized visual tips tailored for every age stage'
+                : 'كبسولات فيديو سريعة مخصصة لكل مرحلة عمرية'}
             </p>
           </div>
 
@@ -1647,8 +1647,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       ? `Playing · 00:${String(reelElapsedSec).padStart(2, '0')} / ${currentReel.durationLabel}`
                       : `جاري العرض · 00:${String(reelElapsedSec).padStart(2, '0')} / ${currentReel.durationLabel}`
                     : isEn
-                    ? 'Tap to play (< 60s Reel)'
-                    : 'اضغط للتشغيل (أقل من ٦٠ ثانية)'}
+                    ? 'Tap to play'
+                    : 'اضغط للتشغيل'}
                 </span>
               </div>
 
@@ -1704,8 +1704,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           <div className="lg:col-span-7 space-y-2.5">
             <div className="text-xs font-black text-[var(--color-muted)] dark:text-[#94A3B8] pb-1">
               {isEn
-                ? `Showing Reel ${activeReelIdx + 1} of ${HOME_INSTAGRAM_REELS.length} (All under 60 seconds):`
-                : `الريلز المختارة (${activeReelIdx + 1} من ${HOME_INSTAGRAM_REELS.length} — جميعها أقل من ٦٠ ثانية):`}
+                ? `Selected Reel ${activeReelIdx + 1} of ${HOME_INSTAGRAM_REELS.length}:`
+                : `الريلز المختارة · ${activeReelIdx + 1} من ${HOME_INSTAGRAM_REELS.length}:`}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {HOME_INSTAGRAM_REELS.map((reel, idx) => {
@@ -1790,10 +1790,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={isEn ? 'Quick One-Handed Child Check-In' : 'متابعة سريعة بيد واحدة'}
         subtitle={
           isEn
-            ? `Log sleep, meal, mood & care for ${activeKidName} (${activeKidStageLabel}) in one tap`
-            : `سجّل النوم، الوجبة، المزاج، والرعاية الصحية لـ ${activeKidName} (${activeKidStageLabel}) بلمسة واحدة`
+            ? `Log sleep, meal, mood & care for ${activeKidName} in one tap`
+            : `سجّل النوم، الوجبة، المزاج، والرعاية الصحية لـ ${activeKidName} بلمسة واحدة`
         }
-        badgeText={isEn ? `${activeKidName} · ${activeKidStageLabel}` : `${activeKidName} · ${activeKidStageLabel}`}
+        badgeText={`${activeKidName} · ${activeKidStageLabel}`}
         isOpen={Boolean(openAccordions.quickTrack)}
         onToggle={() => toggleAccordion('quickTrack')}
         isEn={isEn}
@@ -2077,13 +2077,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
         title={
           isEn
-            ? 'Heroes, Passions & Milestones (Hamza, Laila & Youssef)'
-            : 'عالم الأبطال والشغف · محطات نمو حمزة وليلى ويوسف'
+            ? 'Heroes, Passions & Milestones'
+            : 'عالم الأبطال والشغف · محطات نمو أطفالنا'
         }
         subtitle={
           isEn
-            ? 'Infant sensory milestones (6m), nursery creativity (4y), and school & sports passions (8y)'
-            : 'متابعة حية لإنجازات حمزة الحسية (٦ شهور)، عالم ليلى الإبداعي (٤ سنوات)، وشغف يوسف الرياضي والمدرسي (٨ سنوات)'
+            ? 'Infant sensory milestones, nursery creativity, and school & sports passions'
+            : 'متابعة حية لإنجازات أطفالكم الحسية والإبداعية والرياضية'
         }
         badgeText={isEn ? '3 Heroes' : '٣ أبطال'}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
@@ -2162,7 +2162,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   >
                     <span>🌟</span>
                     <span>
-                      {isEn ? `Cheer (${cheerCount})` : `تشجيع البطل (${cheerCount})`}
+                      {isEn ? `Cheer · ${cheerCount}` : `تشجيع البطل · ${cheerCount}`}
                     </span>
                   </button>
 
@@ -2187,7 +2187,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          6. ACCORDION: AI STORYTELLER (صانع الحواديت بالذكاء الاصطناعي — ~15 LINES) (CHECKLIST #3 & #10)
+          6. ACCORDION: AI STORYTELLER
           ===================================================================== */}
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
@@ -2196,13 +2196,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
         title={
           isEn
-            ? 'AI Bedtime Storyteller (Custom 15-Line Story)'
-            : 'صانع الحواديت بالذكاء الاصطناعي (حدوتة مخصصة من ١٥ سطراً)'
+            ? 'AI Bedtime Storyteller'
+            : 'صانع الحواديت بالذكاء الاصطناعي'
         }
         subtitle={
           isEn
-            ? 'Type simple details and generate a warm 15-line bedtime story starring Hamza, Laila & Youssef'
-            : 'اكتب فكرة بسيطة، وسيؤلف الذكاء الاصطناعي حدوتة دافئة من ١٥ سطراً لبطولة حمزة وليلى ويوسف'
+            ? 'Create a warm bedtime story starring your children'
+            : 'ألف حدوتة مسائية دافئة بأسماء أطفالكم'
         }
         badgeText={isEn ? '15 Lines · AI' : '١٥ سطراً · بأسماء أطفالكم'}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
@@ -2239,8 +2239,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
               >
                 {isEn
-                  ? 'Type simple story details (place, favourite toy, or idea):'
-                  : 'اكتب تفاصيل بسيطة للحدوتة (مكان، لعبة يحبها الأولاد، أو موقف اليوم):'}
+                  ? 'Story Idea or Theme:'
+                  : 'فكرة الحدوتة:'}
               </label>
               <input
                 id="ai-story-custom-input"
@@ -2250,8 +2250,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 onChange={(e) => setStoryCustomTopic(e.target.value)}
                 placeholder={
                   isEn
-                    ? 'e.g., Searching for the glowing star in our garden...'
-                    : 'مثال: رحلة البحث عن نجمة المساء المضيئة في حديقة البيت...'
+                    ? 'Searching for the glowing star in our garden...'
+                    : 'رحلة البحث عن نجمة المساء المضيئة في حديقة البيت...'
                 }
                 className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
               />
@@ -2291,7 +2291,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 onClick={handleGenerateCustomStory}
                 className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black shadow-xs transition-all cursor-pointer"
               >
-                ✨ {isEn ? 'Generate 15 Lines' : 'تأليف الحدوتة (١٥ سطراً)'}
+                ✨ {isEn ? 'Create Story' : 'تأليف الحدوتة'}
               </button>
             </div>
           </div>
@@ -2302,7 +2302,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           >
             <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
               <span className="text-xs font-black text-amber-900 dark:text-amber-300">
-                🌟 {isEn ? 'Tonight’s 15-Line Custom Story:' : 'حدوتة الليلة المخصصة (١٥ سطراً دافئاً):'}
+                🌟 {isEn ? 'Tonight’s Custom Story:' : 'حدوتة الليلة المخصصة:'}
               </span>
               <button
                 type="button"
@@ -2664,13 +2664,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         testId="home-battery-diagnostic-accordion"
         iconEmoji="🔋"
         iconBgClass="bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]"
-        title={isEn ? 'Daily Home Battery Diagnostic' : 'مؤشر بطارية البيت اليومية وخطة الإنقاذ'}
+        title={isEn ? 'Daily Home Battery & Rescue Plan' : 'مؤشر طاقة البيت وخطة الإنقاذ'}
         subtitle={
           isEn
-            ? 'Answer 4 quick check-in questions for Hamza, Laila, Youssef & Parents to view your diagnostic result below'
-            : 'أجب عن ٤ أسئلة سريعة لحمزة وليلى ويوسف والوالدين لتظهر النتيجة التشخيصية وخطة الإنقاذ بالأسفل'
+            ? 'Check in on family energy and view tailored daily recommendations'
+            : 'قيّم طاقة البيت والأطفال واحصل على توصيات فورية لروتين اليوم'
         }
-        badgeText={isEn ? 'Questions → Result' : 'تشخيص ذكي'}
+        badgeText={isEn ? 'Smart Check-In' : 'تشخيص ذكي'}
         isOpen={Boolean(openAccordions.batteryDiagnostic)}
         onToggle={() => toggleAccordion('batteryDiagnostic')}
         isEn={isEn}
@@ -2699,7 +2699,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          9. ACCORDION: INTERACTIVE CHILDREN'S GAMES SHOWCASE (CHECKLIST #3 & #12A)
+          9. ACCORDION: INTERACTIVE CHILDREN'S GAMES SHOWCASE
           ===================================================================== */}
       <HomeAccordionCard
         id="home-children-games-showcase"
@@ -2708,13 +2708,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
         title={
           isEn
-            ? 'Interactive Children’s Learning Games (Safe & Ad-Free)'
-            : 'ركن ألعاب أطفالنا التفاعلية (تعليمي وآمن ١٠٠٪)'
+            ? 'Interactive Children’s Learning Games'
+            : 'ركن ألعاب أطفالنا التفاعلية'
         }
         subtitle={
           isEn
-            ? 'Brain puzzles, memory cards, emotion matching & sensory sounds for Hamza, Laila & Youssef'
-            : 'ألغاز ذكاء، تطابق الذاكرة، الألوان والمشاعر، والأصوات الحسية لمراحل حمزة وليلى ويوسف'
+            ? 'Brain puzzles, memory cards, emotion matching & sensory sounds'
+            : 'ألغاز ذكاء، تطابق الذاكرة، الألوان والمشاعر، والأصوات الحسية'
         }
         badgeText={isEn ? '3 Stages' : '٣ مراحل'}
         badgeClass="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
@@ -2907,10 +2907,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 {isEn
                   ? showPromoShowcase
                     ? 'Hide Store Categories'
-                    : 'Store Categories (0–8 yrs)'
+                    : 'Store Categories'
                   : showPromoShowcase
                   ? 'إخفاء أقسام المتجر'
-                  : 'أقسام المتجر (٠–٨ سنوات)'}
+                  : 'أقسام المتجر'}
               </span>
               <span className="text-[10px]">{showPromoShowcase ? '⌄' : '›'}</span>
             </button>

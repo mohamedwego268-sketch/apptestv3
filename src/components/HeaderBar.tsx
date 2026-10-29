@@ -83,37 +83,31 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const activeCity = city || (country === 'SA' ? 'الرياض' : 'القاهرة');
   const localizedCity = locText(activeCity, lang);
   const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
+  const localizedSlogan = isEn
+    ? 'Our shared space.. growing with love'
+    : 'مساحة تجمعنا.. وبحبهم نكبر';
 
   return (
     <>
       <header
         id="main-sticky-header"
         data-scrolled={isScrolled ? 'true' : 'false'}
-        className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-300 ease-in-out select-none pt-safe"
+        className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-200 select-none pt-safe"
       >
-        <div className="max-w-[430px] mx-auto px-3 py-2 flex flex-wrap items-center justify-between gap-1.5">
-          {/* Left/Start Control Group: Hamburger Menu Trigger (☰) + Quick Notifications Bell + Minimalist Weather Widget */}
+        <div className="max-w-[430px] mx-auto px-2.5 py-1.5 flex items-center justify-between gap-1.5">
+          {/* Compact Control Group: Menu + Notifications + Weather */}
           <div className="flex items-center gap-1 shrink-0">
-            {/* Hamburger Menu Trigger (☰) — Opens Master Control Slide Bar */}
             <button
               id="master-slidebar-trigger-btn"
               data-testid="master-slidebar-trigger-btn"
               type="button"
               onClick={onOpenProfileDrawer}
-              title={
-                isEn
-                  ? 'Open Master Navigation Slide Bar (☰)'
-                  : 'فتح القائمة الجانبية الشاملة والتحكم السريع (☰)'
-              }
-              aria-label={
-                isEn
-                  ? 'Open Master Navigation Slide Bar'
-                  : 'فتح القائمة الجانبية الشاملة والتحكم السريع'
-              }
-              className="min-h-[48px] min-w-[48px] px-2.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer group"
+              title={isEn ? 'Navigation Menu' : 'القائمة الجانبية'}
+              aria-label={isEn ? 'Open Navigation Menu' : 'فتح القائمة الجانبية'}
+              className="h-10 px-2.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <svg
-                className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF] group-hover:scale-110 transition-transform"
+                className="w-3.5 h-3.5 text-[#0d9488] dark:text-[#2DD4BF]"
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-hidden="true"
@@ -130,19 +124,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </span>
             </button>
 
-            {/* Prominent Notifications Quick Bell Button with Live Unread Badge */}
             <button
               id="header-notifications-quick-btn"
               data-testid="header-notifications-quick-btn"
               type="button"
               onClick={() => onNavigate('notifications')}
-              title={isEn ? 'Smart Family Notifications' : 'مركز التنبيهات والتذكيرات الذكية'}
-              aria-label={
-                isEn
-                  ? `Notifications (${unreadNotifCount} unread)`
-                  : `التنبيهات (${unreadNotifCount} غير مقروءة)`
-              }
-              className={`relative min-h-[48px] min-w-[48px] px-2.5 rounded-2xl border inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
+              title={isEn ? 'Notifications' : 'التنبيهات'}
+              aria-label={isEn ? 'Notifications' : 'التنبيهات'}
+              className={`relative h-10 w-10 rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
                 isNotificationsActive
                   ? 'border-[#0d9488] bg-[#0d9488] text-white'
                   : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] dark:text-[#F8FAFC]'
@@ -166,14 +155,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               {unreadNotifCount > 0 && (
                 <span
                   data-testid="header-notifications-unread-badge"
-                  className="px-1.5 min-w-[16px] h-[16px] rounded-full bg-[#FF8C61] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums shadow-2xs"
+                  className="absolute -top-1 -end-1 px-1 min-w-[15px] h-[15px] rounded-full bg-[#FF8C61] text-white text-[9px] font-black inline-flex items-center justify-center tabular-nums shadow-2xs"
                 >
                   {unreadNotifCount}
                 </span>
               )}
             </button>
 
-            {/* Super-Compact Minimalist Weather Widget Directly Beside the Notification Bell */}
             <button
               id="header-weather-quick-btn"
               data-testid="header-weather-quick-btn"
@@ -181,47 +169,45 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={() => setWeatherModalOpen(true)}
               title={
                 isEn
-                  ? `Weather in ${localizedCity}: ${compactWeather.tempC}°C — Tap for full details`
-                  : `طقس ${localizedCity}: ${compactWeather.tempC}°م — اضغط للتفاصيل الكاملة وتوصيات ملابس الأطفال`
+                  ? `${localizedCity}: ${compactWeather.tempC}°C`
+                  : `طقس ${localizedCity}: ${compactWeather.tempC}°م`
               }
               aria-label={
                 isEn
-                  ? `Weather in ${localizedCity}: ${compactWeather.tempC} degrees Celsius. Open weather details`
-                  : `طقس ${localizedCity} ${compactWeather.tempC} درجة مئوية. افتح تفاصيل الطقس`
+                  ? `Weather in ${localizedCity}: ${compactWeather.tempC}°C`
+                  : `طقس ${localizedCity} ${compactWeather.tempC} درجة`
               }
-              className="min-h-[48px] px-2.5 rounded-2xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="h-10 px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
-              <span className="text-sm leading-none" aria-hidden="true">
+              <span className="text-xs leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
               <span className="text-[11px] font-black tabular-nums text-sky-700 dark:text-sky-300">
-                {compactWeather.tempC}°C
+                {compactWeather.tempC}°
               </span>
             </button>
           </div>
 
-          {/* Exclusive Top-Level Brand Wordmark & Official Slogan ("مساحة تجمعنا.. وبحبهم نكبر") */}
+          {/* Compact Brand Wordmark & Localized Slogan */}
           <button
             type="button"
             onClick={() => onNavigate('home')}
-            aria-label={isEn ? 'Nekbaar Home — مساحة تجمعنا.. وبحبهم نكبر' : 'رئيسية نكبر — مساحة تجمعنا.. وبحبهم نكبر'}
-            className="min-h-[48px] px-1.5 py-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
+            aria-label={`${brandName} — ${localizedSlogan}`}
+            className="h-10 px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
             <div className="min-w-0 text-end flex flex-col items-end justify-center">
-              <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5">
-                <span className="font-black text-base text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight shrink-0">
-                  {brandName}
-                </span>
-              </div>
+              <span className="font-black text-sm text-[var(--color-text)] dark:text-[#F8FAFC] leading-none tracking-tight">
+                {brandName}
+              </span>
               <span
                 data-testid="header-official-slogan-badge"
-                className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug flex-wrap break-words"
+                className="text-[10.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-tight truncate max-w-[185px] mt-0.5"
               >
-                مساحة تجمعنا.. وبحبهم نكبر
+                {localizedSlogan}
               </span>
             </div>
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={20} />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+              <ThreeDIcon id="home" size={18} />
             </div>
           </button>
         </div>

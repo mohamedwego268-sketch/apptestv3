@@ -58,8 +58,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       const refreshed = await master.catalog.refresh();
       onShowToast?.(
         isEn
-          ? `🔄 Synced ${refreshed.length} sequenced catalog items via MasterAppController`
-          : `🔄 تمت مزامنة ${refreshed.length} منتجاً بترقيم PRD-XXXX عبر المتحكم الذاتي`
+          ? `🔄 Updated ${refreshed.length} store items`
+          : `🔄 تم تحديث ${refreshed.length} منتجاً في المتجر`
       );
     } finally {
       setIsRefreshing(false);
@@ -70,7 +70,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     if (cat === 'all') return isEn ? 'All Items' : 'الكل';
     const map: Record<string, { ar: string; en: string }> = {
       toys: { ar: '🧸 ألعاب مونتيسوري', en: '🧸 Montessori Toys' },
-      essentials: { ar: '🍼 مستلزمات الرضع (حمزة)', en: '🍼 Infant Essentials' },
+      essentials: { ar: '🍼 مستلزمات الرضع', en: '🍼 Infant Essentials' },
       clothing: { ar: '👟 أزياء قطنية', en: '👟 Cotton Apparel' },
       nursery: { ar: '🏫 حضانات ومدارس', en: '🏫 Nurseries & Schools' },
       courses: { ar: '🎨 كورسات وأنشطة', en: '🎨 Courses & Sports' },
@@ -93,14 +93,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
             <span className="text-sm">🛍️</span>
             <span className="text-[11px] font-black uppercase tracking-wider text-[#0d9488] dark:text-[#2DD4BF]">
               {isEn
-                ? 'Live Sequenced Catalog (PRD-XXXX) · MasterController'
-                : 'كتالوج الأسرة المرّقم تلقائياً (PRD-XXXX) · متصل بـ MasterController'}
+                ? 'Family Store & Essentials'
+                : 'متجر الأسرة ومستلزمات الأطفال'}
             </span>
           </div>
           <h3 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn
-              ? 'Verified Products & Quick Family Actions (Ages 0–8)'
-              : 'منتجات وخدمات موثوقة مع إجراءات سريعة لأطفالكم (حمزة · ليلى · يوسف)'}
+              ? 'Verified Products & Family Services'
+              : 'منتجات وخدمات موثوقة لأطفالكم'}
           </h3>
         </div>
 
@@ -114,11 +114,11 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           >
             {isRefreshing
               ? isEn
-                ? 'Syncing...'
+                ? 'Updating...'
                 : 'جاري التحديث...'
               : isEn
-              ? '🔄 Refresh PRD Codes'
-              : '🔄 تحديث الكتالوج (PRD-XXXX)'}
+              ? '🔄 Refresh Store'
+              : '🔄 تحديث المنتجات'}
           </button>
         </div>
       </div>
@@ -153,8 +153,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={
             isEn
-              ? 'Search by PRD-XXXX or product name...'
-              : 'ابحث برمز PRD-XXXX أو اسم المنتج...'
+              ? 'Search products or brands...'
+              : 'ابحث باسم المنتج أو العلامة التجارية...'
           }
           className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 dark:bg-[#142430] px-3.5 py-2 text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
         />
@@ -233,8 +233,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                     onAddToCart?.(item);
                     onShowToast?.(
                       isEn
-                        ? `🛒 Added ${item.sequenceCode} to Family Cart`
-                        : `🛒 تمت إضافة المنتج (${item.sequenceCode}) إلى سلة الأسرة`
+                        ? `🛒 Added ${item.nameEn || item.name} to Family Cart`
+                        : `🛒 تمت إضافة ${item.name} إلى سلة الأسرة`
                     );
                   }}
                   className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-black cursor-pointer"
