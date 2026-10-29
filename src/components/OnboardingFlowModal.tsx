@@ -12,6 +12,7 @@ import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  normalizeOnboardingRoleToAccount,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
 } from '../services/supabaseService';
@@ -193,6 +194,8 @@ export interface OnboardingCompletionPayload {
   coParentPhone?: string;
   verificationChannel?: VerificationChannel;
   persistedSession?: UserSessionProfile;
+  syncedToDb?: boolean;
+  dbSyncError?: string | null;
 }
 
 interface OnboardingFlowModalProps {
@@ -222,38 +225,70 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 }) => {
   const isEn = language === 'en';
   const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
+  const tempSavedUser = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem('nekbaar_temp_user');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
-  // Progressive Flow Views:
-  // 1. 'AUTH'     -> Minimalist Card-Based Sign-In / Registration Gateway
-  // 2. 'CHILDREN' -> Children Profiles Setup (ملفات الأطفال)
-  // 3. 'PARTNER'  -> Optional Co-Parent Linking (ربط حساب الشريك)
-  const [activeView, setActiveView] = useState<'AUTH' | 'CHILDREN' | 'PARTNER'>('AUTH');
+  // Progressive Flow Steps:
+  // Step 1 ('AUTH')     -> Minimalist Card-Based Sign-In / Registration Gateway
+  // Step 2 ('CHILDREN') -> Children Profiles Setup (ملفات الأطفال / المحاضرات)
+  // Step 3 ('PARTNER')  -> Optional Co-Parent Linking (ربط حساب الشريك)
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const activeView: 'AUTH' | 'CHILDREN' | 'PARTNER' =
+    currentStep === 1 ? 'AUTH' : currentStep === 2 ? 'CHILDREN' : 'PARTNER';
+
+  const setActiveView = (view: 'AUTH' | 'CHILDREN' | 'PARTNER') => {
+    setCurrentStep(view === 'AUTH' ? 1 : view === 'CHILDREN' ? 2 : 3);
+  };
+
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>(
     cachedDraft?.authMode ?? 'signup'
   );
 
   const [parentRole, setParentRole] = useState<ParentThemeRole>(
-    cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom')
+    tempSavedUser?.parentRole ??
+      (tempSavedUser?.role === 'أب'
+        ? 'dad'
+        : tempSavedUser?.role === 'أم'
+        ? 'mom'
+        : cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom'))
   );
   const [fullName, setFullName] = useState<string>(
-    cachedDraft?.parentName ||
+    tempSavedUser?.fullName ||
+      cachedDraft?.parentName ||
       initialParentName ||
       (initialRole === 'dad' ? 'أحمد' : 'مريم')
   );
   const [email, setEmail] = useState<string>(
-    cachedDraft?.email ||
+    tempSavedUser?.email ||
+      cachedDraft?.email ||
       (initialRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app')
   );
   const [selectedCountryCode, setSelectedCountryCode] = useState<AllowedGCCOrEgyptCountry>(
-    cachedDraft?.selectedCountry === 'SA' || initialCountry === 'SA' ? 'SA' : 'EG'
+    tempSavedUser?.country &&
+      EGYPT_AND_GCC_COUNTRIES.some((c) => c.code === tempSavedUser.country)
+      ? (tempSavedUser.country as AllowedGCCOrEgyptCountry)
+      : cachedDraft?.selectedCountry === 'SA' || initialCountry === 'SA'
+      ? 'SA'
+      : 'EG'
   );
   const [locationMode, setLocationMode] = useState<'gps' | 'manual'>('manual');
   const [selectedCityAr, setSelectedCityAr] = useState<string>(
-    cachedDraft?.selectedCity || initialCity || (initialCountry === 'SA' ? 'الرياض' : 'القاهرة')
+    tempSavedUser?.city ||
+      cachedDraft?.selectedCity ||
+      initialCity ||
+      (initialCountry === 'SA' ? 'الرياض' : 'القاهرة')
   );
   const [isLocatingGps, setIsLocatingGps] = useState<boolean>(false);
   const [phone, setPhone] = useState<string>(
-    cachedDraft?.phone || (initialCountry === 'SA' ? '551234567' : '1012345678')
+    tempSavedUser?.phone ||
+      cachedDraft?.phone ||
+      (initialCountry === 'SA' ? '551234567' : '1012345678')
   );
   const [familyId, setFamilyId] = useState<number>(
     cachedDraft?.familyId ?? SHARED_FAMILY_ID
@@ -281,6 +316,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [dbSyncWarning, setDbSyncWarning] = useState<string | null>(null);
+  const [authSyncedToDb, setAuthSyncedToDb] = useState<boolean>(false);
 
   const activeCountryObj = React.useMemo(
     () =>
@@ -290,7 +327,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   );
 
   const safeChildrenList = React.useMemo(
-    () => OnboardingFlowController.sanitizeChildrenList(childrenList),
+    () => OnboardingFlowController.sanitizeChildrenList(childrenList, true),
     [childrenList]
   );
 
@@ -313,7 +350,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         ? 'CREDENTIALS'
         : activeView === 'CHILDREN'
         ? 'CHILDREN'
-        : 'COPARENT';
+        : 'CO_PARENT';
     OnboardingFlowController.saveDraft(stepKey, {
       currentStep: stepKey,
       stepNumber: activeView === 'AUTH' ? 2 : activeView === 'CHILDREN' ? 4 : 5,
@@ -397,8 +434,70 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
   };
 
-  const handleSocialQuickAuth = async (provider: SocialProviderId) => {
+  const syncAuthAndLocationWithSupabase = async (params: {
+    cleanName: string;
+    cleanEmail: string;
+    cleanPhone: string;
+    coreCountry: CountryCode;
+    resolvedCity: string;
+  }) => {
+    const normalizedRole = normalizeOnboardingRoleToAccount(parentRole);
+    const resolvedCurrency = getSuggestedCurrencyForCountry(params.coreCountry);
+    const resolvedFamilyName = `أسرة ${params.cleanName} — نكبر`;
+
+    try {
+      const authRes = await authenticateParentWithSupabase({
+        mode: authMode,
+        role: normalizedRole,
+        parentName: params.cleanName,
+        fullName: params.cleanName,
+        email: params.cleanEmail,
+        phone: params.cleanPhone,
+        country: params.coreCountry,
+        city: params.resolvedCity,
+        currency: resolvedCurrency,
+        familyId,
+        familyName: resolvedFamilyName,
+      });
+
+      const resolvedFamilyId = authRes.familyId || authRes.user?.family_id || familyId;
+      if (resolvedFamilyId) {
+        setFamilyId(resolvedFamilyId);
+      }
+
+      const locRes = await saveOnboardingLocationToSupabase({
+        familyId: resolvedFamilyId,
+        familyName: resolvedFamilyName,
+        country: params.coreCountry,
+        city: params.resolvedCity,
+        currency: resolvedCurrency,
+        activeParent: normalizedRole,
+      });
+
+      if (authRes.syncedToDb && locRes.synced) {
+        setAuthSyncedToDb(true);
+        setDbSyncWarning(null);
+      } else {
+        setAuthSyncedToDb(false);
+        setDbSyncWarning(
+          isEn
+            ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
+            : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.'
+        );
+      }
+    } catch {
+      setAuthSyncedToDb(false);
+      setDbSyncWarning(
+        isEn
+          ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
+          : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.'
+      );
+    }
+  };
+
+  const handleSocialQuickAuth = (provider: SocialProviderId) => {
     setErrorMsg(null);
+    setDbSyncWarning(null);
     const providerProfiles: Record<
       SocialProviderId,
       { email: string; nameAr: string; nameEn: string }
@@ -427,91 +526,102 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
     const chosen = providerProfiles[provider];
     const cleanName = fullName.trim() || (isEn ? chosen.nameEn : chosen.nameAr);
+    const cleanPhone = phone.trim() || activeCountryObj.phonePlaceholder;
+    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
     setFullName(cleanName);
     setEmail(chosen.email);
 
-    setIsSubmitting(true);
+    const registrationData = {
+      fullName: cleanName,
+      parentName: cleanName,
+      email: chosen.email,
+      phone: cleanPhone,
+      country: selectedCountryCode,
+      role: parentRole === 'dad' ? 'أب' : 'أم',
+      parentRole,
+      city: resolvedCity,
+      createdAt: new Date().toISOString(),
+    };
+
     try {
-      const authRes = await authenticateParentWithSupabase({
-        mode: authMode,
-        role: parentRole,
-        fullName: cleanName,
-        email: chosen.email,
-        phone: phone.trim() || activeCountryObj.phonePlaceholder,
-      });
-
-      if (authRes.user.family_id) {
-        setFamilyId(authRes.user.family_id);
-      }
-
-      const coreCountry = activeCountryObj.mappedCoreCountry;
-      await saveOnboardingLocationToSupabase({
-        familyId: authRes.user.family_id || familyId,
-        country: coreCountry,
-        city: selectedCityAr || activeCountryObj.defaultCityAr,
-      });
-
-      setActiveView('CHILDREN');
+      localStorage.setItem('nekbaar_temp_user', JSON.stringify(registrationData));
     } catch {
-      setActiveView('CHILDREN');
-    } finally {
-      setIsSubmitting(false);
+      // Ignore storage quota errors
     }
+
+    setCurrentStep(2);
+
+    const coreCountry = activeCountryObj.mappedCoreCountry;
+    void syncAuthAndLocationWithSupabase({
+      cleanName,
+      cleanEmail: chosen.email,
+      cleanPhone,
+      coreCountry,
+      resolvedCity,
+    });
   };
 
-  const handleAuthNext = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleFirstStepSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     setErrorMsg(null);
+    setDbSyncWarning(null);
 
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedName =
-      fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
-    const trimmedPhone = phone.replace(/[^\d+]/g, '').trim();
+    const country = selectedCountryCode;
+    const role = parentRole === 'dad' ? 'أب' : 'أم';
+    const cleanFullName = fullName.trim();
+    const cleanEmail = email.trim();
+    const cleanPhone = phone.trim();
+    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
 
-    if (!trimmedEmail || !trimmedEmail.includes('@')) {
-      setErrorMsg(
-        isEn ? 'Please enter a valid email address.' : 'يرجى إدخال البريد الإلكتروني بشكل صحيح.'
-      );
+    // 1. جمع بيانات التسجيل البسيطة
+    const registrationData = {
+      fullName: cleanFullName,
+      parentName: cleanFullName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      country,
+      role, // أب أو أم
+      parentRole,
+      city: resolvedCity,
+      createdAt: new Date().toISOString(),
+    };
+
+    // 2. التحقق من اكتمال الحقول الأساسية
+    if (authMode === 'signup' && (!cleanFullName || !cleanPhone || !country)) {
+      setErrorMsg(isEn ? 'Please complete the required fields' : 'يرجى استكمال الحقول الأساسية');
       return;
     }
 
-    if (authMode === 'signup' && !trimmedName) {
-      setErrorMsg(isEn ? 'Please enter your full name.' : 'يرجى إدخال الاسم الكامل.');
+    if (authMode === 'signin' && !cleanEmail && !cleanPhone) {
+      setErrorMsg(isEn ? 'Please complete the required fields' : 'يرجى استكمال الحقول الأساسية');
       return;
     }
 
-    if (authMode === 'signup' && trimmedPhone.length < 7) {
-      setErrorMsg(isEn ? 'Please enter a valid phone number.' : 'يرجى إدخال رقم هاتف صحيح.');
-      return;
-    }
-
-    setIsSubmitting(true);
+    // 3. الحفظ المؤقت لتفادي فقدان البيانات
     try {
-      const authRes = await authenticateParentWithSupabase({
-        mode: authMode,
-        role: parentRole,
-        fullName: trimmedName,
-        email: trimmedEmail,
-        phone: trimmedPhone || activeCountryObj.phonePlaceholder,
-      });
-
-      if (authRes.user.family_id) {
-        setFamilyId(authRes.user.family_id);
-      }
-
-      const coreCountry = activeCountryObj.mappedCoreCountry;
-      await saveOnboardingLocationToSupabase({
-        familyId: authRes.user.family_id || familyId,
-        country: coreCountry,
-        city: selectedCityAr || activeCountryObj.defaultCityAr,
-      });
-
-      setActiveView('CHILDREN');
+      localStorage.setItem('nekbaar_temp_user', JSON.stringify(registrationData));
     } catch {
-      setActiveView('CHILDREN');
-    } finally {
-      setIsSubmitting(false);
+      // Ignore storage quota errors
     }
+
+    // 4. الانتقال للخطوة التالية مع مزامنة واضحة الحالة مع قاعدة البيانات
+    setCurrentStep(2);
+
+    const coreCountry = activeCountryObj.mappedCoreCountry;
+    const resolvedParentName =
+      cleanFullName || (parentRole === 'dad' ? 'أحمد' : 'مريم');
+    const resolvedEmail =
+      cleanEmail ||
+      (parentRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app');
+    const resolvedPhone = cleanPhone || activeCountryObj.phonePlaceholder;
+
+    void syncAuthAndLocationWithSupabase({
+      cleanName: resolvedParentName,
+      cleanEmail: resolvedEmail,
+      cleanPhone: resolvedPhone,
+      coreCountry,
+      resolvedCity,
+    });
   };
 
   const handleAddChild = () => {
@@ -521,74 +631,159 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       setErrorMsg(isEn ? 'Enter child name first.' : 'يرجى إدخال اسم الطفل أولاً.');
       return;
     }
-    const validation = validateChildInput(trimmed, newChildBirth, language);
+    const validation = validateChildInput({
+      name: trimmed,
+      birth: newChildBirth,
+    });
     if (!validation.valid) {
-      setErrorMsg(validation.message);
+      setErrorMsg(
+        validation.error ||
+          (isEn ? 'Please check the child details.' : 'يرجى التحقق من بيانات الطفل.')
+      );
       return;
     }
 
-    const newItem: OnboardingChildDraft = {
-      id: `child-${Date.now()}`,
-      name: trimmed,
-      gender: newChildGender,
-      birth: newChildBirth,
-      interests: newChildGender === 'girl' ? 'الرسم والقصص' : 'السباحة والتركيب',
-      avatarTheme: newChildGender === 'girl' ? 'art_apron' : 'sports_cap',
-    };
+    setChildrenList((prev) => {
+      const currentSanitized = OnboardingFlowController.sanitizeChildrenList(prev, true);
+      const duplicateIdx = currentSanitized.findIndex(
+        (c) =>
+          c.name.trim().toLowerCase() === trimmed.toLowerCase() &&
+          c.birth.trim() === newChildBirth.trim()
+      );
+      if (duplicateIdx >= 0) {
+        const updated = [...currentSanitized];
+        updated[duplicateIdx] = {
+          ...updated[duplicateIdx],
+          name: trimmed,
+          gender: newChildGender,
+          birth: newChildBirth,
+          interests: newChildGender === 'girl' ? 'الرسم والقصص' : 'السباحة والتركيب',
+          avatarTheme: newChildGender === 'girl' ? 'artist' : 'astronaut',
+        };
+        return updated;
+      }
 
-    setChildrenList((prev) => [...OnboardingFlowController.sanitizeChildrenList(prev), newItem]);
+      const nextId =
+        currentSanitized.reduce((maxId, c) => Math.max(maxId, Number(c.id) || 0), 0) + 1;
+
+      const newItem: OnboardingChildDraft = {
+        id: nextId,
+        name: trimmed,
+        gender: newChildGender,
+        ageStagePreset: 'custom',
+        birth: newChildBirth,
+        interests: newChildGender === 'girl' ? 'الرسم والقصص' : 'السباحة والتركيب',
+        avatarTheme: newChildGender === 'girl' ? 'artist' : 'astronaut',
+      };
+      return [...currentSanitized, newItem];
+    });
     setNewChildName('');
   };
 
-  const handleRemoveChild = (id: string) => {
-    setChildrenList((prev) => {
-      const filtered = prev.filter((c) => c.id !== id);
-      return filtered.length > 0 ? filtered : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
-    });
+  const handleRemoveChild = (id: number | string) => {
+    setErrorMsg(null);
+    setChildrenList((prev) => prev.filter((c) => String(c.id) !== String(id)));
+  };
+
+  const handleProceedFromChildrenStep = () => {
+    setErrorMsg(null);
+    if (safeChildrenList.length === 0) {
+      setErrorMsg(
+        isEn
+          ? 'Please add at least one child profile before continuing.'
+          : 'يرجى إضافة ملف طفل واحد على الأقل قبل المتابعة.'
+      );
+      return;
+    }
+    setActiveView('PARTNER');
   };
 
   const handleFinalizeFlow = async (linkCoParent: boolean) => {
     setErrorMsg(null);
+    if (safeChildrenList.length === 0) {
+      setErrorMsg(
+        isEn
+          ? 'Please add at least one child profile before saving.'
+          : 'يرجى إضافة ملف طفل واحد على الأقل قبل الحفظ.'
+      );
+      setActiveView('CHILDREN');
+      return;
+    }
+
     setIsSubmitting(true);
+    const listToSave = safeChildrenList;
 
-    const listToSave =
-      safeChildrenList.length > 0
-        ? safeChildrenList
-        : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
-
+    let childrenSynced = false;
+    let childrenSyncError: string | null = null;
+    let enrichedChildrenList = listToSave;
     try {
-      await saveOnboardingChildrenToSupabase(
-        listToSave.map((item) => ({
+      const saveRes = await saveOnboardingChildrenToSupabase({
+        familyId,
+        childrenList: listToSave.map((item, idx) => ({
+          id: Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1,
+          remoteId: item.remoteId !== undefined ? String(item.remoteId) : undefined,
           name: item.name,
           birth: item.birth,
           gender: item.gender,
           interests: item.interests,
           avatarTheme: item.avatarTheme,
-          familyId,
         })),
-        familyId
+      });
+      childrenSynced = saveRes.synced;
+      childrenSyncError = saveRes.error;
+      if (Array.isArray(saveRes.savedChildren) && saveRes.savedChildren.length > 0) {
+        enrichedChildrenList = listToSave.map((item, idx) => {
+          const localId =
+            Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1;
+          const matchedSaved =
+            saveRes.savedChildren.find((sc) => sc.id === localId) ||
+            saveRes.savedChildren.find((sc) => sc.name === item.name);
+          return {
+            ...item,
+            id: localId,
+            remoteId: matchedSaved?.remote_id ?? item.remoteId,
+          };
+        });
+      }
+    } catch (err) {
+      childrenSynced = false;
+      childrenSyncError =
+        err instanceof Error ? err.message : 'Unable to save children to Supabase.';
+    }
+
+    const finalSyncedToDb = Boolean(authSyncedToDb && childrenSynced);
+    if (!finalSyncedToDb) {
+      setDbSyncWarning(
+        isEn
+          ? 'Could not sync with cloud database; your family profile was saved locally on this device.'
+          : 'تعذر الحفظ في قاعدة البيانات السحابية؛ تم حفظ ملف عائلتك وأطفالك محلياً على هذا الجهاز.'
       );
-    } catch {
-      // Local fallback keeps flow smooth
     }
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
     const primaryChild = listToSave[0];
+    const cleanParentName = fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
+    const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
 
     const sessionProfile: UserSessionProfile = {
+      userId: `usr_${familyId}_${parentRole}`,
       sessionToken: `nk_sess_${familyId}_${Date.now()}`,
       authenticatedAt: new Date().toISOString(),
       onboardingCompleted: true,
-      familyId,
+      familyId: String(familyId),
+      role: parentRole,
       parentRole,
-      parentName: fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم'),
+      fullName: cleanParentName,
+      parentName: cleanParentName,
       email: email.trim(),
-      phone: `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`,
+      phone: cleanPhone,
       country: coreCountry,
       city: finalCity,
       verificationChannel: 'email',
       isOtpVerified: true,
+      emailVerified: true,
+      phoneVerified: true,
       isCoParentLinked: linkCoParent,
       coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
       coParentEmail:
@@ -596,18 +791,23 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app'),
       coParentPhone: coParentPhone.trim() || '559876543',
       childrenCount: listToSave.length,
+      syncedToDb: finalSyncedToDb,
     };
 
-    OnboardingFlowController.saveAuthenticatedSession(sessionProfile);
+    if (typeof OnboardingFlowController.saveAuthenticatedSession === 'function') {
+      OnboardingFlowController.saveAuthenticatedSession(sessionProfile, true);
+    } else {
+      OnboardingFlowController.persistUserSession(sessionProfile, true);
+    }
 
     setIsSubmitting(false);
     onCompleteOnboarding({
-      parentName: sessionProfile.parentName,
+      parentName: cleanParentName,
       role: parentRole,
       country: coreCountry,
       city: finalCity,
       currency: getSuggestedCurrencyForCountry(coreCountry),
-      phoneNumber: sessionProfile.phone,
+      phoneNumber: cleanPhone,
       email: sessionProfile.email,
       childProfile: {
         name: primaryChild.name,
@@ -616,13 +816,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         interests: primaryChild.interests,
         avatarTheme: primaryChild.avatarTheme,
       },
-      childrenProfiles: listToSave,
+      childrenProfiles: enrichedChildrenList,
       isCoParentLinked: linkCoParent,
       coParentName: sessionProfile.coParentName,
       coParentEmail: sessionProfile.coParentEmail,
       coParentPhone: sessionProfile.coParentPhone,
       verificationChannel: 'email',
       persistedSession: sessionProfile,
+      syncedToDb: finalSyncedToDb,
+      dbSyncError: childrenSyncError,
     });
   };
 
@@ -675,11 +877,21 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             </div>
           )}
 
+          {dbSyncWarning && !errorMsg && (
+            <div
+              role="status"
+              data-testid="onboarding-db-sync-warning"
+              className="rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 text-center"
+            >
+              {dbSyncWarning}
+            </div>
+          )}
+
           {/* =================================================================
               VIEW 1: MINIMALIST CARD-BASED SIGN-IN / REGISTRATION GATEWAY
               ================================================================= */}
           {activeView === 'AUTH' && (
-            <form onSubmit={handleAuthNext} className="space-y-3.5" noValidate>
+            <form onSubmit={handleFirstStepSubmit} className="space-y-3.5" noValidate>
               {/* Clean Top Segmented Toggle: Registration vs Sign-In */}
               <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full bg-slate-100 dark:bg-[#142430] border border-slate-200/70 dark:border-[#1E3646]">
                 <button
@@ -1149,7 +1361,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   type="button"
                   id="onboarding-children-next-btn"
                   data-testid="onboarding-children-next-btn"
-                  onClick={() => setActiveView('PARTNER')}
+                  onClick={handleProceedFromChildrenStep}
                   className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center"
                 >
                   {isEn ? 'Next' : 'متابعة'}

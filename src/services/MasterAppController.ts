@@ -19,6 +19,10 @@ import {
   SUPABASE_TABLES,
   ensureSharedFamilyRecordInSupabase,
   fetchFamilySpaceFromSupabase,
+  isCanonicalThreeDemoKids,
+  isDefaultDemoSeedState,
+  isValidUuid,
+  resolveVerifiedFamilyContext,
   supabaseClient,
   syncFamilySpaceToSupabase,
   withSupabaseTimeout,
@@ -558,7 +562,11 @@ export class MasterBackendService implements MasterControllerAPI {
 
     await this.executeWithExponentialBackoff(
       async () => {
-        await ensureSharedFamilyRecordInSupabase({ familyId: this.familyId });
+        const verifiedCtx = await resolveVerifiedFamilyContext();
+        if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+          return 0;
+        }
+        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedCtx.verifiedFamilyId });
         return itemsToProcess.length;
       },
       0,
@@ -620,22 +628,42 @@ export class MasterBackendService implements MasterControllerAPI {
     await this.executeWithExponentialBackoff(
       async () => {
         if (!supabaseClient) return nextSummary;
-        await ensureSharedFamilyRecordInSupabase({ familyId: this.familyId });
-        const rows = Object.values(nextSummary.childrenDiagnostics).map((diag) => ({
-          id: diag.id,
-          family_id: this.familyId,
-          child_id: diag.childId,
-          child_name: diag.childName,
-          overall_score: diag.overallScore,
-          sleep_score: diag.sleepScore,
-          nutrition_score: diag.nutritionScore,
-          mood_score: diag.moodScore,
-          routine_score: diag.routineCompletionScore,
-          updated_at: diag.updatedAt,
-        }));
-        await supabaseClient
-          .from('wellness_diagnostics')
-          .upsert(rows, { onConflict: 'id' });
+        if ((state && isDefaultDemoSeedState(state)) || isCanonicalThreeDemoKids(kids)) {
+          return nextSummary;
+        }
+        const verifiedCtx = await resolveVerifiedFamilyContext();
+        if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+          return nextSummary;
+        }
+        const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
+        const kidByLocalId = new Map<number, ChildProfile>(kids.map((k) => [k.id, k]));
+        const rows = Object.values(nextSummary.childrenDiagnostics)
+          .map((diag) => {
+            const matchedKid = kidByLocalId.get(diag.childId);
+            const remoteChildUuid =
+              matchedKid && isValidUuid(matchedKid.remoteId) ? String(matchedKid.remoteId) : null;
+            if (!remoteChildUuid) return null;
+            return {
+              id: diag.id,
+              family_id: verifiedFamilyUuid,
+              child_id: remoteChildUuid,
+              child_name: diag.childName,
+              overall_score: diag.overallScore,
+              sleep_score: diag.sleepScore,
+              nutrition_score: diag.nutritionScore,
+              mood_score: diag.moodScore,
+              routine_score: diag.routineCompletionScore,
+              updated_at: diag.updatedAt,
+            };
+          })
+          .filter((row): row is NonNullable<typeof row> => row !== null);
+
+        if (rows.length > 0) {
+          await supabaseClient
+            .from('wellness_diagnostics')
+            .upsert(rows, { onConflict: 'id' });
+        }
         return nextSummary;
       },
       nextSummary,
@@ -853,24 +881,32 @@ export class MasterBackendService implements MasterControllerAPI {
     await this.executeWithExponentialBackoff(
       async () => {
         if (!supabaseClient) return this.batterySummary;
-        await ensureSharedFamilyRecordInSupabase({ familyId: this.familyId });
-        const rows = Object.values(this.batterySummary.childrenDiagnostics).map((d) => ({
-          id: d.id,
-          family_id: this.familyId,
-          child_id: d.childId,
-          child_name: d.childName,
-          age_stage: d.ageStage,
-          overall_score: d.overallScore,
-          sleep_score: d.sleepScore,
-          nutrition_score: d.nutritionScore,
-          mood_score: d.moodScore,
-          routine_completion_score: d.routineCompletionScore,
-          status_level: d.statusLevel,
-          recommendation_ar: d.recommendationAr,
-          recommendation_en: d.recommendationEn,
-          updated_at: d.updatedAt,
-        }));
-        await supabaseClient.from('wellness_diagnostics').upsert(rows, { onConflict: 'id' });
+        const verifiedCtx = await resolveVerifiedFamilyContext();
+        if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+          return this.batterySummary;
+        }
+        const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
+        const rows = Object.values(this.batterySummary.childrenDiagnostics)
+          .filter((d) => isValidUuid(d.id))
+          .map((d) => ({
+            id: d.id,
+            family_id: verifiedFamilyUuid,
+            child_name: d.childName,
+            age_stage: d.ageStage,
+            overall_score: d.overallScore,
+            sleep_score: d.sleepScore,
+            nutrition_score: d.nutritionScore,
+            mood_score: d.moodScore,
+            routine_completion_score: d.routineCompletionScore,
+            status_level: d.statusLevel,
+            recommendation_ar: d.recommendationAr,
+            recommendation_en: d.recommendationEn,
+            updated_at: d.updatedAt,
+          }));
+        if (rows.length > 0) {
+          await supabaseClient.from('wellness_diagnostics').upsert(rows, { onConflict: 'id' });
+        }
         return this.batterySummary;
       },
       this.batterySummary,
@@ -939,13 +975,17 @@ export class MasterBackendService implements MasterControllerAPI {
     await this.executeWithExponentialBackoff(
       async () => {
         if (!supabaseClient) return newStory;
-        await ensureSharedFamilyRecordInSupabase({ familyId: this.familyId });
+        const verifiedCtx = await resolveVerifiedFamilyContext();
+        if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+          return newStory;
+        }
+        const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
         await supabaseClient.from('bedtime_stories').upsert(
           {
             id: newStory.id,
             sequence_code: newStory.sequenceCode,
-            family_id: newStory.familyId,
-            child_id: newStory.childId,
+            family_id: verifiedFamilyUuid,
             child_name: newStory.childName,
             age_stage: newStory.ageStage,
             title_ar: newStory.titleAr,
@@ -1064,9 +1104,16 @@ export class MasterBackendService implements MasterControllerAPI {
     const { synced } = await this.executeWithExponentialBackoff(
       async () => {
         if (appState) {
-          const ok = await syncFamilySpaceToSupabase(appState);
-          if (!ok) {
-            throw new Error('Supabase state sync returned false');
+          const verifiedCtx = await resolveVerifiedFamilyContext();
+          if (
+            verifiedCtx.authenticated &&
+            isValidUuid(verifiedCtx.verifiedFamilyId) &&
+            !isDefaultDemoSeedState(appState)
+          ) {
+            const ok = await syncFamilySpaceToSupabase(appState);
+            if (!ok) {
+              throw new Error('Supabase state sync returned false');
+            }
           }
         }
         await this.refreshCatalogWithSequences();

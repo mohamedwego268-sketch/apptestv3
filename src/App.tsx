@@ -66,7 +66,7 @@ import {
   syncFamilySpaceToSupabase,
 } from './services/supabaseService';
 import { useMasterController } from './services/MasterAppController';
-import { getLocalizedDocumentTitle } from './utils/familyFormatters';
+import { getLocalizedDocumentTitle, locText } from './utils/familyFormatters';
 import { FamilyAppProvider, PageId } from './context/FamilyAppContext';
 import { HomeDashboardSection } from './features/HomeDashboardSection';
 import { ChildrenProfilesSection } from './features/ChildrenProfilesSection';
@@ -2893,6 +2893,7 @@ export default function App() {
             childrenProfiles,
             skippedForLater,
             persistedSession,
+            syncedToDb,
           }) => {
             if (persistedSession) {
               setRecognizedProfile(persistedSession);
@@ -2903,6 +2904,7 @@ export default function App() {
                 Array.isArray(childrenProfiles) && childrenProfiles.length > 0
                   ? childrenProfiles.map((item, idx) => ({
                       id: item.id || idx + 1,
+                      remoteId: item.remoteId,
                       name: item.name,
                       gender: item.gender,
                       birth: item.birth,
@@ -2913,9 +2915,8 @@ export default function App() {
                     }))
                   : childProfile?.name
                   ? [
-                      ...prev.kids,
                       {
-                        id: Date.now() + Math.floor(Math.random() * 100),
+                        id: 1,
                         name: childProfile.name,
                         gender: childProfile.gender,
                         birth: childProfile.birth,
@@ -2963,9 +2964,13 @@ export default function App() {
                 ? lang === 'en'
                   ? 'Progress saved locally! You can resume onboarding anytime from Settings.'
                   : 'تم حفظ تقدمك محلياً! يمكنك استكمال إعداد الحساب في أي وقت من الإعدادات.'
+                : syncedToDb
+                ? lang === 'en'
+                  ? `Welcome ${parentName}! Session and children profiles synced to cloud database.`
+                  : `أهلاً بك ${parentName}! تم تثبيت جلستك الدائمة ومزامنة ملفات الأطفال سحابياً بنجاح.`
                 : lang === 'en'
-                ? `Welcome ${parentName}! Permanent session saved & routed to Dashboard.`
-                : `أهلاً بك ${parentName}! تم تثبيت جلستك الدائمة ومزامنة ملفات الأطفال بنجاح.`
+                ? `Welcome ${parentName}! Saved locally on this device (cloud database sync unavailable).`
+                : `أهلاً بك ${parentName}! تم حفظ بياناتك وأطفالك محلياً على هذا الجهاز (تعذرت المزامنة السحابية حالياً).`
             );
           }}
         />

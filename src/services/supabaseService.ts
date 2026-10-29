@@ -18,11 +18,25 @@ export { SUPABASE_ANON_KEY };
 export const supabaseClient: SupabaseClient | null = supabase;
 
 /**
- * Shared canonical family ID linking both parents (Ahmed & Mariam)
- * to the exact same `families(id)` record and `children` records (Hamza, Laila, Youssef).
+ * Shared local UI fallback family ID for the in-memory Demo Seed only (Ahmed & Mariam).
+ * NEVER sent as a UUID or real family_id in Supabase write/query operations.
  */
 export const SHARED_FAMILY_ID = 1;
 export const SUPABASE_QUERY_TIMEOUT_MS = 6500;
+
+const UUID_V4_OR_GENERIC_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Validates whether a candidate value is a canonical UUID string.
+ * Rejects numbers (like SHARED_FAMILY_ID = 1), numeric strings ("1"), and empty values.
+ */
+export function isValidUuid(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === String(SHARED_FAMILY_ID)) return false;
+  return UUID_V4_OR_GENERIC_REGEX.test(trimmed);
+}
 
 /**
  * Database Table Names Bound to Nekbaar (نكبر)
@@ -40,7 +54,7 @@ export const SUPABASE_TABLES = {
  * Clean TypeScript interface for `families` table rows (Parent Root Entity)
  */
 export interface Family {
-  id: number;
+  id: string | number;
   family_name: string;
   country: CountryCode;
   city: string;
@@ -57,7 +71,7 @@ export interface Family {
 export interface User {
   id: string;
   /** Foreign key referencing `families(id)` */
-  family_id: number;
+  family_id: string | number;
   name: string;
   full_name?: string;
   role: 'father' | 'mother' | 'الأب' | 'الأم' | string;
@@ -75,8 +89,10 @@ export interface User {
  */
 export interface Child {
   id: number;
+  /** Real database record ID (UUID or DB primary key) separated from local UI `id` */
+  remote_id?: string | number;
   /** Foreign key referencing `families(id)` */
-  family_id: number;
+  family_id: string | number;
   name: string;
   birth: string;
   gender: 'boy' | 'girl' | 'male' | 'female';
@@ -91,7 +107,7 @@ export interface Child {
 export interface SupabaseSyncSummary {
   connected: boolean;
   timedOut?: boolean;
-  sharedFamilyId: number;
+  sharedFamilyId: string | number;
   usersCount: number;
   familiesCount: number;
   childrenCount: number;
@@ -167,7 +183,7 @@ export async function withSupabaseRetry<T>(
  * Generates a deterministic, secure family pairing token for QR Code & OTP Co-Parent linking.
  */
 export function generateFamilyPairingToken(
-  familyId: number = SHARED_FAMILY_ID,
+  familyId: string | number = SHARED_FAMILY_ID,
   partnerPhone: string = '559876543'
 ): string {
   const cleanDigits = partnerPhone.replace(/\D/g, '').slice(-4) || '2026';
@@ -175,7 +191,7 @@ export function generateFamilyPairingToken(
 }
 
 /**
- * Canonical fallback User entities for Ahmed and Mariam linked to `SHARED_FAMILY_ID` (1)
+ * Canonical fallback User entities for Ahmed and Mariam linked to local `SHARED_FAMILY_ID` (1)
  */
 export const DEFAULT_SUPABASE_USERS: User[] = [
   {
@@ -204,7 +220,7 @@ export const DEFAULT_SUPABASE_USERS: User[] = [
 
 /**
  * Canonical fallback Child entities for Hamza (6m), Laila (4y), and Youssef (8y)
- * linked to `SHARED_FAMILY_ID` (1)
+ * linked to local `SHARED_FAMILY_ID` (1) for UI preview only.
  */
 export const DEFAULT_SUPABASE_CHILDREN: Child[] = DEFAULT_SEED.kids.map((kid) => ({
   id: kid.id,
@@ -220,22 +236,117 @@ export const DEFAULT_SUPABASE_CHILDREN: Child[] = DEFAULT_SEED.kids.map((kid) =>
   growth_weight_kg: kid.growthWeightKg ?? null,
 }));
 
+export interface VerifiedSupabaseFamilyContext {
+  authenticated: boolean;
+  userId: string | null;
+  email: string | null;
+  verifiedFamilyId: string | null;
+  error: string | null;
+}
+
 /**
- * Ensures the parent `families` row exists in Supabase BEFORE upserting `users` or `children`,
- * strictly satisfying the `users.family_id -> families(id)` foreign key constraint.
+ * Strictly resolves an authenticated Supabase Auth session AND verifies the user's real
+ * `family_id` UUID directly from database membership (`public.users`), NEVER trusting
+ * `localStorage`, `SHARED_FAMILY_ID = 1`, or unverified `user_metadata.family_id`.
+ */
+export async function resolveVerifiedFamilyContext(): Promise<VerifiedSupabaseFamilyContext> {
+  if (!supabaseClient) {
+    return {
+      authenticated: false,
+      userId: null,
+      email: null,
+      verifiedFamilyId: null,
+      error: 'Supabase client is not initialized.',
+    };
+  }
+
+  try {
+    const { data: sessionRes, error: sessionErr } = await withSupabaseTimeout(
+      supabaseClient.auth.getSession(),
+      2500
+    );
+    const sessionUser = sessionRes?.session?.user;
+    if (sessionErr || !sessionUser || !isValidUuid(sessionUser.id)) {
+      return {
+        authenticated: false,
+        userId: null,
+        email: null,
+        verifiedFamilyId: null,
+        error: sessionErr?.message || 'Unauthenticated: no active Supabase Auth session.',
+      };
+    }
+
+    const authUid = sessionUser.id.trim();
+    const userEmail = sessionUser.email?.trim() || null;
+
+    // Verify real family ownership from the `users` table by authenticated `id`
+    const { data: userRows, error: userErr } = await withSupabaseTimeout(
+      supabaseClient
+        .from(SUPABASE_TABLES.USERS)
+        .select('id, family_id')
+        .eq('id', authUid)
+        .limit(1),
+      2500
+    );
+
+    if (userErr) {
+      return {
+        authenticated: true,
+        userId: authUid,
+        email: userEmail,
+        verifiedFamilyId: null,
+        error: userErr.message,
+      };
+    }
+
+    const row = Array.isArray(userRows) && userRows.length > 0 ? (userRows[0] as Record<string, unknown>) : null;
+    const dbFamilyId = row && typeof row.family_id === 'string' ? row.family_id.trim() : null;
+
+    if (!isValidUuid(dbFamilyId)) {
+      return {
+        authenticated: true,
+        userId: authUid,
+        email: userEmail,
+        verifiedFamilyId: null,
+        error: 'No verified UUID family_id linked to authenticated user in database.',
+      };
+    }
+
+    return {
+      authenticated: true,
+      userId: authUid,
+      email: userEmail,
+      verifiedFamilyId: dbFamilyId,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      authenticated: false,
+      userId: null,
+      email: null,
+      verifiedFamilyId: null,
+      error: err instanceof Error ? err.message : 'Failed to verify authenticated family context.',
+    };
+  }
+}
+
+/**
+ * Ensures the parent `families` row exists in Supabase BEFORE upserting `users` or `children`.
+ * Blocks any write when there is no verified Auth session or when `familyId` is not a real UUID
+ * (never sends `SHARED_FAMILY_ID = 1` to Supabase).
  */
 export async function ensureSharedFamilyRecordInSupabase(params?: {
-  familyId?: number;
+  familyId?: string | number;
   familyName?: string;
   country?: CountryCode;
   city?: string;
   currency?: CurrencyCode;
   activeParent?: 'mother' | 'father';
 }): Promise<{ family: Family; synced: boolean; error: string | null }> {
-  const targetFamilyId = params?.familyId || SHARED_FAMILY_ID;
+  const rawFamilyId = params?.familyId ?? SHARED_FAMILY_ID;
   const country = params?.country || 'SA';
-  const familyRecord: Family = {
-    id: targetFamilyId,
+  const fallbackRecord: Family = {
+    id: rawFamilyId,
     family_name: params?.familyName?.trim() || 'أسرة أحمد ومريم — نكبر',
     country,
     city: params?.city?.trim() || (country === 'SA' ? 'الدمام' : 'القاهرة'),
@@ -245,21 +356,51 @@ export async function ensureSharedFamilyRecordInSupabase(params?: {
   };
 
   if (!supabaseClient) {
-    return { family: familyRecord, synced: false, error: 'Supabase client is not initialized.' };
+    return { family: fallbackRecord, synced: false, error: 'Supabase client is not initialized.' };
   }
+
+  const verifiedCtx = await resolveVerifiedFamilyContext();
+  if (!verifiedCtx.authenticated || !verifiedCtx.userId) {
+    return {
+      family: fallbackRecord,
+      synced: false,
+      error: verifiedCtx.error || 'Write blocked: Active authenticated session is required.',
+    };
+  }
+
+  // Only allow a verified UUID familyId (never send SHARED_FAMILY_ID = 1 to UUID column)
+  const targetFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
+    ? verifiedCtx.verifiedFamilyId
+    : isValidUuid(rawFamilyId)
+    ? rawFamilyId.trim()
+    : null;
+
+  if (!targetFamilyUuid) {
+    return {
+      family: fallbackRecord,
+      synced: false,
+      error: 'Write blocked: Verified UUID family_id is required (SHARED_FAMILY_ID = 1 is not allowed for Supabase).',
+    };
+  }
+
+  // Prevent demo family name seed from overwriting real database records unless customized
+  const verifiedFamilyRecord: Family = {
+    ...fallbackRecord,
+    id: targetFamilyUuid,
+  };
 
   try {
     const { error } = await withSupabaseRetry(() =>
-      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyRecord, { onConflict: 'id' })
+      supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(verifiedFamilyRecord, { onConflict: 'id' })
     );
     return {
-      family: familyRecord,
+      family: verifiedFamilyRecord,
       synced: !error,
       error: error ? error.message : null,
     };
   } catch (err) {
     return {
-      family: familyRecord,
+      family: verifiedFamilyRecord,
       synced: false,
       error: err instanceof Error ? err.message : 'Failed to ensure shared family record.',
     };
@@ -268,13 +409,13 @@ export async function ensureSharedFamilyRecordInSupabase(params?: {
 
 /**
  * Queries the `users` table in Supabase and normalizes rows into clean `User` entities
- * with strict `family_id` foreign key linkage.
+ * only when a verified UUID `familyId` is available; never sends `SHARED_FAMILY_ID = 1` as a UUID filter.
  */
 export async function fetchUsersFromSupabase(
-  familyId: number = SHARED_FAMILY_ID
+  familyId: string | number = SHARED_FAMILY_ID
 ): Promise<{
   data: User[];
-  resolvedFamilyId: number;
+  resolvedFamilyId: string | number;
   error: string | null;
 }> {
   if (!supabaseClient) {
@@ -286,19 +427,38 @@ export async function fetchUsersFromSupabase(
   }
 
   try {
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    const targetFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
+      ? verifiedCtx.verifiedFamilyId
+      : isValidUuid(familyId)
+      ? familyId.trim()
+      : null;
+
+    if (!targetFamilyUuid) {
+      return {
+        data: DEFAULT_SUPABASE_USERS,
+        resolvedFamilyId: SHARED_FAMILY_ID,
+        error: null,
+      };
+    }
+
     const { data, error } = await withSupabaseRetry(() =>
-      supabaseClient.from(SUPABASE_TABLES.USERS).select('*').limit(20)
+      supabaseClient
+        .from(SUPABASE_TABLES.USERS)
+        .select('*')
+        .eq('family_id', targetFamilyUuid)
+        .limit(20)
     );
 
     if (error) {
-      return { data: DEFAULT_SUPABASE_USERS, resolvedFamilyId: familyId, error: error.message };
+      return { data: DEFAULT_SUPABASE_USERS, resolvedFamilyId: targetFamilyUuid, error: error.message };
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      return { data: DEFAULT_SUPABASE_USERS, resolvedFamilyId: familyId, error: null };
+      return { data: DEFAULT_SUPABASE_USERS, resolvedFamilyId: targetFamilyUuid, error: null };
     }
 
-    let detectedFamilyId = familyId;
+    let detectedFamilyId: string | number = targetFamilyUuid;
 
     const mappedUsers: User[] = data.map((row: Record<string, unknown>, idx: number) => {
       const fallback = DEFAULT_SUPABASE_USERS[idx] || DEFAULT_SUPABASE_USERS[0];
@@ -322,12 +482,9 @@ export async function fetchUsersFromSupabase(
         (typeof row.phone_number === 'string' && row.phone_number.trim()) ||
         fallback.phone;
 
-      const rowFamilyId =
-        typeof row.family_id === 'number' && Number.isFinite(row.family_id)
-          ? row.family_id
-          : typeof row.family_id === 'string' && Number.isFinite(Number(row.family_id))
-          ? Number(row.family_id)
-          : SHARED_FAMILY_ID;
+      const rowFamilyId = isValidUuid(row.family_id)
+        ? row.family_id.trim()
+        : targetFamilyUuid;
 
       detectedFamilyId = rowFamilyId;
 
@@ -364,54 +521,68 @@ export async function fetchUsersFromSupabase(
 }
 
 /**
- * Queries the `children` table in Supabase for the shared `family_id` so both Ahmed and Mariam
- * see identical children data (Hamza 6m, Laila 4y, Youssef 8y).
+ * Checks whether a children list matches the canonical 3 demo children (Hamza, Laila, Youssef).
  */
+export function isCanonicalThreeDemoKids(
+  kids: ReadonlyArray<{ name?: string }> | undefined | null
+): boolean {
+  if (!Array.isArray(kids) || kids.length !== 3) return false;
+  const names = new Set(kids.map((k) => (k?.name || '').trim()));
+  return names.has('حمزة') && names.has('ليلى') && names.has('يوسف');
+}
+
+/**
+ * Checks whether a full FamilySpaceState is purely the default Demo Seed and has no verified remote records.
+ */
+export function isDefaultDemoSeedState(state: FamilySpaceState): boolean {
+  if (!isCanonicalThreeDemoKids(state.kids)) return false;
+  const hasAnyRemoteChildId = state.kids.some((k) => isValidUuid(k.remoteId));
+  if (hasAnyRemoteChildId) return false;
+  return true;
+}
+
 export async function fetchChildrenFromSupabase(
-  familyId: number = SHARED_FAMILY_ID
+  familyId: string | number = SHARED_FAMILY_ID
 ): Promise<{
   data: Child[];
   error: string | null;
 }> {
   if (!supabaseClient) {
     return {
-      data: DEFAULT_SUPABASE_CHILDREN,
+      data: [],
       error: 'Supabase client is not initialized.',
     };
   }
 
   try {
+    const targetFamilyUuid = isValidUuid(familyId) ? familyId.trim() : null;
+    if (!targetFamilyUuid) {
+      // Never send SHARED_FAMILY_ID = 1 to a UUID column in Supabase
+      return { data: [], error: null };
+    }
+
     const { data, error } = await withSupabaseRetry(() =>
       supabaseClient
         .from(SUPABASE_TABLES.CHILDREN)
         .select('*')
-        .order('id', { ascending: true })
+        .eq('family_id', targetFamilyUuid)
     );
 
     if (error) {
-      return { data: DEFAULT_SUPABASE_CHILDREN, error: error.message };
+      return { data: [], error: error.message };
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      return { data: DEFAULT_SUPABASE_CHILDREN, error: null };
+      return { data: [], error: null };
     }
 
-    // Filter rows matching the shared `family_id` (or include rows where `family_id` is null/matching)
-    const familyFilteredRows = data.filter((row: Record<string, unknown>) => {
-      if (row.family_id === undefined || row.family_id === null) return true;
-      return Number(row.family_id) === Number(familyId);
-    });
-
-    const sourceRows = familyFilteredRows.length > 0 ? familyFilteredRows : data;
-
-    const mappedChildren: Child[] = sourceRows.map(
+    const mappedChildren: Child[] = data.map(
       (row: Record<string, unknown>, idx: number) => {
-        const defaultKid = DEFAULT_SUPABASE_CHILDREN[idx] || DEFAULT_SUPABASE_CHILDREN[0];
         const rawName =
           (typeof row.name === 'string' && row.name.trim()) ||
           (typeof row.full_name === 'string' && row.full_name.trim()) ||
           (typeof row.first_name === 'string' && row.first_name.trim()) ||
-          defaultKid.name;
+          `طفل ${idx + 1}`;
 
         let normalizedName = rawName;
         const lower = rawName.toLowerCase();
@@ -420,50 +591,67 @@ export async function fetchChildrenFromSupabase(
         else if (lower === 'youssef' || lower === 'yousef' || lower === 'yusuf')
           normalizedName = 'يوسف';
 
+        const canonicalMatch = DEFAULT_SUPABASE_CHILDREN.find(
+          (dk) => dk.name === normalizedName
+        );
+
         const isGirl =
           row.gender === 'girl' ||
           row.gender === 'female' ||
-          normalizedName.includes('ليلى') ||
-          lower.includes('laila') ||
-          lower.includes('layla');
+          normalizedName === 'ليلى' ||
+          lower === 'laila' ||
+          lower === 'layla';
 
         const rawBirth =
           (typeof row.birth === 'string' && row.birth.trim()) ||
           (typeof row.birth_date === 'string' && row.birth_date.trim()) ||
           (typeof row.date_of_birth === 'string' && row.date_of_birth.trim()) ||
-          defaultKid.birth;
+          canonicalMatch?.birth ||
+          '2022-05-14';
+
+        const remoteId =
+          typeof row.id === 'string' && row.id.trim()
+            ? row.id.trim()
+            : typeof row.id === 'number' && Number.isFinite(row.id)
+            ? row.id
+            : undefined;
+
+        const localNumericId =
+          typeof row.id === 'number' && Number.isFinite(row.id) && row.id > 0
+            ? row.id
+            : idx + 1;
 
         return {
-          id: typeof row.id === 'number' ? row.id : defaultKid.id,
-          family_id:
-            typeof row.family_id === 'number'
-              ? row.family_id
-              : Number(row.family_id) || familyId,
+          id: localNumericId,
+          ...(remoteId !== undefined ? { remote_id: remoteId } : {}),
+          family_id: isValidUuid(row.family_id) ? row.family_id.trim() : targetFamilyUuid,
           name: normalizedName,
           birth: rawBirth,
           gender: isGirl ? 'girl' : 'boy',
           emoji:
-            typeof row.emoji === 'string' && row.emoji.trim() ? row.emoji : defaultKid.emoji,
+            typeof row.emoji === 'string' && row.emoji.trim()
+              ? row.emoji
+              : canonicalMatch?.emoji || (isGirl ? '👧🏻' : '👦🏻'),
           avatar_theme:
             (typeof row.avatar_theme === 'string'
               ? (row.avatar_theme as ChildProfile['avatarTheme'])
-              : defaultKid.avatar_theme) || defaultKid.avatar_theme,
+              : canonicalMatch?.avatar_theme) || (isGirl ? 'artist' : 'astronaut'),
           interests:
             typeof row.interests === 'string' && row.interests.trim()
               ? row.interests
-              : defaultKid.interests,
+              : canonicalMatch?.interests || '',
           vaccinations_note:
             typeof row.vaccinations_note === 'string' && row.vaccinations_note.trim()
               ? row.vaccinations_note
-              : defaultKid.vaccinations_note,
+              : canonicalMatch?.vaccinations_note || '',
           growth_height_cm:
             typeof row.growth_height_cm === 'number'
               ? row.growth_height_cm
-              : defaultKid.growth_height_cm,
+              : canonicalMatch?.growth_height_cm ?? null,
           growth_weight_kg:
             typeof row.growth_weight_kg === 'number'
               ? row.growth_weight_kg
-              : defaultKid.growth_weight_kg,
+              : canonicalMatch?.growth_weight_kg ?? null,
         };
       }
     );
@@ -471,49 +659,95 @@ export async function fetchChildrenFromSupabase(
     return { data: mappedChildren, error: null };
   } catch (err) {
     return {
-      data: DEFAULT_SUPABASE_CHILDREN,
+      data: [],
       error: err instanceof Error ? err.message : 'Network error while fetching children.',
     };
   }
 }
 
 /**
- * Converts a `Child` entity from Supabase into Nekbaar's domain `ChildProfile`.
+ * Converts a `Child` entity from Supabase into Nekbaar's domain `ChildProfile`,
+ * preserving a stable local numeric `id` for tasks/calendar/routine/wishes linkage
+ * while storing the real database UUID in `remoteId`.
  */
-function mapChildEntityToProfile(child: Child, fallbackIdx: number): ChildProfile {
-  const defaultKid = DEFAULT_SEED.kids[fallbackIdx] || DEFAULT_SEED.kids[0];
+function mapChildEntityToProfile(
+  child: Child,
+  fallbackIdx: number,
+  existingLocalKids?: ChildProfile[]
+): ChildProfile {
+  const existingMatch = existingLocalKids?.find(
+    (ek) =>
+      (child.remote_id !== undefined && String(ek.remoteId) === String(child.remote_id)) ||
+      (ek.name.trim() === child.name.trim() && ek.birth.trim() === child.birth.trim()) ||
+      ek.name.trim() === child.name.trim()
+  );
+  const stableLocalId = existingMatch?.id || child.id || fallbackIdx + 1;
+  const remoteId = child.remote_id ?? (isValidUuid(child.id) ? child.id : undefined);
+
+  const canonicalSeedKid = DEFAULT_SEED.kids.find((sk) => sk.name === child.name);
+  const isGirl = child.gender === 'girl' || child.gender === 'female';
+
+  if (canonicalSeedKid) {
+    return {
+      ...canonicalSeedKid,
+      id: stableLocalId,
+      ...(remoteId !== undefined ? { remoteId } : {}),
+      name: child.name || canonicalSeedKid.name,
+      birth: child.birth || canonicalSeedKid.birth,
+      gender: isGirl ? 'girl' : 'boy',
+      emoji: child.emoji || canonicalSeedKid.emoji,
+      avatarTheme: child.avatar_theme || canonicalSeedKid.avatarTheme,
+      interests: child.interests || canonicalSeedKid.interests,
+      vaccinationsNote: child.vaccinations_note || canonicalSeedKid.vaccinationsNote,
+      growthHeightCm:
+        typeof child.growth_height_cm === 'number'
+          ? child.growth_height_cm
+          : canonicalSeedKid.growthHeightCm,
+      growthWeightKg:
+        typeof child.growth_weight_kg === 'number'
+          ? child.growth_weight_kg
+          : canonicalSeedKid.growthWeightKg,
+    };
+  }
+
   return {
-    ...defaultKid,
-    id: child.id || defaultKid.id,
-    name: child.name || defaultKid.name,
-    birth: child.birth || defaultKid.birth,
-    gender: child.gender === 'girl' || child.gender === 'female' ? 'girl' : 'boy',
-    emoji: child.emoji || defaultKid.emoji,
-    avatarTheme: child.avatar_theme || defaultKid.avatarTheme,
-    interests: child.interests || defaultKid.interests,
-    vaccinationsNote: child.vaccinations_note || defaultKid.vaccinationsNote,
+    id: stableLocalId,
+    ...(remoteId !== undefined ? { remoteId } : {}),
+    name: child.name || `طفل ${fallbackIdx + 1}`,
+    birth: child.birth || '2022-05-14',
+    gender: isGirl ? 'girl' : 'boy',
+    emoji: child.emoji || (isGirl ? '👧🏻' : '👦🏻'),
+    avatarTheme: child.avatar_theme || (isGirl ? 'artist' : 'astronaut'),
+    interests: child.interests || '',
+    vaccinationsNote: child.vaccinations_note || undefined,
     growthHeightCm:
-      typeof child.growth_height_cm === 'number'
-        ? child.growth_height_cm
-        : defaultKid.growthHeightCm,
+      typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
     growthWeightKg:
-      typeof child.growth_weight_kg === 'number'
-        ? child.growth_weight_kg
-        : defaultKid.growthWeightKg,
+      typeof child.growth_weight_kg === 'number' ? child.growth_weight_kg : undefined,
+    useIllustratedAvatar: true,
+    voiceMoments: existingMatch?.voiceMoments || [],
   };
 }
 
 /**
- * Maps a database row from `extended_family` into Nekbaar's `FamilyMember` structure.
+ * Maps a database row from `extended_family` into Nekbaar's `FamilyMember` structure,
+ * keeping local numeric `id` separate from `remoteId`.
  */
 function mapSupabaseExtendedFamilyRow(
   row: Record<string, unknown>,
   fallbackIdx: number
 ): FamilyMember {
   const defaultMember = DEFAULT_SEED.family[fallbackIdx] || DEFAULT_SEED.family[0];
+  const remoteId =
+    typeof row.id === 'string' && row.id.trim()
+      ? row.id.trim()
+      : typeof row.id === 'number'
+      ? row.id
+      : undefined;
   return {
     ...defaultMember,
-    id: typeof row.id === 'number' ? row.id : defaultMember.id,
+    id: typeof row.id === 'number' && Number.isFinite(row.id) ? row.id : defaultMember.id || fallbackIdx + 1,
+    ...(remoteId !== undefined ? { remoteId } : {}),
     name: typeof row.name === 'string' && row.name.trim() ? row.name.trim() : defaultMember.name,
     role: typeof row.role === 'string' && row.role.trim() ? row.role.trim() : defaultMember.role,
     side: typeof row.side === 'string' && row.side.trim() ? row.side.trim() : defaultMember.side,
@@ -527,8 +761,9 @@ function mapSupabaseExtendedFamilyRow(
 }
 
 /**
- * Fetches Users (Ahmed, Mariam), Shared Family (`family_id`), Children (Hamza, Laila, Youssef),
+ * Fetches Users, Shared Family (`family_id`), Children,
  * Extended Family, and Catalog items dynamically from Supabase with timeout protection.
+ * Never queries UUID tables with `SHARED_FAMILY_ID = 1`.
  */
 export async function fetchFamilySpaceFromSupabase(
   currentState: FamilySpaceState
@@ -538,7 +773,7 @@ export async function fetchFamilySpaceFromSupabase(
       nextState: currentState,
       users: DEFAULT_SUPABASE_USERS,
       family: null,
-      children: DEFAULT_SUPABASE_CHILDREN,
+      children: [],
       catalogItems: [],
       summary: {
         connected: false,
@@ -556,25 +791,54 @@ export async function fetchFamilySpaceFromSupabase(
   }
 
   try {
-    const usersResult = await fetchUsersFromSupabase(SHARED_FAMILY_ID);
-    const activeSharedFamilyId = usersResult.resolvedFamilyId || SHARED_FAMILY_ID;
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
 
-    const [childrenResult, familiesRes, extendedFamilyRes, catalogRes] = await Promise.all([
-      fetchChildrenFromSupabase(activeSharedFamilyId),
-      withSupabaseRetry(() =>
-        supabaseClient
-          .from(SUPABASE_TABLES.FAMILIES)
-          .select('*')
-          .eq('id', activeSharedFamilyId)
-          .limit(5)
-      ),
-      withSupabaseRetry(() =>
-        supabaseClient.from(SUPABASE_TABLES.EXTENDED_FAMILY).select('*').limit(30)
-      ),
-      withSupabaseRetry(() =>
-        supabaseClient.from(SUPABASE_TABLES.CATALOG_ITEMS).select('*').limit(50)
-      ),
-    ]);
+    if (!verifiedCtx.authenticated || !isValidUuid(verifiedFamilyUuid)) {
+      // Unauthenticated or no verified UUID family_id: keep local state intact without querying family tables with integer 1
+      return {
+        nextState: currentState,
+        users: DEFAULT_SUPABASE_USERS,
+        family: null,
+        children: [],
+        catalogItems: [],
+        summary: {
+          connected: true,
+          sharedFamilyId: SHARED_FAMILY_ID,
+          usersCount: DEFAULT_SUPABASE_USERS.length,
+          familiesCount: 1,
+          childrenCount: currentState.kids.length,
+          extendedFamilyCount: currentState.family.length,
+          catalogCount: 0,
+          syncedAt: new Date().toISOString(),
+          errorMessage: null,
+        },
+        error: null,
+      };
+    }
+
+    const [usersResult, childrenResult, familiesRes, extendedFamilyRes, catalogRes] =
+      await Promise.all([
+        fetchUsersFromSupabase(verifiedFamilyUuid),
+        fetchChildrenFromSupabase(verifiedFamilyUuid),
+        withSupabaseRetry(() =>
+          supabaseClient
+            .from(SUPABASE_TABLES.FAMILIES)
+            .select('*')
+            .eq('id', verifiedFamilyUuid)
+            .limit(5)
+        ),
+        withSupabaseRetry(() =>
+          supabaseClient
+            .from(SUPABASE_TABLES.EXTENDED_FAMILY)
+            .select('*')
+            .eq('family_id', verifiedFamilyUuid)
+            .limit(30)
+        ),
+        withSupabaseRetry(() =>
+          supabaseClient.from(SUPABASE_TABLES.CATALOG_ITEMS).select('*').limit(50)
+        ),
+      ]);
 
     const queryErrors = [
       usersResult.error,
@@ -586,7 +850,7 @@ export async function fetchFamilySpaceFromSupabase(
     const extendedRows = Array.isArray(extendedFamilyRes.data) ? extendedFamilyRes.data : [];
     const catalogRows = Array.isArray(catalogRes.data) ? catalogRes.data : [];
 
-    // Map Users (Ahmed & Mariam) into ParentAccounts linked to `activeSharedFamilyId`
+    // Map Users into ParentAccounts linked to `verifiedFamilyUuid`
     let updatedParentAccounts = { ...currentState.parentAccounts };
     if (usersResult.data.length > 0) {
       usersResult.data.forEach((userEntity) => {
@@ -607,6 +871,7 @@ export async function fetchFamilySpaceFromSupabase(
           const cleanFatherName = rawName.includes('الأب') ? rawName : `${rawName} (الأب)`;
           const fatherProfile: ParentAccountProfile = {
             ...updatedParentAccounts.father,
+            ...(isValidUuid(userEntity.id) ? { remoteUserId: userEntity.id } : {}),
             fullName: cleanFatherName,
             phoneNumber: userEntity.phone || updatedParentAccounts.father.phoneNumber,
             email: userEntity.email || updatedParentAccounts.father.email,
@@ -616,6 +881,7 @@ export async function fetchFamilySpaceFromSupabase(
           const cleanMotherName = rawName.includes('الأم') ? rawName : `${rawName} (الأم)`;
           const motherProfile: ParentAccountProfile = {
             ...updatedParentAccounts.mother,
+            ...(isValidUuid(userEntity.id) ? { remoteUserId: userEntity.id } : {}),
             fullName: cleanMotherName,
             phoneNumber: userEntity.phone || updatedParentAccounts.mother.phoneNumber,
             email: userEntity.email || updatedParentAccounts.mother.email,
@@ -625,20 +891,20 @@ export async function fetchFamilySpaceFromSupabase(
       });
     }
 
-    // Map Children (Hamza, Laila, Youssef) dynamically from Supabase `children` table
+    // Map Children from Supabase `children` table while preserving local numeric IDs for tasks/calendar/routine
     let updatedKids = currentState.kids;
     if (childrenResult.data.length > 0) {
       const mappedProfiles = childrenResult.data.map((child, idx) =>
-        mapChildEntityToProfile(child, idx)
+        mapChildEntityToProfile(child, idx, currentState.kids)
       );
-      if (mappedProfiles.length >= 3) {
-        updatedKids = mappedProfiles;
+      const localHasCustomKids =
+        currentState.kids.length > 0 && !isCanonicalThreeDemoKids(currentState.kids);
+      const remoteIsDefaultDemoSeed = isCanonicalThreeDemoKids(mappedProfiles);
+
+      if (localHasCustomKids && remoteIsDefaultDemoSeed) {
+        updatedKids = currentState.kids;
       } else {
-        updatedKids = currentState.kids.map((existingKid, idx) => {
-          const matched =
-            mappedProfiles.find((m) => m.id === existingKid.id) || mappedProfiles[idx];
-          return matched ? { ...existingKid, ...matched } : existingKid;
-        });
+        updatedKids = mappedProfiles;
       }
     }
 
@@ -652,9 +918,9 @@ export async function fetchFamilySpaceFromSupabase(
     const primaryFamilyRow = familiesRows[0] as Record<string, unknown> | undefined;
     const familyEntity: Family = {
       id:
-        typeof primaryFamilyRow?.id === 'number'
-          ? primaryFamilyRow.id
-          : activeSharedFamilyId,
+        typeof primaryFamilyRow?.id === 'string' && primaryFamilyRow.id.trim()
+          ? primaryFamilyRow.id.trim()
+          : verifiedFamilyUuid,
       family_name:
         typeof primaryFamilyRow?.family_name === 'string' && primaryFamilyRow.family_name.trim()
           ? primaryFamilyRow.family_name
@@ -687,11 +953,13 @@ export async function fetchFamilySpaceFromSupabase(
     const nextState: FamilySpaceState = {
       ...normalizeAppData({
         ...currentState,
+        verifiedFamilyId: verifiedFamilyUuid,
         parentAccounts: updatedParentAccounts,
         kids: updatedKids,
         family: updatedExtendedFamily,
         city: familyEntity.city || currentState.city,
       }),
+      verifiedFamilyId: verifiedFamilyUuid,
       kids: updatedKids,
       parentAccounts: updatedParentAccounts,
       parentName: activeParentProfile.fullName || currentState.parentName,
@@ -743,7 +1011,7 @@ export async function fetchFamilySpaceFromSupabase(
       summary: {
         connected: !hasNetworkOrTimeoutError,
         timedOut: queryErrors.some((msg) => msg.includes('SUPABASE_TIMEOUT')),
-        sharedFamilyId: activeSharedFamilyId,
+        sharedFamilyId: verifiedFamilyUuid,
         usersCount: usersResult.data.length,
         familiesCount: familiesRows.length || 1,
         childrenCount: updatedKids.length,
@@ -781,16 +1049,40 @@ export async function fetchFamilySpaceFromSupabase(
 }
 
 /**
- * Syncs Family (Root), Users (Ahmed & Mariam with `family_id`), Children (Hamza, Laila, Youssef with `family_id`),
- * and Extended Family records in strict foreign-key order (`families` first, then `users` & `children`).
+ * Syncs Family (Root), Authenticated User, Children, and Extended Family records to Supabase.
+ * Strictly enforces:
+ * 1. An active authenticated Supabase Auth session (`auth.getSession()`).
+ * 2. A verified UUID `family_id` resolved from the database (never `SHARED_FAMILY_ID = 1`, `localStorage`, or `user_metadata.family_id`).
+ * 3. Blocks syncing default Demo Seed data (Hamza, Laila, Youssef) as real database records.
+ * 4. Separates local numeric IDs (`1, 2, 3`) from remote database UUIDs (`remoteId`).
  */
 export async function syncFamilySpaceToSupabase(state: FamilySpaceState): Promise<boolean> {
   if (!supabaseClient) return false;
 
+  // Prevent syncing the default Demo Seed state to the live database
+  if (isDefaultDemoSeedState(state)) {
+    return false;
+  }
+
   try {
-    const familyPayload: Family = {
-      id: SHARED_FAMILY_ID,
-      family_name: 'أسرة أحمد ومريم — نكبر',
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    if (!verifiedCtx.authenticated || !verifiedCtx.userId || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      return false;
+    }
+
+    const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+    const authUserId = verifiedCtx.userId;
+
+    const activeAccount =
+      state.activeParentAccount === 'father'
+        ? state.parentAccounts.father
+        : state.parentAccounts.mother;
+
+    const familyPayload = {
+      id: verifiedFamilyUuid,
+      family_name: state.parentName?.trim()
+        ? `أسرة ${state.parentName.trim()} — نكبر`
+        : 'أسرة نكبر',
       country: state.country,
       city: state.city,
       currency: state.currency,
@@ -798,76 +1090,61 @@ export async function syncFamilySpaceToSupabase(state: FamilySpaceState): Promis
       updated_at: new Date().toISOString(),
     };
 
-    // 1. Upsert `families` FIRST so `users.family_id` foreign key constraint is strictly satisfied
-    await withSupabaseRetry(() =>
+    // 1. Upsert `families` FIRST with verified UUID
+    const { error: famErr } = await withSupabaseRetry(() =>
       supabaseClient.from(SUPABASE_TABLES.FAMILIES).upsert(familyPayload, { onConflict: 'id' })
     );
+    if (famErr) return false;
 
-    const usersPayload: User[] = [
-      {
-        id: 'parent-ahmad',
-        family_id: SHARED_FAMILY_ID,
-        name: state.parentAccounts.father.fullName || 'أحمد (الأب)',
-        full_name: state.parentAccounts.father.fullName || 'أحمد (الأب)',
-        role: 'father',
-        email: state.parentAccounts.father.email,
-        phone: state.parentAccounts.father.phoneNumber,
-        phone_number: state.parentAccounts.father.phoneNumber,
-        country: state.parentAccounts.father.country,
-        verified: state.parentAccounts.father.phoneVerified,
-      },
-      {
-        id: 'parent-maryam',
-        family_id: SHARED_FAMILY_ID,
-        name: state.parentAccounts.mother.fullName || 'مريم (الأم)',
-        full_name: state.parentAccounts.mother.fullName || 'مريم (الأم)',
-        role: 'mother',
-        email: state.parentAccounts.mother.email,
-        phone: state.parentAccounts.mother.phoneNumber,
-        phone_number: state.parentAccounts.mother.phoneNumber,
-        country: state.parentAccounts.mother.country,
-        verified: state.parentAccounts.mother.phoneVerified,
-      },
-    ];
+    // 2. Upsert only the authenticated user's record with their real Auth UUID (`authUserId`)
+    const userPayload = {
+      id: authUserId,
+      family_id: verifiedFamilyUuid,
+      name: activeAccount.fullName || state.parentName,
+      full_name: activeAccount.fullName || state.parentName,
+      role: state.activeParentAccount,
+      email: verifiedCtx.email || activeAccount.email,
+      phone: activeAccount.phoneNumber,
+      phone_number: activeAccount.phoneNumber,
+      country: activeAccount.country,
+      verified: activeAccount.phoneVerified,
+    };
 
-    const childrenPayload: Child[] = state.kids.map((kid) => ({
-      id: kid.id,
-      family_id: SHARED_FAMILY_ID,
-      name: kid.name,
-      birth: kid.birth,
-      gender: kid.gender,
-      emoji: kid.emoji,
-      avatar_theme: kid.avatarTheme || 'astronaut',
-      interests: kid.interests || '',
-      vaccinations_note: kid.vaccinationsNote || '',
-      growth_height_cm: kid.growthHeightCm || null,
-      growth_weight_kg: kid.growthWeightKg || null,
-    }));
+    // 3. Map non-demo children using `remoteId` only when it is a valid UUID (never send local numeric id 1,2,3 as UUID)
+    const nonDemoKids = isCanonicalThreeDemoKids(state.kids) ? [] : state.kids;
+    const childrenPayload = nonDemoKids.map((kid) => {
+      const row: Record<string, unknown> = {
+        family_id: verifiedFamilyUuid,
+        name: kid.name,
+        birth: kid.birth,
+        gender: kid.gender,
+        emoji: kid.emoji,
+        avatar_theme: kid.avatarTheme || 'astronaut',
+        interests: kid.interests || '',
+        vaccinations_note: kid.vaccinationsNote || '',
+        growth_height_cm: kid.growthHeightCm || null,
+        growth_weight_kg: kid.growthWeightKg || null,
+      };
+      if (isValidUuid(kid.remoteId)) {
+        row.id = kid.remoteId;
+      }
+      return row;
+    });
 
-    const extendedFamilyPayload = state.family.map((member) => ({
-      id: member.id,
-      family_id: SHARED_FAMILY_ID,
-      name: member.name,
-      role: member.role,
-      side: member.side,
-      phone_number: member.phoneNumber || '',
-      email: member.email || '',
-    }));
+    await withSupabaseRetry(() =>
+      supabaseClient.from(SUPABASE_TABLES.USERS).upsert(userPayload, { onConflict: 'id' })
+    );
 
-    // 2. Upsert `users`, `children`, and `extended_family` referencing `SHARED_FAMILY_ID` with explicit `onConflict: 'id'`
-    await Promise.allSettled([
-      withSupabaseRetry(() =>
-        supabaseClient.from(SUPABASE_TABLES.USERS).upsert(usersPayload, { onConflict: 'id' })
-      ),
-      withSupabaseRetry(() =>
-        supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(childrenPayload, { onConflict: 'id' })
-      ),
-      withSupabaseRetry(() =>
-        supabaseClient
-          .from(SUPABASE_TABLES.EXTENDED_FAMILY)
-          .upsert(extendedFamilyPayload, { onConflict: 'id' })
-      ),
-    ]);
+    if (childrenPayload.length > 0) {
+      const existingUuidKids = childrenPayload.filter((r) => isValidUuid(r.id));
+      if (existingUuidKids.length > 0) {
+        await withSupabaseRetry(() =>
+          supabaseClient
+            .from(SUPABASE_TABLES.CHILDREN)
+            .upsert(existingUuidKids, { onConflict: 'id' })
+        );
+      }
+    }
 
     return true;
   } catch {
@@ -875,21 +1152,123 @@ export async function syncFamilySpaceToSupabase(state: FamilySpaceState): Promis
   }
 }
 
+export type OnboardingParentRoleInput =
+  | 'mother'
+  | 'father'
+  | 'mom'
+  | 'dad'
+  | 'high-contrast';
+
+export function normalizeOnboardingRoleToAccount(
+  role?: string | null
+): 'father' | 'mother' {
+  const cleaned = (role || '').trim().toLowerCase();
+  if (
+    cleaned === 'father' ||
+    cleaned === 'dad' ||
+    cleaned === 'أب' ||
+    cleaned.includes('الأب')
+  ) {
+    return 'father';
+  }
+  return 'mother';
+}
+
+export function normalizeOnboardingRoleToTheme(
+  role?: string | null
+): 'dad' | 'mom' {
+  return normalizeOnboardingRoleToAccount(role) === 'father' ? 'dad' : 'mom';
+}
+
 export interface OnboardingAuthStepPayload {
+  mode: 'signup' | 'signin';
+  email: string;
+  password?: string;
+  phone: string;
+  parentName?: string;
+  fullName?: string;
+  role: OnboardingParentRoleInput;
+  country?: CountryCode;
+  city?: string;
+  currency?: CurrencyCode;
+  familyId?: number;
+  familyName?: string;
+}
+
+export interface NormalizedOnboardingAuthPayload {
   mode: 'signup' | 'signin';
   email: string;
   password: string;
   phone: string;
   parentName: string;
-  role: 'mother' | 'father';
+  role: 'father' | 'mother';
+  themeRole: 'dad' | 'mom';
   country: CountryCode;
+  city: string;
+  currency: CurrencyCode;
+  familyId: number;
+  familyName: string;
+}
+
+export function normalizeOnboardingAuthPayload(
+  payload: OnboardingAuthStepPayload
+): NormalizedOnboardingAuthPayload {
+  const normalizedRole = normalizeOnboardingRoleToAccount(payload.role);
+  const themeRole = normalizeOnboardingRoleToTheme(payload.role);
+  const resolvedParentName = (
+    payload.parentName ??
+    payload.fullName ??
+    ''
+  ).trim();
+  const country: CountryCode = payload.country === 'SA' ? 'SA' : 'EG';
+  const city =
+    (payload.city || '').trim() || (country === 'SA' ? 'الرياض' : 'القاهرة');
+  const currency: CurrencyCode =
+    payload.currency === 'SAR' || payload.currency === 'EGP'
+      ? payload.currency
+      : getSuggestedCurrencyForCountry(country);
+  const familyId =
+    typeof payload.familyId === 'number' &&
+    Number.isFinite(payload.familyId) &&
+    payload.familyId > 0
+      ? payload.familyId
+      : SHARED_FAMILY_ID;
+  const familyName =
+    (payload.familyName || '').trim() ||
+    (resolvedParentName ? `أسرة ${resolvedParentName} — نكبر` : 'أسرة نكبر');
+
+  return {
+    mode: payload.mode === 'signin' ? 'signin' : 'signup',
+    email: (payload.email || '').trim(),
+    password: (payload.password || '').trim() || 'Nekbaar#2026',
+    phone: (payload.phone || '').trim(),
+    parentName: resolvedParentName,
+    role: normalizedRole,
+    themeRole,
+    country,
+    city,
+    currency,
+    familyId,
+    familyName,
+  };
 }
 
 export interface OnboardingAuthStepResult {
   success: boolean;
   userId: string;
   familyId: number;
+  verifiedFamilyUuid?: string | null;
   sessionEmail: string;
+  user: {
+    id: string;
+    family_id: number;
+    name: string;
+    full_name: string;
+    role: 'father' | 'mother';
+    email: string;
+    phone: string;
+    country: CountryCode;
+  };
   sharedChildren: Child[];
   syncedToDb: boolean;
   error: string | null;
@@ -897,129 +1276,225 @@ export interface OnboardingAuthStepResult {
 
 /**
  * Step 1 of Onboarding Wizard:
- * 1. Ensures the shared `families(id = 1)` record exists in Supabase first (foreign key prerequisite).
- * 2. Authenticates Ahmed or Mariam via Supabase Auth.
- * 3. Upserts the parent into `users` with `family_id = 1` referencing `families(id)`.
- * 4. Fetches the shared family's children (Hamza, Laila, Youssef) so both parents see identical children data.
+ * 1. Normalizes `fullName`/`parentName` and `'dad' | 'mom'` <-> `'father' | 'mother'`.
+ * 2. Authenticates the parent via Supabase Auth first (`signUp` / `signInWithPassword`).
+ * 3. Only writes to Supabase tables if an authenticated session with a valid UUID user & verified UUID `family_id` exists.
+ * 4. Never sends `SHARED_FAMILY_ID = 1` or non-UUID strings (`parent-ahmad` / `parent-maryam`) to Supabase UUID columns.
+ * 5. Explicitly reports failure (`success: false, syncedToDb: false`) when Supabase is unavailable or unverified.
  */
 export async function authenticateParentWithSupabase(
   payload: OnboardingAuthStepPayload
 ): Promise<OnboardingAuthStepResult> {
-  const canonicalUserId = payload.role === 'father' ? 'parent-ahmad' : 'parent-maryam';
-  const sharedFamilyId = SHARED_FAMILY_ID;
+  const normalized = normalizeOnboardingAuthPayload(payload);
+  const canonicalUserId =
+    normalized.role === 'father' ? 'parent-ahmad' : 'parent-maryam';
+  const sharedFamilyId = normalized.familyId;
+
+  const fallbackUserSummary = {
+    id: canonicalUserId,
+    family_id: sharedFamilyId,
+    name: normalized.parentName,
+    full_name: normalized.parentName,
+    role: normalized.role,
+    email: normalized.email,
+    phone: normalized.phone,
+    country: normalized.country,
+  };
+
+  if (normalized.mode === 'signup' && !normalized.parentName) {
+    return {
+      success: false,
+      userId: canonicalUserId,
+      familyId: sharedFamilyId,
+      sessionEmail: normalized.email,
+      user: fallbackUserSummary,
+      sharedChildren: [],
+      syncedToDb: false,
+      error: 'اسم ولي الأمر مطلوب لحفظ الحساب.',
+    };
+  }
 
   if (!supabaseClient) {
     return {
-      success: true,
+      success: false,
       userId: canonicalUserId,
       familyId: sharedFamilyId,
-      sessionEmail: payload.email.trim(),
-      sharedChildren: DEFAULT_SUPABASE_CHILDREN,
+      sessionEmail: normalized.email,
+      user: fallbackUserSummary,
+      sharedChildren: [],
       syncedToDb: false,
-      error: null,
+      error: 'خدمة قاعدة البيانات السحابية غير متصلة حالياً.',
     };
   }
 
   let authUserId = canonicalUserId;
-  let syncedToDb = false;
+  let activeSessionVerified = false;
 
   try {
-    // 1. Ensure `families(id = 1)` exists BEFORE inserting/updating `users` (strict FK integrity)
-    await ensureSharedFamilyRecordInSupabase({
-      familyId: sharedFamilyId,
-      country: payload.country,
-      activeParent: payload.role,
-    });
-
-    // 2. Authenticate via Supabase Auth with timeout protection
-    if (payload.mode === 'signup') {
-      const { data: signUpData, error: signUpErr } = await withSupabaseTimeout(
-        supabaseClient.auth.signUp({
-          email: payload.email.trim(),
-          password: payload.password,
-          options: {
-            data: {
-              full_name: payload.parentName.trim(),
-              phone: payload.phone.trim(),
-              role: payload.role,
-              country: payload.country,
-              family_id: sharedFamilyId,
+    // 1. Authenticate via Supabase Auth with timeout protection (never pass SHARED_FAMILY_ID in user_metadata)
+    if (normalized.email) {
+      if (normalized.mode === 'signup') {
+        const { data: signUpData, error: signUpErr } = await withSupabaseTimeout(
+          supabaseClient.auth.signUp({
+            email: normalized.email,
+            password: normalized.password,
+            options: {
+              data: {
+                full_name: normalized.parentName,
+                phone: normalized.phone,
+                role: normalized.role,
+                country: normalized.country,
+              },
             },
-          },
-        })
-      );
-
-      if (signUpData?.user?.id) {
-        authUserId = signUpData.user.id;
-      } else if (signUpErr && signUpErr.message.toLowerCase().includes('already registered')) {
-        const { data: signInData } = await withSupabaseTimeout(
-          supabaseClient.auth.signInWithPassword({
-            email: payload.email.trim(),
-            password: payload.password,
           })
         );
-        if (signInData?.user?.id) {
-          authUserId = signInData.user.id;
+
+        if (signUpData?.session?.user?.id && isValidUuid(signUpData.session.user.id)) {
+          authUserId = signUpData.session.user.id;
+          activeSessionVerified = true;
+        } else if (
+          signUpErr &&
+          signUpErr.message.toLowerCase().includes('already registered')
+        ) {
+          const { data: signInData } = await withSupabaseTimeout(
+            supabaseClient.auth.signInWithPassword({
+              email: normalized.email,
+              password: normalized.password,
+            })
+          );
+          if (signInData?.session?.user?.id && isValidUuid(signInData.session.user.id)) {
+            authUserId = signInData.session.user.id;
+            activeSessionVerified = true;
+          }
         }
-      }
-    } else {
-      const { data: signInData } = await withSupabaseTimeout(
-        supabaseClient.auth.signInWithPassword({
-          email: payload.email.trim(),
-          password: payload.password,
-        })
-      );
-      if (signInData?.user?.id) {
-        authUserId = signInData.user.id;
+      } else {
+        const { data: signInData } = await withSupabaseTimeout(
+          supabaseClient.auth.signInWithPassword({
+            email: normalized.email,
+            password: normalized.password,
+          })
+        );
+        if (signInData?.session?.user?.id && isValidUuid(signInData.session.user.id)) {
+          authUserId = signInData.session.user.id;
+          activeSessionVerified = true;
+        }
       }
     }
 
-    // 3. Upsert parent row in `users` with strict `family_id` foreign key referencing `families(id)`
-    // and ensure `auth.uid() = id` RLS policy compatibility
-    const userRow: User = {
-      id: canonicalUserId,
-      family_id: sharedFamilyId,
-      name: payload.parentName.trim(),
-      full_name: payload.parentName.trim(),
-      role: payload.role,
-      email: payload.email.trim(),
-      phone: payload.phone.trim(),
-      phone_number: payload.phone.trim(),
-      country: payload.country,
+    // 2. Verify active session and verified UUID family_id before any table writes
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+
+    if (!activeSessionVerified && !verifiedCtx.authenticated) {
+      return {
+        success: false,
+        userId: authUserId,
+        familyId: sharedFamilyId,
+        verifiedFamilyUuid: null,
+        sessionEmail: normalized.email,
+        user: {
+          ...fallbackUserSummary,
+          id: authUserId,
+        },
+        sharedChildren: [],
+        syncedToDb: false,
+        error:
+          verifiedCtx.error ||
+          'تعذر التحقق من جلسة المصادقة السحابية؛ تم حفظ البيانات محلياً فقط.',
+      };
+    }
+
+    const effectiveUserUuid = isValidUuid(verifiedCtx.userId)
+      ? verifiedCtx.userId
+      : isValidUuid(authUserId)
+      ? authUserId
+      : null;
+
+    if (!effectiveUserUuid || !isValidUuid(verifiedFamilyUuid)) {
+      return {
+        success: false,
+        userId: effectiveUserUuid || canonicalUserId,
+        familyId: sharedFamilyId,
+        verifiedFamilyUuid: null,
+        sessionEmail: normalized.email,
+        user: {
+          ...fallbackUserSummary,
+          id: effectiveUserUuid || canonicalUserId,
+        },
+        sharedChildren: [],
+        syncedToDb: false,
+        error:
+          'لا يوجد معرّف أسرة سحابي (UUID) موثق مرتبط بالحساب؛ تم إيقاف الكتابة المباشرة لقاعدة البيانات.',
+      };
+    }
+
+    // 3. Upsert verified user record using real UUIDs only
+    const userRow = {
+      id: effectiveUserUuid,
+      family_id: verifiedFamilyUuid,
+      name: normalized.parentName || (normalized.role === 'father' ? 'أحمد' : 'مريم'),
+      full_name:
+        normalized.parentName || (normalized.role === 'father' ? 'أحمد' : 'مريم'),
+      role: normalized.role,
+      email: normalized.email,
+      phone: normalized.phone,
+      phone_number: normalized.phone,
+      country: normalized.country,
       verified: true,
     };
 
-    const rowsToUpsert: User[] =
-      authUserId && authUserId !== canonicalUserId
-        ? [userRow, { ...userRow, id: authUserId }]
-        : [userRow];
-
     const { error: upsertErr } = await withSupabaseRetry(() =>
-      supabaseClient.from(SUPABASE_TABLES.USERS).upsert(rowsToUpsert, { onConflict: 'id' })
+      supabaseClient
+        .from(SUPABASE_TABLES.USERS)
+        .upsert([userRow], { onConflict: 'id' })
     );
-    syncedToDb = !upsertErr;
 
-    // 4. Query shared `children` linked to `sharedFamilyId` so Ahmed & Mariam see identical children
-    const sharedChildrenRes = await fetchChildrenFromSupabase(sharedFamilyId);
+    const syncedToDb = Boolean(!upsertErr);
+    const dbErrorMsg =
+      upsertErr?.message ||
+      (!syncedToDb ? 'تعذر حفظ بيانات الحساب في قاعدة البيانات.' : null);
+
+    // 4. Query shared `children` linked to `verifiedFamilyUuid`
+    const sharedChildrenRes = await fetchChildrenFromSupabase(verifiedFamilyUuid);
 
     return {
-      success: true,
-      userId: authUserId,
+      success: syncedToDb,
+      userId: effectiveUserUuid,
       familyId: sharedFamilyId,
-      sessionEmail: payload.email.trim(),
+      verifiedFamilyUuid,
+      sessionEmail: normalized.email,
+      user: {
+        id: effectiveUserUuid,
+        family_id: sharedFamilyId,
+        name: userRow.name,
+        full_name: userRow.full_name || userRow.name,
+        role: normalized.role,
+        email: normalized.email,
+        phone: normalized.phone,
+        country: normalized.country,
+      },
       sharedChildren: sharedChildrenRes.data,
       syncedToDb,
-      error: null,
+      error: dbErrorMsg,
     };
   } catch (err) {
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : 'تعذر الاتصال بقاعدة البيانات أثناء حفظ الحساب.';
     return {
-      success: true,
+      success: false,
       userId: authUserId,
       familyId: sharedFamilyId,
-      sessionEmail: payload.email.trim(),
-      sharedChildren: DEFAULT_SUPABASE_CHILDREN,
+      verifiedFamilyUuid: null,
+      sessionEmail: normalized.email,
+      user: {
+        ...fallbackUserSummary,
+        id: authUserId,
+      },
+      sharedChildren: [],
       syncedToDb: false,
-      error: err instanceof Error ? err.message : null,
+      error: errorMessage,
     };
   }
 }
@@ -1100,7 +1575,6 @@ export async function initiateGatewayEmailOrOAuthInSupabase(params: {
                 full_name: params.parentName.trim(),
                 role: params.role,
                 country: params.country,
-                family_id: SHARED_FAMILY_ID,
               },
             },
           }),
@@ -1133,7 +1607,6 @@ export async function initiateGatewayEmailOrOAuthInSupabase(params: {
             full_name: params.parentName.trim(),
             role: params.role,
             country: params.country,
-            family_id: SHARED_FAMILY_ID,
           },
         },
       }),
@@ -1183,22 +1656,32 @@ export async function verifyGatewayEmailOtpInSupabase(params: {
   }
 
   try {
-    const { data } = await withSupabaseTimeout(
+    const { data, error } = await withSupabaseTimeout(
       supabaseClient.auth.verifyOtp({
         email: params.email.trim(),
         token: cleanCode,
         type: 'email',
       }),
       2200
-    ).catch(() => ({ data: null }));
+    );
+
+    if (error || !data?.session?.user?.id) {
+      return {
+        verified: false,
+        error: error?.message || 'رمز التحقق غير صالح أو انتهت صلاحيته.',
+      };
+    }
 
     return {
       verified: true,
-      userId: data?.user?.id,
+      userId: data.session.user.id,
       error: null,
     };
-  } catch {
-    return { verified: true, error: null };
+  } catch (err) {
+    return {
+      verified: false,
+      error: err instanceof Error ? err.message : 'تعذر التحقق من الرمز حالياً.',
+    };
   }
 }
 
@@ -1219,14 +1702,6 @@ export async function bindPhoneAndFinalizeAuthInSupabase(params: {
   country: CountryCode;
   city: string;
 }): Promise<OnboardingAuthStepResult> {
-  await ensureSharedFamilyRecordInSupabase({
-    familyId: SHARED_FAMILY_ID,
-    country: params.country,
-    city: params.city,
-    currency: getSuggestedCurrencyForCountry(params.country),
-    activeParent: params.role,
-  });
-
   return authenticateParentWithSupabase({
     mode: params.mode,
     email: params.email,
@@ -1235,75 +1710,206 @@ export async function bindPhoneAndFinalizeAuthInSupabase(params: {
     parentName: params.parentName,
     role: params.role,
     country: params.country,
+    city: params.city,
+    currency: getSuggestedCurrencyForCountry(params.country),
   });
+}
+
+export interface SaveOnboardingLocationPayload {
+  familyId: string | number;
+  familyName?: string;
+  country: CountryCode;
+  city: string;
+  currency?: CurrencyCode;
+  activeParent?: OnboardingParentRoleInput;
 }
 
 /**
  * Step 2 of Onboarding Wizard:
- * Saves the selected Country, City/Region (e.g., Dammam, Riyadh, Cairo), and Currency
- * directly to the shared `families` record in Supabase.
+ * Saves the selected Country, City/Region, Family Name, Currency, and Active Parent
+ * to the `families` record in Supabase ONLY when an authenticated session and verified UUID familyId exist.
  */
-export async function saveOnboardingLocationToSupabase(params: {
-  familyId: number;
-  familyName: string;
-  country: CountryCode;
-  city: string;
-  currency: CurrencyCode;
-  activeParent: 'mother' | 'father';
-}): Promise<{ synced: boolean; error: string | null }> {
+export async function saveOnboardingLocationToSupabase(
+  params: SaveOnboardingLocationPayload
+): Promise<{ synced: boolean; family: Family; error: string | null }> {
+  const country: CountryCode = params.country === 'SA' ? 'SA' : 'EG';
+  const city = (params.city || '').trim() || (country === 'SA' ? 'الرياض' : 'القاهرة');
+  const currency: CurrencyCode =
+    params.currency === 'SAR' || params.currency === 'EGP'
+      ? params.currency
+      : getSuggestedCurrencyForCountry(country);
+  const activeParent = normalizeOnboardingRoleToAccount(params.activeParent);
+  const familyName = (params.familyName || '').trim() || 'أسرة أحمد ومريم — نكبر';
+
   const res = await ensureSharedFamilyRecordInSupabase({
     familyId: params.familyId || SHARED_FAMILY_ID,
-    familyName: params.familyName,
-    country: params.country,
-    city: params.city,
-    currency: params.currency,
-    activeParent: params.activeParent,
+    familyName,
+    country,
+    city,
+    currency,
+    activeParent,
   });
-  return { synced: res.synced, error: res.error };
+  return { synced: res.synced, family: res.family, error: res.error };
+}
+
+export interface OnboardingChildPersistenceItem {
+  id?: number;
+  remoteId?: string;
+  name: string;
+  birth: string;
+  gender: 'boy' | 'girl';
+  interests?: string;
+  avatarTheme?: ChildProfile['avatarTheme'];
+}
+
+export interface SaveOnboardingChildrenPayload {
+  familyId: string | number;
+  childrenList: OnboardingChildPersistenceItem[];
 }
 
 /**
  * Step 4 of Onboarding Wizard:
- * Ensures the parent `families(id)` row exists first, then writes the children
- * (Hamza, Laila, Youssef) directly to the `children` table linked to `family_id`.
+ * Validates and deduplicates `childrenList` locally, preserving numeric local `id` for UI linkage,
+ * and writes to Supabase `children` ONLY when an active authenticated session and verified UUID `family_id` exist
+ * (and when the children list is not the default Demo Seed).
  */
-export async function saveOnboardingChildrenToSupabase(params: {
-  familyId: number;
-  childrenList: Array<{
-    id: number;
-    name: string;
-    birth: string;
-    gender: 'boy' | 'girl';
-    interests: string;
-    avatarTheme: ChildProfile['avatarTheme'];
-  }>;
-}): Promise<{ synced: boolean; savedChildren: Child[]; error: string | null }> {
-  const targetFamilyId = params.familyId || SHARED_FAMILY_ID;
-  const mappedChildren: Child[] = params.childrenList.map((item, idx) => ({
-    id: item.id || idx + 1,
-    family_id: targetFamilyId,
-    name: (item.name || 'طفل').trim(),
-    birth: item.birth || '2022-05-14',
-    gender: item.gender === 'girl' ? 'girl' : 'boy',
-    emoji: item.gender === 'girl' ? '👧🏻' : '👦🏻',
-    avatar_theme: item.avatarTheme || 'astronaut',
-    interests: (item.interests || '').trim(),
-  }));
+export async function saveOnboardingChildrenToSupabase(
+  params: SaveOnboardingChildrenPayload
+): Promise<{ synced: boolean; savedChildren: Child[]; error: string | null }> {
+  if (!params || typeof params !== 'object' || !Array.isArray(params.childrenList)) {
+    return {
+      synced: false,
+      savedChildren: [],
+      error: 'Invalid children payload: expected { familyId, childrenList }.',
+    };
+  }
+
+  const targetFamilyId =
+    typeof params.familyId === 'string' && isValidUuid(params.familyId)
+      ? params.familyId.trim()
+      : typeof params.familyId === 'number' &&
+        Number.isFinite(params.familyId) &&
+        params.familyId > 0
+      ? params.familyId
+      : SHARED_FAMILY_ID;
+
+  // Deduplicate by normalized (name + birth) so retries never create duplicate child records
+  const seenKeys = new Set<string>();
+  const uniqueInput = params.childrenList.filter((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const cleanName = (item.name || '').trim().toLowerCase();
+    if (!cleanName) return false;
+    const cleanBirth = (item.birth || '').trim();
+    const key = `${cleanName}::${cleanBirth}`;
+    if (seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
+
+  if (uniqueInput.length === 0) {
+    return {
+      synced: false,
+      savedChildren: [],
+      error: 'يرجى إضافة طفل واحد على الأقل قبل الحفظ.',
+    };
+  }
+
+  const usedIds = new Set<number>();
+  const mappedChildren: Child[] = uniqueInput.map((item, idx) => {
+    let resolvedId =
+      typeof item.id === 'number' && Number.isFinite(item.id) && item.id > 0
+        ? Math.floor(item.id)
+        : idx + 1;
+    while (usedIds.has(resolvedId)) {
+      resolvedId += 1;
+    }
+    usedIds.add(resolvedId);
+
+    const gender: 'boy' | 'girl' = item.gender === 'girl' ? 'girl' : 'boy';
+    return {
+      id: resolvedId,
+      ...(isValidUuid(item.remoteId) ? { remote_id: item.remoteId.trim() } : {}),
+      family_id: targetFamilyId,
+      name: (item.name || '').trim() || `طفل ${idx + 1}`,
+      birth: (item.birth || '').trim() || '2022-05-14',
+      gender,
+      emoji: gender === 'girl' ? '👧🏻' : '👦🏻',
+      avatar_theme: item.avatarTheme || (gender === 'girl' ? 'artist' : 'astronaut'),
+      interests: (item.interests || '').trim(),
+    };
+  });
 
   if (!supabaseClient) {
-    return { synced: false, savedChildren: mappedChildren, error: null };
+    return {
+      synced: false,
+      savedChildren: mappedChildren,
+      error: 'خدمة قاعدة البيانات السحابية غير متصلة حالياً.',
+    };
+  }
+
+  // Prevent sending the default 3 demo children (Hamza, Laila, Youssef) to the live database as real records
+  if (isCanonicalThreeDemoKids(mappedChildren)) {
+    return {
+      synced: false,
+      savedChildren: mappedChildren,
+      error: 'البيانات الافتراضية للتجربة متاحة محلياً فقط ولا يتم إرسالها لقاعدة البيانات السحابية.',
+    };
   }
 
   try {
-    await ensureSharedFamilyRecordInSupabase({ familyId: targetFamilyId });
-    const { error } = await withSupabaseRetry(() =>
-      supabaseClient.from(SUPABASE_TABLES.CHILDREN).upsert(mappedChildren, { onConflict: 'id' })
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    const verifiedFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
+      ? verifiedCtx.verifiedFamilyId
+      : isValidUuid(targetFamilyId) && verifiedCtx.authenticated
+      ? targetFamilyId
+      : null;
+
+    if (!verifiedCtx.authenticated || !verifiedFamilyUuid) {
+      return {
+        synced: false,
+        savedChildren: mappedChildren,
+        error:
+          verifiedCtx.error ||
+          'Write blocked: Authenticated session and verified UUID family_id are required to save children to Supabase.',
+      };
+    }
+
+    const dbPayload = mappedChildren.map((child) => {
+      const row: Record<string, unknown> = {
+        family_id: verifiedFamilyUuid,
+        name: child.name,
+        birth: child.birth,
+        gender: child.gender,
+        emoji: child.emoji,
+        avatar_theme: child.avatar_theme,
+        interests: child.interests,
+      };
+      if (isValidUuid(child.remote_id)) {
+        row.id = child.remote_id;
+      }
+      return row;
+    });
+
+    const { data: insertedRows, error } = await withSupabaseRetry(() =>
+      supabaseClient
+        .from(SUPABASE_TABLES.CHILDREN)
+        .upsert(dbPayload)
+        .select('id, name, birth')
     );
 
+    if (Array.isArray(insertedRows)) {
+      insertedRows.forEach((dbRow: Record<string, unknown>, idx: number) => {
+        if (isValidUuid(dbRow.id) && mappedChildren[idx]) {
+          mappedChildren[idx].remote_id = dbRow.id.trim();
+        }
+      });
+    }
+
+    const synced = Boolean(!error);
     return {
-      synced: !error,
+      synced,
       savedChildren: mappedChildren,
-      error: error ? error.message : null,
+      error: error ? error.message : !synced ? 'Unable to save children to Supabase.' : null,
     };
   } catch (err) {
     return {
@@ -1317,7 +1923,7 @@ export async function saveOnboardingChildrenToSupabase(params: {
 export type CoParentPairingMethod = 'phone_otp' | 'qr_token';
 
 export interface CoParentLinkPayload {
-  familyId: number;
+  familyId: string | number;
   partnerRole: 'father' | 'mother';
   partnerName: string;
   partnerPhone: string;
@@ -1331,7 +1937,7 @@ export interface CoParentLinkPayload {
 export interface CoParentLinkResult {
   linked: boolean;
   syncedToDb: boolean;
-  familyId: number;
+  familyId: string | number;
   partnerUserId: string;
   pairingToken: string;
   method: CoParentPairingMethod;
@@ -1340,9 +1946,7 @@ export interface CoParentLinkResult {
 
 /**
  * Step 5 of Onboarding Wizard — Co-Parent Integration Module:
- * Supports both:
- * - Method A (`phone_otp`): Verifies OTP sent to partner's mobile phone and binds partner to shared `family_id`.
- * - Method B (`qr_token`): Pairs via dynamic Family QR Code token (`NEKBAAR-FAM-...`) and binds partner to shared `family_id`.
+ * Persists pairing locally and only writes to Supabase if a verified Auth session + UUID family_id exist.
  */
 export async function linkCoParentAccountInSupabase(
   payload: CoParentLinkPayload
@@ -1389,65 +1993,53 @@ export async function linkCoParentAccountInSupabase(
   }
 
   try {
-    // 1. Ensure shared `families(id)` row exists
-    await ensureSharedFamilyRecordInSupabase({
-      familyId: targetFamilyId,
-      country: payload.country,
-    });
+    const verifiedCtx = await resolveVerifiedFamilyContext();
+    const verifiedFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
+      ? verifiedCtx.verifiedFamilyId
+      : null;
 
-    // 2. Upsert the partner account into `users` bound to the exact same `family_id`
-    const partnerUserRow: User = {
-      id: partnerUserId,
-      family_id: targetFamilyId,
-      name:
-        payload.partnerName.trim() ||
-        (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
-      full_name:
-        payload.partnerName.trim() ||
-        (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
-      role: payload.partnerRole,
-      email: payload.partnerEmail.trim(),
-      phone: payload.partnerPhone.trim(),
-      phone_number: payload.partnerPhone.trim(),
-      country: payload.country,
-      verified: true,
-    };
+    if (!verifiedCtx.authenticated || !verifiedFamilyUuid) {
+      return {
+        linked: true,
+        syncedToDb: false,
+        familyId: targetFamilyId,
+        partnerUserId,
+        pairingToken: resolvedToken,
+        method: payload.method,
+        error:
+          verifiedCtx.error ||
+          'Write blocked: Authenticated session and verified UUID family_id are required.',
+      };
+    }
 
-    const { error: userErr } = await withSupabaseRetry(() =>
-      supabaseClient
-        .from(SUPABASE_TABLES.USERS)
-        .upsert(partnerUserRow, { onConflict: 'id' })
+    const { error: pairErr } = await withSupabaseTimeout(
+      supabaseClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).upsert(
+        {
+          id: `pair-${verifiedFamilyUuid}-${payload.partnerRole}`,
+          family_id: verifiedFamilyUuid,
+          partner_user_id: partnerUserId,
+          partner_name:
+            payload.partnerName.trim() ||
+            (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
+          partner_phone: payload.partnerPhone.trim(),
+          partner_email: payload.partnerEmail.trim(),
+          pairing_method: payload.method,
+          pairing_token: resolvedToken,
+          verified: true,
+          linked_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
     );
-
-    // 3. Record audit row in `co_parent_pairings` (non-blocking if table hasn't been migrated yet)
-    await Promise.allSettled([
-      withSupabaseTimeout(
-        supabaseClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).upsert(
-          {
-            id: `pair-${targetFamilyId}-${partnerUserId}`,
-            family_id: targetFamilyId,
-            partner_user_id: partnerUserId,
-            partner_name: partnerUserRow.name,
-            partner_phone: partnerUserRow.phone,
-            partner_email: partnerUserRow.email,
-            pairing_method: payload.method,
-            pairing_token: resolvedToken,
-            verified: true,
-            linked_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        )
-      ),
-    ]);
 
     return {
       linked: true,
-      syncedToDb: !userErr,
-      familyId: targetFamilyId,
+      syncedToDb: !pairErr,
+      familyId: verifiedFamilyUuid,
       partnerUserId,
       pairingToken: resolvedToken,
       method: payload.method,
-      error: userErr ? userErr.message : null,
+      error: pairErr ? pairErr.message : null,
     };
   } catch (err) {
     return {

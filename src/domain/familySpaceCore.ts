@@ -489,6 +489,8 @@ export interface VoiceVaultMoment {
 
 export interface ChildProfile {
   id: number;
+  /** Optional database record identifier (UUID or DB primary key) separated from local UI id */
+  remoteId?: string | number;
   name: string;
   gender: 'boy' | 'girl';
   birth: string;
@@ -511,10 +513,12 @@ export interface ChildProfile {
 
 export interface RoutineTask {
   id: number;
+  remoteId?: string | number;
   name: string;
   time: string;
   done: boolean;
   kidId: number | null;
+  remoteChildId?: string | number | null;
   category: string;
   owner: string;
   cadence: TaskCadence;
@@ -522,11 +526,13 @@ export interface RoutineTask {
 
 export interface CalendarEvent {
   id: number;
+  remoteId?: string | number;
   title: string;
   date: string;
   time?: string;
   type: string;
   childId: number | null;
+  remoteChildId?: string | number | null;
   repeat: 'none' | 'weekly' | 'monthly' | 'yearly';
   note?: string;
   createdAt?: string;
@@ -534,8 +540,10 @@ export interface CalendarEvent {
 
 export interface WishItem {
   id: number;
+  remoteId?: string | number;
   name: string;
   kid: number;
+  remoteChildId?: string | number | null;
   price: number;
   currency?: CurrencyCode;
   emoji: string;
@@ -572,6 +580,7 @@ export type ExtendedRoleCategory =
 
 export interface FamilyMember {
   id: number;
+  remoteId?: string | number;
   name: string;
   role: string;
   side: string;
@@ -621,6 +630,7 @@ export interface ParentNotificationPrefs {
 
 export interface ParentAccountProfile {
   id: 'mother' | 'father';
+  remoteUserId?: string;
   fullName: string;
   relationshipRole: 'الأم' | 'الأب';
   country: CountryCode;
@@ -741,6 +751,8 @@ export interface FamilySpaceState {
   shippingAddress: DemoShippingAddress;
   orders: DemoOrder[];
   darkMode?: boolean;
+  /** Verified remote family UUID when resolved from an authenticated DB session */
+  verifiedFamilyId?: string | null;
 }
 
 export type MediaTopicCategory =
@@ -4078,6 +4090,9 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   if (typeof input.darkMode === 'boolean') {
     base.darkMode = input.darkMode;
   }
+  if (typeof input.verifiedFamilyId === 'string' && input.verifiedFamilyId.trim()) {
+    base.verifiedFamilyId = input.verifiedFamilyId.trim();
+  }
   if (Array.isArray(input.savedMediaIds)) {
     base.savedMediaIds = input.savedMediaIds
       .map((id) => Number(id))
@@ -4122,13 +4137,25 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   ]);
 
   if (Array.isArray(input.kids)) {
-    base.kids = input.kids
-      .filter((k): k is Record<string, unknown> => Boolean(k && typeof k === 'object'))
-      .map((k, idx) => {
+    const validRawKids = input.kids.filter(
+      (k): k is Record<string, unknown> =>
+        Boolean(k && typeof k === 'object' && !Array.isArray(k))
+    );
+    if (validRawKids.length > 0 || input.kids.length === 0) {
+      base.kids = validRawKids.map((k, idx) => {
         const gender = k.gender === 'girl' ? 'girl' : 'boy';
         const rawTheme = k.avatarTheme as AvatarAccessoryTheme;
-        const kidId = Number.isFinite(Number(k.id)) ? Number(k.id) : idx + 1;
-        const seedKid = DEFAULT_SEED.kids.find((sk) => sk.id === kidId);
+        const kidId = Number.isFinite(Number(k.id)) && Number(k.id) > 0 ? Number(k.id) : idx + 1;
+        const remoteId =
+          typeof k.remoteId === 'string' || typeof k.remoteId === 'number'
+            ? k.remoteId
+            : typeof k.id === 'string' && !Number.isFinite(Number(k.id))
+            ? k.id.trim()
+            : undefined;
+        const trimmedName = String(k.name ?? '').trim() || `طفل ${idx + 1}`;
+        const seedKid = DEFAULT_SEED.kids.find(
+          (sk) => sk.id === kidId && sk.name === trimmedName
+        );
         const rawVoiceMoments = Array.isArray(k.voiceMoments)
           ? k.voiceMoments
               .filter((vm): vm is Record<string, unknown> => Boolean(vm && typeof vm === 'object'))
@@ -4150,7 +4177,8 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           : [];
         return {
           id: kidId,
-          name: String(k.name ?? '').trim() || `طفل ${idx + 1}`,
+          ...(remoteId !== undefined ? { remoteId } : {}),
+          name: trimmedName,
           gender,
           birth: typeof k.birth === 'string' ? k.birth : '',
           interests: typeof k.interests === 'string' ? k.interests : '',
@@ -4166,23 +4194,52 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           voiceMoments: rawVoiceMoments,
         };
       });
+    }
   }
 
   const validKidIds = new Set(base.kids.map((k) => Number(k.id)));
+  const remoteIdToLocalKidId = new Map<string, number>();
+  base.kids.forEach((k) => {
+    if (k.remoteId !== undefined && k.remoteId !== null) {
+      remoteIdToLocalKidId.set(String(k.remoteId), k.id);
+    }
+  });
 
   if (Array.isArray(input.tasks)) {
     base.tasks = input.tasks
       .filter((t): t is Record<string, unknown> => Boolean(t && typeof t === 'object'))
       .map((t, idx) => {
         const rawKid = t.kidId ? Number(t.kidId) : null;
+        const resolvedKidId =
+          rawKid && validKidIds.has(rawKid)
+            ? rawKid
+            : t.remoteChildId && remoteIdToLocalKidId.has(String(t.remoteChildId))
+            ? remoteIdToLocalKidId.get(String(t.remoteChildId))!
+            : typeof t.kidId === 'string' && remoteIdToLocalKidId.has(t.kidId)
+            ? remoteIdToLocalKidId.get(t.kidId)!
+            : null;
+        const remoteId =
+          typeof t.remoteId === 'string' || typeof t.remoteId === 'number'
+            ? t.remoteId
+            : typeof t.id === 'string' && !Number.isFinite(Number(t.id))
+            ? t.id.trim()
+            : undefined;
+        const remoteChildId =
+          typeof t.remoteChildId === 'string' || typeof t.remoteChildId === 'number'
+            ? t.remoteChildId
+            : resolvedKidId
+            ? base.kids.find((k) => k.id === resolvedKidId)?.remoteId ?? null
+            : null;
         const cadence: TaskCadence =
           t.cadence === 'weekly' || t.cadence === 'monthly' ? t.cadence : 'daily';
         return {
           id: Number.isFinite(Number(t.id)) ? Number(t.id) : idx + 1,
+          ...(remoteId !== undefined ? { remoteId } : {}),
           name: String(t.name ?? '').trim() || `مهمة ${idx + 1}`,
           time: typeof t.time === 'string' ? t.time : '',
           done: Boolean(t.done),
-          kidId: rawKid && validKidIds.has(rawKid) ? rawKid : null,
+          kidId: resolvedKidId,
+          ...(remoteChildId ? { remoteChildId } : {}),
           category: typeof t.category === 'string' && t.category ? t.category : 'روتين عام',
           owner: typeof t.owner === 'string' && t.owner ? t.owner : 'مشترك',
           cadence,
@@ -4195,17 +4252,39 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
       .filter((e): e is Record<string, unknown> => Boolean(e && typeof e === 'object'))
       .map((e, idx) => {
         const rawChild = e.childId ? Number(e.childId) : null;
+        const resolvedChildId =
+          rawChild && validKidIds.has(rawChild)
+            ? rawChild
+            : e.remoteChildId && remoteIdToLocalKidId.has(String(e.remoteChildId))
+            ? remoteIdToLocalKidId.get(String(e.remoteChildId))!
+            : typeof e.childId === 'string' && remoteIdToLocalKidId.has(e.childId)
+            ? remoteIdToLocalKidId.get(e.childId)!
+            : null;
+        const remoteId =
+          typeof e.remoteId === 'string' || typeof e.remoteId === 'number'
+            ? e.remoteId
+            : typeof e.id === 'string' && !Number.isFinite(Number(e.id))
+            ? e.id.trim()
+            : undefined;
+        const remoteChildId =
+          typeof e.remoteChildId === 'string' || typeof e.remoteChildId === 'number'
+            ? e.remoteChildId
+            : resolvedChildId
+            ? base.kids.find((k) => k.id === resolvedChildId)?.remoteId ?? null
+            : null;
         const repeat =
           e.repeat === 'weekly' || e.repeat === 'monthly' || e.repeat === 'yearly'
             ? e.repeat
             : 'none';
         return {
           id: Number.isFinite(Number(e.id)) ? Number(e.id) : idx + 1,
+          ...(remoteId !== undefined ? { remoteId } : {}),
           title: String(e.title ?? '').trim() || `حدث ${idx + 1}`,
           date: typeof e.date === 'string' && e.date ? e.date : dateLocalISO(new Date()),
           time: typeof e.time === 'string' ? e.time : '',
           type: typeof e.type === 'string' && e.type ? e.type : 'موعد عائلي',
-          childId: rawChild && validKidIds.has(rawChild) ? rawChild : null,
+          childId: resolvedChildId,
+          ...(remoteChildId ? { remoteChildId } : {}),
           repeat,
           note: typeof e.note === 'string' ? e.note : '',
           createdAt: typeof e.createdAt === 'string' ? e.createdAt : new Date().toISOString(),
@@ -4218,6 +4297,26 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
       .filter((w): w is Record<string, unknown> => Boolean(w && typeof w === 'object'))
       .map((w, idx) => {
         const rawKid = Number(w.kid);
+        const resolvedKid =
+          validKidIds.has(rawKid)
+            ? rawKid
+            : w.remoteChildId && remoteIdToLocalKidId.has(String(w.remoteChildId))
+            ? remoteIdToLocalKidId.get(String(w.remoteChildId))!
+            : typeof w.kid === 'string' && remoteIdToLocalKidId.has(w.kid)
+            ? remoteIdToLocalKidId.get(w.kid)!
+            : 0;
+        const remoteId =
+          typeof w.remoteId === 'string' || typeof w.remoteId === 'number'
+            ? w.remoteId
+            : typeof w.id === 'string' && !Number.isFinite(Number(w.id))
+            ? w.id.trim()
+            : undefined;
+        const remoteChildId =
+          typeof w.remoteChildId === 'string' || typeof w.remoteChildId === 'number'
+            ? w.remoteChildId
+            : resolvedKid
+            ? base.kids.find((k) => k.id === resolvedKid)?.remoteId ?? null
+            : null;
         const progressRaw = Number(w.progress);
         const progress = Number.isFinite(progressRaw)
           ? Math.max(0, Math.min(100, Math.round(progressRaw)))
@@ -4226,8 +4325,10 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           : 50;
         return {
           id: Number.isFinite(Number(w.id)) ? Number(w.id) : idx + 1,
+          ...(remoteId !== undefined ? { remoteId } : {}),
           name: String(w.name ?? '').trim() || `أمنية ${idx + 1}`,
-          kid: validKidIds.has(rawKid) ? rawKid : 0,
+          kid: resolvedKid,
+          ...(remoteChildId ? { remoteChildId } : {}),
           price: Number.isFinite(Number(w.price)) && Number(w.price) >= 0 ? Number(w.price) : 0,
           currency: w.currency === 'SAR' ? 'SAR' : 'EGP',
           emoji: typeof w.emoji === 'string' && w.emoji ? w.emoji : '🎁',
@@ -4254,8 +4355,15 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
         const assignedKids = Array.isArray(f.assignedKidIds)
           ? f.assignedKidIds.map((id) => Number(id)).filter((id) => validKidIds.has(id))
           : Array.from(validKidIds);
+        const remoteId =
+          typeof f.remoteId === 'string' || typeof f.remoteId === 'number'
+            ? f.remoteId
+            : typeof f.id === 'string' && !Number.isFinite(Number(f.id))
+            ? f.id.trim()
+            : undefined;
         return {
           id: Number.isFinite(Number(f.id)) ? Number(f.id) : idx + 1,
+          ...(remoteId !== undefined ? { remoteId } : {}),
           name: String(f.name ?? '').trim() || `فرد ${idx + 1}`,
           role: roleStr,
           side: typeof f.side === 'string' && f.side ? f.side : 'الأسرة الأساسية',

@@ -12,36 +12,24 @@ import {
 
 export function loadPersistedFamilyState(): FamilySpaceState {
   try {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.localStorage) {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved && saved.trim()) {
         const parsed = JSON.parse(saved);
-        // Auto-migrate legacy default seed (Ezz & Nour / Sara) or non-grounded kids to Ahmad & Maryam + Hamza (6m), Laila (4y), Youssef (8y)
-        const hasCanonicalThreeKids =
-          Array.isArray(parsed.kids) &&
-          parsed.kids.length === 3 &&
-          parsed.kids.some((k: { name?: string }) => k?.name === 'حمزة') &&
-          parsed.kids.some((k: { name?: string }) => k?.name === 'ليلى') &&
-          parsed.kids.some((k: { name?: string }) => k?.name === 'يوسف');
-        const hasLegacyParent =
-          typeof parsed.parentName === 'string' &&
-          (parsed.parentName.includes('سارة') || parsed.parentName.toLowerCase().includes('sara'));
-        if (!hasCanonicalThreeKids || hasLegacyParent) {
-          const migrated = {
-            ...structuredClone(DEFAULT_SEED),
-            language: parsed.language === 'en' ? 'en' : 'ar',
-            darkMode: Boolean(parsed.darkMode),
-            country: parsed.country === 'SA' ? 'SA' : 'EG',
-            currency: parsed.currency === 'SAR' ? 'SAR' : 'EGP',
-          };
-          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-          return normalizeAppData(migrated);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          // Support wrapped backup/session format (`{ appState: { ... } }`) as well as direct state objects
+          const candidate =
+            parsed.appState &&
+            typeof parsed.appState === 'object' &&
+            !Array.isArray(parsed.appState)
+              ? (parsed.appState as Record<string, unknown>)
+              : (parsed as Record<string, unknown>);
+          return normalizeAppData(candidate);
         }
-        return normalizeAppData({ ...structuredClone(DEFAULT_SEED), ...parsed });
       }
     }
   } catch {
-    // Fallback to normalized default seed
+    // Do not overwrite or delete localStorage on parse failure; fall back in memory only
   }
   return normalizeAppData(DEFAULT_SEED);
 }

@@ -1,6 +1,12 @@
 import { CountryCode, DEFAULT_SEED, ParentThemeRole } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
-import { SHARED_FAMILY_ID, supabaseClient, withSupabaseTimeout } from './supabaseService';
+import {
+  SHARED_FAMILY_ID,
+  isValidUuid,
+  resolveVerifiedFamilyContext,
+  supabaseClient,
+  withSupabaseTimeout,
+} from './supabaseService';
 
 /**
  * Full lifecycle steps for the progressive 5-step Nekbaar onboarding state machine.
@@ -19,6 +25,7 @@ export type VerificationChannel = 'sms' | 'email';
 
 export interface OnboardingChildDraftItem {
   id: number;
+  remoteId?: string | number;
   name: string;
   gender: 'boy' | 'girl';
   ageStagePreset: 'infant_6m' | 'nursery_4y' | 'school_8y' | 'custom';
@@ -28,10 +35,18 @@ export interface OnboardingChildDraftItem {
 }
 
 export interface UserSessionProfile {
-  userId: string;
-  familyId: string;
-  fullName: string;
+  userId?: string;
+  familyId: string | number;
+  verifiedFamilyId?: string | null;
+  isDbVerified?: boolean;
+  fullName?: string;
+  parentName?: string;
   role?: ParentThemeRole;
+  parentRole?: ParentThemeRole;
+  sessionToken?: string;
+  authenticatedAt?: string;
+  onboardingCompleted?: boolean;
+  isOtpVerified?: boolean;
   email: string;
   phone: string;
   city: string;
@@ -45,6 +60,7 @@ export interface UserSessionProfile {
   coParentName?: string;
   coParentEmail?: string;
   coParentPhone?: string;
+  syncedToDb?: boolean;
   updatedAt?: string;
 }
 
@@ -114,41 +130,59 @@ export class OnboardingFlowController {
    * Defensively normalizes any children draft array from localStorage or state
    * so no missing/undefined property can ever trigger an Error Boundary crash on Step 4.
    */
-  public static sanitizeChildrenList(rawList: unknown): OnboardingChildDraftItem[] {
-    if (!Array.isArray(rawList) || rawList.length === 0) {
-      return INITIAL_CANONICAL_ONBOARDING_CHILDREN;
+  public static sanitizeChildrenList(
+    rawList: unknown,
+    allowEmpty: boolean = false
+  ): OnboardingChildDraftItem[] {
+    if (!Array.isArray(rawList)) {
+      return allowEmpty ? [] : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
+    }
+    if (rawList.length === 0) {
+      return allowEmpty ? [] : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
     }
 
     const sanitized = rawList
       .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object'))
       .map((item, idx): OnboardingChildDraftItem => {
-        const fallback =
-          INITIAL_CANONICAL_ONBOARDING_CHILDREN[idx] ||
-          INITIAL_CANONICAL_ONBOARDING_CHILDREN[0];
-        const rawName = typeof item.name === 'string' && item.name.trim() ? item.name.trim() : fallback.name;
+        const rawName =
+          typeof item.name === 'string' && item.name.trim()
+            ? item.name.trim()
+            : `طفل ${idx + 1}`;
+        const canonicalMatch = INITIAL_CANONICAL_ONBOARDING_CHILDREN.find(
+          (c) => c.name === rawName
+        );
+        const rawGender: 'boy' | 'girl' =
+          item.gender === 'girl' || item.gender === 'female' ? 'girl' : 'boy';
         const rawBirth =
           typeof item.birth === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.birth.trim())
             ? item.birth.trim()
-            : fallback.birth;
-        const rawGender: 'boy' | 'girl' =
-          item.gender === 'girl' || item.gender === 'female' ? 'girl' : 'boy';
+            : canonicalMatch?.birth || '2022-05-14';
         const rawPreset: OnboardingChildDraftItem['ageStagePreset'] =
           item.ageStagePreset === 'infant_6m' ||
           item.ageStagePreset === 'nursery_4y' ||
           item.ageStagePreset === 'school_8y' ||
           item.ageStagePreset === 'custom'
             ? item.ageStagePreset
-            : fallback.ageStagePreset;
+            : canonicalMatch?.ageStagePreset || 'custom';
         const rawTheme: AvatarAccessoryTheme =
           item.avatarTheme === 'astronaut' ||
           item.avatarTheme === 'artist' ||
           item.avatarTheme === 'scientist' ||
-          item.avatarTheme === 'athlete'
+          item.avatarTheme === 'athlete' ||
+          item.avatarTheme === 'reader' ||
+          item.avatarTheme === 'nature'
             ? item.avatarTheme
-            : fallback.avatarTheme;
+            : canonicalMatch?.avatarTheme || (rawGender === 'girl' ? 'artist' : 'astronaut');
 
         return {
-          id: typeof item.id === 'number' && Number.isFinite(item.id) ? item.id : fallback.id + idx,
+          id:
+            typeof item.id === 'number' && Number.isFinite(item.id) && item.id > 0
+              ? item.id
+              : idx + 1,
+          remoteId:
+            typeof item.remoteId === 'string' || typeof item.remoteId === 'number'
+              ? item.remoteId
+              : undefined,
           name: rawName,
           gender: rawGender,
           ageStagePreset: rawPreset,
@@ -156,12 +190,14 @@ export class OnboardingFlowController {
           interests:
             typeof item.interests === 'string' && item.interests.trim()
               ? item.interests.trim()
-              : fallback.interests,
+              : canonicalMatch?.interests ||
+                (rawGender === 'girl' ? 'الرسم والقصص' : 'السباحة والتركيب'),
           avatarTheme: rawTheme,
         };
       });
 
-    return sanitized.length > 0 ? sanitized : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
+    if (sanitized.length > 0) return sanitized;
+    return allowEmpty ? [] : INITIAL_CANONICAL_ONBOARDING_CHILDREN;
   }
 
   /**
@@ -215,22 +251,7 @@ export class OnboardingFlowController {
     draft?: OnboardingDraftData;
   }> {
     try {
-      // 1. Check persisted localStorage profile first (instant F5 refresh persistence)
-      const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
-      if (savedProfileRaw) {
-        const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
-        if (profile && profile.userId && profile.fullName) {
-          return {
-            step: 'DASHBOARD',
-            profile: {
-              ...profile,
-              familyId: profile.familyId || String(SHARED_FAMILY_ID),
-            },
-          };
-        }
-      }
-
-      // 2. Check live Supabase Auth session if available
+      // 1. Check live Supabase Auth session and verified DB family ownership first
       if (supabaseClient) {
         try {
           const { data: sessionRes } = await withSupabaseTimeout(
@@ -238,16 +259,25 @@ export class OnboardingFlowController {
             2500
           );
           const sessionUser = sessionRes?.session?.user;
-          if (sessionUser && sessionUser.id) {
+          if (sessionUser && isValidUuid(sessionUser.id)) {
+            const verifiedCtx = await resolveVerifiedFamilyContext();
+            const verifiedFamilyUuid =
+              verifiedCtx.authenticated && isValidUuid(verifiedCtx.verifiedFamilyId)
+                ? verifiedCtx.verifiedFamilyId
+                : null;
             const meta = (sessionUser.user_metadata || {}) as Record<string, unknown>;
             const rawRole = typeof meta.role === 'string' ? meta.role.toLowerCase() : '';
             const isDad =
               rawRole === 'father' ||
               rawRole === 'dad' ||
               (sessionUser.email || '').toLowerCase().includes('ahmad');
+            // Never trust user_metadata.family_id as verified family ownership
             const resolvedProfile: UserSessionProfile = {
               userId: sessionUser.id,
-              familyId: String(meta.family_id || SHARED_FAMILY_ID),
+              familyId: verifiedFamilyUuid || String(SHARED_FAMILY_ID),
+              verifiedFamilyId: verifiedFamilyUuid,
+              isDbVerified: Boolean(verifiedFamilyUuid),
+              syncedToDb: Boolean(verifiedFamilyUuid),
               fullName:
                 (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
                 (isDad ? 'أحمد (الأب)' : 'مريم (الأم)'),
@@ -271,7 +301,26 @@ export class OnboardingFlowController {
             return { step: 'DASHBOARD', profile: resolvedProfile };
           }
         } catch {
-          // Proceed gracefully to local draft / mandatory gateway check if offline
+          // Proceed gracefully to local UI state check if offline
+        }
+      }
+
+      // 2. Check persisted localStorage profile for local UI experience only
+      // Note: localStorage is NEVER treated as proof of Supabase identity or family ownership
+      const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
+      if (savedProfileRaw) {
+        const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
+        if (profile && profile.userId && profile.fullName) {
+          return {
+            step: 'DASHBOARD',
+            profile: {
+              ...profile,
+              familyId: String(SHARED_FAMILY_ID),
+              verifiedFamilyId: null,
+              isDbVerified: false,
+              syncedToDb: false,
+            },
+          };
         }
       }
 
@@ -435,8 +484,21 @@ export class OnboardingFlowController {
     clearDraftAfterComplete: boolean = false
   ): void {
     try {
+      const resolvedName =
+        profile.fullName ||
+        profile.parentName ||
+        (profile.role === 'dad' || profile.parentRole === 'dad' ? 'أحمد' : 'مريم');
+      const resolvedUserId =
+        profile.userId ||
+        profile.sessionToken ||
+        `usr_${profile.familyId || SHARED_FAMILY_ID}_${Date.now()}`;
       const payload: UserSessionProfile = {
         ...profile,
+        userId: resolvedUserId,
+        fullName: resolvedName,
+        parentName: resolvedName,
+        role: profile.role || profile.parentRole || 'mom',
+        familyId: String(profile.familyId || SHARED_FAMILY_ID),
         updatedAt: new Date().toISOString(),
       };
       window.localStorage.setItem(this.STORAGE_KEY, JSON.stringify(payload));
@@ -446,6 +508,16 @@ export class OnboardingFlowController {
     } catch (e) {
       console.error('Failed to persist user session:', e);
     }
+  }
+
+  /**
+   * Alias for persistUserSession used by OnboardingFlowModal upon finalizing onboarding.
+   */
+  public static saveAuthenticatedSession(
+    profile: UserSessionProfile,
+    clearDraftAfterComplete: boolean = true
+  ): void {
+    this.persistUserSession(profile, clearDraftAfterComplete);
   }
 
   /**
