@@ -43,8 +43,8 @@
 
   --font-ui: 'Cairo', 'Plus Jakarta Sans', Tahoma, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-size-base: 13.5px;
-  --line-height-base: 1.62;
+  --font-size-base: 12.75px;
+  --line-height-base: 1.56;
   --radius-card: 20px;
   --radius-control: 10px;
   --radius-small: 8px;
@@ -1125,21 +1125,21 @@ h1, h2, h3, h4 {
 
 .section-heading-block {
   text-align: center;
-  margin-block: 0.95rem 0.65rem;
-  padding-block: 0.35rem;
+  margin-block: 0.65rem 0.45rem;
+  padding-block: 0.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: 0.25rem;
 }
 
 .section-heading-centered {
   text-align: center;
   font-weight: 800;
-  font-size: clamp(1.05rem, 1.9vw, 1.35rem);
-  letter-spacing: -0.02em;
-  line-height: 1.3;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  letter-spacing: -0.015em;
+  line-height: 1.32;
   color: var(--color-heading, var(--color-text));
   margin-inline: auto;
 }
@@ -1147,10 +1147,10 @@ h1, h2, h3, h4 {
 .section-subtitle-centered {
   text-align: center;
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--color-muted);
   margin-inline: auto;
-  max-width: 38rem;
+  max-width: 36rem;
 }
 
 .glass-bottom-nav {
@@ -1540,7 +1540,9 @@ h1, h2, h3, h4 {
 .mobile-app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 .mobile-app-shell select {
   min-height: 48px;
-  transition: all 300ms ease-in-out;
+  transition-property: transform, background-color, border-color, color, box-shadow, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   touch-action: manipulation;
 }
 
@@ -1566,29 +1568,52 @@ h1, h2, h3, h4 {
   outline-offset: 2px;
 }
 
-/* Strict Mobile Typography Hierarchy (Arabic RTL Optimized) */
+/* Compact Mobile Typography Hierarchy (Arabic RTL Optimized — Zero Crowding or Wrapping Bugs) */
 .mobile-app-shell h1 {
-  font-size: 1.375rem; /* text-xl to text-2xl */
-  line-height: 1.4;
-  font-weight: 700;
+  font-size: 1.125rem; /* Compact 18px */
+  line-height: 1.38;
+  font-weight: 800;
 }
 
 .mobile-app-shell h2 {
-  font-size: 1.25rem; /* text-xl */
-  line-height: 1.4;
-  font-weight: 700;
+  font-size: 1rem; /* Compact 16px */
+  line-height: 1.38;
+  font-weight: 800;
 }
 
 .mobile-app-shell h3,
 .mobile-app-shell h4 {
-  font-size: 1rem; /* text-base */
-  line-height: 1.5;
-  font-weight: 600;
+  font-size: 0.875rem; /* Compact 14px */
+  line-height: 1.45;
+  font-weight: 700;
 }
 
 .mobile-app-shell p {
-  font-size: 0.875rem; /* text-sm */
-  line-height: 1.625; /* leading-relaxed */
+  font-size: 0.8125rem; /* Compact 13px */
+  line-height: 1.55;
+}
+
+/* Prevent oversized utility classes from crowding cards inside the 430px mobile frame */
+.mobile-app-shell .text-3xl,
+.mobile-app-shell .text-4xl,
+.mobile-app-shell .text-5xl {
+  font-size: 1.25rem !important;
+  line-height: 1.35 !important;
+}
+
+.mobile-app-shell .text-2xl {
+  font-size: 1.1rem !important;
+  line-height: 1.38 !important;
+}
+
+.mobile-app-shell .text-xl {
+  font-size: 0.975rem !important;
+  line-height: 1.4 !important;
+}
+
+.mobile-app-shell .text-lg {
+  font-size: 0.9rem !important;
+  line-height: 1.42 !important;
 }
 
 /* Native Step Slide & Fade Transitions without CLS */

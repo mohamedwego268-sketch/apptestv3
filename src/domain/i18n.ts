@@ -3,7 +3,8 @@ import { LanguageCode } from './familySpaceCore';
 export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
   ar: {
     brandName: 'نكبر',
-    brandTagline: 'كل حاجة لطفلك في مكان واحد — من أول يوم لحد 8 سنين',
+    brandSlogan: 'مساحة تجمعنا.. وبحبهم نكبر',
+    brandTagline: 'مساحة تجمعنا.. وبحبهم نكبر — كل حاجة لطفلك من أول يوم لحد 8 سنين',
     navHome: 'الرئيسية',
     navChildren: 'إدارة الأطفال',
     navRoutine: 'الروتين اليومي',

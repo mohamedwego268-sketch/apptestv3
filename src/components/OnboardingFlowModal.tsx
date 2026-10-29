@@ -838,7 +838,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   };
 
   /**
-   * Step A Handler (Email / Password or Google OAuth / Apple Sign-In):
+   * Step A Handler (Email / Password or Social OAuth: Gmail, iCloud, Facebook, Outlook):
    * Validates or resolves email, triggers OAuth or Email OTP in Supabase, and advances to Step B (Email OTP verification).
    */
   const handleStepASubmit = async (providerOverride?: AuthProviderType) => {
@@ -855,6 +855,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     } else if (activeProvider === 'apple' && (!resolvedEmail || !resolvedEmail.includes('@'))) {
       resolvedEmail =
         parentRole === 'dad' ? 'ahmad.dad@icloud.com' : 'maryam.mom@icloud.com';
+      setGatewayEmail(resolvedEmail);
+    } else if (activeProvider === 'facebook' && (!resolvedEmail || !resolvedEmail.includes('@'))) {
+      resolvedEmail =
+        parentRole === 'dad' ? 'ahmad.dad@facebook.com' : 'maryam.mom@facebook.com';
+      setGatewayEmail(resolvedEmail);
+    } else if (activeProvider === 'outlook' && (!resolvedEmail || !resolvedEmail.includes('@'))) {
+      resolvedEmail =
+        parentRole === 'dad' ? 'ahmad.dad@outlook.com' : 'maryam.mom@outlook.com';
       setGatewayEmail(resolvedEmail);
     }
 
@@ -912,12 +920,20 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     setStepSyncNotice(
       activeProvider === 'google'
         ? isEn
-          ? `Google account connected (${resolvedEmail}). Instant verification code sent to your email.`
-          : `تم الاتصال بحساب Google (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+          ? `Gmail connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب Gmail (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
         : activeProvider === 'apple'
         ? isEn
-          ? `Apple ID connected (${resolvedEmail}). Instant verification code sent to your email.`
-          : `تم الاتصال بحساب Apple (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+          ? `iCloud connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب iCloud (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+        : activeProvider === 'facebook'
+        ? isEn
+          ? `Facebook connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب Facebook (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
+        : activeProvider === 'outlook'
+        ? isEn
+          ? `Outlook connected (${resolvedEmail}). Instant verification code sent to your email.`
+          : `تم الاتصال بحساب Outlook (${resolvedEmail}) وإرسال رمز التحقق الفوري إلى بريدك الإلكتروني.`
         : isEn
         ? `Verification code sent to ${resolvedEmail}. Please confirm the code in Step B.`
         : `تم إرسال رمز التحقق الفوري (OTP) إلى بريدك الإلكتروني (${resolvedEmail}).`
@@ -1132,34 +1148,37 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
       {/* Strict Mobile App Frame Container (max-w-[430px] mx-auto with Safe Areas pt-safe and pb-safe) */}
       <div className="mobile-app-shell relative z-10 w-full max-w-[430px] mx-auto min-h-dvh pt-safe pb-safe px-3.5 flex flex-col justify-between bg-pattern transition-all duration-300 ease-in-out">
-        <div className="soft-card-surface w-full rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-white/95 dark:bg-[#101D26]/95 backdrop-blur-md p-4 space-y-4 shadow-2xl transition-all duration-300 ease-in-out">
+        <div className="soft-card-surface w-full rounded-3xl border border-teal-500/30 dark:border-[#1E3646] bg-white/95 dark:bg-[#101D26]/95 backdrop-blur-md p-4 space-y-3.5 shadow-[0_20px_50px_-15px_rgba(2,6,23,0.45)] transition-all duration-300 ease-in-out">
         {/* ===================================================================
-            MODE 1: MANDATORY AUTH GATEWAY (LANDING SCREEN)
+            MODE 1: SLEEK CARD-BASED AUTH GATEWAY (LANDING SCREEN)
             =================================================================== */}
         {flowMode === 'GATEWAY' && (
-          <div data-testid="welcome-auth-gateway-screen" className="space-y-4 py-1 animate-mobile-step transition-all duration-300 ease-in-out">
-            {/* Top Brand Header */}
-            <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#0f766e] text-white flex items-center justify-center text-2xl font-black shadow-md shrink-0">
+          <div data-testid="welcome-auth-gateway-screen" className="space-y-3.5 py-0.5 animate-mobile-step transition-all duration-300 ease-in-out">
+            {/* Compact Top Brand Header with Official Slogan ("مساحة تجمعنا.. وبحبهم نكبر") */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-200/80 dark:border-[#1E3646]">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0d9488] to-[#FF8C61] text-white flex items-center justify-center text-xl font-black shadow-sm shrink-0">
                   🌱
                 </div>
-                <div className="space-y-0.5">
+                <div className="min-w-0 space-y-0.5">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? 'Nekbaar Family Super App' : 'تطبيق العائلة الذكي — نكبر'}
+                    <span className="text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight">
+                      {isEn ? 'Nekbaar · نكبر' : 'نكبر'}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black">
-                      {isEn ? 'Secure Auth Gateway' : 'بوابة المصادقة الآمنة'}
+                    <span
+                      data-testid="gateway-official-slogan-badge"
+                      className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug flex-wrap break-words"
+                    >
+                      مساحة تجمعنا.. وبحبهم نكبر
                     </span>
                   </div>
                   <h2
                     id="onboarding-wizard-title"
-                    className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
+                    className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-snug"
                   >
                     {isEn
                       ? 'Welcome to Nekbaar Family Space'
-                      : 'أهلاً بك في نكبر — بوابة الدخول الآمنة للعائلة'}
+                      : 'بوابة الدخول والتسجيل الآمن للعائلة'}
                   </h2>
                 </div>
               </div>
@@ -1169,75 +1188,85 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   type="button"
                   onClick={onClose}
                   aria-label={isEn ? 'Close' : 'إغلاق'}
-                  className="min-w-[48px] min-h-[48px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] text-sm font-bold flex items-center justify-center hover:bg-teal-500/10 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shrink-0"
+                  className="min-w-[48px] min-h-[48px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] text-sm font-bold flex items-center justify-center hover:bg-teal-500/10 active:scale-95 transition-transform duration-150 cursor-pointer shrink-0"
                 >
                   ✕
                 </button>
               )}
             </div>
 
-            {/* Clean Primary Action Toggle between "تسجيل دخول" and "إنشاء حساب جديد" */}
-            <div
-              role="tablist"
-              aria-label={isEn ? 'Authentication Mode Toggle' : 'التبديل بين تسجيل دخول وإنشاء حساب جديد'}
-              className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#142430] border border-slate-200 dark:border-[#1E3646]"
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={gatewayAuthIntent === 'signin'}
-                data-testid="gateway-toggle-signin"
-                onClick={() => {
-                  setGatewayAuthIntent('signin');
-                  setAuthMode('signin');
-                  setErrorMsg(null);
-                }}
-                className={`min-h-[48px] px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all cursor-pointer ${
-                  gatewayAuthIntent === 'signin'
-                    ? 'bg-[#0d9488] text-white shadow-sm'
-                    : 'bg-white dark:bg-[#101D26] text-gray-900 dark:text-[#F8FAFC]'
-                }`}
+            {/* CARD 1: Sleek Segmented Login / Registration Card */}
+            <div className="rounded-2xl border border-slate-200/90 dark:border-[#1E3646] bg-slate-50/70 dark:bg-[#142430]/90 p-3.5 shadow-xs space-y-3">
+              {/* Clean Primary Action Toggle between "تسجيل دخول" and "إنشاء حساب جديد" */}
+              <div
+                role="tablist"
+                aria-label={isEn ? 'Authentication Mode Toggle' : 'التبديل بين تسجيل دخول وإنشاء حساب جديد'}
+                className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-200/75 dark:bg-[#0B131A] border border-slate-300/60 dark:border-[#1E3646]"
               >
-                {isEn ? 'تسجيل دخول (Sign In)' : 'تسجيل دخول'}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={gatewayAuthIntent === 'signup'}
-                data-testid="gateway-toggle-signup"
-                onClick={() => {
-                  setGatewayAuthIntent('signup');
-                  setAuthMode('signup');
-                  setErrorMsg(null);
-                }}
-                className={`min-h-[48px] px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all cursor-pointer ${
-                  gatewayAuthIntent === 'signup'
-                    ? 'bg-[#0d9488] text-white shadow-sm'
-                    : 'bg-white dark:bg-[#101D26] text-gray-900 dark:text-[#F8FAFC]'
-                }`}
-              >
-                {isEn ? 'إنشاء حساب جديد (Sign Up)' : 'إنشاء حساب جديد'}
-              </button>
-            </div>
-
-            {/* Email-First Quick Auth Card with Native Auto-Fill (autoComplete="email") */}
-            <div className="rounded-2xl border border-teal-500/35 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 space-y-3">
-              <div className="space-y-1">
-                <label
-                  htmlFor="gateway-email-autofill-input"
-                  className="block text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={gatewayAuthIntent === 'signin'}
+                  data-testid="gateway-toggle-signin"
+                  onClick={() => {
+                    setGatewayAuthIntent('signin');
+                    setAuthMode('signin');
+                    setErrorMsg(null);
+                  }}
+                  className={`min-h-[48px] px-3 py-2 rounded-xl text-xs font-extrabold active:scale-95 transition-transform duration-150 cursor-pointer ${
+                    gatewayAuthIntent === 'signin'
+                      ? 'bg-[#0d9488] text-white shadow-xs'
+                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC]'
+                  }`}
                 >
-                  {isEn
-                    ? 'Email-First Authentication (Instant OTP):'
-                    : 'المصادقة السريعة بالبريد الإلكتروني (رمز تحقق OTP فوري):'}
-                </label>
-                <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                  {isEn
-                    ? 'Enter your email address with native auto-fill to receive an instant verification code, then bind your mobile number.'
-                    : 'أدخل بريدك الإلكتروني مع دعم التعبئة التلقائية لاستلام رمز التحقق الفوري (OTP)، يليه ربط رقم الجوال الأساسي.'}
-                </p>
+                  {isEn ? 'تسجيل دخول (Sign In)' : 'تسجيل دخول'}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={gatewayAuthIntent === 'signup'}
+                  data-testid="gateway-toggle-signup"
+                  onClick={() => {
+                    setGatewayAuthIntent('signup');
+                    setAuthMode('signup');
+                    setErrorMsg(null);
+                  }}
+                  className={`min-h-[48px] px-3 py-2 rounded-xl text-xs font-extrabold active:scale-95 transition-transform duration-150 cursor-pointer ${
+                    gatewayAuthIntent === 'signup'
+                      ? 'bg-[#0d9488] text-white shadow-xs'
+                      : 'bg-white dark:bg-[#142430] text-gray-900 dark:text-[#F8FAFC]'
+                  }`}
+                >
+                  {isEn ? 'إنشاء حساب جديد (Sign Up)' : 'إنشاء حساب جديد'}
+                </button>
               </div>
-              <div className="space-y-2.5">
+
+              {/* Email-First Input with Auto-Fill & Instant OTP Action */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <label
+                    htmlFor="gateway-email-autofill-input"
+                    className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  >
+                    {isEn ? 'Email Address (Primary ID):' : 'البريد الإلكتروني (المعرّف الأساسي):'}
+                  </label>
+                  <span className="text-[10px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                    {isEn ? 'Auto-Fill + OTP' : 'تعبئة تلقائية + OTP'}
+                  </span>
+                </div>
+
+                {gatewayAuthIntent === 'signup' && (
+                  <input
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    value={parentName}
+                    onChange={(e) => setParentName(e.target.value)}
+                    placeholder={isEn ? 'Full Name (e.g. Maryam / Ahmad)' : 'الاسم الكامل (مثال: مريم / أحمد)'}
+                    className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                  />
+                )}
+
                 <input
                   id="gateway-email-autofill-input"
                   name="email"
@@ -1252,8 +1281,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setEmail(e.target.value);
                   }}
                   placeholder="maryam.mom@nekbaar.app"
-                  className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
+                  className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                 />
+
                 <button
                   type="button"
                   data-testid="gateway-email-otp-submit-btn"
@@ -1264,22 +1294,111 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setFlowMode('AUTH_PIPELINE');
                     void handleStepASubmit('email');
                   }}
-                  className="w-full min-h-[48px] px-4 py-3 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-extrabold shadow-sm active:scale-95 transition-all cursor-pointer"
+                  className="w-full min-h-[48px] px-4 py-2.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold shadow-xs active:scale-95 transition-transform duration-150 cursor-pointer"
                 >
                   {gatewayAuthIntent === 'signup'
                     ? isEn
-                      ? '📨 Create Account & Send Email OTP →'
-                      : '📨 إنشاء حساب جديد وإرسال رمز التحقق للبريد ←'
+                      ? '📨 Create Account & Verify Email OTP →'
+                      : '📨 إنشاء حساب جديد وإرسال رمز التحقق (OTP) ←'
                     : isEn
-                    ? '📨 Sign In & Send Email OTP →'
-                    : '📨 تسجيل دخول وإرسال رمز التحقق للبريد ←'}
+                    ? '📨 Sign In & Verify Email OTP →'
+                    : '📨 تسجيل دخول وإرسال رمز التحقق (OTP) ←'}
                 </button>
               </div>
             </div>
 
-            {/* Two Primary Main Action Cards (Requirement 2 - Mobile Stacked for Thumb Ergonomics) */}
-            <div className="grid grid-cols-1 gap-3">
-              {/* Main Action 1: تسجيل دخول (لديك حساب مسبق) */}
+            {/* CARD 2: Professional Social Authentication Grid (Gmail, iCloud, Facebook, Outlook) */}
+            <div
+              data-testid="gateway-social-auth-card"
+              className="rounded-2xl border border-slate-200/90 dark:border-[#1E3646] bg-white dark:bg-[#142430]/90 p-3.5 shadow-xs space-y-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-px flex-1 bg-slate-200 dark:bg-[#1E3646]" />
+                <span className="text-[11px] font-extrabold text-[var(--color-muted)] dark:text-[#CBD5E1] shrink-0">
+                  {isEn ? 'Or continue with Social Accounts' : 'أو المتابعة السريعة عبر الحسابات الاجتماعية'}
+                </span>
+                <div className="h-px flex-1 bg-slate-200 dark:bg-[#1E3646]" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {/* 1. Gmail (Google) */}
+                <button
+                  type="button"
+                  data-testid="gateway-quick-google-btn"
+                  onClick={() => {
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('google');
+                  }}
+                  className="min-h-[48px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50/80 dark:bg-[#101D26] hover:border-[#EA4335]/60 px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC] flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#EA4335"
+                      d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"
+                    />
+                  </svg>
+                  <span>Gmail</span>
+                </button>
+
+                {/* 2. iCloud (Apple) */}
+                <button
+                  type="button"
+                  data-testid="gateway-quick-apple-btn"
+                  onClick={() => {
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('apple');
+                  }}
+                  className="min-h-[48px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50/80 dark:bg-[#101D26] hover:border-sky-500/60 px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC] flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.5 19.5H6.2a4.2 4.2 0 0 1-.4-8.38A5.5 5.5 0 0 1 16.4 9.2a3.5 3.5 0 0 1 2.1 6.3v.02a3.5 3.5 0 0 1 0 3.98Z" />
+                  </svg>
+                  <span>iCloud</span>
+                </button>
+
+                {/* 3. Facebook */}
+                <button
+                  type="button"
+                  data-testid="gateway-quick-facebook-btn"
+                  onClick={() => {
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('facebook');
+                  }}
+                  className="min-h-[48px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50/80 dark:bg-[#101D26] hover:border-[#1877F2]/60 px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC] flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      fill="#1877F2"
+                      d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.77l-.44 2.89h-2.33v6.99A10 10 0 0 0 22 12Z"
+                    />
+                  </svg>
+                  <span>Facebook</span>
+                </button>
+
+                {/* 4. Outlook (Microsoft) */}
+                <button
+                  type="button"
+                  data-testid="gateway-quick-outlook-btn"
+                  onClick={() => {
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('outlook');
+                  }}
+                  className="min-h-[48px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50/80 dark:bg-[#101D26] hover:border-[#0078D4]/60 px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC] flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="2" y="2" width="9.5" height="9.5" fill="#F25022" />
+                    <rect x="12.5" y="2" width="9.5" height="9.5" fill="#7FBA00" />
+                    <rect x="2" y="12.5" width="9.5" height="9.5" fill="#00A4EF" />
+                    <rect x="12.5" y="12.5" width="9.5" height="9.5" fill="#FFB900" />
+                  </svg>
+                  <span>Outlook</span>
+                </button>
+              </div>
+            </div>
+
+            {/* CARD 3: Split Action Cards (Login vs Register + 5-Step Progressive Wizard) */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Action 1: تسجيل دخول (لديك حساب مسبق) */}
               <button
                 type="button"
                 data-testid="gateway-login-btn"
@@ -1291,34 +1410,25 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setAuthSubStep('STEP_A_IDENTITY');
                   setFlowMode('AUTH_PIPELINE');
                 }}
-                className="group min-h-[48px] rounded-2xl border-2 border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/70 dark:hover:bg-[#182C3A] p-4 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shadow-sm flex flex-col justify-between gap-2.5"
+                className="min-h-[48px] rounded-2xl border border-[#0d9488] bg-white dark:bg-[#142430] hover:bg-teal-50/60 p-3 text-start active:scale-95 transition-transform duration-150 cursor-pointer shadow-2xs flex flex-col justify-between gap-1.5"
               >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="w-10 h-10 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-lg font-black">
-                      🔑
-                    </span>
-                    <span className="text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? 'Existing Account →' : 'حساب مسجل ←'}
-                    </span>
-                  </div>
-                  <div className="text-base font-semibold text-gray-900 dark:text-[#F8FAFC]">
-                    {isEn
-                      ? 'Sign In (Already have an account)'
-                      : 'تسجيل دخول (لديك حساب مسبق)'}
-                  </div>
-                  <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
-                    {isEn
-                      ? 'Sign in with Google, Apple, or Email + instant OTP verification and phone binding.'
-                      : 'الدخول عبر البريد الإلكتروني أو Google/Apple مع رمز التحقق الفوري وتوثيق الجوال.'}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-sm font-black">
+                    🔑
+                  </span>
+                  <span className="text-[10px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
+                    {isEn ? 'Existing →' : 'حساب مسجل ←'}
+                  </span>
                 </div>
-                <div className="pt-2 border-t border-slate-200 dark:border-[#1E3646] text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                  {isEn ? 'تسجيل دخول (لديك حساب مسبق) →' : 'تسجيل دخول (لديك حساب مسبق) ←'}
+                <div className="text-xs font-extrabold text-gray-900 dark:text-[#F8FAFC]">
+                  {isEn ? 'Sign In' : 'تسجيل دخول'}
                 </div>
+                <p className="text-[11px] leading-snug text-gray-600 dark:text-[#CBD5E1]">
+                  {isEn ? 'OTP + Phone Binding' : 'تحقق OTP وتوثيق الجوال'}
+                </p>
               </button>
 
-              {/* Main Action 2: إنشاء حساب جديد */}
+              {/* Action 2: إنشاء حساب جديد */}
               <button
                 type="button"
                 data-testid="gateway-register-btn"
@@ -1330,109 +1440,54 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setAuthSubStep('STEP_A_IDENTITY');
                   setFlowMode('AUTH_PIPELINE');
                 }}
-                className="group min-h-[48px] rounded-2xl border-2 border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-4 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shadow-md flex flex-col justify-between gap-2.5"
+                className="min-h-[48px] rounded-2xl border border-[#0d9488] bg-[#0d9488] hover:bg-[#0f766e] text-white p-3 text-start active:scale-95 transition-transform duration-150 cursor-pointer shadow-xs flex flex-col justify-between gap-1.5"
               >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="w-10 h-10 rounded-xl bg-white/20 text-white flex items-center justify-center text-lg font-black">
-                      🚀
-                    </span>
-                    <span className="text-xs font-extrabold text-teal-100">
-                      {isEn ? 'New Family Account →' : 'حساب عائلي جديد ←'}
-                    </span>
-                  </div>
-                  <div className="text-base font-semibold text-white">
-                    {isEn ? 'Create New Account' : 'إنشاء حساب جديد'}
-                  </div>
-                  <p className="text-sm leading-relaxed text-teal-50/95">
-                    {isEn
-                      ? 'Register with Email or Google/Apple, verify Email OTP, and link your phone for instant co-parent pairing.'
-                      : 'تسجيل حساب جديد بالبريد أو Google/Apple، تأكيد رمز البريد، وربط وتوثيق رقم الجوال للشريك.'}
-                  </p>
+                <div className="flex items-center justify-between">
+                  <span className="w-8 h-8 rounded-xl bg-white/20 text-white flex items-center justify-center text-sm font-black">
+                    🚀
+                  </span>
+                  <span className="text-[10px] font-bold text-teal-100">
+                    {isEn ? 'New →' : 'حساب جديد ←'}
+                  </span>
                 </div>
-                <div className="pt-2 border-t border-white/25 text-xs font-extrabold text-white">
-                  {isEn ? 'إنشاء حساب جديد →' : 'إنشاء حساب جديد ←'}
+                <div className="text-xs font-extrabold text-white">
+                  {isEn ? 'Create Account' : 'إنشاء حساب جديد'}
                 </div>
+                <p className="text-[11px] leading-snug text-teal-50/95">
+                  {isEn ? 'Full Family Setup' : 'تأسيس عائلي متكامل'}
+                </p>
               </button>
             </div>
 
-            {/* Direct Quick OAuth Shortcuts (Google & Apple) + 5-Step Wizard Direct Trigger */}
-            <div className="rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#142430]/75 p-3.5 space-y-2.5">
-              <div className="text-xs text-gray-500 dark:text-[#CBD5E1] text-center font-semibold">
+            {/* 5-Step Progressive Wizard Direct Trigger */}
+            <button
+              type="button"
+              data-testid="gateway-open-5step-wizard-btn"
+              onClick={() => {
+                setErrorMsg(null);
+                setStepSyncNotice(null);
+                setFlowMode('WIZARD');
+              }}
+              className="w-full min-h-[48px] rounded-2xl border border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] px-3.5 py-2.5 text-xs font-extrabold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-150 cursor-pointer"
+            >
+              <span>✨</span>
+              <span>
                 {isEn
-                  ? 'Or continue instantly with your Google or Apple account:'
-                  : 'أو المتابعة المباشرة السريعة باستخدام حساب Google أو Apple:'}
-              </div>
-              <div className="grid grid-cols-1 gap-2.5">
-                <button
-                  type="button"
-                  data-testid="gateway-quick-google-btn"
-                  onClick={() => {
-                    setGatewayAuthIntent('signin');
-                    setFlowMode('AUTH_PIPELINE');
-                    void handleStepASubmit('google');
-                  }}
-                  className="min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
-                >
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      fill="#EA4335"
-                      d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 font-semibold">
-                    {isEn ? 'Continue with Google' : 'المتابعة باستخدام Google'}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  data-testid="gateway-quick-apple-btn"
-                  onClick={() => {
-                    setGatewayAuthIntent('signin');
-                    setFlowMode('AUTH_PIPELINE');
-                    void handleStepASubmit('apple');
-                  }}
-                  className="min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white hover:bg-slate-50 text-gray-900 px-4 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
-                >
-                  <span className="text-base leading-none text-gray-900" aria-hidden="true">
-                    
-                  </span>
-                  <span className="text-gray-900 font-semibold">
-                    {isEn ? 'Continue with Apple' : 'المتابعة باستخدام Apple'}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  data-testid="gateway-open-5step-wizard-btn"
-                  onClick={() => {
-                    setErrorMsg(null);
-                    setStepSyncNotice(null);
-                    setFlowMode('WIZARD');
-                  }}
-                  className="min-h-[48px] rounded-xl border border-teal-500/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] px-4 py-2.5 text-xs font-extrabold flex items-center justify-center gap-2 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
-                >
-                  <span>✨</span>
-                  <span>
-                    {isEn
-                      ? 'Start 5-Step Family Onboarding Wizard (1. الدولة → 5. الشريك)'
-                      : 'بدء معالج الإعداد المتدرج من ٥ خطوات (1. الدولة ← 5. الشريك)'}
-                  </span>
-                </button>
-              </div>
-            </div>
+                  ? 'Start 5-Step Family Onboarding Wizard (1. الدولة → 5. الشريك)'
+                  : 'بدء معالج الإعداد المتدرج من ٥ خطوات (1. الدولة ← 5. الشريك)'}
+              </span>
+            </button>
           </div>
         )}
 
         {/* ===================================================================
             MODE 2: 3-STEP AUTHENTICATION & SIGNUP PIPELINE
-            Step A (Email / Google / Apple) -> Step B (Email OTP) -> Step C (Phone Linking)
+            Step A (Email / Social Logins) -> Step B (Email OTP) -> Step C (Phone Linking)
             =================================================================== */}
         {flowMode === 'AUTH_PIPELINE' && (
-          <div data-testid="auth-pipeline-screen" className="space-y-4 py-1">
+          <div data-testid="auth-pipeline-screen" className="space-y-3.5 py-0.5">
             {/* Top Header */}
-            <div className="flex items-center justify-between gap-2 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
               <div>
                 <div className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                   {gatewayAuthIntent === 'signup'
@@ -1445,16 +1500,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </div>
                 <h2
                   id="onboarding-wizard-title"
-                  className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]"
                 >
                   {authSubStep === 'STEP_A_IDENTITY' &&
                     (gatewayAuthIntent === 'signup'
                       ? isEn
-                        ? 'Step A: Create New Account (Email or Google/Apple)'
-                        : 'الخطوة (أ): إنشاء حساب جديد (البريد أو Google / Apple)'
+                        ? 'Step A: Create Account (Email or Social)'
+                        : 'الخطوة (أ): إنشاء حساب جديد (البريد أو الحسابات الاجتماعية)'
                       : isEn
-                      ? 'Step A: Sign In (Email or Google/Apple)'
-                      : 'الخطوة (أ): تسجيل دخول (البريد أو Google / Apple)')}
+                      ? 'Step A: Sign In (Email or Social)'
+                      : 'الخطوة (أ): تسجيل دخول (البريد أو الحسابات الاجتماعية)')}
                   {authSubStep === 'STEP_B_EMAIL_OTP' &&
                     (isEn
                       ? 'Step B: Instant Email OTP Verification'
@@ -1475,7 +1530,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setStepSyncNotice(null);
                     setFlowMode('GATEWAY');
                   }}
-                  className="px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white text-xs font-semibold text-gray-900 hover:border-[#0d9488] cursor-pointer"
+                  className="min-h-[48px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white text-xs font-semibold text-gray-900 hover:border-[#0d9488] active:scale-95 transition-transform duration-150 cursor-pointer"
                 >
                   {isEn ? '← Auth Gateway' : '→ بوابة الدخول'}
                 </button>
@@ -1484,7 +1539,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     type="button"
                     onClick={onClose}
                     aria-label={isEn ? 'Close' : 'إغلاق'}
-                    className="w-8 h-8 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 cursor-pointer"
+                    className="min-w-[48px] min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-bold flex items-center justify-center hover:bg-teal-500/10 active:scale-95 transition-transform duration-150 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -1502,8 +1557,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 {
                   id: 'STEP_A_IDENTITY' as GatewayAuthSubStep,
                   icon: '📧',
-                  labelAr: 'أ. البريد الإلكتروني أو Google/Apple',
-                  labelEn: 'A. Email or Google/Apple',
+                  labelAr: 'أ. البريد أو الحسابات الاجتماعية',
+                  labelEn: 'A. Email or Social Login',
                 },
                 {
                   id: 'STEP_B_EMAIL_OTP' as GatewayAuthSubStep,
@@ -1536,7 +1591,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setErrorMsg(null);
                       setAuthSubStep(tabItem.id);
                     }}
-                    className={`shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    className={`min-h-[48px] shrink-0 whitespace-nowrap rounded-xl px-3.5 py-2 text-xs border active:scale-95 transition-transform duration-150 cursor-pointer flex items-center gap-1.5 ${
                       isActive
                         ? 'border-[#0d9488] bg-[#0d9488] text-white font-bold shadow-xs'
                         : isDone
@@ -1574,10 +1629,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             )}
 
             {/* ---------------------------------------------------------------
-                STEP A: EMAIL / PASSWORD OR GOOGLE / APPLE SIGN-IN
+                STEP A: EMAIL / PASSWORD OR SOCIAL LOGINS (GMAIL, ICLOUD, FACEBOOK, OUTLOOK)
                 --------------------------------------------------------------- */}
             {authSubStep === 'STEP_A_IDENTITY' && (
-              <div data-testid="auth-step-a-screen" className="space-y-4">
+              <div data-testid="auth-step-a-screen" className="space-y-3.5">
                 {/* Mode Switcher: تسجيل دخول vs إنشاء حساب جديد */}
                 <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-100 dark:bg-[#142430] border border-slate-200 dark:border-[#1E3646]">
                   <button
@@ -1588,13 +1643,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setAuthMode('signin');
                       setErrorMsg(null);
                     }}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition cursor-pointer ${
+                    className={`min-h-[48px] py-2 px-3 rounded-xl text-xs font-black active:scale-95 transition-transform duration-150 cursor-pointer ${
                       gatewayAuthIntent === 'signin'
                         ? 'bg-[#0d9488] text-white shadow-xs'
                         : 'bg-white text-gray-900 font-semibold'
                     }`}
                   >
-                    {isEn ? '🔑 Sign In (Existing Account)' : '🔑 تسجيل دخول (لديك حساب مسبق)'}
+                    {isEn ? '🔑 Sign In' : '🔑 تسجيل دخول'}
                   </button>
                   <button
                     type="button"
@@ -1604,24 +1659,24 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setAuthMode('signup');
                       setErrorMsg(null);
                     }}
-                    className={`py-2 px-3 rounded-xl text-xs font-black transition cursor-pointer ${
+                    className={`min-h-[48px] py-2 px-3 rounded-xl text-xs font-black active:scale-95 transition-transform duration-150 cursor-pointer ${
                       gatewayAuthIntent === 'signup'
                         ? 'bg-[#0d9488] text-white shadow-xs'
                         : 'bg-white text-gray-900 font-semibold'
                     }`}
                   >
-                    {isEn ? '🚀 Create New Account' : '🚀 إنشاء حساب جديد'}
+                    {isEn ? '🚀 Create Account' : '🚀 إنشاء حساب جديد'}
                   </button>
                 </div>
 
-                {/* Google OAuth & Apple Sign-In Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* 4 Social Auth Buttons: Gmail, iCloud, Facebook, Outlook */}
+                <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     data-testid="oauth-google-btn"
                     disabled={isSavingStep}
                     onClick={() => void handleStepASubmit('google')}
-                    className="min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-gray-900 flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                    className="min-h-[48px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-gray-900 flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
                   >
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                       <path
@@ -1629,9 +1684,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.4 14.6 2.5 12 2.5 6.8 2.5 2.5 6.8 2.5 12s4.3 9.5 9.5 9.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.1-1.1-.2-1.6H12z"
                       />
                     </svg>
-                    <span className="text-gray-900 font-semibold">
-                      {isEn ? 'Continue with Google' : 'المتابعة باستخدام Google'}
-                    </span>
+                    <span className="text-gray-900 font-bold">Gmail</span>
                   </button>
 
                   <button
@@ -1639,14 +1692,44 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     data-testid="oauth-apple-btn"
                     disabled={isSavingStep}
                     onClick={() => void handleStepASubmit('apple')}
-                    className="min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3.5 py-2.5 text-xs font-semibold text-gray-900 flex items-center justify-center gap-2 shadow-2xs transition cursor-pointer"
+                    className="min-h-[48px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-gray-900 flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
                   >
-                    <span className="text-base leading-none text-gray-900" aria-hidden="true">
-                      
-                    </span>
-                    <span className="text-gray-900 font-semibold">
-                      {isEn ? 'Continue with Apple' : 'المتابعة باستخدام Apple'}
-                    </span>
+                    <svg className="w-4 h-4 shrink-0 text-sky-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M18.5 19.5H6.2a4.2 4.2 0 0 1-.4-8.38A5.5 5.5 0 0 1 16.4 9.2a3.5 3.5 0 0 1 2.1 6.3v.02a3.5 3.5 0 0 1 0 3.98Z" />
+                    </svg>
+                    <span className="text-gray-900 font-bold">iCloud</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-testid="oauth-facebook-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepASubmit('facebook')}
+                    className="min-h-[48px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-gray-900 flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        fill="#1877F2"
+                        d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.77l-.44 2.89h-2.33v6.99A10 10 0 0 0 22 12Z"
+                      />
+                    </svg>
+                    <span className="text-gray-900 font-bold">Facebook</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    data-testid="oauth-outlook-btn"
+                    disabled={isSavingStep}
+                    onClick={() => void handleStepASubmit('outlook')}
+                    className="min-h-[48px] rounded-xl border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-gray-900 flex items-center justify-center gap-2 shadow-2xs active:scale-95 transition-transform duration-150 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                      <rect x="2" y="2" width="9.5" height="9.5" fill="#F25022" />
+                      <rect x="12.5" y="2" width="9.5" height="9.5" fill="#7FBA00" />
+                      <rect x="2" y="12.5" width="9.5" height="9.5" fill="#00A4EF" />
+                      <rect x="12.5" y="12.5" width="9.5" height="9.5" fill="#FFB900" />
+                    </svg>
+                    <span className="text-gray-900 font-bold">Outlook</span>
                   </button>
                 </div>
 
@@ -1669,7 +1752,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setGatewayEmail('maryam.mom@nekbaar.app');
                       setEmail('maryam.mom@nekbaar.app');
                     }}
-                    className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs transition cursor-pointer ${
+                    className={`min-h-[48px] rounded-xl border px-3 py-2 text-xs active:scale-95 transition-transform duration-150 cursor-pointer ${
                       parentRole === 'mom'
                         ? 'bg-[#0d9488] text-white font-bold border-[#0d9488]'
                         : 'bg-white text-gray-900 font-semibold border-slate-300'
@@ -1686,7 +1769,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setGatewayEmail('ahmad.dad@nekbaar.app');
                       setEmail('ahmad.dad@nekbaar.app');
                     }}
-                    className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs transition cursor-pointer ${
+                    className={`min-h-[48px] rounded-xl border px-3 py-2 text-xs active:scale-95 transition-transform duration-150 cursor-pointer ${
                       parentRole === 'dad'
                         ? 'bg-[#0d9488] text-white font-bold border-[#0d9488]'
                         : 'bg-white text-gray-900 font-semibold border-slate-300'

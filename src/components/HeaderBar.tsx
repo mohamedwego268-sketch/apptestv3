@@ -91,9 +91,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         data-scrolled={isScrolled ? 'true' : 'false'}
         className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-300 ease-in-out select-none pt-safe"
       >
-        <div className="max-w-[430px] mx-auto px-3.5 py-2 flex items-center justify-between gap-2">
+        <div className="max-w-[430px] mx-auto px-3 py-2 flex flex-wrap items-center justify-between gap-1.5">
           {/* Left/Start Control Group: Hamburger Menu Trigger (☰) + Quick Notifications Bell + Minimalist Weather Widget */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             {/* Hamburger Menu Trigger (☰) — Opens Master Control Slide Bar */}
             <button
               id="master-slidebar-trigger-btn"
@@ -110,10 +110,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   ? 'Open Master Navigation Slide Bar'
                   : 'فتح القائمة الجانبية الشاملة والتحكم السريع'
               }
-              className="min-h-[48px] min-w-[48px] px-3 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer group"
+              className="min-h-[48px] min-w-[48px] px-2.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer group"
             >
               <svg
-                className="w-5 h-5 text-[#0d9488] dark:text-[#2DD4BF] group-hover:scale-110 transition-transform"
+                className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF] group-hover:scale-110 transition-transform"
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-hidden="true"
@@ -125,7 +125,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-xs font-bold">
+              <span className="text-[11px] font-bold">
                 {isEn ? 'Menu' : 'القائمة'}
               </span>
             </button>
@@ -142,14 +142,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   ? `Notifications (${unreadNotifCount} unread)`
                   : `التنبيهات (${unreadNotifCount} غير مقروءة)`
               }
-              className={`relative min-h-[48px] min-w-[48px] px-3 rounded-2xl border inline-flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer ${
+              className={`relative min-h-[48px] min-w-[48px] px-2.5 rounded-2xl border inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
                 isNotificationsActive
                   ? 'border-[#0d9488] bg-[#0d9488] text-white'
                   : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] dark:text-[#F8FAFC]'
               }`}
             >
               <svg
-                className={`w-5 h-5 ${
+                className={`w-4 h-4 ${
                   isNotificationsActive ? 'text-white' : 'text-[#FF8C61]'
                 }`}
                 viewBox="0 0 24 24"
@@ -166,7 +166,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               {unreadNotifCount > 0 && (
                 <span
                   data-testid="header-notifications-unread-badge"
-                  className="px-1.5 min-w-[18px] h-[18px] rounded-full bg-[#FF8C61] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums shadow-2xs"
+                  className="px-1.5 min-w-[16px] h-[16px] rounded-full bg-[#FF8C61] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums shadow-2xs"
                 >
                   {unreadNotifCount}
                 </span>
@@ -189,39 +189,39 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   ? `Weather in ${localizedCity}: ${compactWeather.tempC} degrees Celsius. Open weather details`
                   : `طقس ${localizedCity} ${compactWeather.tempC} درجة مئوية. افتح تفاصيل الطقس`
               }
-              className="min-h-[48px] px-3 rounded-2xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
+              className="min-h-[48px] px-2.5 rounded-2xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
-              <span className="text-base leading-none" aria-hidden="true">
+              <span className="text-sm leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
-              <span className="text-xs font-black tabular-nums text-sky-700 dark:text-sky-300">
+              <span className="text-[11px] font-black tabular-nums text-sky-700 dark:text-sky-300">
                 {compactWeather.tempC}°C
               </span>
             </button>
           </div>
 
-          {/* Exclusive Top-Level Brand Wordmark */}
+          {/* Exclusive Top-Level Brand Wordmark & Official Slogan ("مساحة تجمعنا.. وبحبهم نكبر") */}
           <button
             type="button"
             onClick={() => onNavigate('home')}
-            aria-label={isEn ? 'Nekbaar Home' : 'رئيسية نكبر'}
-            className="min-h-[48px] px-1.5 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-all duration-300 ease-in-out cursor-pointer min-w-0"
+            aria-label={isEn ? 'Nekbaar Home — مساحة تجمعنا.. وبحبهم نكبر' : 'رئيسية نكبر — مساحة تجمعنا.. وبحبهم نكبر'}
+            className="min-h-[48px] px-1.5 py-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
-            <div className="min-w-0 text-end">
-              <div className="flex flex-col items-end">
-                <span className="font-bold text-xl text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight shrink-0">
+            <div className="min-w-0 text-end flex flex-col items-end justify-center">
+              <div className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5">
+                <span className="font-black text-base text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight shrink-0">
                   {brandName}
                 </span>
-                <span
-                  data-testid="header-official-slogan-badge"
-                  className="text-[10px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-tight whitespace-nowrap"
-                >
-                  {isEn ? 'Family Hub' : 'وبحبهم نكبر'}
-                </span>
               </div>
+              <span
+                data-testid="header-official-slogan-badge"
+                className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug flex-wrap break-words"
+              >
+                مساحة تجمعنا.. وبحبهم نكبر
+              </span>
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={22} />
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+              <ThreeDIcon id="home" size={20} />
             </div>
           </button>
         </div>

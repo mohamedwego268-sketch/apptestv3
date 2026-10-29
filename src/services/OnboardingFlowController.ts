@@ -40,7 +40,7 @@ export interface UserSessionProfile {
   isCoParentLinked: boolean;
   emailVerified?: boolean;
   phoneVerified?: boolean;
-  authProvider?: 'email' | 'google' | 'apple';
+  authProvider?: 'email' | 'google' | 'apple' | 'facebook' | 'outlook';
   verificationChannel?: VerificationChannel;
   coParentName?: string;
   coParentEmail?: string;

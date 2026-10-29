@@ -324,17 +324,31 @@ CREATE POLICY "extended_family_all_own_family"
   USING (family_id = public.get_authenticated_family_id())
   WITH CHECK (family_id = public.get_authenticated_family_id());
 
--- 5. Policies for `catalog_items` (Readable by family, writable for family catalog items)
+-- 5. Policies for `catalog_items` (Readable by family, writable for family catalog items with auth.uid() protection)
 DROP POLICY IF EXISTS "catalog_items_select_policy" ON public.catalog_items;
 CREATE POLICY "catalog_items_select_policy"
   ON public.catalog_items FOR SELECT
-  USING (family_id = public.get_authenticated_family_id() OR country = 'ALL');
+  USING (
+    family_id = public.get_authenticated_family_id()
+    OR country = 'ALL'
+    OR auth.uid() IS NOT NULL
+  );
 
-DROP POLICY IF EXISTS "catalog_items_write_own_family" ON public.catalog_items;
-CREATE POLICY "catalog_items_write_own_family"
-  ON public.catalog_items FOR ALL
+DROP POLICY IF EXISTS "catalog_items_insert_own_family" ON public.catalog_items;
+CREATE POLICY "catalog_items_insert_own_family"
+  ON public.catalog_items FOR INSERT
+  WITH CHECK (family_id = public.get_authenticated_family_id());
+
+DROP POLICY IF EXISTS "catalog_items_update_own_family" ON public.catalog_items;
+CREATE POLICY "catalog_items_update_own_family"
+  ON public.catalog_items FOR UPDATE
   USING (family_id = public.get_authenticated_family_id())
   WITH CHECK (family_id = public.get_authenticated_family_id());
+
+DROP POLICY IF EXISTS "catalog_items_delete_own_family" ON public.catalog_items;
+CREATE POLICY "catalog_items_delete_own_family"
+  ON public.catalog_items FOR DELETE
+  USING (family_id = public.get_authenticated_family_id());
 
 -- 6. Policies for `wellness_diagnostics`
 DROP POLICY IF EXISTS "wellness_diagnostics_all_own_family" ON public.wellness_diagnostics;
@@ -386,4 +400,14 @@ ON CONFLICT (id) DO UPDATE SET
   family_id = EXCLUDED.family_id,
   name = EXCLUDED.name,
   birth = EXCLUDED.birth,
+  updated_at = NOW();
+
+INSERT INTO public.catalog_items (id, sequence_code, family_id, name, name_en, kind, category, category_label, country, city, price_egp, price_sar, rating, is_sponsored, description, emoji)
+VALUES
+  (201, 'PRD-0001', 1, 'مكعبات مونتيسوري الخشبية الذكية', 'Montessori Smart Wooden Blocks', 'product', 'toys', 'ألعاب وتنمية', 'ALL', 'القاهرة', 650, 95, '4.9', TRUE, 'مجموعة خشبية آمنة لتنمية المهارات الحركية الدقيقة والتركيز.', '🧱'),
+  (202, 'PRD-0002', 1, 'سجادة وقت البطن الحسية للرضع', 'Infant Sensory Tummy-Time Mat', 'product', 'toys', 'مستلزمات الرضع', 'ALL', 'الرياض', 890, 135, '4.9', FALSE, 'سجادة قطنية مبطنة مع ألعاب معلقة لتقوية عضلات الرقبة والظهر لحمزة.', '👶🏻'),
+  (203, 'PRD-0003', 1, 'حقيبة التلوين المائي والفنون الإبداعية', 'Creative Watercolor & Art Studio Kit', 'product', 'toys', 'فنون وحضانة', 'ALL', 'القاهرة', 520, 79, '4.8', FALSE, 'ألوان مائية قابلة للغسل وكراسة رسم لتسمية المشاعر وتنمية خيال ليلى.', '🎨')
+ON CONFLICT (id) DO UPDATE SET
+  family_id = EXCLUDED.family_id,
+  name = EXCLUDED.name,
   updated_at = NOW();

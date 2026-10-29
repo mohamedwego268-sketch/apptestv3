@@ -1024,7 +1024,7 @@ export async function authenticateParentWithSupabase(
   }
 }
 
-export type AuthProviderType = 'email' | 'google' | 'apple';
+export type AuthProviderType = 'email' | 'google' | 'apple' | 'facebook' | 'outlook';
 
 export interface GatewayStepAResult {
   success: boolean;
@@ -1038,8 +1038,9 @@ export interface GatewayStepAResult {
 
 /**
  * Mandatory Auth Gateway — Step A:
- * Supports Google OAuth, Apple Sign-In, or standard Email & Password / Email OTP,
- * and dispatches an instant OTP verification code to the user's email for Step B.
+ * Supports Gmail (Google OAuth), iCloud (Apple Sign-In), Facebook, Outlook (Microsoft Azure),
+ * or standard Email & Password / Email OTP, and dispatches an instant OTP verification code
+ * to the user's email for Step B.
  */
 export async function initiateGatewayEmailOrOAuthInSupabase(params: {
   provider: AuthProviderType;
@@ -1070,11 +1071,17 @@ export async function initiateGatewayEmailOrOAuthInSupabase(params: {
   let resolvedUserId = fallbackUserId;
 
   try {
-    if (params.provider === 'google' || params.provider === 'apple') {
+    if (
+      params.provider === 'google' ||
+      params.provider === 'apple' ||
+      params.provider === 'facebook' ||
+      params.provider === 'outlook'
+    ) {
+      const oauthProvider = params.provider === 'outlook' ? 'azure' : params.provider;
       // Trigger non-redirecting OAuth URL preparation (iframe-safe) + instant Email OTP verification
       await withSupabaseTimeout(
         supabaseClient.auth.signInWithOAuth({
-          provider: params.provider,
+          provider: oauthProvider,
           options: {
             redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
             skipBrowserRedirect: true,
