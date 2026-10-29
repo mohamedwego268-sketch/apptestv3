@@ -1596,7 +1596,7 @@ export default function App() {
     >
       <div
         data-testid="mobile-app-viewport-frame"
-        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-between overflow-x-hidden pb-28 transition-all duration-300 ease-in-out"
+        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-between overflow-x-hidden pb-28 transition-all duration-300 ease-in-out"
       >
         {isDashboardUnlocked && (
           <>
@@ -1833,7 +1833,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={loadFromSupabase}
-                    className="px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-extrabold transition cursor-pointer"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white font-extrabold transition cursor-pointer"
                   >
                     {lang === 'en' ? 'Retry Sync' : 'إعادة المزامنة'}
                   </button>
@@ -1841,7 +1841,7 @@ export default function App() {
                     type="button"
                     onClick={() => setSupabaseErrorMsg(null)}
                     aria-label={lang === 'en' ? 'Dismiss notice' : 'إغلاق التنبيه'}
-                    className="px-2 py-1 rounded-lg text-amber-800 dark:text-amber-300 hover:bg-amber-500/15 cursor-pointer"
+                    className="min-h-[48px] min-w-[48px] px-2 py-1 rounded-lg text-amber-800 dark:text-amber-300 hover:bg-amber-500/15 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -1883,8 +1883,8 @@ export default function App() {
                                 : 'ربط حساب الشريك متاح في أي وقت'
                             }`
                         : lang === 'en'
-                        ? '1. Location → 2. Credentials → 3. Verify OTP → 4. Children → 5. Co-Parent'
-                        : '١. الموقع ← ٢. بيانات الحساب ← ٣. التحقق ← ٤. الأطفال ← ٥. ربط الشريك'}
+                        ? '1. الدولة والمدينة → 2. الحساب → 3. التحقق → 4. الأطفال → 5. ربط الشريك'
+                        : '1. الدولة والمدينة ← 2. الحساب ← 3. التحقق ← 4. الأطفال ← 5. ربط الشريك'}
                     </div>
                   </div>
                 </div>
@@ -1894,7 +1894,7 @@ export default function App() {
                     type="button"
                     data-testid="open-progressive-onboarding-btn"
                     onClick={() => setOnboardingModalOpen(true)}
-                    className="min-h-[36px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black transition cursor-pointer"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black transition cursor-pointer"
                   >
                     {recognizedProfile
                       ? lang === 'en'
@@ -1918,7 +1918,7 @@ export default function App() {
                             : 'تم تسجيل الخروج وفتح بوابة الدخول الإلزامية.'
                         );
                       }}
-                      className="min-h-[36px] px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
+                      className="min-h-[48px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
                     >
                       {lang === 'en' ? '🚪 Sign Out' : '🚪 تسجيل خروج'}
                     </button>
@@ -1927,7 +1927,7 @@ export default function App() {
                     type="button"
                     onClick={() => setShowSmartGreetingBanner(false)}
                     aria-label={lang === 'en' ? 'Dismiss greeting' : 'إخفاء الترحيب'}
-                    className="px-2 py-1 rounded-lg text-xs font-bold text-[var(--color-muted)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
+                    className="min-h-[48px] min-w-[48px] px-2 py-1 rounded-lg text-xs font-bold text-[var(--color-muted)] hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer"
                   >
                     ✕
                   </button>

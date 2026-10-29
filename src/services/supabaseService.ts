@@ -286,7 +286,7 @@ export async function fetchUsersFromSupabase(
   }
 
   try {
-    const { data, error } = await withSupabaseTimeout(
+    const { data, error } = await withSupabaseRetry(() =>
       supabaseClient.from(SUPABASE_TABLES.USERS).select('*').limit(20)
     );
 
@@ -381,7 +381,7 @@ export async function fetchChildrenFromSupabase(
   }
 
   try {
-    const { data, error } = await withSupabaseTimeout(
+    const { data, error } = await withSupabaseRetry(() =>
       supabaseClient
         .from(SUPABASE_TABLES.CHILDREN)
         .select('*')
@@ -561,17 +561,17 @@ export async function fetchFamilySpaceFromSupabase(
 
     const [childrenResult, familiesRes, extendedFamilyRes, catalogRes] = await Promise.all([
       fetchChildrenFromSupabase(activeSharedFamilyId),
-      withSupabaseTimeout(
+      withSupabaseRetry(() =>
         supabaseClient
           .from(SUPABASE_TABLES.FAMILIES)
           .select('*')
           .eq('id', activeSharedFamilyId)
           .limit(5)
       ),
-      withSupabaseTimeout(
+      withSupabaseRetry(() =>
         supabaseClient.from(SUPABASE_TABLES.EXTENDED_FAMILY).select('*').limit(30)
       ),
-      withSupabaseTimeout(
+      withSupabaseRetry(() =>
         supabaseClient.from(SUPABASE_TABLES.CATALOG_ITEMS).select('*').limit(50)
       ),
     ]);

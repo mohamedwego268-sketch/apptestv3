@@ -249,6 +249,11 @@ CREATE POLICY "families_update_own_family"
   USING (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL)
   WITH CHECK (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "families_delete_own_family" ON public.families;
+CREATE POLICY "families_delete_own_family"
+  ON public.families FOR DELETE
+  USING (id = public.get_authenticated_family_id());
+
 -- 2. Policies for `users` (Enforces strict `auth.uid() = id` / `auth_uid = auth.uid()` and shared `family_id` linkage)
 DROP POLICY IF EXISTS "users_select_own_family" ON public.users;
 CREATE POLICY "users_select_own_family"
@@ -280,6 +285,14 @@ CREATE POLICY "users_update_own_family"
     id = auth.uid()::text
     OR auth_uid = auth.uid()
     OR family_id = public.get_authenticated_family_id()
+  );
+
+DROP POLICY IF EXISTS "users_delete_own_family" ON public.users;
+CREATE POLICY "users_delete_own_family"
+  ON public.users FOR DELETE
+  USING (
+    id = auth.uid()::text
+    OR auth_uid = auth.uid()
   );
 
 -- 3. Policies for `children`

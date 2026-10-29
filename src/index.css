@@ -1416,9 +1416,19 @@ h1, h2, h3, h4 {
 
 /* Smooth horizontal scroll container for Onboarding Step Navigation Tabs */
 .step-tabs-scroll {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(13, 148, 136, 0.45) transparent;
   -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.step-tabs-scroll > * {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .step-tabs-scroll::-webkit-scrollbar {

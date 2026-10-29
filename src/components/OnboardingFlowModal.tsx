@@ -140,28 +140,28 @@ const WIZARD_STEPS_META: Array<{
     num: 2,
     stepKey: 'CREDENTIALS',
     icon: '🔐',
-    labelAr: '2. الحساب (بيانات الحساب)',
-    labelEn: '2. Account Credentials',
+    labelAr: '2. الحساب',
+    labelEn: '2. Account',
   },
   {
     num: 3,
     stepKey: 'VERIFY_METHOD',
     icon: '📲',
-    labelAr: '3. التحقق (طريقة التحقق)',
-    labelEn: '3. Verification Method',
+    labelAr: '3. التحقق',
+    labelEn: '3. Verification',
   },
   {
     num: 4,
     stepKey: 'CHILDREN',
     icon: '👶🏻',
-    labelAr: '4. الأطفال (ملفات الأطفال)',
-    labelEn: '4. Children Profiles',
+    labelAr: '4. الأطفال',
+    labelEn: '4. Children',
   },
   {
     num: 5,
     stepKey: 'CO_PARENT',
     icon: '🤝',
-    labelAr: '5. الشريك (ربط الشريك)',
+    labelAr: '5. ربط الشريك',
     labelEn: '5. Co-Parent Link',
   },
 ];
@@ -1130,8 +1130,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         <rect width="100%" height="100%" fill="url(#nekbaar-arabesque-entry-pattern)" />
       </svg>
 
-      {/* Strict Mobile App Frame Container (max-w-[430px] mx-auto with Safe Areas pt-safe / pt-12 and pb-safe / pb-8) */}
-      <div className="mobile-app-shell relative z-10 w-full max-w-[430px] mx-auto min-h-dvh pt-12 pb-8 px-3.5 flex flex-col justify-between bg-pattern transition-all duration-300 ease-in-out">
+      {/* Strict Mobile App Frame Container (max-w-[430px] mx-auto with Safe Areas pt-safe and pb-safe) */}
+      <div className="mobile-app-shell relative z-10 w-full max-w-[430px] mx-auto min-h-dvh pt-safe pb-safe px-3.5 flex flex-col justify-between bg-pattern transition-all duration-300 ease-in-out">
         <div className="soft-card-surface w-full rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-white/95 dark:bg-[#101D26]/95 backdrop-blur-md p-4 space-y-4 shadow-2xl transition-all duration-300 ease-in-out">
         {/* ===================================================================
             MODE 1: MANDATORY AUTH GATEWAY (LANDING SCREEN)
@@ -1176,21 +1176,108 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               )}
             </div>
 
-            {/* Greeting & Security Explanation Card */}
-            <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 space-y-1.5">
-              <p className="text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
-                {isEn
-                  ? 'Please sign in or create a new family account to access your children’s profiles (Hamza, Laila, Youssef), daily routines, bedtime stories, and instant co-parent sync.'
-                  : 'يرجى تسجيل الدخول أو إنشاء حساب عائلي جديد للوصول إلى ملفات أطفالك (حمزة، ليلى، يوسف)، الروتين اليومي، قصص ما قبل النوم، والربط الفوري مع الشريك.'}
-              </p>
-              <div className="text-xs text-gray-500 dark:text-[#CBD5E1]">
-                {isEn
-                  ? 'Supports Google / Apple OAuth, instant Email OTP verification, and primary mobile binding:'
-                  : 'يدعم الدخول عبر Google و Apple، رمز التحقق الفوري عبر البريد الإلكتروني (OTP)، وتوثيق رقم الجوال لربط الشريك:'}
+            {/* Clean Primary Action Toggle between "تسجيل دخول" and "إنشاء حساب جديد" */}
+            <div
+              role="tablist"
+              aria-label={isEn ? 'Authentication Mode Toggle' : 'التبديل بين تسجيل دخول وإنشاء حساب جديد'}
+              className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-[#142430] border border-slate-200 dark:border-[#1E3646]"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={gatewayAuthIntent === 'signin'}
+                data-testid="gateway-toggle-signin"
+                onClick={() => {
+                  setGatewayAuthIntent('signin');
+                  setAuthMode('signin');
+                  setErrorMsg(null);
+                }}
+                className={`min-h-[48px] px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all cursor-pointer ${
+                  gatewayAuthIntent === 'signin'
+                    ? 'bg-[#0d9488] text-white shadow-sm'
+                    : 'bg-white dark:bg-[#101D26] text-gray-900 dark:text-[#F8FAFC]'
+                }`}
+              >
+                {isEn ? 'تسجيل دخول (Sign In)' : 'تسجيل دخول'}
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={gatewayAuthIntent === 'signup'}
+                data-testid="gateway-toggle-signup"
+                onClick={() => {
+                  setGatewayAuthIntent('signup');
+                  setAuthMode('signup');
+                  setErrorMsg(null);
+                }}
+                className={`min-h-[48px] px-3 py-2.5 rounded-xl text-sm font-extrabold transition-all cursor-pointer ${
+                  gatewayAuthIntent === 'signup'
+                    ? 'bg-[#0d9488] text-white shadow-sm'
+                    : 'bg-white dark:bg-[#101D26] text-gray-900 dark:text-[#F8FAFC]'
+                }`}
+              >
+                {isEn ? 'إنشاء حساب جديد (Sign Up)' : 'إنشاء حساب جديد'}
+              </button>
+            </div>
+
+            {/* Email-First Quick Auth Card with Native Auto-Fill (autoComplete="email") */}
+            <div className="rounded-2xl border border-teal-500/35 bg-gradient-to-br from-teal-500/10 via-transparent to-amber-500/10 p-4 space-y-3">
+              <div className="space-y-1">
+                <label
+                  htmlFor="gateway-email-autofill-input"
+                  className="block text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  {isEn
+                    ? 'Email-First Authentication (Instant OTP):'
+                    : 'المصادقة السريعة بالبريد الإلكتروني (رمز تحقق OTP فوري):'}
+                </label>
+                <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                  {isEn
+                    ? 'Enter your email address with native auto-fill to receive an instant verification code, then bind your mobile number.'
+                    : 'أدخل بريدك الإلكتروني مع دعم التعبئة التلقائية لاستلام رمز التحقق الفوري (OTP)، يليه ربط رقم الجوال الأساسي.'}
+                </p>
+              </div>
+              <div className="space-y-2.5">
+                <input
+                  id="gateway-email-autofill-input"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  dir="ltr"
+                  data-testid="gateway-email-input"
+                  value={gatewayEmail}
+                  onChange={(e) => {
+                    setGatewayEmail(e.target.value);
+                    setEmail(e.target.value);
+                  }}
+                  placeholder="maryam.mom@nekbaar.app"
+                  className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
+                />
+                <button
+                  type="button"
+                  data-testid="gateway-email-otp-submit-btn"
+                  disabled={isSavingStep}
+                  onClick={() => {
+                    setErrorMsg(null);
+                    setStepSyncNotice(null);
+                    setFlowMode('AUTH_PIPELINE');
+                    void handleStepASubmit('email');
+                  }}
+                  className="w-full min-h-[48px] px-4 py-3 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-extrabold shadow-sm active:scale-95 transition-all cursor-pointer"
+                >
+                  {gatewayAuthIntent === 'signup'
+                    ? isEn
+                      ? '📨 Create Account & Send Email OTP →'
+                      : '📨 إنشاء حساب جديد وإرسال رمز التحقق للبريد ←'
+                    : isEn
+                    ? '📨 Sign In & Send Email OTP →'
+                    : '📨 تسجيل دخول وإرسال رمز التحقق للبريد ←'}
+                </button>
               </div>
             </div>
 
-            {/* Two Primary Main Action Buttons (Requirement 1 - Mobile Stacked for Thumb Ergonomics) */}
+            {/* Two Primary Main Action Cards (Requirement 2 - Mobile Stacked for Thumb Ergonomics) */}
             <div className="grid grid-cols-1 gap-3">
               {/* Main Action 1: تسجيل دخول (لديك حساب مسبق) */}
               <button
@@ -1616,11 +1703,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     </label>
                     <input
                       type="text"
+                      name="name"
+                      autoComplete="name"
                       data-testid="auth-step-a-name-input"
                       value={parentName}
                       onChange={(e) => setParentName(e.target.value)}
                       placeholder={isEn ? 'e.g. Maryam / Ahmad' : 'مثال: مريم (الأم) أو أحمد (الأب)'}
-                      className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                      className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2.5 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                     />
                   </div>
                 )}
@@ -1631,6 +1720,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    inputMode="email"
+                    autoComplete="email"
                     dir="ltr"
                     data-testid="auth-step-a-email-input"
                     value={gatewayEmail}
@@ -1639,7 +1731,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setEmail(e.target.value);
                     }}
                     placeholder="maryam.mom@nekbaar.app"
-                    className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                    className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2.5 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                   />
                 </div>
 
@@ -1651,7 +1743,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setUsePasswordInStepA((prev) => !prev)}
-                      className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] underline cursor-pointer"
+                      className="min-h-[48px] px-2 text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] underline cursor-pointer"
                     >
                       {usePasswordInStepA
                         ? isEn
@@ -1665,6 +1757,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   {usePasswordInStepA && (
                     <input
                       type="password"
+                      name="password"
+                      autoComplete={gatewayAuthIntent === 'signup' ? 'new-password' : 'current-password'}
                       dir="ltr"
                       data-testid="auth-step-a-password-input"
                       value={gatewayPassword}
@@ -1672,7 +1766,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         setGatewayPassword(e.target.value);
                         setPassword(e.target.value);
                       }}
-                      className="w-full min-h-[42px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                      className="w-full min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2.5 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                     />
                   )}
                 </div>
@@ -1683,7 +1777,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     data-testid="auth-step-a-submit-btn"
                     disabled={isSavingStep}
                     onClick={() => void handleStepASubmit('email')}
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                    className="w-full min-h-[48px] px-6 py-3 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
                   >
                     {isSavingStep
                       ? isEn
@@ -1739,25 +1833,27 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   <div className="flex flex-wrap items-center gap-2.5">
                     <input
                       type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
                       dir="ltr"
                       maxLength={6}
                       data-testid="auth-step-b-otp-input"
                       value={gatewayEmailOtp}
                       onChange={(e) => setGatewayEmailOtp(e.target.value)}
                       placeholder={DEMO_OTP_CODE}
-                      className="flex-1 min-w-[160px] min-h-[44px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2 text-center text-base font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
+                      className="flex-1 min-w-[160px] min-h-[48px] rounded-xl border border-slate-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2 text-center text-base font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
                     />
                     <button
                       type="button"
                       onClick={() => setGatewayEmailOtp(DEMO_OTP_CODE)}
-                      className="min-h-[44px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+                      className="min-h-[48px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
                     >
                       {isEn ? 'Auto-Fill (1234)' : 'تعبئة تلقائية (1234)'}
                     </button>
                     <button
                       type="button"
                       onClick={() => void handleStepASubmit(selectedProvider)}
-                      className="min-h-[44px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                      className="min-h-[48px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
                     >
                       {isEn ? '🔄 Resend Code' : '🔄 إعادة إرسال الرمز'}
                     </button>
@@ -1771,7 +1867,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setErrorMsg(null);
                       setAuthSubStep('STEP_A_IDENTITY');
                     }}
-                    className="px-4 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                    className="min-h-[48px] px-4 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
                   >
                     {isEn ? '← Back to Email (Step A)' : '→ تعديل البريد (الخطوة أ)'}
                   </button>
@@ -1781,7 +1877,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     data-testid="auth-step-b-verify-btn"
                     disabled={isSavingStep}
                     onClick={() => void handleStepBVerifyEmailOtp()}
-                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                    className="min-h-[48px] px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
                   >
                     {isSavingStep
                       ? isEn
@@ -1817,7 +1913,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     )}
                   </div>
                   <p className="text-xs sm:text-sm font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed">
-                    (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك والطرف الثاني لاحقاً)
+                    (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك لاحقاً)
                   </p>
                 </div>
 
@@ -1831,7 +1927,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       data-testid="auth-step-c-country-select"
                       value={selectedCountry}
                       onChange={(e) => handleSelectCountry(e.target.value as CountryCode)}
-                      className="w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900"
+                      className="w-full min-h-[48px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-gray-900"
                     >
                       <option value="SA" className="text-gray-900 bg-white font-bold">
                         🇸🇦 السعودية (+966)
@@ -1847,11 +1943,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       {isEn ? 'Primary Mobile Phone Number:' : 'رقم الجوال الأساسي:'}
                     </label>
                     <div className="flex items-center gap-2" dir="ltr">
-                      <span className="min-h-[44px] px-3.5 rounded-xl border border-slate-300 bg-slate-100 text-gray-900 text-xs font-black flex items-center">
+                      <span className="min-h-[48px] px-3.5 rounded-xl border border-slate-300 bg-slate-100 text-gray-900 text-xs font-black flex items-center">
                         {selectedCountry === 'SA' ? '+966' : '+20'}
                       </span>
                       <input
                         type="tel"
+                        name="phone"
+                        autoComplete="tel"
                         data-testid="auth-step-c-phone-input"
                         value={gatewayPhone}
                         onChange={(e) => {
@@ -1859,7 +1957,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                           setPhone(e.target.value);
                         }}
                         placeholder={selectedCountry === 'SA' ? '551234567' : '1012345678'}
-                        className="flex-1 min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-black text-gray-900"
+                        className="flex-1 min-h-[48px] rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-black text-gray-900"
                       />
                     </div>
                   </div>
@@ -1873,7 +1971,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       setErrorMsg(null);
                       setAuthSubStep('STEP_B_EMAIL_OTP');
                     }}
-                    className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-gray-900 text-xs font-semibold cursor-pointer"
                   >
                     {isEn ? '← Back to Step B' : '→ السابق (الخطوة ب)'}
                   </button>
@@ -1888,7 +1986,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                           openCustomizationWizard: true,
                         })
                       }
-                      className="px-3.5 py-2.5 rounded-xl border border-[#0d9488] bg-white hover:bg-teal-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
+                      className="min-h-[48px] px-3.5 py-2.5 rounded-xl border border-[#0d9488] bg-white hover:bg-teal-50 text-gray-900 text-xs font-semibold transition cursor-pointer"
                     >
                       {isEn
                         ? '⚙️ Verify Phone & Customize 5-Step Setup'
@@ -1904,7 +2002,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                           openCustomizationWizard: false,
                         })
                       }
-                      className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
+                      className="min-h-[48px] px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-sm transition cursor-pointer disabled:opacity-60"
                     >
                       {isSavingStep
                         ? isEn
@@ -2168,7 +2266,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         key={preset.cityAr}
                         type="button"
                         onClick={() => setSelectedCity(preset.cityAr)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-black border transition-all cursor-pointer ${
+                        className={`min-h-[48px] px-3.5 py-2 rounded-xl text-xs font-black border transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-[#0d9488] text-white border-[#0d9488]'
                             : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -2198,7 +2296,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   data-testid="onboarding-city-select"
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                  className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                 >
                   {availableCities.map((c, idx) => (
                     <option
@@ -2239,7 +2337,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setCoParentName('أحمد (الأب)');
                   setCoParentEmail('ahmad.dad@nekbaar.app');
                 }}
-                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                className={`min-h-[48px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
                   parentRole === 'mom'
                     ? 'bg-[#0d9488] text-white border-[#0d9488]'
                     : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -2257,7 +2355,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   setCoParentName('مريم (الأم)');
                   setCoParentEmail('maryam.mom@nekbaar.app');
                 }}
-                className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
+                className={`min-h-[48px] rounded-xl border px-3 py-2 text-xs font-black transition cursor-pointer ${
                   parentRole === 'dad'
                     ? 'bg-[#0d9488] text-white border-[#0d9488]'
                     : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
@@ -2274,10 +2372,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  autoComplete="name"
                   data-testid="onboarding-parent-name-input"
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                 />
               </div>
 
@@ -2286,20 +2386,22 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   {isEn ? 'ربط وتوثيق رقم الجوال:' : 'ربط وتوثيق رقم الجوال:'}
                 </label>
                 <div className="flex items-center gap-2" dir="ltr">
-                  <span className="min-h-[42px] px-3 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-black flex items-center">
+                  <span className="min-h-[48px] px-3 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-xs font-black flex items-center">
                     {selectedCountry === 'SA' ? '+966' : '+20'}
                   </span>
                   <input
                     type="tel"
+                    name="phone"
+                    autoComplete="tel"
                     data-testid="onboarding-phone-input"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder={selectedCountry === 'SA' ? '551234567' : '1012345678'}
-                    className="flex-1 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    className="flex-1 min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                   />
                 </div>
                 <p className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
-                  (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك والطرف الثاني لاحقاً)
+                  (سجل رقم جوالك الأساسي لتسهيل عملية الربط الفوري مع حساب الشريك لاحقاً)
                 </p>
               </div>
             </div>
@@ -2311,11 +2413,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  inputMode="email"
+                  autoComplete="email"
                   dir="ltr"
                   data-testid="onboarding-email-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                 />
               </div>
 
@@ -2325,10 +2430,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </label>
                 <input
                   type="password"
+                  name="password"
+                  autoComplete="current-password"
                   dir="ltr"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3.5 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                 />
               </div>
             </div>
@@ -2431,12 +2538,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               <div className="flex items-center gap-2.5">
                 <input
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   dir="ltr"
                   maxLength={6}
                   data-testid="onboarding-otp-input"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-36 min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-2 text-center text-sm font-black tracking-widest text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="w-36 min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-4 py-2 text-center text-sm font-black tracking-widest text-[var(--color-text)] dark:text-[#F8FAFC]"
                 />
                 <button
                   type="button"
@@ -2445,7 +2554,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setIsOtpVerified(true);
                     setOtpSentBanner(true);
                   }}
-                  className="min-h-[42px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
+                  className="min-h-[48px] px-3.5 py-2 rounded-xl bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold cursor-pointer"
                 >
                   {isEn ? 'Auto-Fill OTP' : 'تعبئة الرمز تلقائياً'}
                 </button>
@@ -2592,7 +2701,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   value={newChildName}
                   onChange={(e) => setNewChildName(e.target.value)}
                   placeholder={isEn ? 'Child Name (e.g. Omar)' : 'اسم الطفل'}
-                  className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                  className="min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                 />
 
                 <select
@@ -2602,7 +2711,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       e.target.value as OnboardingChildDraft['ageStagePreset']
                     )
                   }
-                  className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                  className="min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                 >
                   <option value="infant_6m" className="text-gray-900 bg-white font-bold">
                     {isEn
@@ -2627,7 +2736,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     onChange={(e) =>
                       setNewChildGender(e.target.value as 'boy' | 'girl')
                     }
-                    className="flex-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                    className="flex-1 min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                   >
                     <option value="boy" className="text-gray-900 bg-white font-bold">
                       {isEn ? 'Boy 👦🏻' : 'ولد 👦🏻'}
@@ -2641,7 +2750,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     type="button"
                     data-testid="onboarding-add-child-btn"
                     onClick={handleAddDraftChild}
-                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer shrink-0"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer shrink-0"
                   >
                     {isEn ? '+ Add' : '+ إضافة'}
                   </button>
@@ -2758,10 +2867,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </label>
                   <input
                     type="text"
+                    autoComplete="name"
                     data-testid="onboarding-coparent-name-input"
                     value={coParentName}
                     onChange={(e) => setCoParentName(e.target.value)}
-                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                   />
                 </div>
 
@@ -2771,11 +2881,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </label>
                   <input
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
                     dir="ltr"
                     data-testid="onboarding-coparent-email-input"
                     value={coParentEmail}
                     onChange={(e) => setCoParentEmail(e.target.value)}
-                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                   />
                 </div>
 
@@ -2785,12 +2897,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   </label>
                   <input
                     type="tel"
+                    autoComplete="tel"
                     dir="ltr"
                     data-testid="onboarding-coparent-phone-input"
                     value={coParentPhone}
                     onChange={(e) => setCoParentPhone(e.target.value)}
                     placeholder={selectedCountry === 'SA' ? '559876543' : '1098765432'}
-                    className="w-full min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                    className="w-full min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-1.5 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]"
                   />
                 </div>
               </div>
@@ -2829,7 +2942,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                             : `تم إرسال رمز التحقق (${DEMO_OTP_CODE}) إلى جوال الشريك (${coParentPhone}).`
                         );
                       }}
-                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer shrink-0"
+                      className="min-h-[48px] px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer shrink-0"
                     >
                       {coParentOtpSent
                         ? isEn
@@ -2844,13 +2957,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   <div className="flex flex-wrap items-center gap-2.5 pt-1">
                     <input
                       type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
                       dir="ltr"
                       maxLength={6}
                       data-testid="coparent-otp-input"
                       value={coParentOtpCode}
                       onChange={(e) => setCoParentOtpCode(e.target.value)}
                       placeholder={DEMO_OTP_CODE}
-                      className="w-36 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1.5 text-center text-sm font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
+                      className="w-36 min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1.5 text-center text-sm font-black tracking-widest text-gray-900 dark:text-[#F8FAFC]"
                     />
                     <button
                       type="button"
@@ -2885,7 +3000,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                             : `تم التحقق والربط بنجاح! حساب «${coParentName}» مرتبط الآن بمعرف العائلة المشترك (#${res.familyId}).`
                         );
                       }}
-                      className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer"
+                      className="min-h-[48px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer"
                     >
                       {coParentOtpVerified
                         ? isEn
@@ -2977,7 +3092,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         value={qrScanInputToken}
                         onChange={(e) => setQrScanInputToken(e.target.value)}
                         placeholder={familyPairingToken}
-                        className="flex-1 min-w-[160px] min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
+                        className="flex-1 min-w-[160px] min-h-[48px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-1 text-xs font-bold text-gray-900 dark:text-[#F8FAFC]"
                       />
                       <button
                         type="button"
@@ -3006,7 +3121,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                               : `تم مسح رمز QR والربط الفوري بنجاح! حساب «${coParentName}» مرتبط الآن بالعائلة (#${res.familyId}).`
                           );
                         }}
-                        className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer shrink-0"
+                        className="min-h-[48px] px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition cursor-pointer shrink-0"
                       >
                         {isQrPairedSuccess
                           ? isEn
@@ -3037,7 +3152,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       skippedForLater: false,
                     })
                   }
-                  className="px-3.5 py-2 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 text-xs font-black cursor-pointer"
+                  className="min-h-[48px] px-3.5 py-2 rounded-xl border border-amber-500/40 bg-amber-500/15 hover:bg-amber-500/25 text-amber-900 dark:text-amber-200 text-xs font-black cursor-pointer"
                 >
                   {isEn
                     ? '⏭️ تخطي مؤقت / إكمال لاحقاً (Enter Dashboard)'
@@ -3069,7 +3184,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     data-testid="onboarding-back-btn"
                     disabled={isSavingStep}
                     onClick={handlePreviousStep}
-                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488] transition cursor-pointer disabled:opacity-50"
                   >
                     {isEn ? '← Back' : '→ السابق'}
                   </button>
@@ -3086,7 +3201,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         skippedForLater: false,
                       })
                     }
-                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
+                    className="min-h-[48px] px-3.5 py-2 rounded-xl text-xs font-bold border border-dashed border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-muted)] dark:text-[#CBD5E1] hover:text-[#0d9488] hover:border-[#0d9488] transition cursor-pointer"
                   >
                     {isEn ? 'Skip for Later' : 'تخطي مؤقت / إكمال لاحقاً'}
                   </button>
