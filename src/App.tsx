@@ -1509,6 +1509,16 @@ export default function App() {
     e.target.value = '';
   };
 
+  const handleSignOut = () => {
+    OnboardingFlowController.clearSession();
+    setRecognizedProfile(null);
+    setActiveFamilyStorageScope(null);
+    setState(createEmptyFamilySpaceState());
+    setOnboardingModalOpen(true);
+    setActivePage('home');
+    showToast(state.language === 'en' ? 'You have been signed out.' : 'تم تسجيل الخروج بأمان.');
+  };
+
   const handleResetAllData = () => {
     OnboardingFlowController.clearSession();
     setRecognizedProfile(null);
@@ -2643,6 +2653,7 @@ export default function App() {
                 onExportJson={handleExportJson}
                 onImportJsonFile={handleImportJsonFile}
                 onOpenConfirmResetModal={() => setConfirmResetModal(true)}
+                onSignOut={handleSignOut}
                 onShowToast={showToast}
                 settingsCountry={settingsCountry}
                 onCountryChangeInSettings={handleCountryChangeInSettings}
