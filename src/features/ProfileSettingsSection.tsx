@@ -462,6 +462,18 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-2 mb-3" role="group" aria-label={lang === 'en' ? 'Choose country' : 'اختيار الدولة'}>
+                {([
+                  { code: 'EG' as const, flag: '🇪🇬', name: lang === 'en' ? 'Egypt' : 'مصر', currency: 'EGP' },
+                  { code: 'SA' as const, flag: '🇸🇦', name: lang === 'en' ? 'Saudi Arabia' : 'السعودية', currency: 'SAR' },
+                ]).map((country) => (
+                  <button key={country.code} type="button" data-testid={`settings-country-${country.code.toLowerCase()}-btn`} aria-pressed={settingsCountry === country.code} onClick={() => onCountryChangeInSettings(country.code)} className={`min-h-[58px] rounded-2xl border px-3 py-2 flex items-center gap-2 text-start transition-all ${settingsCountry === country.code ? 'border-[#0d9488] bg-teal-50 dark:bg-[#12343a] shadow-sm' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] hover:border-[#0d9488]/60'}`}>
+                    <span className="text-2xl" aria-hidden="true">{country.flag}</span>
+                    <span className="min-w-0 flex-1"><span className="block text-sm font-black text-[var(--color-text)]">{country.name}</span><span className="block text-[11px] font-bold text-[var(--color-muted)]">{COUNTRY_CITIES_MAP[country.code].length} {country.code === 'EG' ? (lang === 'en' ? 'governorates' : 'محافظة') : (lang === 'en' ? 'regions / cities' : 'منطقة / مدينة')} · {country.currency}</span></span>
+                    {settingsCountry === country.code && <span className="text-[#0d9488] font-black" aria-hidden="true">✓</span>}
+                  </button>
+                ))}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
