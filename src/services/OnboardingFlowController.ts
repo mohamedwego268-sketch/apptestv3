@@ -66,6 +66,15 @@ export interface UserSessionProfile {
   updatedAt?: string;
 }
 
+/**
+ * A cached profile is not enough to unlock family data; it must carry a verified family UUID.
+ */
+export function hasVerifiedFamilyAccess(
+  profile: Pick<UserSessionProfile, 'verifiedFamilyId'> | null | undefined
+): boolean {
+  return Boolean(profile && isValidUuid(profile.verifiedFamilyId));
+}
+
 export interface OnboardingDraftData {
   currentStep: OnboardingStep;
   stepNumber: 1 | 2 | 3 | 4 | 5;
