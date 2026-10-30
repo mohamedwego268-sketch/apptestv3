@@ -299,7 +299,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   // Step 2: Children Profiles Setup
   const [childrenList, setChildrenList] = useState<OnboardingChildDraft[]>(() =>
-    OnboardingFlowController.sanitizeChildrenList(cachedDraft?.childrenList)
+    OnboardingFlowController.sanitizeChildrenList(cachedDraft?.childrenList, true)
   );
   const [newChildName, setNewChildName] = useState<string>('');
   const [newChildGender, setNewChildGender] = useState<'boy' | 'girl'>('boy');
