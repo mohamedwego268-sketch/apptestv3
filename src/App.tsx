@@ -342,6 +342,11 @@ export default function App() {
   const [supabaseErrorMsg, setSupabaseErrorMsg] = useState<string | null>(null);
 
   const loadFromSupabase = React.useCallback(async () => {
+    if (!activeFamilyStorageScope) {
+      setSupabaseStatus('ready');
+      setSupabaseErrorMsg(null);
+      return;
+    }
     setSupabaseStatus('loading');
     setSupabaseErrorMsg(null);
     const { hydratedState, snapshot } = await master.controller.bootstrapWithAppState(state);
@@ -352,11 +357,18 @@ export default function App() {
     } else {
       setSupabaseStatus('ready');
     }
-  }, [master.controller]);
+  }, [master.controller, activeFamilyStorageScope, state]);
 
-  // Autonomous Bootstrapping & Hydration via MasterAppController on mount
+  // Hydrate cloud data only after a verified family scope is active.
+  // This prevents the initial demo/empty state from racing the family-local workspace restore.
   useEffect(() => {
+    if (!activeFamilyStorageScope) {
+      setSupabaseStatus('ready');
+      setSupabaseErrorMsg(null);
+      return;
+    }
     let isMounted = true;
+    setSupabaseStatus('loading');
     master.controller.bootstrapWithAppState(state).then(({ hydratedState, snapshot }) => {
       if (!isMounted) return;
       setState(hydratedState);
@@ -370,7 +382,7 @@ export default function App() {
     return () => {
       isMounted = false;
     };
-  }, [master.controller]);
+  }, [master.controller, activeFamilyStorageScope]);
 
   // Smart Startup Profile Recognition (`OnboardingFlowController.detectInitialState()`)
   useEffect(() => {
@@ -467,12 +479,14 @@ export default function App() {
 
   // Autonomous Debounced Sync & Battery Diagnostics Recomputation via MasterAppController
   useEffect(() => {
+    if (!activeFamilyStorageScope) return;
     const syncTimer = setTimeout(() => {
       void master.forceSyncNow(state);
     }, 1500);
     return () => clearTimeout(syncTimer);
   }, [
     master,
+    activeFamilyStorageScope,
     state.kids,
     state.tasks,
     state.family,
