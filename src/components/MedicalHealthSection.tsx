@@ -64,107 +64,6 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   const [readingArticle, setReadingArticle] = useState<MediaContentItem | null>(null);
   const [comparedDoctorIds, setComparedDoctorIds] = useState<number[]>([]);
 
-  // SOS & Dosage Quick Hub State (دليل الطوارئ والجرعات)
-  const [selectedDosageKidId, setSelectedDosageKidId] = useState<number>(kids[0]?.id || 1);
-  const selectedDosageKid = useMemo(
-    () => kids.find((k) => k.id === selectedDosageKidId) || kids[0],
-    [kids, selectedDosageKidId]
-  );
-  const [customWeightKg, setCustomWeightKg] = useState<number>(
-    selectedDosageKid?.growthWeightKg || 7.8
-  );
-  const [selectedMedType, setSelectedMedType] = useState<'paracetamol' | 'ibuprofen'>('paracetamol');
-  const [dosageLogHistory, setDosageLogHistory] = useState<
-    Array<{
-      id: string;
-      kidName: string;
-      medicationAr: string;
-      medicationEn: string;
-      doseMg: number;
-      doseMl: number;
-      loggedAt: string;
-    }>
-  >([
-    {
-      id: 'dose-seed-1',
-      kidName: 'حمزة',
-      medicationAr: 'باراسيتامول شراب (120 مجم / 5 مل)',
-      medicationEn: 'Paracetamol Syrup (120mg / 5ml)',
-      doseMg: 117,
-      doseMl: 4.9,
-      loggedAt: '02:15 م',
-    },
-  ]);
-
-  const handleSelectDosageChild = (kid: ChildProfile) => {
-    setSelectedDosageKidId(kid.id);
-    if (kid.growthWeightKg) {
-      setCustomWeightKg(kid.growthWeightKg);
-    }
-  };
-
-  const calculatedDosage = useMemo(() => {
-    const safeWeight = Math.max(3, Math.min(60, Number(customWeightKg) || 7.8));
-    if (selectedMedType === 'paracetamol') {
-      // Standard pediatric reference: 15 mg/kg per dose every 4–6 hours (120mg/5ml suspension)
-      const mg = Math.round(safeWeight * 15);
-      const ml = Number(((mg / 120) * 5).toFixed(1));
-      return {
-        mg,
-        ml,
-        concentrationAr: 'تركيز 120 مجم / 5 مل',
-        concentrationEn: '120mg / 5ml Suspension',
-        intervalAr: 'كل 4 إلى 6 ساعات (بحد أقصى 4 جرعات يوميًا)',
-        intervalEn: 'Every 4–6 hours (Max 4 doses/24h)',
-        warningAr: 'آمن للرضع والأطفال وفق الوزن الدقيق بعد استشارة الطبيب.',
-        warningEn: 'Weight-based reference; confirm with pediatrician.',
-      };
-    }
-    // Ibuprofen reference: 10 mg/kg per dose every 6–8 hours (100mg/5ml suspension) — only > 6 months
-    const mg = Math.round(safeWeight * 10);
-    const ml = Number(((mg / 100) * 5).toFixed(1));
-    return {
-      mg,
-      ml,
-      concentrationAr: 'تركيز 100 مجم / 5 مل',
-      concentrationEn: '100mg / 5ml Suspension',
-      intervalAr: 'كل 6 إلى 8 ساعات بعد الأكل (بحد أقصى 3 جرعات يوميًا)',
-      intervalEn: 'Every 6–8 hours after food (Max 3 doses/24h)',
-      warningAr: 'تنبيه: لا يُعطى الإيبوبروفين للرضع أقل من 6 أشهر أو في حالات الجفاف.',
-      warningEn: 'Warning: Do not give Ibuprofen to infants under 6 months or if dehydrated.',
-    };
-  }, [customWeightKg, selectedMedType]);
-
-  const handleLogDose = () => {
-    const now = new Date();
-    const timeLabel = now.toLocaleTimeString(isEn ? 'en-US' : 'ar-EG', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const kidName = selectedDosageKid ? locText(selectedDosageKid.name, language) : isEn ? 'Child' : 'الطفل';
-    const newEntry = {
-      id: `dose-${Date.now()}`,
-      kidName,
-      medicationAr:
-        selectedMedType === 'paracetamol'
-          ? 'باراسيتامول شراب (120 مجم / 5 مل)'
-          : 'إيبوبروفين شراب (100 مجم / 5 مل)',
-      medicationEn:
-        selectedMedType === 'paracetamol'
-          ? 'Paracetamol Syrup (120mg / 5ml)'
-          : 'Ibuprofen Syrup (100mg / 5ml)',
-      doseMg: calculatedDosage.mg,
-      doseMl: calculatedDosage.ml,
-      loggedAt: timeLabel,
-    };
-    setDosageLogHistory((prev) => [newEntry, ...prev.slice(0, 7)]);
-    onShowToast(
-      isEn
-        ? `Logged ${calculatedDosage.ml} ml dose for ${kidName} at ${timeLabel}`
-        : `تم تسجيل جرعة ${calculatedDosage.ml} مل لـ «${kidName}» الساعة ${timeLabel}`
-    );
-  };
-
   const handleToggleCompareDoctor = (doc: CommercialCatalogItem) => {
     setComparedDoctorIds((prev) => {
       const exists = prev.includes(doc.id);
@@ -241,7 +140,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       subtitle: isEn
         ? 'Quick Reference · Safe Pediatric Weight Dosage · Medical Disclaimer'
         : 'مرجع سريع وآمن لجرعات حمزة وليلى ويوسف مع تنبيهات السلامة الطبية',
-      ctaLabel: isEn ? 'Open SOS & Dosage Hub' : 'افتح دليل الطوارئ والجرعات',
+      ctaLabel: isEn ? 'Open Emergency Checklist' : 'افتح قائمة الاستعداد للطوارئ',
       onCtaClick: () => setActiveTab('sos_dosage'),
       iconId: 'shield',
       gradient: 'linear-gradient(125deg, #fff1f2, #ffe4e6, #fef3c7)',
@@ -304,7 +203,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                 : 'text-rose-900 dark:text-rose-200 hover:bg-rose-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            🚑 {isEn ? 'SOS & Dosage Hub' : 'دليل الطوارئ والجرعات'}
+            🚑 {isEn ? 'Emergency Preparedness' : 'الاستعداد للطوارئ'}
           </button>
           <button
             type="button"
@@ -619,271 +518,84 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   {
                     id: 'sos-pediatric',
                     titleAr: 'الخط الساخن لاستشارات طب الأطفال والحمى',
-                    titleEn: '24/7 Pediatric Fever & Triage Line',
-                    number: country === 'SA' ? '937' : '105',
-                    descAr: 'إرشادات فورية للتعامل مع ارتفاع الحرارة والنزلات المعوية',
-                    descEn: 'Direct medical triage for high fever and dehydration',
-                  },
-                ].map((sos) => (
-                  <div
-                    key={sos.id}
-                    className="rounded-xl bg-white dark:bg-[#142430] border border-rose-200/80 dark:border-[#1E3646] p-3 flex flex-wrap items-center justify-between gap-2.5 shadow-2xs"
-                  >
-                    <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                        {isEn ? sos.titleEn : sos.titleAr}
-                      </div>
-                      <div className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                        {isEn ? sos.descEn : sos.descAr}
-                      </div>
-                    </div>
-                    <a
-                      href={`tel:${sos.number}`}
-                      onClick={() =>
-                        onShowToast(
-                          isEn
-                            ? `Dialing emergency number ${sos.number}...`
-                            : `جاري الاتصال برقم الطوارئ ${sos.number}...`
-                        )
-                      }
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-black tabular-nums flex items-center gap-1.5 shadow-2xs shrink-0"
-                    >
-                      <span>📞</span>
-                      <span dir="ltr">{sos.number}</span>
-                    </a>
-                  </div>
-                ))}
-              </div>
+                    titleEn: '24/7 Pediatric Fever &      {/* TAB 2B: FAMILY EMERGENCY PREPAREDNESS — NO DOSAGE OR DIAGNOSIS */}
+      {activeTab === 'sos_dosage' && (
+        <div
+          id="sos-dosage-quick-hub"
+          data-testid="sos-dosage-quick-hub"
+          className="space-y-4 animate-tab-enter"
+        >
+          <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-600/50 bg-amber-50 dark:bg-[#1F1A14] p-4 flex items-start gap-3">
+            <span className="text-2xl shrink-0">⚠️</span>
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-amber-950 dark:text-amber-200">
+                {isEn ? 'Emergency information — preparation only' : 'معلومات الطوارئ — للاستعداد فقط'}
+              </h3>
+              <p className="text-xs font-semibold leading-relaxed text-amber-900 dark:text-amber-100">
+                {isEn
+                  ? 'This page does not diagnose, recommend medicines, or calculate doses. For an emergency, contact the official local emergency service immediately.'
+                  : 'القسم ده لا يشخّص الحالات ولا يوصي بأدوية أو يحسب جرعات. في أي حالة طارئة، تواصل فورًا مع جهة الطوارئ الرسمية في بلدك.'}
+              </p>
             </div>
+          </div>
 
-            {/* Part 2: Weight-Based Fever Reducer Calculator & Logger */}
-            <div className="rounded-2xl border border-teal-200 dark:border-[#1E3646] bg-teal-50/50 dark:bg-[#101D26] p-4 space-y-3.5 shadow-2xs">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm sm:text-base font-extrabold text-teal-950 dark:text-[#2DD4BF] flex items-center gap-2">
-                  <span>🌡️</span>
-                  <span>
-                    {isEn
-                      ? 'Weight-Based Fever Reducer Tracker'
-                      : 'حاسبة وسجل جرعات خافض الحرارة بالوزن'}
-                  </span>
-                </h3>
-                <span className="px-2.5 py-1 rounded-full bg-teal-100 dark:bg-[#142430] text-teal-900 dark:text-[#2DD4BF] text-xs font-extrabold">
-                  {isEn ? 'By Child Weight (kg)' : 'حسب وزن الطفل (كجم)'}
-                </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              {
+                icon: '📞',
+                titleAr: 'أرقام التواصل المهمة',
+                titleEn: 'Important contact numbers',
+                bodyAr: 'احفظ رقم الطوارئ المحلي، ومركز السموم الرسمي إن توفر، ورقم طبيب الطفل.',
+                bodyEn: 'Save your official local emergency number, poison center if available, and your child’s clinician.',
+              },
+              {
+                icon: '📍',
+                titleAr: 'معلومات الوصول',
+                titleEn: 'Location details',
+                bodyAr: 'احتفظ بعنوان المنزل الدقيق وأقرب معلم واضح لمشاركته مع خدمات الطوارئ.',
+                bodyEn: 'Keep your exact home address and a nearby landmark ready to share with emergency responders.',
+              },
+              {
+                icon: '🧒',
+                titleAr: 'بطاقة تعريف الطفل',
+                titleEn: 'Child information card',
+                bodyAr: 'جهّز اسم الطفل وعمره وبيانات ولي الأمر وأي حساسية أو حالة صحية أدخلتها بنفسك.',
+                bodyEn: 'Have the child’s name, age, parent contact, and any allergies or conditions you personally recorded.',
+              },
+              {
+                icon: '💊',
+                titleAr: 'قائمة الأدوية',
+                titleEn: 'Medication list',
+                bodyAr: 'سجّل أسماء الأدوية وتركيز العبوة كما هي على الملصق، واتبع تعليمات الطبيب أو الصيدلي فقط.',
+                bodyEn: 'Record medicine names and package concentrations exactly as printed; follow a clinician or pharmacist’s instructions.',
+              },
+            ].map((item) => (
+              <div key={item.titleEn} className="rounded-2xl border border-rose-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 space-y-2">
+                <div className="text-2xl">{item.icon}</div>
+                <h4 className="text-sm font-extrabold text-[var(--color-text)]">
+                  {isEn ? item.titleEn : item.titleAr}
+                </h4>
+                <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
+                  {isEn ? item.bodyEn : item.bodyAr}
+                </p>
               </div>
+            ))}
+          </div>
 
-              {/* Select Child Quick Pills */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-extrabold text-[var(--color-text)]">
-                  {isEn ? '1. Select Child Profile:' : '١. اختر الطفل لتعبئة الوزن تلقائيًا:'}
-                </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {kids.map((kid) => {
-                    const isSelected = kid.id === selectedDosageKidId;
-                    return (
-                      <button
-                        key={kid.id}
-                        type="button"
-                        onClick={() => handleSelectDosageChild(kid)}
-                        className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                            : 'bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                        }`}
-                      >
-                        <span>{kid.emoji || '👶'}</span>
-                        <span>{locText(kid.name, language)}</span>
-                        {kid.growthWeightKg && (
-                          <span dir="ltr" className="text-xs font-black opacity-90">
-                            ({kid.growthWeightKg} kg)
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Weight & Medication Selector */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-                    {isEn ? '2. Child Weight (kg):' : '٢. وزن الطفل الحالي (كجم):'}
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    min={3}
-                    max={60}
-                    value={customWeightKg}
-                    onChange={(e) => setCustomWeightKg(Number(e.target.value))}
-                    className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-3 py-2 text-xs sm:text-sm font-extrabold text-[var(--color-text)] tabular-nums"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-                    {isEn ? '3. Fever Reducer Type:' : '٣. نوع خافض الحرارة:'}
-                  </label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMedType('paracetamol')}
-                      className={`min-h-[44px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold border cursor-pointer ${
-                        selectedMedType === 'paracetamol'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)]'
-                      }`}
-                    >
-                      {isEn ? 'Paracetamol' : 'باراسيتامول'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedMedType('ibuprofen')}
-                      className={`min-h-[44px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold border cursor-pointer ${
-                        selectedMedType === 'ibuprofen'
-                          ? 'bg-orange-600 text-white border-orange-600'
-                          : 'bg-white dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)]'
-                      }`}
-                    >
-                      {isEn ? 'Ibuprofen' : 'إيبوبروفين'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Calculated Result Box */}
-              <div className="rounded-xl bg-white dark:bg-[#142430] border border-teal-200 dark:border-[#1E3646] p-3.5 space-y-2 shadow-2xs">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="text-xs font-bold text-[var(--color-muted)]">
-                      {isEn ? calculatedDosage.concentrationEn : calculatedDosage.concentrationAr}
-                    </div>
-                    <div className="text-sm sm:text-base font-black text-teal-950 dark:text-[#2DD4BF] mt-0.5">
-                      {isEn
-                        ? `Recommended Dose: ${calculatedDosage.ml} ml (${calculatedDosage.mg} mg)`
-                        : `الجرعة الاسترشادية: ${calculatedDosage.ml} مل (${calculatedDosage.mg} مجم)`}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLogDose}
-                    className="min-h-[44px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs sm:text-sm font-extrabold shadow-2xs cursor-pointer"
-                  >
-                    + {isEn ? 'Log Dose Time' : 'تسجيل إعطاء الجرعة الآن'}
-                  </button>
-                </div>
-                <div className="text-xs font-semibold text-[var(--color-text)]">
-                  ⏱️ {isEn ? calculatedDosage.intervalEn : calculatedDosage.intervalAr}
-                </div>
-                <div className="text-xs font-bold text-amber-800 dark:text-amber-300">
-                  ⚕️ {isEn ? calculatedDosage.warningEn : calculatedDosage.warningAr}
-                </div>
-              </div>
-
-              {/* Recent Logged Doses */}
-              <div className="space-y-1.5">
-                <div className="text-xs font-extrabold text-[var(--color-text)]">
-                  📋 {isEn ? 'Recent Fever Reducer Log:' : 'سجل آخر الجرعات المعطاة:'}
-                </div>
-                <div className="space-y-1.5">
-                  {dosageLogHistory.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="rounded-xl bg-white/90 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] px-3 py-2 flex flex-wrap items-center justify-between gap-2 text-xs"
-                    >
-                      <span className="font-extrabold text-[var(--color-text)]">
-                        👶 {entry.kidName} · {isEn ? entry.medicationEn : entry.medicationAr}
-                      </span>
-                      <span className="font-black text-[#0d9488] dark:text-[#2DD4BF] tabular-nums">
-                        {entry.doseMl} ml ({entry.doseMg} mg) — 🕒 {entry.loggedAt}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className="rounded-2xl border border-rose-200 dark:border-[#1E3646] bg-rose-50/70 dark:bg-[#101D26] p-4 space-y-2">
+            <h4 className="text-sm font-extrabold text-rose-950 dark:text-rose-200">
+              {isEn ? 'When urgent help may be needed' : 'متى تحتاج مساعدة عاجلة؟'}
+            </h4>
+            <p className="text-xs leading-relaxed text-rose-900 dark:text-rose-100">
+              {isEn
+                ? 'If a child has severe breathing difficulty, becomes unresponsive, has a seizure, or you believe there is immediate danger, contact emergency services now. Do not wait for an app response.'
+                : 'لو الطفل عنده صعوبة شديدة في التنفس، أو فقد الاستجابة، أو حدثت تشنجات، أو فيه خطر فوري، اتصل بالطوارئ الآن. ما تستناش رد من التطبيق.'}
+            </p>
           </div>
         </div>
       )}
 
-      {/* TAB 3: EVIDENCE-BASED MEDICAL & PSYCHOLOGICAL GUIDES */}
-      {activeTab === 'articles' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-tab-enter">
-          {medicalArticles.map((article) => {
-            const isSaved = savedMediaIds.includes(article.id);
-            return (
-              <MasterPatternCard
-                key={article.id}
-                tone="emerald"
-                categoryKey="medical"
-                itemIdOrIndex={article.id}
-                darkMode={darkMode}
-                onThumbnailClick={() => setReadingArticle(article)}
-                topLeftBadge={locText(article.reviewerCredentialsAr, language, 'Peer-Reviewed Specialist')}
-                topRightBadge={
-                  <span>
-                    👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
-                  </span>
-                }
-                title={isEn ? article.titleEn : article.title}
-                metaLeft={
-                  <span>
-                    🩺 {locText(article.durationLabel, language)} · 📍 {displayCity}
-                  </span>
-                }
-                metaRightAction={
-                  <button
-                    type="button"
-                    onClick={() => setReadingArticle(article)}
-                    className="min-h-[44px] px-2 text-xs font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
-                  >
-                    {isEn ? 'Read Now' : 'اقرأ الآن'}
-                  </button>
-                }
-                bodyContent={
-                  <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                    {isEn ? article.summaryEn : article.summary}
-                  </p>
-                }
-                footerLeft={
-                  <PrimaryCtaButton
-                    variant="emerald"
-                    size="sm"
-                    onClick={() => setReadingArticle(article)}
-                  >
-                    📖 {isEn ? 'Open Guide' : 'قراءة الدليل'}
-                  </PrimaryCtaButton>
-                }
-                footerRight={
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onToggleSaveMedia(article.id);
-                      onShowToast(
-                        isSaved
-                          ? isEn
-                            ? 'Removed from saved guides'
-                            : 'تمت الإزالة من المحفوظات'
-                          : isEn
-                          ? 'Saved to medical guides'
-                          : 'تم الحفظ في مرجعك الطبي'
-                      );
-                    }}
-                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
-                  >
-                    {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
-                  </button>
-                }
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* Compact Clinical Notice Strip (No Cross-Section Navigation) */}
-      <div className="rounded-2xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/60 dark:bg-[#101D26] px-4 py-2.5 text-xs font-bold text-emerald-950 dark:text-[#A5F3FC] flex flex-wrap items-center justify-between gap-2 soft-card-surface">
-        <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub (Text & Clinical Records Only)' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية (سجلات وأدلة نصية طبية فقط)'}</span>
-        <span>📍 {displayCity}</span>
+isplayCity}</span>
       </div>
 
       {/* Doctor Appointment Booking Modal */}
@@ -998,7 +710,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs font-extrabold text-emerald-800">
-                  🩺 {locText(readingArticle.reviewerCredentialsAr, language, 'Peer-Reviewed Medical & Psychology Guide')}
+                  🩺 {isEn ? 'Demo educational content · Not medical advice' : 'محتوى توعوي تجريبي · لا يُعد نصيحة طبية'}
                 </div>
                 <h3 className="text-lg font-extrabold text-[var(--color-text)] mt-1">
                   {isEn ? readingArticle.titleEn : readingArticle.title}
