@@ -828,11 +828,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   const handleFinalizeFlow = async (linkCoParent: boolean) => {
     setErrorMsg(null);
-    if (safeChildrenList.length === 0) {
+    if (safeChildrenList.length === 0 && authMode === 'signup') {
       setErrorMsg(
         isEn
-          ? 'Please add at least one child profile before saving.'
-          : 'يرجى إضافة ملف طفل واحد على الأقل قبل الحفظ.'
+          ? 'Please add at least one child profile before completing a new family setup.'
+          : 'أضف ملف طفل واحد على الأقل لإكمال إنشاء الأسرة الجديدة.'
       );
       setActiveView('CHILDREN');
       return;
@@ -901,7 +901,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       return;
     }
 
-    const finalSyncedToDb = Boolean(authSyncedToDb && childrenSynced);
+    const finalSyncedToDb = Boolean(authSyncedToDbRef.current && childrenSynced);
     if (!childrenSynced) {
       setIsSubmitting(false);
       setDbSyncWarning(childrenSyncError || (isEn
