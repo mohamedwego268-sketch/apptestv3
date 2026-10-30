@@ -55,8 +55,8 @@ const AI_MODELS_SPEC: Array<{
     nameEn: 'Parenting Consultant',
     descAr: 'إرشاد نفسي وتربوي حديث مبني على مراحل نمو الطفل (0–8 سنوات)',
     descEn: 'Evidence-based child psychology & developmental guidance (ages 0–8)',
-    badgeAr: '🧠 مستشار تربوي ذكي',
-    badgeEn: '🧠 Parenting Consultant',
+    badgeAr: '🧠 إرشاد أسري وتربوي',
+    badgeEn: '🧠 Parenting Guide',
     emoji: '🧠',
   },
   {
@@ -65,8 +65,8 @@ const AI_MODELS_SPEC: Array<{
     nameEn: 'Daily Plans Architect',
     descAr: 'تصميم جداول النوم، الروتين اليومي، اللانش بوكس، وأنشطة مونتيسوري',
     descEn: 'Custom sleep schedules, daily routines, healthy lunchboxes & Montessori play',
-    badgeAr: '📅 مهندس الخطط اليومية',
-    badgeEn: '📅 Daily Plans Architect',
+    badgeAr: '📅 منظم اليوم الأسري',
+    badgeEn: '📅 Daily Family Planner',
     emoji: '📅',
   },
   {
@@ -75,8 +75,8 @@ const AI_MODELS_SPEC: Array<{
     nameEn: 'Behavioral Coach',
     descAr: 'حلول هادئة لنوبات الغضب، العناد، الغيرة بين الإخوة، وتقليل الشاشات',
     descEn: 'Calm co-regulation for tantrums, sibling rivalry & screen-free habits',
-    badgeAr: '💛 مدرب الدعم السلوكي',
-    badgeEn: '💛 Positive Behavior Coach',
+    badgeAr: '💛 دعم السلوك الإيجابي',
+    badgeEn: '💛 Positive Behaviour Support',
     emoji: '💛',
   },
 ];
@@ -188,8 +188,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     modelBadgeAr: activeModelSpec.badgeAr,
     modelBadgeEn: activeModelSpec.badgeEn,
     structuredCard: {
-      badgeAr: `خطة مخصصة لـ ${selectedKid?.name || 'الطفل'} (${kidAge?.stageCode || '2-5'} سنوات)`,
-      badgeEn: `Tailored Plan for ${displayKidName} (${kidAge?.stageCode || '2-5'} yrs)`,
+      badgeAr: `خطة مناسبة لـ ${selectedKid?.name || 'الطفل'} (${kidAge?.stageCode || '2-5'} سنوات)`,
+      badgeEn: `A plan for ${displayKidName} (${kidAge?.stageCode || '2-5'} yrs)`,
       stepsAr: [
         '١. تثبيت موعد الاستيقاظ والإفطار يمنح الطفل أمانًا صباحيًا.',
         '٢. 15 دقيقة لعب تفاعلي مشترك بدون شاشات بعد الحضانة.',
@@ -210,8 +210,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   const [savedThreads, setSavedThreads] = useState<AiConversationThread[]>([
     {
       id: 'thread-current',
-      titleAr: `خطة روتين وتربية ${selectedKid?.name || 'حمزة'} اليومية`,
-      titleEn: `${displayKidName}'s Daily Routine & Parenting Plan`,
+      titleAr: `خطة يومية مناسبة لـ ${selectedKid?.name || 'طفلك'}`,
+      titleEn: `A Daily Plan for ${displayKidName}`,
       dateLabelAr: 'اليوم · نشط الآن',
       dateLabelEn: 'Today · Active Now',
       modelId: 'consultant',
@@ -238,8 +238,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           textAr: 'إليك خطة التهدئة المسائية التدريجية في ٢٠ دقيقة لمساعدة الطفل على الاسترخاء الطبيعي:',
           textEn: 'Here is the 20-minute gradual evening wind-down blueprint for natural sleep:',
           timestamp: '08:29 PM',
-          modelBadgeAr: '📅 مهندس الخطط اليومية',
-          modelBadgeEn: '📅 Daily Plans Architect',
+          modelBadgeAr: '📅 منظم اليوم الأسري',
+          modelBadgeEn: '📅 Daily Family Planner',
           structuredCard: {
             badgeAr: 'طقس النوم الهادئ (٣ خطوات)',
             badgeEn: 'Calm Sleep Ritual (3 Steps)',
@@ -280,8 +280,8 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           textAr: 'تحويل وقت الترتيب إلى لعبة سباق قصيرة مع التخيير الإيجابي يقلل العناد بنسبة ٨٠٪:',
           textEn: 'Turning cleanup into a short race game with positive choices reduces resistance by 80%:',
           timestamp: '05:16 PM',
-          modelBadgeAr: '💛 مدرب الدعم السلوكي',
-          modelBadgeEn: '💛 Positive Behavior Coach',
+          modelBadgeAr: '💛 دعم السلوك الإيجابي',
+          modelBadgeEn: '💛 Positive Behaviour Support',
           structuredCard: {
             badgeAr: 'خطة التنظيم المشترك (Co-Regulation)',
             badgeEn: 'Co-Regulation Cleanup Plan',
@@ -494,7 +494,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
   return (
     <section
       className="min-h-[calc(100vh-145px)] flex flex-col"
-      aria-label={isEn ? 'In-App AI Parenting Assistant' : 'مساعد نكبر الذكي'}
+      aria-label={isEn ? 'Family AI Assistant' : 'مساعد نكبر للأسرة'}
     >
       {/* Full-Page Immersive ChatGPT / Gemini-Standard AI Workspace */}
       <div className="flex-1 min-h-[calc(100vh-155px)] rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 flex flex-col justify-between gap-4 shadow-sm soft-card-surface relative overflow-hidden">
