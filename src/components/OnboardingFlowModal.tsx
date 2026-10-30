@@ -534,20 +534,24 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         setPendingVerificationEmail(null);
       }
 
-      // Restore existing family children if signing in to an existing family
-      if (Array.isArray(authRes.sharedChildren) && authRes.sharedChildren.length > 0) {
-        setChildrenList(
-          authRes.sharedChildren.map((child, idx) => ({
+      // On sign-in, the database is authoritative even when the family has zero children.
+      // Never retain a previous account's cached child list.
+      const restoredChildrenDraft = Array.isArray(authRes.sharedChildren)
+        ? authRes.sharedChildren.map((child, idx) => ({
             id: child.id || idx + 1,
             remoteId: child.remote_id,
             name: child.name,
-            gender: child.gender === 'girl' ? 'girl' : 'boy',
-            ageStagePreset: 'custom',
+            gender: child.gender === 'girl' ? 'girl' as const : 'boy' as const,
+            ageStagePreset: 'custom' as const,
             birth: child.birth || '2022-05-14',
             interests: child.interests || '',
-            avatarTheme: child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+            avatarTheme: child.avatar_theme || (child.gender === 'girl' ? 'artist' as const : 'astronaut' as const),
           }))
-        );
+        : [];
+      if (authMode === 'signin') {
+        setChildrenList(restoredChildrenDraft);
+      } else if (restoredChildrenDraft.length > 0) {
+        setChildrenList(restoredChildrenDraft);
       }
 
       const locRes = authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
@@ -843,38 +847,52 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     let childrenSyncError: string | null = null;
     let enrichedChildrenList = listToSave;
     try {
-      const saveRes = await saveOnboardingChildrenToSupabase({
-        familyId: verifiedFamilyUuid || familyId,
-        childrenList: listToSave.map((item, idx) => ({
-          id: Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1,
-          remoteId: item.remoteId !== undefined ? String(item.remoteId) : undefined,
-          name: item.name,
-          birth: item.birth,
-          gender: item.gender,
-          interests: item.interests,
-          avatarTheme: item.avatarTheme,
-        })),
-      });
-      childrenSynced = saveRes.synced;
-      childrenSyncError = saveRes.error;
-      if (Array.isArray(saveRes.savedChildren) && saveRes.savedChildren.length > 0) {
-        enrichedChildrenList = listToSave.map((item, idx) => {
-          const localId =
-            Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1;
-          const matchedSaved =
-            saveRes.savedChildren.find((sc) => sc.id === localId) ||
-            saveRes.savedChildren.find((sc) => sc.name === item.name);
-          return {
-            ...item,
-            id: localId,
-            remoteId: matchedSaved?.remote_id ?? item.remoteId,
-          };
+      if (listToSave.length === 0) {
+        // An empty child list is valid; there are simply no child rows to persist.
+        childrenSynced = true;
+        enrichedChildrenList = [];
+      } else {
+        const saveRes = await saveOnboardingChildrenToSupabase({
+          familyId: verifiedFamilyUuid || familyId,
+          childrenList: listToSave.map((item, idx) => ({
+            id: Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1,
+            remoteId: item.remoteId !== undefined ? String(item.remoteId) : undefined,
+            name: item.name,
+            birth: item.birth,
+            gender: item.gender,
+            interests: item.interests,
+            avatarTheme: item.avatarTheme,
+          })),
         });
+        childrenSynced = saveRes.synced;
+        childrenSyncError = saveRes.error;
+        if (Array.isArray(saveRes.savedChildren) && saveRes.savedChildren.length > 0) {
+          enrichedChildrenList = listToSave.map((item, idx) => {
+            const localId =
+              Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1;
+            const matchedSaved =
+              saveRes.savedChildren.find((sc) => sc.id === localId) ||
+              saveRes.savedChildren.find((sc) => sc.name === item.name);
+            return {
+              ...item,
+              id: localId,
+              remoteId: matchedSaved?.remote_id ?? item.remoteId,
+            };
+          });
+        }
       }
     } catch (err) {
       childrenSynced = false;
       childrenSyncError =
         err instanceof Error ? err.message : 'Unable to save children to Supabase.';
+    }
+
+    if (!authSyncedToDb) {
+      setIsSubmitting(false);
+      setDbSyncWarning(isEn
+        ? 'Your authenticated family profile is not confirmed in cloud storage yet. Please retry; setup has not been completed.'
+        : 'لم يتم تأكيد حفظ ملف الأسرة في قاعدة البيانات بعد. أعد المحاولة؛ لم يكتمل التسجيل.');
+      return;
     }
 
     const finalSyncedToDb = Boolean(authSyncedToDb && childrenSynced);
@@ -885,17 +903,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : 'لم نتمكن من تأكيد حفظ بيانات الأطفال سحابياً. أعد المحاولة قبل إكمال التسجيل.'));
       return;
     }
-    if (!finalSyncedToDb) {
-      setDbSyncWarning(
-        isEn
-          ? 'Could not sync with cloud database; your family profile was saved locally on this device.'
-          : 'تعذر الحفظ في قاعدة البيانات السحابية؛ تم حفظ ملف عائلتك وأطفالك محلياً على هذا الجهاز.'
-      );
-    }
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
-    const primaryChild = listToSave[0];
+    const primaryChild = listToSave[0] || {
+      name: '',
+      gender: 'boy' as const,
+      birth: '',
+      interests: '',
+      avatarTheme: 'astronaut' as const,
+    };
     const cleanParentName = fullName.trim();
     const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
 
