@@ -272,6 +272,13 @@ export default function App() {
     null
   );
 
+  // Keep the side-page country, city and currency controls aligned with the active family location.
+  useEffect(() => {
+    setSettingsCountry(state.country);
+    setSettingsCity(resolveCityRegionId(state.country, state.city));
+    setSettingsCurrency(state.currency);
+  }, [state.country, state.city, state.currency]);
+
   // Bottom Settings Phone OTP Verification State
   const [settingsPhoneInput, setSettingsPhoneInput] = useState<string>(
     state.parentAccounts[state.activeParentAccount]?.phoneNumber || '1012345678'
@@ -1775,13 +1782,31 @@ export default function App() {
         {(PREVIEW_ACCESS_BYPASS || isPreviewMode) && (
           <div
             role="status"
-            className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-center text-[11px] font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+            className="mx-3 mt-2 rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 via-white to-sky-50 px-3 py-2.5 text-center text-[11px] font-bold text-teal-900 shadow-sm dark:border-teal-800 dark:from-[#102b30] dark:via-[#12232b] dark:to-[#102c3b] dark:text-teal-100"
           >
-            {lang === 'en'
-              ? 'Preview mode · Sample data only · Changes are not saved to a real family account'
-              : 'وضع المراجعة · بيانات تجريبية فقط · التغييرات لا تُحفظ على حساب أسرة حقيقي'}
+            <div>
+              {lang === 'en'
+                ? 'Preview mode · Sample data only · Changes are not saved to a real family account'
+                : 'وضع المراجعة · بيانات تجريبية فقط · التغييرات لا تُحفظ على حساب أسرة حقيقي'}
+            </div>
+            {isPreviewMode && (
+              <button
+                type="button"
+                data-testid="preview-return-to-login-btn"
+                onClick={() => {
+                  previewModeRef.current = false;
+                  setIsPreviewMode(false);
+                  setState(createEmptyFamilySpaceState());
+                  setOnboardingModalOpen(true);
+                  setActivePage('home');
+                }}
+                className="mt-1.5 min-h-[36px] px-4 rounded-full border border-teal-700/20 bg-white/80 text-teal-800 font-extrabold dark:bg-[#183941] dark:text-teal-100"
+              >
+                {lang === 'en' ? 'Return to sign in' : 'العودة لتسجيل الدخول'}
+              </button>
+            )}
           </div>
-        )}
+        )}}
         {isDashboardUnlocked && (
           <>
             <HeaderBar
