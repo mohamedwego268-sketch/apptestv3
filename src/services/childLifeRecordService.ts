@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import type { ChildProfileDetails } from '../domain/familySpaceCore';
 import {
   isValidUuid,
   resolveVerifiedFamilyContext,
@@ -39,21 +40,6 @@ export interface ChildLifeRecord {
   updated_at: string;
 }
 
-export interface ChildProfileDetails {
-  favoriteFoods?: string[];
-  favoriteDrinks?: string[];
-  dislikedFoods?: string[];
-  foodRestrictions?: string[];
-  hobbies?: string[];
-  sports?: string[];
-  school?: Record<string, unknown>;
-  sleepPreferences?: Record<string, unknown>;
-  dailyRoutine?: Record<string, unknown>;
-  emotionalProfile?: Record<string, unknown>;
-  socialProfile?: Record<string, unknown>;
-  interests?: string[];
-  extra?: Record<string, unknown>;
-}
 
 type ServiceResult<T> = { data: T; error: string | null };
 
