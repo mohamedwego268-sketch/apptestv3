@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import supabase, { SUPABASE_ANON_KEY, SUPABASE_URL } from '../supabase.js';
 import {
   ChildProfile,
+  ChildProfileDetails,
   CommercialCatalogItem,
   CountryCode,
   CurrencyCode,
@@ -104,6 +105,7 @@ export interface Child {
   emoji?: string;
   avatar_theme?: ChildProfile['avatarTheme'];
   interests?: string;
+  profile_details?: ChildProfileDetails;
   vaccinations_note?: string;
   growth_height_cm?: number | null;
   growth_weight_kg?: number | null;
@@ -512,31 +514,69 @@ export async function ensureSharedFamilyRecordInSupabase(
   };
 
   try {
-    let { error } = await withSupabaseRetry(() =>
-      activeClient.from(SUPABASE_TABLES.FAMILIES).upsert(verifiedFamilyRecord, { onConflict: 'id' })
+    // The authenticated client must never create a family through an upsert here.
+    // The bootstrap RPC is the only supported family-creation path; it runs atomically
+    // after Auth verification. The public.families table intentionally has no INSERT
+    // policy for browser clients, so upsert would attempt INSERT and fail RLS even when
+    // the family row already exists.
+    const updatePayload: Record<string, unknown> = {
+      family_name: verifiedFamilyRecord.family_name,
+      country: verifiedFamilyRecord.country,
+      city: verifiedFamilyRecord.city,
+      currency: verifiedFamilyRecord.currency,
+      active_parent: verifiedFamilyRecord.active_parent,
+      updated_at: verifiedFamilyRecord.updated_at,
+    };
+
+    let updateRes = await withSupabaseRetry(() =>
+      activeClient
+        .from(SUPABASE_TABLES.FAMILIES)
+        .update(updatePayload)
+        .eq('id', targetFamilyUuid)
+        .select('id')
+        .maybeSingle()
     );
-    if (error && isUndefinedColumnError(error)) {
-      const minimalFamilyPayload = {
-        id: targetFamilyUuid,
-        family_name: verifiedFamilyRecord.family_name,
-      };
-      const retryRes = await withSupabaseRetry(() =>
+
+    if (updateRes.error && isUndefinedColumnError(updateRes.error)) {
+      updateRes = await withSupabaseRetry(() =>
         activeClient
           .from(SUPABASE_TABLES.FAMILIES)
-          .upsert(minimalFamilyPayload, { onConflict: 'id' })
+          .update({
+            family_name: verifiedFamilyRecord.family_name,
+            updated_at: verifiedFamilyRecord.updated_at,
+          })
+          .eq('id', targetFamilyUuid)
+          .select('id')
+          .maybeSingle()
       );
-      error = retryRes.error;
     }
+
+    if (updateRes.error) {
+      return {
+        family: verifiedFamilyRecord,
+        synced: false,
+        error: updateRes.error.message,
+      };
+    }
+
+    if (!updateRes.data || updateRes.data.id !== targetFamilyUuid) {
+      return {
+        family: verifiedFamilyRecord,
+        synced: false,
+        error: 'لم يتم العثور على سجل الأسرة الموثق أو لا تسمح سياسات الوصول بتحديثه. لم يتم إنشاء سجل بديل.',
+      };
+    }
+
     return {
       family: verifiedFamilyRecord,
-      synced: !error,
-      error: error ? error.message : null,
+      synced: true,
+      error: null,
     };
   } catch (err) {
     return {
       family: verifiedFamilyRecord,
       synced: false,
-      error: err instanceof Error ? err.message : 'Failed to ensure shared family record.',
+      error: err instanceof Error ? err.message : 'Failed to update the existing family record.',
     };
   }
 }
@@ -556,7 +596,7 @@ export async function fetchUsersFromSupabase(
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   if (!activeClient) {
     return {
-      data: DEFAULT_SUPABASE_USERS,
+      data: [],
       resolvedFamilyId: familyId,
       error: 'Supabase client is not initialized.',
     };
@@ -572,9 +612,9 @@ export async function fetchUsersFromSupabase(
 
     if (!targetFamilyUuid) {
       return {
-        data: DEFAULT_SUPABASE_USERS,
+        data: [],
         resolvedFamilyId: SHARED_FAMILY_ID,
-        error: null,
+        error: 'No authenticated family UUID is available; no user records were loaded.',
       };
     }
 
@@ -596,13 +636,12 @@ export async function fetchUsersFromSupabase(
 
     let detectedFamilyId: string | number = targetFamilyUuid;
 
-    const mappedUsers: User[] = data.map((row: Record<string, unknown>, idx: number) => {
-      const fallback = DEFAULT_SUPABASE_USERS[idx] || DEFAULT_SUPABASE_USERS[0];
+    const mappedUsers: User[] = data.map((row: Record<string, unknown>) => {
       const rawName =
         (typeof row.name === 'string' && row.name.trim()) ||
         (typeof row.full_name === 'string' && row.full_name.trim()) ||
         (typeof row.first_name === 'string' && row.first_name.trim()) ||
-        fallback.name;
+        '';
 
       const rawRole = typeof row.role === 'string' ? row.role.toLowerCase() : '';
       const isMother =
@@ -616,7 +655,7 @@ export async function fetchUsersFromSupabase(
       const phoneVal =
         (typeof row.phone === 'string' && row.phone.trim()) ||
         (typeof row.phone_number === 'string' && row.phone_number.trim()) ||
-        fallback.phone;
+        '';
 
       const rowFamilyId = isValidUuid(row.family_id)
         ? row.family_id.trim()
@@ -637,7 +676,7 @@ export async function fetchUsersFromSupabase(
           typeof row.full_name === 'string' && row.full_name.trim()
             ? row.full_name.trim()
             : rawName,
-        role: isMother ? 'mother' : 'father',
+        role: rawRole === 'mother' || rawRole === 'mom' || rawRole.includes('أم') ? 'mother' : 'father',
         phone: phoneVal,
         phone_number: phoneVal,
         email: typeof row.email === 'string' ? row.email : undefined,
@@ -649,7 +688,7 @@ export async function fetchUsersFromSupabase(
     return { data: mappedUsers, resolvedFamilyId: detectedFamilyId, error: null };
   } catch (err) {
     return {
-      data: DEFAULT_SUPABASE_USERS,
+      data: [],
       resolvedFamilyId: familyId,
       error: err instanceof Error ? err.message : 'Network error while fetching users.',
     };
@@ -744,8 +783,7 @@ export async function fetchChildrenFromSupabase(
           (typeof row.birth === 'string' && row.birth.trim()) ||
           (typeof row.birth_date === 'string' && row.birth_date.trim()) ||
           (typeof row.date_of_birth === 'string' && row.date_of_birth.trim()) ||
-          canonicalMatch?.birth ||
-          '2022-05-14';
+          '';
 
         const remoteId =
           typeof row.id === 'string' && row.id.trim()
@@ -774,24 +812,28 @@ export async function fetchChildrenFromSupabase(
             (typeof row.avatar_theme === 'string'
               ? (row.avatar_theme as ChildProfile['avatarTheme'])
               : canonicalMatch?.avatar_theme) || (isGirl ? 'artist' : 'astronaut'),
+          profile_details:
+            row.profile_details && typeof row.profile_details === 'object' && !Array.isArray(row.profile_details)
+              ? (row.profile_details as ChildProfileDetails)
+              : {},
           interests:
             typeof row.interests === 'string' && row.interests.trim()
               ? row.interests.trim()
               : typeof row.passions_or_heroes === 'string' && row.passions_or_heroes.trim()
               ? row.passions_or_heroes.trim()
-              : canonicalMatch?.interests || '',
+              : '',
           vaccinations_note:
             typeof row.vaccinations_note === 'string' && row.vaccinations_note.trim()
               ? row.vaccinations_note
-              : canonicalMatch?.vaccinations_note || '',
+              : '',
           growth_height_cm:
             typeof row.growth_height_cm === 'number'
               ? row.growth_height_cm
-              : canonicalMatch?.growth_height_cm ?? null,
+              : null,
           growth_weight_kg:
             typeof row.growth_weight_kg === 'number'
               ? row.growth_weight_kg
-              : canonicalMatch?.growth_weight_kg ?? null,
+              : null,
         };
       }
     );
@@ -818,8 +860,8 @@ function mapChildEntityToProfile(
   const existingMatch = existingLocalKids?.find(
     (ek) =>
       (child.remote_id !== undefined && String(ek.remoteId) === String(child.remote_id)) ||
-      (ek.name.trim() === child.name.trim() && ek.birth.trim() === child.birth.trim()) ||
-      ek.name.trim() === child.name.trim()
+      (ek.name.trim().toLowerCase() === child.name.trim().toLowerCase() &&
+        ek.birth.trim() === child.birth.trim())
   );
   const stableLocalId = existingMatch?.id || child.id || fallbackIdx + 1;
   const remoteId = child.remote_id ?? (isValidUuid(child.id) ? child.id : undefined);
@@ -833,20 +875,21 @@ function mapChildEntityToProfile(
       id: stableLocalId,
       ...(remoteId !== undefined ? { remoteId } : {}),
       name: child.name || canonicalSeedKid.name,
-      birth: child.birth || canonicalSeedKid.birth,
+      birth: child.birth || '',
       gender: isGirl ? 'girl' : 'boy',
       emoji: child.emoji || canonicalSeedKid.emoji,
       avatarTheme: child.avatar_theme || canonicalSeedKid.avatarTheme,
-      interests: child.interests || canonicalSeedKid.interests,
-      vaccinationsNote: child.vaccinations_note || canonicalSeedKid.vaccinationsNote,
+      interests: child.interests || '',
+      profileDetails: child.profile_details || {},
+      vaccinationsNote: child.vaccinations_note || undefined,
       growthHeightCm:
         typeof child.growth_height_cm === 'number'
           ? child.growth_height_cm
-          : canonicalSeedKid.growthHeightCm,
+          : undefined,
       growthWeightKg:
         typeof child.growth_weight_kg === 'number'
           ? child.growth_weight_kg
-          : canonicalSeedKid.growthWeightKg,
+          : undefined,
     };
   }
 
@@ -854,11 +897,12 @@ function mapChildEntityToProfile(
     id: stableLocalId,
     ...(remoteId !== undefined ? { remoteId } : {}),
     name: child.name || `طفل ${fallbackIdx + 1}`,
-    birth: child.birth || '2022-05-14',
+    birth: child.birth || '',
     gender: isGirl ? 'girl' : 'boy',
     emoji: child.emoji || (isGirl ? '👧🏻' : '👦🏻'),
     avatarTheme: child.avatar_theme || (isGirl ? 'artist' : 'astronaut'),
     interests: child.interests || '',
+    profileDetails: child.profile_details || {},
     vaccinationsNote: child.vaccinations_note || undefined,
     growthHeightCm:
       typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
@@ -1358,6 +1402,7 @@ export async function syncFamilySpaceToSupabase(
             gender: kid.gender,
             interests: kid.interests || '',
             avatarTheme: kid.avatarTheme || 'astronaut',
+            profileDetails: kid.profileDetails || {},
           })),
         },
         activeClient
@@ -1461,7 +1506,7 @@ export function normalizeOnboardingAuthPayload(
   return {
     mode: payload.mode === 'signin' ? 'signin' : 'signup',
     email: (payload.email || '').trim(),
-    password: (payload.password || '').trim() || 'Nekbaar#2026',
+    password: (payload.password || '').trim(),
     phone: (payload.phone || '').trim(),
     parentName: resolvedParentName,
     role: normalizedRole,
@@ -1534,6 +1579,29 @@ export async function authenticateParentWithSupabase(
     country: normalized.country,
   };
 
+  if (!normalized.email || !normalized.password) {
+    return {
+      success: false,
+      authenticated: false,
+      identityVerified: false,
+      emailVerified: false,
+      phoneVerified: false,
+      pendingEmailVerification: false,
+      accountCreated: false,
+      profileCreated: false,
+      familyLinked: false,
+      userId: canonicalUserId,
+      familyId: sharedFamilyId,
+      verifiedFamilyUuid: null,
+      sessionEmail: normalized.email,
+      user: fallbackUserSummary,
+      family: null,
+      sharedChildren: [],
+      syncedToDb: false,
+      error: 'البريد الإلكتروني وكلمة المرور مطلوبان لتسجيل الدخول الآمن.',
+    };
+  }
+
   if (normalized.mode === 'signup' && !normalized.parentName) {
     return {
       success: false,
@@ -1597,6 +1665,10 @@ export async function authenticateParentWithSupabase(
             email: normalized.email,
             password: normalized.password,
             options: {
+              // Return the user to the exact app origin where signup started.
+              // Supabase Auth must also allow this origin in its Redirect URLs.
+              emailRedirectTo:
+                typeof window !== 'undefined' ? window.location.origin : undefined,
               data: {
                 full_name: normalized.parentName,
                 phone: normalized.phone,
@@ -1628,26 +1700,10 @@ export async function authenticateParentWithSupabase(
           signUpErr &&
           signUpErr.message.toLowerCase().includes('already registered')
         ) {
-          const { data: signInData, error: signInErr } = await withSupabaseTimeout(
-            activeClient.auth.signInWithPassword({
-              email: normalized.email,
-              password: normalized.password,
-            })
-          );
-          const evalSignIn = evaluateAuthSessionResponse({
-            user: signInData?.user,
-            session: signInData?.session,
-            error: signInErr,
-          });
-          emailVerified = evalSignIn.emailVerified;
-          phoneVerified = evalSignIn.phoneVerified;
-          if (evalSignIn.status === 'ACTIVE_SESSION_READY' && evalSignIn.authUserId) {
-            authUserId = evalSignIn.authUserId;
-            activeSessionVerified = true;
-            accountCreated = true;
-          } else {
-            authFailureReason = signInErr?.message || evalSignIn.reason;
-          }
+          // Never turn a sign-up attempt into an implicit sign-in. Ask the user
+          // to switch to the explicit sign-in flow or recover their password.
+          authFailureReason =
+            'هذا البريد الإلكتروني مسجل بالفعل. انتقل إلى تسجيل الدخول أو استخدم استعادة كلمة المرور.';
         } else if (signUpErr) {
           authFailureReason = signUpErr.message;
         }
@@ -1893,12 +1949,28 @@ export async function authenticateParentWithSupabase(
       }
     }
 
-    const syncedToDb = Boolean(!upsertErr);
-    profileCreated = profileCreated || syncedToDb;
-    familyLinked = Boolean(isValidUuid(verifiedFamilyUuid) && syncedToDb);
+    // Verify that the profile row exists and is linked to this exact Auth user + family.
+    const profileCheck = await withSupabaseTimeout(
+      activeClient
+        .from(SUPABASE_TABLES.USERS)
+        .select('id, auth_user_id, family_id')
+        .eq('auth_user_id', effectiveUserUuid)
+        .eq('family_id', verifiedFamilyUuid)
+        .limit(1)
+    );
+    const verifiedProfileRow = Array.isArray(profileCheck.data) ? profileCheck.data[0] as Record<string, unknown> | undefined : undefined;
+    const profileVerified = Boolean(
+      !upsertErr && !profileCheck.error && verifiedProfileRow &&
+      verifiedProfileRow.auth_user_id === effectiveUserUuid &&
+      verifiedProfileRow.family_id === verifiedFamilyUuid &&
+      isValidUuid(verifiedProfileRow.id)
+    );
+    const syncedToDb = profileVerified;
+    profileCreated = profileCreated || profileVerified;
+    familyLinked = Boolean(isValidUuid(verifiedFamilyUuid) && profileVerified);
     const dbErrorMsg =
-      upsertErr?.message ||
-      (!syncedToDb ? 'تعذر حفظ بيانات الحساب في قاعدة البيانات.' : null);
+      upsertErr?.message || profileCheck.error?.message ||
+      (!syncedToDb ? 'تعذر التحقق من حفظ ملف المستخدم وربطه بالأسرة في قاعدة البيانات.' : null);
 
     // 5. Fetch family record and shared `children` linked to `verifiedFamilyUuid`
     const { data: famRows } = await withSupabaseTimeout(
@@ -2027,7 +2099,7 @@ export async function verifyAccountIdentityOtpInSupabase(
 ): Promise<VerifyAccountIdentityOtpResult> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const cleanToken = (params.token || '').trim();
-  if (cleanToken.length < 4) {
+  if (!/^\d{6}$/.test(cleanToken)) {
     return {
       verified: false,
       userId: null,
@@ -2454,6 +2526,10 @@ export async function initiateGatewayEmailOrOAuthInSupabase(params: {
             email: cleanEmail,
             password: params.password.trim(),
             options: {
+              // Keep every email-signup path aligned with the deployed app origin.
+              // This origin must also be allow-listed in Supabase Auth Redirect URLs.
+              emailRedirectTo:
+                typeof window !== 'undefined' ? window.location.origin : undefined,
               data: {
                 full_name: params.parentName.trim(),
                 role: params.role,
@@ -2557,7 +2633,7 @@ export async function bindPhoneAndFinalizeAuthInSupabase(params: {
   return authenticateParentWithSupabase({
     mode: params.mode,
     email: params.email,
-    password: params.password || 'Nekbaar#2026',
+    password: params.password || '',
     phone: params.phone,
     parentName: params.parentName,
     role: params.role,
@@ -2616,6 +2692,7 @@ export interface OnboardingChildPersistenceItem {
   gender: 'boy' | 'girl';
   interests?: string;
   avatarTheme?: ChildProfile['avatarTheme'];
+  profileDetails?: ChildProfileDetails;
 }
 
 export interface SaveOnboardingChildrenPayload {
@@ -2645,11 +2722,15 @@ export async function saveOnboardingChildrenToSupabase(
   const targetFamilyId =
     typeof params.familyId === 'string' && isValidUuid(params.familyId)
       ? params.familyId.trim()
-      : typeof params.familyId === 'number' &&
-        Number.isFinite(params.familyId) &&
-        params.familyId > 0
-      ? params.familyId
-      : SHARED_FAMILY_ID;
+      : null;
+
+  if (!targetFamilyId) {
+    return {
+      synced: false,
+      savedChildren: [],
+      error: 'Write blocked: a verified family UUID is required before saving children.',
+    };
+  }
 
   // Deduplicate by normalized (name + birth) so retries never create duplicate child records
   const seenKeys = new Set<string>();
@@ -2658,6 +2739,7 @@ export async function saveOnboardingChildrenToSupabase(
     const cleanName = (item.name || '').trim().toLowerCase();
     if (!cleanName) return false;
     const cleanBirth = (item.birth || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanBirth)) return false;
     const key = `${cleanName}::${cleanBirth}`;
     if (seenKeys.has(key)) return false;
     seenKeys.add(key);
@@ -2689,11 +2771,14 @@ export async function saveOnboardingChildrenToSupabase(
       ...(isValidUuid(item.remoteId) ? { remote_id: item.remoteId.trim() } : {}),
       family_id: targetFamilyId,
       name: (item.name || '').trim() || `طفل ${idx + 1}`,
-      birth: (item.birth || '').trim() || '2022-05-14',
+      birth: (item.birth || '').trim(),
       gender,
       emoji: gender === 'girl' ? '👧🏻' : '👦🏻',
       avatar_theme: item.avatarTheme || (gender === 'girl' ? 'artist' : 'astronaut'),
       interests: (item.interests || '').trim(),
+      profile_details: item.profileDetails && typeof item.profileDetails === 'object' && !Array.isArray(item.profileDetails)
+        ? item.profileDetails
+        : {},
     };
   });
 
@@ -2737,16 +2822,16 @@ export async function saveOnboardingChildrenToSupabase(
     const existingByKey = new Map<string, string>();
     for (const existingChild of existingDbRes.data) {
       if (isValidUuid(existingChild.remote_id)) {
-        const nameKey = (existingChild.name || '').trim().toLowerCase();
+        const nameKey = `${(existingChild.name || '').trim().toLowerCase()}::${(existingChild.birth || '').trim()}`;
         existingByKey.set(nameKey, existingChild.remote_id.trim());
       }
     }
 
     const fullPayload = mappedChildren.map((child) => {
-      const ageInfo = calculateChildAge(child.birth || '2022-05-14', 'ar');
+      const ageInfo = calculateChildAge(child.birth, 'ar');
       const matchedRemoteUuid =
         (isValidUuid(child.remote_id) && child.remote_id.trim()) ||
-        existingByKey.get(child.name.trim().toLowerCase()) ||
+        existingByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`) ||
         undefined;
       if (matchedRemoteUuid) {
         child.remote_id = matchedRemoteUuid;
@@ -2761,6 +2846,7 @@ export async function saveOnboardingChildrenToSupabase(
         interests: child.interests || '',
         emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
         avatar_theme: child.avatar_theme || 'astronaut',
+        profile_details: child.profile_details || {},
       };
       if (matchedRemoteUuid) {
         row.id = matchedRemoteUuid;
@@ -2769,7 +2855,7 @@ export async function saveOnboardingChildrenToSupabase(
     });
 
     const minimalPayload = mappedChildren.map((child) => {
-      const ageInfo = calculateChildAge(child.birth || '2022-05-14', 'ar');
+      const ageInfo = calculateChildAge(child.birth, 'ar');
       const row: Record<string, unknown> = {
         family_id: verifiedFamilyUuid,
         name: child.name,
@@ -2810,20 +2896,30 @@ export async function saveOnboardingChildrenToSupabase(
       });
     }
 
-    // Confirm database persistence before reporting `synced: true`
-    const synced = Boolean(
-      !error &&
-        Array.isArray(insertedRows) &&
-        insertedRows.length === mappedChildren.length
+    // Verify persistence by reading the family rows back; an upsert response alone is not enough.
+    if (error) {
+      return { synced: false, savedChildren: mappedChildren, error: error.message };
+    }
+    const verifyRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient);
+    if (verifyRes.error) {
+      return { synced: false, savedChildren: mappedChildren, error: `Write completed but read-back verification failed: ${verifyRes.error}` };
+    }
+    const persistedByKey = new Map(
+      verifyRes.data.map((row) => [`${(row.name || '').trim().toLowerCase()}::${(row.birth || '').trim()}`, row])
+    );
+    const verifiedChildren = mappedChildren.map((child) => {
+      const persisted = persistedByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`);
+      return persisted && isValidUuid(persisted.remote_id)
+        ? { ...child, remote_id: persisted.remote_id, family_id: verifiedFamilyUuid }
+        : child;
+    });
+    const synced = verifiedChildren.every((child) =>
+      isValidUuid(child.remote_id) && persistedByKey.has(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`)
     );
     return {
       synced,
-      savedChildren: mappedChildren,
-      error: error
-        ? error.message
-        : !synced
-        ? 'Unable to confirm saved children records in Supabase.'
-        : null,
+      savedChildren: verifiedChildren,
+      error: synced ? null : 'Write returned but one or more child records could not be verified after saving.',
     };
   } catch (err) {
     return {

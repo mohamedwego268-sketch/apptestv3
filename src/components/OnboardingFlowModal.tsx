@@ -265,17 +265,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : cachedDraft?.parentRole ?? (initialRole === 'dad' ? 'dad' : 'mom'))
   );
   const [fullName, setFullName] = useState<string>(
-    tempSavedUser?.fullName ||
-      cachedDraft?.parentName ||
-      initialParentName ||
-      (initialRole === 'dad' ? 'أحمد' : 'مريم')
+    tempSavedUser?.fullName || cachedDraft?.parentName || initialParentName || ''
   );
-  const [email, setEmail] = useState<string>(
-    tempSavedUser?.email ||
-      cachedDraft?.email ||
-      (initialRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app')
-  );
-  const [password, setPassword] = useState<string>('Nekbaar#2026');
+  const [email, setEmail] = useState<string>(tempSavedUser?.email || cachedDraft?.email || '');
+  const [password, setPassword] = useState<string>('');
   const [selectedCountryCode, setSelectedCountryCode] = useState<AllowedGCCOrEgyptCountry>(
     tempSavedUser?.country &&
       EGYPT_AND_GCC_COUNTRIES.some((c) => c.code === tempSavedUser.country)
@@ -292,11 +285,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       (initialCountry === 'SA' ? 'الرياض' : 'القاهرة')
   );
   const [isLocatingGps, setIsLocatingGps] = useState<boolean>(false);
-  const [phone, setPhone] = useState<string>(
-    tempSavedUser?.phone ||
-      cachedDraft?.phone ||
-      (initialCountry === 'SA' ? '551234567' : '1012345678')
-  );
+  const [phone, setPhone] = useState<string>(tempSavedUser?.phone || cachedDraft?.phone || '');
   const [familyId, setFamilyId] = useState<number>(
     cachedDraft?.familyId ?? SHARED_FAMILY_ID
   );
@@ -407,17 +396,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   const handleSelectRole = (nextRole: ParentThemeRole) => {
     setParentRole(nextRole);
-    if (nextRole === 'dad') {
-      if (!fullName.trim() || fullName.trim() === 'مريم') setFullName('أحمد');
-      if (email.includes('maryam')) setEmail('ahmad.dad@nekbaar.app');
-      setCoParentName('مريم');
-      setCoParentEmail('maryam.mom@nekbaar.app');
-    } else {
-      if (!fullName.trim() || fullName.trim() === 'أحمد') setFullName('مريم');
-      if (email.includes('ahmad')) setEmail('maryam.mom@nekbaar.app');
-      setCoParentName('أحمد');
-      setCoParentEmail('ahmad.dad@nekbaar.app');
-    }
   };
 
   const handleDetectCurrentLocationGps = () => {
@@ -425,29 +403,85 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     setErrorMsg(null);
     setIsLocatingGps(true);
 
-    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          // Heuristic bounding box for Egypt vs GCC
-          if (latitude >= 22 && latitude <= 32 && longitude >= 25 && longitude <= 35) {
-            setSelectedCountryCode('EG');
-            setSelectedCityAr(latitude > 30.8 ? 'الإسكندرية' : 'القاهرة');
-          } else {
-            setSelectedCityAr(activeCountryObj.defaultCityAr);
-          }
-          setIsLocatingGps(false);
-        },
-        () => {
-          setSelectedCityAr(activeCountryObj.defaultCityAr);
-          setIsLocatingGps(false);
-        },
-        { timeout: 3500 }
-      );
-    } else {
-      setSelectedCityAr(activeCountryObj.defaultCityAr);
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setIsLocatingGps(false);
+      setLocationMode('manual');
+      setErrorMsg(isEn
+        ? 'Location is unavailable in this browser. Please select your city manually.'
+        : 'خدمة تحديد الموقع غير متاحة في المتصفح. اختر المدينة يدويًا.');
+      return;
     }
+
+    const cityCoordinates: Array<{ country: 'SA' | 'EG'; city: string; lat: number; lon: number }> = [
+      { country: 'SA', city: 'الخبر', lat: 26.2172, lon: 50.1971 },
+      { country: 'SA', city: 'الدمام', lat: 26.4207, lon: 50.0888 },
+      { country: 'SA', city: 'الرياض', lat: 24.7136, lon: 46.6753 },
+      { country: 'SA', city: 'جدة', lat: 21.4858, lon: 39.1925 },
+      { country: 'SA', city: 'مكة المكرمة', lat: 21.3891, lon: 39.8579 },
+      { country: 'SA', city: 'المدينة المنورة', lat: 24.5247, lon: 39.5692 },
+      { country: 'SA', city: 'الجبيل', lat: 27.0174, lon: 49.6583 },
+      { country: 'SA', city: 'أبها', lat: 18.2164, lon: 42.5053 },
+      { country: 'EG', city: 'القاهرة', lat: 30.0444, lon: 31.2357 },
+      { country: 'EG', city: 'الإسكندرية', lat: 31.2001, lon: 29.9187 },
+      { country: 'EG', city: 'الجيزة', lat: 30.0131, lon: 31.2089 },
+      { country: 'EG', city: 'المنصورة', lat: 31.0409, lon: 31.3785 },
+      { country: 'EG', city: 'طنطا', lat: 30.7865, lon: 31.0004 },
+      { country: 'EG', city: 'أسيوط', lat: 27.1809, lon: 31.1837 },
+    ];
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const isEgypt = latitude >= 21.5 && latitude <= 32.5 && longitude >= 24.5 && longitude <= 36;
+        const isSaudi = latitude >= 16 && latitude <= 33.5 && longitude >= 34 && longitude <= 56;
+        const detectedCountry = isEgypt ? 'EG' : isSaudi ? 'SA' : null;
+
+        if (!detectedCountry) {
+          setIsLocatingGps(false);
+          setLocationMode('manual');
+          setErrorMsg(isEn
+            ? 'Your location is outside the supported countries. Please choose Egypt or Saudi Arabia and select a city.'
+            : 'موقعك خارج نطاق مصر والسعودية. اختر الدولة والمدينة يدويًا.');
+          return;
+        }
+
+        const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+        const distanceKm = (a: number, b: number, c: number, d: number) => {
+          const dLat = toRadians(c - a);
+          const dLon = toRadians(d - b);
+          const h = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(a)) * Math.cos(toRadians(c)) * Math.sin(dLon / 2) ** 2;
+          return 6371 * 2 * Math.asin(Math.sqrt(h));
+        };
+        const nearestCity = cityCoordinates
+          .filter((city) => city.country === detectedCountry)
+          .map((city) => ({ ...city, distance: distanceKm(latitude, longitude, city.lat, city.lon) }))
+          .sort((a, b) => a.distance - b.distance)[0];
+
+        setSelectedCountryCode(detectedCountry);
+        if (nearestCity && nearestCity.distance <= 100) {
+          setSelectedCityAr(nearestCity.city);
+          setErrorMsg(null);
+        } else {
+          setLocationMode('manual');
+          setErrorMsg(isEn
+            ? 'Country detected, but the nearest supported city is not accurate enough. Please select your city manually.'
+            : 'تم تحديد الدولة، لكن لا يمكن تأكيد المدينة بدقة كافية. اختر مدينتك يدويًا.');
+        }
+        setIsLocatingGps(false);
+      },
+      (error) => {
+        setIsLocatingGps(false);
+        setLocationMode('manual');
+        const message = error.code === 1
+          ? (isEn ? 'Allow location permission for this site, then try again.' : 'اسمح للمتصفح بالوصول للموقع ثم حاول مرة أخرى.')
+          : error.code === 3
+          ? (isEn ? 'Location request timed out. Try again or select your city manually.' : 'انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر المدينة يدويًا.')
+          : (isEn ? 'Could not determine your location. Select your city manually.' : 'تعذر تحديد موقعك. اختر المدينة يدويًا.');
+        setErrorMsg(message);
+      },
+      { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
+    );
   };
 
   const syncAuthAndLocationWithSupabase = async (params: {
@@ -469,7 +503,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         parentName: params.cleanName,
         fullName: params.cleanName,
         email: params.cleanEmail,
-        password: params.cleanPassword || password || 'Nekbaar#2026',
+        password: params.cleanPassword || password,
         phone: params.cleanPhone,
         country: params.coreCountry,
         city: params.resolvedCity,
@@ -516,21 +550,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         );
       }
 
-      const resolvedFamilyId = authRes.familyId || authRes.user?.family_id || familyId;
-      if (resolvedFamilyId) {
-        setFamilyId(resolvedFamilyId);
-      }
+      const locRes = authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
+        ? await saveOnboardingLocationToSupabase({
+            familyId: authRes.verifiedFamilyUuid,
+            familyName: resolvedFamilyName,
+            country: params.coreCountry,
+            city: params.resolvedCity,
+            currency: resolvedCurrency,
+            activeParent: normalizedRole,
+          })
+        : { synced: false, error: authRes.error || 'No verified family UUID; location write was blocked.' };
 
-      const locRes = await saveOnboardingLocationToSupabase({
-        familyId: authRes.verifiedFamilyUuid || resolvedFamilyId,
-        familyName: resolvedFamilyName,
-        country: params.coreCountry,
-        city: params.resolvedCity,
-        currency: resolvedCurrency,
-        activeParent: normalizedRole,
-      });
-
-      if (authRes.syncedToDb && locRes.synced) {
+      if (authRes.success && authRes.syncedToDb && locRes.synced) {
         setAuthSyncedToDb(true);
         setDbSyncWarning(null);
       } else {
@@ -588,11 +619,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    if (!fullName.trim() || !phone.trim()) {
+      setErrorMsg(isEn ? 'Complete your name and phone number before continuing.' : 'أكمل الاسم ورقم الهاتف قبل المتابعة.');
+      return;
+    }
     await syncAuthAndLocationWithSupabase({
-      cleanName: fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم'),
+      cleanName: fullName.trim(),
       cleanEmail: targetEmail,
       cleanPassword: password,
-      cleanPhone: phone.trim() || activeCountryObj.phonePlaceholder,
+      cleanPhone: phone.trim(),
       coreCountry,
       resolvedCity,
     });
@@ -647,68 +682,64 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
   };
 
-  const handleFirstStepSubmit = (e: React.FormEvent) => {
+  const handleFirstStepSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     setErrorMsg(null);
     setDbSyncWarning(null);
 
     const country = selectedCountryCode;
-    const role = parentRole === 'dad' ? 'أب' : 'أم';
     const cleanFullName = fullName.trim();
-    const cleanEmail = email.trim();
+    const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
+    const cleanPassword = password;
     const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
 
-    // 1. جمع بيانات التسجيل البسيطة
-    const registrationData = {
-      fullName: cleanFullName,
-      parentName: cleanFullName,
-      email: cleanEmail,
-      phone: cleanPhone,
-      country,
-      role, // أب أو أم
-      parentRole,
-      city: resolvedCity,
-      createdAt: new Date().toISOString(),
-    };
-
-    // 2. التحقق من اكتمال الحقول الأساسية
-    if (authMode === 'signup' && (!cleanFullName || !cleanPhone || !country)) {
-      setErrorMsg(isEn ? 'Please complete the required fields' : 'يرجى استكمال الحقول الأساسية');
+    if (!cleanEmail || !cleanPassword || (authMode === 'signup' && (!cleanFullName || !cleanPhone || !country))) {
+      setErrorMsg(isEn
+        ? 'Enter a valid email and password; sign-up also requires your name and phone.'
+        : 'أدخل البريد الإلكتروني وكلمة المرور؛ والتسجيل الجديد يتطلب الاسم ورقم الهاتف أيضًا.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMsg(isEn ? 'Enter a valid email address.' : 'أدخل بريدًا إلكترونيًا صحيحًا.');
+      return;
+    }
+    if (cleanPassword.length < 8) {
+      setErrorMsg(isEn ? 'Password must be at least 8 characters.' : 'كلمة المرور يجب ألا تقل عن 8 أحرف.');
       return;
     }
 
-    if (authMode === 'signin' && !cleanEmail && !cleanPhone) {
-      setErrorMsg(isEn ? 'Please complete the required fields' : 'يرجى استكمال الحقول الأساسية');
-      return;
-    }
-
-    // 3. الحفظ المؤقت لتفادي فقدان البيانات
+    // Keep a recoverable draft only; authentication and cloud persistence remain authoritative.
     try {
-      localStorage.setItem('nekbaar_temp_user', JSON.stringify(registrationData));
+      localStorage.setItem('nekbaar_temp_user', JSON.stringify({
+        fullName: cleanFullName, email: cleanEmail, phone: cleanPhone, country,
+        role: parentRole === 'dad' ? 'أب' : 'أم', parentRole, city: resolvedCity,
+      }));
     } catch {
-      // Ignore storage quota errors
+      // Local draft storage is optional and never treated as successful account creation.
     }
 
-    // 4. الانتقال للخطوة التالية مع مزامنة واضحة الحالة مع قاعدة البيانات
-    setCurrentStep(2);
-
-    const coreCountry = activeCountryObj.mappedCoreCountry;
-    const resolvedParentName =
-      cleanFullName || (parentRole === 'dad' ? 'أحمد' : 'مريم');
-    const resolvedEmail =
-      cleanEmail ||
-      (parentRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app');
-    const resolvedPhone = cleanPhone || activeCountryObj.phonePlaceholder;
-
-    void syncAuthAndLocationWithSupabase({
-      cleanName: resolvedParentName,
-      cleanEmail: resolvedEmail,
-      cleanPassword: password,
-      cleanPhone: resolvedPhone,
-      coreCountry,
-      resolvedCity,
-    });
+    setIsSubmitting(true);
+    try {
+      const authRes = await syncAuthAndLocationWithSupabase({
+        cleanName: cleanFullName,
+        cleanEmail,
+        cleanPassword,
+        cleanPhone,
+        coreCountry: activeCountryObj.mappedCoreCountry,
+        resolvedCity,
+      });
+      if (authRes?.success || authRes?.pendingEmailVerification) {
+        setCurrentStep(2);
+      } else {
+        setErrorMsg(authRes?.error || (isEn
+          ? 'Authentication could not be completed. Your account data was not advanced.'
+          : 'تعذر إكمال تسجيل الدخول؛ لم ننتقل للخطوة التالية ولم نعتبر البيانات محفوظة.'));
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleAddChild = () => {
@@ -797,6 +828,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       return;
     }
 
+    if (!verifiedUserUuid || !isValidUuid(verifiedUserUuid) || !verifiedFamilyUuid || !isValidUuid(verifiedFamilyUuid) || !authSyncedToDb) {
+      setErrorMsg(isEn
+        ? 'Verify your account and complete cloud family setup before saving the children.'
+        : 'لازم توثّق الحساب وتكتمل مزامنة مساحة الأسرة قبل حفظ بيانات الأطفال.');
+      setActiveView('AUTH');
+      return;
+    }
+
     setIsSubmitting(true);
     const listToSave = safeChildrenList;
 
@@ -839,6 +878,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
 
     const finalSyncedToDb = Boolean(authSyncedToDb && childrenSynced);
+    if (!childrenSynced) {
+      setIsSubmitting(false);
+      setDbSyncWarning(childrenSyncError || (isEn
+        ? 'Children could not be confirmed in cloud storage. Please retry before completing setup.'
+        : 'لم نتمكن من تأكيد حفظ بيانات الأطفال سحابياً. أعد المحاولة قبل إكمال التسجيل.'));
+      return;
+    }
     if (!finalSyncedToDb) {
       setDbSyncWarning(
         isEn
@@ -850,7 +896,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
     const primaryChild = listToSave[0];
-    const cleanParentName = fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
+    const cleanParentName = fullName.trim();
     const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
 
     // Never mark an account as verified simply because database synchronization succeeded!
@@ -858,11 +904,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const genuinePhoneVerified = Boolean(phoneVerifiedState);
 
     const sessionProfile: UserSessionProfile = {
-      userId: verifiedUserUuid || `usr_${familyId}_${parentRole}`,
-      sessionToken: `nk_sess_${familyId}_${Date.now()}`,
+      userId: verifiedUserUuid,
+      sessionToken: '',
       authenticatedAt: new Date().toISOString(),
       onboardingCompleted: true,
-      familyId: verifiedFamilyUuid || String(familyId),
+      familyId: verifiedFamilyUuid,
       verifiedFamilyId: verifiedFamilyUuid,
       isDbVerified: finalSyncedToDb,
       role: parentRole,
@@ -878,11 +924,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       emailVerified: genuineEmailVerified,
       phoneVerified: genuinePhoneVerified,
       isCoParentLinked: linkCoParent,
-      coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
-      coParentEmail:
-        coParentEmail.trim() ||
-        (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app'),
-      coParentPhone: coParentPhone.trim() || '559876543',
+      coParentName: coParentName.trim(),
+      coParentEmail: coParentEmail.trim(),
+      coParentPhone: coParentPhone.trim(),
       childrenCount: listToSave.length,
       syncedToDb: finalSyncedToDb,
     };

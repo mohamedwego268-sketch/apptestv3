@@ -487,6 +487,22 @@ export interface VoiceVaultMoment {
   melodyHz?: number[];
 }
 
+export interface ChildProfileDetails {
+  favoriteFoods?: string[];
+  favoriteDrinks?: string[];
+  dislikedFoods?: string[];
+  foodRestrictions?: string[];
+  hobbies?: string[];
+  sports?: string[];
+  school?: Record<string, unknown>;
+  sleepPreferences?: Record<string, unknown>;
+  dailyRoutine?: Record<string, unknown>;
+  emotionalProfile?: Record<string, unknown>;
+  socialProfile?: Record<string, unknown>;
+  interests?: string[];
+  extra?: Record<string, unknown>;
+}
+
 export interface ChildProfile {
   id: number;
   /** Optional database record identifier (UUID or DB primary key) separated from local UI id */
@@ -495,6 +511,7 @@ export interface ChildProfile {
   gender: 'boy' | 'girl';
   birth: string;
   interests: string;
+  profileDetails?: ChildProfileDetails;
   emoji: string;
   bloodType?: string;
   vaccinationsNote?: string;

@@ -111,6 +111,8 @@ import {
 } from './components/DesignSystem';
 import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 
+const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds must use the real authentication flow.
+
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => loadFamilySpaceState());
   const [activePage, setActivePage] = useState<PageId>('home');
@@ -276,7 +278,7 @@ export default function App() {
     OnboardingFlowController.getSavedProfile()
   );
   const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(
-    () => !Boolean(OnboardingFlowController.getSavedProfile())
+    () => (PREVIEW_ACCESS_BYPASS ? false : !Boolean(OnboardingFlowController.getSavedProfile()))
   );
   const [showSmartGreetingBanner, setShowSmartGreetingBanner] = useState<boolean>(true);
   const [childModalOpen, setChildModalOpen] = useState<boolean>(false);
@@ -370,6 +372,11 @@ export default function App() {
 
   // Smart Startup Profile Recognition (`OnboardingFlowController.detectInitialState()`)
   useEffect(() => {
+    if (PREVIEW_ACCESS_BYPASS) {
+      setRecognizedProfile(null);
+      setOnboardingModalOpen(false);
+      return;
+    }
     let active = true;
     OnboardingFlowController.detectInitialState().then(
       ({ step, profile, restoredChildren, draft }) => {
@@ -1621,17 +1628,17 @@ export default function App() {
     iconId: ThreeDIconId;
   }[] = [
     { id: 'home', label: lang === 'en' ? '1. Home' : '١. الرئيسية', shortLabel: lang === 'en' ? 'Home' : 'الرئيسية', iconId: 'home' },
-    { id: 'assistant', label: lang === 'en' ? '2. Smart AI Assistant' : '٢. مساعد نكبر الذكي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد نكبر الذكي', iconId: 'assistant' },
-    { id: 'children', label: lang === 'en' ? '3. Our Kids 3D' : '٣. أولادنا 3D', shortLabel: lang === 'en' ? 'Kids 3D' : 'أولادنا 3D', iconId: 'children' },
-    { id: 'routine', label: lang === 'en' ? '4. Daily Routine' : '٤. الروتين اليومي', shortLabel: lang === 'en' ? 'Routine' : 'الروتين اليومي', iconId: 'routine' },
-    { id: 'services', label: lang === 'en' ? '5. Quick Store' : '٥. المتجر السريع', shortLabel: lang === 'en' ? 'Store' : 'المتجر السريع', iconId: 'services' },
-    { id: 'calendar', label: lang === 'en' ? '6. Calendar & Events' : '٦. التقويم والمواعيد', shortLabel: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد', iconId: 'calendar' },
-    { id: 'medical', label: lang === 'en' ? '7. Doctor & Clinic' : '٧. الدكتور والعيادة', shortLabel: lang === 'en' ? 'Clinic' : 'الدكتور والعيادة', iconId: 'health' },
-    { id: 'media', label: lang === 'en' ? '8. Parenting Reels & Videos' : '٨. ريلز وفيديوهات التربية', shortLabel: lang === 'en' ? 'Reels' : 'ريلز التربية', iconId: 'video' },
-    { id: 'community', label: lang === 'en' ? '9. Parents Gathering' : '٩. لمة الآباء', shortLabel: lang === 'en' ? 'Community' : 'لمة الآباء', iconId: 'star' },
-    { id: 'chat', label: lang === 'en' ? '10. Family Chat' : '١٠. شات العيلة', shortLabel: lang === 'en' ? 'Chat' : 'شات العيلة', iconId: 'shield' },
-    { id: 'family', label: lang === 'en' ? '11. Family & Permissions' : '١١. عيلتنا والصلاحيات', shortLabel: lang === 'en' ? 'Family' : 'عيلتنا والصلاحيات', iconId: 'family' },
-    { id: 'settings', label: lang === 'en' ? '12. Settings & Control' : '١٢. الإعدادات والتحكم', shortLabel: lang === 'en' ? 'Settings' : 'الإعدادات والتحكم', iconId: 'settings' },
+    { id: 'assistant', label: lang === 'en' ? '2. AI Assistant' : '٢. مساعد نكبر الذكي', shortLabel: lang === 'en' ? 'AI Agent' : 'مساعد نكبر الذكي', iconId: 'assistant' },
+    { id: 'children', label: lang === 'en' ? '3. Our Kids 3D' : '٣. ملفات الأطفال والنمو', shortLabel: lang === 'en' ? 'Kids 3D' : 'أولادنا 3D', iconId: 'children' },
+    { id: 'routine', label: lang === 'en' ? '4. Daily Routine' : '٤. الروتين والمهام', shortLabel: lang === 'en' ? 'Routine' : 'الروتين اليومي', iconId: 'routine' },
+    { id: 'services', label: lang === 'en' ? '5. Quick Store' : '٥. المتجر والاحتياجات', shortLabel: lang === 'en' ? 'Store' : 'المتجر السريع', iconId: 'services' },
+    { id: 'calendar', label: lang === 'en' ? '6. Calendar & Events' : '٦. المواعيد والتذكيرات', shortLabel: lang === 'en' ? 'Calendar' : 'التقويم والمواعيد', iconId: 'calendar' },
+    { id: 'medical', label: lang === 'en' ? '7. Doctor & Clinic' : '٧. الصحة والأطباء', shortLabel: lang === 'en' ? 'Clinic' : 'الدكتور والعيادة', iconId: 'health' },
+    { id: 'media', label: lang === 'en' ? '8. Parenting Reels & Videos' : '٨. المحتوى والفيديوهات', shortLabel: lang === 'en' ? 'Reels' : 'ريلز التربية', iconId: 'video' },
+    { id: 'community', label: lang === 'en' ? '9. Parents Gathering' : '٩. مجتمع الأهل', shortLabel: lang === 'en' ? 'Community' : 'لمة الآباء', iconId: 'star' },
+    { id: 'chat', label: lang === 'en' ? '10. Family Chat' : '١٠. محادثات الأسرة', shortLabel: lang === 'en' ? 'Chat' : 'شات العيلة', iconId: 'shield' },
+    { id: 'family', label: lang === 'en' ? '11. Family & Permissions' : '١١. أفراد الأسرة والصلاحيات', shortLabel: lang === 'en' ? 'Family' : 'عيلتنا والصلاحيات', iconId: 'family' },
+    { id: 'settings', label: lang === 'en' ? '12. Settings & Control' : '١٢. الإعدادات', shortLabel: lang === 'en' ? 'Settings' : 'الإعدادات والتحكم', iconId: 'settings' },
     { id: 'wishes', label: t(lang, 'navWishes'), shortLabel: lang === 'en' ? 'Wishes' : 'الأمنيات', iconId: 'wishes' },
     { id: 'games', label: t(lang, 'navGames'), shortLabel: lang === 'en' ? '3D Games' : 'الألعاب', iconId: 'games' },
     { id: 'notifications', label: t(lang, 'navNotifications'), shortLabel: lang === 'en' ? 'Alerts' : 'الإشعارات', iconId: 'notifications' },
@@ -1707,6 +1714,16 @@ export default function App() {
         data-testid="mobile-app-viewport-frame"
         className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-8 transition-all duration-300 ease-in-out"
       >
+        {PREVIEW_ACCESS_BYPASS && (
+          <div
+            role="status"
+            className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-center text-[11px] font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+          >
+            {lang === 'en'
+              ? 'Preview mode · Registration temporarily skipped · Changes may be stored only on this device'
+              : 'وضع المعاينة · تم تجاوز التسجيل مؤقتًا · قد تُحفظ التغييرات على هذا الجهاز فقط'}
+          </div>
+        )}
         {isDashboardUnlocked && (
           <>
             <HeaderBar

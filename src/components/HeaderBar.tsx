@@ -94,7 +94,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         data-scrolled={isScrolled ? 'true' : 'false'}
         className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-200 select-none"
       >
-        <div className="max-w-[430px] mx-auto px-3 py-2 flex items-center justify-between gap-2">
+        <div className="max-w-[430px] mx-auto px-3 py-1.5 flex items-center justify-between gap-2">
           {/* Compact Control Group: Menu + Notifications + Weather */}
           <div className="flex items-center gap-1.5 shrink-0">
             <button
@@ -104,7 +104,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={onOpenProfileDrawer}
               title={isEn ? 'Navigation Menu' : 'القائمة الجانبية'}
               aria-label={isEn ? 'Open Navigation Menu' : 'فتح القائمة الجانبية'}
-              className="min-h-[48px] px-2.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="header-control min-h-[42px] px-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <svg
                 className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF]"
@@ -119,7 +119,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-[11px] font-bold">
+              <span className="text-xs font-bold">
                 {isEn ? 'Menu' : 'القائمة'}
               </span>
             </button>
@@ -131,14 +131,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={() => onNavigate('notifications')}
               title={isEn ? 'Notifications' : 'التنبيهات'}
               aria-label={isEn ? 'Notifications' : 'التنبيهات'}
-              className={`relative min-h-[48px] min-w-[48px] rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
+              className={`header-control relative min-h-[42px] min-w-[42px] rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
                 isNotificationsActive
                   ? 'border-[#0d9488] bg-[#0d9488] text-white'
                   : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] dark:text-[#F8FAFC]'
               }`}
             >
               <svg
-                className={`w-4 h-4 ${
+                className={`w-[18px] h-[18px] ${
                   isNotificationsActive ? 'text-white' : 'text-[#FF8C61]'
                 }`}
                 viewBox="0 0 24 24"
@@ -169,21 +169,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={() => setWeatherModalOpen(true)}
               title={
                 isEn
-                  ? `${localizedCity}: ${compactWeather.tempC}°C`
-                  : `طقس ${localizedCity}: ${compactWeather.tempC}°م`
+                  ? `View live weather for ${localizedCity}`
+                  : `عرض الطقس الحالي في ${localizedCity}`
               }
               aria-label={
                 isEn
-                  ? `Weather in ${localizedCity}: ${compactWeather.tempC}°C`
-                  : `طقس ${localizedCity} ${compactWeather.tempC} درجة`
+                  ? `View live weather in ${localizedCity}`
+                  : `عرض الطقس الحالي في ${localizedCity}`
               }
-              className="min-h-[48px] px-2.5 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="header-control min-h-[42px] px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
-              <span className="text-xs leading-none" aria-hidden="true">
+              <span className="text-sm leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
-              <span className="text-[11px] font-black tabular-nums text-sky-700 dark:text-sky-300">
-                {compactWeather.tempC}°
+              <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
+                {isEn ? 'Weather' : 'الطقس'}
               </span>
             </button>
           </div>
@@ -193,21 +193,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             type="button"
             onClick={() => onNavigate('home')}
             aria-label={`${brandName} — ${localizedSlogan}`}
-            className="min-h-[48px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
+            className="min-h-[42px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
             <div className="min-w-0 text-end flex flex-col items-end justify-center flex-wrap">
-              <span className="font-black text-sm text-[var(--color-text)] dark:text-[#F8FAFC] leading-none tracking-tight">
+              <span className="font-black text-[17px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
                 {brandName}
               </span>
               <span
                 data-testid="header-official-slogan-badge"
-                className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-0.5"
+                className="text-[10px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-0.5"
               >
                 {localizedSlogan}
               </span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={18} />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+              <ThreeDIcon id="home" size={20} />
             </div>
           </button>
         </div>
@@ -241,8 +241,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
                     {isEn
-                      ? 'Live temperature & clothing tips for Hamza, Laila & Youssef'
-                      : 'درجة الحرارة الآن ونصائح ملابس حمزة وليلى ويوسف'}
+                      ? 'Current conditions and useful family weather guidance'
+                      : 'حالة الطقس الحالية وإرشادات مناسبة للأسرة'}
                   </p>
                 </div>
               </div>
@@ -269,42 +269,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }}
             />
 
-            {/* Extra Expanded Details: Humidity, Wind, UV & Child-Specific Guidance */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  💧 {isEn ? 'Humidity' : 'الرطوبة'}
-                </div>
-                <div className="text-sm font-bold text-sky-600 dark:text-sky-300 tabular-nums mt-0.5">
-                  {compactWeather.humidity}%
-                </div>
-              </div>
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  🌬️ {isEn ? 'Wind' : 'الرياح'}
-                </div>
-                <div className="text-sm font-bold text-[#0d9488] dark:text-[#2DD4BF] tabular-nums mt-0.5">
-                  {compactWeather.windKmh} {isEn ? 'km/h' : 'كم/س'}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  👕 {isEn ? 'Outfit' : 'الملابس'}
-                </div>
-                <div className="text-xs font-bold text-amber-700 dark:text-amber-300 mt-0.5">
-                  {isEn ? 'Light Cotton' : 'قطن خفيف'}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-teal-500/25 bg-teal-50/60 dark:bg-[#142430] p-4 space-y-1.5">
-              <div className="text-base font-semibold text-[#0d9488] dark:text-[#2DD4BF]">
-                🧭 {isEn ? 'Tailored Parenting Weather Advice:' : 'توصية الطقس اليوم لحمزة وليلى ويوسف:'}
-              </div>
-              <p className="text-sm leading-relaxed text-[var(--color-text)] dark:text-[#CBD5E1]">
+            <div className="rounded-2xl border border-sky-500/25 bg-sky-50/70 dark:bg-[#142430] p-3 space-y-1.5">
+              <p className="text-sm font-bold text-sky-800 dark:text-sky-200">
+                {isEn ? 'A quick reminder' : 'تذكير سريع'}
+              </p>
+              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
                 {isEn
-                  ? 'Great weather for Youssef’s afternoon sports practice and a 20-minute stroller walk with baby Hamza before sunset. Pack an extra water bottle for Laila at nursery.'
-                  : 'الجو مناسب جداً لتمرين يوسف بعد العصر، وتمشية خفيفة بعربية الرضيع مع حمزة لمدة ٢٠ دقيقة قبل الغروب، مع تزويد ليلى بزمزمية مياه إضافية في الحضانة.'}
+                  ? 'Check the live conditions before outdoor activities, and adapt clothing and hydration to the actual weather.'
+                  : 'راجع حالة الطقس الفعلية قبل الخروج، واختاروا الملابس وكمية الميه حسب الجو واحتياج كل طفل.'}
               </p>
             </div>
 

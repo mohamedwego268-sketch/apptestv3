@@ -1349,7 +1349,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 className="space-y-1.5"
               >
                 <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
-                  📂 {isEn ? 'Platform Sections & Sub-Menus (12)' : 'أقسام المنصة والقوائم الفرعية (١٢ قسم)'}
+                  📂 {isEn ? 'App Sections' : 'أقسام التطبيق'}
                 </div>
 
                 {(() => {
@@ -1419,8 +1419,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'assistant',
                       pageId: 'assistant',
                       iconId: 'assistant',
-                      titleAr: '٢. مساعد نكبر الذكي',
-                      titleEn: '2. Smart AI Assistant',
+                      titleAr: '٢. المساعد الذكي',
+                      titleEn: '2. AI Assistant',
                       badgeAr: '3 موديلات',
                       badgeEn: '3 Models',
                       subItems: [
@@ -1483,8 +1483,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'children',
                       pageId: 'children',
                       iconId: 'children',
-                      titleAr: '٣. أولادنا 3D',
-                      titleEn: '3. Our Kids 3D',
+                      titleAr: '٣. ملفات الأطفال والنمو',
+                      titleEn: '3. Child Profiles & Growth',
                       badgeAr: `${state.kids.length} أطفال`,
                       badgeEn: `${state.kids.length} Kids`,
                       subItems: [
@@ -1524,8 +1524,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'routine',
                       pageId: 'routine',
                       iconId: 'routine',
-                      titleAr: '٤. الروتين اليومي',
-                      titleEn: '4. Daily Routine',
+                      titleAr: '٤. الروتين والمهام',
+                      titleEn: '4. Routines & Tasks',
                       badgeAr: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
                       badgeEn: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
                       subItems: [
@@ -1565,8 +1565,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'services',
                       pageId: 'services',
                       iconId: 'services',
-                      titleAr: '٥. المتجر السريع (٠–٨ سنوات)',
-                      titleEn: '5. Express Store (Ages 0–8)',
+                      titleAr: '٥. المتجر والاحتياجات',
+                      titleEn: '5. Store & Essentials',
                       badgeAr: '٦ أقسام',
                       badgeEn: '6 Categories',
                       subItems: [
@@ -1653,7 +1653,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'calendar',
                       pageId: 'calendar',
                       iconId: 'calendar',
-                      titleAr: '٦. التقويم والمواعيد',
+                      titleAr: '٦. المواعيد والتذكيرات',
                       titleEn: '6. Calendar & Appointments',
                       badgeAr: `${state.events.length} مواعيد`,
                       badgeEn: `${state.events.length} Events`,
@@ -1697,12 +1697,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       titleAr: '٧. الدكتور والعيادة',
                       titleEn: '7. Doctor & Pediatric Clinic',
                       badgeAr: 'حجز فوري',
-                      badgeEn: 'Instant Booking',
+                      badgeEn: 'دليل الخدمات',
                       subItems: [
                         {
                           id: 'med-book-doc',
-                          labelAr: 'حجز دكتور أطفال معتمد',
-                          labelEn: 'Book Verified Pediatrician',
+                          labelAr: 'دليل أطباء الأطفال والعيادات',
+                          labelEn: 'Find Pediatricians & Clinics',
                           icon: '👨‍⚕️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1721,8 +1721,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'med-instant-consult',
-                          labelAr: 'استشارات طبية وتربوية فورية',
-                          labelEn: 'Instant Medical Consultations',
+                          labelAr: 'معلومات وإرشادات صحية موثوقة',
+                          labelEn: 'Health Guides & Information',
                           icon: '⚡',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1735,8 +1735,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'media',
                       pageId: 'media',
                       iconId: 'video',
-                      titleAr: '٨. ريلز وفيديوهات التربية',
-                      titleEn: '8. Parenting Reels & Videos',
+                      titleAr: '٨. المحتوى والفيديوهات',
+                      titleEn: '8. Content & Videos',
                       badgeAr: '9:16 ريلز',
                       badgeEn: '9:16 Reels',
                       subItems: [
@@ -1776,14 +1776,14 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'community',
                       pageId: 'community',
                       iconId: 'star',
-                      titleAr: '٩. لمة الآباء',
-                      titleEn: '9. Parents Community',
+                      titleAr: '٩. مجتمع الأهل',
+                      titleEn: '9. Parent Community',
                       badgeAr: 'مجتمع آمن',
                       badgeEn: 'Safe Hub',
                       subItems: [
                         {
                           id: 'comm-open-chat',
-                          labelAr: 'شات النقاشات المفتوحة',
+                          labelAr: 'موضوعات ونقاشات الأهل',
                           labelEn: 'Open Parents Discussions',
                           icon: '💬',
                           onSelect: () => {
@@ -1803,8 +1803,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'comm-safe',
-                          labelAr: 'مجتمع آمن وموثق للعائلات',
-                          labelEn: 'Verified Safe Family Community',
+                          labelAr: 'مساحة تواصل للأهل',
+                          labelEn: 'Parent Community Space',
                           icon: '🛡️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('community');
@@ -1817,8 +1817,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'chat',
                       pageId: 'chat',
                       iconId: 'shield',
-                      titleAr: '١٠. شات العيلة',
-                      titleEn: '10. Family Internal Chat',
+                      titleAr: '١٠. محادثات الأسرة',
+                      titleEn: '10. Family Messages',
                       badgeAr: 'داخلي',
                       badgeEn: 'Private',
                       subItems: [
@@ -1858,8 +1858,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'family',
                       pageId: 'family',
                       iconId: 'family',
-                      titleAr: '١١. عيلتنا والصلاحيات',
-                      titleEn: '11. Our Family & Permissions',
+                      titleAr: '١١. أفراد الأسرة والصلاحيات',
+                      titleEn: '11. Family & Permissions',
                       badgeAr: `${state.family.length} أفراد`,
                       badgeEn: `${state.family.length} Members`,
                       subItems: [
@@ -1899,8 +1899,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'settings',
                       pageId: 'settings',
                       iconId: 'settings',
-                      titleAr: '١٢. الإعدادات والتحكم',
-                      titleEn: '12. Settings & Control',
+                      titleAr: '١٢. الإعدادات',
+                      titleEn: '12. Settings',
                       badgeAr: 'تحكم كامل',
                       badgeEn: 'Full Control',
                       subItems: [
@@ -1940,10 +1940,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'contact',
                       pageId: 'contact',
                       iconId: 'shield',
-                      titleAr: '١٣. تواصل معنا والدعم',
-                      titleEn: '13. Contact Us & Support Hub',
-                      badgeAr: 'دعم ٢٤/٧',
-                      badgeEn: '24/7 Care',
+                      titleAr: '١٣. الدعم والتواصل',
+                      titleEn: '13. Help & Support',
+                      badgeAr: 'الدعم',
+                      badgeEn: 'Support',
                       subItems: [
                         {
                           id: 'contact-direct-page',
@@ -1957,8 +1957,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'contact-whatsapp-hotline',
-                          labelAr: 'خدمة العملاء واتساب وهاتف: +20 100 888 4422',
-                          labelEn: 'Customer Care WhatsApp & Phone: +20 100 888 4422',
+                          labelAr: 'قنوات التواصل والدعم',
+                          labelEn: 'Contact & Support Channels',
                           icon: '📞',
                           onSelect: () => {
                             onNavigateFromDrawer?.('contact');
@@ -1967,8 +1967,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'contact-official-email',
-                          labelAr: 'البريد الرسمي: support@nekbaar.com (٩ ص – ١١ م)',
-                          labelEn: 'Official Email: support@nekbaar.com (9 AM – 11 PM)',
+                          labelAr: 'معلومات التواصل الرسمية',
+                          labelEn: 'Official Contact Information',
                           icon: '🌐',
                           onSelect: () => {
                             onNavigateFromDrawer?.('contact');

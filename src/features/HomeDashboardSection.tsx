@@ -72,17 +72,17 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'morning',
     slotLabelAr: '☀️ رسالة الصباح الصوتية',
     slotLabelEn: '☀️ Morning Support Audio',
-    titleAr: 'بداية هادئة ليومكم مع حمزة وليلى ويوسف',
-    titleEn: 'A Calm Morning Start with Hamza, Laila & Youssef',
-    hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
-    hostsEn: 'Warm Audio Support for Ahmad & Maryam',
+    titleAr: 'ابدأ يومك بخطوة بسيطة مع طفلك',
+    titleEn: 'Start the Day with One Simple Moment Together',
+    hostsAr: 'دقيقة عملية لكل أب وأم',
+    hostsEn: 'A practical minute for every parent',
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
-      'ابتسامة هادئة وحضن قصير قبل خروج يوسف للمدرسة وليلى للحضانة يمنحان أطفالكم أماناً عاطفياً يمتد طوال اليوم.',
+      'قبل ما تبدأوا مشاوير اليوم، خُدوا دقيقة تسمعوا طفلكم وتقولوا له إيه اللي هيحصل النهارده. الروتين الواضح بيساعده يستعد.',
     summaryEn:
       'A calm smile and a warm hug before Youssef heads to school and Laila to nursery anchors their emotional safety all day.',
-    takeawayAr: '💡 تذكير الصباح: الهدوء يبدأ من نبرة صوتنا في أول ١٠ دقائق.',
+    takeawayAr: '💡 جرّب النهارده: قول لطفلك خطوتين أو تلاتة من خطة اليوم.',
     takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
     melodyHz: [392.0, 440.0, 493.88, 523.25],
   },
@@ -91,17 +91,17 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'afternoon',
     slotLabelAr: '🌤️ رسالة الظهيرة الصوتية',
     slotLabelEn: '🌤️ Afternoon Support Audio',
-    titleAr: 'استقبال دافئ بعد المدرسة والحضانة بدون أسئلة ضاغطة',
-    titleEn: 'Warm Post-School & Nursery Reconnection Without Pressure',
+    titleAr: 'بعد الحضانة أو المدرسة: اسمع الأول وبعدين اسأل',
+    titleEn: 'After School: Listen First, Then Ask',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
     hostsEn: 'Warm Audio Support for Ahmad & Maryam',
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
-      'عند عودة ليلى ويوسف، قدّموا وجبة خفيفة وكوب ماء أولاً مع وقت البطن اللطيف للرضيع حمزة قبل الحديث عن الواجبات.',
+      'سيب لطفلك فرصة يهدأ بعد الرجوع. اعرض عليه مية أو وجبة مناسبة لعمره، وبعدها اسأله سؤال بسيط عن يومه من غير تحقيق.',
     summaryEn:
       'When Laila and Youssef return, offer a light snack and water first alongside gentle tummy time for baby Hamza before homework talk.',
-    takeawayAr: '💡 تذكير الظهيرة: التفرغ ١٥ دقيقة بانتباه كامل يشبع خزان المحبة.',
+    takeawayAr: '💡 جرّب النهارده: عشر دقايق لعب أو كلام من غير موبايل.',
     takeawayEn: '💡 Afternoon cue: 15 minutes of undivided presence refills their love tank.',
     melodyHz: [440.0, 523.25, 587.33, 659.25],
   },
@@ -110,17 +110,17 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'evening',
     slotLabelAr: '🌙 رسالة المساء الصوتية',
     slotLabelEn: '🌙 Evening Wind-Down Audio',
-    titleAr: 'امتنان المساء وتهدئة الإضاءة لنوم عميق ومريح',
-    titleEn: 'Evening Gratitude & Dimmed Lights for Deep Sleep',
+    titleAr: 'قبل النوم: اقفلوا اليوم بهدوء وروتين ثابت',
+    titleEn: 'End the Day with a Calm, Familiar Routine',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
     hostsEn: 'Warm Audio Support for Ahmad & Maryam',
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
-      'أنتما تقومان بعمل عظيم اليوم يا أحمد ومريم. خفّضوا الإضاءة الآن، واختموا الليلة بحدوتة هادئة تجمع يوسف وليلى وحمزة.',
+      'اختاروا نشاط هادي قبل النوم يناسب سن طفلكم: قصة قصيرة، حضن، أو كلام عن أحلى حاجة حصلت النهارده.',
     summaryEn:
       'You both did a wonderful job today, Ahmad & Maryam. Dim the lights now and close the night with a warm story for Youssef, Laila, and Hamza.',
-    takeawayAr: '💡 تذكير المساء: آخر شعور قبل النوم هو ما يبقى في قلب الطفل غداً.',
+    takeawayAr: '💡 جرّبوا: نفس الترتيب كل ليلة، مع مرونة لو اليوم اتأخر.',
     takeawayEn: '💡 Evening cue: The last feeling before sleep stays in a child’s heart tomorrow.',
     melodyHz: [329.63, 392.0, 440.0, 523.25],
   },
@@ -151,19 +151,19 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-hamza-sensory',
     durationSec: 45,
     durationLabel: '00:45',
-    stageBadgeAr: '👶🏻 حمزة · ٦ شهور',
-    stageBadgeEn: '👶🏻 Hamza · 6 Months',
-    childFocusAr: 'النمو الحسي والحركي للرضيع',
+    stageBadgeAr: '👶🏻 من ٠ إلى ١٢ شهر',
+    stageBadgeEn: '👶🏻 0–12 Months',
+    childFocusAr: 'اللعب والتواصل في السنة الأولى',
     childFocusEn: 'Infant Sensory & Motor Milestones',
-    titleAr: '٣ حركات بسيطة في وقت البطن تقوّي عضلات حمزة وتساعده على الجلوس',
+    titleAr: 'وقت اللعب على البطن: خليه قصير وتحت ملاحظتك',
     titleEn: '3 Simple Tummy-Time Moves to Strengthen Hamza’s Core for Sitting',
     captionAr:
-      'ضعي لعبة خشبية ملونة على بُعد ٢٠ سم من حمزة مع التواصل البصري والغناء الهادئ لمدة ٣ دقائق.',
+      'اختار وقت يكون فيه الطفل صاحي وهادي، وحطه على بطنه على سطح ثابت وآمن مع مراقبتك طول الوقت. لو اتضايق، وقف وجرب وقت تاني.',
     captionEn:
       'Place a colorful wooden rattle 20cm in front of Hamza while making eye contact and singing softly for 3 minutes.',
-    expertNameAr: 'د. سارة المنصوري · طب نمو الأطفال',
+    expertNameAr: 'معلومة إرشادية · راجع طبيب الأطفال عند القلق',
     expertNameEn: 'Dr. Sara Al-Mansouri · Pediatric Development',
-    likesCount: 342,
+    likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-sky-900/90 via-sky-950/45 to-slate-950/95',
     melodyHz: [392.0, 493.88, 587.33],
@@ -172,19 +172,19 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-laila-emotions',
     durationSec: 52,
     durationLabel: '00:52',
-    stageBadgeAr: '🎨 ليلى · ٤ سنوات',
-    stageBadgeEn: '🎨 Laila · 4 Years',
-    childFocusAr: 'تسمية المشاعر والخيال الإبداعي',
+    stageBadgeAr: '🎨 من ٣ إلى ٥ سنوات',
+    stageBadgeEn: '🎨 Ages 3–5',
+    childFocusAr: 'التعبير عن المشاعر',
     childFocusEn: 'Emotion Naming & Creative Expression',
-    titleAr: 'كيف تحولين لحظة عناد ليلى بعد الحضانة إلى لعبة رسم وتسمية مشاعر؟',
+    titleAr: 'ساعد طفلك يسمي إحساسه بدل ما تطلب منه يبطل عياط',
     titleEn: 'How to Turn Laila’s Post-Nursery Meltdown into an Emotion-Drawing Game',
     captionAr:
-      'بدلاً من قول «لا تبكي»، اسألي ليلى: «لو غضبك الآن له لون، أي قلم تلوين تختارين؟» وشاهدي هدوءها الفوري.',
+      'ممكن تقول: «واضح إنك متضايق.. تحب تحكيلي حصل إيه؟» اسمع من غير تقليل من إحساسه، ومش لازم يهدأ فورًا.',
     captionEn:
       'Instead of saying "stop crying", ask Laila: "If your frustration had a color right now, which crayon would it be?"',
-    expertNameAr: 'أ. نورهان الشافعي · إرشاد تربوي ونفسي',
+    expertNameAr: 'نشاط مقترح · مش بديل عن دعم متخصص',
     expertNameEn: 'Nourhan El-Shafei · Child Psychologist',
-    likesCount: 518,
+    likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-rose-900/90 via-rose-950/45 to-slate-950/95',
     melodyHz: [440.0, 554.37, 659.25],
@@ -193,19 +193,19 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-youssef-champions',
     durationSec: 55,
     durationLabel: '00:55',
-    stageBadgeAr: '🏆 يوسف · ٨ سنوات',
-    stageBadgeEn: '🏆 Youssef · 8 Years',
-    childFocusAr: 'التركيز الدراسي وبناء شخصية البطل',
+    stageBadgeAr: '🎒 من ٦ إلى ٨ سنوات',
+    stageBadgeEn: '🎒 Ages 6–8',
+    childFocusAr: 'تنظيم المذاكرة والحركة',
     childFocusEn: 'School Focus & Athletic Confidence',
-    titleAr: 'قاعدة ٢٥ دقيقة مذاكرة + ١٠ دقائق حركة لتركيز يوسف بدون ملل أو شاشات',
+    titleAr: 'قسّم وقت المذاكرة لفترات قصيرة وبينها حركة',
     titleEn: 'The 25-Min Study + 10-Min Movement Rule for Youssef’s Peak Focus',
     captionAr:
-      'ربط المذاكرة بتحدي رياضي صغير مع بابا أحمد يرفع هرمون الدوبامين الطبيعي ويجعل يوسف ينجز واجباته بحماس.',
+      'ابدأوا بفترة تركيز مناسبة لطفلكم، وبعدها استراحة حركة أو شرب مية. عدّلوا المدة حسب سنه وقدرته، ومفيش رقم واحد يناسب كل الأطفال.',
     captionEn:
       'Pairing homework with a quick sports challenge with Dad Ahmad boosts natural dopamine and self-driven discipline.',
-    expertNameAr: 'كابتن كريم عبد العزيز · تربية رياضية وتعديل سلوك',
+    expertNameAr: 'فكرة لتنظيم اليوم · عدّلها حسب طفلك',
     expertNameEn: 'Coach Karim Abdelaziz · Youth Sports & Focus',
-    likesCount: 629,
+    likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-amber-900/90 via-teal-950/50 to-slate-950/95',
     melodyHz: [523.25, 659.25, 783.99],
@@ -214,19 +214,19 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     id: 'reel-parents-harmony',
     durationSec: 48,
     durationLabel: '00:48',
-    stageBadgeAr: '🤝 أحمد ومريم · تناغم الزوجين',
-    stageBadgeEn: '🤝 Ahmad & Maryam · Co-Parenting Harmony',
+    stageBadgeAr: '🤝 للأب والأم ومقدمي الرعاية',
+    stageBadgeEn: '🤝 Parents & Caregivers',
     childFocusAr: 'تقاسم المهام وتجديد طاقة البيت',
     childFocusEn: 'Shared Care & Evening Reset',
-    titleAr: 'سر الـ ١٥ دقيقة المسائية بين أحمد ومريم لبيت أهدأ وأكثر دفئاً',
+    titleAr: 'اتفقوا على تقسيم المسؤوليات بدل ما كل حاجة تبقى على شخص واحد',
     titleEn: 'The 15-Minute Evening Hand-Off Secret for Ahmad & Maryam',
     captionAr:
-      'تناوبوا بهدوء: بينما يقرأ أحدكما حدوتة ليلى ويوسف، يحصل الآخر على استراحة قهوة قصيرة لتجديد طاقته.',
+      'اتفقوا مين مسؤول عن الوجبة، ومين عن تجهيز النوم، ومين يتابع المواعيد. الاتفاق الواضح يقلل اللخبطة والضغط.',
     captionEn:
       'Take turns gently: while one reads bedtime stories to Laila and Youssef, the other enjoys a quiet 15-minute recharge.',
-    expertNameAr: 'د. هاني درويش · استشاري العلاقات الأسرية',
+    expertNameAr: 'خطوة عملية لتنظيم مسؤوليات البيت',
     expertNameEn: 'Dr. Hany Darwish · Family Counselor',
-    likesCount: 485,
+    likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-teal-900/90 via-slate-900/50 to-slate-950/95',
     melodyHz: [349.23, 440.0, 523.25],
@@ -250,10 +250,10 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-1',
     tagAr: '👶🏻 حمزة · ٦ شهور',
     tagEn: '👶🏻 Hamza · 6m',
-    titleAr: 'الأمان العاطفي يبدأ من النظرة',
+    titleAr: 'ردّ على طفلك لما يحاول يتواصل',
     titleEn: 'Emotional Safety Starts with Eye Contact',
     wisdomAr:
-      'استجابتكِ السريعة لابتسامة حمزة ومناغاته تبني في دماغه ملايين الروابط العصبية للثقة والأمان.',
+      'لما طفلك يبص لك أو يصدر صوت، رد عليه بابتسامة أو كلام بسيط. التفاعل المتبادل فرصة يومية للتواصل والتعلم.',
     wisdomEn:
       'Your warm response to Hamza’s coos and smiles builds millions of neural pathways for lifelong trust.',
     imageUrl: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=700&q=80',
@@ -263,10 +263,10 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-2',
     tagAr: '🎨 ليلى · ٤ سنوات',
     tagEn: '🎨 Laila · 4y',
-    titleAr: 'الخيال بوابة الذكاء العاطفي',
+    titleAr: 'خليه يكمل حكايته للآخر',
     titleEn: 'Imagination Fuels Emotional Intelligence',
     wisdomAr:
-      'حين تحكي ليلى قصة خيالية بعد الحضانة، استمعوا بدهشة؛ فالخيال في عمر ٤ سنوات هو تدريب على حل المشكلات.',
+      'اسأل طفلك: «وبعدين حصل إيه؟» وسيبه يكمل الحكاية بطريقته. مش لازم تصحح كل تفصيلة.',
     wisdomEn:
       'When Laila shares an imaginative tale after nursery, listen with wonder—pretend play trains problem-solving.',
     imageUrl: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80',
@@ -276,10 +276,10 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-3',
     tagAr: '🏆 يوسف · ٨ سنوات',
     tagEn: '🏆 Youssef · 8y',
-    titleAr: 'امدحوا الجهد لا النتيجة فقط',
+    titleAr: 'امدح المحاولة والمجهود',
     titleEn: 'Praise Effort, Not Just the Trophy',
     wisdomAr:
-      'قولكم ليوسف «أعجبني إصرارك في التمرين والواجب اليوم» يصنع بطلاً يثق بقدرته على التطور المستمر.',
+      'امدح المجهود المحدد: «عجبني إنك حاولت تاني». ده أوضح وأفيد من المدح العام.',
     wisdomEn:
       'Telling Youssef "I love how focused you stayed in practice today" builds resilient self-confidence.',
     imageUrl: 'https://images.unsplash.com/photo-1484820540004-14229fe36ca4?auto=format&fit=crop&w=700&q=80',
@@ -289,10 +289,10 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-4',
     tagAr: '💚 أحمد ومريم · الأسرة',
     tagEn: '💚 Ahmad & Maryam · Family',
-    titleAr: 'هدوء الوالدين هو بوصلة البيت',
+    titleAr: 'اتفقوا على تقسيم مسؤوليات البيت',
     titleEn: 'Calm Parents Are the Home’s Compass',
     wisdomAr:
-      'الأطفال لا يتذكرون الكلمات المثالية، بل يتذكرون دفء البيت حين يتعاون بابا أحمد وماما مريم بمودة.',
+      'قسّموا المهام واتفقوا على طريقة واحدة للتعامل مع الروتين. مش لازم كل واحد يعمل كل حاجة.',
     wisdomEn:
       'Children don’t need perfection—they thrive on the warmth they feel when Dad Ahmad and Mom Maryam team up.',
     imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=700&q=80',
@@ -302,10 +302,10 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-5',
     tagAr: '🌙 روتين المساء',
     tagEn: '🌙 Bedtime Rhythm',
-    titleAr: '٣٠ دقيقة بلا شاشات قبل النوم',
+    titleAr: 'روتين هادي قبل النوم',
     titleEn: '30 Screen-Free Minutes Before Sleep',
     wisdomAr:
-      'إغلاق الشاشات واستبدالها بإضاءة دافئة وحدوتة هادئة يضاعف جودة نوم الأطفال وراحتهم الذهنية.',
+      'اعملوا روتين هادي قبل النوم، وقللوا الشاشات حسب عمر الطفل وإرشادات طبيبه.',
     wisdomEn:
       'Replacing screens with warm lighting and a shared story doubles children’s deep sleep quality.',
     imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80',
@@ -530,45 +530,39 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
   };
 
-  // Auto-trigger the 30s time-aware audio brief on first session opening
-  useEffect(() => {
-    try {
-      const alreadyAutoPlayed = sessionStorage.getItem('nekbaar_session_audio_autoplayed_v1');
-      if (!alreadyAutoPlayed) {
-        sessionStorage.setItem('nekbaar_session_audio_autoplayed_v1', 'true');
-        setActiveBriefIdx(defaultBriefIdx);
-        setBriefElapsedSec(0);
-        setIsPlayingBrief(true);
-        playGentleAudioSynthesizer(DAILY_AUDIO_BRIEFS_30S[defaultBriefIdx]?.melodyHz);
-      }
-    } catch {
-      // Ignore storage restrictions
+  // Read the daily tip aloud with the device's speech engine; never autoplay audio.
+  const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief) => {
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'خاصية القراءة الصوتية مش متاحة على الجهاز ده.');
+      return;
     }
-  }, [defaultBriefIdx]);
+    window.speechSynthesis.cancel();
+    const spokenText = [isEn ? brief.titleEn : brief.titleAr, isEn ? brief.summaryEn : brief.summaryAr, isEn ? brief.takeawayEn : brief.takeawayAr].join('. ');
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = isEn ? 'en-US' : 'ar-EG';
+    utterance.rate = 0.95;
+    utterance.onstart = () => setIsPlayingBrief(true);
+    utterance.onend = () => {
+      setIsPlayingBrief(false);
+      setBriefElapsedSec(30);
+    };
+    utterance.onerror = () => setIsPlayingBrief(false);
+    setBriefElapsedSec(0);
+    setIsPlayingBrief(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (!isPlayingBrief) return;
-    const interval = window.setInterval(() => {
-      setBriefElapsedSec((prev) => {
-        if (prev >= 29) {
-          setIsPlayingBrief(false);
-          return 30;
-        }
-        return prev + 1;
-      });
-    }, 1000);
+    const interval = window.setInterval(() => setBriefElapsedSec((prev) => Math.min(30, prev + 1)), 1000);
     return () => window.clearInterval(interval);
   }, [isPlayingBrief]);
 
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
   const handleReplayAudioBrief = () => {
-    setBriefElapsedSec(0);
-    setIsPlayingBrief(true);
-    playGentleAudioSynthesizer(currentBrief.melodyHz);
-    onShowToast?.(
-      isEn
-        ? '🔄 Replaying 30-second daily parenting audio brief'
-        : '🔄 جاري إعادة تشغيل الرسالة الصوتية اليومية (٣٠ ثانية)'
-    );
+    speakDailyBrief(currentBrief);
+    onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
   };
 
   // ============================================================================
@@ -1237,7 +1231,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 data-testid="welcome-hero-accordion-arrow"
                 aria-expanded={openAccordions.welcomeAudio}
                 onClick={() => toggleAccordion('welcomeAudio')}
-                title={isEn ? 'Toggle Audio Brief Card' : 'طي / فتح بطاقة الرسالة الصوتية'}
+                title={isEn ? 'Toggle Daily Tip Card' : 'طي / فتح بطاقة نصيحة اليوم'}
                 className={`min-w-[48px] min-h-[48px] rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
                   openAccordions.welcomeAudio ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
                 }`}
@@ -1253,17 +1247,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
             >
               {isEn
-                ? `Welcome back, ${activeParentNameEn} 👋 Wishing you a calm, joyful day with ${liveHamzaNameEn}, ${liveLailaNameEn} & ${liveYoussefNameEn}`
-                : `أهلاً بعودتك يا ${activeParentNameAr} ${isMotherActive ? '🌸' : '🌟'}.. يوم دافئ يجمعك مع ${liveHamzaNameAr} و${liveLailaNameAr} و${liveYoussefNameAr}`}
+                ? `Welcome back, ${activeParentNameEn} 👋 Let's make today's family routine easier.`
+                : `أهلاً يا ${activeParentNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
             </h1>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
               {isMotherActive
                 ? isEn
-                  ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Dad ${partnerParentNameEn}.`
-                  : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع بابا ${partnerParentNameAr}.`
+                  ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
+                  : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`
                 : isEn
-                ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Mom ${partnerParentNameEn}.`
-                : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع ماما ${partnerParentNameAr}.`}
+                ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
+                : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`}
             </p>
           </div>
         </div>
@@ -1285,13 +1279,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 type="button"
                 data-testid="audio-brief-play-toggle"
                 onClick={() => {
-                  const nextPlay = !isPlayingBrief;
-                  if (nextPlay && briefElapsedSec >= 30) {
-                    setBriefElapsedSec(0);
-                  }
-                  setIsPlayingBrief(nextPlay);
-                  if (nextPlay) {
-                    playGentleAudioSynthesizer(currentBrief.melodyHz);
+                  if (isPlayingBrief) {
+                    window.speechSynthesis?.pause();
+                    setIsPlayingBrief(false);
+                  } else if (window.speechSynthesis?.paused) {
+                    window.speechSynthesis.resume();
+                    setIsPlayingBrief(true);
+                  } else {
+                    speakDailyBrief(currentBrief);
                   }
                 }}
                 aria-label={
@@ -1315,7 +1310,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="flex-1 min-w-0 w-full space-y-1 text-start">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                   <span className="inline-block whitespace-normal">
-                    🎙️ {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}
+                    🔊 {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}
                   </span>
                   <span aria-hidden="true">·</span>
                   <span className="text-[var(--color-muted)] dark:text-[#94A3B8] whitespace-normal">
@@ -1386,7 +1381,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[#0d9488]/40 bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <span>🔄</span>
-                  <span>{isEn ? 'Replay 30s' : 'إعادة الاستماع'}</span>
+                  <span>{isEn ? 'Listen again' : 'اسمع تاني'}</span>
                 </button>
 
                 <button
@@ -1397,11 +1392,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     setActiveBriefIdx(nextIdx);
                     setBriefElapsedSec(0);
                     setIsPlayingBrief(true);
-                    playGentleAudioSynthesizer(DAILY_AUDIO_BRIEFS_30S[nextIdx].melodyHz);
+                    speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
                   }}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                 >
-                  {isEn ? 'Next Slot ⏭' : 'رسالة الفترة التالية ⏮'}
+                  {isEn ? 'Next tip ⏭' : 'النصيحة التالية ⏭'}
                 </button>
               </div>
             </div>
@@ -1434,13 +1429,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </span>
               <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {isEn
-                  ? 'Quick Parenting Reels'
-                  : 'ريلز نصائح التربية السريعة'}
+                  ? 'Short Videos & Practical Tips'
+                  : 'فيديوهات قصيرة ونصايح عملية'}
               </h2>
             </div>
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
               {isEn
-                ? 'Bite-sized visual tips tailored for every age stage'
+                ? 'Short, useful content for everyday parenting moments'
                 : 'كبسولات فيديو سريعة مخصصة لكل مرحلة عمرية'}
             </p>
           </div>
@@ -2688,12 +2683,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={
           isEn
             ? 'Visual Parenting Wisdom Gallery'
-            : 'معرض البطاقات المصورة · إشراقات تربوية سريعة'
+            : 'نصايح مصورة وسهلة التطبيق'
         }
         subtitle={
           isEn
             ? 'Swipe horizontally left or right to explore illustrated daily parenting tips'
-            : 'اسحب يميناً ويساراً لتصفح بطاقات الحكمة التربوية المصورة لعائلتكم'
+            : 'بطاقات سريعة فيها فكرة واحدة تقدر تطبقها مع طفلك'
         }
         badgeText={isEn ? '5 Cards' : '٥ بطاقات مصورة'}
         badgeClass="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
