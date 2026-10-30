@@ -246,7 +246,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [dbSyncWarning, setDbSyncWarning] = useState<string | null>(null);
   const [authSyncedToDb, setAuthSyncedToDb] = useState<boolean>(false);
-  const authSyncedToDbRef = React.useRef(false);
 
   const activeCountryObj = React.useMemo(
     () =>
@@ -422,7 +421,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     coreCountry: CountryCode;
     resolvedCity: string;
   }) => {
-    authSyncedToDbRef.current = false;
     setAuthSyncedToDb(false);
     const normalizedRole = normalizeOnboardingRoleToAccount(parentRole);
     const resolvedCurrency = getSuggestedCurrencyForCountry(params.coreCountry);
