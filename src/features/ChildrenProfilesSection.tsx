@@ -46,7 +46,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
   };
 
   return (
-    <section className="space-y-4" aria-label={isEn ? 'Children Profiles' : 'ملفات الأطفال'}>
+    <section className="space-y-4" aria-label={isEn ? 'Your Children & Their Growth' : 'ملفات أطفالك ومراحل نموهم'}>
       <div
         style={{ backgroundImage: getCardBackgroundSpec('children', state.darkMode).backgroundImageCss }}
         className="image-bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3"
@@ -54,7 +54,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-xs font-extrabold">
-              {isEn ? 'Hamza (6m) · Laila (4y) · Youssef (8y)' : 'حمزة (٦ شهور) · ليلى (٤ سنوات) · يوسف (٨ سنوات)'}
+              {isEn ? 'Your children’s profiles and milestones' : 'تابعوا تفاصيل كل طفل وتطوراته في مكان واحد'}
             </span>
           </div>
           <h2 className="image-card-title text-base sm:text-lg font-extrabold leading-snug">
@@ -208,7 +208,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                       onClick={() => onOpenEditChild(kid)}
                       className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs cursor-pointer"
                     >
-                      {isEn ? 'Edit 3D Profile / Growth' : 'تعديل الملف وقياسات النمو'}
+                      {isEn ? 'Edit Child Profile & Growth' : 'تعديل ملف الطفل وبيانات النمو'}
                     </button>
                     <button
                       type="button"
