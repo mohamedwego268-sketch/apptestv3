@@ -56,8 +56,9 @@ import {
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
 import { t } from './domain/i18n';
 import {
-  loadFamilySpaceState,
-  saveFamilySpaceState,
+  createEmptyFamilySpaceState,
+  loadFamilySpaceStateForFamily,
+  saveFamilySpaceStateForFamily,
   exportFamilySpaceJsonBackup,
   resetFamilySpaceState,
 } from './services/familyStorageService';
@@ -114,7 +115,8 @@ import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds must use the real authentication flow.
 
 export default function App() {
-  const [state, setState] = useState<FamilySpaceState>(() => loadFamilySpaceState());
+  const [state, setState] = useState<FamilySpaceState>(() => createEmptyFamilySpaceState());
+  const [activeFamilyStorageScope, setActiveFamilyStorageScope] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<PageId>('home');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
   const tabLoadingTimerRef = React.useRef<number | null>(null);
@@ -327,10 +329,10 @@ export default function App() {
     document.documentElement.lang = state.language === 'en' ? 'en' : 'ar';
     document.documentElement.dir = state.language === 'en' ? 'ltr' : 'rtl';
     document.title = getLocalizedDocumentTitle(state.language);
-    if (!saveFamilySpaceState(state)) {
-      showToast('تعذر الحفظ في المتصفح. صدّر نسخة احتياطية من الإعدادات.');
+    if (activeFamilyStorageScope && !saveFamilySpaceStateForFamily(state, activeFamilyStorageScope)) {
+      showToast('تعذر حفظ مساحة الأسرة على هذا الجهاز. صدّر نسخة احتياطية من الإعدادات.');
     }
-  }, [state]);
+  }, [state, activeFamilyStorageScope]);
 
   // Autonomous Master Controller hook (`Initializing` | `Synced` | `Offline-Fallback` | `Error-Recovery`)
   const master = useMasterController();
@@ -381,62 +383,65 @@ export default function App() {
     OnboardingFlowController.detectInitialState().then(
       ({ step, profile, restoredChildren, draft }) => {
         if (!active) return;
-        if (step === 'DASHBOARD' && profile) {
+        if (step === 'DASHBOARD' && profile && isValidUuid(profile.verifiedFamilyId)) {
+          const familyState = loadFamilySpaceStateForFamily(profile.verifiedFamilyId);
+          setActiveFamilyStorageScope(profile.verifiedFamilyId);
           setRecognizedProfile(profile);
           setOnboardingModalOpen(false);
           setActivePage('home');
-          setState((prev) => {
-            const nextCountry =
-              profile.country === 'SA' || profile.country === 'EG' ? profile.country : prev.country;
-            const nextRole =
-              profile.role === 'dad' || profile.role === 'mom' ? profile.role : prev.role;
-            const pid = nextRole === 'dad' ? 'father' : 'mother';
-            const nextKids =
-              Array.isArray(restoredChildren) && restoredChildren.length > 0
-                ? restoredChildren.map((child, idx) => ({
-                    id: child.id || idx + 1,
-                    remoteId: child.remote_id,
-                    name: child.name,
-                    gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
-                    birth: child.birth || '2022-05-14',
-                    interests: child.interests || '',
-                    emoji: child.gender === 'girl' ? '👧🏻' : '👦🏻',
-                    avatarTheme:
-                      child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
-                    useIllustratedAvatar: true,
-                  }))
-                : prev.kids;
-            return {
-              ...prev,
-              parentName: profile.fullName || prev.parentName,
-              role: nextRole,
-              country: nextCountry,
-              city: profile.city || prev.city,
-              currency: getSuggestedCurrencyForCountry(nextCountry),
-              activeParentAccount: pid,
-              parentAccounts: {
-                ...prev.parentAccounts,
-                [pid]: {
-                  ...prev.parentAccounts[pid],
-                  fullName: profile.fullName || prev.parentAccounts[pid].fullName,
-                  country: nextCountry,
-                  email: profile.email || prev.parentAccounts[pid].email,
-                  phoneNumber: profile.phone || prev.parentAccounts[pid].phoneNumber,
-                  emailVerified: Boolean(profile.emailVerified),
-                  phoneVerified: Boolean(profile.phoneVerified),
-                  onboardingCompleted: Boolean(profile.onboardingCompleted ?? true),
-                },
+          const nextCountry =
+            profile.country === 'SA' || profile.country === 'EG' ? profile.country : familyState.country;
+          const nextRole =
+            profile.role === 'dad' || profile.role === 'mom' ? profile.role : familyState.role;
+          const pid = nextRole === 'dad' ? 'father' : 'mother';
+          const nextKids = Array.isArray(restoredChildren)
+            ? restoredChildren.map((child, idx) => ({
+                id: child.id || idx + 1,
+                remoteId: child.remote_id,
+                name: child.name,
+                gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
+                birth: child.birth || '2022-05-14',
+                interests: child.interests || '',
+                emoji: child.gender === 'girl' ? '👧🏻' : '👦🏻',
+                avatarTheme:
+                  child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+                useIllustratedAvatar: true,
+              }))
+            : familyState.kids;
+          setState({
+            ...familyState,
+            parentName: profile.fullName || familyState.parentName,
+            role: nextRole,
+            country: nextCountry,
+            city: profile.city || familyState.city,
+            currency: getSuggestedCurrencyForCountry(nextCountry),
+            activeParentAccount: pid,
+            verifiedFamilyId: profile.verifiedFamilyId,
+            parentAccounts: {
+              ...familyState.parentAccounts,
+              [pid]: {
+                ...familyState.parentAccounts[pid],
+                fullName: profile.fullName || familyState.parentAccounts[pid].fullName,
+                country: nextCountry,
+                email: profile.email || familyState.parentAccounts[pid].email,
+                phoneNumber: profile.phone || familyState.parentAccounts[pid].phoneNumber,
+                emailVerified: Boolean(profile.emailVerified),
+                phoneVerified: Boolean(profile.phoneVerified),
+                onboardingCompleted: Boolean(profile.onboardingCompleted ?? true),
               },
-              kids: nextKids,
-            };
+            },
+            kids: nextKids,
           });
           showToast(
-            state.language === 'en'
-              ? `👋 Welcome back, ${profile.fullName}! Routed directly to your Family Dashboard.`
-              : `👋 أهلاً بعودتك، ${profile.fullName}! تم التعرف على حسابك المحفوظ وتوجيهك مباشرة للوحة العائلة.`
+            familyState.language === 'en'
+              ? `👋 Welcome back, ${profile.fullName}! Your family workspace has been restored.`
+              : `👋 أهلاً بعودتك، ${profile.fullName}! تم استعادة مساحة أسرتك المحفوظة.`
           );
-        } else if (step === 'WELCOME_PROFILE' || (draft && draft.currentStep)) {
-          // Open Welcome & Auth Gateway for new/logged-out users or restore in-progress draft
+        } else {
+          // No verified family ownership means no access to any previously cached family workspace.
+          setActiveFamilyStorageScope(null);
+          setRecognizedProfile(null);
+          setState(createEmptyFamilySpaceState());
           setOnboardingModalOpen(true);
         }
       }
@@ -1493,7 +1498,9 @@ export default function App() {
   const handleResetAllData = () => {
     OnboardingFlowController.clearSession();
     setRecognizedProfile(null);
-    const fresh = resetFamilySpaceState();
+    setActiveFamilyStorageScope(null);
+    const fresh = createEmptyFamilySpaceState();
+    resetFamilySpaceState();
     setState(fresh);
     setConfirmResetModal(false);
     showToast('تمت استعادة البيانات الافتراضية للنموذج');
@@ -2872,13 +2879,22 @@ export default function App() {
             persistedSession,
             syncedToDb,
           }) => {
-            if (persistedSession) {
+            const verifiedFamilyScope =
+              persistedSession?.verifiedFamilyId && isValidUuid(persistedSession.verifiedFamilyId)
+                ? persistedSession.verifiedFamilyId
+                : null;
+            const familyStateBase = verifiedFamilyScope
+              ? loadFamilySpaceStateForFamily(verifiedFamilyScope)
+              : createEmptyFamilySpaceState();
+            setActiveFamilyStorageScope(verifiedFamilyScope);
+            if (persistedSession && verifiedFamilyScope) {
               setRecognizedProfile(persistedSession);
             }
             setState((prev) => {
+              const base = verifiedFamilyScope ? familyStateBase : prev;
               const pid = role === 'dad' ? 'father' : 'mother';
               const nextKids =
-                Array.isArray(childrenProfiles) && childrenProfiles.length > 0
+                Array.isArray(childrenProfiles)
                   ? childrenProfiles.map((item, idx) => ({
                       id: item.id || idx + 1,
                       remoteId: item.remoteId,
@@ -2903,7 +2919,7 @@ export default function App() {
                         useIllustratedAvatar: true,
                       },
                     ]
-                  : prev.kids;
+                  : [];
               const genuineEmailVerified = Boolean(
                 emailVerified ?? persistedSession?.emailVerified ?? false
               );
@@ -2911,7 +2927,7 @@ export default function App() {
                 phoneVerified ?? persistedSession?.phoneVerified ?? false
               );
               return {
-                ...prev,
+                ...base,
                 parentName,
                 role,
                 country,
