@@ -548,7 +548,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold bg-teal-100 text-teal-900">
-              📲 {isEn ? 'Instant Family Account Linking (QR & Code)' : 'ربط حساب الأسرة الفوري (QR Code · رابط · كود يدوي)'}
+              📲 {isEn ? 'Family Invitations & Account Linking' : 'دعوات الأسرة وربط الحسابات (QR · رابط · رمز)'}
             </span>
             <h2 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] mt-1">
               {isEn
@@ -654,7 +654,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
               <div className="rounded-xl bg-slate-50 dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <div className="text-[10px] font-bold text-[var(--color-muted)]">
-                    {isEn ? 'Direct Invite Link' : 'رابط الدعوة المباشر'}
+                    {isEn ? 'Family Invite Link' : 'رابط دعوة الأسرة'}
                   </div>
                   <div dir="ltr" className="text-[11px] font-mono font-bold text-[var(--color-text)] truncate">
                     {inviteUrl}
@@ -785,7 +785,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 onClick={handleSimulateQrScanAndJoin}
                 className="flex-1"
               >
-                📷 {isEn ? 'Scan Dad’s QR & Join Instantly' : 'مسح رمز QR وانضمام فوري لحساب الأسرة'}
+                📷 {isEn ? 'Scan the Family QR Code' : 'امسح رمز الأسرة لبدء الانضمام'}
               </PrimaryCtaButton>
               <button
                 type="button"
@@ -823,7 +823,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-              🛡️ {isEn ? 'Role Management & Permissions (6 Family Roles)' : 'إدارة الأدوار والصلاحيات العائلية (الأب · الأم · الجد · الجدة · العم/الخال · العمة/الخالة)'}
+              🛡️ {isEn ? 'Family Roles & Access Permissions' : 'إدارة أدوار أفراد الأسرة وصلاحيات الوصول'}
             </h3>
             <p className="text-[11px] font-semibold text-[var(--color-muted)]">
               {isEn
