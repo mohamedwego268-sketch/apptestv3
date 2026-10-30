@@ -50,6 +50,7 @@ import {
 } from './supabaseDatabaseContract';
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../supabase.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { UI_STRINGS } from './i18n';
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -92,6 +93,16 @@ Object.defineProperty(globalThis, 'localStorage', {
   value: memoryStorage,
   configurable: true,
   writable: true,
+});
+
+describe('Bilingual interface copy', () => {
+  it('keeps Arabic and English translation keys aligned with no empty labels', () => {
+    assert.deepEqual(Object.keys(UI_STRINGS.ar).sort(), Object.keys(UI_STRINGS.en).sort());
+    for (const key of Object.keys(UI_STRINGS.ar)) {
+      assert.ok(UI_STRINGS.ar[key].trim(), `Arabic translation is empty: ${key}`);
+      assert.ok(UI_STRINGS.en[key].trim(), `English translation is empty: ${key}`);
+    }
+  });
 });
 
 describe('Country, currency and city normalization', () => {
