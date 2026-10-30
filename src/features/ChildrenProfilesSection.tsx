@@ -16,6 +16,7 @@ import {
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar, ThreeDIcon } from '../components/ThreeDVisuals';
 import { ChildGrowthChart } from '../components/ChildGrowthChart';
+import { ChildLifeTimelinePanel } from './ChildLifeTimelinePanel';
 
 export interface ChildrenProfilesSectionProps {
   state: FamilySpaceState;
@@ -223,6 +224,15 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
           })}
         </div>
       )}
+
+      {state.kids.map((kid) => (
+        <ChildLifeTimelinePanel
+          key={kid.id}
+          childId={kid.remoteId}
+          childName={locText(kid.name, lang)}
+          lang={lang}
+        />
+      ))}
     </section>
   );
 };
