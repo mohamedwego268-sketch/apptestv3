@@ -254,9 +254,14 @@ export default function App() {
   const [settingsParentName, setSettingsParentName] = useState<string>(state.parentName);
   const [settingsRole, setSettingsRole] = useState<ParentThemeRole>(state.role);
   const [settingsCountry, setSettingsCountry] = useState<CountryCode>(state.country);
-  const [settingsCity, setSettingsCity] = useState<string>(
-    state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')
-  );
+  const [settingsCity, setSettingsCity] = useState<string>(() => {
+    const countryCities = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
+    return (
+      countryCities.find(
+        (city) => city.id === state.city || city.subCitiesAr?.includes(state.city)
+      )?.id || countryCities[0].id
+    );
+  });
   const [settingsLanguage, setSettingsLanguage] = useState<LanguageCode>(state.language);
   const [settingsCurrency, setSettingsCurrency] = useState<CurrencyCode>(state.currency);
   const [settingsCalendarMode, setSettingsCalendarMode] = useState<CalendarDisplayMode>(
