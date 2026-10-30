@@ -781,8 +781,7 @@ export async function fetchChildrenFromSupabase(
           (typeof row.birth === 'string' && row.birth.trim()) ||
           (typeof row.birth_date === 'string' && row.birth_date.trim()) ||
           (typeof row.date_of_birth === 'string' && row.date_of_birth.trim()) ||
-          canonicalMatch?.birth ||
-          '2022-05-14';
+          '';
 
         const remoteId =
           typeof row.id === 'string' && row.id.trim()
@@ -816,19 +815,19 @@ export async function fetchChildrenFromSupabase(
               ? row.interests.trim()
               : typeof row.passions_or_heroes === 'string' && row.passions_or_heroes.trim()
               ? row.passions_or_heroes.trim()
-              : canonicalMatch?.interests || '',
+              : '',
           vaccinations_note:
             typeof row.vaccinations_note === 'string' && row.vaccinations_note.trim()
               ? row.vaccinations_note
-              : canonicalMatch?.vaccinations_note || '',
+              : '',
           growth_height_cm:
             typeof row.growth_height_cm === 'number'
               ? row.growth_height_cm
-              : canonicalMatch?.growth_height_cm ?? null,
+              : null,
           growth_weight_kg:
             typeof row.growth_weight_kg === 'number'
               ? row.growth_weight_kg
-              : canonicalMatch?.growth_weight_kg ?? null,
+              : null,
         };
       }
     );
@@ -870,20 +869,20 @@ function mapChildEntityToProfile(
       id: stableLocalId,
       ...(remoteId !== undefined ? { remoteId } : {}),
       name: child.name || canonicalSeedKid.name,
-      birth: child.birth || canonicalSeedKid.birth,
+      birth: child.birth || '',
       gender: isGirl ? 'girl' : 'boy',
       emoji: child.emoji || canonicalSeedKid.emoji,
       avatarTheme: child.avatar_theme || canonicalSeedKid.avatarTheme,
-      interests: child.interests || canonicalSeedKid.interests,
-      vaccinationsNote: child.vaccinations_note || canonicalSeedKid.vaccinationsNote,
+      interests: child.interests || '',
+      vaccinationsNote: child.vaccinations_note || undefined,
       growthHeightCm:
         typeof child.growth_height_cm === 'number'
           ? child.growth_height_cm
-          : canonicalSeedKid.growthHeightCm,
+          : undefined,
       growthWeightKg:
         typeof child.growth_weight_kg === 'number'
           ? child.growth_weight_kg
-          : canonicalSeedKid.growthWeightKg,
+          : undefined,
     };
   }
 
@@ -891,7 +890,7 @@ function mapChildEntityToProfile(
     id: stableLocalId,
     ...(remoteId !== undefined ? { remoteId } : {}),
     name: child.name || `طفل ${fallbackIdx + 1}`,
-    birth: child.birth || '2022-05-14',
+    birth: child.birth || '',
     gender: isGirl ? 'girl' : 'boy',
     emoji: child.emoji || (isGirl ? '👧🏻' : '👦🏻'),
     avatarTheme: child.avatar_theme || (isGirl ? 'artist' : 'astronaut'),
@@ -2730,6 +2729,7 @@ export async function saveOnboardingChildrenToSupabase(
     const cleanName = (item.name || '').trim().toLowerCase();
     if (!cleanName) return false;
     const cleanBirth = (item.birth || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanBirth)) return false;
     const key = `${cleanName}::${cleanBirth}`;
     if (seenKeys.has(key)) return false;
     seenKeys.add(key);
@@ -2761,7 +2761,7 @@ export async function saveOnboardingChildrenToSupabase(
       ...(isValidUuid(item.remoteId) ? { remote_id: item.remoteId.trim() } : {}),
       family_id: targetFamilyId,
       name: (item.name || '').trim() || `طفل ${idx + 1}`,
-      birth: (item.birth || '').trim() || '2022-05-14',
+      birth: (item.birth || '').trim(),
       gender,
       emoji: gender === 'girl' ? '👧🏻' : '👦🏻',
       avatar_theme: item.avatarTheme || (gender === 'girl' ? 'artist' : 'astronaut'),
@@ -2815,7 +2815,7 @@ export async function saveOnboardingChildrenToSupabase(
     }
 
     const fullPayload = mappedChildren.map((child) => {
-      const ageInfo = calculateChildAge(child.birth || '2022-05-14', 'ar');
+      const ageInfo = calculateChildAge(child.birth, 'ar');
       const matchedRemoteUuid =
         (isValidUuid(child.remote_id) && child.remote_id.trim()) ||
         existingByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`) ||
@@ -2841,7 +2841,7 @@ export async function saveOnboardingChildrenToSupabase(
     });
 
     const minimalPayload = mappedChildren.map((child) => {
-      const ageInfo = calculateChildAge(child.birth || '2022-05-14', 'ar');
+      const ageInfo = calculateChildAge(child.birth, 'ar');
       const row: Record<string, unknown> = {
         family_id: verifiedFamilyUuid,
         name: child.name,
