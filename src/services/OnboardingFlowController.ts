@@ -437,7 +437,7 @@ export class OnboardingFlowController {
           parsed.verificationChannel === 'email' ? 'email' : 'sms',
         otpCode: typeof parsed.otpCode === 'string' ? parsed.otpCode : '1234',
         isOtpVerified: Boolean(parsed.isOtpVerified),
-        childrenList: this.sanitizeChildrenList(parsed.childrenList),
+        childrenList: this.sanitizeChildrenList(parsed.childrenList, true),
         coParentName:
           typeof parsed.coParentName === 'string'
             ? parsed.coParentName
@@ -491,7 +491,7 @@ export class OnboardingFlowController {
         childrenList:
           data.childrenList ??
           existingDraft?.childrenList ??
-          INITIAL_CANONICAL_ONBOARDING_CHILDREN,
+          [],
         coParentName:
           data.coParentName ?? existingDraft?.coParentName ?? 'أحمد (الأب)',
         coParentEmail:
