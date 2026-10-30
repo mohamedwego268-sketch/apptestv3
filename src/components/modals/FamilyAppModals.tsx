@@ -1349,7 +1349,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 className="space-y-1.5"
               >
                 <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
-                  📂 {isEn ? 'Platform Sections & Sub-Menus (12)' : 'أقسام المنصة والقوائم الفرعية (١٢ قسم)'}
+                  📂 {isEn ? 'App Sections' : 'أقسام التطبيق'}
                 </div>
 
                 {(() => {
@@ -1697,12 +1697,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       titleAr: '٧. الدكتور والعيادة',
                       titleEn: '7. Doctor & Pediatric Clinic',
                       badgeAr: 'حجز فوري',
-                      badgeEn: 'Instant Booking',
+                      badgeEn: 'دليل الخدمات',
                       subItems: [
                         {
                           id: 'med-book-doc',
-                          labelAr: 'حجز دكتور أطفال معتمد',
-                          labelEn: 'Book Verified Pediatrician',
+                          labelAr: 'دليل أطباء الأطفال والعيادات',
+                          labelEn: 'Find Pediatricians & Clinics',
                           icon: '👨‍⚕️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1721,8 +1721,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'med-instant-consult',
-                          labelAr: 'استشارات طبية وتربوية فورية',
-                          labelEn: 'Instant Medical Consultations',
+                          labelAr: 'معلومات وإرشادات صحية موثوقة',
+                          labelEn: 'Health Guides & Information',
                           icon: '⚡',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1783,7 +1783,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       subItems: [
                         {
                           id: 'comm-open-chat',
-                          labelAr: 'شات النقاشات المفتوحة',
+                          labelAr: 'موضوعات ونقاشات الأهل',
                           labelEn: 'Open Parents Discussions',
                           icon: '💬',
                           onSelect: () => {
@@ -1803,8 +1803,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'comm-safe',
-                          labelAr: 'مجتمع آمن وموثق للعائلات',
-                          labelEn: 'Verified Safe Family Community',
+                          labelAr: 'مساحة تواصل للأهل',
+                          labelEn: 'Parent Community Space',
                           icon: '🛡️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('community');
@@ -1942,8 +1942,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       iconId: 'shield',
                       titleAr: '١٣. تواصل معنا والدعم',
                       titleEn: '13. Contact Us & Support Hub',
-                      badgeAr: 'دعم ٢٤/٧',
-                      badgeEn: '24/7 Care',
+                      badgeAr: 'الدعم',
+                      badgeEn: 'Support',
                       subItems: [
                         {
                           id: 'contact-direct-page',
@@ -1957,8 +1957,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'contact-whatsapp-hotline',
-                          labelAr: 'خدمة العملاء واتساب وهاتف: +20 100 888 4422',
-                          labelEn: 'Customer Care WhatsApp & Phone: +20 100 888 4422',
+                          labelAr: 'قنوات التواصل والدعم',
+                          labelEn: 'Contact & Support Channels',
                           icon: '📞',
                           onSelect: () => {
                             onNavigateFromDrawer?.('contact');
@@ -1967,8 +1967,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'contact-official-email',
-                          labelAr: 'البريد الرسمي: support@nekbaar.com (٩ ص – ١١ م)',
-                          labelEn: 'Official Email: support@nekbaar.com (9 AM – 11 PM)',
+                          labelAr: 'معلومات التواصل الرسمية',
+                          labelEn: 'Official Contact Information',
                           icon: '🌐',
                           onSelect: () => {
                             onNavigateFromDrawer?.('contact');
