@@ -2874,7 +2874,7 @@ export async function linkCoParentAccountInSupabase(
     payload.pairingToken?.trim() ||
     generateFamilyPairingToken(targetFamilyId, payload.partnerPhone);
 
-  // Persist pairing record locally first for instant offline resilience
+  // Persist pairing draft locally first without marking verified=true unless DB session is verified
   try {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(
@@ -2887,7 +2887,7 @@ export async function linkCoParentAccountInSupabase(
           partnerEmail: payload.partnerEmail.trim(),
           method: payload.method,
           pairingToken: resolvedToken,
-          verified: true,
+          verified: false,
           linkedAt: new Date().toISOString(),
         })
       );
@@ -2898,13 +2898,13 @@ export async function linkCoParentAccountInSupabase(
 
   if (!activeClient) {
     return {
-      linked: true,
+      linked: false,
       syncedToDb: false,
       familyId: targetFamilyId,
       partnerUserId,
       pairingToken: resolvedToken,
       method: payload.method,
-      error: null,
+      error: 'Supabase client is not initialized.',
     };
   }
 
@@ -2916,7 +2916,7 @@ export async function linkCoParentAccountInSupabase(
 
     if (!verifiedCtx.authenticated || !verifiedFamilyUuid) {
       return {
-        linked: true,
+        linked: false,
         syncedToDb: false,
         familyId: targetFamilyId,
         partnerUserId,
@@ -2928,6 +2928,7 @@ export async function linkCoParentAccountInSupabase(
       };
     }
 
+    const genuinelyVerified = Boolean(verifiedCtx.emailVerified || verifiedCtx.phoneVerified);
     const { error: pairErr } = await withSupabaseTimeout(
       activeClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).upsert(
         {
@@ -2940,7 +2941,7 @@ export async function linkCoParentAccountInSupabase(
           partner_role: payload.partnerRole,
           pairing_method: payload.method,
           pairing_token_hash: resolvedToken,
-          verified: true,
+          verified: genuinelyVerified,
           linked_at: new Date().toISOString(),
         },
         { onConflict: 'pairing_token_hash' }
@@ -2948,7 +2949,7 @@ export async function linkCoParentAccountInSupabase(
     );
 
     return {
-      linked: true,
+      linked: !pairErr,
       syncedToDb: !pairErr,
       familyId: verifiedFamilyUuid,
       partnerUserId,
@@ -2958,7 +2959,7 @@ export async function linkCoParentAccountInSupabase(
     };
   } catch (err) {
     return {
-      linked: true,
+      linked: false,
       syncedToDb: false,
       familyId: targetFamilyId,
       partnerUserId,
@@ -2968,3 +2969,141 @@ export async function linkCoParentAccountInSupabase(
     };
   }
 }
+
+/**
+ * Truthful Supabase OAuth Sign-In (`signInWithOAuth`):
+ * Calls Supabase Auth `signInWithOAuth` for `'google' | 'apple' | 'facebook' | 'azure'`.
+ * Never fakes authentication with demo emails or marks the user as signed in if the OAuth
+ * provider is disabled in Supabase Dashboard (`external.<provider> = false`).
+ */
+export async function signInWithOAuthProviderInSupabase(
+  provider: 'google' | 'apple' | 'facebook' | 'azure',
+  customClient?: SupabaseClient | null
+): Promise<{
+  initiated: boolean;
+  provider: 'google' | 'apple' | 'facebook' | 'azure';
+  redirectUrl: string | null;
+  errorAr: string | null;
+  errorEn: string | null;
+}> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return {
+      initiated: false,
+      provider,
+      redirectUrl: null,
+      errorAr: 'خدمة المصادقة السحابية غير متصلة حالياً.',
+      errorEn: 'Supabase Auth client is not initialized.',
+    };
+  }
+
+  try {
+    const res = await withSupabaseTimeout(
+      activeClient.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+          skipBrowserRedirect: true,
+        },
+      }),
+      3500
+    );
+
+    if (res.error) {
+      return {
+        initiated: false,
+        provider,
+        redirectUrl: null,
+        errorAr: `مزود تسجيل الدخول (${provider}) غير مفعّل في إعدادات Supabase Auth حالياً. يرجى التسجيل أو الدخول بالبريد الإلكتروني وكلمة المرور.`,
+        errorEn: `OAuth provider (${provider}) is not enabled in Supabase Auth (${res.error.message}). Please use Email & Password.`,
+      };
+    }
+
+    const redirectUrl =
+      typeof res.data?.url === 'string' && res.data.url.trim().startsWith('http')
+        ? res.data.url.trim()
+        : null;
+
+    if (!redirectUrl) {
+      return {
+        initiated: false,
+        provider,
+        redirectUrl: null,
+        errorAr: `مزود تسجيل الدخول (${provider}) غير مفعّل حالياً في مشروع Supabase. يرجى استخدام البريد الإلكتروني وكلمة المرور.`,
+        errorEn: `OAuth provider (${provider}) is not enabled in Supabase Dashboard. Please use Email & Password.`,
+      };
+    }
+
+    return {
+      initiated: true,
+      provider,
+      redirectUrl,
+      errorAr: null,
+      errorEn: null,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'OAuth request failed';
+    return {
+      initiated: false,
+      provider,
+      redirectUrl: null,
+      errorAr: `تعذر الاتصال بمزود تسجيل الدخول (${provider}). يرجى استخدام البريد الإلكتروني وكلمة المرور.`,
+      errorEn: `Unable to initiate OAuth with ${provider}: ${msg}`,
+    };
+  }
+}
+
+/**
+ * Deletes a child record from `public.children` in Supabase ONLY when:
+ * 1. The caller has an active authenticated session.
+ * 2. The caller's verified `family_id` owns the child record.
+ * 3. `remoteId` is a valid UUID.
+ */
+export async function deleteChildFromSupabase(
+  params: { remoteId?: string | number | null; childName?: string },
+  customClient?: SupabaseClient | null
+): Promise<{ deleted: boolean; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return { deleted: false, error: 'Supabase client is not initialized.' };
+  }
+
+  if (!isValidUuid(params.remoteId)) {
+    return {
+      deleted: false,
+      error: 'Delete skipped: child record does not have a remote database UUID.',
+    };
+  }
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      return {
+        deleted: false,
+        error:
+          verifiedCtx.error ||
+          'Delete blocked: Authenticated session and verified UUID family_id are required.',
+      };
+    }
+
+    const { error } = await withSupabaseTimeout(
+      activeClient
+        .from(SUPABASE_TABLES.CHILDREN)
+        .delete()
+        .eq('id', params.remoteId.trim())
+        .eq('family_id', verifiedCtx.verifiedFamilyId)
+    );
+
+    if (error) {
+      return { deleted: false, error: error.message };
+    }
+
+    return { deleted: true, error: null };
+  } catch (err) {
+    return {
+      deleted: false,
+      error: err instanceof Error ? err.message : 'Failed to delete child from Supabase.',
+    };
+  }
+}
+

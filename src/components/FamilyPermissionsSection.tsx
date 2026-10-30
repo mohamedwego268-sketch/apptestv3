@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   ChildProfile,
   CountryCode,
-  DEMO_OTP_CODE,
   ExtendedRoleCategory,
   FamilyInvitation,
   FamilyMember,
@@ -14,6 +13,7 @@ import {
   sanitizeUserText,
   validatePhoneForCountry,
 } from '../domain/familySpaceCore';
+import { verifyAccountIdentityOtpInSupabase } from '../services/supabaseService';
 import { PrimaryCtaButton } from './DesignSystem';
 
 export type SixFamilyRoleId =
@@ -403,7 +403,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     });
   };
 
-  const handleVerifyOtpAndSaveParent = () => {
+  const handleVerifyOtpAndSaveParent = async () => {
     const check = validatePhoneForCountry(phoneInput, countryInput);
     if (!check.valid) {
       setVerificationMsg({
@@ -412,22 +412,51 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
       });
       return;
     }
-    if (otpInput.trim() !== DEMO_OTP_CODE) {
+    if (!otpInput.trim() || otpInput.trim().length < 4) {
       setVerificationMsg({
         type: 'err',
         text: isEn
-          ? 'Incorrect OTP verification code. Please check and try again.'
-          : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.',
+          ? 'Please enter the verification code sent via Supabase Auth.'
+          : 'يرجى إدخال رمز التحقق المرسل عبر خدمة المصادقة.',
       });
       return;
     }
+
+    const verifyRes = await verifyAccountIdentityOtpInSupabase({
+      email: emailInput.trim() || currentParent.email,
+      phone: check.fullInternational,
+      token: otpInput.trim(),
+      type: 'sms',
+    });
+
+    if (!verifyRes.verified) {
+      // Save contact details locally without faking phoneVerified or emailVerified
+      onUpdateParentAccount(editingParent, {
+        country: countryInput,
+        phoneCode: countryInput === 'SA' ? '+966' : '+20',
+        phoneNumber: check.normalized,
+        phoneVerified: false,
+        email: emailInput.trim() || currentParent.email,
+        emailVerified: Boolean(currentParent.emailVerified),
+      });
+      setVerificationMsg({
+        type: 'err',
+        text:
+          verifyRes.error ||
+          (isEn
+            ? 'Phone saved locally, but SMS OTP could not be verified by Supabase Auth.'
+            : 'تم حفظ الرقم محلياً، لكن لم يتم التحقق من رمز OTP عبر Supabase Auth.'),
+      });
+      return;
+    }
+
     onUpdateParentAccount(editingParent, {
       country: countryInput,
       phoneCode: countryInput === 'SA' ? '+966' : '+20',
       phoneNumber: check.normalized,
-      phoneVerified: true,
+      phoneVerified: verifyRes.phoneVerified,
       email: emailInput.trim() || currentParent.email,
-      emailVerified: true,
+      emailVerified: verifyRes.emailVerified || Boolean(currentParent.emailVerified),
       onboardingCompleted: true,
     });
     setOtpRequested(false);
@@ -435,8 +464,8 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     setVerificationMsg({
       type: 'ok',
       text: isEn
-        ? '✅ Phone number (OTP) and Email verified!'
-        : '✅ تم توثيق رقم الهاتف (OTP) والبريد الإلكتروني بنجاح!',
+        ? '✅ Identity verified via Supabase Auth!'
+        : '✅ تم توثيق الهوية بنجاح عبر Supabase Auth!',
     });
   };
 

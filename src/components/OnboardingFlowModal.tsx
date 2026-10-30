@@ -17,6 +17,7 @@ import {
   resendAccountVerificationOtpInSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
+  signInWithOAuthProviderInSupabase,
   verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
 import {
@@ -541,6 +542,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.')
         );
       }
+      return authRes;
     } catch {
       setAuthSyncedToDb(false);
       setDbSyncWarning(
@@ -548,6 +550,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
           : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.'
       );
+      return null;
     }
   };
 
@@ -612,71 +615,36 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
   };
 
-  const handleSocialQuickAuth = (provider: SocialProviderId) => {
+  const handleSocialQuickAuth = async (provider: SocialProviderId) => {
     setErrorMsg(null);
     setDbSyncWarning(null);
-    const providerProfiles: Record<
-      SocialProviderId,
-      { email: string; nameAr: string; nameEn: string }
-    > = {
-      gmail: {
-        email: parentRole === 'dad' ? 'ahmad.family@gmail.com' : 'maryam.family@gmail.com',
-        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
-        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
-      },
-      icloud: {
-        email: parentRole === 'dad' ? 'ahmad.parent@icloud.com' : 'maryam.parent@icloud.com',
-        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
-        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
-      },
-      facebook: {
-        email: parentRole === 'dad' ? 'ahmad.fb@nekbaar.app' : 'maryam.fb@nekbaar.app',
-        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
-        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
-      },
-      outlook: {
-        email: parentRole === 'dad' ? 'ahmad.family@outlook.com' : 'maryam.family@outlook.com',
-        nameAr: parentRole === 'dad' ? 'أحمد' : 'مريم',
-        nameEn: parentRole === 'dad' ? 'Ahmad' : 'Maryam',
-      },
+    const providerMap: Record<SocialProviderId, 'google' | 'apple' | 'facebook' | 'azure'> = {
+      gmail: 'google',
+      icloud: 'apple',
+      facebook: 'facebook',
+      outlook: 'azure',
     };
 
-    const chosen = providerProfiles[provider];
-    const cleanName = fullName.trim() || (isEn ? chosen.nameEn : chosen.nameAr);
-    const cleanPhone = phone.trim() || activeCountryObj.phonePlaceholder;
-    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
-    setFullName(cleanName);
-    setEmail(chosen.email);
+    const supabaseProvider = providerMap[provider];
+    setIsSubmitting(true);
+    const oauthRes = await signInWithOAuthProviderInSupabase(supabaseProvider);
+    setIsSubmitting(false);
 
-    const registrationData = {
-      fullName: cleanName,
-      parentName: cleanName,
-      email: chosen.email,
-      phone: cleanPhone,
-      country: selectedCountryCode,
-      role: parentRole === 'dad' ? 'أب' : 'أم',
-      parentRole,
-      city: resolvedCity,
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      localStorage.setItem('nekbaar_temp_user', JSON.stringify(registrationData));
-    } catch {
-      // Ignore storage quota errors
+    if (!oauthRes.initiated || !oauthRes.redirectUrl) {
+      // Never fake OAuth authentication with hardcoded emails or advance to Step 2 when OAuth is disabled
+      setErrorMsg(
+        isEn
+          ? oauthRes.errorEn ||
+              `OAuth provider (${provider}) is not enabled in Supabase Dashboard. Please use Email & Password.`
+          : oauthRes.errorAr ||
+              `مزود تسجيل الدخول (${provider}) غير مفعّل في إعدادات Supabase حالياً. يرجى استخدام البريد الإلكتروني وكلمة المرور.`
+      );
+      return;
     }
 
-    setCurrentStep(2);
-
-    const coreCountry = activeCountryObj.mappedCoreCountry;
-    void syncAuthAndLocationWithSupabase({
-      cleanName,
-      cleanEmail: chosen.email,
-      cleanPassword: password,
-      cleanPhone,
-      coreCountry,
-      resolvedCity,
-    });
+    if (typeof window !== 'undefined') {
+      window.location.assign(oauthRes.redirectUrl);
+    }
   };
 
   const handleFirstStepSubmit = (e: React.FormEvent) => {

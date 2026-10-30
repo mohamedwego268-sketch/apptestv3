@@ -62,8 +62,12 @@ import {
   resetFamilySpaceState,
 } from './services/familyStorageService';
 import {
+  deleteChildFromSupabase,
   fetchFamilySpaceFromSupabase,
+  isValidUuid,
+  saveOnboardingChildrenToSupabase,
   syncFamilySpaceToSupabase,
+  verifyAccountIdentityOtpInSupabase,
 } from './services/supabaseService';
 import { useMasterController } from './services/MasterAppController';
 import { getLocalizedDocumentTitle, locText } from './utils/familyFormatters';
@@ -751,6 +755,10 @@ export default function App() {
     }
 
     const emoji = gender === 'girl' ? '👧🏻' : '👦🏻';
+    const targetLocalId = editingChild
+      ? editingChild.id
+      : Date.now() + Math.floor(Math.random() * 100);
+    const existingRemoteId = editingChild?.remoteId;
 
     setState((prev) => {
       if (editingChild) {
@@ -779,7 +787,7 @@ export default function App() {
         };
       }
       const newChild: ChildProfile = {
-        id: Date.now() + Math.floor(Math.random() * 100),
+        id: targetLocalId,
         name,
         gender,
         birth,
@@ -797,6 +805,38 @@ export default function App() {
       return { ...prev, kids: [...prev.kids, newChild] };
     });
 
+    const verifiedFamilyUuid =
+      (isValidUuid(state.verifiedFamilyId) && state.verifiedFamilyId) ||
+      (isValidUuid(recognizedProfile?.verifiedFamilyId) && recognizedProfile?.verifiedFamilyId) ||
+      null;
+
+    if (verifiedFamilyUuid) {
+      void saveOnboardingChildrenToSupabase({
+        familyId: verifiedFamilyUuid,
+        childrenList: [
+          {
+            id: targetLocalId,
+            remoteId: isValidUuid(existingRemoteId) ? String(existingRemoteId) : undefined,
+            name,
+            birth,
+            gender,
+            interests,
+            avatarTheme,
+          },
+        ],
+      }).then((saveRes) => {
+        if (saveRes.synced && saveRes.savedChildren[0]?.remote_id) {
+          const assignedRemoteId = saveRes.savedChildren[0].remote_id;
+          setState((prev) => ({
+            ...prev,
+            kids: prev.kids.map((k) =>
+              k.id === targetLocalId ? { ...k, remoteId: assignedRemoteId } : k
+            ),
+          }));
+        }
+      });
+    }
+
     setChildModalOpen(false);
     setEditingChild(null);
     showToast(
@@ -808,6 +848,13 @@ export default function App() {
 
   const handleConfirmDeleteChild = () => {
     if (confirmDeleteChildId === null) return;
+    const targetChild = state.kids.find((k) => k.id === confirmDeleteChildId);
+    if (targetChild && isValidUuid(targetChild.remoteId)) {
+      void deleteChildFromSupabase({
+        remoteId: targetChild.remoteId,
+        childName: targetChild.name,
+      });
+    }
     setState((prev) => deleteChildCascade(prev, confirmDeleteChildId));
     setConfirmDeleteChildId(null);
     showToast('تم حذف ملف الطفل والعناصر المرتبطة به');
@@ -1313,7 +1360,7 @@ export default function App() {
     );
   };
 
-  const handleSaveBottomInternationalAndPhone = () => {
+  const handleSaveBottomInternationalAndPhone = async () => {
     const phoneCheck = validatePhoneForCountry(settingsPhoneInput, settingsCountry);
     if (!phoneCheck.valid) {
       showToast(
@@ -1338,13 +1385,38 @@ export default function App() {
       return;
     }
 
-    if (settingsOtpStep && settingsOtpCode.trim() !== DEMO_OTP_CODE) {
-      showToast(
-        lang === 'en'
-          ? 'Incorrect OTP verification code. Please check and try again.'
-          : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.'
-      );
-      return;
+    let genuinePhoneVerified = Boolean(
+      recognizedProfile?.phoneVerified && !phoneOrCountryChanged
+    );
+
+    if (settingsOtpStep) {
+      if (!settingsOtpCode.trim() || settingsOtpCode.trim().length < 4) {
+        showToast(
+          lang === 'en'
+            ? 'Please enter the OTP verification code.'
+            : 'يرجى إدخال رمز التحقق.'
+        );
+        return;
+      }
+
+      const verifyRes = await verifyAccountIdentityOtpInSupabase({
+        email: currentParent.email,
+        phone: phoneCheck.fullInternational,
+        token: settingsOtpCode.trim(),
+        type: 'sms',
+      });
+
+      if (verifyRes.verified && verifyRes.phoneVerified) {
+        genuinePhoneVerified = true;
+      } else if (settingsOtpCode.trim() !== DEMO_OTP_CODE) {
+        showToast(
+          verifyRes.error ||
+            (lang === 'en'
+              ? 'Incorrect OTP verification code. Please check and try again.'
+              : 'رمز التحقق غير صحيح. يرجى التأكد والمحاولة مرة أخرى.')
+        );
+        return;
+      }
     }
 
     setState((prev) => {
@@ -1365,7 +1437,8 @@ export default function App() {
             country: settingsCountry,
             phoneCode: settingsCountry === 'SA' ? '+966' : '+20',
             phoneNumber: phoneCheck.normalized,
-            phoneVerified: true,
+            // Never mark phoneVerified true unless genuinely confirmed by Supabase Auth!
+            phoneVerified: genuinePhoneVerified,
           },
         },
       };
@@ -1374,9 +1447,13 @@ export default function App() {
     setSettingsOtpCode('');
     setCurrencySuggestionBanner(null);
     showToast(
-      lang === 'en'
-        ? 'Country, City, Currency & Verified Phone updated!'
-        : 'تم تحديث الدولة والمدينة والعملة وتوثيق رقم الهاتف الدولي بنجاح!'
+      genuinePhoneVerified
+        ? lang === 'en'
+          ? 'Country, City, Currency & Verified Phone updated!'
+          : 'تم تحديث الدولة والمدينة والعملة وتوثيق رقم الهاتف الدولي بنجاح!'
+        : lang === 'en'
+        ? 'Country, City, Currency & Phone saved locally (SMS verification pending).'
+        : 'تم حفظ الدولة والمدينة والعملة ورقم الهاتف محلياً (توثيق SMS عبر السحابة قيد التفعيل).'
     );
   };
 

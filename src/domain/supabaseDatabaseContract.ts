@@ -421,3 +421,65 @@ export function mapChildProfileToContractRow(
     growth_weight_kg: typeof child.growthWeightKg === 'number' ? child.growthWeightKg : null,
   };
 }
+
+/**
+ * Verified Live Supabase Auth Provider Settings (`qbwnzunusmaidciakuod` `/auth/v1/settings`):
+ * Used to prevent fake OAuth or fake SMS verification in the frontend when providers are disabled.
+ */
+export const VERIFIED_LIVE_AUTH_SETTINGS = {
+  emailEnabled: true,
+  phoneEnabled: false,
+  mailerAutoconfirm: false,
+  oauthProviders: {
+    google: false,
+    apple: false,
+    facebook: false,
+    azure: false,
+  },
+} as const;
+
+export type SupportedOAuthProvider = 'google' | 'apple' | 'facebook' | 'azure';
+
+export function evaluateOAuthProviderAvailability(
+  provider: SupportedOAuthProvider,
+  oauthResponse?: {
+    data?: { url?: string | null; provider?: string | null } | null;
+    error?: { message?: string } | null;
+  }
+): {
+  available: boolean;
+  redirectUrl: string | null;
+  reasonAr: string | null;
+  reasonEn: string | null;
+} {
+  if (oauthResponse?.error?.message) {
+    return {
+      available: false,
+      redirectUrl: null,
+      reasonAr: `تعذر تسجيل الدخول عبر المزود الخارجي (${provider}): المزود غير مفعّل في إعدادات Supabase Auth حالياً. يرجى استخدام البريد الإلكتروني وكلمة المرور.`,
+      reasonEn: `OAuth provider (${provider}) is not enabled in Supabase Auth settings (${oauthResponse.error.message}). Please sign in with Email & Password.`,
+    };
+  }
+
+  const url =
+    typeof oauthResponse?.data?.url === 'string' && oauthResponse.data.url.trim().startsWith('http')
+      ? oauthResponse.data.url.trim()
+      : null;
+
+  if (!url) {
+    return {
+      available: false,
+      redirectUrl: null,
+      reasonAr: `مزود تسجيل الدخول (${provider}) غير مفعّل حالياً في إعدادات Supabase. يرجى استخدام البريد الإلكتروني وكلمة المرور.`,
+      reasonEn: `OAuth provider (${provider}) is not configured in Supabase Dashboard. Please use Email & Password.`,
+    };
+  }
+
+  return {
+    available: true,
+    redirectUrl: url,
+    reasonAr: null,
+    reasonEn: null,
+  };
+}
+

@@ -17,6 +17,7 @@ import {
 import {
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  deleteChildFromSupabase,
   ensureSharedFamilyRecordInSupabase,
   fetchChildrenFromSupabase,
   fetchFamilySpaceFromSupabase,
@@ -24,6 +25,7 @@ import {
   isCanonicalThreeDemoKids,
   isDefaultDemoSeedState,
   isValidUuid,
+  linkCoParentAccountInSupabase,
   normalizeOnboardingAuthPayload,
   normalizeOnboardingRoleToAccount,
   normalizeOnboardingRoleToTheme,
@@ -31,13 +33,16 @@ import {
   restoreAuthenticatedAccountFromSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
+  signInWithOAuthProviderInSupabase,
   signOutFromSupabase,
   syncFamilySpaceToSupabase,
   verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
 import {
+  VERIFIED_LIVE_AUTH_SETTINGS,
   VERIFIED_LIVE_TABLE_COLUMNS,
   evaluateAuthSessionResponse,
+  evaluateOAuthProviderAvailability,
   mapChildProfileToContractRow,
   verifyDatabaseFamilyMembership,
 } from './supabaseDatabaseContract';
@@ -1344,6 +1349,140 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
       'created_at',
     ]);
   });
+
+  it('14. Truthful OAuth & Co-Parent Verification: never fakes OAuth login or co-parent verification when providers or sessions are unverified', async () => {
+    assert.equal(VERIFIED_LIVE_AUTH_SETTINGS.oauthProviders.google, false);
+    assert.equal(VERIFIED_LIVE_AUTH_SETTINGS.oauthProviders.apple, false);
+    assert.equal(VERIFIED_LIVE_AUTH_SETTINGS.oauthProviders.facebook, false);
+    assert.equal(VERIFIED_LIVE_AUTH_SETTINGS.oauthProviders.azure, false);
+
+    const disabledEval = evaluateOAuthProviderAvailability('google', {
+      data: { url: null, provider: 'google' },
+      error: { message: 'Unsupported provider: provider is not enabled' },
+    });
+    assert.equal(disabledEval.available, false);
+    assert.equal(disabledEval.redirectUrl, null);
+    assert.ok(disabledEval.reasonAr?.includes('google'));
+
+    const mockDisabledOAuthClient = {
+      auth: {
+        async signInWithOAuth() {
+          return {
+            data: { provider: 'google', url: null },
+            error: { message: 'Unsupported provider: provider is not enabled' },
+          };
+        },
+        async getSession() {
+          return { data: { session: null }, error: null };
+        },
+      },
+    } as unknown as SupabaseClient;
+
+    const oauthRes = await signInWithOAuthProviderInSupabase('google', mockDisabledOAuthClient);
+    assert.equal(oauthRes.initiated, false);
+    assert.equal(oauthRes.redirectUrl, null);
+    assert.ok(oauthRes.errorEn?.includes('not enabled'));
+
+    // Unauthenticated co-parent linking must never report linked=true or verified=true
+    const coParentRes = await linkCoParentAccountInSupabase(
+      {
+        familyId: SHARED_FAMILY_ID,
+        partnerRole: 'mother',
+        partnerName: 'مريم',
+        partnerPhone: '551234567',
+        partnerEmail: 'maryam@example.com',
+        country: 'SA',
+        method: 'phone_otp',
+      },
+      mockDisabledOAuthClient
+    );
+    assert.equal(coParentRes.linked, false);
+    assert.equal(coParentRes.syncedToDb, false);
+  });
+
+  it('15. Child Deletion & Family Ownership Enforcement: deletes child only when owned by authenticated family', async () => {
+    const familyAUuid = '44444444-4444-4444-8444-444444444444';
+    const childAUuid = '55555555-5555-4555-8555-555555555555';
+    const authUserAUuid = '66666666-6666-4666-8666-666666666666';
+    let deletedChildId: string | null = null;
+    let deletedFamilyId: string | null = null;
+
+    const mockAuthClient = {
+      auth: {
+        async getSession() {
+          return {
+            data: {
+              session: {
+                access_token: 'jwt_valid',
+                user: {
+                  id: authUserAUuid,
+                  email: 'owner@nekbaar.app',
+                  email_confirmed_at: '2026-10-30T00:00:00Z',
+                },
+              },
+            },
+            error: null,
+          };
+        },
+      },
+      from(table: string) {
+        if (table === 'users') {
+          return {
+            select() {
+              return {
+                eq() {
+                  return {
+                    async limit() {
+                      return {
+                        data: [
+                          {
+                            id: '77777777-7777-4777-8777-777777777777',
+                            auth_user_id: authUserAUuid,
+                            family_id: familyAUuid,
+                          },
+                        ],
+                        error: null,
+                      };
+                    },
+                  };
+                },
+              };
+            },
+          };
+        }
+        if (table === 'children') {
+          return {
+            delete() {
+              return {
+                eq(col1: string, val1: string) {
+                  if (col1 === 'id') deletedChildId = val1;
+                  return {
+                    async eq(col2: string, val2: string) {
+                      if (col2 === 'family_id') deletedFamilyId = val2;
+                      return { error: null };
+                    },
+                  };
+                },
+              };
+            },
+          };
+        }
+        throw new Error(`Unexpected table ${table}`);
+      },
+    } as unknown as SupabaseClient;
+
+    // Non-UUID local ID is skipped safely
+    const localSkipRes = await deleteChildFromSupabase({ remoteId: 1 }, mockAuthClient);
+    assert.equal(localSkipRes.deleted, false);
+
+    // Valid UUID child owned by Family A is deleted with both id and family_id filters
+    const delRes = await deleteChildFromSupabase({ remoteId: childAUuid }, mockAuthClient);
+    assert.equal(delRes.deleted, true);
+    assert.equal(delRes.error, null);
+    assert.equal(deletedChildId, childAUuid);
+    assert.equal(deletedFamilyId, familyAUuid);
+  });
 });
+
 
 

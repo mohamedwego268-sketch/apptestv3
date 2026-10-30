@@ -563,6 +563,7 @@ export class OnboardingFlowController {
     try {
       window.localStorage.removeItem(this.STORAGE_KEY);
       window.localStorage.removeItem(this.DRAFT_KEY);
+      window.localStorage.removeItem('nekbaar_temp_user');
       if (supabaseClient) {
         void supabaseClient.auth.signOut().catch(() => null);
       }
@@ -570,4 +571,47 @@ export class OnboardingFlowController {
       console.error('Failed to clear session:', e);
     }
   }
+
+  /**
+   * Subscribes to real-time Supabase Auth state transitions (`SIGNED_IN`, `TOKEN_REFRESHED`, `SIGNED_OUT`)
+   * so the frontend session state stays synchronized with genuine Supabase Auth state.
+   */
+  public static subscribeToAuthSessionChanges(
+    onSessionChange: (payload: {
+      event: string;
+      authenticated: boolean;
+      userId: string | null;
+      emailVerified: boolean;
+      phoneVerified: boolean;
+    }) => void
+  ): () => void {
+    if (!supabaseClient?.auth?.onAuthStateChange) {
+      return () => {};
+    }
+    const { data } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      const user = session?.user;
+      const validUser = Boolean(user && isValidUuid(user.id));
+      const emailConfirmed = Boolean(
+        validUser &&
+          ((typeof user?.email_confirmed_at === 'string' && user.email_confirmed_at.length > 0) ||
+            (typeof user?.confirmed_at === 'string' && user.confirmed_at.length > 0))
+      );
+      const phoneConfirmed = Boolean(
+        validUser &&
+          typeof user?.phone_confirmed_at === 'string' &&
+          user.phone_confirmed_at.length > 0
+      );
+      onSessionChange({
+        event,
+        authenticated: validUser,
+        userId: validUser && user ? user.id : null,
+        emailVerified: emailConfirmed,
+        phoneVerified: phoneConfirmed,
+      });
+    });
+    return () => {
+      data?.subscription?.unsubscribe();
+    };
+  }
 }
+
