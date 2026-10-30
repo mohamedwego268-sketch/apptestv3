@@ -126,6 +126,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     AI_MODELS_SPEC.find((m) => m.id === activeModelId) || AI_MODELS_SPEC[0];
 
   const [inputPrompt, setInputPrompt] = useState<string>('');
+  const [isGeneratingReply, setIsGeneratingReply] = useState<boolean>(false);
   const [isVoiceSimulating, setIsVoiceSimulating] = useState<boolean>(false);
   const [voiceSampleIdx, setVoiceSampleIdx] = useState<number>(0);
 
@@ -137,17 +138,17 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
     },
     {
       topic: 'food',
-      ar: `🎙️ «إزاي أشجع ${selectedKid?.name || 'طفلي'} يجرب الخضار والفواكه في اللانش بوكس من غير إجبار؟»`,
+      ar: `🎙️ «كيف أشجع ${selectedKid?.name || 'طفلي'} على تجربة الخضار والفواكه في اللانش بوكس بهدوء دون إجبار؟»`,
       en: `🎙️ "How can I encourage ${displayKidName} to try veggies and fruit in their lunchbox gently?"`,
     },
     {
       topic: 'behavior',
-      ar: `🎙️ «اقترح لي ٣ خطوات سريعة لتهدئة نوبة الغضب وقت لمّ الألعاب بهدوء»`,
+      ar: `🎙️ «اقترح لي ٣ خطوات سريعة لتهدئة نوبة الغضب وقت ترتيب الألعاب بهدوء»`,
       en: `🎙️ "Give me 3 quick co-regulation steps to calm a cleanup-time tantrum gently"`,
     },
     {
       topic: 'play',
-      ar: `🎙️ «عايز نشاط مونتيسوري منزلي لمدة ١٥ دقيقة ينمّي التركيز واللغة عند ${selectedKid?.name || 'طفلي'}»`,
+      ar: `🎙️ «أريد نشاط مونتيسوري منزلي لمدة ١٥ دقيقة ينمّي التركيز واللغة عند ${selectedKid?.name || 'طفلي'}»`,
       en: `🎙️ "Suggest a 15-minute home Montessori play activity to boost ${displayKidName}'s focus"`,
     },
   ];
@@ -484,6 +485,10 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
 
     setMessages((prev) => [...prev, parentMsg, aiReply]);
     setInputPrompt('');
+    setIsGeneratingReply(true);
+    window.setTimeout(() => {
+      setIsGeneratingReply(false);
+    }, 350);
   };
 
   return (
@@ -774,6 +779,20 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                   </div>
                 );
               })}
+              {isGeneratingReply && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-2xl border border-teal-200 dark:border-[#1E3646] bg-teal-50/70 dark:bg-[#142430] px-4 py-2.5 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] inline-flex items-center gap-2"
+                >
+                  <span className="animate-spin inline-block">⏳</span>
+                  <span>
+                    {isEn
+                      ? `Preparing tailored guidance for ${displayKidName}...`
+                      : `جاري تنسيق الإرشاد التربوي المخصص لـ ${displayKidName}...`}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Quick Suggested Starter Prompts Above Composer Dock */}

@@ -363,8 +363,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       selectedCountry: coreCountry,
       selectedCity: selectedCityAr || activeCountryObj.defaultCityAr,
       verificationChannel: 'email',
-      otpCode: '123456',
-      isOtpVerified: true,
+      otpCode: '',
+      isOtpVerified: authSyncedToDb,
       childrenList: safeChildrenList,
       coParentName,
       coParentEmail,
@@ -781,9 +781,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       country: coreCountry,
       city: finalCity,
       verificationChannel: 'email',
-      isOtpVerified: true,
-      emailVerified: true,
-      phoneVerified: true,
+      isOtpVerified: finalSyncedToDb,
+      emailVerified: finalSyncedToDb,
+      phoneVerified: finalSyncedToDb,
       isCoParentLinked: linkCoParent,
       coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
       coParentEmail:
@@ -1079,6 +1079,24 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         <span className="text-[11px] opacity-80">GPS</span>
                       </div>
                     )}
+                  </div>
+
+                  {/* Clear Country + City + Currency + Dial Code Summary Strip */}
+                  <div
+                    data-testid="onboarding-region-summary"
+                    className="rounded-2xl border border-teal-500/25 bg-teal-50/70 dark:bg-[#142430] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-extrabold text-teal-900 dark:text-[#2DD4BF]"
+                  >
+                    <span>
+                      🌍 {isEn ? activeCountryObj.nameEn : activeCountryObj.nameAr} ·{' '}
+                      {isEn
+                        ? activeCountryObj.cities.find((c) => c.ar === selectedCityAr)?.en ||
+                          activeCountryObj.defaultCityEn
+                        : selectedCityAr}
+                    </span>
+                    <span dir="ltr" className="tabular-nums">
+                      {activeCountryObj.dialCode} ·{' '}
+                      {getSuggestedCurrencyForCountry(activeCountryObj.mappedCoreCountry)}
+                    </span>
                   </div>
 
                   {/* Phone Number Input */}

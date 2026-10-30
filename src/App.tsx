@@ -1632,6 +1632,43 @@ export default function App() {
 
             {/* Main Mobile Workspace Container */}
             <div className="w-full max-w-[430px] mx-auto px-3 pt-2.5 pb-6 flex-1">
+              {/* Parent OS Quick Navigation Bar — Coherent 1-Tap Access Across Core Modules */}
+              <nav
+                id="parent-os-quick-dock"
+                data-testid="parent-os-quick-dock"
+                aria-label={lang === 'en' ? 'Parent OS Quick Modules' : 'الوصول السريع لأركان نكبر'}
+                className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 mb-1.5"
+              >
+                {(
+                  [
+                    { id: 'home', labelAr: '🏠 الرئيسية', labelEn: '🏠 Home' },
+                    { id: 'media', labelAr: '🎬 الميديا والريلز', labelEn: '🎬 Media & Reels' },
+                    { id: 'community', labelAr: '🤝 المجتمع', labelEn: '🤝 Community' },
+                    { id: 'chat', labelAr: '💬 المحادثات', labelEn: '💬 Chat' },
+                    { id: 'assistant', labelAr: '✨ المساعد الذكي', labelEn: '✨ AI Assistant' },
+                    { id: 'medical', labelAr: '🩺 الرعاية الطبية', labelEn: '🩺 Medical' },
+                    { id: 'routine', labelAr: '✅ الروتين', labelEn: '✅ Routine' },
+                  ] as Array<{ id: PageId; labelAr: string; labelEn: string }>
+                ).map((item) => {
+                  const isActive = activePage === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      data-testid={`os-quick-pill-${item.id}`}
+                      onClick={() => navigateTo(item.id)}
+                      className={`min-h-[36px] px-3 py-1 rounded-full text-xs font-extrabold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                        isActive
+                          ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
+                      }`}
+                    >
+                      {lang === 'en' ? item.labelEn : item.labelAr}
+                    </button>
+                  );
+                })}
+              </nav>
+
               {/* Main Viewport */}
               <main key={activePage} className="min-w-0 space-y-4 animate-page-enter transition-all duration-300 ease-in-out">
             {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
@@ -2172,6 +2209,7 @@ export default function App() {
                     );
                   }}
                   onShowToast={showToast}
+                  onOpenMediaHub={() => navigateTo('media')}
                 />
               ))}
 

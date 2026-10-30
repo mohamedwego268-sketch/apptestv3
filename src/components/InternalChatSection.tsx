@@ -113,7 +113,7 @@ const INITIAL_CHAT_THREADS: ChatThread[] = [
         sender: 'other',
         senderNameAr: 'أحمد',
         senderNameEn: 'Ahmad',
-        textAr: 'خلصت تمرين كرة القدم والسباحة مع يوسف، وهنقرأ قصة المساء مع ليلى ونجهز قيلولة حمزة أول ما نرجع البيت إن شاء الله.',
+        textAr: 'أنهيت تمرين كرة القدم والسباحة مع يوسف، وسنقرأ قصة المساء مع ليلى ونجهز قيلولة حمزة فور عودتنا للمنزل إن شاء الله.',
         textEn: 'Finished football and swimming practice with Youssef! We will read the bedtime story with Laila and settle Hamza as soon as we get home.',
         timestamp: '06:10 PM',
       },
@@ -136,13 +136,20 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
   const [threads, setThreads] = useState<ChatThread[]>(INITIAL_CHAT_THREADS);
   const [activeThreadId, setActiveThreadId] = useState<string>('thread-nursery');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'doctor' | 'nursery' | 'family'>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [messageInput, setMessageInput] = useState<string>('');
   const [chatsArchived, setChatsArchived] = useState<boolean>(false);
   const emptyChatCopy = getEmptyStateCopy('chats', language);
 
   const filteredThreads = chatsArchived
     ? []
-    : threads.filter((t) => categoryFilter === 'all' || t.category === categoryFilter);
+    : threads.filter((t) => {
+        if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
+        const q = searchQuery.trim().toLowerCase();
+        if (!q) return true;
+        const hay = `${t.participantNameAr} ${t.participantNameEn} ${t.roleTitleAr} ${t.scopedChildAr}`.toLowerCase();
+        return hay.includes(q);
+      });
 
   const activeThread =
     filteredThreads.find((t) => t.id === activeThreadId) || filteredThreads[0] || null;
@@ -280,10 +287,21 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
         /* Two-Column Messaging Workspace */
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 items-stretch">
           {/* Conversation List */}
-          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-2 shadow-2xs">
-            <div className="px-2 py-1 text-xs font-extrabold text-[var(--color-muted)]">
-              {isEn ? 'Active Conversations' : 'المحادثات النشطة'}
+          <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 space-y-2.5 shadow-2xs">
+            <div className="flex items-center justify-between px-2 py-0.5 text-xs font-extrabold text-[var(--color-muted)]">
+              <span>{isEn ? 'Active Conversations' : 'المحادثات النشطة'}</span>
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-[#2DD4BF]">
+                ● {isEn ? 'Realtime Ready' : 'جاهز للمراسلة الفورية'}
+              </span>
             </div>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={isEn ? '🔍 Search conversations...' : '🔍 ابحث في المحادثات...'}
+              aria-label={isEn ? 'Search conversations' : 'البحث في المحادثات'}
+              className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-semibold text-[var(--color-text)]"
+            />
           {filteredThreads.map((thread) => {
             const isSelected = thread.id === activeThread?.id;
             const lastMsg = thread.messages[thread.messages.length - 1];

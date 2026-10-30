@@ -14,6 +14,7 @@ import {
   PrimaryCtaButton,
   SwipeableBannerCarousel,
 } from './DesignSystem';
+import { REEL_TOPIC_FILTERS } from '../services/frontendProductAdapter';
 
 interface MediaPlatformSectionProps {
   catalog?: MediaContentItem[];
@@ -243,7 +244,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const [likedReelIds, setLikedReelIds] = useState<string[]>(['reel-1']);
   const [savedReelIds, setSavedReelIds] = useState<string[]>(['reel-2']);
   const [reelPlaying, setReelPlaying] = useState<boolean>(true);
-  const [reelCategoryFilter] = useState<string>('all');
+  const [reelCategoryFilter, setReelCategoryFilter] = useState<string>('all');
   const [isFullScreenReel, setIsFullScreenReel] = useState<boolean>(false);
 
   // Social Engagement State (Likes, Comments, Shares across Reels, Podcasts & Videos)
@@ -712,6 +713,38 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           </button>
         )}
       </div>
+
+      {/* Interactive Reels Category Filter Bar */}
+      {mediaViewMode === 'reels' && (
+        <div
+          role="tablist"
+          aria-label={isEn ? 'Filter Reels by Topic' : 'تصفية الريلز حسب الموضوع'}
+          className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1"
+        >
+          {REEL_TOPIC_FILTERS.map((topic) => {
+            const isActive = reelCategoryFilter === topic.id;
+            return (
+              <button
+                key={topic.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => {
+                  setReelCategoryFilter(topic.id);
+                  setActiveReelIndex(0);
+                }}
+                className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-extrabold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+                  isActive
+                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                    : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-indigo-400'
+                }`}
+              >
+                {isEn ? topic.labelEn : topic.labelAr}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* FULL-SCREEN REELS MODAL OVERLAY */}
       {isFullScreenReel && (
