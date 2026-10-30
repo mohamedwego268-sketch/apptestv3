@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { LanguageCode } from '../domain/familySpaceCore';
 import {
   BedtimeStoryRecord,
@@ -86,6 +86,35 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
   const [selectedMoralIdx, setSelectedMoralIdx] = useState<number>(1);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [activeStoryId, setActiveStoryId] = useState<string | null>(null);
+  const [isReadingStory, setIsReadingStory] = useState<boolean>(false);
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  const handleReadStory = () => {
+    if (!featuredStory || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      onShowToast?.(isEn ? 'Read-aloud is not available on this device.' : 'القراءة الصوتية مش متاحة على الجهاز ده.');
+      return;
+    }
+    if (isReadingStory) {
+      window.speechSynthesis.cancel();
+      setIsReadingStory(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const text = isEn ? featuredStory.storyBodyEn : featuredStory.storyBodyAr;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = isEn ? 'en-US' : 'ar-EG';
+    utterance.rate = 0.88;
+    utterance.onstart = () => setIsReadingStory(true);
+    utterance.onend = () => setIsReadingStory(false);
+    utterance.onerror = () => setIsReadingStory(false);
+    setIsReadingStory(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const visibleStories = useMemo<BedtimeStoryRecord[]>(() => {
     if (selectedChildFilter === 'all') {
@@ -399,6 +428,20 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
             <p className="text-xs sm:text-sm font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
               {isEn ? featuredStory.storyBodyEn : featuredStory.storyBodyAr}
             </p>
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-amber-500/20">
+              <p className="text-[10px] text-[var(--color-muted)] dark:text-[#94A3B8]">
+                {isEn ? 'Listen using your device voice' : 'اسمع الحدوتة بصوت جهازك'}
+              </p>
+              <button
+                type="button"
+                data-testid="story-reader-audio-toggle"
+                onClick={handleReadStory}
+                className="min-h-[40px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold inline-flex items-center gap-2"
+              >
+                <span aria-hidden="true">{isReadingStory ? '⏹' : '🔊'}</span>
+                {isReadingStory ? (isEn ? 'Stop listening' : 'إيقاف الاستماع') : (isEn ? 'Listen to story' : 'اسمع الحدوتة')}
+              </button>
+            </div>
           </div>
         )}
       </div>
