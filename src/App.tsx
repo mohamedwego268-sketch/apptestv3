@@ -111,6 +111,8 @@ import {
 } from './components/DesignSystem';
 import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 
+const PREVIEW_ACCESS_BYPASS = true; // TEMP: remove after preview review; never merge this flag into production.
+
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => loadFamilySpaceState());
   const [activePage, setActivePage] = useState<PageId>('home');
@@ -276,7 +278,7 @@ export default function App() {
     OnboardingFlowController.getSavedProfile()
   );
   const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(
-    () => !Boolean(OnboardingFlowController.getSavedProfile())
+    () => (PREVIEW_ACCESS_BYPASS ? false : !Boolean(OnboardingFlowController.getSavedProfile()))
   );
   const [showSmartGreetingBanner, setShowSmartGreetingBanner] = useState<boolean>(true);
   const [childModalOpen, setChildModalOpen] = useState<boolean>(false);
@@ -370,6 +372,11 @@ export default function App() {
 
   // Smart Startup Profile Recognition (`OnboardingFlowController.detectInitialState()`)
   useEffect(() => {
+    if (PREVIEW_ACCESS_BYPASS) {
+      setRecognizedProfile(null);
+      setOnboardingModalOpen(false);
+      return;
+    }
     let active = true;
     OnboardingFlowController.detectInitialState().then(
       ({ step, profile, restoredChildren, draft }) => {
@@ -1707,6 +1714,16 @@ export default function App() {
         data-testid="mobile-app-viewport-frame"
         className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-8 transition-all duration-300 ease-in-out"
       >
+        {PREVIEW_ACCESS_BYPASS && (
+          <div
+            role="status"
+            className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-center text-[11px] font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+          >
+            {lang === 'en'
+              ? 'Preview mode · Registration temporarily skipped · Changes may be stored only on this device'
+              : 'وضع المعاينة · تم تجاوز التسجيل مؤقتًا · قد تُحفظ التغييرات على هذا الجهاز فقط'}
+          </div>
+        )}
         {isDashboardUnlocked && (
           <>
             <HeaderBar
