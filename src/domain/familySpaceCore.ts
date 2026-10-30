@@ -4593,6 +4593,32 @@ export function calculateChildAge(
   };
 }
 
+/** Resolve legacy city names, English aliases and sub-cities to one canonical region ID. */
+export function resolveCityRegionId(country: CountryCode, rawCity: string | null | undefined): string {
+  const cities = COUNTRY_CITIES_MAP[country] || COUNTRY_CITIES_MAP.EG;
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/\\s+/g, ' ');
+  const target = typeof rawCity === 'string' ? normalize(rawCity) : '';
+
+  if (!target) return cities[0].id;
+
+  const match = cities.find((city) => {
+    const aliases = [
+      city.id,
+      city.nameAr,
+      city.nameEn,
+      city.labelAr,
+      city.labelEn,
+      city.regionAr,
+      city.regionEn,
+      ...(city.subCitiesAr || []),
+      ...(city.subCitiesEn || []),
+    ];
+    return aliases.some((alias) => typeof alias === 'string' && normalize(alias) === target);
+  });
+
+  return match?.id || cities[0].id;
+}
+
 export function getSuggestedCurrencyForCountry(country: CountryCode): CurrencyCode {
   return country === 'SA' ? 'SAR' : 'EGP';
 }

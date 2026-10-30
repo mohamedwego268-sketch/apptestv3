@@ -9,6 +9,7 @@ import {
   MediaContentItem,
   CommercialCatalogItem,
   COUNTRY_CITIES_MAP,
+  resolveCityRegionId,
   formatCurrency,
   locText,
 } from '../../domain/familySpaceCore';
@@ -174,13 +175,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const [locationAccordionOpen, setLocationAccordionOpen] = useState<boolean>(false);
   const [navigationSearch, setNavigationSearch] = useState<string>('');
   const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
-  const resolvedDrawerCityId =
-    activeCountryList.find(
-      (c) =>
-        c.id === state.city ||
-        (state.city && c.subCitiesAr?.includes(state.city)) ||
-        (state.city && (c.id.includes(state.city) || state.city.includes(c.id)))
-    )?.id || activeCountryList[0].id;
+  const resolvedDrawerCityId = resolveCityRegionId(state.country, state.city);
 
   return (
     <>

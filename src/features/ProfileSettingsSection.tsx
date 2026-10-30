@@ -276,7 +276,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               badgeLabel={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
               badgeTone="purple"
               cardTone="purple"
-              defaultOpen={false}
+              defaultOpen={true}
             >
               <div className="space-y-4">
                 <div>

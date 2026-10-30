@@ -7,6 +7,7 @@ import {
   calculateChildAge,
   getSuggestedCurrencyForCountry,
   COUNTRY_CITIES_MAP,
+  resolveCityRegionId,
   validateChildInput,
 } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
@@ -255,10 +256,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   // One canonical location source keeps onboarding, settings and local discovery aligned.
   const activeCityOptions = COUNTRY_CITIES_MAP[activeCountryObj.mappedCoreCountry];
-  const resolvedSelectedCityId =
-    activeCityOptions.find(
-      (city) => city.id === selectedCityAr || city.subCitiesAr?.includes(selectedCityAr)
-    )?.id || activeCityOptions[0].id;
+  const resolvedSelectedCityId = resolveCityRegionId(activeCountryObj.mappedCoreCountry, selectedCityAr);
   const resolvedSelectedCity = activeCityOptions.find((city) => city.id === resolvedSelectedCityId) || activeCityOptions[0];
 
   const safeChildrenList = React.useMemo(

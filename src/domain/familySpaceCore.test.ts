@@ -5,6 +5,8 @@ import {
   STORAGE_KEY,
   normalizeAppData,
   validateChildInput,
+  getSuggestedCurrencyForCountry,
+  resolveCityRegionId,
 } from './familySpaceCore';
 import {
   loadPersistedFamilyState,
@@ -90,6 +92,22 @@ Object.defineProperty(globalThis, 'localStorage', {
   value: memoryStorage,
   configurable: true,
   writable: true,
+});
+
+describe('Country, currency and city normalization', () => {
+  it('resolves Arabic and English city names and sub-city aliases to the same canonical region', () => {
+    assert.equal(resolveCityRegionId('SA', 'Khobar'), 'الدمام');
+    assert.equal(resolveCityRegionId('SA', 'الظهران'), 'الدمام');
+    assert.equal(resolveCityRegionId('SA', 'Riyadh'), 'الرياض');
+    assert.equal(resolveCityRegionId('EG', 'New Cairo'), 'القاهرة');
+    assert.equal(resolveCityRegionId('EG', 'الإسكندرية'), 'الإسكندرية');
+  });
+
+  it('falls back safely for an unknown city and keeps country currency defaults aligned', () => {
+    assert.equal(resolveCityRegionId('SA', 'Unknown city'), 'الدمام');
+    assert.equal(getSuggestedCurrencyForCountry('SA'), 'SAR');
+    assert.equal(getSuggestedCurrencyForCountry('EG'), 'EGP');
+  });
 });
 
 describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local Storage', () => {
