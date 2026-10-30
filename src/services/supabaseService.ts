@@ -556,7 +556,7 @@ export async function fetchUsersFromSupabase(
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   if (!activeClient) {
     return {
-      data: DEFAULT_SUPABASE_USERS,
+      data: [],
       resolvedFamilyId: familyId,
       error: 'Supabase client is not initialized.',
     };
@@ -817,8 +817,8 @@ function mapChildEntityToProfile(
   const existingMatch = existingLocalKids?.find(
     (ek) =>
       (child.remote_id !== undefined && String(ek.remoteId) === String(child.remote_id)) ||
-      (ek.name.trim() === child.name.trim() && ek.birth.trim() === child.birth.trim()) ||
-      ek.name.trim() === child.name.trim()
+      (ek.name.trim().toLowerCase() === child.name.trim().toLowerCase() &&
+        ek.birth.trim() === child.birth.trim())
   );
   const stableLocalId = existingMatch?.id || child.id || fallbackIdx + 1;
   const remoteId = child.remote_id ?? (isValidUuid(child.id) ? child.id : undefined);
@@ -1915,12 +1915,28 @@ export async function authenticateParentWithSupabase(
       }
     }
 
-    const syncedToDb = Boolean(!upsertErr);
-    profileCreated = profileCreated || syncedToDb;
-    familyLinked = Boolean(isValidUuid(verifiedFamilyUuid) && syncedToDb);
+    // Verify that the profile row exists and is linked to this exact Auth user + family.
+    const profileCheck = await withSupabaseTimeout(
+      activeClient
+        .from(SUPABASE_TABLES.USERS)
+        .select('id, auth_user_id, family_id')
+        .eq('auth_user_id', effectiveUserUuid)
+        .eq('family_id', verifiedFamilyUuid)
+        .limit(1)
+    );
+    const verifiedProfileRow = Array.isArray(profileCheck.data) ? profileCheck.data[0] as Record<string, unknown> | undefined : undefined;
+    const profileVerified = Boolean(
+      !upsertErr && !profileCheck.error && verifiedProfileRow &&
+      verifiedProfileRow.auth_user_id === effectiveUserUuid &&
+      verifiedProfileRow.family_id === verifiedFamilyUuid &&
+      isValidUuid(verifiedProfileRow.id)
+    );
+    const syncedToDb = profileVerified;
+    profileCreated = profileCreated || profileVerified;
+    familyLinked = Boolean(isValidUuid(verifiedFamilyUuid) && profileVerified);
     const dbErrorMsg =
-      upsertErr?.message ||
-      (!syncedToDb ? 'تعذر حفظ بيانات الحساب في قاعدة البيانات.' : null);
+      upsertErr?.message || profileCheck.error?.message ||
+      (!syncedToDb ? 'تعذر التحقق من حفظ ملف المستخدم وربطه بالأسرة في قاعدة البيانات.' : null);
 
     // 5. Fetch family record and shared `children` linked to `verifiedFamilyUuid`
     const { data: famRows } = await withSupabaseTimeout(
