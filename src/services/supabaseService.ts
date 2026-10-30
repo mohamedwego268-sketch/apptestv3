@@ -512,31 +512,69 @@ export async function ensureSharedFamilyRecordInSupabase(
   };
 
   try {
-    let { error } = await withSupabaseRetry(() =>
-      activeClient.from(SUPABASE_TABLES.FAMILIES).upsert(verifiedFamilyRecord, { onConflict: 'id' })
+    // The authenticated client must never create a family through an upsert here.
+    // The bootstrap RPC is the only supported family-creation path; it runs atomically
+    // after Auth verification. The public.families table intentionally has no INSERT
+    // policy for browser clients, so upsert would attempt INSERT and fail RLS even when
+    // the family row already exists.
+    const updatePayload: Record<string, unknown> = {
+      family_name: verifiedFamilyRecord.family_name,
+      country: verifiedFamilyRecord.country,
+      city: verifiedFamilyRecord.city,
+      currency: verifiedFamilyRecord.currency,
+      active_parent: verifiedFamilyRecord.active_parent,
+      updated_at: verifiedFamilyRecord.updated_at,
+    };
+
+    let updateRes = await withSupabaseRetry(() =>
+      activeClient
+        .from(SUPABASE_TABLES.FAMILIES)
+        .update(updatePayload)
+        .eq('id', targetFamilyUuid)
+        .select('id')
+        .maybeSingle()
     );
-    if (error && isUndefinedColumnError(error)) {
-      const minimalFamilyPayload = {
-        id: targetFamilyUuid,
-        family_name: verifiedFamilyRecord.family_name,
-      };
-      const retryRes = await withSupabaseRetry(() =>
+
+    if (updateRes.error && isUndefinedColumnError(updateRes.error)) {
+      updateRes = await withSupabaseRetry(() =>
         activeClient
           .from(SUPABASE_TABLES.FAMILIES)
-          .upsert(minimalFamilyPayload, { onConflict: 'id' })
+          .update({
+            family_name: verifiedFamilyRecord.family_name,
+            updated_at: verifiedFamilyRecord.updated_at,
+          })
+          .eq('id', targetFamilyUuid)
+          .select('id')
+          .maybeSingle()
       );
-      error = retryRes.error;
     }
+
+    if (updateRes.error) {
+      return {
+        family: verifiedFamilyRecord,
+        synced: false,
+        error: updateRes.error.message,
+      };
+    }
+
+    if (!updateRes.data || updateRes.data.id !== targetFamilyUuid) {
+      return {
+        family: verifiedFamilyRecord,
+        synced: false,
+        error: 'لم يتم العثور على سجل الأسرة الموثق أو لا تسمح سياسات الوصول بتحديثه. لم يتم إنشاء سجل بديل.',
+      };
+    }
+
     return {
       family: verifiedFamilyRecord,
-      synced: !error,
-      error: error ? error.message : null,
+      synced: true,
+      error: null,
     };
   } catch (err) {
     return {
       family: verifiedFamilyRecord,
       synced: false,
-      error: err instanceof Error ? err.message : 'Failed to ensure shared family record.',
+      error: err instanceof Error ? err.message : 'Failed to update the existing family record.',
     };
   }
 }
