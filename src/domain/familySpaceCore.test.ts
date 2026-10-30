@@ -134,7 +134,7 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
 
   it('2. validates and deduplicates child-list persistence arguments ({ familyId, childrenList }) on retries', async () => {
     const res = await saveOnboardingChildrenToSupabase({
-      familyId: 12,
+      familyId: '550e8400-e29b-41d4-a716-446655440000',
       childrenList: [
         {
           id: 1,
@@ -165,7 +165,7 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     });
 
     assert.equal(res.savedChildren.length, 2);
-    assert.equal(res.savedChildren[0].family_id, 12);
+    assert.equal(res.savedChildren[0].family_id, '550e8400-e29b-41d4-a716-446655440000');
     assert.equal(res.savedChildren[0].name, 'سلمى');
     assert.equal(res.savedChildren[0].gender, 'girl');
     assert.equal(res.savedChildren[1].name, 'عمر');
@@ -374,8 +374,8 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(familyRes.synced, false);
 
     const usersRes = await fetchUsersFromSupabase(SHARED_FAMILY_ID);
-    assert.equal(usersRes.error, null);
-    assert.equal(Array.isArray(usersRes.data), true);
+    assert.match(usersRes.error || '', /No authenticated family UUID is available/);
+    assert.deepEqual(usersRes.data, []);
 
     const childrenRes = await fetchChildrenFromSupabase(SHARED_FAMILY_ID);
     assert.equal(childrenRes.error, null);
