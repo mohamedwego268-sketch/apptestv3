@@ -210,7 +210,7 @@ const INITIAL_MEDIA_COMMENTS: Record<string, MediaCommentItem[]> = {
       authorEn: 'Ahmed (Adam’s Dad)',
       roleAr: 'أب',
       roleEn: 'Father',
-      textAr: 'نصيحة عملية ومختصرة جدًا، شكرًا د. نورهان.',
+      textAr: 'نصيحة عملية ومختصرة جدًا، شكرًا على المشاركة.',
       textEn: 'Very practical and concise tip, thank you for sharing.',
       timeAgoAr: 'منذ 5 ساعات',
       timeAgoEn: '5h ago',
