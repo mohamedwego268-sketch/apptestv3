@@ -1343,7 +1343,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       {isEn ? 'Sample Courier Profile' : 'ملف مندوب تجريبي'}
                     </div>
                     <div className="text-[11px] font-bold text-emerald-800 dark:text-[#2DD4BF]">
-                      ⭐ 4.95 · {isEn ? 'Verified Family Courier' : 'مندوب توصيل طلبات الأسرة'}
+                      {isEn ? 'Sample courier profile · Demo only' : 'ملف مندوب توصيل تجريبي'}
                     </div>
                   </div>
                 </div>
@@ -2475,7 +2475,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                                 : cItem.deliveryEstimateAr
                               : isEn
                               ? 'Same-Day Booking'
-                              : 'حجز وتنفيذ فوري'}
+                              : 'طلب خدمة أو حجز'}
                           </span>
                         </div>
                       </div>
