@@ -1619,6 +1619,10 @@ export async function authenticateParentWithSupabase(
             email: normalized.email,
             password: normalized.password,
             options: {
+              // Return the user to the exact app origin where signup started.
+              // Supabase Auth must also allow this origin in its Redirect URLs.
+              emailRedirectTo:
+                typeof window !== 'undefined' ? window.location.origin : undefined,
               data: {
                 full_name: normalized.parentName,
                 phone: normalized.phone,
