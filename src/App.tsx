@@ -136,15 +136,7 @@ export default function App() {
   const [splashScreen, setSplashScreen] = useState<{
     visible: boolean;
     fadingOut: boolean;
-  }>(() => {
-    try {
-      const hasSession = Boolean(OnboardingFlowController.getSavedProfile());
-      const seen = window.sessionStorage.getItem('nekbaar_splash_seen_v1') === '1';
-      return { visible: hasSession && !seen, fadingOut: false };
-    } catch {
-      return { visible: false, fadingOut: false };
-    }
-  });
+  }>({ visible: false, fadingOut: false });
   const splashFadeTimerRef = React.useRef<number | null>(null);
   const splashHideTimerRef = React.useRef<number | null>(null);
   const [storeInitialCategoryId, setStoreInitialCategoryId] = useState<string | null>(null);
@@ -276,11 +268,9 @@ export default function App() {
   const [settingsOtpCode, setSettingsOtpCode] = useState<string>('');
 
   // Active Modals & Mandatory Auth Gateway / Smart Startup Profile Recognition (`OnboardingFlowController`)
-  const [recognizedProfile, setRecognizedProfile] = useState<UserSessionProfile | null>(() =>
-    OnboardingFlowController.getSavedProfile()
-  );
+  const [recognizedProfile, setRecognizedProfile] = useState<UserSessionProfile | null>(null);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(
-    () => (PREVIEW_ACCESS_BYPASS ? false : !Boolean(OnboardingFlowController.getSavedProfile()))
+    () => !PREVIEW_ACCESS_BYPASS
   );
   const [showSmartGreetingBanner, setShowSmartGreetingBanner] = useState<boolean>(true);
   const [childModalOpen, setChildModalOpen] = useState<boolean>(false);
