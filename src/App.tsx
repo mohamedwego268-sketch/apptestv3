@@ -451,6 +451,20 @@ export default function App() {
     };
   }, []);
 
+  // Keep the UI aligned with real Supabase Auth transitions. A signed-out browser
+  // must never keep showing the previous family's locally cached workspace.
+  useEffect(() => {
+    return OnboardingFlowController.subscribeToAuthSessionChanges(({ event, authenticated }) => {
+      if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !authenticated)) {
+        setRecognizedProfile(null);
+        setActiveFamilyStorageScope(null);
+        setState(createEmptyFamilySpaceState());
+        setOnboardingModalOpen(true);
+        setActivePage('home');
+      }
+    });
+  }, []);
+
   // Autonomous Debounced Sync & Battery Diagnostics Recomputation via MasterAppController
   useEffect(() => {
     const syncTimer = setTimeout(() => {
@@ -2935,14 +2949,14 @@ export default function App() {
                 currency,
                 activeParentAccount: pid,
                 shippingAddress: {
-                  ...prev.shippingAddress,
+                  ...base.shippingAddress,
                   recipientName: parentName,
                   city,
                 },
                 parentAccounts: {
-                  ...prev.parentAccounts,
+                  ...base.parentAccounts,
                   [pid]: {
-                    ...prev.parentAccounts[pid],
+                    ...base.parentAccounts[pid],
                     fullName: parentName,
                     country,
                     phoneCode: country === 'SA' ? '+966' : '+20',
