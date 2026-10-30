@@ -421,6 +421,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     coreCountry: CountryCode;
     resolvedCity: string;
   }) => {
+    setAuthSyncedToDb(false);
     const normalizedRole = normalizeOnboardingRoleToAccount(parentRole);
     const resolvedCurrency = getSuggestedCurrencyForCountry(params.coreCountry);
     const resolvedFamilyName = `أسرة ${params.cleanName} — نكبر`;
@@ -463,23 +464,48 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         setPendingVerificationEmail(null);
       }
 
-      // Restore existing family children if signing in to an existing family
-      if (Array.isArray(authRes.sharedChildren) && authRes.sharedChildren.length > 0) {
-        setChildrenList(
-          authRes.sharedChildren.map((child, idx) => ({
+      // The database is authoritative on sign-in, including an empty child list.
+      const restoredChildrenDraft = Array.isArray(authRes.sharedChildren)
+        ? authRes.sharedChildren.map((child, idx) => ({
             id: child.id || idx + 1,
             remoteId: child.remote_id,
             name: child.name,
-            gender: child.gender === 'girl' ? 'girl' : 'boy',
-            ageStagePreset: 'custom',
+            gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
+            ageStagePreset: 'custom' as const,
             birth: child.birth || '2022-05-14',
             interests: child.interests || '',
-            avatarTheme: child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+            avatarTheme: child.avatar_theme || (child.gender === 'girl' ? ('artist' as const) : ('astronaut' as const)),
           }))
-        );
+        : [];
+      if (authMode === 'signin') {
+        setChildrenList(restoredChildrenDraft);
+        const savedCountry = authRes.family?.country === 'EG' ? 'EG' : 'SA';
+        const savedCity = typeof authRes.family?.city === 'string' ? authRes.family.city : '';
+        const savedName =
+          typeof authRes.user?.full_name === 'string'
+            ? authRes.user.full_name
+            : typeof authRes.user?.name === 'string'
+            ? authRes.user.name
+            : '';
+        const savedRole = String(authRes.user?.role || '').toLowerCase();
+        const savedPhone = typeof authRes.user?.phone === 'string' ? authRes.user.phone.trim() : '';
+        const dialCode = savedCountry === 'SA' ? '+966' : '+20';
+        const nationalPhone = savedPhone.startsWith(dialCode)
+          ? savedPhone.slice(dialCode.length)
+          : savedPhone.replace(/^\+\d{1,3}/, '');
+        setSelectedCountryCode(savedCountry);
+        if (savedCity) setSelectedCityAr(savedCity);
+        if (savedName) setFullName(savedName);
+        if (savedRole === 'father' || savedRole === 'dad') setParentRole('dad');
+        else if (savedRole === 'mother' || savedRole === 'mom') setParentRole('mom');
+        if (nationalPhone) setPhone(nationalPhone.replace(/^0+/, ''));
+      } else if (restoredChildrenDraft.length > 0) {
+        setChildrenList(restoredChildrenDraft);
       }
 
-      const locRes = authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
+      const locRes = authMode === 'signin'
+        ? { synced: true, error: null }
+        : authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
         ? await saveOnboardingLocationToSupabase({
             familyId: authRes.verifiedFamilyUuid,
             familyName: resolvedFamilyName,

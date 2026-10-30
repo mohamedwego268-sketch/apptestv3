@@ -66,6 +66,15 @@ export interface UserSessionProfile {
   updatedAt?: string;
 }
 
+/**
+ * Cached profile data never proves family ownership. Require a verified UUID.
+ */
+export function hasVerifiedFamilyAccess(
+  profile: Pick<UserSessionProfile, 'verifiedFamilyId'> | null | undefined
+): boolean {
+  return Boolean(profile && isValidUuid(profile.verifiedFamilyId));
+}
+
 export interface OnboardingDraftData {
   currentStep: OnboardingStep;
   stepNumber: 1 | 2 | 3 | 4 | 5;
@@ -338,27 +347,8 @@ export class OnboardingFlowController {
         }
       }
 
-      // 2. Check persisted localStorage profile for local UI experience only
-      // Note: localStorage is NEVER treated as proof of Supabase identity, verification, or family ownership
-      const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
-      if (savedProfileRaw) {
-        const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
-        if (profile && profile.userId && profile.fullName) {
-          return {
-            step: 'DASHBOARD',
-            profile: {
-              ...profile,
-              familyId: String(SHARED_FAMILY_ID),
-              verifiedFamilyId: null,
-              isDbVerified: false,
-              syncedToDb: false,
-              isOtpVerified: false,
-              emailVerified: false,
-              phoneVerified: false,
-            },
-          };
-        }
-      }
+      // A cached profile is not an authenticated session. Only a live Supabase
+      // session with a verified family UUID may unlock a family workspace.
 
       const draft = this.loadDraft();
       return { step: 'WELCOME_PROFILE', draft: draft || undefined };

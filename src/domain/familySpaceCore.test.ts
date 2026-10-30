@@ -9,12 +9,17 @@ import {
   resolveCityRegionId,
 } from './familySpaceCore';
 import {
+  createEmptyFamilySpaceState,
+  getFamilySpaceStorageKey,
+  loadFamilySpaceStateForFamily,
   loadPersistedFamilyState,
+  saveFamilySpaceStateForFamily,
   savePersistedFamilyState,
 } from '../services/familyStorageService';
 import {
   OnboardingFlowController,
   UserSessionProfile,
+  hasVerifiedFamilyAccess,
 } from '../services/OnboardingFlowController';
 import {
   SHARED_FAMILY_ID,
@@ -383,12 +388,11 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(OnboardingFlowController.loadDraft(), null);
 
     const detected = await OnboardingFlowController.detectInitialState();
-    assert.equal(detected.step, 'DASHBOARD');
-    assert.equal(detected.profile?.fullName, 'أحمد المنصور');
-    // Crucial Phase 1 check: localStorage session alone must NOT be treated as verified DB ownership
-    assert.equal(detected.profile?.isDbVerified, false);
-    assert.equal(detected.profile?.syncedToDb, false);
-    assert.equal(detected.profile?.verifiedFamilyId, null);
+    assert.equal(detected.step, 'WELCOME_PROFILE');
+    assert.equal(detected.profile, undefined);
+    // A cached profile alone must never unlock the private family workspace.
+    assert.equal(hasVerifiedFamilyAccess(restored), false);
+    assert.equal(hasVerifiedFamilyAccess({ verifiedFamilyId: '550e8400-e29b-41d4-a716-446655440000' }), true);
 
     const childCheck = validateChildInput({ name: 'فريدة', birth: '2022-03-15' });
     assert.equal(childCheck.valid, true);
@@ -1512,6 +1516,28 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(deletedChildId, childAUuid);
     assert.equal(deletedFamilyId, familyAUuid);
   });
+  it('isolates local workspaces by verified family UUID', () => {
+    const familyA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const familyB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    memoryStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_SEED, tasks: [{ id: 900, name: 'legacy' }] }));
+
+    const cleanA = loadFamilySpaceStateForFamily(familyA);
+    assert.equal(cleanA.tasks.length, 0);
+
+    const stateA = normalizeAppData({
+      ...createEmptyFamilySpaceState(),
+      verifiedFamilyId: familyA,
+      parentName: 'Family A',
+      tasks: [{ id: 901, name: 'private task', time: '08:00', done: false, kidId: 1, category: 'routine', owner: 'parent', cadence: 'daily' }],
+    });
+    assert.equal(saveFamilySpaceStateForFamily(stateA, familyA), true);
+
+    assert.equal(loadFamilySpaceStateForFamily(familyA).tasks[0]?.name, 'private task');
+    assert.equal(loadFamilySpaceStateForFamily(familyB).tasks.length, 0);
+    assert.equal(getFamilySpaceStorageKey('1'), null);
+    assert.equal(getFamilySpaceStorageKey('not-a-uuid'), null);
+  });
+
 });
 
 
