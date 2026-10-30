@@ -494,11 +494,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         );
       }
 
-      const resolvedFamilyId = authRes.familyId || authRes.user?.family_id || familyId;
-      if (resolvedFamilyId) {
-        setFamilyId(resolvedFamilyId);
-      }
-
       const locRes = authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
         ? await saveOnboardingLocationToSupabase({
             familyId: authRes.verifiedFamilyUuid,
