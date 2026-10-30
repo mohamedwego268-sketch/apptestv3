@@ -1707,3 +1707,46 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ==========================================================================
+   PREMIUM MOBILE NAVIGATION DRAWER
+   Anchored to the reading direction, compact, tactile and safe-area aware.
+   ========================================================================== */
+.drawer-backdrop {
+  padding: 0;
+  isolation: isolate;
+}
+.drawer-panel {
+  position: relative;
+  flex: 0 0 auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(13, 148, 136, 0.35) transparent;
+  box-shadow: 0 24px 80px -24px rgba(2, 6, 23, 0.42);
+}
+.drawer-enter-rtl {
+  animation: drawerEnterRtl 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.drawer-enter-ltr {
+  animation: drawerEnterLtr 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.drawer-nav-group {
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.025);
+}
+.drawer-nav-group:has([aria-expanded="true"]) {
+  box-shadow: 0 8px 22px rgba(13, 148, 136, 0.08);
+}
+@keyframes drawerEnterRtl {
+  from { opacity: 0; transform: translateX(22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes drawerEnterLtr {
+  from { opacity: 0; transform: translateX(-22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer-enter-rtl,
+  .drawer-enter-ltr {
+    animation: none;
+  }
+}
