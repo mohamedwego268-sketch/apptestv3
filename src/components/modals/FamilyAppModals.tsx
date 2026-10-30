@@ -178,6 +178,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
     activeCountryList.find(
       (c) =>
         c.id === state.city ||
+        (state.city && c.subCitiesAr?.includes(state.city)) ||
         (state.city && (c.id.includes(state.city) || state.city.includes(c.id)))
     )?.id || activeCountryList[0].id;
 
