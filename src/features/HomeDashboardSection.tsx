@@ -1247,17 +1247,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
             >
               {isEn
-                ? `Welcome back, ${activeParentNameEn} 👋 Wishing you a calm, joyful day with ${liveHamzaNameEn}, ${liveLailaNameEn} & ${liveYoussefNameEn}`
-                : `أهلاً بعودتك يا ${activeParentNameAr} ${isMotherActive ? '🌸' : '🌟'}.. يوم دافئ يجمعك مع ${liveHamzaNameAr} و${liveLailaNameAr} و${liveYoussefNameAr}`}
+                ? `Welcome back, ${activeParentNameEn} 👋 Let's make today's family routine easier.`
+                : `أهلاً يا ${activeParentNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
             </h1>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
               {isMotherActive
                 ? isEn
-                  ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Dad ${partnerParentNameEn}.`
-                  : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع بابا ${partnerParentNameAr}.`
+                  ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
+                  : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`
                 : isEn
-                ? `Everything for baby ${liveHamzaNameEn}, creative ${liveLailaNameEn}, and champion ${liveYoussefNameEn} is organized and synced with Mom ${partnerParentNameEn}.`
-                : `كل تفاصيل رعاية الرضيع ${liveHamzaNameAr}، وإبداع ${liveLailaNameAr}، ومدرسة ورياضة ${liveYoussefNameAr} مرتبة ومتزامنة مع ماما ${partnerParentNameAr}.`}
+                ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
+                : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`}
             </p>
           </div>
         </div>
@@ -1429,13 +1429,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </span>
               <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
                 {isEn
-                  ? 'Quick Parenting Reels'
-                  : 'ريلز نصائح التربية السريعة'}
+                  ? 'Short Videos & Practical Tips'
+                  : 'فيديوهات قصيرة ونصايح عملية'}
               </h2>
             </div>
             <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
               {isEn
-                ? 'Bite-sized visual tips tailored for every age stage'
+                ? 'Short, useful content for everyday parenting moments'
                 : 'كبسولات فيديو سريعة مخصصة لكل مرحلة عمرية'}
             </p>
           </div>
@@ -2683,12 +2683,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={
           isEn
             ? 'Visual Parenting Wisdom Gallery'
-            : 'معرض البطاقات المصورة · إشراقات تربوية سريعة'
+            : 'نصايح مصورة وسهلة التطبيق'
         }
         subtitle={
           isEn
             ? 'Swipe horizontally left or right to explore illustrated daily parenting tips'
-            : 'اسحب يميناً ويساراً لتصفح بطاقات الحكمة التربوية المصورة لعائلتكم'
+            : 'بطاقات سريعة فيها فكرة واحدة تقدر تطبقها مع طفلك'
         }
         badgeText={isEn ? '5 Cards' : '٥ بطاقات مصورة'}
         badgeClass="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
