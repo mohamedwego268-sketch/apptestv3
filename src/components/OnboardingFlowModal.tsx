@@ -407,10 +407,23 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-          // Heuristic bounding box for Egypt vs GCC
+          // Detect supported countries from GPS; do not retain a stale cached country.
           if (latitude >= 22 && latitude <= 32 && longitude >= 25 && longitude <= 35) {
             setSelectedCountryCode('EG');
             setSelectedCityAr(latitude > 30.8 ? 'الإسكندرية' : 'القاهرة');
+          } else if (latitude >= 16 && latitude <= 33.5 && longitude >= 34 && longitude <= 56) {
+            setSelectedCountryCode('SA');
+            if (latitude >= 24 && latitude <= 29 && longitude >= 48 && longitude <= 53) {
+              setSelectedCityAr('الخبر');
+            } else if (latitude >= 23 && latitude <= 27 && longitude >= 44 && longitude < 48) {
+              setSelectedCityAr('الرياض');
+            } else if (latitude >= 20 && latitude <= 23 && longitude >= 37 && longitude <= 40) {
+              setSelectedCityAr('جدة');
+            } else if (latitude >= 21 && latitude <= 23 && longitude >= 39 && longitude <= 41) {
+              setSelectedCityAr('مكة المكرمة');
+            } else {
+              setSelectedCityAr('الرياض');
+            }
           } else {
             setSelectedCityAr(activeCountryObj.defaultCityAr);
           }
@@ -645,7 +658,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : 'أدخل البريد الإلكتروني وكلمة المرور؛ والتسجيل الجديد يتطلب الاسم ورقم الهاتف أيضًا.');
       return;
     }
-    if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(cleanEmail)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setErrorMsg(isEn ? 'Enter a valid email address.' : 'أدخل بريدًا إلكترونيًا صحيحًا.');
       return;
     }
