@@ -1,4 +1,4 @@
-import type { Json, SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   isValidUuid,
   resolveVerifiedFamilyContext,
@@ -138,7 +138,7 @@ export async function createChildLifeRecord(
       title: input.title?.trim() || '',
       notes: input.notes?.trim() || '',
       occurred_at: input.occurredAt || new Date().toISOString(),
-      details: (input.details || {}) as Json,
+      details: (input.details || {}),
       created_by: scope.userId,
     };
     const { data, error } = await withSupabaseRetry(() =>
@@ -174,7 +174,7 @@ export async function updateChildLifeRecord(
     if (patch.title !== undefined) updates.title = patch.title.trim();
     if (patch.notes !== undefined) updates.notes = patch.notes.trim();
     if (patch.occurred_at !== undefined) updates.occurred_at = patch.occurred_at;
-    if (patch.details !== undefined) updates.details = patch.details as Json;
+    if (patch.details !== undefined) updates.details = patch.details;
     const { data, error } = await withSupabaseRetry(() =>
       client.from('child_life_records').update(updates)
         .eq('id', recordId)
@@ -230,7 +230,7 @@ export async function saveChildProfileDetails(
     if ('error' in scope) return { data: null, error: scope.error };
     const { data, error } = await withSupabaseRetry(() =>
       client.from('children')
-        .update({ profile_details: details as Json, updated_at: new Date().toISOString() })
+        .update({ profile_details: details, updated_at: new Date().toISOString() })
         .eq('id', childId)
         .eq('family_id', scope.familyId)
         .select('profile_details')
