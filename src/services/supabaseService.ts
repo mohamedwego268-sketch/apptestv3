@@ -2,6 +2,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import supabase, { SUPABASE_ANON_KEY, SUPABASE_URL } from '../supabase.js';
 import {
   ChildProfile,
+  ChildProfileDetails,
   CommercialCatalogItem,
   CountryCode,
   CurrencyCode,
@@ -104,6 +105,7 @@ export interface Child {
   emoji?: string;
   avatar_theme?: ChildProfile['avatarTheme'];
   interests?: string;
+  profile_details?: ChildProfileDetails;
   vaccinations_note?: string;
   growth_height_cm?: number | null;
   growth_weight_kg?: number | null;
@@ -810,6 +812,10 @@ export async function fetchChildrenFromSupabase(
             (typeof row.avatar_theme === 'string'
               ? (row.avatar_theme as ChildProfile['avatarTheme'])
               : canonicalMatch?.avatar_theme) || (isGirl ? 'artist' : 'astronaut'),
+          profile_details:
+            row.profile_details && typeof row.profile_details === 'object' && !Array.isArray(row.profile_details)
+              ? (row.profile_details as ChildProfileDetails)
+              : {},
           interests:
             typeof row.interests === 'string' && row.interests.trim()
               ? row.interests.trim()
@@ -874,6 +880,7 @@ function mapChildEntityToProfile(
       emoji: child.emoji || canonicalSeedKid.emoji,
       avatarTheme: child.avatar_theme || canonicalSeedKid.avatarTheme,
       interests: child.interests || '',
+      profileDetails: child.profile_details || {},
       vaccinationsNote: child.vaccinations_note || undefined,
       growthHeightCm:
         typeof child.growth_height_cm === 'number'
@@ -895,6 +902,7 @@ function mapChildEntityToProfile(
     emoji: child.emoji || (isGirl ? '👧🏻' : '👦🏻'),
     avatarTheme: child.avatar_theme || (isGirl ? 'artist' : 'astronaut'),
     interests: child.interests || '',
+    profileDetails: child.profile_details || {},
     vaccinationsNote: child.vaccinations_note || undefined,
     growthHeightCm:
       typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
