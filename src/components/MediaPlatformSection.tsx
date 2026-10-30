@@ -63,8 +63,8 @@ interface ParentingReelItem {
 const PARENTING_REELS_FEED: ParentingReelItem[] = [
   {
     id: 'reel-1',
-    titleAr: 'قاعدة الـ 3 دقائق لتهدئة نوبة الغضب فورًا بدون صراخ',
-    titleEn: 'The 3-Minute Rule to Calm Toddler Tantrums Without Yelling',
+    titleAr: 'خطوات هادئة لمساندة الطفل وقت نوبة الغضب',
+    titleEn: 'Calm Ways to Support a Child During a Tantrum',
     creatorNameAr: 'د. نورهان الشافعي',
     creatorNameEn: 'Dr. Nourhan El-Shafei',
     creatorRoleAr: 'أخصائية تعديل سلوك وتربية إيجابية',
@@ -95,8 +95,8 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
   },
   {
     id: 'reel-2',
-    titleAr: '5 أنشطة مونتيسوري من مطبخك تنمي تركيز طفلك (بدون شاشات)',
-    titleEn: '5 Kitchen Montessori Activities That Boost Focus (Zero Screens)',
+    titleAr: 'أنشطة منزلية بسيطة لتنمية التركيز بعيداً عن الشاشات',
+    titleEn: 'Simple At-Home Activities to Build Focus Without Screens',
     creatorNameAr: 'أ. مريم عبد الرحمن',
     creatorNameEn: 'Mariam Abdelrahman',
     creatorRoleAr: 'مدربة مونتيسوري وتنمية مهارات مبكرة',
@@ -127,8 +127,8 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
   },
   {
     id: 'reel-3',
-    titleAr: 'روتين الـ 20 دقيقة الذهبية لنوم عميق للرضع والأطفال',
-    titleEn: 'The Golden 20-Minute Wind-Down Routine for Deep Child Sleep',
+    titleAr: 'روتين مسائي قصير يساعد الطفل على الاستعداد للنوم',
+    titleEn: 'A Short Evening Routine to Help Children Settle for Sleep',
     creatorNameAr: 'سارة المنيري',
     creatorNameEn: 'Sara El-Moneiry',
     creatorRoleAr: 'استشارية نوم معتمدة للأطفال والرضع',
@@ -159,8 +159,8 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
   },
   {
     id: 'reel-4',
-    titleAr: 'أفكار لانش بوكس ذكية للأطفال الانتقائيين في الأكل',
-    titleEn: 'Smart Lunchbox Ideas for Picky Eaters (Nursery & School)',
+    titleAr: 'أفكار متنوعة لوجبة المدرسة تناسب الأذواق المختلفة',
+    titleEn: 'Lunchbox Ideas for Different Tastes and Appetites',
     creatorNameAr: 'د. هبة الجندي',
     creatorNameEn: 'Dr. Heba El-Gendy',
     creatorRoleAr: 'أخصائية تغذية علاجية للأطفال',
@@ -439,7 +439,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const mediaBanners: BannerSlideItem[] = [
     {
       id: 'media-slide-reels',
-      badge: isEn ? '📱 Full-Screen Reels 9:16' : '📱 ريلز الأسرة بملء الشاشة 9:16',
+      badge: isEn ? '📱 Vertical Family Reels' : '📱 مقاطع قصيرة للأسرة',
       title: isEn
         ? '60-Second Parenting Reels with Live Likes, Comments & Share'
         : 'فيديوهات ريلز تربوية مع إعجاب وتعليقات ومشاركة فورية',
@@ -457,7 +457,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
     },
     {
       id: 'media-slide-audio',
-      badge: isEn ? '🎙️ Parenting Podcasts & Bedtime Audio' : '🎙️ بودكاست الأسرة والقصص الصوتية',
+      badge: isEn ? '🎙️ Parenting Podcasts & Bedtime Audio' : '🎙️ محتوى صوتي وقصص قبل النوم',
       title: isEn
         ? 'Clean Podcast Player with Waveform & Sleep Lullabies'
         : 'مشغل بودكاست وقصص صوتية حديث مع موجات صوتية وتهويدات',
@@ -656,12 +656,12 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   );
 
   return (
-    <section className="space-y-4" aria-label={isEn ? 'Media, Videos & Reels Hub' : 'مركز الميديا والريلز التربوية'}>
+    <section className="space-y-4" aria-label={isEn ? 'Family Media & Learning' : 'مكتبة الأسرة والمحتوى التفاعلي'}>
       {/* Swipeable Media Banners */}
       <SwipeableBannerCarousel
         slides={mediaBanners}
         language={language}
-        ariaLabel={isEn ? 'Media Highlights Carousel' : 'لافتات الميديا والريلز المتحركة'}
+        ariaLabel={isEn ? 'Featured Family Content' : 'المحتوى المميز'}
       />
 
       {/* Mode Switcher Tabs */}
@@ -709,7 +709,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold shadow-2xs flex items-center gap-1.5 cursor-pointer"
           >
             <span>⛶</span>
-            <span>{isEn ? 'Full-Screen Reels Player' : 'مشغل الريلز ملء الشاشة'}</span>
+            <span>{isEn ? 'Vertical Reels Player' : 'مشغل المقاطع القصيرة'}</span>
           </button>
         )}
       </div>
@@ -885,7 +885,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             {/* All Reels Grid Cards */}
             <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-2.5 shadow-2xs">
               <h3 className="text-sm font-extrabold text-[var(--color-text)]">
-                🎞️ {isEn ? 'All Parenting Reels' : 'قائمة الريلز المختارة'}
+                🎞️ {isEn ? 'Explore All Reels' : 'استكشف كل المقاطع'}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {PARENTING_REELS_FEED.map((reel, idx) => {
