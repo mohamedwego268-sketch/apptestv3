@@ -2480,6 +2480,10 @@ export async function initiateGatewayEmailOrOAuthInSupabase(params: {
             email: cleanEmail,
             password: params.password.trim(),
             options: {
+              // Keep every email-signup path aligned with the deployed app origin.
+              // This origin must also be allow-listed in Supabase Auth Redirect URLs.
+              emailRedirectTo:
+                typeof window !== 'undefined' ? window.location.origin : undefined,
               data: {
                 full_name: params.parentName.trim(),
                 role: params.role,
