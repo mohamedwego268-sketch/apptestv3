@@ -94,7 +94,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         data-scrolled={isScrolled ? 'true' : 'false'}
         className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-200 select-none"
       >
-        <div className="max-w-[430px] mx-auto px-3 py-2 flex items-center justify-between gap-2">
+        <div className="max-w-[430px] mx-auto px-3 py-1.5 flex items-center justify-between gap-2">
           {/* Compact Control Group: Menu + Notifications + Weather */}
           <div className="flex items-center gap-1.5 shrink-0">
             <button
@@ -104,10 +104,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={onOpenProfileDrawer}
               title={isEn ? 'Navigation Menu' : 'القائمة الجانبية'}
               aria-label={isEn ? 'Open Navigation Menu' : 'فتح القائمة الجانبية'}
-              className="min-h-[48px] px-2.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="header-control min-h-[42px] px-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <svg
-                className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF]"
+                className="w-5 h-5 text-[#0d9488] dark:text-[#2DD4BF]"
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-hidden="true"
@@ -119,7 +119,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   strokeLinecap="round"
                 />
               </svg>
-              <span className="text-[11px] font-bold">
+              <span className="text-xs font-bold">
                 {isEn ? 'Menu' : 'القائمة'}
               </span>
             </button>
@@ -131,14 +131,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={() => onNavigate('notifications')}
               title={isEn ? 'Notifications' : 'التنبيهات'}
               aria-label={isEn ? 'Notifications' : 'التنبيهات'}
-              className={`relative min-h-[48px] min-w-[48px] rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
+              className={`header-control relative min-h-[42px] min-w-[42px] rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
                 isNotificationsActive
                   ? 'border-[#0d9488] bg-[#0d9488] text-white'
                   : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] dark:text-[#F8FAFC]'
               }`}
             >
               <svg
-                className={`w-4 h-4 ${
+                className={`w-5 h-5 ${
                   isNotificationsActive ? 'text-white' : 'text-[#FF8C61]'
                 }`}
                 viewBox="0 0 24 24"
@@ -177,12 +177,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   ? `Weather in ${localizedCity}: ${compactWeather.tempC}°C`
                   : `طقس ${localizedCity} ${compactWeather.tempC} درجة`
               }
-              className="min-h-[48px] px-2.5 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="header-control min-h-[42px] px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
-              <span className="text-xs leading-none" aria-hidden="true">
+              <span className="text-base leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
-              <span className="text-[11px] font-black tabular-nums text-sky-700 dark:text-sky-300">
+              <span className="text-xs font-black tabular-nums text-sky-700 dark:text-sky-300">
                 {compactWeather.tempC}°
               </span>
             </button>
@@ -193,21 +193,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             type="button"
             onClick={() => onNavigate('home')}
             aria-label={`${brandName} — ${localizedSlogan}`}
-            className="min-h-[48px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
+            className="min-h-[42px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
             <div className="min-w-0 text-end flex flex-col items-end justify-center flex-wrap">
-              <span className="font-black text-sm text-[var(--color-text)] dark:text-[#F8FAFC] leading-none tracking-tight">
+              <span className="font-black text-[17px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
                 {brandName}
               </span>
               <span
                 data-testid="header-official-slogan-badge"
-                className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-0.5"
+                className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-1"
               >
                 {localizedSlogan}
               </span>
             </div>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={18} />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+              <ThreeDIcon id="home" size={22} />
             </div>
           </button>
         </div>
