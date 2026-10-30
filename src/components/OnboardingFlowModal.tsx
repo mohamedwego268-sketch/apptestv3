@@ -138,6 +138,7 @@ interface OnboardingFlowModalProps {
   initialRole: ParentThemeRole;
   language: LanguageCode;
   onClose: () => void;
+  onPreviewRequest: () => void;
   onCompleteOnboarding: (payload: OnboardingCompletionPayload) => void;
 }
 
@@ -152,6 +153,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   initialRole,
   language,
   onClose,
+  onPreviewRequest,
   onCompleteOnboarding,
 }) => {
   const isEn = language === 'en';
@@ -1407,6 +1409,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   ? 'Next'
                   : 'متابعة'}
               </button>
+
+              {/* App review uses bundled sample data only; it does not create or authenticate an account. */}
+              <div className="grid grid-cols-2 gap-2 pt-1" data-testid="auth-preview-actions">
+                <button type="button" id="auth-review-app-btn" data-testid="auth-review-app-btn" onClick={onPreviewRequest} className="min-h-[48px] rounded-full bg-gradient-to-r from-[#0d9488] to-[#269db4] text-white text-xs font-black shadow-md shadow-teal-900/10 hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+                  <span aria-hidden="true">👀</span>{isEn ? 'Review the App' : 'مراجعة التطبيق'}
+                </button>
+                <button type="button" id="auth-skip-preview-btn" data-testid="auth-skip-preview-btn" onClick={onPreviewRequest} className="min-h-[48px] rounded-full border border-teal-600/25 bg-teal-50 dark:bg-[#142c32] text-teal-800 dark:text-teal-200 text-xs font-extrabold hover:bg-teal-100 dark:hover:bg-[#183a42] active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer">
+                  {isEn ? 'Skip for now' : 'تخطي الآن'}
+                </button>
+              </div>
 
               {/* Official Branded Social Logins: Gmail, iCloud, Facebook, Outlook */}
               <div className="pt-2 space-y-2.5">
