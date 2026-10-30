@@ -79,9 +79,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         id: 1,
         authorAr: 'د. سلمى الكيلاني',
         authorEn: 'Dr. Salma El-Kilany',
-        roleBadgeAr: '🩺 استشاري تربوي ونفسي أطفال (موثّق)',
-        roleBadgeEn: '🩺 Verified Child Psychologist',
-        isVerifiedExpert: true,
+        roleBadgeAr: '🩺 مساهمة مجتمعية',
+        roleBadgeEn: '🩺 Community contributor',
+        isVerifiedExpert: false,
         textAr:
           'خطوة ممتازة يا نهى! ثبات موعد الاستلام وتوديع الطفل بوضوح بدل الانصراف المفاجئ يبني أمانًا وثقة كبيرة في الحضانة.',
         textEn:
@@ -126,9 +126,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         id: 3,
         authorAr: 'أ. سارة المنيري',
         authorEn: 'Sara El-Moneiry',
-        roleBadgeAr: '🩺 أخصائية تعديل سلوك ومونتيسوري (موثّق)',
-        roleBadgeEn: '🩺 Verified Montessori Educator',
-        isVerifiedExpert: true,
+        roleBadgeAr: '🩺 مساهمة مجتمعية',
+        roleBadgeEn: '🩺 Community contributor',
+        isVerifiedExpert: false,
         textAr:
           'استخدام مؤقت مرئي (ساعة رملية أو منبه لطيف) وتنبيه الطفل قبل انتهاء الوقت بـ 5 دقائق يمنع نوبات الغضب عند إغلاق الشاشة.',
         textEn:
@@ -163,9 +163,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         id: 4,
         authorAr: 'د. هبة عبد الرحمن',
         authorEn: 'Dr. Heba Abdelrahman',
-        roleBadgeAr: '🩺 استشاري تغذية أطفال (موثّق)',
-        roleBadgeEn: '🩺 Verified Pediatric Nutritionist',
-        isVerifiedExpert: true,
+        roleBadgeAr: '🩺 مساهمة مجتمعية',
+        roleBadgeEn: '🩺 Community contributor',
+        isVerifiedExpert: false,
         textAr:
           'اختيار ممتاز يا ياسمين! السمسم المطحون مع التمر مصدر غني بالكالسيوم والحديد، ويمكن إضافة رشة قرفة خفيفة لتحسين النكهة.',
         textEn: 'Great choice! Ground sesame with dates is rich in calcium and iron.',
@@ -199,9 +199,9 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
         id: 5,
         authorAr: 'د. طارق النجار',
         authorEn: 'Dr. Tarek El-Naggar',
-        roleBadgeAr: '🩺 استشاري طب الأطفال وحديثي الولادة (موثّق)',
-        roleBadgeEn: '🩺 Verified Pediatrician',
-        isVerifiedExpert: true,
+        roleBadgeAr: '🩺 مساهمة مجتمعية',
+        roleBadgeEn: '🩺 Community contributor',
+        isVerifiedExpert: false,
         textAr:
           'روتين النوم المبكر يصنع فارقًا كبيرًا في إفراز هرمون النمو والتركيز وتقوية المناعة. استمروا على نفس التوقيت حتى في الإجازات.',
         textEn: 'Early bedtime routines significantly boost growth hormone and immunity.',
@@ -333,8 +333,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       id: 'reel-expert-sleep',
       authorAr: 'د. طارق النجار',
       authorEn: 'Dr. Tarek El-Naggar',
-      roleAr: '🏅 استشاري طب الأطفال (موثّق)',
-      roleEn: '🏅 Certified Pediatrician',
+      roleAr: '🏅 مساهمة مجتمعية',
+      roleEn: '🏅 Community contributor',
       isExpert: true,
       duration: '0:45',
       emoji: '🌙',
@@ -348,7 +348,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       id: 'reel-lunchbox',
       authorAr: 'د. هبة عبد الرحمن',
       authorEn: 'Dr. Heba Abdelrahman',
-      roleAr: '🏅 استشاري تغذية أطفال (موثّق)',
+      roleAr: '🏅 مساهمة مجتمعية',
       roleEn: '🏅 Pediatric Nutritionist',
       isExpert: true,
       duration: '0:38',
@@ -526,7 +526,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       id: 'comm-slide-share',
       badge: isEn ? '🤝 Parents Community' : '🤝 مجتمع الأهل',
       title: isEn
-        ? 'Share Experiences & Get Verified Specialist Replies'
+        ? 'Share experiences and learn from the community'
         : 'شارك تجربتك اليومية واحصل على ردود الخبراء الموثقين',
       subtitle: isEn
         ? `${posts.length} Active Discussions · Grouped by Age (0–8 Yrs)`
@@ -924,7 +924,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               <span>🎬</span>
               <span>
                 {isEn
-                  ? 'Family Story Reels & Verified Specialists'
+                  ? 'Family Stories & Community Tips'
                   : 'ريلز العيلة القصيرة · والخبراء المعتمدين'}
               </span>
             </div>
@@ -948,7 +948,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             <span>
               {topicFilter === 'experts'
                 ? isEn
-                  ? 'Verified Replies ✓'
+                  ? 'Community replies'
                   : 'ردود الخبراء ✓'
                 : isEn
                 ? 'Expert Replies'
@@ -1180,7 +1180,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar pb-0.5">
             {[
               { id: 'all', labelAr: 'الكل', labelEn: 'All' },
-              { id: 'experts', labelAr: '🏅 ردود الأطباء والخبراء', labelEn: '🏅 Verified Experts' },
+              { id: 'experts', labelAr: '🏅 مساهمات المجتمع', labelEn: '🏅 Community contributors' },
               { id: 'nursery', labelAr: '🏫 الحضانات', labelEn: '🏫 Nurseries' },
               { id: 'behavior', labelAr: '💛 السلوك', labelEn: '💛 Behavior' },
               { id: 'nutrition', labelAr: '🍎 التغذية', labelEn: '🍎 Nutrition' },
