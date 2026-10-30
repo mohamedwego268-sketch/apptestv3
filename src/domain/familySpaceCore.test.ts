@@ -17,6 +17,7 @@ import {
 import {
   OnboardingFlowController,
   UserSessionProfile,
+  hasVerifiedFamilyAccess,
 } from '../services/OnboardingFlowController';
 import {
   SHARED_FAMILY_ID,
@@ -1548,6 +1549,19 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(deletedChildId, childAUuid);
     assert.equal(deletedFamilyId, familyAUuid);
   });
+
+  it('16. Dashboard access requires an authenticated profile with a verified family UUID', () => {
+    assert.equal(hasVerifiedFamilyAccess(null), false);
+    assert.equal(hasVerifiedFamilyAccess(undefined), false);
+    assert.equal(hasVerifiedFamilyAccess({ verifiedFamilyId: null }), false);
+    assert.equal(hasVerifiedFamilyAccess({ verifiedFamilyId: '1' }), false);
+    assert.equal(hasVerifiedFamilyAccess({ verifiedFamilyId: 'not-a-uuid' }), false);
+    assert.equal(
+      hasVerifiedFamilyAccess({ verifiedFamilyId: '550e8400-e29b-41d4-a716-446655440000' }),
+      true
+    );
+  });
+
 });
 
 
