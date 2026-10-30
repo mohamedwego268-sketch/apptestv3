@@ -396,17 +396,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   const handleSelectRole = (nextRole: ParentThemeRole) => {
     setParentRole(nextRole);
-    if (nextRole === 'dad') {
-      if (!fullName.trim() || fullName.trim() === 'مريم') setFullName('أحمد');
-      if (email.includes('maryam')) setEmail('ahmad.dad@nekbaar.app');
-      setCoParentName('مريم');
-      setCoParentEmail('maryam.mom@nekbaar.app');
-    } else {
-      if (!fullName.trim() || fullName.trim() === 'أحمد') setFullName('مريم');
-      if (email.includes('ahmad')) setEmail('maryam.mom@nekbaar.app');
-      setCoParentName('أحمد');
-      setCoParentEmail('ahmad.dad@nekbaar.app');
-    }
   };
 
   const handleDetectCurrentLocationGps = () => {
@@ -458,7 +447,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         parentName: params.cleanName,
         fullName: params.cleanName,
         email: params.cleanEmail,
-        password: params.cleanPassword || password || 'Nekbaar#2026',
+        password: params.cleanPassword || password,
         phone: params.cleanPhone,
         country: params.coreCountry,
         city: params.resolvedCity,
@@ -788,6 +777,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       return;
     }
 
+    if (!verifiedUserUuid || !isValidUuid(verifiedUserUuid) || !verifiedFamilyUuid || !isValidUuid(verifiedFamilyUuid) || !authSyncedToDb) {
+      setErrorMsg(isEn
+        ? 'Verify your account and complete cloud family setup before saving the children.'
+        : 'لازم توثّق الحساب وتكتمل مزامنة مساحة الأسرة قبل حفظ بيانات الأطفال.');
+      setActiveView('AUTH');
+      return;
+    }
+
     setIsSubmitting(true);
     const listToSave = safeChildrenList;
 
@@ -830,6 +827,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
 
     const finalSyncedToDb = Boolean(authSyncedToDb && childrenSynced);
+    if (!childrenSynced) {
+      setIsSubmitting(false);
+      setDbSyncWarning(childrenSyncError || (isEn
+        ? 'Children could not be confirmed in cloud storage. Please retry before completing setup.'
+        : 'لم نتمكن من تأكيد حفظ بيانات الأطفال سحابياً. أعد المحاولة قبل إكمال التسجيل.'));
+      return;
+    }
     if (!finalSyncedToDb) {
       setDbSyncWarning(
         isEn
@@ -841,7 +845,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
     const primaryChild = listToSave[0];
-    const cleanParentName = fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
+    const cleanParentName = fullName.trim();
     const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
 
     // Never mark an account as verified simply because database synchronization succeeded!
@@ -849,11 +853,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const genuinePhoneVerified = Boolean(phoneVerifiedState);
 
     const sessionProfile: UserSessionProfile = {
-      userId: verifiedUserUuid || `usr_${familyId}_${parentRole}`,
-      sessionToken: `nk_sess_${familyId}_${Date.now()}`,
+      userId: verifiedUserUuid,
+      sessionToken: '',
       authenticatedAt: new Date().toISOString(),
       onboardingCompleted: true,
-      familyId: verifiedFamilyUuid || String(familyId),
+      familyId: verifiedFamilyUuid,
       verifiedFamilyId: verifiedFamilyUuid,
       isDbVerified: finalSyncedToDb,
       role: parentRole,
@@ -869,11 +873,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       emailVerified: genuineEmailVerified,
       phoneVerified: genuinePhoneVerified,
       isCoParentLinked: linkCoParent,
-      coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
-      coParentEmail:
-        coParentEmail.trim() ||
-        (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app'),
-      coParentPhone: coParentPhone.trim() || '559876543',
+      coParentName: coParentName.trim(),
+      coParentEmail: coParentEmail.trim(),
+      coParentPhone: coParentPhone.trim(),
       childrenCount: listToSave.length,
       syncedToDb: finalSyncedToDb,
     };
