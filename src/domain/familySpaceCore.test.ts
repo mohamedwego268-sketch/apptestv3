@@ -100,6 +100,7 @@ describe('Country, currency and city normalization', () => {
     assert.equal(resolveCityRegionId('SA', 'الظهران'), 'الدمام');
     assert.equal(resolveCityRegionId('SA', 'Riyadh'), 'الرياض');
     assert.equal(resolveCityRegionId('EG', 'New Cairo'), 'القاهرة');
+    assert.equal(resolveCityRegionId('EG', '  New   Cairo  '), 'القاهرة');
     assert.equal(resolveCityRegionId('EG', 'الإسكندرية'), 'الإسكندرية');
   });
 
