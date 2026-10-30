@@ -2615,6 +2615,7 @@ export default function App() {
                 onExportJson={handleExportJson}
                 onImportJsonFile={handleImportJsonFile}
                 onOpenConfirmResetModal={() => setConfirmResetModal(true)}
+                onSignOut={handleSignOut}
                 onShowToast={showToast}
                 settingsCountry={settingsCountry}
                 onCountryChangeInSettings={handleCountryChangeInSettings}
