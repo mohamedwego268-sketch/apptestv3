@@ -2186,7 +2186,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         }`}
                       >
                         <span>🇪🇬</span>
-                        <span>{isEn ? 'Egypt (27 · EGP)' : 'مصر (٢٧ محافظة · EGP)'}</span>
+                        <span>{isEn ? `Egypt (${COUNTRY_CITIES_MAP.EG.length} governorates · EGP)` : `مصر (${COUNTRY_CITIES_MAP.EG.length} محافظة · EGP)`}</span>
                       </button>
                       <button
                         id="drawer-country-sa-btn"
@@ -2200,7 +2200,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         }`}
                       >
                         <span>🇸🇦</span>
-                        <span>{isEn ? 'Saudi (15 · SAR)' : 'السعودية (١٥ منطقة · SAR)'}</span>
+                        <span>{isEn ? `Saudi Arabia (${COUNTRY_CITIES_MAP.SA.length} regions / cities · SAR)` : `السعودية (${COUNTRY_CITIES_MAP.SA.length} منطقة / مدينة · SAR)`}</span>
                       </button>
                     </div>
 
