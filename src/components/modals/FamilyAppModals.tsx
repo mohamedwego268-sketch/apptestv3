@@ -1667,8 +1667,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'store-nurseries-schools',
-                          labelAr: 'حضانات ومدارس معتمدة',
-                          labelEn: 'Verified Nurseries & Schools',
+                          labelAr: 'دليل الحضانات والمدارس',
+                          labelEn: 'Nurseries & Schools Directory',
                           icon: '🏫',
                           onSelect: () => {
                             onOpenStoreCategoryFromDrawer?.('nursery');
@@ -1700,8 +1700,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'store-live-tracking',
-                          labelAr: 'تتبع الطلبات المباشر وخريطة المندوب',
-                          labelEn: 'Live Delivery Tracking & Route Map',
+                          labelAr: 'متابعة حالة الطلب',
+                          labelEn: 'Order Status & Tracking',
                           icon: '🛵',
                           onSelect: () => {
                             onOpenStoreCategoryFromDrawer?.('live_tracking');
