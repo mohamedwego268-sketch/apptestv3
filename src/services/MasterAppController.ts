@@ -655,15 +655,17 @@ export class MasterBackendService implements MasterControllerAPI {
               nutrition_score: diag.nutritionScore,
               mood_score: diag.moodScore,
               routine_score: diag.routineCompletionScore,
+              routine_completion_score: diag.routineCompletionScore,
               updated_at: diag.updatedAt,
             };
           })
           .filter((row): row is NonNullable<typeof row> => row !== null);
 
         if (rows.length > 0) {
-          await supabaseClient
+          const { error } = await supabaseClient
             .from('wellness_diagnostics')
             .upsert(rows, { onConflict: 'family_id,child_id' });
+          if (error) throw error;
         }
         return nextSummary;
       },
