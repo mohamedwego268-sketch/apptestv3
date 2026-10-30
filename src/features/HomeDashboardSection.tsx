@@ -1164,107 +1164,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const currentSport = sportActivities[selectedSportSlot];
   const isSportDoneToday = Boolean(completedSportByKid[activeKidId]);
 
-  const minimalistGateways: Array<{
-    id: PageId;
-    iconId: ThreeDIconId;
-    titleAr: string;
-    titleEn: string;
-    subAr: string;
-    subEn: string;
-    statAr: string;
-    statEn: string;
-    accentClass: string;
-  }> = [
-    {
-      id: 'services',
-      iconId: 'services',
-      titleAr: 'المتجر السريع',
-      titleEn: 'Express Store',
-      subAr: 'ألعاب مونتيسوري، ملابس وحضانات',
-      subEn: 'Montessori toys, apparel & nurseries',
-      statAr: cartItemCount > 0 ? `${cartItemCount} بالسلة` : '٠–٨ سنوات',
-      statEn: cartItemCount > 0 ? `${cartItemCount} in Cart` : 'Ages 0–8',
-      accentClass: 'hover:border-[#FF8C61]',
-    },
-    {
-      id: 'assistant',
-      iconId: 'assistant',
-      titleAr: 'المساعد الذكي',
-      titleEn: 'AI Assistant',
-      subAr: 'مستشار تربوي وخطط يومية',
-      subEn: 'Parenting advisor & daily plans',
-      statAr: '٣ موديلات ذكية',
-      statEn: '3 AI Models',
-      accentClass: 'hover:border-[#0d9488]',
-    },
-    {
-      id: 'medical',
-      iconId: 'health',
-      titleAr: 'الدكتور والعيادة',
-      titleEn: 'Pediatric Clinic',
-      subAr: 'أطباء أطفال وتطعيمات ونمو',
-      subEn: 'Verified doctors & vaccinations',
-      statAr: 'حجز فوري',
-      statEn: 'Instant Book',
-      accentClass: 'hover:border-emerald-500',
-    },
-    {
-      id: 'media',
-      iconId: 'video',
-      titleAr: 'ريلز التربية 9:16',
-      titleEn: 'Parenting Reels',
-      subAr: 'فيديوهات إرشادية في ٦٠ ثانية',
-      subEn: '60s visual parenting guides',
-      statAr: 'فيديو وبودكاست',
-      statEn: 'Reels & Audio',
-      accentClass: 'hover:border-indigo-500',
-    },
-    {
-      id: 'community',
-      iconId: 'star',
-      titleAr: 'لمة الآباء',
-      titleEn: 'Parents Hub',
-      subAr: 'تجارب ونقاشات آمنة وموثقة',
-      subEn: 'Verified parent discussions',
-      statAr: 'مجتمع آمن',
-      statEn: 'Safe Hub',
-      accentClass: 'hover:border-amber-500',
-    },
-    {
-      id: 'routine',
-      iconId: 'routine',
-      titleAr: 'الروتين اليومي',
-      titleEn: 'Daily Routine',
-      subAr: 'مهام الأطفال والتذكيرات الذكية',
-      subEn: 'Kids habits & smart reminders',
-      statAr: `${completedTasksCount}/${state.tasks.length} مكتمل`,
-      statEn: `${completedTasksCount}/${state.tasks.length} Done`,
-      accentClass: 'hover:border-[#0d9488]',
-    },
-    {
-      id: 'calendar',
-      iconId: 'calendar',
-      titleAr: 'التقويم والمواعيد',
-      titleEn: 'Family Calendar',
-      subAr: nearestEvent ? locText(nearestEvent.title, lang) : 'مواعيد العيلة والتطعيمات',
-      subEn: nearestEvent ? locText(nearestEvent.title, lang) : 'Shared events & checkups',
-      statAr: `${state.events.length} مواعيد`,
-      statEn: `${state.events.length} Events`,
-      accentClass: 'hover:border-sky-500',
-    },
-    {
-      id: 'games',
-      iconId: 'games',
-      titleAr: 'ألعاب أطفالنا',
-      titleEn: 'Kids Games',
-      subAr: 'ألغاز ذكاء وتلوين وتحديات تفاعلية',
-      subEn: 'Safe interactive learning play',
-      statAr: '٣ مراحل عمرية',
-      statEn: '3 Age Stages',
-      accentClass: 'hover:border-emerald-500',
-    },
-  ];
-
   // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
   const isMotherActive =
     state.activeParentAccount === 'mother' ||
@@ -1545,14 +1444,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 : 'كبسولات فيديو سريعة مخصصة لكل مرحلة عمرية'}
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigateTo('media')}
-            className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold transition-all cursor-pointer"
-          >
-            {isEn ? 'Full Reels Library →' : 'مكتبة الريلز الكاملة ←'}
-          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
@@ -2054,13 +1945,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold transition-all cursor-pointer"
               >
                 + {isEn ? dailyCompassWisdom.actionLabelEn : dailyCompassWisdom.actionLabelAr}
-              </button>
-              <button
-                type="button"
-                onClick={() => navigateTo('assistant')}
-                className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-[#0d9488]/40 bg-teal-500/10 hover:bg-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-extrabold transition-all cursor-pointer"
-              >
-                {isEn ? 'Ask AI Advisor →' : 'اسأل المستشار الذكي ←'}
               </button>
             </div>
           </div>
@@ -2876,20 +2760,20 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          11. ACCORDION: FAMILY PLATFORM GATEWAYS GRID (CHECKLIST #3)
+          11. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
           ===================================================================== */}
       <HomeAccordionCard
         id="home-minimalist-gateways"
         testId="home-minimalist-gateways"
-        iconEmoji="🗂️"
+        iconEmoji="🛍️"
         iconBgClass="bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]"
-        title={isEn ? 'Family Platform Quick Gateways' : 'بوابات أقسام المنصة السريعة'}
+        title={isEn ? 'Featured Family Store & Supplies' : 'ترشيحات المتجر ومستلزمات الأسرة'}
         subtitle={
           isEn
-            ? 'Direct access to Store, AI Assistant, Medical Care, Reels, Community, and Games'
-            : 'انتقل مباشرة للمتجر، المساعد الذكي، الأطباء، الريلز، لمة الآباء، وألعاب الأطفال'
+            ? 'Curated Montessori toys, books, apparel, and verified nurseries'
+            : 'ألعاب مونتيسوري، قصص تربوية، ملابس قطنية، وحضانات معتمدة'
         }
-        badgeText={isEn ? '8 Sections' : '٨ أقسام'}
+        badgeText={isEn ? 'Ages 0–8' : '٠–٨ سنوات'}
         isOpen={Boolean(openAccordions.platformGateways)}
         onToggle={() => toggleAccordion('platformGateways')}
         isEn={isEn}
@@ -2914,36 +2798,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </span>
               <span className="text-[10px]">{showPromoShowcase ? '⌄' : '›'}</span>
             </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2.5">
-            {minimalistGateways.map((gw) => (
-              <button
-                key={gw.id}
-                type="button"
-                data-testid={`home-gateway-${gw.id}`}
-                onClick={() => navigateTo(gw.id)}
-                className={`min-h-[48px] bg-white dark:bg-[#142430]/80 shadow-sm rounded-2xl p-4 border border-gray-100 dark:border-[#1E3646] text-start flex flex-col justify-between gap-2.5 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer group ${gw.accentClass}`}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-1.5 w-full">
-                  <SoftFilledIcon id={gw.iconId} boxSize="sm" />
-                  <span className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug">
-                    {isEn ? gw.statEn : gw.statAr}
-                  </span>
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug flex items-center justify-between gap-1">
-                    <span className="leading-snug">{isEn ? gw.titleEn : gw.titleAr}</span>
-                    <span className="text-xs opacity-50 group-hover:opacity-100 transition-opacity shrink-0">
-                      {isEn ? '→' : '←'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-[#94A3B8] leading-snug">
-                    {isEn ? gw.subEn : gw.subAr}
-                  </p>
-                </div>
-              </button>
-            ))}
           </div>
 
           <div id="home-promotional-showcase" data-testid="home-promotional-showcase">

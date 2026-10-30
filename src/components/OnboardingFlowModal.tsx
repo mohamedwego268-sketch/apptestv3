@@ -12,9 +12,12 @@ import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  isValidUuid,
   normalizeOnboardingRoleToAccount,
+  resendAccountVerificationOtpInSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
+  verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
 import {
   INITIAL_CANONICAL_ONBOARDING_CHILDREN,
@@ -179,6 +182,8 @@ export interface OnboardingCompletionPayload {
   currency: CurrencyCode;
   phoneNumber: string;
   email: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
   childProfile: {
     name: string;
     gender: 'boy' | 'girl';
@@ -269,6 +274,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       cachedDraft?.email ||
       (initialRole === 'dad' ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app')
   );
+  const [password, setPassword] = useState<string>('Nekbaar#2026');
   const [selectedCountryCode, setSelectedCountryCode] = useState<AllowedGCCOrEgyptCountry>(
     tempSavedUser?.country &&
       EGYPT_AND_GCC_COUNTRIES.some((c) => c.code === tempSavedUser.country)
@@ -293,6 +299,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [familyId, setFamilyId] = useState<number>(
     cachedDraft?.familyId ?? SHARED_FAMILY_ID
   );
+  const [verifiedUserUuid, setVerifiedUserUuid] = useState<string | null>(null);
+  const [verifiedFamilyUuid, setVerifiedFamilyUuid] = useState<string | null>(null);
+  const [emailVerifiedState, setEmailVerifiedState] = useState<boolean>(false);
+  const [phoneVerifiedState, setPhoneVerifiedState] = useState<boolean>(false);
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
+  const [verificationOtpCode, setVerificationOtpCode] = useState<string>('');
+  const [otpStatusMsg, setOtpStatusMsg] = useState<string | null>(null);
 
   // Step 2: Children Profiles Setup
   const [childrenList, setChildrenList] = useState<OnboardingChildDraft[]>(() =>
@@ -364,7 +377,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       selectedCity: selectedCityAr || activeCountryObj.defaultCityAr,
       verificationChannel: 'email',
       otpCode: '',
-      isOtpVerified: authSyncedToDb,
+      isOtpVerified: emailVerifiedState || phoneVerifiedState,
       childrenList: safeChildrenList,
       coParentName,
       coParentEmail,
@@ -385,6 +398,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     coParentName,
     coParentEmail,
     coParentPhone,
+    emailVerifiedState,
+    phoneVerifiedState,
   ]);
 
   if (!isOpen) return null;
@@ -437,6 +452,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const syncAuthAndLocationWithSupabase = async (params: {
     cleanName: string;
     cleanEmail: string;
+    cleanPassword?: string;
     cleanPhone: string;
     coreCountry: CountryCode;
     resolvedCity: string;
@@ -452,6 +468,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         parentName: params.cleanName,
         fullName: params.cleanName,
         email: params.cleanEmail,
+        password: params.cleanPassword || password || 'Nekbaar#2026',
         phone: params.cleanPhone,
         country: params.coreCountry,
         city: params.resolvedCity,
@@ -460,13 +477,51 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         familyName: resolvedFamilyName,
       });
 
+      // Strictly track genuine Supabase Auth confirmation state (never fake from DB sync)
+      setEmailVerifiedState(Boolean(authRes.emailVerified));
+      setPhoneVerifiedState(Boolean(authRes.phoneVerified));
+
+      if (isValidUuid(authRes.userId)) {
+        setVerifiedUserUuid(authRes.userId);
+      }
+      if (isValidUuid(authRes.verifiedFamilyUuid)) {
+        setVerifiedFamilyUuid(authRes.verifiedFamilyUuid);
+      }
+
+      if (authRes.pendingEmailVerification) {
+        setPendingVerificationEmail(params.cleanEmail);
+        setOtpStatusMsg(
+          isEn
+            ? `Verification code sent to ${params.cleanEmail}. Enter the 6-digit OTP to confirm your identity.`
+            : `تم إرسال رمز تحقق إلى ${params.cleanEmail}. أدخل الرمز لتأكيد البريد الإلكتروني وتفعيل المزامنة السحابية.`
+        );
+      } else {
+        setPendingVerificationEmail(null);
+      }
+
+      // Restore existing family children if signing in to an existing family
+      if (Array.isArray(authRes.sharedChildren) && authRes.sharedChildren.length > 0) {
+        setChildrenList(
+          authRes.sharedChildren.map((child, idx) => ({
+            id: child.id || idx + 1,
+            remoteId: child.remote_id,
+            name: child.name,
+            gender: child.gender === 'girl' ? 'girl' : 'boy',
+            ageStagePreset: 'custom',
+            birth: child.birth || '2022-05-14',
+            interests: child.interests || '',
+            avatarTheme: child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+          }))
+        );
+      }
+
       const resolvedFamilyId = authRes.familyId || authRes.user?.family_id || familyId;
       if (resolvedFamilyId) {
         setFamilyId(resolvedFamilyId);
       }
 
       const locRes = await saveOnboardingLocationToSupabase({
-        familyId: resolvedFamilyId,
+        familyId: authRes.verifiedFamilyUuid || resolvedFamilyId,
         familyName: resolvedFamilyName,
         country: params.coreCountry,
         city: params.resolvedCity,
@@ -480,9 +535,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       } else {
         setAuthSyncedToDb(false);
         setDbSyncWarning(
-          isEn
-            ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
-            : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.'
+          authRes.error ||
+            (isEn
+              ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
+              : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.')
         );
       }
     } catch {
@@ -492,6 +548,67 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
           : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.'
       );
+    }
+  };
+
+  const handleVerifyIdentityOtp = async () => {
+    const targetEmail = pendingVerificationEmail || email.trim();
+    if (!verificationOtpCode.trim()) {
+      setErrorMsg(
+        isEn ? 'Please enter the verification code.' : 'يرجى إدخال رمز التحقق المرسل لبريدك.'
+      );
+      return;
+    }
+    setErrorMsg(null);
+    const verifyRes = await verifyAccountIdentityOtpInSupabase({
+      email: targetEmail,
+      token: verificationOtpCode.trim(),
+      type: 'signup',
+    });
+    if (!verifyRes.verified) {
+      setErrorMsg(
+        verifyRes.error ||
+          (isEn ? 'Invalid or expired verification code.' : 'رمز التحقق غير صالح أو منتهي الصلاحية.')
+      );
+      return;
+    }
+
+    setEmailVerifiedState(verifyRes.emailVerified);
+    setPhoneVerifiedState(verifyRes.phoneVerified);
+    if (verifyRes.userId && isValidUuid(verifyRes.userId)) {
+      setVerifiedUserUuid(verifyRes.userId);
+    }
+    setPendingVerificationEmail(null);
+    setOtpStatusMsg(
+      isEn ? 'Identity verified! Syncing family space...' : 'تم توثيق الهوية بنجاح! جاري ربط مساحة الأسرة...'
+    );
+
+    const coreCountry = activeCountryObj.mappedCoreCountry;
+    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    await syncAuthAndLocationWithSupabase({
+      cleanName: fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم'),
+      cleanEmail: targetEmail,
+      cleanPassword: password,
+      cleanPhone: phone.trim() || activeCountryObj.phonePlaceholder,
+      coreCountry,
+      resolvedCity,
+    });
+  };
+
+  const handleResendIdentityOtp = async () => {
+    const targetEmail = pendingVerificationEmail || email.trim();
+    const res = await resendAccountVerificationOtpInSupabase({
+      email: targetEmail,
+      type: 'signup',
+    });
+    if (res.sent) {
+      setOtpStatusMsg(
+        isEn
+          ? `A new verification code was sent to ${targetEmail}.`
+          : `تمت إعادة إرسال رمز التحقق إلى ${targetEmail}.`
+      );
+    } else if (res.error) {
+      setErrorMsg(res.error);
     }
   };
 
@@ -555,6 +672,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     void syncAuthAndLocationWithSupabase({
       cleanName,
       cleanEmail: chosen.email,
+      cleanPassword: password,
       cleanPhone,
       coreCountry,
       resolvedCity,
@@ -618,6 +736,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     void syncAuthAndLocationWithSupabase({
       cleanName: resolvedParentName,
       cleanEmail: resolvedEmail,
+      cleanPassword: password,
       cleanPhone: resolvedPhone,
       coreCountry,
       resolvedCity,
@@ -718,7 +837,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     let enrichedChildrenList = listToSave;
     try {
       const saveRes = await saveOnboardingChildrenToSupabase({
-        familyId,
+        familyId: verifiedFamilyUuid || familyId,
         childrenList: listToSave.map((item, idx) => ({
           id: Number.isFinite(Number(item.id)) && Number(item.id) > 0 ? Number(item.id) : idx + 1,
           remoteId: item.remoteId !== undefined ? String(item.remoteId) : undefined,
@@ -766,12 +885,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const cleanParentName = fullName.trim() || (parentRole === 'dad' ? 'أحمد' : 'مريم');
     const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
 
+    // Never mark an account as verified simply because database synchronization succeeded!
+    const genuineEmailVerified = Boolean(emailVerifiedState);
+    const genuinePhoneVerified = Boolean(phoneVerifiedState);
+
     const sessionProfile: UserSessionProfile = {
-      userId: `usr_${familyId}_${parentRole}`,
+      userId: verifiedUserUuid || `usr_${familyId}_${parentRole}`,
       sessionToken: `nk_sess_${familyId}_${Date.now()}`,
       authenticatedAt: new Date().toISOString(),
       onboardingCompleted: true,
-      familyId: String(familyId),
+      familyId: verifiedFamilyUuid || String(familyId),
+      verifiedFamilyId: verifiedFamilyUuid,
+      isDbVerified: finalSyncedToDb,
       role: parentRole,
       parentRole,
       fullName: cleanParentName,
@@ -781,9 +906,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       country: coreCountry,
       city: finalCity,
       verificationChannel: 'email',
-      isOtpVerified: finalSyncedToDb,
-      emailVerified: finalSyncedToDb,
-      phoneVerified: finalSyncedToDb,
+      isOtpVerified: genuineEmailVerified || genuinePhoneVerified,
+      emailVerified: genuineEmailVerified,
+      phoneVerified: genuinePhoneVerified,
       isCoParentLinked: linkCoParent,
       coParentName: coParentName.trim() || (parentRole === 'dad' ? 'مريم' : 'أحمد'),
       coParentEmail:
@@ -809,6 +934,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       currency: getSuggestedCurrencyForCountry(coreCountry),
       phoneNumber: cleanPhone,
       email: sessionProfile.email,
+      emailVerified: genuineEmailVerified,
+      phoneVerified: genuinePhoneVerified,
       childProfile: {
         name: primaryChild.name,
         gender: primaryChild.gender,
@@ -884,6 +1011,51 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               className="rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 text-center"
             >
               {dbSyncWarning}
+            </div>
+          )}
+
+          {pendingVerificationEmail && (
+            <div
+              data-testid="auth-otp-verification-box"
+              className="rounded-2xl bg-teal-50 dark:bg-[#142430] border border-teal-300 dark:border-teal-700/60 p-3.5 space-y-2.5"
+            >
+              <p className="text-xs font-extrabold text-teal-900 dark:text-teal-200 text-center">
+                {otpStatusMsg ||
+                  (isEn
+                    ? `Verify your email (${pendingVerificationEmail})`
+                    : `تأكيد البريد الإلكتروني (${pendingVerificationEmail})`)}
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  dir="ltr"
+                  data-testid="auth-otp-code-input"
+                  value={verificationOtpCode}
+                  onChange={(e) => setVerificationOtpCode(e.target.value)}
+                  placeholder={isEn ? '6-digit OTP code' : 'رمز التحقق (6 أرقام)'}
+                  aria-label={isEn ? 'Verification code' : 'رمز التحقق'}
+                  className="flex-1 min-h-[42px] px-4 rounded-full border border-teal-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-xs font-bold text-slate-900 dark:text-white text-center"
+                />
+                <button
+                  type="button"
+                  data-testid="auth-otp-verify-btn"
+                  onClick={handleVerifyIdentityOtp}
+                  className="min-h-[42px] px-4 rounded-full bg-[#0d9488] text-white text-xs font-black cursor-pointer"
+                >
+                  {isEn ? 'Verify' : 'تأكيد'}
+                </button>
+              </div>
+              <div className="text-center">
+                <button
+                  type="button"
+                  data-testid="auth-otp-resend-btn"
+                  onClick={handleResendIdentityOtp}
+                  className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
+                >
+                  {isEn ? 'Resend verification code' : 'إعادة إرسال رمز التحقق'}
+                </button>
+              </div>
             </div>
           )}
 
@@ -985,6 +1157,22 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={isEn ? 'Email Address' : 'البريد الإلكتروني'}
                   aria-label={isEn ? 'Email Address' : 'البريد الإلكتروني'}
+                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
+                />
+              </div>
+
+              {/* Password (كلمة المرور) */}
+              <div>
+                <input
+                  id="auth-password-input"
+                  data-testid="auth-password-input"
+                  type="password"
+                  dir="ltr"
+                  autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={isEn ? 'Password' : 'كلمة المرور'}
+                  aria-label={isEn ? 'Password' : 'كلمة المرور'}
                   className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
                 />
               </div>

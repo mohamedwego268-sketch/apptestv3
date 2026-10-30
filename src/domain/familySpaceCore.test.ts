@@ -28,9 +28,12 @@ import {
   normalizeOnboardingRoleToAccount,
   normalizeOnboardingRoleToTheme,
   resolveVerifiedFamilyContext,
+  restoreAuthenticatedAccountFromSupabase,
   saveOnboardingChildrenToSupabase,
   saveOnboardingLocationToSupabase,
+  signOutFromSupabase,
   syncFamilySpaceToSupabase,
+  verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
 import {
   VERIFIED_LIVE_TABLE_COLUMNS,
@@ -38,6 +41,8 @@ import {
   mapChildProfileToContractRow,
   verifyDatabaseFamilyMembership,
 } from './supabaseDatabaseContract';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../supabase.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 class MemoryStorage implements Storage {
   private store = new Map<string, string>();
@@ -653,6 +658,691 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(phase2ExistingChild.passions_or_heroes, 'السباحة والعلوم');
     assert.equal(phase2ExistingChild.interests, 'السباحة والعلوم');
     assert.equal(phase2ExistingChild.birth, '2018-09-10');
+  });
+
+  it('12. Required 9-Step E2E Scenario: Register -> Verify Identity -> Create Profile & Family -> Add Children -> Confirm in DB -> Sign Out -> Sign In -> Restore Exact Data -> Cross-Account RLS Isolation', async () => {
+    /**
+     * Stateful Supabase Auth + RLS-Enforcing PostgREST Simulator that mirrors
+     * `auth.users`, `public.families`, `public.users`, `public.children`,
+     * `bootstrap_authenticated_family_space`, and `current_user_family_id()` RLS policies.
+     */
+    interface SimAuthUser {
+      id: string;
+      email: string;
+      password: string;
+      email_confirmed_at: string | null;
+      phone_confirmed_at: string | null;
+      confirmed_at: string | null;
+      user_metadata: Record<string, unknown>;
+      otpToken: string;
+    }
+
+    const dbAuthUsers = new Map<string, SimAuthUser>();
+    const dbFamilies = new Map<string, Record<string, unknown>>();
+    const dbUsers = new Map<string, Record<string, unknown>>();
+    const dbChildren = new Map<string, Record<string, unknown>>();
+
+    let uuidCounter = 100;
+    const nextUuid = () => {
+      uuidCounter += 1;
+      const hex = uuidCounter.toString(16).padStart(12, '0');
+      return `88888888-4444-4444-8444-${hex}`;
+    };
+
+    const createSimulatedRlsClient = (): SupabaseClient => {
+      let currentSessionUser: SimAuthUser | null = null;
+
+      const currentUserFamilyId = (): string | null => {
+        if (!currentSessionUser) return null;
+        for (const u of dbUsers.values()) {
+          if (u.auth_user_id === currentSessionUser.id && typeof u.family_id === 'string') {
+            return u.family_id;
+          }
+        }
+        return null;
+      };
+
+      const makeQueryBuilder = (tableName: string) => {
+        const filters: Array<{ col: string; val: unknown }> = [];
+        let op: 'select' | 'insert' | 'upsert' | 'update' = 'select';
+        let writePayload: Array<Record<string, unknown>> = [];
+        let upsertConflictCol: string | undefined;
+
+        const execute = async (): Promise<{ data: unknown; error: null | { message: string; code?: string } }> => {
+          const myUid = currentSessionUser?.id || null;
+          const myFamilyId = currentUserFamilyId();
+
+          if (!myUid && tableName !== 'catalog_items') {
+            return { data: [], error: null };
+          }
+
+          if (op === 'select') {
+            let sourceRows: Array<Record<string, unknown>> = [];
+            if (tableName === 'families') {
+              sourceRows = Array.from(dbFamilies.values()).filter(
+                (r) => myFamilyId && r.id === myFamilyId
+              );
+            } else if (tableName === 'users') {
+              sourceRows = Array.from(dbUsers.values()).filter(
+                (r) =>
+                  r.auth_user_id === myUid ||
+                  (r.auth_user_id && myFamilyId && r.family_id === myFamilyId)
+              );
+            } else if (tableName === 'children') {
+              sourceRows = Array.from(dbChildren.values()).filter(
+                (r) => myFamilyId && r.family_id === myFamilyId
+              );
+            }
+            for (const f of filters) {
+              sourceRows = sourceRows.filter((r) => r[f.col] === f.val);
+            }
+            return { data: sourceRows.map((r) => ({ ...r })), error: null };
+          }
+
+          if (op === 'insert' || op === 'upsert') {
+            const savedRows: Array<Record<string, unknown>> = [];
+            for (const rawItem of writePayload) {
+              if (tableName === 'families') {
+                const id = typeof rawItem.id === 'string' && isValidUuid(rawItem.id) ? rawItem.id : nextUuid();
+                if (dbFamilies.has(id) && id !== myFamilyId) {
+                  return { data: null, error: { message: 'RLS policy violation on families', code: '42501' } };
+                }
+                const row = { ...rawItem, id, created_at: new Date().toISOString() };
+                dbFamilies.set(id, row);
+                savedRows.push(row);
+              } else if (tableName === 'users') {
+                if (rawItem.auth_user_id !== myUid) {
+                  return { data: null, error: { message: 'RLS policy violation on users', code: '42501' } };
+                }
+                let existingId: string | null = null;
+                if (upsertConflictCol === 'auth_user_id') {
+                  for (const [k, v] of dbUsers.entries()) {
+                    if (v.auth_user_id === myUid) {
+                      existingId = k;
+                      break;
+                    }
+                  }
+                }
+                const id = existingId || (typeof rawItem.id === 'string' && isValidUuid(rawItem.id) ? rawItem.id : nextUuid());
+                const row = {
+                  ...(existingId ? dbUsers.get(existingId) : {}),
+                  ...rawItem,
+                  id,
+                };
+                dbUsers.set(id, row);
+                savedRows.push(row);
+              } else if (tableName === 'children') {
+                // Enforce RLS: `WITH CHECK (family_id = public.current_user_family_id())`
+                if (!myFamilyId || rawItem.family_id !== myFamilyId) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'new row violates row-level security policy for table "children"',
+                      code: '42501',
+                    },
+                  };
+                }
+                const id = typeof rawItem.id === 'string' && isValidUuid(rawItem.id) ? rawItem.id : nextUuid();
+                const existingChild = dbChildren.get(id);
+                if (existingChild && existingChild.family_id !== myFamilyId) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'RLS policy violation: cannot overwrite another family child',
+                      code: '42501',
+                    },
+                  };
+                }
+                const row = {
+                  ...(existingChild || {}),
+                  ...rawItem,
+                  id,
+                  created_at: existingChild?.created_at || new Date().toISOString(),
+                };
+                dbChildren.set(id, row);
+                savedRows.push(row);
+              }
+            }
+            return { data: savedRows, error: null };
+          }
+
+          if (op === 'update') {
+            const patch = writePayload[0] || {};
+            const updatedRows: Array<Record<string, unknown>> = [];
+            if (tableName === 'users') {
+              for (const [k, v] of dbUsers.entries()) {
+                const matchesFilters = filters.every((f) => v[f.col] === f.val);
+                if (matchesFilters && v.auth_user_id === myUid) {
+                  const next = { ...v, ...patch };
+                  dbUsers.set(k, next);
+                  updatedRows.push(next);
+                }
+              }
+            } else if (tableName === 'families') {
+              for (const [k, v] of dbFamilies.entries()) {
+                const matchesFilters = filters.every((f) => v[f.col] === f.val);
+                if (matchesFilters && k === myFamilyId) {
+                  const next = { ...v, ...patch };
+                  dbFamilies.set(k, next);
+                  updatedRows.push(next);
+                }
+              }
+            }
+            return { data: updatedRows, error: null };
+          }
+
+          return { data: [], error: null };
+        };
+
+        const builder = {
+          select() {
+            return builder;
+          },
+          eq(col: string, val: unknown) {
+            filters.push({ col, val });
+            return builder;
+          },
+          order() {
+            return builder;
+          },
+          limit() {
+            return builder;
+          },
+          insert(rows: Record<string, unknown> | Array<Record<string, unknown>>) {
+            op = 'insert';
+            writePayload = Array.isArray(rows) ? rows : [rows];
+            return builder;
+          },
+          upsert(
+            rows: Record<string, unknown> | Array<Record<string, unknown>>,
+            opts?: { onConflict?: string }
+          ) {
+            op = 'upsert';
+            writePayload = Array.isArray(rows) ? rows : [rows];
+            upsertConflictCol = opts?.onConflict;
+            return builder;
+          },
+          update(patch: Record<string, unknown>) {
+            op = 'update';
+            writePayload = [patch];
+            return builder;
+          },
+          then(
+            onFulfilled?: (value: { data: unknown; error: null | { message: string; code?: string } }) => unknown,
+            onRejected?: (reason: unknown) => unknown
+          ) {
+            return execute().then(onFulfilled, onRejected);
+          },
+        };
+        return builder;
+      };
+
+      const client = {
+        auth: {
+          async signUp(params: {
+            email: string;
+            password: string;
+            options?: { data?: Record<string, unknown> };
+          }) {
+            const cleanEmail = params.email.trim().toLowerCase();
+            for (const existing of dbAuthUsers.values()) {
+              if (existing.email === cleanEmail) {
+                return {
+                  data: { user: null, session: null },
+                  error: { message: 'User already registered' },
+                };
+              }
+            }
+            const newUser: SimAuthUser = {
+              id: nextUuid(),
+              email: cleanEmail,
+              password: params.password,
+              email_confirmed_at: null,
+              phone_confirmed_at: null,
+              confirmed_at: null,
+              user_metadata: params.options?.data || {},
+              otpToken: '654321',
+            };
+            dbAuthUsers.set(newUser.id, newUser);
+            // Mirrors live `mailer_autoconfirm: false` -> user created, session is null until OTP verified
+            return {
+              data: {
+                user: { ...newUser },
+                session: null,
+              },
+              error: null,
+            };
+          },
+          async verifyOtp(params: { email?: string; token: string; type: string }) {
+            const cleanEmail = (params.email || '').trim().toLowerCase();
+            for (const user of dbAuthUsers.values()) {
+              if (user.email === cleanEmail && user.otpToken === params.token.trim()) {
+                const nowIso = new Date().toISOString();
+                user.email_confirmed_at = nowIso;
+                user.confirmed_at = nowIso;
+                currentSessionUser = user;
+                return {
+                  data: {
+                    user: { ...user },
+                    session: {
+                      access_token: `jwt_${user.id}`,
+                      user: { ...user },
+                    },
+                  },
+                  error: null,
+                };
+              }
+            }
+            return {
+              data: { user: null, session: null },
+              error: { message: 'Token has expired or is invalid' },
+            };
+          },
+          async signInWithPassword(params: { email: string; password: string }) {
+            const cleanEmail = params.email.trim().toLowerCase();
+            for (const user of dbAuthUsers.values()) {
+              if (user.email === cleanEmail) {
+                if (user.password !== params.password) {
+                  return {
+                    data: { user: null, session: null },
+                    error: { message: 'Invalid login credentials' },
+                  };
+                }
+                if (!user.email_confirmed_at) {
+                  return {
+                    data: { user: null, session: null },
+                    error: { message: 'Email not confirmed' },
+                  };
+                }
+                currentSessionUser = user;
+                return {
+                  data: {
+                    user: { ...user },
+                    session: {
+                      access_token: `jwt_${user.id}`,
+                      user: { ...user },
+                    },
+                  },
+                  error: null,
+                };
+              }
+            }
+            return {
+              data: { user: null, session: null },
+              error: { message: 'Invalid login credentials' },
+            };
+          },
+          async getSession() {
+            if (!currentSessionUser) {
+              return { data: { session: null }, error: null };
+            }
+            return {
+              data: {
+                session: {
+                  access_token: `jwt_${currentSessionUser.id}`,
+                  user: { ...currentSessionUser },
+                },
+              },
+              error: null,
+            };
+          },
+          async signOut() {
+            currentSessionUser = null;
+            return { error: null };
+          },
+        },
+        async rpc(fnName: string, args: Record<string, unknown>) {
+          if (fnName === 'bootstrap_authenticated_family_space') {
+            if (!currentSessionUser) {
+              return { data: null, error: { message: 'UNAUTHENTICATED' } };
+            }
+            // Check if 1:1 user row already exists for `auth_user_id`
+            for (const existingUser of dbUsers.values()) {
+              if (
+                existingUser.auth_user_id === currentSessionUser.id &&
+                typeof existingUser.family_id === 'string'
+              ) {
+                return {
+                  data: [
+                    {
+                      user_id: existingUser.id,
+                      family_id: existingUser.family_id,
+                      is_new_family: false,
+                    },
+                  ],
+                  error: null,
+                };
+              }
+            }
+            const famId = nextUuid();
+            dbFamilies.set(famId, {
+              id: famId,
+              family_name: args.p_family_name || `أسرة ${args.p_full_name} — نكبر`,
+              country: args.p_country || 'EG',
+              city: args.p_city || 'القاهرة',
+              currency: args.p_currency || 'EGP',
+              active_parent: args.p_role || 'father',
+              created_by: currentSessionUser.id,
+              created_at: new Date().toISOString(),
+            });
+            const usrRowId = nextUuid();
+            dbUsers.set(usrRowId, {
+              id: usrRowId,
+              auth_user_id: currentSessionUser.id,
+              family_id: famId,
+              full_name: args.p_full_name,
+              role: args.p_role || 'father',
+              email: currentSessionUser.email,
+              phone: args.p_phone || '',
+              country: args.p_country || 'EG',
+              verified: Boolean(currentSessionUser.email_confirmed_at),
+              created_at: new Date().toISOString(),
+            });
+            return {
+              data: [{ user_id: usrRowId, family_id: famId, is_new_family: true }],
+              error: null,
+            };
+          }
+          return { data: null, error: { message: 'RPC not found' } };
+        },
+        from(tableName: string) {
+          return makeQueryBuilder(tableName);
+        },
+      };
+
+      return client as unknown as SupabaseClient;
+    };
+
+    const clientA = createSimulatedRlsClient();
+    const clientB = createSimulatedRlsClient();
+
+    // =========================================================================
+    // STEP 1: Register a new account (Account A)
+    // =========================================================================
+    const registerRes = await authenticateParentWithSupabase(
+      {
+        mode: 'signup',
+        email: 'tarek.father@nekbaar.app',
+        password: 'SecurePassword#2026',
+        phone: '+201012345678',
+        parentName: 'طارق المنصور',
+        role: 'father',
+        country: 'EG',
+        city: 'القاهرة',
+        currency: 'EGP',
+      },
+      clientA
+    );
+
+    assert.equal(registerRes.accountCreated, true);
+    assert.equal(registerRes.pendingEmailVerification, true);
+    assert.equal(registerRes.authenticated, false);
+    assert.equal(registerRes.identityVerified, false);
+    assert.equal(registerRes.emailVerified, false);
+    assert.equal(registerRes.phoneVerified, false);
+    assert.equal(registerRes.syncedToDb, false);
+    assert.equal(dbFamilies.size, 0, 'Unverified signup must not write to families');
+    assert.equal(dbUsers.size, 0, 'Unverified signup must not write to public.users');
+
+    // =========================================================================
+    // STEP 2: Complete genuine identity verification (OTP)
+    // =========================================================================
+    const verifyRes = await verifyAccountIdentityOtpInSupabase(
+      {
+        email: 'tarek.father@nekbaar.app',
+        token: '654321',
+        type: 'signup',
+      },
+      clientA
+    );
+    assert.equal(verifyRes.verified, true);
+    assert.equal(verifyRes.emailVerified, true);
+    assert.ok(isValidUuid(verifyRes.userId));
+
+    // =========================================================================
+    // STEP 3: Create the user profile and family record
+    // =========================================================================
+    const bootstrapRes = await authenticateParentWithSupabase(
+      {
+        mode: 'signin',
+        email: 'tarek.father@nekbaar.app',
+        password: 'SecurePassword#2026',
+        phone: '+201012345678',
+        parentName: 'طارق المنصور',
+        role: 'father',
+        country: 'EG',
+        city: 'القاهرة',
+        currency: 'EGP',
+      },
+      clientA
+    );
+
+    assert.equal(bootstrapRes.success, true);
+    assert.equal(bootstrapRes.authenticated, true);
+    assert.equal(bootstrapRes.identityVerified, true);
+    assert.equal(bootstrapRes.emailVerified, true);
+    assert.equal(bootstrapRes.profileCreated, true);
+    assert.equal(bootstrapRes.familyLinked, true);
+    assert.equal(bootstrapRes.syncedToDb, true);
+    assert.ok(isValidUuid(bootstrapRes.verifiedFamilyUuid));
+    const familyAUuid = bootstrapRes.verifiedFamilyUuid!;
+    const userAUuid = bootstrapRes.userId;
+
+    // =========================================================================
+    // STEP 4: Add one or more children (plus retry deduplication check)
+    // =========================================================================
+    const addChildrenRes = await saveOnboardingChildrenToSupabase(
+      {
+        familyId: familyAUuid,
+        childrenList: [
+          {
+            id: 1,
+            name: 'كريم طارق',
+            birth: '2021-06-15',
+            gender: 'boy',
+            interests: 'التركيب والفضاء',
+            avatarTheme: 'astronaut',
+          },
+          {
+            id: 2,
+            name: 'سارة طارق',
+            birth: '2023-11-02',
+            gender: 'girl',
+            interests: 'الموسيقى والرسم',
+            avatarTheme: 'artist',
+          },
+        ],
+      },
+      clientA
+    );
+
+    assert.equal(addChildrenRes.synced, true);
+    assert.equal(addChildrenRes.savedChildren.length, 2);
+    assert.ok(isValidUuid(addChildrenRes.savedChildren[0].remote_id));
+    assert.ok(isValidUuid(addChildrenRes.savedChildren[1].remote_id));
+
+    // Retry with the exact same children to verify zero duplicate rows are created
+    const retryChildrenRes = await saveOnboardingChildrenToSupabase(
+      {
+        familyId: familyAUuid,
+        childrenList: [
+          {
+            id: 1,
+            name: 'كريم طارق',
+            birth: '2021-06-15',
+            gender: 'boy',
+            interests: 'التركيب والفضاء',
+            avatarTheme: 'astronaut',
+          },
+          {
+            id: 2,
+            name: 'سارة طارق',
+            birth: '2023-11-02',
+            gender: 'girl',
+            interests: 'الموسيقى والرسم',
+            avatarTheme: 'artist',
+          },
+        ],
+      },
+      clientA
+    );
+    assert.equal(retryChildrenRes.synced, true);
+    assert.equal(dbChildren.size, 2, 'Retries must update existing children, never duplicate rows');
+
+    // =========================================================================
+    // STEP 5: Confirm that all records exist in Supabase
+    // =========================================================================
+    assert.equal(dbUsers.size, 1, 'Exactly one 1:1 user profile must exist for Account A');
+    assert.equal(dbFamilies.size, 1, 'Exactly one family record must exist for Account A');
+    assert.equal(dbChildren.size, 2, 'Both children records must exist in Supabase');
+    const fetchedChildrenStep5 = await fetchChildrenFromSupabase(familyAUuid, clientA);
+    assert.equal(fetchedChildrenStep5.error, null);
+    assert.equal(fetchedChildrenStep5.data.length, 2);
+    assert.deepEqual(
+      fetchedChildrenStep5.data.map((c) => c.name),
+      ['كريم طارق', 'سارة طارق']
+    );
+
+    // =========================================================================
+    // STEP 6: Sign out
+    // =========================================================================
+    const signOutRes = await signOutFromSupabase(clientA);
+    assert.equal(signOutRes.signedOut, true);
+    const afterSignOutCtx = await resolveVerifiedFamilyContext(clientA);
+    assert.equal(afterSignOutCtx.authenticated, false);
+    assert.equal(afterSignOutCtx.verifiedFamilyId, null);
+
+    // =========================================================================
+    // STEP 7: Sign in again using the same account
+    // =========================================================================
+    const signInAgainRes = await authenticateParentWithSupabase(
+      {
+        mode: 'signin',
+        email: 'tarek.father@nekbaar.app',
+        password: 'SecurePassword#2026',
+        phone: '+201012345678',
+        parentName: 'طارق المنصور',
+        role: 'father',
+        country: 'EG',
+        city: 'القاهرة',
+      },
+      clientA
+    );
+    assert.equal(signInAgainRes.success, true);
+    assert.equal(signInAgainRes.authenticated, true);
+    assert.equal(signInAgainRes.userId, userAUuid);
+    assert.equal(signInAgainRes.verifiedFamilyUuid, familyAUuid);
+    assert.equal(dbUsers.size, 1, 'Signing in again must not create a duplicate user profile');
+    assert.equal(dbFamilies.size, 1, 'Signing in again must not create a duplicate family');
+
+    // =========================================================================
+    // STEP 8: Confirm that the exact same user, family, and children data is restored
+    // =========================================================================
+    const restoredAccount = await restoreAuthenticatedAccountFromSupabase(clientA);
+    assert.equal(restoredAccount.restored, true);
+    assert.equal(restoredAccount.userId, userAUuid);
+    assert.equal(restoredAccount.verifiedFamilyId, familyAUuid);
+    assert.equal(restoredAccount.userProfile?.full_name, 'طارق المنصور');
+    assert.equal(restoredAccount.userProfile?.role, 'father');
+    assert.equal(restoredAccount.family?.id, familyAUuid);
+    assert.equal(restoredAccount.family?.country, 'EG');
+    assert.equal(restoredAccount.family?.city, 'القاهرة');
+    assert.equal(restoredAccount.children.length, 2);
+    assert.equal(restoredAccount.children[0].name, 'كريم طارق');
+    assert.equal(restoredAccount.children[1].name, 'سارة طارق');
+    assert.equal(
+      restoredAccount.children[0].remote_id,
+      addChildrenRes.savedChildren[0].remote_id
+    );
+    assert.equal(
+      restoredAccount.children[1].remote_id,
+      addChildrenRes.savedChildren[1].remote_id
+    );
+
+    // =========================================================================
+    // STEP 9: Test that a different account (Account B) cannot access Account A's family data
+    // =========================================================================
+    await authenticateParentWithSupabase(
+      {
+        mode: 'signup',
+        email: 'nada.mother@nekbaar.app',
+        password: 'OtherPassword#2026',
+        phone: '+966551234567',
+        parentName: 'ندى العتيبي',
+        role: 'mother',
+        country: 'SA',
+        city: 'الرياض',
+        currency: 'SAR',
+      },
+      clientB
+    );
+    await verifyAccountIdentityOtpInSupabase(
+      {
+        email: 'nada.mother@nekbaar.app',
+        token: '654321',
+        type: 'signup',
+      },
+      clientB
+    );
+    const bootstrapB = await authenticateParentWithSupabase(
+      {
+        mode: 'signin',
+        email: 'nada.mother@nekbaar.app',
+        password: 'OtherPassword#2026',
+        phone: '+966551234567',
+        parentName: 'ندى العتيبي',
+        role: 'mother',
+        country: 'SA',
+        city: 'الرياض',
+        currency: 'SAR',
+      },
+      clientB
+    );
+    assert.equal(bootstrapB.success, true);
+    const familyBUuid = bootstrapB.verifiedFamilyUuid!;
+    assert.notEqual(familyBUuid, familyAUuid, 'Account B must receive a separate family UUID');
+
+    // Account B attempts to read Account A's children by passing Family A's UUID
+    const crossReadChildren = await fetchChildrenFromSupabase(familyAUuid, clientB);
+    assert.equal(
+      crossReadChildren.data.length,
+      0,
+      'RLS & service ownership verification must block Account B from reading Account A children'
+    );
+
+    // Account B attempts to read Account A's user profile
+    const crossReadUsers = await fetchUsersFromSupabase(familyAUuid, clientB);
+    assert.equal(
+      crossReadUsers.data.filter((u) => u.id === userAUuid).length,
+      0,
+      'Account B must not be able to read Account A user profile'
+    );
+
+    // Confirm Account A's children are completely untouched
+    const accountAChildrenCheck = await fetchChildrenFromSupabase(familyAUuid, clientA);
+    assert.equal(accountAChildrenCheck.data.length, 2);
+  });
+
+  it('13. Live Supabase Configuration & Contract Readiness: normalizes publishable anon key and models live table columns accurately', () => {
+    assert.equal(SUPABASE_URL, 'https://qbwnzunusmaidciakuod.supabase.co');
+    assert.ok(
+      SUPABASE_ANON_KEY.startsWith('sb_publishable_'),
+      'SUPABASE_ANON_KEY must be normalized to lowercase sb_publishable_ prefix so PostgREST does not reject it with 401'
+    );
+    assert.deepEqual(VERIFIED_LIVE_TABLE_COLUMNS.extended_family, [
+      'id',
+      'family_id',
+      'full_name',
+      'relation_type',
+      'created_at',
+    ]);
+    assert.deepEqual(VERIFIED_LIVE_TABLE_COLUMNS.catalog_items, [
+      'id',
+      'title',
+      'price',
+      'description',
+      'created_at',
+    ]);
   });
 });
 

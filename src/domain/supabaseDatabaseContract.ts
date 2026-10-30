@@ -21,6 +21,8 @@ export const VERIFIED_LIVE_TABLE_COLUMNS = {
     'passions_or_heroes',
     'created_at',
   ] as const,
+  extended_family: ['id', 'family_id', 'full_name', 'relation_type', 'created_at'] as const,
+  catalog_items: ['id', 'title', 'price', 'description', 'created_at'] as const,
 } as const;
 
 export const PHASE2_TARGET_TABLE_COLUMNS = {
@@ -138,6 +140,8 @@ export interface EvaluatedAuthSessionState {
   status: AuthAccountLifecycleStatus;
   authUserId: string | null;
   email: string | null;
+  emailVerified: boolean;
+  phoneVerified: boolean;
   canProceedToFamilyBootstrap: boolean;
   requiresEmailVerificationPrompt: boolean;
   reason: string | null;
@@ -150,10 +154,28 @@ export interface EvaluatedAuthSessionState {
  * 2. If `user.id` (valid UUID) is present but `session` is null -> `PENDING_EMAIL_CONFIRMATION`
  *    (blocks premature table writes that would fail RLS or leave unlinked rows).
  * 3. Demo IDs (`parent-ahmad`, `parent-maryam`, `1`) are strictly rejected.
+ * 4. `emailVerified` and `phoneVerified` are derived strictly from Supabase Auth confirmation
+ *    timestamps/session state — NEVER assumed merely because a database write succeeded.
  */
 export function evaluateAuthSessionResponse(input: {
-  user?: { id?: unknown; email?: unknown; user_metadata?: Record<string, unknown> } | null;
-  session?: { access_token?: unknown; user?: { id?: unknown; email?: unknown } | null } | null;
+  user?: {
+    id?: unknown;
+    email?: unknown;
+    email_confirmed_at?: unknown;
+    confirmed_at?: unknown;
+    phone_confirmed_at?: unknown;
+    user_metadata?: Record<string, unknown>;
+  } | null;
+  session?: {
+    access_token?: unknown;
+    user?: {
+      id?: unknown;
+      email?: unknown;
+      email_confirmed_at?: unknown;
+      confirmed_at?: unknown;
+      phone_confirmed_at?: unknown;
+    } | null;
+  } | null;
   error?: { message?: string } | null;
 }): EvaluatedAuthSessionState {
   if (input.error?.message) {
@@ -161,6 +183,8 @@ export function evaluateAuthSessionResponse(input: {
       status: 'AUTH_ERROR',
       authUserId: null,
       email: null,
+      emailVerified: false,
+      phoneVerified: false,
       canProceedToFamilyBootstrap: false,
       requiresEmailVerificationPrompt: false,
       reason: input.error.message,
@@ -176,6 +200,8 @@ export function evaluateAuthSessionResponse(input: {
       status: 'UNAUTHENTICATED_OR_INVALID',
       authUserId: null,
       email: cleanEmail,
+      emailVerified: false,
+      phoneVerified: false,
       canProceedToFamilyBootstrap: false,
       requiresEmailVerificationPrompt: false,
       reason: 'Missing or non-UUID auth user ID.',
@@ -188,11 +214,34 @@ export function evaluateAuthSessionResponse(input: {
     isValidUuid(input.session?.user?.id) &&
     input.session.user.id.trim() === rawUserId.trim();
 
+  const emailConfirmedTimestamp =
+    input.session?.user?.email_confirmed_at ??
+    input.session?.user?.confirmed_at ??
+    input.user?.email_confirmed_at ??
+    input.user?.confirmed_at;
+
+  const phoneConfirmedTimestamp =
+    input.session?.user?.phone_confirmed_at ?? input.user?.phone_confirmed_at;
+
+  const emailVerified = Boolean(
+    hasValidAccessToken &&
+      (typeof emailConfirmedTimestamp === 'string'
+        ? emailConfirmedTimestamp.trim().length > 0
+        : true)
+  );
+  const phoneVerified = Boolean(
+    hasValidAccessToken &&
+      typeof phoneConfirmedTimestamp === 'string' &&
+      phoneConfirmedTimestamp.trim().length > 0
+  );
+
   if (!hasValidAccessToken) {
     return {
       status: 'PENDING_EMAIL_CONFIRMATION',
       authUserId: rawUserId.trim(),
       email: cleanEmail,
+      emailVerified: false,
+      phoneVerified: false,
       canProceedToFamilyBootstrap: false,
       requiresEmailVerificationPrompt: true,
       reason:
@@ -204,6 +253,8 @@ export function evaluateAuthSessionResponse(input: {
     status: 'ACTIVE_SESSION_READY',
     authUserId: rawUserId.trim(),
     email: cleanEmail,
+    emailVerified,
+    phoneVerified,
     canProceedToFamilyBootstrap: true,
     requiresEmailVerificationPrompt: false,
     reason: null,

@@ -148,15 +148,6 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => onNavigateTo('notifications')}
-              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
-            >
-              {lang === 'en'
-                ? `Alerts (${unreadNotifCount})`
-                : `الإشعارات (${unreadNotifCount})`}
-            </button>
-            <button
-              type="button"
               onClick={onToggleShowInnerSettings}
               className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >

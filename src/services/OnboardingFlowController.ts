@@ -1,9 +1,11 @@
 import { CountryCode, DEFAULT_SEED, ParentThemeRole } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
+  Child,
   SHARED_FAMILY_ID,
   isValidUuid,
   resolveVerifiedFamilyContext,
+  restoreAuthenticatedAccountFromSupabase,
   supabaseClient,
   withSupabaseTimeout,
 } from './supabaseService';
@@ -242,12 +244,14 @@ export class OnboardingFlowController {
   /**
    * Step 0: Smart Startup & Mandatory Auth Gateway Detection
    * Checks if a valid active session (`auth.uid` or local persistence) exists.
-   * - If found: syncs `localStorage` and returns `{ step: 'DASHBOARD', profile }` so the app bypasses the gateway and routes directly to the dashboard.
-   * - If not found: returns `{ step: 'WELCOME_PROFILE', draft }` so unauthenticated visitors see the mandatory Auth Gateway screen first.
+   * - If an active Supabase session exists: restores exact DB user profile, family, and children,
+   *   and derives `emailVerified`/`phoneVerified` strictly from Supabase Auth confirmation timestamps.
+   * - If not found: returns `{ step: 'WELCOME_PROFILE', draft }` so unauthenticated visitors see the Auth Gateway first.
    */
   public static async detectInitialState(): Promise<{
     step: OnboardingStep;
     profile?: UserSessionProfile;
+    restoredChildren?: Child[];
     draft?: OnboardingDraftData;
   }> {
     try {
@@ -260,45 +264,74 @@ export class OnboardingFlowController {
           );
           const sessionUser = sessionRes?.session?.user;
           if (sessionUser && isValidUuid(sessionUser.id)) {
-            const verifiedCtx = await resolveVerifiedFamilyContext();
+            const restored = await restoreAuthenticatedAccountFromSupabase(supabaseClient);
+            const verifiedCtx = restored.authenticated
+              ? {
+                  authenticated: restored.authenticated,
+                  verifiedFamilyId: restored.verifiedFamilyId,
+                  emailVerified: restored.emailVerified,
+                  phoneVerified: restored.phoneVerified,
+                }
+              : await resolveVerifiedFamilyContext(supabaseClient);
+
             const verifiedFamilyUuid =
               verifiedCtx.authenticated && isValidUuid(verifiedCtx.verifiedFamilyId)
                 ? verifiedCtx.verifiedFamilyId
                 : null;
             const meta = (sessionUser.user_metadata || {}) as Record<string, unknown>;
-            const rawRole = typeof meta.role === 'string' ? meta.role.toLowerCase() : '';
+            const rawRole =
+              restored.userProfile?.role ||
+              (typeof meta.role === 'string' ? meta.role.toLowerCase() : '');
             const isDad =
               rawRole === 'father' ||
               rawRole === 'dad' ||
               (sessionUser.email || '').toLowerCase().includes('ahmad');
-            // Never trust user_metadata.family_id as verified family ownership
+
+            // Never trust user_metadata.family_id as verified family ownership,
+            // and never mark emailVerified/phoneVerified true unless confirmed by Supabase Auth!
             const resolvedProfile: UserSessionProfile = {
               userId: sessionUser.id,
               familyId: verifiedFamilyUuid || String(SHARED_FAMILY_ID),
               verifiedFamilyId: verifiedFamilyUuid,
-              isDbVerified: Boolean(verifiedFamilyUuid),
-              syncedToDb: Boolean(verifiedFamilyUuid),
+              isDbVerified: Boolean(verifiedFamilyUuid && restored.restored),
+              syncedToDb: Boolean(verifiedFamilyUuid && restored.restored),
               fullName:
+                restored.userProfile?.full_name ||
                 (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
                 (isDad ? 'أحمد (الأب)' : 'مريم (الأم)'),
               role: isDad ? 'dad' : 'mom',
-              email: sessionUser.email || (isDad ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app'),
+              email:
+                restored.userProfile?.email ||
+                sessionUser.email ||
+                (isDad ? 'ahmad.dad@nekbaar.app' : 'maryam.mom@nekbaar.app'),
               phone:
+                restored.userProfile?.phone ||
                 (typeof meta.phone === 'string' && meta.phone.trim()) ||
                 sessionUser.phone ||
                 '551234567',
               city:
+                restored.family?.city ||
                 (typeof meta.city === 'string' && meta.city.trim()) ||
                 'الدمام',
-              country: meta.country === 'EG' ? 'EG' : 'SA',
-              childrenCount: 3,
-              isCoParentLinked: true,
-              emailVerified: true,
-              phoneVerified: true,
+              country:
+                restored.family?.country === 'EG' || meta.country === 'EG' ? 'EG' : 'SA',
+              childrenCount:
+                restored.restored && restored.children.length > 0
+                  ? restored.children.length
+                  : 0,
+              isCoParentLinked: false,
+              isOtpVerified: verifiedCtx.emailVerified || verifiedCtx.phoneVerified,
+              emailVerified: verifiedCtx.emailVerified,
+              phoneVerified: verifiedCtx.phoneVerified,
+              onboardingCompleted: Boolean(verifiedFamilyUuid && restored.restored),
               updatedAt: new Date().toISOString(),
             };
             this.persistUserSession(resolvedProfile, false);
-            return { step: 'DASHBOARD', profile: resolvedProfile };
+            return {
+              step: 'DASHBOARD',
+              profile: resolvedProfile,
+              restoredChildren: restored.restored ? restored.children : undefined,
+            };
           }
         } catch {
           // Proceed gracefully to local UI state check if offline
@@ -306,7 +339,7 @@ export class OnboardingFlowController {
       }
 
       // 2. Check persisted localStorage profile for local UI experience only
-      // Note: localStorage is NEVER treated as proof of Supabase identity or family ownership
+      // Note: localStorage is NEVER treated as proof of Supabase identity, verification, or family ownership
       const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
       if (savedProfileRaw) {
         const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
@@ -319,6 +352,9 @@ export class OnboardingFlowController {
               verifiedFamilyId: null,
               isDbVerified: false,
               syncedToDb: false,
+              isOtpVerified: false,
+              emailVerified: false,
+              phoneVerified: false,
             },
           };
         }

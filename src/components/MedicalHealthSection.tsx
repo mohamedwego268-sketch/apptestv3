@@ -34,7 +34,6 @@ interface MedicalHealthSectionProps {
   onToggleSaveMedia: (id: number) => void;
   onBookDoctorAppointment: (doctorName: string, childId: number | null, date: string, time: string, note: string) => void;
   onShowToast: (msg: string) => void;
-  onOpenMediaHub?: () => void;
 }
 
 export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
@@ -50,7 +49,6 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   onToggleSaveMedia,
   onBookDoctorAppointment,
   onShowToast,
-  onOpenMediaHub,
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
@@ -882,21 +880,10 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         </div>
       )}
 
-      {/* Compact Clinical Notice Strip + Dedicated Media Link (No Video Player Inside Medical) */}
+      {/* Compact Clinical Notice Strip (No Cross-Section Navigation) */}
       <div className="rounded-2xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/60 dark:bg-[#101D26] px-4 py-2.5 text-xs font-bold text-emerald-950 dark:text-[#A5F3FC] flex flex-wrap items-center justify-between gap-2 soft-card-surface">
         <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub (Text & Clinical Records Only)' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية (سجلات وأدلة نصية طبية فقط)'}</span>
-        <div className="flex items-center gap-2">
-          {onOpenMediaHub && (
-            <button
-              type="button"
-              onClick={onOpenMediaHub}
-              className="px-3 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-extrabold transition-colors cursor-pointer"
-            >
-              🎬 {isEn ? 'Watch Parenting Reels & Videos' : 'شاهد الفيديوهات والريلز في قسم الميديا'}
-            </button>
-          )}
-          <span>📍 {displayCity}</span>
-        </div>
+        <span>📍 {displayCity}</span>
       </div>
 
       {/* Doctor Appointment Booking Modal */}

@@ -367,37 +367,69 @@ export default function App() {
   // Smart Startup Profile Recognition (`OnboardingFlowController.detectInitialState()`)
   useEffect(() => {
     let active = true;
-    OnboardingFlowController.detectInitialState().then(({ step, profile, draft }) => {
-      if (!active) return;
-      if (step === 'DASHBOARD' && profile) {
-        setRecognizedProfile(profile);
-        setOnboardingModalOpen(false);
-        setActivePage('home');
-        setState((prev) => {
-          const nextCountry =
-            profile.country === 'SA' || profile.country === 'EG' ? profile.country : prev.country;
-          const nextRole = profile.role === 'dad' || profile.role === 'mom' ? profile.role : prev.role;
-          const pid = nextRole === 'dad' ? 'father' : 'mother';
-          return {
-            ...prev,
-            parentName: profile.fullName || prev.parentName,
-            role: nextRole,
-            country: nextCountry,
-            city: profile.city || prev.city,
-            currency: getSuggestedCurrencyForCountry(nextCountry),
-            activeParentAccount: pid,
-          };
-        });
-        showToast(
-          state.language === 'en'
-            ? `👋 Welcome back, ${profile.fullName}! Routed directly to your Family Dashboard.`
-            : `👋 أهلاً بعودتك، ${profile.fullName}! تم التعرف على حسابك المحفوظ وتوجيهك مباشرة للوحة العائلة.`
-        );
-      } else if (step === 'WELCOME_PROFILE' || (draft && draft.currentStep)) {
-        // Open Welcome & Auth Gateway for new/logged-out users or restore in-progress draft
-        setOnboardingModalOpen(true);
+    OnboardingFlowController.detectInitialState().then(
+      ({ step, profile, restoredChildren, draft }) => {
+        if (!active) return;
+        if (step === 'DASHBOARD' && profile) {
+          setRecognizedProfile(profile);
+          setOnboardingModalOpen(false);
+          setActivePage('home');
+          setState((prev) => {
+            const nextCountry =
+              profile.country === 'SA' || profile.country === 'EG' ? profile.country : prev.country;
+            const nextRole =
+              profile.role === 'dad' || profile.role === 'mom' ? profile.role : prev.role;
+            const pid = nextRole === 'dad' ? 'father' : 'mother';
+            const nextKids =
+              Array.isArray(restoredChildren) && restoredChildren.length > 0
+                ? restoredChildren.map((child, idx) => ({
+                    id: child.id || idx + 1,
+                    remoteId: child.remote_id,
+                    name: child.name,
+                    gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
+                    birth: child.birth || '2022-05-14',
+                    interests: child.interests || '',
+                    emoji: child.gender === 'girl' ? '👧🏻' : '👦🏻',
+                    avatarTheme:
+                      child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+                    useIllustratedAvatar: true,
+                  }))
+                : prev.kids;
+            return {
+              ...prev,
+              parentName: profile.fullName || prev.parentName,
+              role: nextRole,
+              country: nextCountry,
+              city: profile.city || prev.city,
+              currency: getSuggestedCurrencyForCountry(nextCountry),
+              activeParentAccount: pid,
+              parentAccounts: {
+                ...prev.parentAccounts,
+                [pid]: {
+                  ...prev.parentAccounts[pid],
+                  fullName: profile.fullName || prev.parentAccounts[pid].fullName,
+                  country: nextCountry,
+                  email: profile.email || prev.parentAccounts[pid].email,
+                  phoneNumber: profile.phone || prev.parentAccounts[pid].phoneNumber,
+                  emailVerified: Boolean(profile.emailVerified),
+                  phoneVerified: Boolean(profile.phoneVerified),
+                  onboardingCompleted: Boolean(profile.onboardingCompleted ?? true),
+                },
+              },
+              kids: nextKids,
+            };
+          });
+          showToast(
+            state.language === 'en'
+              ? `👋 Welcome back, ${profile.fullName}! Routed directly to your Family Dashboard.`
+              : `👋 أهلاً بعودتك، ${profile.fullName}! تم التعرف على حسابك المحفوظ وتوجيهك مباشرة للوحة العائلة.`
+          );
+        } else if (step === 'WELCOME_PROFILE' || (draft && draft.currentStep)) {
+          // Open Welcome & Auth Gateway for new/logged-out users or restore in-progress draft
+          setOnboardingModalOpen(true);
+        }
       }
-    });
+    );
     return () => {
       active = false;
     };
@@ -1596,7 +1628,7 @@ export default function App() {
     >
       <div
         data-testid="mobile-app-viewport-frame"
-        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-24 transition-all duration-300 ease-in-out"
+        className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-8 transition-all duration-300 ease-in-out"
       >
         {isDashboardUnlocked && (
           <>
@@ -1632,12 +1664,12 @@ export default function App() {
 
             {/* Main Mobile Workspace Container */}
             <div className="w-full max-w-[430px] mx-auto px-3 pt-2.5 pb-6 flex-1">
-              {/* Parent OS Quick Navigation Bar — Coherent 1-Tap Access Across Core Modules */}
+              {/* Parent OS Quick Navigation Bar — Single Primary Navigation System Across Main Sections */}
               <nav
                 id="parent-os-quick-dock"
                 data-testid="parent-os-quick-dock"
-                aria-label={lang === 'en' ? 'Parent OS Quick Modules' : 'الوصول السريع لأركان نكبر'}
-                className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5 mb-1.5"
+                aria-label={lang === 'en' ? 'Parent OS Main Navigation' : 'شريط التنقل الرئيسي لأركان نكبر'}
+                className="sticky top-[52px] z-30 bg-slate-50/95 dark:bg-gray-900/95 backdrop-blur-md flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 mb-2 border-b border-gray-200/60 dark:border-[#1E3646]/70"
               >
                 {(
                   [
@@ -1648,6 +1680,12 @@ export default function App() {
                     { id: 'assistant', labelAr: '✨ المساعد الذكي', labelEn: '✨ AI Assistant' },
                     { id: 'medical', labelAr: '🩺 الرعاية الطبية', labelEn: '🩺 Medical' },
                     { id: 'routine', labelAr: '✅ الروتين', labelEn: '✅ Routine' },
+                    {
+                      id: 'services',
+                      labelAr: cartItemCount > 0 ? `🛍️ المتجر (${cartItemCount})` : '🛍️ المتجر',
+                      labelEn: cartItemCount > 0 ? `🛍️ Store (${cartItemCount})` : '🛍️ Store',
+                    },
+                    { id: 'settings', labelAr: '⚙️ الحساب', labelEn: '⚙️ Account' },
                   ] as Array<{ id: PageId; labelAr: string; labelEn: string }>
                 ).map((item) => {
                   const isActive = activePage === item.id;
@@ -1657,6 +1695,7 @@ export default function App() {
                       type="button"
                       data-testid={`os-quick-pill-${item.id}`}
                       onClick={() => navigateTo(item.id)}
+                      aria-current={isActive ? 'page' : undefined}
                       className={`min-h-[36px] px-3 py-1 rounded-full text-xs font-extrabold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                         isActive
                           ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
@@ -1671,7 +1710,7 @@ export default function App() {
 
               {/* Main Viewport */}
               <main key={activePage} className="min-w-0 space-y-4 animate-page-enter transition-all duration-300 ease-in-out">
-            {/* Unified Top App Bar with Functional Back Button for all Nested / Inner Screens */}
+            {/* Unified Top App Bar with Functional Back Button for Sub-Pages Only (not Main Dock Sections) */}
             {(() => {
               const innerScreenMeta: Partial<
                 Record<
@@ -1689,39 +1728,6 @@ export default function App() {
                   }
                 >
               > = {
-                medical: {
-                  titleAr: 'الرعاية الطبية',
-                  titleEn: 'Medical Care',
-                  badgeAr: 'أطباء وعيادات وتطعيمات',
-                  badgeEn: 'Doctors, Clinics & Growth',
-                  iconId: 'health',
-                  tone: 'emerald',
-                  parentPage: 'home',
-                  parentLabelAr: 'رجوع',
-                  parentLabelEn: 'Back',
-                },
-                media: {
-                  titleAr: 'الميديا والريلز 9:16',
-                  titleEn: 'Educational Reels & Media',
-                  badgeAr: 'فيديوهات وبطاقات بصرية',
-                  badgeEn: 'Reels & Visual Guides',
-                  iconId: 'video',
-                  tone: 'indigo',
-                  parentPage: 'home',
-                  parentLabelAr: 'رجوع',
-                  parentLabelEn: 'Back',
-                },
-                chat: {
-                  titleAr: 'المحادثات المباشرة',
-                  titleEn: 'Direct Family & Expert Chat',
-                  badgeAr: 'تواصل فوري آمن',
-                  badgeEn: 'Direct Messaging',
-                  iconId: 'shield',
-                  tone: 'sky',
-                  parentPage: 'home',
-                  parentLabelAr: 'رجوع',
-                  parentLabelEn: 'Back',
-                },
                 children: {
                   titleAr: 'ملفات الأطفال 3D',
                   titleEn: '3D Child Profiles',
@@ -1729,17 +1735,6 @@ export default function App() {
                   badgeEn: `${state.kids.length} Profiles`,
                   iconId: 'children',
                   tone: 'teal',
-                  parentPage: 'home',
-                  parentLabelAr: 'رجوع',
-                  parentLabelEn: 'Back',
-                },
-                routine: {
-                  titleAr: 'الروتين اليومي',
-                  titleEn: 'Daily Routine',
-                  badgeAr: `${completedTasksCount}/${state.tasks.length} مكتمل`,
-                  badgeEn: `${completedTasksCount}/${state.tasks.length} Done`,
-                  iconId: 'routine',
-                  tone: 'orange',
                   parentPage: 'home',
                   parentLabelAr: 'رجوع',
                   parentLabelEn: 'Back',
@@ -2209,7 +2204,6 @@ export default function App() {
                     );
                   }}
                   onShowToast={showToast}
-                  onOpenMediaHub={() => navigateTo('media')}
                 />
               ))}
 
@@ -2751,157 +2745,6 @@ export default function App() {
             </footer>
           </main>
         </div>
-
-            {/* Super App Mobile Bottom Navigation Bar (Strictly 5 Elements with Central AI Agent FAB — Always Visible in Mobile Viewport) */}
-            {(() => {
-              const isHomeBranch = [
-                'home',
-                'medical',
-                'media',
-                'chat',
-                'children',
-                'routine',
-                'calendar',
-                'wishes',
-                'games',
-                'notifications',
-              ].includes(activePage);
-              const isProfileBranch = ['settings', 'family', 'privacy', 'terms', 'contact'].includes(
-                activePage
-              );
-
-              return (
-                <nav
-                  data-testid="mobile-bottom-navigation-bar"
-                  className="fixed bottom-0 inset-x-0 max-w-[430px] mx-auto z-40 border-t border-gray-200/80 dark:border-[#1E3646] glass-bottom-nav px-2 pt-1.5 pb-safe-nav grid grid-cols-5 items-end gap-1 shadow-[0_-8px_24px_-6px_rgba(42,36,51,0.14)]"
-                  aria-label={lang === 'en' ? 'Mobile Bottom Navigation' : 'التنقل السفلي للموبايل'}
-                >
-                  {/* 1. Home */}
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('home')}
-                    aria-current={activePage === 'home' ? 'page' : undefined}
-                    className={`relative min-h-[48px] py-1 px-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10px] tracking-tight leading-tight font-bold active:scale-95 transition-all duration-300 ease-in-out min-w-0 ${
-                      isHomeBranch
-                        ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {isHomeBranch && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
-                      />
-                    )}
-                    <ThreeDIcon id="home" size={20} />
-                    <span className="truncate max-w-full">{lang === 'en' ? 'Home' : 'الرئيسية'}</span>
-                  </button>
-
-                  {/* 2. Store */}
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('services')}
-                    aria-current={activePage === 'services' ? 'page' : undefined}
-                    className={`relative min-h-[48px] py-1 px-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10px] tracking-tight leading-tight font-bold active:scale-95 transition-all duration-300 ease-in-out min-w-0 ${
-                      activePage === 'services'
-                        ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {activePage === 'services' && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
-                      />
-                    )}
-                    <div className="relative">
-                      <ThreeDIcon id="services" size={20} />
-                      {cartItemCount > 0 && (
-                        <span className="absolute -top-1 -end-2 px-1 min-w-[15px] h-[15px] rounded-full bg-orange-600 text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums">
-                          {cartItemCount}
-                        </span>
-                      )}
-                    </div>
-                    <span className="truncate max-w-full">{lang === 'en' ? 'Store' : 'المتجر'}</span>
-                  </button>
-
-                  {/* 3. Central AI Robot Assistant FAB */}
-                  <div className="flex flex-col items-center justify-end min-w-0">
-                    <button
-                      id="mobile-ai-robot-fab"
-                      type="button"
-                      onClick={() => navigateTo('assistant')}
-                      aria-current={activePage === 'assistant' ? 'page' : undefined}
-                      aria-label={lang === 'en' ? 'AI Agent' : 'مساعد الذكاء الاصطناعي'}
-                      className="-mt-6 min-h-[48px] flex flex-col items-center justify-center group focus:outline-none active:scale-95 transition-all duration-300 ease-in-out max-w-full"
-                    >
-                      <span
-                        className={`ai-robot-fab-pulse w-13 h-13 rounded-full flex items-center justify-center border-4 border-[var(--color-surface)] transition-all duration-300 ease-in-out active:scale-95 ${
-                          activePage === 'assistant'
-                            ? 'bg-gradient-to-tr from-[#0d9488] via-[#0e7490] to-[#FF8C61] ring-4 ring-[var(--color-accent-soft)] scale-105'
-                            : 'bg-gradient-to-tr from-[#0d9488] via-[#0e7490] to-[#FF8C61] hover:scale-105'
-                        }`}
-                      >
-                        <AiRobotHeadIcon size={28} onDarkSurface={true} />
-                      </span>
-                      <span
-                        className={`mt-0.5 px-1 py-0.2 rounded-full text-[9.5px] tracking-tight font-extrabold leading-tight text-center whitespace-nowrap truncate max-w-full transition-colors ${
-                          activePage === 'assistant'
-                            ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)]'
-                            : 'text-[var(--color-text)]'
-                        }`}
-                      >
-                        {lang === 'en' ? 'AI Agent' : 'المساعد الذكي'}
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* 4. Community */}
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('community')}
-                    aria-current={activePage === 'community' ? 'page' : undefined}
-                    className={`relative min-h-[48px] py-1 px-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10px] tracking-tight leading-tight font-bold active:scale-95 transition-all duration-300 ease-in-out min-w-0 ${
-                      activePage === 'community'
-                        ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {activePage === 'community' && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
-                      />
-                    )}
-                    <ThreeDIcon id="star" size={20} />
-                    <span className="truncate max-w-full">
-                      {lang === 'en' ? 'Community' : 'المجتمع'}
-                    </span>
-                  </button>
-
-                  {/* 5. Profile */}
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('settings')}
-                    aria-current={activePage === 'settings' ? 'page' : undefined}
-                    className={`relative min-h-[48px] py-1 px-1 rounded-2xl flex flex-col items-center justify-center gap-0.5 text-[10px] tracking-tight leading-tight font-bold active:scale-95 transition-all duration-300 ease-in-out min-w-0 ${
-                      isProfileBranch
-                        ? 'bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold shadow-2xs'
-                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                    }`}
-                  >
-                    {isProfileBranch && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute top-0.5 w-5 h-1 rounded-full bg-[var(--color-accent)]"
-                      />
-                    )}
-                    <ThreeDIcon id="settings" size={20} />
-                    <span className="truncate max-w-full">{lang === 'en' ? 'Profile' : 'الحساب'}</span>
-                  </button>
-                </nav>
-              );
-            })()}
           </>
         )}
 
@@ -2927,6 +2770,8 @@ export default function App() {
             currency,
             phoneNumber,
             email,
+            emailVerified,
+            phoneVerified,
             childProfile,
             childrenProfiles,
             skippedForLater,
@@ -2965,6 +2810,12 @@ export default function App() {
                       },
                     ]
                   : prev.kids;
+              const genuineEmailVerified = Boolean(
+                emailVerified ?? persistedSession?.emailVerified ?? false
+              );
+              const genuinePhoneVerified = Boolean(
+                phoneVerified ?? persistedSession?.phoneVerified ?? false
+              );
               return {
                 ...prev,
                 parentName,
@@ -2986,9 +2837,9 @@ export default function App() {
                     country,
                     phoneCode: country === 'SA' ? '+966' : '+20',
                     phoneNumber,
-                    phoneVerified: !skippedForLater,
+                    phoneVerified: genuinePhoneVerified,
                     email,
-                    emailVerified: !skippedForLater,
+                    emailVerified: genuineEmailVerified,
                     onboardingCompleted: !skippedForLater,
                   },
                 },
