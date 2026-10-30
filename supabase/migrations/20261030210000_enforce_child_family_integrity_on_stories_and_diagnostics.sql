@@ -3,10 +3,8 @@
 -- `public.wellness_diagnostics` and `public.bedtime_stories`
 --
 -- Security Audit Finding:
--- Previously, `public.wellness_diagnostics` and `public.bedtime_stories` had
--- separate single-column foreign keys (`family_id -> families.id` and
--- `child_id -> children.id`) and RLS policies that only checked
--- `family_id = private.current_user_family_id()`.
+-- The canonical schema defines BIGINT child/family keys, NOT NULL child_id
+-- columns, and the helper public.get_authenticated_family_id().
 -- That allowed a record to reference a `child_id` belonging to ANOTHER family
 -- while passing the caller's own `family_id`.
 --
@@ -24,6 +22,38 @@
 -- =============================================================================
 
 BEGIN;
+
+
+-- 0. Fail closed if the live schema does not match the canonical schema this
+-- migration was reviewed against. This prevents applying guessed FK semantics.
+DO $preflight$
+DECLARE
+  v_missing TEXT;
+BEGIN
+  IF to_regprocedure('public.get_authenticated_family_id()') IS NULL THEN
+    RAISE EXCEPTION 'Required helper public.get_authenticated_family_id() is missing; aborting migration';
+  END IF;
+
+  SELECT string_agg(x.table_name || '.' || x.column_name, ', ')
+    INTO v_missing
+  FROM (VALUES
+    ('children','id'), ('children','family_id'),
+    ('wellness_diagnostics','child_id'), ('wellness_diagnostics','family_id'),
+    ('bedtime_stories','child_id'), ('bedtime_stories','family_id')
+  ) AS x(table_name, column_name)
+  LEFT JOIN information_schema.columns c
+    ON c.table_schema = 'public'
+   AND c.table_name = x.table_name
+   AND c.column_name = x.column_name
+   AND c.data_type = 'bigint'
+   AND c.is_nullable = 'NO'
+  WHERE c.column_name IS NULL;
+
+  IF v_missing IS NOT NULL THEN
+    RAISE EXCEPTION 'Expected BIGINT NOT NULL columns missing or incompatible: %; aborting migration', v_missing;
+  END IF;
+END
+$preflight$;
 
 -- 1. Ensure composite unique index on `public.children(id, family_id)` exists
 -- so composite foreign keys can reference `(id, family_id)`.
@@ -50,8 +80,7 @@ BEGIN
 END $$;
 
 -- 3. Enforce composite foreign key `(child_id, family_id) -> public.children(id, family_id)`
--- on `public.bedtime_stories` (where `child_id` is nullable; when `child_id IS NOT NULL`,
--- PostgreSQL MATCH SIMPLE composite FK requires `(child_id, family_id)` to exist in `public.children`).
+-- on `public.bedtime_stories` (both columns are NOT NULL; deleting a child cascades to its stories).
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -64,7 +93,7 @@ BEGIN
       ADD CONSTRAINT bedtime_stories_child_family_fk
       FOREIGN KEY (child_id, family_id)
       REFERENCES public.children(id, family_id)
-      ON DELETE SET NULL (child_id)
+      ON DELETE CASCADE
       NOT VALID;
   END IF;
 END $$;
@@ -119,6 +148,9 @@ CREATE INDEX IF NOT EXISTS idx_bedtime_stories_child_family
 -- with explicit operation-specific policies verifying `(child_id, family_id)` ownership.
 ALTER TABLE public.wellness_diagnostics ENABLE ROW LEVEL SECURITY;
 
+-- Drop the exact legacy policy name from supabase/schema.sql as well as
+-- the name used by the earlier draft of this migration.
+DROP POLICY IF EXISTS wellness_diagnostics_all_own_family ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_family_all ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_select_family ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_insert_family ON public.wellness_diagnostics;
@@ -130,7 +162,7 @@ CREATE POLICY wellness_diagnostics_select_family
   FOR SELECT
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND EXISTS (
       SELECT 1
       FROM public.children c
@@ -144,7 +176,7 @@ CREATE POLICY wellness_diagnostics_insert_family
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND EXISTS (
       SELECT 1
       FROM public.children c
@@ -158,7 +190,7 @@ CREATE POLICY wellness_diagnostics_update_family
   FOR UPDATE
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND EXISTS (
       SELECT 1
       FROM public.children c
@@ -167,7 +199,7 @@ CREATE POLICY wellness_diagnostics_update_family
     )
   )
   WITH CHECK (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND EXISTS (
       SELECT 1
       FROM public.children c
@@ -181,7 +213,7 @@ CREATE POLICY wellness_diagnostics_delete_family
   FOR DELETE
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND EXISTS (
       SELECT 1
       FROM public.children c
@@ -191,10 +223,12 @@ CREATE POLICY wellness_diagnostics_delete_family
   );
 
 -- 7. Replace broad `FOR ALL` RLS policies on `public.bedtime_stories`
--- with explicit operation-specific policies verifying `(child_id, family_id)` ownership
--- whenever `child_id IS NOT NULL`.
+-- with explicit operation-specific policies verifying `(child_id, family_id)` ownership.
 ALTER TABLE public.bedtime_stories ENABLE ROW LEVEL SECURITY;
 
+-- Drop the exact legacy policy name from supabase/schema.sql as well as
+-- the name used by the earlier draft of this migration.
+DROP POLICY IF EXISTS bedtime_stories_all_own_family ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_family_all ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_select_family ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_insert_family ON public.bedtime_stories;
@@ -206,7 +240,7 @@ CREATE POLICY bedtime_stories_select_family
   FOR SELECT
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND (
       child_id IS NULL
       OR EXISTS (
@@ -223,7 +257,7 @@ CREATE POLICY bedtime_stories_insert_family
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND (
       child_id IS NULL
       OR EXISTS (
@@ -240,7 +274,7 @@ CREATE POLICY bedtime_stories_update_family
   FOR UPDATE
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND (
       child_id IS NULL
       OR EXISTS (
@@ -252,7 +286,7 @@ CREATE POLICY bedtime_stories_update_family
     )
   )
   WITH CHECK (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND (
       child_id IS NULL
       OR EXISTS (
@@ -269,7 +303,7 @@ CREATE POLICY bedtime_stories_delete_family
   FOR DELETE
   TO authenticated
   USING (
-    family_id = (SELECT private.current_user_family_id())
+    family_id = (SELECT public.get_authenticated_family_id())
     AND (
       child_id IS NULL
       OR EXISTS (
