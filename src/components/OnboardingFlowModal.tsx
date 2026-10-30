@@ -321,6 +321,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [dbSyncWarning, setDbSyncWarning] = useState<string | null>(null);
   const [authSyncedToDb, setAuthSyncedToDb] = useState<boolean>(false);
+  const authSyncedToDbRef = React.useRef(false);
 
   const activeCountryObj = React.useMemo(
     () =>
@@ -492,6 +493,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     coreCountry: CountryCode;
     resolvedCity: string;
   }) => {
+    authSyncedToDbRef.current = false;
+    setAuthSyncedToDb(false);
     const normalizedRole = normalizeOnboardingRoleToAccount(parentRole);
     const resolvedCurrency = getSuggestedCurrencyForCountry(params.coreCountry);
     const resolvedFamilyName = `أسرة ${params.cleanName} — نكبر`;
@@ -566,9 +569,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : { synced: false, error: authRes.error || 'No verified family UUID; location write was blocked.' };
 
       if (authRes.success && authRes.syncedToDb && locRes.synced) {
+        authSyncedToDbRef.current = true;
         setAuthSyncedToDb(true);
         setDbSyncWarning(null);
       } else {
+        authSyncedToDbRef.current = false;
         setAuthSyncedToDb(false);
         setDbSyncWarning(
           authRes.error ||
@@ -579,6 +584,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       }
       return authRes;
     } catch {
+      authSyncedToDbRef.current = false;
       setAuthSyncedToDb(false);
       setDbSyncWarning(
         isEn
@@ -887,7 +893,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         err instanceof Error ? err.message : 'Unable to save children to Supabase.';
     }
 
-    if (!authSyncedToDb) {
+    if (!authSyncedToDbRef.current) {
       setIsSubmitting(false);
       setDbSyncWarning(isEn
         ? 'Your authenticated family profile is not confirmed in cloud storage yet. Please retry; setup has not been completed.'
