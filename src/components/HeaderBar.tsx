@@ -104,10 +104,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={onOpenProfileDrawer}
               title={isEn ? 'Navigation Menu' : 'القائمة الجانبية'}
               aria-label={isEn ? 'Open Navigation Menu' : 'فتح القائمة الجانبية'}
-              className="header-control min-h-[42px] px-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+              className="header-control min-h-[42px] px-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <svg
-                className="w-5 h-5 text-[#0d9488] dark:text-[#2DD4BF]"
+                className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF]"
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-hidden="true"
@@ -138,7 +138,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }`}
             >
               <svg
-                className={`w-5 h-5 ${
+                className={`w-[18px] h-[18px] ${
                   isNotificationsActive ? 'text-white' : 'text-[#FF8C61]'
                 }`}
                 viewBox="0 0 24 24"
@@ -179,7 +179,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }
               className="header-control min-h-[42px] px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
-              <span className="text-base leading-none" aria-hidden="true">
+              <span className="text-sm leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
               <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
@@ -201,13 +201,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </span>
               <span
                 data-testid="header-official-slogan-badge"
-                className="text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-1"
+                className="text-[10px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-0.5"
               >
                 {localizedSlogan}
               </span>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={22} />
+              <ThreeDIcon id="home" size={20} />
             </div>
           </button>
         </div>
