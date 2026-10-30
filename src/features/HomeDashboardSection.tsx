@@ -160,9 +160,9 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionAr:
       'اختار وقت يكون فيه الطفل صاحي وهادي، وحطه على بطنه على سطح ثابت وآمن مع مراقبتك طول الوقت. لو اتضايق، وقف وجرب وقت تاني.',
     captionEn:
-      'Place a colorful wooden rattle 20cm in front of Hamza while making eye contact and singing softly for 3 minutes.',
+      'Place a safe toy within your baby's easy reach and stay close, talking or singing gently while supervising.',
     expertNameAr: 'معلومة إرشادية · راجع طبيب الأطفال عند القلق',
-    expertNameEn: 'Dr. Sara Al-Mansouri · Pediatric Development',
+    expertNameEn: 'Nekbaar Parenting Tips',
     likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-sky-900/90 via-sky-950/45 to-slate-950/95',
@@ -181,9 +181,9 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionAr:
       'ممكن تقول: «واضح إنك متضايق.. تحب تحكيلي حصل إيه؟» اسمع من غير تقليل من إحساسه، ومش لازم يهدأ فورًا.',
     captionEn:
-      'Instead of saying "stop crying", ask Laila: "If your frustration had a color right now, which crayon would it be?"',
+      'Instead of saying "stop crying", ask your child: "If that feeling had a color, which one would it be?"',
     expertNameAr: 'نشاط مقترح · مش بديل عن دعم متخصص',
-    expertNameEn: 'Nourhan El-Shafei · Child Psychologist',
+    expertNameEn: 'Nekbaar Parenting Tips',
     likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-rose-900/90 via-rose-950/45 to-slate-950/95',
@@ -202,9 +202,9 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionAr:
       'ابدأوا بفترة تركيز مناسبة لطفلكم، وبعدها استراحة حركة أو شرب مية. عدّلوا المدة حسب سنه وقدرته، ومفيش رقم واحد يناسب كل الأطفال.',
     captionEn:
-      'Pairing homework with a quick sports challenge with Dad Ahmad boosts natural dopamine and self-driven discipline.',
+      'Pairing a short study session with a movement break can help your child reset and return to the task.',
     expertNameAr: 'فكرة لتنظيم اليوم · عدّلها حسب طفلك',
-    expertNameEn: 'Coach Karim Abdelaziz · Youth Sports & Focus',
+    expertNameEn: 'Nekbaar Parenting Tips',
     likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-amber-900/90 via-teal-950/50 to-slate-950/95',
@@ -225,7 +225,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionEn:
       'Take turns gently: while one reads bedtime stories to Laila and Youssef, the other enjoys a quiet 15-minute recharge.',
     expertNameAr: 'خطوة عملية لتنظيم مسؤوليات البيت',
-    expertNameEn: 'Dr. Hany Darwish · Family Counselor',
+    expertNameEn: 'Nekbaar Family Tips',
     likesCount: 0,
     imageUrl: 'https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&w=900&q=80',
     accentGradient: 'from-teal-900/90 via-slate-900/50 to-slate-950/95',
@@ -2765,8 +2765,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={isEn ? 'Featured Family Store & Supplies' : 'ترشيحات المتجر ومستلزمات الأسرة'}
         subtitle={
           isEn
-            ? 'Curated Montessori toys, books, apparel, and verified nurseries'
-            : 'ألعاب مونتيسوري، قصص تربوية، ملابس قطنية، وحضانات معتمدة'
+            ? 'Montessori toys, books, apparel, and family service listings'
+            : 'ألعاب مونتيسوري، قصص تربوية، ملابس قطنية، وخدمات أسرية'
         }
         badgeText={isEn ? 'Ages 0–8' : '٠–٨ سنوات'}
         isOpen={Boolean(openAccordions.platformGateways)}
@@ -2827,7 +2827,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     catId: 'nursery',
                     emoji: '🏫',
                     titleAr: 'حضانات ومدارس',
-                    titleEn: 'Verified Nurseries',
+                    titleEn: 'Nurseries & Schools',
                     ageAr: '١–٨ سنوات',
                     ageEn: 'Ages 1–8',
                   },
