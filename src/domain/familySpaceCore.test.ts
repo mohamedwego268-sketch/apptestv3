@@ -9,12 +9,17 @@ import {
   resolveCityRegionId,
 } from './familySpaceCore';
 import {
+  createEmptyFamilySpaceState,
+  getFamilySpaceStorageKey,
+  loadFamilySpaceStateForFamily,
   loadPersistedFamilyState,
+  saveFamilySpaceStateForFamily,
   savePersistedFamilyState,
 } from '../services/familyStorageService';
 import {
   OnboardingFlowController,
   UserSessionProfile,
+  hasVerifiedFamilyAccess,
 } from '../services/OnboardingFlowController';
 import {
   SHARED_FAMILY_ID,
@@ -383,12 +388,11 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(OnboardingFlowController.loadDraft(), null);
 
     const detected = await OnboardingFlowController.detectInitialState();
-    assert.equal(detected.step, 'DASHBOARD');
-    assert.equal(detected.profile?.fullName, 'أحمد المنصور');
-    // Crucial Phase 1 check: localStorage session alone must NOT be treated as verified DB ownership
-    assert.equal(detected.profile?.isDbVerified, false);
-    assert.equal(detected.profile?.syncedToDb, false);
-    assert.equal(detected.profile?.verifiedFamilyId, null);
+    assert.equal(detected.step, 'WELCOME_PROFILE');
+    assert.equal(detected.profile, undefined);
+    // A cached profile alone must never unlock the private family workspace.
+    assert.equal(hasVerifiedFamilyAccess(restored), false);
+    assert.equal(hasVerifiedFamilyAccess({ verifiedFamilyId: '550e8400-e29b-41d4-a716-446655440000' }), true);
 
     const childCheck = validateChildInput({ name: 'فريدة', birth: '2022-03-15' });
     assert.equal(childCheck.valid, true);
