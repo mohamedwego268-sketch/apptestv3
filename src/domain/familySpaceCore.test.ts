@@ -7,7 +7,11 @@ import {
   validateChildInput,
 } from './familySpaceCore';
 import {
+  createEmptyFamilySpaceState,
+  getFamilySpaceStorageKey,
+  loadFamilySpaceStateForFamily,
   loadPersistedFamilyState,
+  saveFamilySpaceStateForFamily,
   savePersistedFamilyState,
 } from '../services/familyStorageService';
 import {
@@ -1395,6 +1399,71 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     );
     assert.equal(coParentRes.linked, false);
     assert.equal(coParentRes.syncedToDb, false);
+  });
+
+  it('16. Family-scoped local persistence never shares tasks, children, or wishes between family UUIDs', () => {
+    const familyA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const familyB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+
+    // Legacy unscoped data must not be copied into a newly authenticated family.
+    memoryStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...DEFAULT_SEED,
+      parentName: 'بيانات قديمة غير مرتبطة',
+      tasks: [{ id: 900, name: 'مهمة قديمة' }],
+    }));
+
+    const emptyA = loadFamilySpaceStateForFamily(familyA);
+    assert.equal(emptyA.kids.length, 0);
+    assert.equal(emptyA.tasks.length, 0);
+    assert.equal(emptyA.wishes.length, 0);
+
+    const familyAState = normalizeAppData({
+      ...createEmptyFamilySpaceState(),
+      verifiedFamilyId: familyA,
+      parentName: 'أسرة ألف',
+      kids: [{
+        id: 1,
+        name: 'ليان',
+        gender: 'girl',
+        birth: '2022-08-10',
+        interests: 'الرسم',
+      }],
+      tasks: [{
+        id: 901,
+        name: 'مهمة الأسرة ألف',
+        time: '08:00 ص',
+        done: false,
+        kidId: 1,
+        category: 'روتين',
+        owner: 'الأم',
+        cadence: 'daily',
+      }],
+      wishes: [{
+        id: 902,
+        name: 'أمنية الأسرة ألف',
+        kid: 1,
+        price: 100,
+        currency: 'SAR',
+        emoji: '🎁',
+        reserved: false,
+        progress: 0,
+        goalType: 'أمنية طفل',
+      }],
+    });
+
+    assert.equal(saveFamilySpaceStateForFamily(familyAState, familyA), true);
+    const restoredA = loadFamilySpaceStateForFamily(familyA);
+    const isolatedB = loadFamilySpaceStateForFamily(familyB);
+
+    assert.equal(restoredA.parentName, 'أسرة ألف');
+    assert.equal(restoredA.kids[0]?.name, 'ليان');
+    assert.equal(restoredA.tasks[0]?.name, 'مهمة الأسرة ألف');
+    assert.equal(restoredA.wishes[0]?.name, 'أمنية الأسرة ألف');
+    assert.equal(isolatedB.kids.length, 0);
+    assert.equal(isolatedB.tasks.length, 0);
+    assert.equal(isolatedB.wishes.length, 0);
+    assert.equal(getFamilySpaceStorageKey('1'), null);
+    assert.equal(getFamilySpaceStorageKey('not-a-uuid'), null);
   });
 
   it('15. Child Deletion & Family Ownership Enforcement: deletes child only when owned by authenticated family', async () => {
