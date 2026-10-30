@@ -6,6 +6,7 @@ import {
   ParentThemeRole,
   calculateChildAge,
   getSuggestedCurrencyForCountry,
+  COUNTRY_CITIES_MAP,
   validateChildInput,
 } from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
@@ -330,6 +331,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     [selectedCountryCode]
   );
 
+  // One canonical location source keeps onboarding, settings and local discovery aligned.
+  const activeCityOptions = COUNTRY_CITIES_MAP[activeCountryObj.mappedCoreCountry];
+  const resolvedSelectedCityId =
+    activeCityOptions.find(
+      (city) => city.id === selectedCityAr || city.subCitiesAr?.includes(selectedCityAr)
+    )?.id || activeCityOptions[0].id;
+  const resolvedSelectedCity = activeCityOptions.find((city) => city.id === resolvedSelectedCityId) || activeCityOptions[0];
+
   const safeChildrenList = React.useMemo(
     () => OnboardingFlowController.sanitizeChildrenList(childrenList, true),
     [childrenList]
@@ -339,13 +348,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     ? 'Our shared space.. growing with love'
     : 'مساحة تجمعنا.. وبحبهم نكبر';
 
-  // Ensure selected city belongs to active country
+  // Normalize legacy city names and GPS sub-cities to the canonical region ID.
   useEffect(() => {
-    const existsInCountry = activeCountryObj.cities.some((c) => c.ar === selectedCityAr);
-    if (!existsInCountry) {
-      setSelectedCityAr(activeCountryObj.defaultCityAr);
+    if (selectedCityAr !== resolvedSelectedCityId) {
+      setSelectedCityAr(resolvedSelectedCityId);
     }
-  }, [activeCountryObj, selectedCityAr]);
+  }, [selectedCityAr, resolvedSelectedCityId]);
 
   useEffect(() => {
     const coreCountry = activeCountryObj.mappedCoreCountry;
@@ -365,7 +373,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       phone,
       familyId,
       selectedCountry: coreCountry,
-      selectedCity: selectedCityAr || activeCountryObj.defaultCityAr,
+      selectedCity: resolvedSelectedCityId,
       verificationChannel: 'email',
       otpCode: '',
       isOtpVerified: emailVerifiedState || phoneVerifiedState,
@@ -619,7 +627,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     );
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
-    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    const resolvedCity = resolvedSelectedCityId;
     if (!fullName.trim() || !phone.trim()) {
       setErrorMsg(isEn ? 'Enter your name and phone number to continue.' : 'أدخل الاسم ورقم الجوال للمتابعة.');
       return;
@@ -694,7 +702,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
     const cleanPassword = password;
-    const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    const resolvedCity = resolvedSelectedCityId;
 
     if (!cleanEmail || !cleanPassword || (authMode === 'signup' && (!cleanFullName || !cleanPhone || !country))) {
       setErrorMsg(isEn
@@ -895,7 +903,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
-    const finalCity = selectedCityAr || activeCountryObj.defaultCityAr;
+    const finalCity = resolvedSelectedCityId;
     const primaryChild = listToSave[0];
     const cleanParentName = fullName.trim();
     const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
@@ -1257,14 +1265,14 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       <select
                         id="auth-city-select"
                         data-testid="auth-city-select"
-                        value={selectedCityAr}
+                        value={resolvedSelectedCityId}
                         onChange={(e) => setSelectedCityAr(e.target.value)}
                         aria-label={isEn ? 'City' : 'المدينة'}
                         className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
                       >
-                        {activeCountryObj.cities.map((cityItem) => (
-                          <option key={cityItem.ar} value={cityItem.ar}>
-                            {isEn ? cityItem.en : cityItem.ar}
+                        {activeCityOptions.map((cityItem) => (
+                          <option key={cityItem.id} value={cityItem.id}>
+                            {isEn ? (cityItem.labelEn || cityItem.nameEn) : (cityItem.labelAr || cityItem.nameAr)}
                           </option>
                         ))}
                       </select>
@@ -1273,9 +1281,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         <span>
                           📍{' '}
                           {isEn
-                            ? activeCountryObj.cities.find((c) => c.ar === selectedCityAr)?.en ||
-                              activeCountryObj.defaultCityEn
-                            : selectedCityAr}
+                            ? resolvedSelectedCity.labelEn || resolvedSelectedCity.nameEn || activeCountryObj.defaultCityEn
+                            : (resolvedSelectedCity.labelAr || resolvedSelectedCity.nameAr)}
                         </span>
                         <span className="text-[11px] opacity-80">GPS</span>
                       </div>
@@ -1290,9 +1297,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     <span>
                       🌍 {isEn ? activeCountryObj.nameEn : activeCountryObj.nameAr} ·{' '}
                       {isEn
-                        ? activeCountryObj.cities.find((c) => c.ar === selectedCityAr)?.en ||
-                          activeCountryObj.defaultCityEn
-                        : selectedCityAr}
+                        ? resolvedSelectedCity.labelEn || resolvedSelectedCity.nameEn || activeCountryObj.defaultCityEn
+                        : (resolvedSelectedCity.labelAr || resolvedSelectedCity.nameAr)}
                     </span>
                     <span dir="ltr" className="tabular-nums">
                       {activeCountryObj.dialCode} ·{' '}
