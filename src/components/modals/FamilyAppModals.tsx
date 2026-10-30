@@ -1154,33 +1154,71 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             className={`drawer-panel w-[min(88vw,390px)] max-w-[390px] h-[100dvh] overflow-y-auto overscroll-contain bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] px-4 pt-safe pb-safe space-y-4 shadow-2xl flex flex-col justify-between ${isEn ? 'drawer-enter-ltr' : 'drawer-enter-rtl'}`}
           >
             <div className="space-y-4">
-              {/* Top Header Row */}
-              <div className="flex items-center justify-between border-b border-[var(--color-border)] dark:border-[#1E3646] pb-3">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs shrink-0">
-                    <ThreeDIcon id="home" size={20} />
+              {/* Premium brand panel: identity, family location and one-tap language */}
+              <section className="drawer-brand-panel relative overflow-hidden rounded-[26px] p-4 text-white">
+                <div className="drawer-brand-orb drawer-brand-orb-one" aria-hidden="true" />
+                <div className="drawer-brand-orb drawer-brand-orb-two" aria-hidden="true" />
+                <div className="relative z-10 flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="drawer-brand-mark w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
+                      <ThreeDIcon id="home" size={25} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-bold tracking-wide text-white/75">
+                        {isEn ? 'YOUR FAMILY, IN ONE SPACE' : 'مساحتكم العائلية'}
+                      </div>
+                      <h2 id="roleModalTitle" className="text-lg font-black leading-tight text-white mt-0.5">
+                        {isEn ? 'Nekbaar' : 'نكبر'}
+                      </h2>
+                      <p className="text-[13px] font-semibold text-white/85 mt-0.5">
+                        {isEn ? 'Family Space' : 'مساحة الأسرة'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h2
-                      id="roleModalTitle"
-                      className="text-base font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
-                    >
-                      {isEn ? 'Nekbaar · Family Space' : 'نكبر · مساحة الأسرة'}
-                    </h2>
-                    <p className="text-xs text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? 'One thoughtful space for family life' : 'كل تفاصيل الأسرة.. في مساحة واحدة'}
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={onCloseRoleModal}
+                    aria-label={isEn ? 'Close navigation' : 'إغلاق القائمة'}
+                    className="drawer-brand-close min-w-[42px] min-h-[42px] rounded-xl flex items-center justify-center text-xl font-bold shrink-0"
+                  >
+                    ×
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={onCloseRoleModal}
-                  aria-label={isEn ? 'Close' : 'إغلاق'}
-                  className="min-w-[48px] min-h-[48px] rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center active:scale-95 transition-all duration-300 ease-in-out cursor-pointer hover:border-[#0d9488] shrink-0"
-                >
-                  ×
-                </button>
-              </div>
+                <div className="relative z-10 mt-4 grid grid-cols-[1fr_auto] gap-2 items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLocationAccordionOpen(true);
+                      window.setTimeout(() => document.getElementById('drawer-symmetric-location-selector')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+                    }}
+                    className="drawer-brand-location min-h-[48px] min-w-0 rounded-2xl px-3 py-2 flex items-center gap-2.5 text-start"
+                    aria-label={isEn ? 'Change country and city' : 'تغيير الدولة والمدينة'}
+                  >
+                    <span className="text-xl shrink-0" aria-hidden="true">{state.country === 'SA' ? '🇸🇦' : '🇪🇬'}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-[10px] font-bold text-white/70">{isEn ? 'YOUR LOCATION' : 'موقع الأسرة'}</span>
+                      <span className="block text-[13px] font-extrabold text-white truncate">
+                        {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}
+                        <span className="font-medium text-white/75"> · {state.country === 'SA' ? (isEn ? 'Saudi Arabia' : 'السعودية') : (isEn ? 'Egypt' : 'مصر')}</span>
+                      </span>
+                    </span>
+                    <span className="text-white/75 text-sm shrink-0">{isEn ? 'Edit' : 'تعديل'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onToggleLanguageFromDrawer?.()}
+                    className="drawer-brand-language min-h-[48px] min-w-[58px] rounded-2xl px-2.5 flex flex-col items-center justify-center gap-0.5"
+                    aria-label={isEn ? 'Switch interface to Arabic' : 'تغيير لغة الواجهة إلى الإنجليزية'}
+                  >
+                    <span className="text-base" aria-hidden="true">🌐</span>
+                    <span className="text-[11px] font-black">{isEn ? 'عربي' : 'EN'}</span>
+                  </button>
+                </div>
+                <div className="relative z-10 mt-2 flex items-center justify-between text-[11px] font-semibold text-white/75">
+                  <span>{isEn ? 'A calmer way to manage family life' : 'كل ما يهم الأسرة.. أقرب وأسهل'}</span>
+                  <span dir="ltr" className="tabular-nums">{state.currency}</span>
+                </div>
+              </section>
 
               {/* MASTER QUICK TOGGLES ACCORDION (Sidebar Top): Language Switcher, Eye-Comfort Dark/Light, Cart, Wishlist & Parent Profiles */}
               <div
@@ -1349,7 +1387,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 data-testid="slidebar-expandable-accordions"
                 className="space-y-1.5"
               >
-                <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
+                <div className="px-1 text-xs font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
                   {isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
                 </div>
 
@@ -2041,7 +2079,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                               <ThreeDIcon id={sec.iconId} size={17} />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <div className="text-[13px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                              <div className="drawer-section-title text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                                 {isEn ? sec.titleEn : sec.titleAr}
                               </div>
                             </div>
@@ -2049,7 +2087,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
 
                           <div className="flex items-center gap-1 shrink-0">
                             {sec.badgeAr && (
-                              <span className="px-2 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] text-[9.5px] font-black">
+                              <span className="px-2.5 py-1 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] text-xs font-black">
                                 {isEn ? sec.badgeEn : sec.badgeAr}
                               </span>
                             )}
@@ -2074,7 +2112,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                                 data-testid={`slidebar-subitem-${sub.id}`}
                                 type="button"
                                 onClick={sub.onSelect}
-                                className="w-full min-h-[44px] px-3 py-2.5 rounded-xl text-start text-xs font-semibold text-[var(--color-text)] dark:text-[#E2E8F0] hover:bg-[#0d9488]/10 hover:text-[var(--color-role-text)] dark:hover:text-[#5EEAD4] transition-all flex items-center justify-between gap-2 cursor-pointer group"
+                                className="drawer-subitem w-full min-h-[48px] px-3 py-2.5 rounded-xl text-start text-[13px] font-semibold text-[var(--color-text)] dark:text-[#E2E8F0] hover:bg-[#0d9488]/10 hover:text-[var(--color-role-text)] dark:hover:text-[#5EEAD4] transition-all flex items-center justify-between gap-2 cursor-pointer group"
                               >
                                 <span className="flex items-center gap-2 min-w-0">
                                   <span className="text-sm leading-none shrink-0">{sub.icon}</span>
