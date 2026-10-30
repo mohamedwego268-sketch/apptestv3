@@ -1660,52 +1660,87 @@ export async function authenticateParentWithSupabase(
 
     if (normalized.email) {
       if (normalized.mode === 'signup') {
-        const { data: signUpData, error: signUpErr } = await withSupabaseTimeout(
-          activeClient.auth.signUp({
-            email: normalized.email,
-            password: normalized.password,
-            options: {
-              // Return the user to the exact app origin where signup started.
-              // Supabase Auth must also allow this origin in its Redirect URLs.
-              emailRedirectTo:
-                typeof window !== 'undefined' ? window.location.origin : undefined,
-              data: {
-                full_name: normalized.parentName,
-                phone: normalized.phone,
-                role: normalized.role,
-                country: normalized.country,
+        let reusedExistingVerifiedSession = false;
+        if (typeof activeClient.auth?.getSession === 'function') {
+          try {
+            const { data: existingSessionData } = await withSupabaseTimeout(
+              activeClient.auth.getSession()
+            );
+            const activeSession = existingSessionData?.session;
+            const sessionEmail = activeSession?.user?.email?.trim().toLowerCase();
+            if (
+              activeSession?.access_token &&
+              activeSession?.user &&
+              sessionEmail === normalized.email &&
+              isValidUuid(activeSession.user.id)
+            ) {
+              const evalExisting = evaluateAuthSessionResponse({
+                user: activeSession.user,
+                session: activeSession,
+                error: null,
+              });
+              if (evalExisting.status === 'ACTIVE_SESSION_READY' && evalExisting.authUserId) {
+                authUserId = evalExisting.authUserId;
+                emailVerified = evalExisting.emailVerified;
+                phoneVerified = evalExisting.phoneVerified;
+                activeSessionVerified = true;
+                accountCreated = true;
+                reusedExistingVerifiedSession = true;
+              }
+            }
+          } catch {
+            // Proceed with standard signUp call if session check fails
+          }
+        }
+
+        if (!reusedExistingVerifiedSession) {
+          const { data: signUpData, error: signUpErr } = await withSupabaseTimeout(
+            activeClient.auth.signUp({
+              email: normalized.email,
+              password: normalized.password,
+              options: {
+                // Return the user to the exact app origin where signup started.
+                // Supabase Auth must also allow this origin in its Redirect URLs.
+                emailRedirectTo:
+                  typeof window !== 'undefined' ? window.location.origin : undefined,
+                data: {
+                  full_name: normalized.parentName,
+                  phone: normalized.phone,
+                  role: normalized.role,
+                  country: normalized.country,
+                },
               },
-            },
-          })
-        );
+            })
+          );
 
-        const evalSignUp = evaluateAuthSessionResponse({
-          user: signUpData?.user,
-          session: signUpData?.session,
-          error: signUpErr,
-        });
+          const evalSignUp = evaluateAuthSessionResponse({
+            user: signUpData?.user,
+            session: signUpData?.session,
+            error: signUpErr,
+          });
 
-        emailVerified = evalSignUp.emailVerified;
-        phoneVerified = evalSignUp.phoneVerified;
+          emailVerified = evalSignUp.emailVerified;
+          phoneVerified = evalSignUp.phoneVerified;
 
-        if (evalSignUp.status === 'ACTIVE_SESSION_READY' && evalSignUp.authUserId) {
-          authUserId = evalSignUp.authUserId;
-          activeSessionVerified = true;
-          accountCreated = true;
-        } else if (evalSignUp.status === 'PENDING_EMAIL_CONFIRMATION' && evalSignUp.authUserId) {
-          authUserId = evalSignUp.authUserId;
-          pendingEmailConfirmation = true;
-          accountCreated = true;
-        } else if (
-          signUpErr &&
-          signUpErr.message.toLowerCase().includes('already registered')
-        ) {
-          // Never turn a sign-up attempt into an implicit sign-in. Ask the user
-          // to switch to the explicit sign-in flow or recover their password.
-          authFailureReason =
-            'هذا البريد الإلكتروني مسجل بالفعل. انتقل إلى تسجيل الدخول أو استخدم استعادة كلمة المرور.';
-        } else if (signUpErr) {
-          authFailureReason = signUpErr.message;
+          if (evalSignUp.status === 'ACTIVE_SESSION_READY' && evalSignUp.authUserId) {
+            authUserId = evalSignUp.authUserId;
+            activeSessionVerified = true;
+            accountCreated = true;
+          } else if (evalSignUp.status === 'PENDING_EMAIL_CONFIRMATION' && evalSignUp.authUserId) {
+            authUserId = evalSignUp.authUserId;
+            pendingEmailConfirmation = true;
+            accountCreated = true;
+          } else if (
+            signUpErr &&
+            signUpErr.message.toLowerCase().includes('already registered')
+          ) {
+            // Never turn a sign-up attempt into an implicit sign-in. Ask the user
+            // to switch to the explicit sign-in flow or recover their password.
+            authFailureReason =
+              'هذا البريد الإلكتروني مسجل بالفعل. انتقل إلى تسجيل الدخول أو استخدم استعادة كلمة المرور.';
+          } else if (signUpErr) {
+            authFailureReason = signUpErr.message;
+          }
         }
       } else {
         const { data: signInData, error: signInErr } = await withSupabaseTimeout(
@@ -1818,6 +1853,10 @@ export async function authenticateParentWithSupabase(
           verifiedCtx.fullName ||
           (normalized.role === 'father' ? 'أحمد' : 'مريم');
     const resolvedRole = verifiedCtx.role || normalized.role;
+    const resolvedPhone =
+      normalized.mode === 'signin'
+        ? verifiedCtx.phone || normalized.phone
+        : normalized.phone || verifiedCtx.phone || '';
 
     // 3. If authenticated user has no verified family_id yet, attempt atomic RPC bootstrap first
     let profileCreated = Boolean(verifiedCtx.userRowId);
@@ -2042,7 +2081,7 @@ export async function authenticateParentWithSupabase(
         full_name: resolvedFullName,
         role: resolvedRole,
         email: normalized.email,
-        phone: normalized.phone,
+        phone: resolvedPhone,
         country: restoredFamily.country,
       },
       family: restoredFamily,

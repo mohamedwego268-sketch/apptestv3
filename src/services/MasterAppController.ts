@@ -461,6 +461,29 @@ export class MasterBackendService implements MasterControllerAPI {
     }
   }
 
+  public resetSessionState(): void {
+    this.latestChildren = [];
+    this.batterySummary = buildBatteryDiagnosticsFromState([]);
+    this.allStories = createInitialStoriesLibrary();
+    this.pendingOutbox = [];
+    this.retryTelemetry = {
+      attempt: 0,
+      maxAttempts: 3,
+      lastError: null,
+      nextRetryDelayMs: null,
+      recoveredCount: 0,
+      lastSyncedAt: null,
+    };
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(MASTER_CACHE_STORAGE_KEY);
+      } catch {
+        // Ignore storage restrictions safely
+      }
+    }
+    this.notifyListeners();
+  }
+
   private attachAutonomousEnvironmentWatchers(): void {
     if (typeof window === 'undefined' || this.initializedListeners) return;
     this.initializedListeners = true;

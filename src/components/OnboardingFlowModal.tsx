@@ -578,7 +578,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       setErrorMsg(isEn ? 'Enter your name and phone number to continue.' : 'أدخل الاسم ورقم الجوال للمتابعة.');
       return;
     }
-    await syncAuthAndLocationWithSupabase({
+    const postVerifyRes = await syncAuthAndLocationWithSupabase({
       cleanName: fullName.trim(),
       cleanEmail: targetEmail,
       cleanPassword: password,
@@ -586,6 +586,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       coreCountry,
       resolvedCity,
     });
+    if (postVerifyRes?.success) {
+      setCurrentStep(2);
+    }
   };
 
   const handleResendIdentityOtp = async () => {
@@ -665,14 +668,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       return;
     }
 
-    // Keep a recoverable draft only; authentication and cloud persistence remain authoritative.
-    try {
-      localStorage.setItem('nekbaar_temp_user', JSON.stringify({
-        fullName: cleanFullName, email: cleanEmail, phone: cleanPhone, country,
-        role: parentRole === 'dad' ? 'أب' : 'أم', parentRole, city: resolvedCity,
-      }));
-    } catch {
-      // Local draft storage is optional and never treated as successful account creation.
+    // Keep a recoverable draft during sign-up only; authentication and cloud persistence remain authoritative.
+    if (authMode === 'signup') {
+      try {
+        localStorage.setItem('nekbaar_temp_user', JSON.stringify({
+          fullName: cleanFullName, email: cleanEmail, phone: cleanPhone, country,
+          role: parentRole === 'dad' ? 'أب' : 'أم', parentRole, city: resolvedCity,
+        }));
+      } catch {
+        // Local draft storage is optional and never treated as successful account creation.
+      }
     }
 
     setIsSubmitting(true);
@@ -685,7 +690,116 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         coreCountry: activeCountryObj.mappedCoreCountry,
         resolvedCity,
       });
-      if (authRes?.success || authRes?.pendingEmailVerification) {
+      if (authRes?.pendingEmailVerification) {
+        // Remain on Step 1 (AUTH) so the user can enter the 6-digit OTP verification code
+        return;
+      }
+      if (
+        authMode === 'signin' &&
+        authRes?.success &&
+        authRes.syncedToDb &&
+        isValidUuid(authRes.verifiedFamilyUuid) &&
+        isValidUuid(authRes.userId)
+      ) {
+        const restoredChildren: OnboardingChildDraft[] = Array.isArray(authRes.sharedChildren)
+          ? authRes.sharedChildren.map((child, idx) => ({
+              id: child.id || idx + 1,
+              remoteId: child.remote_id,
+              name: child.name,
+              gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
+              ageStagePreset: 'custom' as const,
+              birth: child.birth || '2022-05-14',
+              interests: child.interests || '',
+              avatarTheme:
+                child.avatar_theme ||
+                (child.gender === 'girl' ? ('artist' as const) : ('astronaut' as const)),
+            }))
+          : [];
+
+        if (restoredChildren.length > 0) {
+          const restoredCountry: 'SA' | 'EG' = authRes.family?.country === 'EG' ? 'EG' : 'SA';
+          const restoredCurrency: 'SAR' | 'EGP' =
+            authRes.family?.currency === 'EGP' || restoredCountry === 'EG' ? 'EGP' : 'SAR';
+          const restoredCity =
+            (typeof authRes.family?.city === 'string' && authRes.family.city.trim()) ||
+            (restoredCountry === 'EG' ? 'القاهرة' : 'الرياض');
+          const restoredRole: 'dad' | 'mom' =
+            String(authRes.user?.role || '').toLowerCase() === 'mother' ||
+            String(authRes.user?.role || '').toLowerCase() === 'mom'
+              ? 'mom'
+              : 'dad';
+          const restoredParentName =
+            (typeof authRes.user?.full_name === 'string' && authRes.user.full_name.trim()) ||
+            (typeof authRes.user?.name === 'string' && authRes.user.name.trim()) ||
+            (restoredRole === 'dad' ? 'أحمد' : 'مريم');
+          const rawRestoredPhone =
+            typeof authRes.user?.phone === 'string' ? authRes.user.phone.trim() : '';
+          const dialCode = restoredCountry === 'SA' ? '+966' : '+20';
+          const restoredPhone = rawRestoredPhone
+            ? rawRestoredPhone.startsWith('+')
+              ? rawRestoredPhone
+              : `${dialCode}${rawRestoredPhone.replace(/^0+/, '')}`
+            : '';
+          const genuineEmailVerified = Boolean(authRes.emailVerified);
+          const genuinePhoneVerified = Boolean(authRes.phoneVerified);
+
+          const sessionProfile: UserSessionProfile = {
+            userId: authRes.userId,
+            sessionToken: '',
+            authenticatedAt: new Date().toISOString(),
+            onboardingCompleted: true,
+            familyId: authRes.verifiedFamilyUuid,
+            verifiedFamilyId: authRes.verifiedFamilyUuid,
+            isDbVerified: true,
+            role: restoredRole,
+            parentRole: restoredRole,
+            fullName: restoredParentName,
+            parentName: restoredParentName,
+            email: cleanEmail,
+            phone: restoredPhone,
+            country: restoredCountry,
+            city: restoredCity,
+            verificationChannel: 'email',
+            isOtpVerified: genuineEmailVerified || genuinePhoneVerified,
+            emailVerified: genuineEmailVerified,
+            phoneVerified: genuinePhoneVerified,
+            isCoParentLinked: false,
+            childrenCount: restoredChildren.length,
+            syncedToDb: true,
+          };
+
+          if (typeof OnboardingFlowController.saveAuthenticatedSession === 'function') {
+            OnboardingFlowController.saveAuthenticatedSession(sessionProfile, true);
+          } else {
+            OnboardingFlowController.persistUserSession(sessionProfile, true);
+          }
+
+          const primaryRestoredChild = restoredChildren[0];
+          onCompleteOnboarding({
+            parentName: restoredParentName,
+            role: restoredRole,
+            country: restoredCountry,
+            city: restoredCity,
+            currency: restoredCurrency,
+            phoneNumber: restoredPhone,
+            email: cleanEmail,
+            emailVerified: genuineEmailVerified,
+            phoneVerified: genuinePhoneVerified,
+            childProfile: {
+              name: primaryRestoredChild.name,
+              birth: primaryRestoredChild.birth,
+              gender: primaryRestoredChild.gender,
+              interests: primaryRestoredChild.interests,
+              avatarTheme: primaryRestoredChild.avatarTheme,
+            },
+            childrenProfiles: restoredChildren,
+            persistedSession: sessionProfile,
+            syncedToDb: true,
+          });
+          return;
+        }
+      }
+      if (authRes?.success) {
         setCurrentStep(2);
       } else {
         setErrorMsg(authRes?.error || (isEn
@@ -852,7 +966,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     const finalCity = resolvedSelectedCityId;
     const primaryChild = listToSave[0];
     const cleanParentName = fullName.trim();
-    const cleanPhone = `${activeCountryObj.dialCode}${phone.replace(/^0+/, '')}`;
+    const trimmedPhoneInput = phone.trim();
+    const cleanPhone = trimmedPhoneInput
+      ? trimmedPhoneInput.startsWith('+')
+        ? trimmedPhoneInput
+        : `${activeCountryObj.dialCode}${trimmedPhoneInput.replace(/^0+/, '')}`
+      : '';
 
     // Never mark an account as verified simply because database synchronization succeeded!
     const genuineEmailVerified = Boolean(emailVerifiedState);

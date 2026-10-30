@@ -1518,9 +1518,12 @@ export default function App() {
 
   const handleSignOut = () => {
     OnboardingFlowController.clearSession();
+    master.controller.resetSessionState();
     setRecognizedProfile(null);
     setActiveFamilyStorageScope(null);
     setState(createEmptyFamilySpaceState());
+    setRoleModalOpen(false);
+    setChildModalOpen(false);
     setOnboardingModalOpen(true);
     setActivePage('home');
   };
@@ -3017,10 +3020,20 @@ export default function App() {
             persistedSession,
             syncedToDb,
           }) => {
+            const verifiedFamilyUuid =
+              persistedSession && isValidUuid(persistedSession.verifiedFamilyId)
+                ? persistedSession.verifiedFamilyId.trim()
+                : persistedSession && isValidUuid(persistedSession.familyId)
+                ? String(persistedSession.familyId).trim()
+                : null;
             if (persistedSession) {
               setRecognizedProfile(persistedSession);
             }
+            setActiveFamilyStorageScope(verifiedFamilyUuid);
             setState((prev) => {
+              const baseState = verifiedFamilyUuid
+                ? loadFamilySpaceStateForFamily(verifiedFamilyUuid)
+                : prev;
               const pid = role === 'dad' ? 'father' : 'mother';
               const nextKids =
                 Array.isArray(childrenProfiles) && childrenProfiles.length > 0
@@ -3048,7 +3061,7 @@ export default function App() {
                         useIllustratedAvatar: true,
                       },
                     ]
-                  : prev.kids;
+                  : baseState.kids;
               const genuineEmailVerified = Boolean(
                 emailVerified ?? persistedSession?.emailVerified ?? false
               );
@@ -3056,7 +3069,8 @@ export default function App() {
                 phoneVerified ?? persistedSession?.phoneVerified ?? false
               );
               return {
-                ...prev,
+                ...baseState,
+                verifiedFamilyId: verifiedFamilyUuid,
                 parentName,
                 role,
                 country,
@@ -3064,14 +3078,14 @@ export default function App() {
                 currency,
                 activeParentAccount: pid,
                 shippingAddress: {
-                  ...prev.shippingAddress,
+                  ...baseState.shippingAddress,
                   recipientName: parentName,
                   city,
                 },
                 parentAccounts: {
-                  ...prev.parentAccounts,
+                  ...baseState.parentAccounts,
                   [pid]: {
-                    ...prev.parentAccounts[pid],
+                    ...baseState.parentAccounts[pid],
                     fullName: parentName,
                     country,
                     phoneCode: country === 'SA' ? '+966' : '+20',

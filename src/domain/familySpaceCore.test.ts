@@ -1538,7 +1538,218 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(getFamilySpaceStorageKey('not-a-uuid'), null);
   });
 
+  it('16. Sign-In Account Restoration & Post-OTP Bootstrap: restores saved phone, role, country, city, and children on signin without running UPDATE queries, and reuses verified session after OTP confirmation', async () => {
+    const authUserUuid = '12121212-3434-4567-8901-234567890123';
+    const userRowUuid = '21212121-4343-4567-8901-234567890123';
+    const familyUuid = '31313131-5454-4567-8901-234567890123';
+    const childUuid = '41414141-6565-4567-8901-234567890123';
+
+    let usersUpdateCalled = false;
+    let usersUpsertCalled = false;
+    let signUpCallCount = 0;
+
+    const mockRestoreClient = {
+      auth: {
+        async signInWithPassword({ email }: { email: string }) {
+          return {
+            data: {
+              user: {
+                id: authUserUuid,
+                email,
+                email_confirmed_at: '2026-10-30T10:00:00Z',
+              },
+              session: {
+                access_token: 'jwt_signin_restored',
+                user: {
+                  id: authUserUuid,
+                  email,
+                  email_confirmed_at: '2026-10-30T10:00:00Z',
+                },
+              },
+            },
+            error: null,
+          };
+        },
+        async signUp() {
+          signUpCallCount += 1;
+          return {
+            data: { user: null, session: null },
+            error: { message: 'User already registered' },
+          };
+        },
+        async getSession() {
+          return {
+            data: {
+              session: {
+                access_token: 'jwt_signin_restored',
+                user: {
+                  id: authUserUuid,
+                  email: 'mariam@nekbaar.app',
+                  email_confirmed_at: '2026-10-30T10:00:00Z',
+                },
+              },
+            },
+            error: null,
+          };
+        },
+      },
+      from(table: string) {
+        if (table === 'users') {
+          return {
+            select() {
+              const chain = {
+                eq() {
+                  return chain;
+                },
+                async limit() {
+                  return {
+                    data: [
+                      {
+                        id: userRowUuid,
+                        auth_user_id: authUserUuid,
+                        family_id: familyUuid,
+                        full_name: 'مريم الشافعي',
+                        role: 'mother',
+                        email: 'mariam@nekbaar.app',
+                        phone: '+201098765432',
+                        country: 'EG',
+                      },
+                    ],
+                    error: null,
+                  };
+                },
+              };
+              return chain;
+            },
+            update() {
+              usersUpdateCalled = true;
+              const chain = {
+                eq() {
+                  return chain;
+                },
+                then(resolve: (val: { error: null }) => void) {
+                  resolve({ error: null });
+                },
+              };
+              return chain;
+            },
+            upsert() {
+              usersUpsertCalled = true;
+              return Promise.resolve({ error: null });
+            },
+          };
+        }
+        if (table === 'families') {
+          return {
+            select() {
+              return {
+                eq() {
+                  return {
+                    async limit() {
+                      return {
+                        data: [
+                          {
+                            id: familyUuid,
+                            family_name: 'عائلة الشافعي',
+                            country: 'EG',
+                            city: 'الإسكندرية',
+                            currency: 'EGP',
+                            active_parent: 'mother',
+                          },
+                        ],
+                        error: null,
+                      };
+                    },
+                  };
+                },
+              };
+            },
+          };
+        }
+        if (table === 'children') {
+          return {
+            select() {
+              return {
+                async eq() {
+                  return {
+                    data: [
+                      {
+                        id: childUuid,
+                        family_id: familyUuid,
+                        name: 'سلمى',
+                        gender: 'girl',
+                        birth_date: '2021-09-01',
+                        passions_or_heroes: 'الباليه والرسم',
+                        avatar_theme: 'artist',
+                      },
+                    ],
+                    error: null,
+                  };
+                },
+              };
+            },
+          };
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      },
+    } as unknown as SupabaseClient;
+
+    // 1. Sign-in with blank UI defaults (parentName: '', phone: '', country: 'SA', role: 'father')
+    // must restore authoritative DB values without issuing UPDATE or UPSERT on `public.users`.
+    const signInRes = await authenticateParentWithSupabase(
+      {
+        mode: 'signin',
+        parentName: '',
+        role: 'father',
+        email: 'mariam@nekbaar.app',
+        phone: '',
+        password: 'Password123!',
+        country: 'SA',
+        city: 'الرياض',
+        currency: 'SAR',
+      },
+      mockRestoreClient
+    );
+
+    assert.equal(signInRes.success, true);
+    assert.equal(signInRes.syncedToDb, true);
+    assert.equal(signInRes.verifiedFamilyUuid, familyUuid);
+    assert.equal(usersUpdateCalled, false);
+    assert.equal(usersUpsertCalled, false);
+    assert.equal(signInRes.user.full_name, 'مريم الشافعي');
+    assert.equal(signInRes.user.role, 'mother');
+    assert.equal(signInRes.user.phone, '+201098765432');
+    assert.equal(signInRes.user.country, 'EG');
+    assert.equal(signInRes.family?.country, 'EG');
+    assert.equal(signInRes.family?.city, 'الإسكندرية');
+    assert.equal(signInRes.family?.currency, 'EGP');
+    assert.equal(signInRes.sharedChildren.length, 1);
+    assert.equal(signInRes.sharedChildren[0].name, 'سلمى');
+    assert.equal(signInRes.sharedChildren[0].remote_id, childUuid);
+
+    // 2. Post-OTP signup retry: when `mode: 'signup'` is called after `verifyOtp` has already
+    // established an active verified session for that email, it reuses the session instead of calling `auth.signUp` again.
+    const postOtpSignupRes = await authenticateParentWithSupabase(
+      {
+        mode: 'signup',
+        parentName: 'مريم الشافعي',
+        role: 'mother',
+        email: 'mariam@nekbaar.app',
+        phone: '+201098765432',
+        password: 'Password123!',
+        country: 'EG',
+        city: 'الإسكندرية',
+        currency: 'EGP',
+      },
+      mockRestoreClient
+    );
+
+    assert.equal(signUpCallCount, 0);
+    assert.equal(postOtpSignupRes.success, true);
+    assert.equal(postOtpSignupRes.verifiedFamilyUuid, familyUuid);
+  });
 });
+
 
 
 
