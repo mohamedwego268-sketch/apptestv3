@@ -1516,6 +1516,28 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(deletedChildId, childAUuid);
     assert.equal(deletedFamilyId, familyAUuid);
   });
+  it('isolates local workspaces by verified family UUID', () => {
+    const familyA = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+    const familyB = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+    memoryStorage.setItem(STORAGE_KEY, JSON.stringify({ ...DEFAULT_SEED, tasks: [{ id: 900, name: 'legacy' }] }));
+
+    const cleanA = loadFamilySpaceStateForFamily(familyA);
+    assert.equal(cleanA.tasks.length, 0);
+
+    const stateA = normalizeAppData({
+      ...createEmptyFamilySpaceState(),
+      verifiedFamilyId: familyA,
+      parentName: 'Family A',
+      tasks: [{ id: 901, name: 'private task', time: '08:00', done: false, kidId: 1, category: 'routine', owner: 'parent', cadence: 'daily' }],
+    });
+    assert.equal(saveFamilySpaceStateForFamily(stateA, familyA), true);
+
+    assert.equal(loadFamilySpaceStateForFamily(familyA).tasks[0]?.name, 'private task');
+    assert.equal(loadFamilySpaceStateForFamily(familyB).tasks.length, 0);
+    assert.equal(getFamilySpaceStorageKey('1'), null);
+    assert.equal(getFamilySpaceStorageKey('not-a-uuid'), null);
+  });
+
 });
 
 
