@@ -360,7 +360,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 badgeLabel={lang === 'en' ? 'Local Backup' : 'نسخة احتياطية محلية'}
                 badgeTone="emerald"
                 cardTone="emerald"
-                defaultOpen={false}
+                defaultOpen={true}
               >
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -427,13 +427,13 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             id="settings-international-bottom"
             title={
               lang === 'en'
-                ? 'Country, Calling Code, Currency & Verified Phone'
-                : 'إعدادات الدولة، مفتاح الهاتف، العملة، وتوثيق الجوال'
+                ? 'Country, City, Currency & Phone'
+                : 'الدولة والمدينة والعملة ورقم الجوال'
             }
             subtitle={
               lang === 'en'
-                ? 'Region, international dial code, currency & OTP verified phone'
-                : 'تحديد الدولة، مفتاح الاتصال، العملة وتوثيق رقم الهاتف'
+                ? 'Set your country, city, display currency and phone number'
+                : 'حدد الدولة والمدينة والعملة، وأدر رقم هاتف الحساب'
             }
             iconId="location"
             badgeLabel={`${state.country === 'SA' ? '+966 · SAR' : '+20 · EGP'} · ${locText(
@@ -517,8 +517,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 <div>
                   <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     {lang === 'en'
-                      ? `Verified Phone (${settingsCountry === 'SA' ? '+966' : '+20'})`
-                      : `رقم هاتف الحساب الموثق (${settingsCountry === 'SA' ? '+966' : '+20'})`}
+                      ? `Mobile phone number (${settingsCountry === 'SA' ? '+966' : '+20'})`
+                      : `رقم الجوال (${settingsCountry === 'SA' ? '+966' : '+20'})`}
                   </label>
                   <input
                     id="settingsPhoneInput"
