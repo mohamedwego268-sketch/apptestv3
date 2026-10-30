@@ -68,11 +68,11 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               {todayFormattedCombined}
             </span>
             <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug">
-              {isEn ? 'Family Calendar (Gregorian & Hijri)' : 'التقويم والمواعيد (ميلادي وهجري)'}
+              {isEn ? 'Family Calendar' : 'تقويم الأسرة · ميلادي وهجري'}
             </h2>
           </div>
           <PrimaryCtaButton variant="teal" size="sm" onClick={onOpenAddEvent}>
-            {isEn ? '+ Add New Event' : '+ إضافة حدث جديد'}
+            {isEn ? '+ Add Event' : '+ إضافة موعد'}
           </PrimaryCtaButton>
         </div>
       </div>
@@ -179,7 +179,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
             subtitle={emptyCalendarCopy.subtitle}
             actionLabel={emptyCalendarCopy.actionLabel}
             onAction={onOpenAddEvent}
-            secondaryCtaLabel={isEn ? 'Show All Events' : 'عرض كل الأحداث'}
+            secondaryCtaLabel={isEn ? 'View All Events' : 'عرض كل المواعيد'}
             onSecondaryCtaClick={() => {
               setEventFrom('');
               setEventTo('');

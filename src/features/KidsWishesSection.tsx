@@ -61,7 +61,7 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
               {state.wishes.length} {isEn ? 'Saved Wishes' : 'أمنيات مسجلة'}
             </span>
             <h2 className="image-card-title text-sm sm:text-base font-extrabold leading-snug">
-              {isEn ? 'Kids Wishes & Family Gift Goals' : 'أمنيات الأطفال وأهداف الإهداء العائلي'}
+              {isEn ? 'Children’s Wishes & Family Goals' : 'أمنيات الأطفال وأهداف الأسرة'}
             </h2>
           </div>
           <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenAddWish}>
@@ -207,7 +207,7 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
         <div className="rounded-3xl border border-amber-200/80 dark:border-[#1E3646] bg-amber-50/85 dark:bg-[#101D26] p-5 shadow-2xs space-y-3.5 soft-card-surface">
           <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)] flex items-center gap-2">
             <SoftFilledIcon id="wishes" boxSize="sm" />
-            <span>{isEn ? 'Quick Gift Ideas' : 'أفكار هدايا سريعة تفرح ولادنا'}</span>
+            <span>{isEn ? 'Quick Gift Ideas' : 'أفكار هدايا تناسب اهتمامات الأطفال'}</span>
           </h3>
           <div className="space-y-2.5">
             {[
@@ -224,7 +224,7 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
                   itemIdOrIndex={idx + 1}
                   darkMode={state.darkMode}
                   onThumbnailClick={() => onQuickAddWish(idea.title, idea.egp, idea.sar, idea.emoji)}
-                  topLeftBadge={isEn ? 'Gift Idea' : 'هدية مقترحة'}
+                  topLeftBadge={isEn ? 'Gift Inspiration' : 'فكرة هدية'}
                   topRightBadge={<span>{idea.emoji} ★ 4.9</span>}
                   titlePrefixSlot={<SoftFilledIcon id={idea.iconId} size={18} />}
                   title={locText(idea.title, lang)}

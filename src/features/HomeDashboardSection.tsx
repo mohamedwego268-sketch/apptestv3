@@ -72,8 +72,8 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'morning',
     slotLabelAr: '☀️ رسالة الصباح الصوتية',
     slotLabelEn: '☀️ Morning Support Audio',
-    titleAr: 'ابدأ يومك بخطوة بسيطة مع طفلك',
-    titleEn: 'Start the Day with One Simple Moment Together',
+    titleAr: 'ابدأ يومكم بلحظة تواصل بسيطة',
+    titleEn: 'Begin the Day with a Small Moment Together',
     hostsAr: 'دقيقة عملية لكل أب وأم',
     hostsEn: 'A practical minute for every parent',
     durationSec: 30,
@@ -91,7 +91,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'afternoon',
     slotLabelAr: '🌤️ رسالة الظهيرة الصوتية',
     slotLabelEn: '🌤️ Afternoon Support Audio',
-    titleAr: 'بعد الحضانة أو المدرسة: اسمع الأول وبعدين اسأل',
+    titleAr: 'بعد الحضانة أو المدرسة: استمع أولاً، ثم اسأل',
     titleEn: 'After School: Listen First, Then Ask',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
     hostsEn: 'Warm Audio Support for Ahmad & Maryam',
@@ -110,7 +110,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     timeBucket: 'evening',
     slotLabelAr: '🌙 رسالة المساء الصوتية',
     slotLabelEn: '🌙 Evening Wind-Down Audio',
-    titleAr: 'قبل النوم: اقفلوا اليوم بهدوء وروتين ثابت',
+    titleAr: 'قبل النوم: اختتموا اليوم بهدوء وروتين ثابت',
     titleEn: 'End the Day with a Calm, Familiar Routine',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
     hostsEn: 'Warm Audio Support for Ahmad & Maryam',
@@ -155,8 +155,8 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     stageBadgeEn: '👶🏻 0–12 Months',
     childFocusAr: 'اللعب والتواصل في السنة الأولى',
     childFocusEn: 'Infant Sensory & Motor Milestones',
-    titleAr: 'وقت اللعب على البطن: خليه قصير وتحت ملاحظتك',
-    titleEn: '3 Simple Tummy-Time Moves to Strengthen Hamza’s Core for Sitting',
+    titleAr: 'وقت الاستلقاء على البطن: دقائق قصيرة مع مراقبتك',
+    titleEn: 'Simple Tummy-Time Ideas to Support Early Movement',
     captionAr:
       'اختار وقت يكون فيه الطفل صاحي وهادي، وحطه على بطنه على سطح ثابت وآمن مع مراقبتك طول الوقت. لو اتضايق، وقف وجرب وقت تاني.',
     captionEn:
@@ -177,7 +177,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     childFocusAr: 'التعبير عن المشاعر',
     childFocusEn: 'Emotion Naming & Creative Expression',
     titleAr: 'ساعد طفلك يسمي إحساسه بدل ما تطلب منه يبطل عياط',
-    titleEn: 'How to Turn Laila’s Post-Nursery Meltdown into an Emotion-Drawing Game',
+    titleEn: 'Turn Big Feelings into a Simple Drawing Activity',
     captionAr:
       'ممكن تقول: «واضح إنك متضايق.. تحب تحكيلي حصل إيه؟» اسمع من غير تقليل من إحساسه، ومش لازم يهدأ فورًا.',
     captionEn:
@@ -198,7 +198,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     childFocusAr: 'تنظيم المذاكرة والحركة',
     childFocusEn: 'School Focus & Athletic Confidence',
     titleAr: 'قسّم وقت المذاكرة لفترات قصيرة وبينها حركة',
-    titleEn: 'The 25-Min Study + 10-Min Movement Rule for Youssef’s Peak Focus',
+    titleEn: 'Try Short Study Sessions with Movement Breaks',
     captionAr:
       'ابدأوا بفترة تركيز مناسبة لطفلكم، وبعدها استراحة حركة أو شرب مية. عدّلوا المدة حسب سنه وقدرته، ومفيش رقم واحد يناسب كل الأطفال.',
     captionEn:
@@ -219,7 +219,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     childFocusAr: 'تقاسم المهام وتجديد طاقة البيت',
     childFocusEn: 'Shared Care & Evening Reset',
     titleAr: 'اتفقوا على تقسيم المسؤوليات بدل ما كل حاجة تبقى على شخص واحد',
-    titleEn: 'The 15-Minute Evening Hand-Off Secret for Ahmad & Maryam',
+    titleEn: 'A Simple Evening Handover for Shared Parenting',
     captionAr:
       'اتفقوا مين مسؤول عن الوجبة، ومين عن تجهيز النوم، ومين يتابع المواعيد. الاتفاق الواضح يقلل اللخبطة والضغط.',
     captionEn:
@@ -737,7 +737,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKid = state.kids[selectedKidIdx] || state.kids[0];
   const activeKidId = activeKid?.id ?? 1;
   const activeKidAge = activeKid ? calculateChildAge(activeKid.birth, lang) : null;
-  const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'Hamza' : 'حمزة';
+  const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'your child' : 'طفلك';
   const activeKidStageLabel = activeKidAge?.label || (isEn ? '6 Months' : '٦ شهور');
 
   // Standardized Child Color Helper (Hamza = Sky, Laila = Rose, Youssef = Amber)
@@ -767,10 +767,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const dailyCompassWisdom = useMemo(() => {
     if (effectiveTimeBucket === 'morning') {
       return {
-        badgeAr: '☀️ حكمة الصباح · بداية هادئة لـ أحمد ومريم',
-        badgeEn: '☀️ Morning Compass · Calm Start for Ahmad & Maryam',
-        titleAr: '٥ دقائق من التواصل البصري والابتسامة قبل انطلاق اليوم تصنع أماناً نفسياً طوال النهار',
-        titleEn: '5 Minutes of Eye Contact & Warm Smiles Before the Day Begins Anchors Emotional Safety',
+        badgeAr: '☀️ بداية اليوم · لحظة هادئة مع طفلك',
+        badgeEn: '☀️ Morning Moment · A Calm Start Together',
+        titleAr: 'ابدأوا اليوم بخمس دقائق من التواصل والابتسامة',
+        titleEn: 'Start the Day with Five Minutes of Connection and Warm Smiles',
         bodyAr:
           'ابدأوا صباحكم بلمسة حانية لحمزة، وتشجيع ليلى على اختيار ألوان يومها في الحضانة، وتذكير يوسف بأنه بطل مسؤول في مدرسته.',
         bodyEn:
@@ -786,9 +786,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
     if (effectiveTimeBucket === 'afternoon') {
       return {
-        badgeAr: '🌤️ حكمة الظهيرة · طاقة ما بعد المدرسة والحضانة',
-        badgeEn: '🌤️ Afternoon Compass · Post-School & Nursery Reconnection',
-        titleAr: 'لحظة اللقاء بعد المدرسة والحضانة أهم من السؤال الفوري عن الواجبات',
+        badgeAr: '🌤️ وقت العودة · مساحة للحكي والاستماع',
+        badgeEn: '🌤️ After School · Reconnect and Listen',
+        titleAr: 'امنح طفلك وقتاً للحكي قبل السؤال عن الواجبات',
         titleEn: 'Warm Reconnection After School & Nursery Matters More Than Immediate Homework Questions',
         bodyAr:
           'عند عودة يوسف من المدرسة وليلى من الحضانة، امنحوهم ١٥ دقيقة استرخاء ووجبة خفيفة صحية مع وقت البطن الحسي لحمزة قبل بدء المذاكرة أو التمرين.',
@@ -804,10 +804,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       };
     }
     return {
-      badgeAr: '🌙 حكمة المساء · سكينة البيت وروتين النوم',
-      badgeEn: '🌙 Evening Compass · Peaceful Home & Bedtime Wind-Down',
-      titleAr: 'تخفيف الإضاءة قبل النوم بـ ٤٥ دقيقة يهيئ أدمغة الأطفال لنوم عميق ومريح',
-      titleEn: 'Dimming Lights 45 Minutes Before Bedtime Prepares Growing Brains for Deep Sleep',
+      badgeAr: '🌙 نهاية اليوم · هدوء واستعداد للنوم',
+      badgeEn: '🌙 Evening Reset · A Calmer Bedtime',
+      titleAr: 'خفّفوا الإضاءة قبل النوم، وابدؤوا روتيناً هادئاً',
+      titleEn: 'Dim the Lights and Begin a Calm Bedtime Routine',
       bodyAr:
         'في المساء، يتعاون أحمد ومريم لتهدئة إيقاع البيت: تدليك لطيف لحمزة، وحدوتة خيالية قصيرة لليلى، وحوار امتنان هادئ مع يوسف عن أجمل لحظة في يومه.',
       bodyEn:
@@ -855,8 +855,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         accentBorder: 'border-sky-500/45',
         accentBg: 'bg-sky-500/12 text-sky-700 dark:text-sky-300',
         progressBarClass: 'from-sky-500 to-teal-500',
-        titleAr: 'محطة الأسبوع: تقوية عضلات الجلوس، تتبع الخشخيشة الخشبية، وأول تجربة تذوق مهروس الجزر',
-        titleEn: 'Weekly Milestone: Assisted Sitting Core Strength, Wooden Rattle Tracking & First Carrot Puree',
+        titleAr: 'محطة الأسبوع: مهارات الحركة والاستكشاف وتجربة أطعمة جديدة',
+        titleEn: 'This Week: Movement, Exploration and New Food Experiences',
         passionTagsAr: ['وقت البطن', 'الألعاب الخشبية الحسية', 'المناغاة والابتسامة'],
         passionTagsEn: ['Tummy Time', 'Sensory Wooden Rattle', 'Joyful Babbling'],
         nextGoalAr: '🎯 الهدف القادم: الجلوس المستقل لمدة ٣٠ ثانية + فحص تطعيم الـ ٦ شهور',
@@ -875,8 +875,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         accentBorder: 'border-rose-500/45',
         accentBg: 'bg-rose-500/12 text-rose-700 dark:text-rose-300',
         progressBarClass: 'from-rose-500 to-pink-500',
-        titleAr: 'بطلة الإبداع: رسم عائلة الديناصورات بالألوان المائية وتسمية المشاعر بهدوء في الحضانة',
-        titleEn: 'Creative Star: Watercolor Dinosaur Family Painting & Calm Emotion Naming at Nursery',
+        titleAr: 'لحظة إبداع: الرسم والتعبير عن المشاعر',
+        titleEn: 'Creative Moment: Art and Naming Feelings',
         passionTagsAr: ['التلوين المائي والصلصال', 'أناشيد الحضانة', 'القصص المصورة'],
         passionTagsEn: ['Watercolors & Clay', 'Nursery Rhymes', 'Picture Stories'],
         nextGoalAr: '🎯 الهدف القادم: ترتيب ركن الألوان بنفسها + مشاركة أصدقائها في الحضانة',
@@ -895,8 +895,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         accentBorder: 'border-amber-500/45',
         accentBg: 'bg-amber-500/12 text-amber-800 dark:text-amber-300',
         progressBarClass: 'from-amber-500 to-teal-600',
-        titleAr: 'بطل الأسبوع: إنهاء مشروع العلوم المدرسي + التميز في تمرين السباحة وكرة القدم بدون شاشات',
-        titleEn: 'Champion of the Week: School Science Project + Swimming & Football Sprint Mastery',
+        titleAr: 'إنجاز الأسبوع: تجربة علمية ونشاط رياضي',
+        titleEn: 'This Week’s Wins: A Science Project and Active Play',
         passionTagsAr: ['السباحة وكرة القدم', 'ألغاز الذكاء والمنطق', 'تجارب العلوم والفضاء'],
         passionTagsEn: ['Swimming & Football', 'Logic & Chess Puzzles', 'Space & Science'],
         nextGoalAr: '🎯 الهدف القادم: شارة القراءة الأسبوعية + تحدي اللياقة العائلي يوم الجمعة',

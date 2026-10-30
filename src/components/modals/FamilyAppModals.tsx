@@ -169,9 +169,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
 }) => {
   const lang = state.language;
   const isEn = lang === 'en';
-  const [expandedAccordionId, setExpandedAccordionId] = useState<string>('services');
-  const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(true);
+  const [expandedAccordionId, setExpandedAccordionId] = useState<string>('home');
+  const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(false);
   const [locationAccordionOpen, setLocationAccordionOpen] = useState<boolean>(false);
+  const [navigationSearch, setNavigationSearch] = useState<string>('');
   const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedDrawerCityId =
     activeCountryList.find(
@@ -1139,7 +1140,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
           id="master-control-slidebar-backdrop"
           data-testid="master-control-slidebar-backdrop"
           dir={isEn ? 'ltr' : 'rtl'}
-          className="fixed inset-0 z-50 bg-[var(--color-overlay)] backdrop-blur-xs flex justify-center"
+          className={`fixed inset-0 z-50 bg-slate-950/55 backdrop-blur-sm flex items-stretch ${isEn ? 'justify-start' : 'justify-start'} drawer-backdrop`}
           onClick={(e) => {
             if (e.target === e.currentTarget) onCloseRoleModal();
           }}
@@ -1150,7 +1151,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="roleModalTitle"
-            className="w-full max-w-[430px] h-full overflow-y-auto bg-[var(--color-surface)] dark:bg-[#0B131A] border-x border-[var(--color-border)] dark:border-[#1E3646] px-4 pt-safe pb-safe space-y-4 shadow-2xl flex flex-col justify-between animate-page-enter transition-all duration-300 ease-in-out"
+            className={`drawer-panel w-[min(88vw,390px)] max-w-[390px] h-[100dvh] overflow-y-auto overscroll-contain bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] px-4 pt-safe pb-safe space-y-4 shadow-2xl flex flex-col justify-between ${isEn ? 'drawer-enter-ltr' : 'drawer-enter-rtl'}`}
           >
             <div className="space-y-4">
               {/* Top Header Row */}
@@ -1164,10 +1165,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id="roleModalTitle"
                       className="text-base font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
                     >
-                      {isEn ? 'Nekbaar · Master Navigation' : 'نكبر · القائمة الرئيسية والتحكم'}
+                      {isEn ? 'Nekbaar · Family Space' : 'نكبر · مساحة الأسرة'}
                     </h2>
                     <p className="text-xs text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+                      {isEn ? 'One thoughtful space for family life' : 'كل تفاصيل الأسرة.. في مساحة واحدة'}
                     </p>
                   </div>
                 </div>
@@ -1198,7 +1199,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       ⚡
                     </span>
                     <span className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                      {isEn ? 'Quick Controls & Parent Session' : 'أدوات التحكم السريع والجلسة المستقلة'}
+                      {isEn ? 'Quick Settings' : 'إعدادات سريعة'}
                     </span>
                   </div>
                   <span className="w-8 h-8 rounded-lg bg-[var(--color-surface)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
@@ -1349,8 +1350,30 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 className="space-y-1.5"
               >
                 <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
-                  📂 {isEn ? 'App Sections' : 'أقسام التطبيق'}
+                  {isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
                 </div>
+
+                <label className="drawer-search flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/65 dark:bg-[#101D26] focus-within:border-[#0d9488] focus-within:ring-2 focus-within:ring-[#0d9488]/10">
+                  <SoftFilledIcon id="search" size={17} />
+                  <input
+                    type="search"
+                    value={navigationSearch}
+                    onChange={(e) => setNavigationSearch(e.target.value)}
+                    placeholder={isEn ? 'Find a section or feature…' : 'ابحث عن قسم أو ميزة…'}
+                    aria-label={isEn ? 'Search app sections' : 'البحث في أقسام التطبيق'}
+                    className="min-w-0 flex-1 bg-transparent border-0 outline-none text-sm font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)]"
+                  />
+                  {navigationSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setNavigationSearch('')}
+                      aria-label={isEn ? 'Clear search' : 'مسح البحث'}
+                      className="min-w-[32px] min-h-[32px] rounded-full bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-muted)] flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  )}
+                </label>
 
                 {(() => {
                   const masterAccordionSections: Array<{
@@ -1373,15 +1396,15 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'home',
                       pageId: 'home',
                       iconId: 'home',
-                      titleAr: '١. الرئيسية',
-                      titleEn: '1. Home Showcase',
-                      badgeAr: 'البرودكشن',
-                      badgeEn: 'Production',
+                      titleAr: 'الرئيسية',
+                      titleEn: 'Home',
+                      badgeAr: 'الرئيسية',
+                      badgeEn: 'Overview',
                       subItems: [
                         {
                           id: 'home-prod',
-                          labelAr: 'واجهة البرودكشن الرئيسية',
-                          labelEn: 'Production Home Showcase',
+                          labelAr: 'لوحة الأسرة الرئيسية',
+                          labelEn: 'Family Dashboard',
                           icon: '🏡',
                           onSelect: () => {
                             onNavigateFromDrawer?.('home');
@@ -1390,8 +1413,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'home-promos',
-                          labelAr: 'البانرات الترويجية والإعلانية',
-                          labelEn: 'Promotional & Ad Banners',
+                          labelAr: 'العروض والمحتوى المميز',
+                          labelEn: 'Featured Content & Offers',
                           icon: '🔥',
                           onSelect: () => {
                             onNavigateFromDrawer?.('home');
@@ -1405,8 +1428,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'home-welcome-splash',
-                          labelAr: 'شاشة الترحيب التفاعلية (٤ ثوانٍ)',
-                          labelEn: 'Interactive Welcome Splash (4s)',
+                          labelAr: 'إعادة عرض شاشة الترحيب',
+                          labelEn: 'Replay Welcome Screen',
                           icon: '✨',
                           onSelect: () => {
                             onCloseRoleModal();
@@ -1419,8 +1442,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'assistant',
                       pageId: 'assistant',
                       iconId: 'assistant',
-                      titleAr: '٢. المساعد الذكي',
-                      titleEn: '2. AI Assistant',
+                      titleAr: 'المساعد الذكي',
+                      titleEn: 'AI Assistant',
                       badgeAr: '3 موديلات',
                       badgeEn: '3 Models',
                       subItems: [
@@ -1437,8 +1460,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'ai-consultant',
-                          labelAr: 'موديل: مستشار تربوي ذكي',
-                          labelEn: 'Model: Parenting Consultant',
+                          labelAr: 'استشارات تربوية وأفكار عملية',
+                          labelEn: 'Parenting Guidance',
                           icon: '🧠',
                           onSelect: () => {
                             onSelectAiSubActionFromDrawer?.({
@@ -1451,8 +1474,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'ai-planner',
-                          labelAr: 'موديل: خطط يومية وتغذية',
-                          labelEn: 'Model: Daily Plans Architect',
+                          labelAr: 'تنظيم اليوم والتغذية',
+                          labelEn: 'Daily Planning & Nutrition',
                           icon: '📅',
                           onSelect: () => {
                             onSelectAiSubActionFromDrawer?.({
@@ -1465,8 +1488,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'ai-behavior',
-                          labelAr: 'موديل: دعم سلوكي وتعديل سلوك',
-                          labelEn: 'Model: Behavioral Coach',
+                          labelAr: 'فهم السلوك والتعامل معه',
+                          labelEn: 'Understanding Behaviour',
                           icon: '💛',
                           onSelect: () => {
                             onSelectAiSubActionFromDrawer?.({
@@ -1483,8 +1506,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'children',
                       pageId: 'children',
                       iconId: 'children',
-                      titleAr: '٣. ملفات الأطفال والنمو',
-                      titleEn: '3. Child Profiles & Growth',
+                      titleAr: 'الأطفال والنمو',
+                      titleEn: 'Children & Growth',
                       badgeAr: `${state.kids.length} أطفال`,
                       badgeEn: `${state.kids.length} Kids`,
                       subItems: [
@@ -1524,8 +1547,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'routine',
                       pageId: 'routine',
                       iconId: 'routine',
-                      titleAr: '٤. الروتين والمهام',
-                      titleEn: '4. Routines & Tasks',
+                      titleAr: 'الروتين والمهام',
+                      titleEn: 'Routines & Tasks',
                       badgeAr: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
                       badgeEn: `${state.tasks.filter((tItem) => tItem.done).length}/${state.tasks.length}`,
                       subItems: [
@@ -1565,8 +1588,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'services',
                       pageId: 'services',
                       iconId: 'services',
-                      titleAr: '٥. المتجر والاحتياجات',
-                      titleEn: '5. Store & Essentials',
+                      titleAr: 'المتجر والخدمات',
+                      titleEn: 'Store & Services',
                       badgeAr: '٦ أقسام',
                       badgeEn: '6 Categories',
                       subItems: [
@@ -1653,8 +1676,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'calendar',
                       pageId: 'calendar',
                       iconId: 'calendar',
-                      titleAr: '٦. المواعيد والتذكيرات',
-                      titleEn: '6. Calendar & Appointments',
+                      titleAr: 'التقويم والمواعيد',
+                      titleEn: 'Calendar & Appointments',
                       badgeAr: `${state.events.length} مواعيد`,
                       badgeEn: `${state.events.length} Events`,
                       subItems: [
@@ -1694,15 +1717,15 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'medical',
                       pageId: 'medical',
                       iconId: 'health',
-                      titleAr: '٧. الدكتور والعيادة',
-                      titleEn: '7. Doctor & Pediatric Clinic',
-                      badgeAr: 'حجز فوري',
-                      badgeEn: 'دليل الخدمات',
+                      titleAr: 'الصحة والرعاية الطبية',
+                      titleEn: 'Health & Medical Care',
+                      badgeAr: 'دليل الرعاية',
+                      badgeEn: 'Care Directory',
                       subItems: [
                         {
                           id: 'med-book-doc',
-                          labelAr: 'دليل أطباء الأطفال والعيادات',
-                          labelEn: 'Find Pediatricians & Clinics',
+                          labelAr: 'استكشف أطباء الأطفال والعيادات',
+                          labelEn: 'Explore Pediatricians & Clinics',
                           icon: '👨‍⚕️',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1711,8 +1734,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'med-clinics',
-                          labelAr: 'عيادات تخصصية وتغذية وتخاطب',
-                          labelEn: 'Specialized Pediatric Clinics',
+                          labelAr: 'تخصصات الأطفال والتغذية والتخاطب',
+                          labelEn: 'Pediatric Specialties, Nutrition & Speech',
                           icon: '🏥',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1721,8 +1744,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'med-instant-consult',
-                          labelAr: 'معلومات وإرشادات صحية موثوقة',
-                          labelEn: 'Health Guides & Information',
+                          labelAr: 'معلومات وإرشادات لصحة الطفل',
+                          labelEn: 'Child Health Guides',
                           icon: '⚡',
                           onSelect: () => {
                             onNavigateFromDrawer?.('medical');
@@ -1735,8 +1758,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'media',
                       pageId: 'media',
                       iconId: 'video',
-                      titleAr: '٨. المحتوى والفيديوهات',
-                      titleEn: '8. Content & Videos',
+                      titleAr: 'المحتوى والفيديو',
+                      titleEn: 'Media & Learning',
                       badgeAr: '9:16 ريلز',
                       badgeEn: '9:16 Reels',
                       subItems: [
@@ -1776,10 +1799,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'community',
                       pageId: 'community',
                       iconId: 'star',
-                      titleAr: '٩. مجتمع الأهل',
-                      titleEn: '9. Parent Community',
-                      badgeAr: 'مجتمع آمن',
-                      badgeEn: 'Safe Hub',
+                      titleAr: 'مجتمع الأهل',
+                      titleEn: 'Parent Community',
+                      badgeAr: 'تواصل وتبادل',
+                      badgeEn: 'Connect & Share',
                       subItems: [
                         {
                           id: 'comm-open-chat',
@@ -1817,15 +1840,15 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'chat',
                       pageId: 'chat',
                       iconId: 'shield',
-                      titleAr: '١٠. محادثات الأسرة',
-                      titleEn: '10. Family Messages',
+                      titleAr: 'الرسائل والمحادثات',
+                      titleEn: 'Messages',
                       badgeAr: 'داخلي',
                       badgeEn: 'Private',
                       subItems: [
                         {
                           id: 'chat-parents-caregivers',
                           labelAr: 'المحادثات الداخلية بين الوالدين ومقدمي الرعاية',
-                          labelEn: 'Internal Chat Between Parents & Caregivers',
+                          labelEn: 'Family & Caregiver Messages',
                           icon: '👨‍👩‍👧‍👦',
                           onSelect: () => {
                             onNavigateFromDrawer?.('chat');
@@ -1858,8 +1881,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'family',
                       pageId: 'family',
                       iconId: 'family',
-                      titleAr: '١١. أفراد الأسرة والصلاحيات',
-                      titleEn: '11. Family & Permissions',
+                      titleAr: 'الأسرة والصلاحيات',
+                      titleEn: 'Family & Access',
                       badgeAr: `${state.family.length} أفراد`,
                       badgeEn: `${state.family.length} Members`,
                       subItems: [
@@ -1899,8 +1922,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'settings',
                       pageId: 'settings',
                       iconId: 'settings',
-                      titleAr: '١٢. الإعدادات',
-                      titleEn: '12. Settings',
+                      titleAr: 'الإعدادات',
+                      titleEn: 'Settings',
                       badgeAr: 'تحكم كامل',
                       badgeEn: 'Full Control',
                       subItems: [
@@ -1940,8 +1963,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       id: 'contact',
                       pageId: 'contact',
                       iconId: 'shield',
-                      titleAr: '١٣. الدعم والتواصل',
-                      titleEn: '13. Help & Support',
+                      titleAr: 'المساعدة والتواصل',
+                      titleEn: 'Help & Support',
                       badgeAr: 'الدعم',
                       badgeEn: 'Support',
                       subItems: [
@@ -1967,8 +1990,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         },
                         {
                           id: 'contact-official-email',
-                          labelAr: 'معلومات التواصل الرسمية',
-                          labelEn: 'Official Contact Information',
+                          labelAr: 'بيانات التواصل والدعم',
+                          labelEn: 'Contact & Support Details',
                           icon: '🌐',
                           onSelect: () => {
                             onNavigateFromDrawer?.('contact');
@@ -1979,33 +2002,46 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     },
                   ];
 
-                  return masterAccordionSections.map((sec) => {
-                    const isExpanded = expandedAccordionId === sec.id;
+                  const query = navigationSearch.trim().toLocaleLowerCase();
+                  const visibleSections = masterAccordionSections
+                    .map((sec) => {
+                      const groupMatches = !query || `${sec.titleAr} ${sec.titleEn}`.toLocaleLowerCase().includes(query);
+                      const matchingSubItems = !query || groupMatches
+                        ? sec.subItems
+                        : sec.subItems.filter((sub) =>
+                            `${sub.labelAr} ${sub.labelEn}`.toLocaleLowerCase().includes(query)
+                          );
+                      return { ...sec, subItems: matchingSubItems, matchesSearch: groupMatches || matchingSubItems.length > 0 };
+                    })
+                    .filter((sec) => !query || sec.matchesSearch);
+
+                  return visibleSections.map((sec) => {
+                    const isExpanded = Boolean(query) || expandedAccordionId === sec.id;
                     const isPageActive = activePage === sec.pageId;
                     return (
                       <div
                         key={sec.id}
                         data-testid={`slidebar-accordion-${sec.id}`}
-                        className={`rounded-2xl border transition-all overflow-hidden ${
+                        className={`drawer-nav-group rounded-2xl border transition-all overflow-hidden ${
                           isPageActive
                             ? 'border-[#0d9488] bg-teal-50/40 dark:bg-[#142430]'
                             : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26]'
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-1 p-2 sm:p-2.5">
+                        <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3">
                           <button
                             type="button"
                             onClick={() => {
                               setExpandedAccordionId((prev) => (prev === sec.id ? '' : sec.id));
                             }}
                             aria-expanded={isExpanded}
-                            className="flex-1 min-w-0 flex items-center gap-2 text-start cursor-pointer"
+                            className="flex-1 min-w-0 min-h-[48px] flex items-center gap-3 text-start cursor-pointer"
                           >
-                            <span className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] flex items-center justify-center shrink-0">
+                            <span className="w-10 h-10 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] flex items-center justify-center shrink-0">
                               <ThreeDIcon id={sec.iconId} size={17} />
                             </span>
                             <div className="min-w-0 flex-1">
-                              <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+                              <div className="text-[13px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                                 {isEn ? sec.titleEn : sec.titleAr}
                               </div>
                             </div>
@@ -2038,7 +2074,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                                 data-testid={`slidebar-subitem-${sub.id}`}
                                 type="button"
                                 onClick={sub.onSelect}
-                                className="w-full px-2.5 py-2 rounded-xl text-start text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#E2E8F0] hover:bg-[#0d9488] hover:text-white transition-all flex items-center justify-between gap-2 cursor-pointer group"
+                                className="w-full min-h-[44px] px-3 py-2.5 rounded-xl text-start text-xs font-semibold text-[var(--color-text)] dark:text-[#E2E8F0] hover:bg-[#0d9488]/10 hover:text-[var(--color-role-text)] dark:hover:text-[#5EEAD4] transition-all flex items-center justify-between gap-2 cursor-pointer group"
                               >
                                 <span className="flex items-center gap-2 min-w-0">
                                   <span className="text-sm leading-none shrink-0">{sub.icon}</span>

@@ -93,7 +93,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   const lang = state.language;
 
   return (
-    <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'الحساب والإعدادات'}>
+    <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
       {/* Compact Profile Hero Warm Image Card for Unified Family Space */}
       <div
         className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5"
@@ -137,14 +137,14 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
           <div className="flex flex-wrap items-center gap-1.5">
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenOnboardingModal}>
-              {lang === 'en' ? 'Edit Account & City' : 'عدّل الحساب والمدينة'}
+              {lang === 'en' ? 'Edit Account & City' : 'تحديث بيانات الحساب والموقع'}
             </PrimaryCtaButton>
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
               className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
-              {lang === 'en' ? 'Family & Permissions' : 'العيلة والصلاحيات'}
+              {lang === 'en' ? 'Family & Permissions' : 'الأسرة والصلاحيات'}
             </button>
             <button
               type="button"
@@ -263,7 +263,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
         <div className="space-y-5" aria-label={lang === 'en' ? 'Settings inside Profile' : 'الإعدادات داخل صفحة الحساب'}>
           <div className="section-heading-block">
             <h3 className="section-heading-centered">
-              {lang === 'en' ? 'Settings & Account Preferences' : 'الإعدادات وتخصيص الحساب'}
+              {lang === 'en' ? 'Settings & Account Preferences' : 'تفضيلات الحساب والتطبيق'}
             </h3>
           </div>
 
@@ -271,7 +271,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             {/* 1. Experience & Interface Preferences */}
             <CollapsibleSectionCard
               title={lang === 'en' ? 'Theme, Language & Calendar' : 'السمة البصرية واللغة والتقويم'}
-              subtitle={lang === 'en' ? 'Parent profile role, visual theme & language' : 'تخصيص وضع ولي الأمر والسمة البصرية ولغة العرض'}
+              subtitle={lang === 'en' ? 'Personalize your profile, appearance and language' : 'خصص ملفك وطريقة عرض التطبيق واللغة'}
               iconId="settings"
               badgeLabel={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
               badgeTone="purple"
@@ -281,7 +281,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               <div className="space-y-4">
                 <div>
                   <label htmlFor="parentName" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                    {lang === 'en' ? 'Parent / Family Display Name' : 'اسم ولي الأمر / الأسرة'}
+                    {lang === 'en' ? 'Parent or Family Name' : 'اسم ولي الأمر أو الأسرة'}
                   </label>
                   <input
                     id="parentName"
@@ -345,7 +345,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 </div>
 
                 <PrimaryCtaButton variant="purple" onClick={onSaveGeneralSettings}>
-                  {lang === 'en' ? 'Save Experience Preferences' : 'حفظ تفضيلات التجربة واللغة'}
+                  {lang === 'en' ? 'Save Preferences' : 'حفظ التفضيلات'}
                 </PrimaryCtaButton>
               </div>
             </CollapsibleSectionCard>
@@ -357,7 +357,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 title={lang === 'en' ? 'Data Backup & Restore' : 'النسخ الاحتياطي واستعادة البيانات'}
                 subtitle={lang === 'en' ? 'Export or import your family profile locally' : 'تصدير أو استيراد ملف بيانات أسرتك بأمان'}
                 iconId="shield"
-                badgeLabel={lang === 'en' ? 'Safe Backup' : 'حفظ آمن'}
+                badgeLabel={lang === 'en' ? 'Local Backup' : 'نسخة احتياطية محلية'}
                 badgeTone="emerald"
                 cardTone="emerald"
                 defaultOpen={false}
@@ -447,7 +447,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <UnifiedBadge
-                  label={lang === 'en' ? 'Verified Mobile Protection' : 'حماية الجوال الموثق'}
+                  label={lang === 'en' ? 'Mobile Number' : 'رقم الجوال'}
                   tone="amber"
                   iconId="shield"
                 />

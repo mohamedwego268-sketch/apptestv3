@@ -196,7 +196,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       )
     );
     setMessageInput('');
-    onShowToast(isEn ? 'Message sent' : 'تم إرسال الرسالة');
+    onShowToast(isEn ? 'Message added' : 'تمت إضافة الرسالة');
   };
 
   return (
@@ -209,10 +209,10 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
             <SoftFilledIcon id="shield" size={24} />
-            <span>{isEn ? 'Direct Scoped Messaging · Child-Specific Access' : 'تواصل مباشر محمي بالصلاحيات · نطاق مخصص لكل طفل'}</span>
+            <span>{isEn ? 'Family Messages · Child-Specific Access' : 'محادثات الأسرة · صلاحيات مرتبطة بكل طفل'}</span>
           </span>
           <h2 className="section-heading-centered image-card-title">
-            {isEn ? 'Family, Nursery & Doctor Chat' : 'المحادثات المباشرة للأسرة والعيادات والحضانة'}
+            {isEn ? 'Family & Care Team Messages' : 'رسائل الأسرة ومقدمي الرعاية'}
           </h2>
         </div>
 
@@ -291,7 +291,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
             <div className="flex items-center justify-between px-2 py-0.5 text-xs font-extrabold text-[var(--color-muted)]">
               <span>{isEn ? 'Active Conversations' : 'المحادثات النشطة'}</span>
               <span className="text-[10px] font-bold text-emerald-700 dark:text-[#2DD4BF]">
-                ● {isEn ? 'Realtime Ready' : 'جاهز للمراسلة الفورية'}
+                ● {isEn ? 'Demo Messaging' : 'نموذج مراسلة تجريبي'}
               </span>
             </div>
             <input

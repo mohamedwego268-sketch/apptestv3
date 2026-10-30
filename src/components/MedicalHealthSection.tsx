@@ -115,14 +115,14 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
   const medicalBanners: BannerSlideItem[] = [
     {
       id: 'med-slide-doctors',
-      badge: isEn ? '🩺 Verified Pediatricians' : '🩺 أطباء وعيادات معتمدة',
+      badge: isEn ? '🩺 Pediatric Care Directory' : '🩺 دليل أطباء الأطفال والعيادات',
       title: isEn
         ? `Top Pediatricians & Specialists in ${displayCity}`
         : `أفضل أطباء واستشاريي الأطفال في ${city}`,
       subtitle: isEn
         ? 'Instant Appointment Booking · Syncs with Family Calendar'
         : 'حجز فوري للمواعيد · يضاف تلقائيًا لتقويم الأسرة',
-      ctaLabel: isEn ? 'Book Doctor Now' : 'احجز موعد طبيب الآن',
+      ctaLabel: isEn ? 'Explore Care Options' : 'استكشف خيارات الرعاية',
       onCtaClick: () => {
         setActiveTab('doctors');
         if (filteredDoctors[0]) setBookingDoctor(filteredDoctors[0]);
@@ -133,7 +133,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
     },
     {
       id: 'med-slide-sos',
-      badge: isEn ? '🚑 SOS & Dosage Hub' : '🚑 دليل الطوارئ والجرعات',
+      badge: isEn ? '🚑 Emergency Preparation' : '🚑 الاستعداد للطوارئ',
       title: isEn
         ? 'Emergency Contacts & Weight-Based Fever Reducer Guide'
         : 'أرقام الطوارئ وحاسبة جرعات خافض الحرارة بالوزن',
@@ -189,7 +189,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                 : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
             }`}
           >
-            👩‍⚕️ {isEn ? `Doctors (${filteredDoctors.length})` : `دكاترة وعيادات (${filteredDoctors.length})`}
+            👩‍⚕️ {isEn ? `Doctors & Clinics (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
           </button>
           <button
             id="medical-sos-dosage-tab-btn"
@@ -242,7 +242,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
           }`}
         >
-          📍 {isEn ? `My City (${displayCity})` : `الأقرب في (${city})`}
+          📍 {isEn ? `Near ${displayCity})` : `بالقرب من (${city})`}
         </button>
       </div>
 
@@ -446,7 +446,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   }
                   footerLeft={
                     <span className="text-xs font-extrabold text-emerald-900 dark:text-[#A5F3FC]">
-                      💉 {isEn ? 'Vaccinations: Up to Date' : 'سجل التطعيمات: منتظمة'}
+                      💉 {isEn ? 'Vaccination Record' : 'سجل التطعيمات'}
                     </span>
                   }
                 />
@@ -510,7 +510,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                 itemIdOrIndex={article.id}
                 darkMode={darkMode}
                 onThumbnailClick={() => setReadingArticle(article)}
-                topLeftBadge={isEn ? 'Demo educational content · Not clinically reviewed' : 'محتوى توعوي تجريبي · غير معتمد كمراجعة طبية'}
+                topLeftBadge={isEn ? 'Demo educational content · Not clinically reviewed' : 'محتوى توعوي تجريبي · لم يخضع لمراجعة طبية'}
                 topRightBadge={
                   <span>
                     👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
@@ -573,7 +573,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
 
       {/* Compact Clinical Notice Strip (No Cross-Section Navigation) */}
       <div className="rounded-2xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/60 dark:bg-[#101D26] px-4 py-2.5 text-xs font-bold text-emerald-950 dark:text-[#A5F3FC] flex flex-wrap items-center justify-between gap-2 soft-card-surface">
-        <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub (Text & Clinical Records Only)' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية (سجلات وأدلة نصية طبية فقط)'}</span>
+        <span>⚕️ {isEn ? 'Health Guides & Family Appointment Planning' : 'إرشادات صحية وتنظيم مواعيد الأسرة'}</span>
         <span>📍 {displayCity}</span>
       </div>
 
@@ -590,7 +590,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
           >
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-base font-extrabold text-[var(--color-text)]">
-                🩺 {isEn ? 'Book Doctor Appointment' : 'حجز موعد طبي وتنسيق التقويم'}
+                🩺 {isEn ? 'Coordinate a Doctor Visit' : 'تنسيق زيارة الطبيب'}
               </h3>
               <button
                 type="button"
@@ -671,7 +671,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                 {isEn ? 'Cancel' : 'إلغاء'}
               </button>
               <PrimaryCtaButton type="submit" variant="emerald" size="sm">
-                {isEn ? 'Confirm Booking' : 'تأكيد الحجز بالتقويم'}
+                {isEn ? 'Add to Family Calendar' : 'إضافة الموعد إلى تقويم الأسرة'}
               </PrimaryCtaButton>
             </div>
           </form>
@@ -689,7 +689,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="text-xs font-extrabold text-emerald-800">
-                  🩺 {isEn ? 'Demo educational content · Not medical advice' : 'محتوى توعوي تجريبي · لا يُعد نصيحة طبية'}
+                  🩺 {isEn ? 'Demo content · Not medical advice' : 'محتوى تجريبي · لا يغني عن استشارة الطبيب'}
                 </div>
                 <h3 className="text-lg font-extrabold text-[var(--color-text)] mt-1">
                   {isEn ? readingArticle.titleEn : readingArticle.title}

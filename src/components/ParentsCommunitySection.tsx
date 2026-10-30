@@ -426,7 +426,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     setAddStoryModalOpen(false);
     setStoryModalId(createdStory.id);
     onShowToast(
-      isEn ? '✨ Your story is now live in Parents Community!' : '✨ تم نشر حالتك اليومية في لمة الآباء بنجاح!'
+      isEn ? '✨ Your moment has been shared with the community.' : '✨ تمت مشاركة لحظتك مع مجتمع الأهل.'
     );
   };
 
@@ -489,7 +489,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     setNewPostBody('');
     setComposerOpen(false);
     setExpandedPostId(created.id);
-    onShowToast(isEn ? 'Post published to Parents Community!' : 'تم نشر مشاركتك في مجتمع الوالدين!');
+    onShowToast(isEn ? 'Your post has been shared with the community.' : 'تمت مشاركة منشورك مع مجتمع الأهل.');
   };
 
   const handleAddComment = (postId: number) => {
@@ -524,7 +524,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   const communityBanners: BannerSlideItem[] = [
     {
       id: 'comm-slide-share',
-      badge: isEn ? '🤝 Safe Parents Community' : '🤝 مجتمع الآباء والأمهات',
+      badge: isEn ? '🤝 Parents Community' : '🤝 مجتمع الأهل',
       title: isEn
         ? 'Share Experiences & Get Verified Specialist Replies'
         : 'شارك تجربتك اليومية واحصل على ردود الخبراء الموثقين',
@@ -584,7 +584,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             <span className="text-base">📸</span>
             <div>
               <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Parents Daily Stories & Moments' : 'حالات ويوميات الآباء (Stories)'}
+                {isEn ? 'Parents Daily Stories & Moments' : 'لحظات ويوميات الأسرة'}
               </h3>
               <p className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
                 {isEn
@@ -599,13 +599,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             onClick={() => setAddStoryModalOpen(true)}
             className="min-h-[34px] px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#FF8C61] to-[#0d9488] text-white text-[11px] font-extrabold shadow-2xs hover:opacity-95 active:scale-95 transition-all cursor-pointer shrink-0"
           >
-            + {isEn ? 'Add Story' : 'أضف حالتك'}
+            + {isEn ? 'Share a Moment' : 'شارك لحظة'}
           </button>
         </div>
 
         {/* Horizontal Avatar Stories Carousel with Active Gradient Rings */}
         <div className="flex items-start gap-3.5 overflow-x-auto no-scrollbar pt-1 pb-1">
-          {/* 1. "+ أضف حالتك / Add Story" Circular Trigger */}
+          {/* 1. "+ شارك لحظة / Share a Moment" Circular Trigger */}
           <button
             type="button"
             data-testid="stories-carousel-add-trigger"
@@ -621,7 +621,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </span>
             </div>
             <span className="text-[10.5px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate w-full text-center">
-              {isEn ? 'Add Story' : 'أضف حالتك'}
+              {isEn ? 'Share a Moment' : 'شارك لحظة'}
             </span>
           </button>
 
@@ -666,7 +666,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         </div>
       </div>
 
-      {/* Add Story Composer Modal Popup */}
+      {/* Share a Moment Composer Modal Popup */}
       {addStoryModalOpen && (
         <div
           id="community-add-story-modal"
@@ -683,7 +683,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           >
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                📸 {isEn ? 'Share a Daily Parenting Story' : 'أضف حالتك ولحظتك اليومية مع أطفالك'}
+                📸 {isEn ? 'Share a Family Moment' : 'شارك لحظة ولحظتك اليومية مع أطفالك'}
               </h3>
               <button
                 type="button"
@@ -718,7 +718,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
 
             <div className="space-y-1.5">
               <label className="block text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                {isEn ? 'Your Story Highlight' : 'اكتب حالتك أو إنجاز طفلك اليوم'}
+                {isEn ? 'Your Family Moment' : 'اكتب لحظة أو إنجازاً تحب مشاركته'}
               </label>
               <textarea
                 rows={3}
@@ -910,7 +910,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       <SwipeableBannerCarousel
         slides={communityBanners}
         language={language}
-        ariaLabel={isEn ? 'Community Highlights Carousel' : 'لافتات مجتمع الآباء المتحركة'}
+        ariaLabel={isEn ? 'Featured Community Stories' : 'قصص وتجارب من مجتمع الأهل'}
       />
 
       {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
@@ -1053,7 +1053,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       {/* Post Composer Collapsible Card */}
       <CollapsibleSectionCard
         id="community-post-composer-accordion"
-        title={isEn ? 'Share Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالك'}
+        title={isEn ? 'Share an Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالاً'}
         subtitle={
           isEn
             ? 'Connect with parents and certified child specialists across Egypt & Saudi Arabia'

@@ -52,7 +52,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1.5 shrink-0">
               <SoftFilledIcon id="notifications" size={16} />
               <span>
-                {isEn ? 'Smart Daily Alerts' : 'تنبيهات يومية مخصصة'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
+                {isEn ? 'Daily Family Reminders' : 'تذكيرات الأسرة اليومية'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
               </span>
             </span>
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1 shrink-0">
@@ -118,7 +118,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
                   size="sm"
                   onClick={onMarkAllRead}
                 >
-                  ✓ {isEn ? 'Mark All Read' : 'تحديد الكل كمقروء'}
+                  ✓ {isEn ? 'Mark All as Read' : 'تحديد الكل كمقروء'}
                 </PrimaryCtaButton>
               )}
             </div>
@@ -223,7 +223,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
               className="w-4 h-4 accent-[var(--color-accent)]"
             />
             <span className="text-xs font-extrabold text-[var(--color-text)]">
-              {isEn ? 'Enable 3 Daily Tips' : 'تفعيل الإشعارات اليومية الثلاثة'}
+              {isEn ? 'Schedule Daily Reminders' : 'تحديد مواعيد التذكيرات اليومية'}
             </span>
           </label>
 

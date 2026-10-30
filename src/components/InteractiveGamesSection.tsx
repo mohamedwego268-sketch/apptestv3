@@ -335,7 +335,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
           )}
           <div>
             <label htmlFor="gameChildSelector" className="block text-xs font-extrabold text-[var(--color-text)]">
-              🎮 {isEn ? 'Active Child Player:' : 'ملف الطفل المشارك في اللعب:'}
+              🎮 {isEn ? 'Playing Profile:' : 'الطفل الذي يلعب الآن:'}
             </label>
             <div className="flex items-center gap-2 mt-1">
               <select
@@ -363,7 +363,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
               className="accent-[var(--color-accent)]"
             />
             <span>
-              🛡️ {isEn ? 'Parent Co-Play Active (15m)' : 'إشراف الوالدين نشط (15 دقيقة)'}
+              🛡️ {isEn ? 'Parent-supervised play session' : 'جلسة لعب بإشراف ولي الأمر'}
             </span>
           </label>
           <button
@@ -574,7 +574,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                🎨 {isEn ? 'Interactive Space Rocket Coloring Studio' : 'مرسم التلوين التفاعلي: لوّن صاروخ الفضاء'}
+                🎨 {isEn ? 'Space Rocket Coloring' : 'لوّن صاروخ الفضاء خطوة بخطوة'}
               </h3>
               <p className="text-[11px] font-semibold text-[var(--color-muted)]">
                 {isEn
@@ -690,7 +690,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
                 />
               </svg>
               <span className="text-[11px] font-bold text-indigo-200 mt-1">
-                ✨ {isEn ? 'Tap directly on the rocket parts to color!' : 'اضغط مباشرة على أجزاء الصاروخ لتلوينها!'}
+                ✨ {isEn ? 'Tap a rocket part to choose its colour.' : 'اختر جزءاً من الصاروخ ثم لوّنه باللون الذي تفضله.'}
               </span>
             </div>
 

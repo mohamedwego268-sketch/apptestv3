@@ -341,7 +341,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                       {isEn ? clause.badgeEn : clause.badgeAr}
                     </span>
                     <span className="text-[11px] font-bold text-[var(--color-muted)]">
-                      🔒 {isEn ? 'Verified Standard Clause' : 'بند خصوصية معتمد'}
+                      🔒 {isEn ? 'Privacy & Data Information' : 'معلومات الخصوصية والبيانات'}
                     </span>
                   </div>
                   <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
@@ -458,7 +458,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
               <SoftFilledIcon id="notifications" size={30} />
             </div>
             <span className="image-card-badge inline-block px-3 py-0.5 rounded-full text-[11px] font-extrabold">
-              {isEn ? 'DIGITAL CUSTOMER CARE 24/7' : 'مركز التواصل والدعم الرقمي ٢٤/٧'}
+              {isEn ? 'DIGITAL CUSTOMER SUPPORT' : 'الدعم والتواصل الرقمي'}
             </span>
             <h2 className="section-heading-centered image-card-title">
               {isEn
@@ -484,7 +484,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                   <span className="text-lg" aria-hidden="true">✉️</span>
                 </div>
                 <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                  {isEn ? 'Official Support & Care Email' : 'مراسلة الدعم الفني عبر البريد الإلكتروني'}
+                  {isEn ? 'Support Email' : 'تواصل مع فريق الدعم عبر البريد الإلكتروني'}
                 </h3>
                 <div className="space-y-1.5 pt-1">
                   <div className="rounded-xl bg-white/90 dark:bg-[#142430] border border-sky-100 dark:border-[#1E3646] px-3 py-2 flex items-center justify-between gap-2">
@@ -625,7 +625,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
                 </h3>
               </div>
               <span className="text-[11px] font-bold text-purple-900 dark:text-[#C4B5FD]">
-                ⚡ {isEn ? 'Instant Digital Response' : 'استجابة رقمية فورية'}
+                ⚡ {isEn ? 'Digital Contact' : 'تواصل رقمي'}
               </span>
             </div>
 

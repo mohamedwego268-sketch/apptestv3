@@ -89,10 +89,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         <div className="image-card-glass-panel rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-0.5 text-start">
             <span className="image-card-badge px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums">
-              {isEn ? 'Completed:' : 'مكتمل:'} {completedTasksCount}/{state.tasks.length}
+              {isEn ? 'Done:' : 'أُنجز:'} {completedTasksCount}/{state.tasks.length}
             </span>
             <h2 className="image-card-title text-sm sm:text-base font-extrabold">
-              {isEn ? 'Daily Routine & Smart Reminders' : 'الروتين اليومي والتذكيرات الذكية'}
+              {isEn ? 'Family Routine & Reminders' : 'روتين الأسرة والتذكيرات'}
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -101,7 +101,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               onClick={onResetTasks}
               className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-white/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] whitespace-nowrap transition-all active:scale-95 cursor-pointer"
             >
-              {isEn ? 'Reset' : 'إعادة ضبط'}
+              {isEn ? 'Clear filters' : 'مسح التصفية'}
             </button>
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenAddTask}>
               {isEn ? '+ Add Task' : '+ إضافة مهمة'}
@@ -159,7 +159,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
           <div className="flex flex-wrap items-center gap-2 text-xs">
             <select
               id="routineLeadWindow"
-              aria-label={isEn ? 'Alert lead window' : 'التنبيه قبل الموعد بـ'}
+              aria-label={isEn ? 'Reminder lead time' : 'مدة التنبيه قبل الموعد'}
               value={routineApproachingWindow}
               onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
               className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
@@ -176,7 +176,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               onChange={(e) => setRoutineRefTimePreset(e.target.value)}
               className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
             >
-              <option value="live">{isEn ? 'Live Current Time' : 'الوقت الحالي تلقائيًا'}</option>
+              <option value="live">{isEn ? 'Current time' : 'الوقت الحالي'}</option>
               <option value="07:15">{isEn ? 'Morning (07:15 AM)' : 'صباحًا (07:15 ص)'}</option>
               <option value="15:45">{isEn ? 'Afternoon (03:45 PM)' : 'عصرًا (03:45 م)'}</option>
               <option value="18:20">{isEn ? 'Evening (06:20 PM)' : 'مساءً (06:20 م)'}</option>
@@ -223,7 +223,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               onChange={(e) => setRoutineKidFilter(e.target.value)}
               className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
             >
-              <option value="all">{isEn ? 'All Kids & Family' : 'كل الأطفال والأسرة'}</option>
+              <option value="all">{isEn ? 'Everyone in the family' : 'كل أفراد الأسرة'}</option>
               {state.kids.map((k) => (
                 <option key={k.id} value={String(k.id)}>
                   {locText(k.name, lang)}
