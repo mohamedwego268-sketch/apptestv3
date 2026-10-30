@@ -1402,6 +1402,7 @@ export async function syncFamilySpaceToSupabase(
             gender: kid.gender,
             interests: kid.interests || '',
             avatarTheme: kid.avatarTheme || 'astronaut',
+            profileDetails: kid.profileDetails || {},
           })),
         },
         activeClient
@@ -2691,6 +2692,7 @@ export interface OnboardingChildPersistenceItem {
   gender: 'boy' | 'girl';
   interests?: string;
   avatarTheme?: ChildProfile['avatarTheme'];
+  profileDetails?: ChildProfileDetails;
 }
 
 export interface SaveOnboardingChildrenPayload {
@@ -2774,6 +2776,9 @@ export async function saveOnboardingChildrenToSupabase(
       emoji: gender === 'girl' ? '👧🏻' : '👦🏻',
       avatar_theme: item.avatarTheme || (gender === 'girl' ? 'artist' : 'astronaut'),
       interests: (item.interests || '').trim(),
+      profile_details: item.profileDetails && typeof item.profileDetails === 'object' && !Array.isArray(item.profileDetails)
+        ? item.profileDetails
+        : {},
     };
   });
 
@@ -2841,6 +2846,7 @@ export async function saveOnboardingChildrenToSupabase(
         interests: child.interests || '',
         emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
         avatar_theme: child.avatar_theme || 'astronaut',
+        profile_details: child.profile_details || {},
       };
       if (matchedRemoteUuid) {
         row.id = matchedRemoteUuid;
