@@ -84,8 +84,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const localizedCity = locText(activeCity, lang);
   const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
   const localizedSlogan = isEn
-    ? 'Our shared space.. growing with love'
-    : 'مساحة تجمعنا.. وبحبهم نكبر';
+    ? 'One space for every family moment'
+    : 'مساحة واحدة.. لكل تفاصيل الأسرة';
 
   return (
     <>
@@ -102,8 +102,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               data-testid="master-slidebar-trigger-btn"
               type="button"
               onClick={onOpenProfileDrawer}
-              title={isEn ? 'Navigation Menu' : 'القائمة الجانبية'}
-              aria-label={isEn ? 'Open Navigation Menu' : 'فتح القائمة الجانبية'}
+              title={isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
+              aria-label={isEn ? 'Open Family Navigation' : 'فتح قائمة الأسرة'}
               className="header-control min-h-[42px] px-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <svg
@@ -120,7 +120,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 />
               </svg>
               <span className="text-xs font-bold">
-                {isEn ? 'Menu' : 'القائمة'}
+                {isEn ? 'Explore' : 'استكشف'}
               </span>
             </button>
 
@@ -241,8 +241,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
                     {isEn
-                      ? 'Current conditions and useful family weather guidance'
-                      : 'حالة الطقس الحالية وإرشادات مناسبة للأسرة'}
+                      ? 'Local weather and practical family tips'
+                      : 'حالة الطقس ونصائح مناسبة لأنشطة الأسرة'}
                   </p>
                 </div>
               </div>
@@ -275,8 +275,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </p>
               <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
                 {isEn
-                  ? 'Check the live conditions before outdoor activities, and adapt clothing and hydration to the actual weather.'
-                  : 'راجع حالة الطقس الفعلية قبل الخروج، واختاروا الملابس وكمية الميه حسب الجو واحتياج كل طفل.'}
+                  ? 'Check local conditions before heading out, then adjust clothing, sun protection and hydration to the day.'
+                  : 'تحققوا من حالة الطقس قبل الخروج، واختاروا الملابس ووسائل الحماية والترطيب بما يناسب اليوم.'}
               </p>
             </div>
 
@@ -286,7 +286,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 onClick={() => setWeatherModalOpen(false)}
                 className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-bold active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
               >
-                {isEn ? 'Done' : 'حسناً، فهمت'}
+                {isEn ? 'Done' : 'تم'}
               </button>
             </div>
           </div>
