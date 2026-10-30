@@ -1810,9 +1810,13 @@ export async function authenticateParentWithSupabase(
       : null;
 
     const resolvedFullName =
-      normalized.parentName ||
-      verifiedCtx.fullName ||
-      (normalized.role === 'father' ? 'أحمد' : 'مريم');
+      normalized.mode === 'signin'
+        ? verifiedCtx.fullName ||
+          normalized.parentName ||
+          (normalized.role === 'father' ? 'أحمد' : 'مريم')
+        : normalized.parentName ||
+          verifiedCtx.fullName ||
+          (normalized.role === 'father' ? 'أحمد' : 'مريم');
     const resolvedRole = verifiedCtx.role || normalized.role;
 
     // 3. If authenticated user has no verified family_id yet, attempt atomic RPC bootstrap first
@@ -1904,7 +1908,10 @@ export async function authenticateParentWithSupabase(
     };
 
     let upsertErr: { message?: string; code?: string } | null = null;
-    if (existingRowId) {
+    if (existingRowId && normalized.mode === 'signin') {
+      // Login is read/verify only: never overwrite a family's saved profile or location
+      // with stale fields from the sign-in form or a previous local draft.
+    } else if (existingRowId) {
       const upd = await withSupabaseRetry(() =>
         activeClient
           .from(SUPABASE_TABLES.USERS)
@@ -1926,6 +1933,8 @@ export async function authenticateParentWithSupabase(
         );
         upsertErr = retryUpd.error;
       }
+    } else if (normalized.mode === 'signin') {
+      upsertErr = { message: 'Authenticated account has no verified family profile row.' };
     } else {
       const ins = await withSupabaseRetry(() =>
         activeClient
