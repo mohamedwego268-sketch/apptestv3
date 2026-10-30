@@ -403,42 +403,85 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     setErrorMsg(null);
     setIsLocatingGps(true);
 
-    if (typeof navigator !== 'undefined' && 'geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          // Detect supported countries from GPS; do not retain a stale cached country.
-          if (latitude >= 22 && latitude <= 32 && longitude >= 25 && longitude <= 35) {
-            setSelectedCountryCode('EG');
-            setSelectedCityAr(latitude > 30.8 ? 'الإسكندرية' : 'القاهرة');
-          } else if (latitude >= 16 && latitude <= 33.5 && longitude >= 34 && longitude <= 56) {
-            setSelectedCountryCode('SA');
-            if (latitude >= 24 && latitude <= 29 && longitude >= 48 && longitude <= 53) {
-              setSelectedCityAr('الخبر');
-            } else if (latitude >= 23 && latitude <= 27 && longitude >= 44 && longitude < 48) {
-              setSelectedCityAr('الرياض');
-            } else if (latitude >= 20 && latitude <= 23 && longitude >= 37 && longitude <= 40) {
-              setSelectedCityAr('جدة');
-            } else if (latitude >= 21 && latitude <= 23 && longitude >= 39 && longitude <= 41) {
-              setSelectedCityAr('مكة المكرمة');
-            } else {
-              setSelectedCityAr('الرياض');
-            }
-          } else {
-            setSelectedCityAr(activeCountryObj.defaultCityAr);
-          }
-          setIsLocatingGps(false);
-        },
-        () => {
-          setSelectedCityAr(activeCountryObj.defaultCityAr);
-          setIsLocatingGps(false);
-        },
-        { timeout: 3500 }
-      );
-    } else {
-      setSelectedCityAr(activeCountryObj.defaultCityAr);
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       setIsLocatingGps(false);
+      setLocationMode('manual');
+      setErrorMsg(isEn
+        ? 'Location is unavailable in this browser. Please select your city manually.'
+        : 'خدمة تحديد الموقع غير متاحة في المتصفح. اختر المدينة يدويًا.');
+      return;
     }
+
+    const cityCoordinates: Array<{ country: 'SA' | 'EG'; city: string; lat: number; lon: number }> = [
+      { country: 'SA', city: 'الخبر', lat: 26.2172, lon: 50.1971 },
+      { country: 'SA', city: 'الدمام', lat: 26.4207, lon: 50.0888 },
+      { country: 'SA', city: 'الرياض', lat: 24.7136, lon: 46.6753 },
+      { country: 'SA', city: 'جدة', lat: 21.4858, lon: 39.1925 },
+      { country: 'SA', city: 'مكة المكرمة', lat: 21.3891, lon: 39.8579 },
+      { country: 'SA', city: 'المدينة المنورة', lat: 24.5247, lon: 39.5692 },
+      { country: 'SA', city: 'الجبيل', lat: 27.0174, lon: 49.6583 },
+      { country: 'SA', city: 'أبها', lat: 18.2164, lon: 42.5053 },
+      { country: 'EG', city: 'القاهرة', lat: 30.0444, lon: 31.2357 },
+      { country: 'EG', city: 'الإسكندرية', lat: 31.2001, lon: 29.9187 },
+      { country: 'EG', city: 'الجيزة', lat: 30.0131, lon: 31.2089 },
+      { country: 'EG', city: 'المنصورة', lat: 31.0409, lon: 31.3785 },
+      { country: 'EG', city: 'طنطا', lat: 30.7865, lon: 31.0004 },
+      { country: 'EG', city: 'أسيوط', lat: 27.1809, lon: 31.1837 },
+    ];
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const isEgypt = latitude >= 21.5 && latitude <= 32.5 && longitude >= 24.5 && longitude <= 36;
+        const isSaudi = latitude >= 16 && latitude <= 33.5 && longitude >= 34 && longitude <= 56;
+        const detectedCountry = isEgypt ? 'EG' : isSaudi ? 'SA' : null;
+
+        if (!detectedCountry) {
+          setIsLocatingGps(false);
+          setLocationMode('manual');
+          setErrorMsg(isEn
+            ? 'Your location is outside the supported countries. Please choose Egypt or Saudi Arabia and select a city.'
+            : 'موقعك خارج نطاق مصر والسعودية. اختر الدولة والمدينة يدويًا.');
+          return;
+        }
+
+        const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+        const distanceKm = (a: number, b: number, c: number, d: number) => {
+          const dLat = toRadians(c - a);
+          const dLon = toRadians(d - b);
+          const h = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(a)) * Math.cos(toRadians(c)) * Math.sin(dLon / 2) ** 2;
+          return 6371 * 2 * Math.asin(Math.sqrt(h));
+        };
+        const nearestCity = cityCoordinates
+          .filter((city) => city.country === detectedCountry)
+          .map((city) => ({ ...city, distance: distanceKm(latitude, longitude, city.lat, city.lon) }))
+          .sort((a, b) => a.distance - b.distance)[0];
+
+        setSelectedCountryCode(detectedCountry);
+        if (nearestCity && nearestCity.distance <= 100) {
+          setSelectedCityAr(nearestCity.city);
+          setErrorMsg(null);
+        } else {
+          setLocationMode('manual');
+          setErrorMsg(isEn
+            ? 'Country detected, but the nearest supported city is not accurate enough. Please select your city manually.'
+            : 'تم تحديد الدولة، لكن لا يمكن تأكيد المدينة بدقة كافية. اختر مدينتك يدويًا.');
+        }
+        setIsLocatingGps(false);
+      },
+      (error) => {
+        setIsLocatingGps(false);
+        setLocationMode('manual');
+        const message = error.code === 1
+          ? (isEn ? 'Allow location permission for this site, then try again.' : 'اسمح للمتصفح بالوصول للموقع ثم حاول مرة أخرى.')
+          : error.code === 3
+          ? (isEn ? 'Location request timed out. Try again or select your city manually.' : 'انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر المدينة يدويًا.')
+          : (isEn ? 'Could not determine your location. Select your city manually.' : 'تعذر تحديد موقعك. اختر المدينة يدويًا.');
+        setErrorMsg(message);
+      },
+      { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
+    );
   };
 
   const syncAuthAndLocationWithSupabase = async (params: {
