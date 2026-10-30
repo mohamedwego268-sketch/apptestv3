@@ -36,7 +36,7 @@ export const NEKBAAR_ONBOARDING_CACHE_KEY = OnboardingFlowController.DRAFT_KEY;
 export type OnboardingChildDraft = OnboardingChildDraftItem;
 export type OnboardingCachedState = OnboardingDraftData;
 
-export type AllowedGCCOrEgyptCountry = 'EG' | 'SA' | 'AE' | 'KW' | 'QA' | 'BH' | 'OM';
+export type SupportedAccountCountry = CountryCode;
 
 export interface CityChoice {
   ar: string;
@@ -44,7 +44,7 @@ export interface CityChoice {
 }
 
 export interface AllowedCountryOption {
-  code: AllowedGCCOrEgyptCountry;
+  code: SupportedAccountCountry;
   mappedCoreCountry: CountryCode;
   dialCode: string;
   defaultCityAr: string;
@@ -56,11 +56,10 @@ export interface AllowedCountryOption {
 }
 
 /**
- * Currently enabled markets: Egypt and Saudi Arabia.
- * Other GCC markets remain out of signup until country-specific currency, phone,
- * location and service data are supported end-to-end in the core domain.
+ * Enabled account markets: Egypt and Saudi Arabia. Other markets should only be
+ * added after country-specific phone, currency, location and service data are ready.
  */
-export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
+export const SUPPORTED_ACCOUNT_COUNTRIES: AllowedCountryOption[] = [
   {
     code: 'EG',
     mappedCoreCountry: 'EG',
@@ -97,85 +96,8 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
       { ar: 'الخبر', en: 'Khobar' },
     ],
   },
-  {
-    code: 'AE',
-    mappedCoreCountry: 'SA',
-    dialCode: '+971',
-    defaultCityAr: 'دبي',
-    defaultCityEn: 'Dubai',
-    nameAr: 'الإمارات',
-    nameEn: 'United Arab Emirates',
-    phonePlaceholder: '501234567',
-    cities: [
-      { ar: 'دبي', en: 'Dubai' },
-      { ar: 'أبوظبي', en: 'Abu Dhabi' },
-      { ar: 'الشارقة', en: 'Sharjah' },
-      { ar: 'العين', en: 'Al Ain' },
-    ],
-  },
-  {
-    code: 'KW',
-    mappedCoreCountry: 'SA',
-    dialCode: '+965',
-    defaultCityAr: 'مدينة الكويت',
-    defaultCityEn: 'Kuwait City',
-    nameAr: 'الكويت',
-    nameEn: 'Kuwait',
-    phonePlaceholder: '50123456',
-    cities: [
-      { ar: 'مدينة الكويت', en: 'Kuwait City' },
-      { ar: 'حولي', en: 'Hawalli' },
-      { ar: 'السالمية', en: 'Salmiya' },
-      { ar: 'الفروانية', en: 'Farwaniya' },
-    ],
-  },
-  {
-    code: 'QA',
-    mappedCoreCountry: 'SA',
-    dialCode: '+974',
-    defaultCityAr: 'الدوحة',
-    defaultCityEn: 'Doha',
-    nameAr: 'قطر',
-    nameEn: 'Qatar',
-    phonePlaceholder: '33123456',
-    cities: [
-      { ar: 'الدوحة', en: 'Doha' },
-      { ar: 'الوكرة', en: 'Al Wakrah' },
-      { ar: 'الريان', en: 'Al Rayyan' },
-      { ar: 'لوسيل', en: 'Lusail' },
-    ],
-  },
-  {
-    code: 'BH',
-    mappedCoreCountry: 'SA',
-    dialCode: '+973',
-    defaultCityAr: 'المنامة',
-    defaultCityEn: 'Manama',
-    nameAr: 'البحرين',
-    nameEn: 'Bahrain',
-    phonePlaceholder: '33123456',
-    cities: [
-      { ar: 'المنامة', en: 'Manama' },
-      { ar: 'المحرق', en: 'Muharraq' },
-      { ar: 'الرفاع', en: 'Riffa' },
-    ],
-  },
-  {
-    code: 'OM',
-    mappedCoreCountry: 'SA',
-    dialCode: '+968',
-    defaultCityAr: 'مسقط',
-    defaultCityEn: 'Muscat',
-    nameAr: 'عمان',
-    nameEn: 'Oman',
-    phonePlaceholder: '91234567',
-    cities: [
-      { ar: 'مسقط', en: 'Muscat' },
-      { ar: 'صلالة', en: 'Salalah' },
-      { ar: 'صحار', en: 'Sohar' },
-    ],
-  },
-].filter((country) => country.code === 'EG' || country.code === 'SA');
+
+];
 
 export interface OnboardingCompletionPayload {
   parentName: string;
@@ -271,10 +193,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   );
   const [email, setEmail] = useState<string>(tempSavedUser?.email || cachedDraft?.email || '');
   const [password, setPassword] = useState<string>('');
-  const [selectedCountryCode, setSelectedCountryCode] = useState<AllowedGCCOrEgyptCountry>(
+  const [selectedCountryCode, setSelectedCountryCode] = useState<SupportedAccountCountry>(
     tempSavedUser?.country &&
-      EGYPT_AND_GCC_COUNTRIES.some((c) => c.code === tempSavedUser.country)
-      ? (tempSavedUser.country as AllowedGCCOrEgyptCountry)
+      SUPPORTED_ACCOUNT_COUNTRIES.some((c) => c.code === tempSavedUser.country)
+      ? (tempSavedUser.country as SupportedAccountCountry)
       : cachedDraft?.selectedCountry === 'SA' || initialCountry === 'SA'
       ? 'SA'
       : 'EG'
@@ -326,8 +248,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
 
   const activeCountryObj = React.useMemo(
     () =>
-      EGYPT_AND_GCC_COUNTRIES.find((c) => c.code === selectedCountryCode) ||
-      EGYPT_AND_GCC_COUNTRIES[0],
+      SUPPORTED_ACCOUNT_COUNTRIES.find((c) => c.code === selectedCountryCode) ||
+      SUPPORTED_ACCOUNT_COUNTRIES[0],
     [selectedCountryCode]
   );
 
@@ -1208,12 +1130,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       data-testid="auth-country-select"
                       value={selectedCountryCode}
                       onChange={(e) =>
-                        setSelectedCountryCode(e.target.value as AllowedGCCOrEgyptCountry)
+                        setSelectedCountryCode(e.target.value as SupportedAccountCountry)
                       }
                       aria-label={isEn ? 'Country' : 'الدولة'}
                       className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
                     >
-                      {EGYPT_AND_GCC_COUNTRIES.map((countryItem) => (
+                      {SUPPORTED_ACCOUNT_COUNTRIES.map((countryItem) => (
                         <option key={countryItem.code} value={countryItem.code}>
                           {isEn ? countryItem.nameEn : countryItem.nameAr} ({countryItem.dialCode})
                         </option>
