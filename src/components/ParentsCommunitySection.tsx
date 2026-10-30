@@ -77,8 +77,8 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     comments: [
       {
         id: 1,
-        authorAr: 'د. سلمى الكيلاني',
-        authorEn: 'Dr. Salma El-Kilany',
+        authorAr: 'مساهم من المجتمع',
+        authorEn: 'Community contributor',
         roleBadgeAr: '🩺 مساهمة مجتمعية',
         roleBadgeEn: '🩺 Community contributor',
         isVerifiedExpert: false,
@@ -124,8 +124,8 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     comments: [
       {
         id: 3,
-        authorAr: 'أ. سارة المنيري',
-        authorEn: 'Sara El-Moneiry',
+        authorAr: 'مساهمة من المجتمع',
+        authorEn: 'Community contributor',
         roleBadgeAr: '🩺 مساهمة مجتمعية',
         roleBadgeEn: '🩺 Community contributor',
         isVerifiedExpert: false,
@@ -161,8 +161,8 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     comments: [
       {
         id: 4,
-        authorAr: 'د. هبة عبد الرحمن',
-        authorEn: 'Dr. Heba Abdelrahman',
+        authorAr: 'مساهمة من المجتمع',
+        authorEn: 'Community contributor',
         roleBadgeAr: '🩺 مساهمة مجتمعية',
         roleBadgeEn: '🩺 Community contributor',
         isVerifiedExpert: false,
@@ -197,8 +197,8 @@ const INITIAL_COMMUNITY_POSTS: CommunityPost[] = [
     comments: [
       {
         id: 5,
-        authorAr: 'د. طارق النجار',
-        authorEn: 'Dr. Tarek El-Naggar',
+        authorAr: 'مساهم من المجتمع',
+        authorEn: 'Community contributor',
         roleBadgeAr: '🩺 مساهمة مجتمعية',
         roleBadgeEn: '🩺 Community contributor',
         isVerifiedExpert: false,
@@ -331,11 +331,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     },
     {
       id: 'reel-expert-sleep',
-      authorAr: 'د. طارق النجار',
-      authorEn: 'Dr. Tarek El-Naggar',
+      authorAr: 'مساهم من المجتمع',
+      authorEn: 'Community contributor',
       roleAr: '🏅 مساهمة مجتمعية',
       roleEn: '🏅 Community contributor',
-      isExpert: true,
+      isExpert: false,
       duration: '0:45',
       emoji: '🌙',
       titleAr: 'سر الـ ٢٠ دقيقة الذهبية قبل نوم الطفل بدون سهر',
@@ -346,11 +346,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     },
     {
       id: 'reel-lunchbox',
-      authorAr: 'د. هبة عبد الرحمن',
-      authorEn: 'Dr. Heba Abdelrahman',
+      authorAr: 'مساهمة من المجتمع',
+      authorEn: 'Community contributor',
       roleAr: '🏅 مساهمة مجتمعية',
-      roleEn: '🏅 Pediatric Nutritionist',
-      isExpert: true,
+      roleEn: '🏅 Community contributor',
+      isExpert: false,
       duration: '0:38',
       emoji: '🍱',
       titleAr: '٣ أفكار لانش بوكس غنية بالحديد والتركيز للمدرسة',
@@ -361,11 +361,11 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     },
     {
       id: 'reel-montessori',
-      authorAr: 'أ. سارة المنيري',
-      authorEn: 'Sara El-Moneiry',
-      roleAr: '🏅 أخصائية مونتيسوري وتعديل سلوك',
-      roleEn: '🏅 Certified Montessori Specialist',
-      isExpert: true,
+      authorAr: 'مساهمة من المجتمع',
+      authorEn: 'Community contributor',
+      roleAr: '🏅 مساهمة مجتمعية',
+      roleEn: '🏅 Community contributor',
+      isExpert: false,
       duration: '0:52',
       emoji: '🧸',
       titleAr: 'نشاط مونتيسوري منزلي بأدوات المطبخ لتنمية التركيز',
@@ -527,7 +527,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       badge: isEn ? '🤝 Parents Community' : '🤝 مجتمع الأهل',
       title: isEn
         ? 'Share experiences and learn from the community'
-        : 'شارك تجربتك اليومية واحصل على ردود الخبراء الموثقين',
+        : 'شارك تجربتك اليومية واحصل على مساهمات وتجارب المجتمع',
       subtitle: isEn
         ? `${posts.length} Active Discussions · Grouped by Age (0–8 Yrs)`
         : `${posts.length} نقاشات نشطة · مصنفة حسب عمر الطفل (0–8 سنوات)`,
@@ -544,8 +544,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         ? 'How Parents Overcame First-Week Nursery Anxiety'
         : 'كيف تغلب الآباء على قلق الأسبوع الأول في الحضانة؟',
       subtitle: isEn
-        ? 'Real Parent Tips · Psychologist Reviewed'
-        : 'تجارب واقعية · نصائح استشاريين نفسيين',
+        ? 'Real Parent Tips · Parent Experiences'
+        : 'تجارب واقعية · تجارب وملاحظات أولياء الأمور',
       ctaLabel: isEn ? 'Filter Nursery Topics' : 'استعرض تجارب الحضانات',
       onCtaClick: () => setTopicFilter('nursery'),
       iconId: 'children',
@@ -925,13 +925,13 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               <span>
                 {isEn
                   ? 'Family Stories & Community Tips'
-                  : 'ريلز العيلة القصيرة · والخبراء المعتمدين'}
+                  : 'قصص قصيرة ونصائح مجتمعية'}
               </span>
             </div>
             <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
               {isEn
-                ? '60s Expert Tips & Real Parent Stories'
-                : 'كبسولات تربوية وطبية سريعة مع الأطباء الموثقين 🏅'}
+                ? 'Quick Parenting Ideas & Family Stories'
+                : 'أفكار عملية وتجارب أسرية قصيرة'}
             </h3>
           </div>
 
@@ -1056,8 +1056,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         title={isEn ? 'Share an Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالاً'}
         subtitle={
           isEn
-            ? 'Connect with parents and certified child specialists across Egypt & Saudi Arabia'
-            : 'تواصل مع الآباء واستشاريي رعاية الأطفال المعتمدين في مصر والسعودية'
+            ? 'Connect with parents and share family experiences across Egypt & Saudi Arabia'
+            : 'تواصل مع أولياء الأمور وتبادل الخبرات الأسرية في مصر والسعودية'
         }
         iconId="star"
         cardTone="amber"
