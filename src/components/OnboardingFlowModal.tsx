@@ -55,8 +55,9 @@ export interface AllowedCountryOption {
 }
 
 /**
- * Strictly restricted to Egypt and GCC countries only:
- * (مصر, السعودية, الإمارات, الكويت, قطر, البحرين, عمان)
+ * Currently enabled markets: Egypt and Saudi Arabia.
+ * Other GCC markets remain out of signup until country-specific currency, phone,
+ * location and service data are supported end-to-end in the core domain.
  */
 export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
   {
@@ -173,7 +174,7 @@ export const EGYPT_AND_GCC_COUNTRIES: AllowedCountryOption[] = [
       { ar: 'صحار', en: 'Sohar' },
     ],
   },
-];
+].filter((country) => country.code === 'EG' || country.code === 'SA');
 
 export interface OnboardingCompletionPayload {
   parentName: string;
@@ -1189,10 +1190,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 />
               </div>
 
-              {/* Phone Number + Restricted Country Selector (Egypt & GCC Only) */}
+              {/* Phone Number + Country Selector (Egypt & Saudi Arabia) */}
               {authMode === 'signup' && (
                 <>
-                  {/* Country Dropdown (Strictly Egypt & GCC) */}
+                  {/* Country Dropdown (markets supported end-to-end by the core account model) */}
                   <div>
                     <select
                       id="auth-country-select"
