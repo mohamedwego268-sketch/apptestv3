@@ -338,27 +338,8 @@ export class OnboardingFlowController {
         }
       }
 
-      // 2. Check persisted localStorage profile for local UI experience only
-      // Note: localStorage is NEVER treated as proof of Supabase identity, verification, or family ownership
-      const savedProfileRaw = window.localStorage.getItem(this.STORAGE_KEY);
-      if (savedProfileRaw) {
-        const profile = JSON.parse(savedProfileRaw) as UserSessionProfile;
-        if (profile && profile.userId && profile.fullName) {
-          return {
-            step: 'DASHBOARD',
-            profile: {
-              ...profile,
-              familyId: String(SHARED_FAMILY_ID),
-              verifiedFamilyId: null,
-              isDbVerified: false,
-              syncedToDb: false,
-              isOtpVerified: false,
-              emailVerified: false,
-              phoneVerified: false,
-            },
-          };
-        }
-      }
+      // A cached profile is not an authenticated session. Require a live Supabase Auth
+      // session before exposing any family workspace; preserve the draft for retry.
 
       const draft = this.loadDraft();
       return { step: 'WELCOME_PROFILE', draft: draft || undefined };
