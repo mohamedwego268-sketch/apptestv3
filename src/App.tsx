@@ -331,7 +331,9 @@ export default function App() {
     setIsPreviewMode(true);
     setActiveFamilyStorageScope(null);
     setRecognizedProfile(null);
-    setState(normalizeAppData(DEFAULT_SEED));
+    setSettingsOtpStep(false);
+    setSettingsOtpCode('');
+    setState(normalizeAppData({ ...DEFAULT_SEED, verifiedFamilyId: null }));
     setActivePage('home');
     setOnboardingModalOpen(false);
     showToast(lang === 'en' ? 'Preview mode · Sample data only' : 'وضع المراجعة · بيانات تجريبية فقط');
@@ -1431,7 +1433,7 @@ export default function App() {
     const phoneOrCountryChanged =
       settingsCountry !== state.country || phoneCheck.normalized !== currentParent.phoneNumber;
 
-    if (phoneOrCountryChanged && !settingsOtpStep) {
+    if (phoneOrCountryChanged && !settingsOtpStep && !isPreviewMode) {
       setSettingsOtpStep(true);
       showToast(
         lang === 'en'
@@ -1445,7 +1447,7 @@ export default function App() {
       recognizedProfile?.phoneVerified && !phoneOrCountryChanged
     );
 
-    if (settingsOtpStep) {
+    if (settingsOtpStep && !isPreviewMode) {
       if (!settingsOtpCode.trim() || settingsOtpCode.trim().length < 4) {
         showToast(
           lang === 'en'
