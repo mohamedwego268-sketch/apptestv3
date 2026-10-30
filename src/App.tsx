@@ -1806,7 +1806,7 @@ export default function App() {
               </button>
             )}
           </div>
-        )}}
+        )}
         {isDashboardUnlocked && (
           <>
             <HeaderBar
