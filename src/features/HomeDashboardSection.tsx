@@ -530,45 +530,39 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
   };
 
-  // Auto-trigger the 30s time-aware audio brief on first session opening
-  useEffect(() => {
-    try {
-      const alreadyAutoPlayed = sessionStorage.getItem('nekbaar_session_audio_autoplayed_v1');
-      if (!alreadyAutoPlayed) {
-        sessionStorage.setItem('nekbaar_session_audio_autoplayed_v1', 'true');
-        setActiveBriefIdx(defaultBriefIdx);
-        setBriefElapsedSec(0);
-        setIsPlayingBrief(true);
-        playGentleAudioSynthesizer(DAILY_AUDIO_BRIEFS_30S[defaultBriefIdx]?.melodyHz);
-      }
-    } catch {
-      // Ignore storage restrictions
+  // Read the daily tip aloud with the device's speech engine; never autoplay audio.
+  const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief) => {
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'خاصية القراءة الصوتية مش متاحة على الجهاز ده.');
+      return;
     }
-  }, [defaultBriefIdx]);
+    window.speechSynthesis.cancel();
+    const spokenText = [isEn ? brief.titleEn : brief.titleAr, isEn ? brief.summaryEn : brief.summaryAr, isEn ? brief.takeawayEn : brief.takeawayAr].join('. ');
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = isEn ? 'en-US' : 'ar-EG';
+    utterance.rate = 0.95;
+    utterance.onstart = () => setIsPlayingBrief(true);
+    utterance.onend = () => {
+      setIsPlayingBrief(false);
+      setBriefElapsedSec(30);
+    };
+    utterance.onerror = () => setIsPlayingBrief(false);
+    setBriefElapsedSec(0);
+    setIsPlayingBrief(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (!isPlayingBrief) return;
-    const interval = window.setInterval(() => {
-      setBriefElapsedSec((prev) => {
-        if (prev >= 29) {
-          setIsPlayingBrief(false);
-          return 30;
-        }
-        return prev + 1;
-      });
-    }, 1000);
+    const interval = window.setInterval(() => setBriefElapsedSec((prev) => Math.min(30, prev + 1)), 1000);
     return () => window.clearInterval(interval);
   }, [isPlayingBrief]);
 
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
+
   const handleReplayAudioBrief = () => {
-    setBriefElapsedSec(0);
-    setIsPlayingBrief(true);
-    playGentleAudioSynthesizer(currentBrief.melodyHz);
-    onShowToast?.(
-      isEn
-        ? '🔄 Replaying 30-second daily parenting audio brief'
-        : '🔄 جاري إعادة تشغيل الرسالة الصوتية اليومية (٣٠ ثانية)'
-    );
+    speakDailyBrief(currentBrief);
+    onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
   };
 
   // ============================================================================
@@ -1237,7 +1231,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 data-testid="welcome-hero-accordion-arrow"
                 aria-expanded={openAccordions.welcomeAudio}
                 onClick={() => toggleAccordion('welcomeAudio')}
-                title={isEn ? 'Toggle Audio Brief Card' : 'طي / فتح بطاقة الرسالة الصوتية'}
+                title={isEn ? 'Toggle Daily Tip Card' : 'طي / فتح بطاقة نصيحة اليوم'}
                 className={`min-w-[48px] min-h-[48px] rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
                   openAccordions.welcomeAudio ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
                 }`}
@@ -1285,13 +1279,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 type="button"
                 data-testid="audio-brief-play-toggle"
                 onClick={() => {
-                  const nextPlay = !isPlayingBrief;
-                  if (nextPlay && briefElapsedSec >= 30) {
-                    setBriefElapsedSec(0);
-                  }
-                  setIsPlayingBrief(nextPlay);
-                  if (nextPlay) {
-                    playGentleAudioSynthesizer(currentBrief.melodyHz);
+                  if (isPlayingBrief) {
+                    window.speechSynthesis?.pause();
+                    setIsPlayingBrief(false);
+                  } else if (window.speechSynthesis?.paused) {
+                    window.speechSynthesis.resume();
+                    setIsPlayingBrief(true);
+                  } else {
+                    speakDailyBrief(currentBrief);
                   }
                 }}
                 aria-label={
@@ -1315,7 +1310,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="flex-1 min-w-0 w-full space-y-1 text-start">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                   <span className="inline-block whitespace-normal">
-                    🎙️ {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}
+                    🔊 {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}
                   </span>
                   <span aria-hidden="true">·</span>
                   <span className="text-[var(--color-muted)] dark:text-[#94A3B8] whitespace-normal">
@@ -1386,7 +1381,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[#0d9488]/40 bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <span>🔄</span>
-                  <span>{isEn ? 'Replay 30s' : 'إعادة الاستماع'}</span>
+                  <span>{isEn ? 'Listen again' : 'اسمع تاني'}</span>
                 </button>
 
                 <button
@@ -1397,11 +1392,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     setActiveBriefIdx(nextIdx);
                     setBriefElapsedSec(0);
                     setIsPlayingBrief(true);
-                    playGentleAudioSynthesizer(DAILY_AUDIO_BRIEFS_30S[nextIdx].melodyHz);
+                    speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
                   }}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                 >
-                  {isEn ? 'Next Slot ⏭' : 'رسالة الفترة التالية ⏮'}
+                  {isEn ? 'Next tip ⏭' : 'النصيحة التالية ⏭'}
                 </button>
               </div>
             </div>
