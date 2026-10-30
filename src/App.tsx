@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   DEMO_OTP_CODE,
+  DEFAULT_SEED,
+  normalizeAppData,
   FamilySpaceState,
   ChildProfile,
   RoutineTask,
@@ -270,6 +272,13 @@ export default function App() {
     null
   );
 
+  // Keep the side-page country, city and currency controls aligned with the active family location.
+  useEffect(() => {
+    setSettingsCountry(state.country);
+    setSettingsCity(resolveCityRegionId(state.country, state.city));
+    setSettingsCurrency(state.currency);
+  }, [state.country, state.city, state.currency]);
+
   // Bottom Settings Phone OTP Verification State
   const [settingsPhoneInput, setSettingsPhoneInput] = useState<string>(
     state.parentAccounts[state.activeParentAccount]?.phoneNumber || '1012345678'
@@ -279,6 +288,8 @@ export default function App() {
 
   // Active Modals & Mandatory Auth Gateway / Smart Startup Profile Recognition (`OnboardingFlowController`)
   const [recognizedProfile, setRecognizedProfile] = useState<UserSessionProfile | null>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState<boolean>(false);
+  const previewModeRef = React.useRef<boolean>(false);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState<boolean>(
     () => !PREVIEW_ACCESS_BYPASS
   );
@@ -312,6 +323,20 @@ export default function App() {
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
+  };
+
+  const handleEnterPreviewMode = () => {
+    // Bundled sample data only: no verified family scope, cloud hydration, or family storage writes.
+    previewModeRef.current = true;
+    setIsPreviewMode(true);
+    setActiveFamilyStorageScope(null);
+    setRecognizedProfile(null);
+    setSettingsOtpStep(false);
+    setSettingsOtpCode('');
+    setState(normalizeAppData({ ...DEFAULT_SEED, verifiedFamilyId: null }));
+    setActivePage('home');
+    setOnboardingModalOpen(false);
+    showToast(lang === 'en' ? 'Preview mode · Sample data only' : 'وضع المراجعة · بيانات تجريبية فقط');
   };
 
   useEffect(() => {
@@ -393,7 +418,7 @@ export default function App() {
     let active = true;
     OnboardingFlowController.detectInitialState().then(
       ({ step, profile, restoredChildren }) => {
-        if (!active) return;
+        if (!active || previewModeRef.current) return;
         if (step === 'DASHBOARD' && profile && isValidUuid(profile.verifiedFamilyId)) {
           const familyState = loadFamilySpaceStateForFamily(profile.verifiedFamilyId);
           setActiveFamilyStorageScope(profile.verifiedFamilyId);
@@ -1366,7 +1391,7 @@ export default function App() {
   // Settings & Internationalization handlers
   const handleCountryChangeInSettings = (nextCountry: CountryCode) => {
     setSettingsCountry(nextCountry);
-    const defaultCity = nextCountry === 'SA' ? 'الرياض' : 'القاهرة';
+    const defaultCity = COUNTRY_CITIES_MAP[nextCountry][0]?.id || (nextCountry === 'SA' ? 'الرياض' : 'القاهرة');
     setSettingsCity(defaultCity);
     const suggested = getSuggestedCurrencyForCountry(nextCountry);
     if (settingsCurrency !== suggested) {
@@ -1408,7 +1433,7 @@ export default function App() {
     const phoneOrCountryChanged =
       settingsCountry !== state.country || phoneCheck.normalized !== currentParent.phoneNumber;
 
-    if (phoneOrCountryChanged && !settingsOtpStep) {
+    if (phoneOrCountryChanged && !settingsOtpStep && !isPreviewMode) {
       setSettingsOtpStep(true);
       showToast(
         lang === 'en'
@@ -1422,7 +1447,7 @@ export default function App() {
       recognizedProfile?.phoneVerified && !phoneOrCountryChanged
     );
 
-    if (settingsOtpStep) {
+    if (settingsOtpStep && !isPreviewMode) {
       if (!settingsOtpCode.trim() || settingsOtpCode.trim().length < 4) {
         showToast(
           lang === 'en'
@@ -1517,6 +1542,8 @@ export default function App() {
   };
 
   const handleSignOut = () => {
+    previewModeRef.current = false;
+    setIsPreviewMode(false);
     OnboardingFlowController.clearSession();
     master.controller.resetSessionState();
     setRecognizedProfile(null);
@@ -1738,7 +1765,7 @@ export default function App() {
     );
   };
 
-  const isDashboardUnlocked = PREVIEW_ACCESS_BYPASS || hasVerifiedFamilyAccess(recognizedProfile);
+  const isDashboardUnlocked = PREVIEW_ACCESS_BYPASS || isPreviewMode || hasVerifiedFamilyAccess(recognizedProfile);
 
   return (
     <FamilyAppProvider
@@ -1754,14 +1781,32 @@ export default function App() {
         data-testid="mobile-app-viewport-frame"
         className="mobile-app-shell max-w-[430px] mx-auto min-h-dvh w-full pt-safe pb-safe bg-slate-50 dark:bg-gray-900 shadow-2xl border-x border-gray-200/80 dark:border-[#1E3646] relative flex flex-col justify-start overflow-x-hidden pb-24 transition-all duration-300 ease-in-out"
       >
-        {PREVIEW_ACCESS_BYPASS && (
+        {(PREVIEW_ACCESS_BYPASS || isPreviewMode) && (
           <div
             role="status"
-            className="mx-3 mt-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-center text-[11px] font-bold text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+            className="mx-3 mt-2 rounded-2xl border border-teal-200 bg-gradient-to-r from-teal-50 via-white to-sky-50 px-3 py-2.5 text-center text-[11px] font-bold text-teal-900 shadow-sm dark:border-teal-800 dark:from-[#102b30] dark:via-[#12232b] dark:to-[#102c3b] dark:text-teal-100"
           >
-            {lang === 'en'
-              ? 'Preview mode · Registration temporarily skipped · Changes may be stored only on this device'
-              : 'وضع المعاينة · تم تجاوز التسجيل مؤقتًا · قد تُحفظ التغييرات على هذا الجهاز فقط'}
+            <div>
+              {lang === 'en'
+                ? 'Preview mode · Sample data only · Changes are not saved to a real family account'
+                : 'وضع المراجعة · بيانات تجريبية فقط · التغييرات لا تُحفظ على حساب أسرة حقيقي'}
+            </div>
+            {isPreviewMode && (
+              <button
+                type="button"
+                data-testid="preview-return-to-login-btn"
+                onClick={() => {
+                  previewModeRef.current = false;
+                  setIsPreviewMode(false);
+                  setState(createEmptyFamilySpaceState());
+                  setOnboardingModalOpen(true);
+                  setActivePage('home');
+                }}
+                className="mt-1.5 min-h-[36px] px-4 rounded-full border border-teal-700/20 bg-white/80 text-teal-800 font-extrabold dark:bg-[#183941] dark:text-teal-100"
+              >
+                {lang === 'en' ? 'Return to sign in' : 'العودة لتسجيل الدخول'}
+              </button>
+            )}
           </div>
         )}
         {isDashboardUnlocked && (
@@ -2999,6 +3044,7 @@ export default function App() {
           initialParentName={state.parentName}
           initialRole={state.role}
           language={state.language}
+          onPreviewRequest={handleEnterPreviewMode}
           onClose={() => {
             if (recognizedProfile) {
               setOnboardingModalOpen(false);
@@ -3026,6 +3072,8 @@ export default function App() {
                 : persistedSession && isValidUuid(persistedSession.familyId)
                 ? String(persistedSession.familyId).trim()
                 : null;
+            previewModeRef.current = false;
+            setIsPreviewMode(false);
             if (persistedSession) {
               setRecognizedProfile(persistedSession);
             }
