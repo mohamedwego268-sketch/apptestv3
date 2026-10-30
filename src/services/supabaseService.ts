@@ -1650,26 +1650,10 @@ export async function authenticateParentWithSupabase(
           signUpErr &&
           signUpErr.message.toLowerCase().includes('already registered')
         ) {
-          const { data: signInData, error: signInErr } = await withSupabaseTimeout(
-            activeClient.auth.signInWithPassword({
-              email: normalized.email,
-              password: normalized.password,
-            })
-          );
-          const evalSignIn = evaluateAuthSessionResponse({
-            user: signInData?.user,
-            session: signInData?.session,
-            error: signInErr,
-          });
-          emailVerified = evalSignIn.emailVerified;
-          phoneVerified = evalSignIn.phoneVerified;
-          if (evalSignIn.status === 'ACTIVE_SESSION_READY' && evalSignIn.authUserId) {
-            authUserId = evalSignIn.authUserId;
-            activeSessionVerified = true;
-            accountCreated = true;
-          } else {
-            authFailureReason = signInErr?.message || evalSignIn.reason;
-          }
+          // Never turn a sign-up attempt into an implicit sign-in. Ask the user
+          // to switch to the explicit sign-in flow or recover their password.
+          authFailureReason =
+            'هذا البريد الإلكتروني مسجل بالفعل. انتقل إلى تسجيل الدخول أو استخدم استعادة كلمة المرور.';
         } else if (signUpErr) {
           authFailureReason = signUpErr.message;
         }
@@ -2595,7 +2579,7 @@ export async function bindPhoneAndFinalizeAuthInSupabase(params: {
   return authenticateParentWithSupabase({
     mode: params.mode,
     email: params.email,
-    password: params.password || 'Nekbaar#2026',
+    password: params.password || '',
     phone: params.phone,
     parentName: params.parentName,
     role: params.role,
