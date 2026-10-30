@@ -36,6 +36,7 @@ export interface ProfileSettingsSectionProps {
   onExportJson: () => void;
   onImportJsonFile: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenConfirmResetModal: () => void;
+  onSignOut: () => void;
   onShowToast: (msg: string) => void;
   settingsCountry: CountryCode;
   onCountryChangeInSettings: (val: CountryCode) => void;
@@ -74,6 +75,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   onExportJson,
   onImportJsonFile,
   onOpenConfirmResetModal,
+  onSignOut,
   onShowToast,
   settingsCountry,
   onCountryChangeInSettings,
@@ -384,6 +386,13 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                       />
                     </label>
 
+                    <button
+                      type="button"
+                      onClick={onSignOut}
+                      className="min-h-[42px] px-4 py-2 rounded-2xl text-xs font-extrabold border border-amber-300 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-200"
+                    >
+                      {lang === 'en' ? 'Sign Out' : 'تسجيل الخروج'}
+                    </button>
                     <button
                       type="button"
                       onClick={onOpenConfirmResetModal}
