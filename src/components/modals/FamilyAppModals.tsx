@@ -169,9 +169,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
 }) => {
   const lang = state.language;
   const isEn = lang === 'en';
-  const [expandedAccordionId, setExpandedAccordionId] = useState<string>('services');
-  const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(true);
+  const [expandedAccordionId, setExpandedAccordionId] = useState<string>('home');
+  const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(false);
   const [locationAccordionOpen, setLocationAccordionOpen] = useState<boolean>(false);
+  const [navigationSearch, setNavigationSearch] = useState<string>('');
   const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedDrawerCityId =
     activeCountryList.find(
@@ -1349,8 +1350,30 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 className="space-y-1.5"
               >
                 <div className="px-1 text-[10.5px] font-black text-[var(--color-muted)] dark:text-[#94A3B8] uppercase tracking-wider">
-                  📂 {isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
+                  {isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
                 </div>
+
+                <label className="drawer-search flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/65 dark:bg-[#101D26] focus-within:border-[#0d9488] focus-within:ring-2 focus-within:ring-[#0d9488]/10">
+                  <SoftFilledIcon id="search" size={17} />
+                  <input
+                    type="search"
+                    value={navigationSearch}
+                    onChange={(e) => setNavigationSearch(e.target.value)}
+                    placeholder={isEn ? 'Find a section or feature…' : 'ابحث عن قسم أو ميزة…'}
+                    aria-label={isEn ? 'Search app sections' : 'البحث في أقسام التطبيق'}
+                    className="min-w-0 flex-1 bg-transparent border-0 outline-none text-sm font-semibold text-[var(--color-text)] placeholder:text-[var(--color-muted)]"
+                  />
+                  {navigationSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setNavigationSearch('')}
+                      aria-label={isEn ? 'Clear search' : 'مسح البحث'}
+                      className="min-w-[32px] min-h-[32px] rounded-full bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-muted)] flex items-center justify-center"
+                    >
+                      ×
+                    </button>
+                  )}
+                </label>
 
                 {(() => {
                   const masterAccordionSections: Array<{
@@ -1979,8 +2002,21 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     },
                   ];
 
-                  return masterAccordionSections.map((sec) => {
-                    const isExpanded = expandedAccordionId === sec.id;
+                  const query = navigationSearch.trim().toLocaleLowerCase();
+                  const visibleSections = masterAccordionSections
+                    .map((sec) => {
+                      const groupMatches = !query || `${sec.titleAr} ${sec.titleEn}`.toLocaleLowerCase().includes(query);
+                      const matchingSubItems = !query || groupMatches
+                        ? sec.subItems
+                        : sec.subItems.filter((sub) =>
+                            `${sub.labelAr} ${sub.labelEn}`.toLocaleLowerCase().includes(query)
+                          );
+                      return { ...sec, subItems: matchingSubItems, matchesSearch: groupMatches || matchingSubItems.length > 0 };
+                    })
+                    .filter((sec) => !query || sec.matchesSearch);
+
+                  return visibleSections.map((sec) => {
+                    const isExpanded = Boolean(query) || expandedAccordionId === sec.id;
                     const isPageActive = activePage === sec.pageId;
                     return (
                       <div
