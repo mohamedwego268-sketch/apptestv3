@@ -117,11 +117,11 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       id: 'med-slide-doctors',
       badge: isEn ? '🩺 Pediatric Care Directory' : '🩺 دليل أطباء الأطفال والعيادات',
       title: isEn
-        ? `Top Pediatricians & Specialists in ${displayCity}`
-        : `أفضل أطباء واستشاريي الأطفال في ${city}`,
+        ? `Explore pediatric care options in ${displayCity}`
+        : `خيارات رعاية الأطفال المتاحة في ${city}`,
       subtitle: isEn
-        ? 'Instant Appointment Booking · Syncs with Family Calendar'
-        : 'حجز فوري للمواعيد · يضاف تلقائيًا لتقويم الأسرة',
+        ? 'Appointment requests · Added to your family calendar'
+        : 'إرسال طلب موعد · تسجيله في تقويم الأسرة',
       ctaLabel: isEn ? 'Explore Care Options' : 'استكشف خيارات الرعاية',
       onCtaClick: () => {
         setActiveTab('doctors');
@@ -135,11 +135,11 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
       id: 'med-slide-sos',
       badge: isEn ? '🚑 Emergency Preparation' : '🚑 الاستعداد للطوارئ',
       title: isEn
-        ? 'Emergency Contacts & Weight-Based Fever Reducer Guide'
-        : 'أرقام الطوارئ وحاسبة جرعات خافض الحرارة بالوزن',
+        ? 'Emergency Contacts & Safe Response Guide'
+        : 'أرقام الطوارئ وإرشادات التصرف الآمن',
       subtitle: isEn
-        ? 'Quick Reference · Safe Pediatric Weight Dosage · Medical Disclaimer'
-        : 'مرجع سريع وآمن لجرعات حمزة وليلى ويوسف مع تنبيهات السلامة الطبية',
+        ? 'Emergency preparation · General safety guidance'
+        : 'إرشادات عامة للاستعداد للطوارئ مع تنبيهات السلامة',
       ctaLabel: isEn ? 'Open Emergency Checklist' : 'افتح قائمة الاستعداد للطوارئ',
       onCtaClick: () => setActiveTab('sos_dosage'),
       iconId: 'shield',
@@ -304,7 +304,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   title={isEn ? doc.nameEn : doc.name}
                   metaLeft={
                     <span>
-                      📍 {locText(doc.city, language)} · {isEn ? 'Verified' : 'موثق'}
+                      📍 {locText(doc.city, language)} · {isEn ? 'Sample profile' : 'ملف تجريبي'}
                     </span>
                   }
                   metaRightAction={
