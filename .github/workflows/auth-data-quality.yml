@@ -3,7 +3,7 @@ name: Auth and app quality checks
 on:
   push:
     branches:
-      - fix/auth-data-integrity-2026-10-30
+      - main
   pull_request:
     branches:
       - main
@@ -15,10 +15,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Node.js
-        uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
         run: npm install
       - name: Family data integrity tests
         run: npx tsx --test src/domain/familySpaceCore.test.ts
