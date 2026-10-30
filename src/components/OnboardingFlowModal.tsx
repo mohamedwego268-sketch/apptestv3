@@ -614,13 +614,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     }
     setPendingVerificationEmail(null);
     setOtpStatusMsg(
-      isEn ? 'Identity verified! Syncing family space...' : 'تم توثيق الهوية بنجاح! جاري ربط مساحة الأسرة...'
+      isEn ? 'Identity verified. Connecting your family space…' : 'تم التحقق من الهوية. جارٍ ربط مساحة الأسرة…'
     );
 
     const coreCountry = activeCountryObj.mappedCoreCountry;
     const resolvedCity = selectedCityAr || activeCountryObj.defaultCityAr;
     if (!fullName.trim() || !phone.trim()) {
-      setErrorMsg(isEn ? 'Complete your name and phone number before continuing.' : 'أكمل الاسم ورقم الهاتف قبل المتابعة.');
+      setErrorMsg(isEn ? 'Enter your name and phone number to continue.' : 'أدخل الاسم ورقم الجوال للمتابعة.');
       return;
     }
     await syncAuthAndLocationWithSupabase({
@@ -1248,7 +1248,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         }`}
                       >
                         <span>🏙️</span>
-                        <span>{isEn ? 'Select City' : 'اختيار المدينة يدوياً'}</span>
+                        <span>{isEn ? 'Choose Your City' : 'اختر مدينتك'}</span>
                       </button>
                     </div>
 
@@ -1473,7 +1473,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <div className="space-y-4">
               <div className="text-center">
                 <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                  {isEn ? 'Children Profiles' : 'ملفات الأطفال'}
+                  {isEn ? 'Children’s Profiles' : 'ملفات أطفالك'}
                 </h2>
               </div>
 
@@ -1603,7 +1603,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <div className="space-y-4">
               <div className="text-center">
                 <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
-                  {isEn ? 'Co-Parent Account' : 'ربط حساب الشريك'}
+                  {isEn ? 'Invite a Co-Parent' : 'دعوة ولي الأمر الآخر'}
                 </h2>
               </div>
 
@@ -1612,8 +1612,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   type="text"
                   value={coParentName}
                   onChange={(e) => setCoParentName(e.target.value)}
-                  placeholder={isEn ? 'Partner Name' : 'اسم الشريك'}
-                  aria-label={isEn ? 'Partner Name' : 'اسم الشريك'}
+                  placeholder={isEn ? 'Co-Parent Name' : 'اسم ولي الأمر الآخر'}
+                  aria-label={isEn ? 'Co-Parent Name' : 'اسم ولي الأمر الآخر'}
                   className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488]"
                 />
                 <input
@@ -1621,8 +1621,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   dir="ltr"
                   value={coParentEmail}
                   onChange={(e) => setCoParentEmail(e.target.value)}
-                  placeholder={isEn ? 'Partner Email' : 'البريد الإلكتروني للشريك'}
-                  aria-label={isEn ? 'Partner Email' : 'البريد الإلكتروني للشريك'}
+                  placeholder={isEn ? 'Co-Parent Email' : 'بريد ولي الأمر الآخر'}
+                  aria-label={isEn ? 'Co-Parent Email' : 'بريد ولي الأمر الآخر'}
                   className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] text-start"
                 />
                 <input
@@ -1630,8 +1630,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   dir="ltr"
                   value={coParentPhone}
                   onChange={(e) => setCoParentPhone(e.target.value)}
-                  placeholder={isEn ? 'Partner Phone' : 'رقم هاتف الشريك'}
-                  aria-label={isEn ? 'Partner Phone' : 'رقم هاتف الشريك'}
+                  placeholder={isEn ? 'Co-Parent Phone' : 'رقم جوال ولي الأمر الآخر'}
+                  aria-label={isEn ? 'Co-Parent Phone' : 'رقم جوال ولي الأمر الآخر'}
                   className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] text-start"
                 />
               </div>
