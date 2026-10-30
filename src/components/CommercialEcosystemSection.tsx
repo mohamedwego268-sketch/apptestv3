@@ -435,8 +435,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       id: 'services',
       titleAr: '👩‍⚕️ استشارات تربوية وتوصيل سريع',
       titleEn: '👩‍⚕️ Consultations & Delivery',
-      subtitleAr: 'جلسات إرشاد وتخاطب أونلاين وتوصيل فوري للأسرة',
-      subtitleEn: 'Online parenting consultations & express delivery',
+      subtitleAr: 'جلسات إرشاد وتخاطب أونلاين وخيارات توصيل',
+      subtitleEn: 'Online parenting consultations & delivery options',
       badgeAr: '👩‍⚕️ استشارات وتوصيل',
       badgeEn: '👩‍⚕️ Consultations',
       emoji: '👩‍⚕️',
@@ -858,8 +858,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         ? `Montessori Toys & Organic Baby Essentials (${currency})`
         : `ألعاب مونتيسوري ومستلزمات الطفل العضوية (${currency})`,
       subtitle: isEn
-        ? `Fast Delivery in ${displayCity} · Live Courier Tracking`
-        : `توصيل فوري في ${city} · تتبع المندوب مباشرة على الخريطة`,
+        ? `Delivery options in ${displayCity} · Sample tracking`
+        : `خيارات التوصيل في ${city} · نموذج توضيحي للتتبع`,
       ctaLabel: isEn ? 'Explore Toys & Entertainment' : 'استكشف قسم الألعاب والترفيه',
       onCtaClick: () => openCategoryFullPage('toys'),
       iconId: 'services',
@@ -868,14 +868,14 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     },
     {
       id: 'store-slide-tracking',
-      badge: isEn ? '🛵 Live Delivery Tracking' : '🛵 تتبع الطلبات المباشر',
+      badge: isEn ? '🛵 Sample Delivery Tracking' : '🛵 نموذج تتبع الطلبات',
       title: isEn
-        ? 'Real-Time Order Timeline & Live Driver Route Map'
-        : 'تتبع لحظي لحالة طلبك ومسار المندوب حتى باب المنزل',
+        ? 'Sample Order Timeline & Delivery Route'
+        : 'عرض توضيحي لمراحل الطلب ومسار التوصيل',
       subtitle: isEn
         ? 'Order Received → Preparing → Out for Delivery'
         : 'تم الاستلام ← جاري التحضير ← في الطريق إليك',
-      ctaLabel: isEn ? 'Open Live Order Tracker' : 'افتح خريطة تتبع الطلب',
+      ctaLabel: isEn ? 'Open Tracking Demo' : 'افتح نموذج التتبع',
       onCtaClick: () => setShowLiveTracking(true),
       iconId: 'cart',
       gradient: 'linear-gradient(125deg, #ecfdf5, #d1fae5, #e0f2fe)',
@@ -883,13 +883,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     },
     {
       id: 'store-slide-nurseries',
-      badge: isEn ? '🏫 Nurseries & Preschools & Schools' : '🏫 حضانات ومدارس موثقة',
+      badge: isEn ? '🏫 Nurseries, Preschools & Schools' : '🏫 دليل الحضانات والمدارس',
       title: isEn
-        ? `Top Nurseries, Preschools & Academies in ${displayCity}`
-        : `أفضل الحضانات والمدارس المعتمدة في ${city}`,
+        ? `Nurseries, Preschools & Academies in ${displayCity}`
+        : `الحضانات والمدارس المتاحة في ${city}`,
       subtitle: isEn
-        ? 'Verified Ratings · Direct Booking · Local Directory'
-        : 'تقييمات موثقة · حجز مباشر · دليل مدينتك',
+        ? 'Directory listings · Ratings shown in this demo'
+        : 'ملفات الدليل · التقييمات المعروضة في النموذج',
       ctaLabel: isEn ? 'View All Schools & Nurseries' : 'عرض قسم الحضانات والمدارس',
       onCtaClick: () => openCategoryFullPage('nursery'),
       iconId: 'children',
@@ -924,7 +924,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
           <div className="min-w-0">
             <div className="text-xs font-extrabold text-[var(--color-text)] truncate">
-              {isEn ? 'Family Store & Express Delivery' : 'متجر الأسرة والتوصيل الفوري'}
+              {isEn ? 'Family Store & Delivery Options' : 'متجر الأسرة وخيارات التوصيل'}
             </div>
             <div className="text-[10px] font-bold text-[var(--color-muted)] truncate">
               {country === 'SA' ? (isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية') : isEn ? '🇪🇬 Egypt' : '🇪🇬 مصر'} · 📍 {displayCity} · {currency}
@@ -1092,7 +1092,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           isOpen={showLiveTracking}
           onToggle={setShowLiveTracking}
           defaultOpen={false}
-          title={isEn ? 'Live Delivery Tracking & Route Map' : 'تتبع الطلب المباشر وخريطة التوصيل'}
+          title={isEn ? 'Sample Delivery Tracking & Route Map' : 'تتبع الطلب المباشر وخريطة التوصيل'}
           subtitle={
             isEn
               ? `Status: ${activeStage.titleEn} · ETA: ${
@@ -1340,7 +1340,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   </div>
                   <div>
                     <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                      {isEn ? 'Capt. Tarek Al-Harbi' : 'كابتن طارق الحربي'}
+                      {isEn ? 'Sample Courier Profile' : 'ملف مندوب تجريبي'}
                     </div>
                     <div className="text-[11px] font-bold text-emerald-800 dark:text-[#2DD4BF]">
                       ⭐ 4.95 · {isEn ? 'Verified Family Courier' : 'مندوب توصيل طلبات الأسرة'}
@@ -1536,10 +1536,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <div className="rounded-2xl border border-emerald-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
                     <h5 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
-                      📋 {isEn ? 'Confirmed Order Summary' : 'ملخص الطلب المؤكد وتفاصيل الدفع'}
+                      📋 {isEn ? 'Sample Order Summary' : 'ملخص الطلب التجريبي وتفاصيل الدفع'}
                     </h5>
                     <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-[#101D26] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
-                      {isEn ? 'Verified' : 'مؤكد ✓'}
+                      {isEn ? 'Demo' : 'نموذج'}
                     </span>
                   </div>
 
@@ -2679,7 +2679,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* Compact Visual Payment Badges Strip */}
       <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)]">
         <span>
-          🛡️ {isEn ? 'Localized Catalog & Live Delivery Tracking' : 'كتالوج محلي وتوصيل مباشر على الخريطة'}
+          🛡️ {isEn ? 'Localized Catalog & Sample Delivery Tracking' : 'كتالوج محلي وتوصيل مباشر على الخريطة'}
         </span>
         <span className="text-[var(--color-text)]">
           💳 Visa · Mastercard · مدى mada · Apple Pay
