@@ -111,7 +111,7 @@ import {
 } from './components/DesignSystem';
 import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
 
-const PREVIEW_ACCESS_BYPASS = true; // TEMP: remove after preview review; never merge this flag into production.
+const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds must use the real authentication flow.
 
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => loadFamilySpaceState());
