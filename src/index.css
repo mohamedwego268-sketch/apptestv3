@@ -43,8 +43,12 @@
 
   --font-ui: 'Cairo', 'Plus Jakarta Sans', Tahoma, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-size-base: 12.75px;
-  --line-height-base: 1.56;
+  --font-size-base: 14px;
+  --line-height-base: 1.58;
+  --font-size-caption: 12px;
+  --font-size-body: 14px;
+  --font-size-section: 18px;
+  --font-size-page-title: 21px;
   --radius-card: 20px;
   --radius-control: 10px;
   --radius-small: 8px;
@@ -1632,3 +1636,74 @@ h1, h2, h3, h4 {
   animation: mobileStepSlideFade 300ms ease-in-out both;
 }
 
+/* ==========================================================================
+   NEKBAAR UI SCALE v1.3 — consistent, readable sizing across every screen
+   Header measurements are deliberately compact while preserving 42px controls.
+   ========================================================================== */
+html {
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+}
+.mobile-app-shell {
+  font-size: 14px;
+}
+.mobile-app-shell h1 {
+  font-size: 1.3125rem;
+  line-height: 1.35;
+}
+.mobile-app-shell h2 {
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+.mobile-app-shell h3,
+.mobile-app-shell h4 {
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.mobile-app-shell p {
+  font-size: 0.875rem;
+  line-height: 1.62;
+}
+.mobile-app-shell .text-xs,
+.mobile-app-shell [class*="text-[11px]"],
+.mobile-app-shell [class*="text-[10px]"],
+.mobile-app-shell [class*="text-[9px]"] {
+  font-size: 0.75rem !important;
+  line-height: 1.45 !important;
+}
+.mobile-app-shell .text-sm {
+  font-size: 0.875rem;
+}
+.mobile-app-shell #main-sticky-header {
+  min-height: 58px;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.mobile-app-shell #main-sticky-header .header-control {
+  min-height: 42px;
+  min-width: 42px;
+}
+.mobile-app-shell #main-sticky-header button {
+  min-height: 42px;
+}
+.mobile-app-shell #main-sticky-header button:focus-visible {
+  outline-offset: 2px;
+}
+.mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+}
+@media (max-width: 360px) {
+  .mobile-app-shell #main-sticky-header .header-control {
+    min-height: 40px;
+    min-width: 40px;
+  }
+  .mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
+    max-width: 145px;
+    text-wrap: balance;
+  }
+}
