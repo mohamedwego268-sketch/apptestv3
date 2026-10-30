@@ -1,27 +1,24 @@
 -- ============================================================================
--- Nekbaar (نكبر) — Phase 2 Proposed Migration (REVIEW ONLY — DO NOT AUTO-APPLY)
--- Target Project: qbwnzunusmaidciakuod
--- Purpose:
---   1. Align live PostgreSQL tables (`public.families`, `public.users`, `public.children`)
---      with the verified Phase 2 application contract WITHOUT destructive changes.
---   2. Preserve and explicitly quarantine existing orphaned profile records in `public.users`
---      (since `auth.users` currently contains 0 records).
---   3. Establish atomic `SECURITY DEFINER` RPC functions for:
---      - Account + Family bootstrap (`public.bootstrap_authenticated_family_space`)
---      - Secure Co-Parent invitation creation & acceptance (`public.create_co_parent_invitation`,
---        `public.accept_co_parent_invitation`)
---   4. Enforce strict, least-privilege Row Level Security (RLS) policies across all tables
---      derived exclusively from `auth.uid()` and verified `public.users.auth_user_id` membership.
+-- Nekbaar (نكبر) — Phase 2 Database Contract, Atomic Auth Bootstrap & RLS
+-- Target Project: qbwnzunusmaidciakuod (PREPARED ONLY — DO NOT AUTO-EXECUTE)
+-- Guarantees:
+--   1. Zero destructive changes: no DROP TABLE, DROP COLUMN, DELETE, or UPDATE
+--      overwriting/quarantining existing rows in `public.users`, `public.families`,
+--      or `public.children`.
+--   2. Uses `NOT VALID` on new foreign keys so existing rows are preserved untouched
+--      while strictly enforcing referential integrity on all new/updated rows.
+--   3. Reuses existing schema table names (`co_parent_pairings`, `extended_family`,
+--      `wellness_diagnostics`, `bedtime_stories`, `catalog_items`) without duplicates.
+--   4. Enforces least-privilege RLS derived strictly from `auth.uid()` and verified
+--      `public.users.auth_user_id` + `public.users.family_id`.
 -- ============================================================================
 
 BEGIN;
 
--- Ensure pgcrypto is available for gen_random_uuid() and cryptographic token hashing
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ============================================================================
--- STEP 1: NON-DESTRUCTIVE ADDITIVE COLUMNS ON `public.families`
--- Live columns verified: (id, family_name, created_at)
+-- 1. `public.families` — Additive Columns Preserving Live (id, family_name, created_at)
 -- ============================================================================
 ALTER TABLE public.families
   ALTER COLUMN id SET DEFAULT gen_random_uuid(),
@@ -32,37 +29,22 @@ ALTER TABLE public.families
   ADD COLUMN IF NOT EXISTS city TEXT NOT NULL DEFAULT 'الدمام',
   ADD COLUMN IF NOT EXISTS currency TEXT NOT NULL DEFAULT 'SAR',
   ADD COLUMN IF NOT EXISTS active_parent TEXT NOT NULL DEFAULT 'mother',
-  ADD COLUMN IF NOT EXISTS created_by UUID NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS pairing_token TEXT NULL,
+  ADD COLUMN IF NOT EXISTS created_by UUID NULL,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chk_families_country'
-  ) THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_families_created_by') THEN
     ALTER TABLE public.families
-      ADD CONSTRAINT chk_families_country CHECK (country IN ('EG', 'SA'));
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chk_families_currency'
-  ) THEN
-    ALTER TABLE public.families
-      ADD CONSTRAINT chk_families_currency CHECK (currency IN ('EGP', 'SAR', 'USD'));
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chk_families_active_parent'
-  ) THEN
-    ALTER TABLE public.families
-      ADD CONSTRAINT chk_families_active_parent CHECK (active_parent IN ('mother', 'father'));
+      ADD CONSTRAINT fk_families_created_by
+      FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL NOT VALID;
   END IF;
 END $$;
 
 -- ============================================================================
--- STEP 2: NON-DESTRUCTIVE ADDITIVE COLUMNS & ORPHAN REMEDIATION ON `public.users`
--- Live columns verified: (id, auth_user_id, full_name, role, created_at)
--- Note: Live `public.users` does NOT currently have `family_id`, and `auth.users` has 0 rows.
+-- 2. `public.users` — Additive Columns Preserving Live (id, auth_user_id, full_name, role, created_at)
+-- Zero mutation/quarantine of existing rows; `NOT VALID` constraints protect existing data.
 -- ============================================================================
 ALTER TABLE public.users
   ALTER COLUMN id SET DEFAULT gen_random_uuid(),
@@ -74,58 +56,23 @@ ALTER TABLE public.users
   ADD COLUMN IF NOT EXISTS phone TEXT NULL,
   ADD COLUMN IF NOT EXISTS country TEXT NOT NULL DEFAULT 'SA',
   ADD COLUMN IF NOT EXISTS verified BOOLEAN NOT NULL DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS is_legacy_orphan BOOLEAN NOT NULL DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS orphan_notes TEXT NULL,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
--- Explicitly preserve and quarantine existing orphaned profile records:
--- Because `auth.users` currently has 0 records, any existing row in `public.users`
--- either has `auth_user_id IS NULL` or an `auth_user_id` that does not exist in `auth.users`.
--- Instead of deleting them, we mark `is_legacy_orphan = TRUE` and detach unverified `auth_user_id`
--- so the foreign key to `auth.users(id)` can be enforced safely.
-UPDATE public.users u
-SET
-  is_legacy_orphan = TRUE,
-  orphan_notes = COALESCE(
-    u.orphan_notes,
-    'Preserved pre-Phase-2 profile record with no matching auth.users row; isolated from RLS until admin/owner mapping is approved.'
-  ),
-  auth_user_id = CASE
-    WHEN u.auth_user_id IS NOT NULL
-     AND NOT EXISTS (SELECT 1 FROM auth.users au WHERE au.id = u.auth_user_id)
-    THEN NULL
-    ELSE u.auth_user_id
-  END,
-  updated_at = NOW()
-WHERE u.auth_user_id IS NULL
-   OR NOT EXISTS (SELECT 1 FROM auth.users au WHERE au.id = u.auth_user_id);
-
--- Enforce foreign key from `public.users(auth_user_id)` -> `auth.users(id)`
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_auth_user_id'
-  ) THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_auth_user_id') THEN
     ALTER TABLE public.users
       ADD CONSTRAINT fk_users_auth_user_id
-      FOREIGN KEY (auth_user_id)
-      REFERENCES auth.users(id)
-      ON DELETE CASCADE;
+      FOREIGN KEY (auth_user_id) REFERENCES auth.users(id) ON DELETE CASCADE NOT VALID;
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_family_id'
-  ) THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_family_id') THEN
     ALTER TABLE public.users
       ADD CONSTRAINT fk_users_family_id
-      FOREIGN KEY (family_id)
-      REFERENCES public.families(id)
-      ON UPDATE CASCADE
-      ON DELETE RESTRICT;
+      FOREIGN KEY (family_id) REFERENCES public.families(id) ON UPDATE CASCADE ON DELETE RESTRICT NOT VALID;
   END IF;
 END $$;
 
--- Unique index on non-null `auth_user_id` guarantees 1:1 mapping between `auth.users` and `public.users`
 CREATE UNIQUE INDEX IF NOT EXISTS uq_users_auth_user_id
   ON public.users(auth_user_id)
   WHERE auth_user_id IS NOT NULL;
@@ -134,24 +81,8 @@ CREATE INDEX IF NOT EXISTS idx_users_family_id
   ON public.users(family_id)
   WHERE family_id IS NOT NULL;
 
--- Ensure all non-orphan rows require both `auth_user_id` and `family_id`
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'chk_users_active_requires_auth_and_family'
-  ) THEN
-    ALTER TABLE public.users
-      ADD CONSTRAINT chk_users_active_requires_auth_and_family
-      CHECK (
-        is_legacy_orphan = TRUE
-        OR (auth_user_id IS NOT NULL AND family_id IS NOT NULL)
-      );
-  END IF;
-END $$;
-
 -- ============================================================================
--- STEP 3: NON-DESTRUCTIVE ADDITIVE COLUMNS ON `public.children`
--- Live columns verified: (id, family_id, name, age_stage, gender, passions_or_heroes, created_at)
+-- 3. `public.children` — Additive Columns Preserving Live (id, family_id, name, age_stage, gender, passions_or_heroes, created_at)
 -- ============================================================================
 ALTER TABLE public.children
   ALTER COLUMN id SET DEFAULT gen_random_uuid(),
@@ -167,56 +98,42 @@ ALTER TABLE public.children
   ADD COLUMN IF NOT EXISTS growth_weight_kg NUMERIC NULL,
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 
--- Backfill `interests` from existing `passions_or_heroes` so existing records retain all data
-UPDATE public.children
-SET interests = passions_or_heroes
-WHERE interests IS NULL AND passions_or_heroes IS NOT NULL;
-
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_children_family_id'
-  ) THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_children_family_id') THEN
     ALTER TABLE public.children
       ADD CONSTRAINT fk_children_family_id
-      FOREIGN KEY (family_id)
-      REFERENCES public.families(id)
-      ON UPDATE CASCADE
-      ON DELETE CASCADE;
+      FOREIGN KEY (family_id) REFERENCES public.families(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
   END IF;
 END $$;
 
 CREATE INDEX IF NOT EXISTS idx_children_family_id ON public.children(family_id);
 
 -- ============================================================================
--- STEP 4: SECURE CO-PARENT INVITATIONS TABLE (`public.family_invitations`)
--- Replaces insecure client-generated pairing tokens with verifiable DB invitations
+-- 4. Reuse Existing Application Tables (`co_parent_pairings`, `extended_family`,
+--    `wellness_diagnostics`, `bedtime_stories`, `catalog_items`) with UUID `family_id`
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.family_invitations (
+CREATE TABLE IF NOT EXISTS public.co_parent_pairings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
-  invited_by_user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  invited_email TEXT NOT NULL,
-  invited_phone TEXT NULL,
-  invited_role TEXT NOT NULL CHECK (invited_role IN ('father', 'mother')),
-  token_hash TEXT NOT NULL UNIQUE,
+  invited_by_user_id UUID NULL REFERENCES public.users(id) ON DELETE SET NULL,
+  partner_user_id UUID NULL REFERENCES public.users(id) ON DELETE SET NULL,
+  partner_name TEXT NOT NULL,
+  partner_phone TEXT NOT NULL DEFAULT '',
+  partner_email TEXT NOT NULL,
+  partner_role TEXT NOT NULL DEFAULT 'father' CHECK (partner_role IN ('father', 'mother')),
+  pairing_method TEXT NOT NULL DEFAULT 'phone_otp' CHECK (pairing_method IN ('phone_otp', 'qr_token')),
+  pairing_token_hash TEXT NOT NULL UNIQUE,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'revoked', 'expired')),
-  accepted_by_user_id UUID NULL REFERENCES public.users(id) ON DELETE SET NULL,
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
   expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '48 hours'),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  linked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   accepted_at TIMESTAMPTZ NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_family_invitations_family_id
-  ON public.family_invitations(family_id);
-CREATE INDEX IF NOT EXISTS idx_family_invitations_invited_email
-  ON public.family_invitations(LOWER(invited_email));
+CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_family_id
+  ON public.co_parent_pairings(family_id);
 
--- ============================================================================
--- STEP 5: AUXILIARY FAMILY-OWNED TABLES (UUID `family_id` CONTRACT)
--- Ensures `extended_family`, `wellness_diagnostics`, `bedtime_stories`, and
--- `catalog_items` exist with UUID `family_id` referencing `public.families(id)`.
--- ============================================================================
 CREATE TABLE IF NOT EXISTS public.extended_family (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
@@ -294,36 +211,26 @@ CREATE TABLE IF NOT EXISTS public.catalog_items (
 );
 
 -- ============================================================================
--- STEP 6: VERIFIED FAMILY MEMBERSHIP HELPER & ATOMIC BOOTSTRAP FUNCTIONS
+-- 5. Security-Definer Functions (`SET search_path = public, pg_temp`)
 -- ============================================================================
 
--- 6A. `public.current_user_family_id()`:
--- Strictly resolves the authenticated caller's `family_id` UUID from `public.users`
--- where `auth_user_id = auth.uid()` and `is_legacy_orphan = FALSE`.
--- NEVER trusts `user_metadata.family_id`, `email`, or fallback constants.
 CREATE OR REPLACE FUNCTION public.current_user_family_id()
 RETURNS UUID
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
   SELECT u.family_id
   FROM public.users u
   WHERE u.auth_user_id = auth.uid()
-    AND u.is_legacy_orphan = FALSE
     AND u.family_id IS NOT NULL
   LIMIT 1;
 $$;
 
-REVOKE ALL ON FUNCTION public.current_user_family_id() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.current_user_family_id() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.current_user_family_id() TO authenticated;
 
--- 6B. `public.bootstrap_authenticated_family_space(...)`:
--- Atomically creates a `public.families` row and links the caller's `public.users`
--- profile (`auth_user_id = auth.uid()`) in a single transaction.
--- Idempotent: if the caller already belongs to a verified family, it updates their
--- profile and returns the existing `(user_id, family_id, is_new_family = false)`.
 CREATE OR REPLACE FUNCTION public.bootstrap_authenticated_family_space(
   p_full_name TEXT,
   p_role TEXT DEFAULT 'mother',
@@ -340,7 +247,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $$
 DECLARE
   v_auth_uid UUID := auth.uid();
@@ -377,14 +284,14 @@ BEGIN
     'أسرة ' || v_clean_name || ' — نكبر'
   );
 
-  -- Serialize concurrent bootstrap calls for the same authenticated user
   PERFORM pg_advisory_xact_lock(hashtext(v_auth_uid::text));
 
+  -- Only match a profile explicitly linked to this authenticated `auth.uid()`
+  -- Never claim unlinked/existing records automatically.
   SELECT u.id, u.family_id
     INTO v_existing_user_id, v_existing_family_id
   FROM public.users u
   WHERE u.auth_user_id = v_auth_uid
-    AND u.is_legacy_orphan = FALSE
   LIMIT 1;
 
   IF v_existing_user_id IS NOT NULL AND v_existing_family_id IS NOT NULL THEN
@@ -397,13 +304,13 @@ BEGIN
       country = v_clean_country,
       verified = TRUE,
       updated_at = NOW()
-    WHERE id = v_existing_user_id;
+    WHERE id = v_existing_user_id
+      AND auth_user_id = v_auth_uid;
 
     RETURN QUERY SELECT v_existing_user_id, v_existing_family_id, FALSE;
     RETURN;
   END IF;
 
-  -- Create a new family record owned by the authenticated user
   INSERT INTO public.families (
     family_name,
     country,
@@ -434,9 +341,9 @@ BEGIN
       phone = NULLIF(TRIM(p_phone), ''),
       country = v_clean_country,
       verified = TRUE,
-      is_legacy_orphan = FALSE,
       updated_at = NOW()
-    WHERE id = v_existing_user_id;
+    WHERE id = v_existing_user_id
+      AND auth_user_id = v_auth_uid;
   ELSE
     INSERT INTO public.users (
       auth_user_id,
@@ -447,7 +354,6 @@ BEGIN
       phone,
       country,
       verified,
-      is_legacy_orphan,
       updated_at
     )
     VALUES (
@@ -459,7 +365,6 @@ BEGIN
       NULLIF(TRIM(p_phone), ''),
       v_clean_country,
       TRUE,
-      FALSE,
       NOW()
     )
     RETURNING id INTO v_existing_user_id;
@@ -469,122 +374,22 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.bootstrap_authenticated_family_space(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.bootstrap_authenticated_family_space(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.bootstrap_authenticated_family_space(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated;
 
--- 6C. `public.accept_co_parent_invitation(p_raw_token TEXT, p_full_name TEXT, p_phone TEXT)`:
--- Allows an authenticated second parent to securely join an existing family using a valid,
--- unexpired invitation token whose `invited_email` matches the second parent's `auth.jwt() ->> 'email'`.
-CREATE OR REPLACE FUNCTION public.accept_co_parent_invitation(
-  p_raw_token TEXT,
-  p_full_name TEXT,
-  p_phone TEXT DEFAULT NULL
-)
-RETURNS TABLE (
-  user_id UUID,
-  family_id UUID,
-  joined_role TEXT
-)
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_auth_uid UUID := auth.uid();
-  v_auth_email TEXT := LOWER(TRIM(COALESCE(auth.jwt() ->> 'email', '')));
-  v_token_hash TEXT;
-  v_invite RECORD;
-  v_user_id UUID;
-BEGIN
-  IF v_auth_uid IS NULL OR v_auth_email = '' THEN
-    RAISE EXCEPTION 'UNAUTHENTICATED: Verified Supabase Auth session and email are required to accept an invitation.';
-  END IF;
-
-  IF NULLIF(TRIM(COALESCE(p_raw_token, '')), '') IS NULL THEN
-    RAISE EXCEPTION 'INVALID_TOKEN: Invitation token is required.';
-  END IF;
-
-  v_token_hash := encode(digest(TRIM(p_raw_token), 'sha256'), 'hex');
-
-  SELECT *
-    INTO v_invite
-  FROM public.family_invitations fi
-  WHERE fi.token_hash = v_token_hash
-    AND fi.status = 'pending'
-    AND fi.expires_at > NOW()
-  FOR UPDATE;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'INVALID_OR_EXPIRED_INVITE: Invitation is invalid, expired, or already used.';
-  END IF;
-
-  IF LOWER(TRIM(v_invite.invited_email)) <> v_auth_email THEN
-    RAISE EXCEPTION 'EMAIL_MISMATCH: Authenticated user email does not match the invited co-parent email.';
-  END IF;
-
-  INSERT INTO public.users (
-    auth_user_id,
-    family_id,
-    full_name,
-    role,
-    email,
-    phone,
-    verified,
-    is_legacy_orphan,
-    updated_at
-  )
-  VALUES (
-    v_auth_uid,
-    v_invite.family_id,
-    COALESCE(NULLIF(TRIM(p_full_name), ''), 'شريك الأسرة'),
-    v_invite.invited_role,
-    v_auth_email,
-    NULLIF(TRIM(p_phone), ''),
-    TRUE,
-    FALSE,
-    NOW()
-  )
-  ON CONFLICT (auth_user_id) WHERE auth_user_id IS NOT NULL
-  DO UPDATE SET
-    family_id = EXCLUDED.family_id,
-    full_name = EXCLUDED.full_name,
-    role = EXCLUDED.role,
-    email = EXCLUDED.email,
-    phone = COALESCE(EXCLUDED.phone, public.users.phone),
-    verified = TRUE,
-    is_legacy_orphan = FALSE,
-    updated_at = NOW()
-  RETURNING id INTO v_user_id;
-
-  UPDATE public.family_invitations
-  SET
-    status = 'accepted',
-    accepted_by_user_id = v_user_id,
-    accepted_at = NOW()
-  WHERE id = v_invite.id;
-
-  RETURN QUERY SELECT v_user_id, v_invite.family_id, v_invite.invited_role;
-END;
-$$;
-
-REVOKE ALL ON FUNCTION public.accept_co_parent_invitation(TEXT, TEXT, TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.accept_co_parent_invitation(TEXT, TEXT, TEXT) TO authenticated;
-
 -- ============================================================================
--- STEP 7: STRICT LEAST-PRIVILEGE ROW LEVEL SECURITY (RLS) POLICIES
--- Zero trust in `user_metadata`, `localStorage`, or `OR auth.uid() IS NOT NULL`.
+-- 6. Strict Least-Privilege Row Level Security (RLS) Policies
 -- ============================================================================
-
 ALTER TABLE public.families ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.children ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.family_invitations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.co_parent_pairings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.extended_family ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wellness_diagnostics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bedtime_stories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.catalog_items ENABLE ROW LEVEL SECURITY;
 
--- 7.1 `public.families` policies
+-- 6.1 `public.families`
 DROP POLICY IF EXISTS "families_select_own_family" ON public.families;
 CREATE POLICY "families_select_own_family"
   ON public.families FOR SELECT
@@ -598,20 +403,18 @@ CREATE POLICY "families_update_own_family"
   USING (id = public.current_user_family_id())
   WITH CHECK (id = public.current_user_family_id());
 
--- Note: Direct client INSERT/DELETE on `public.families` is intentionally omitted;
--- family creation happens atomically via `public.bootstrap_authenticated_family_space`.
-
--- 7.2 `public.users` policies
+-- 6.2 `public.users`
 DROP POLICY IF EXISTS "users_select_own_or_family" ON public.users;
 DROP POLICY IF EXISTS "users_select_own_family" ON public.users;
 CREATE POLICY "users_select_own_or_family"
   ON public.users FOR SELECT
   TO authenticated
   USING (
-    is_legacy_orphan = FALSE
-    AND (
-      auth_user_id = auth.uid()
-      OR (family_id IS NOT NULL AND family_id = public.current_user_family_id())
+    auth_user_id = auth.uid()
+    OR (
+      auth_user_id IS NOT NULL
+      AND family_id IS NOT NULL
+      AND family_id = public.current_user_family_id()
     )
   );
 
@@ -621,17 +424,17 @@ CREATE POLICY "users_update_self_only"
   ON public.users FOR UPDATE
   TO authenticated
   USING (
-    is_legacy_orphan = FALSE
-    AND auth_user_id = auth.uid()
+    auth_user_id = auth.uid()
+    AND family_id IS NOT NULL
     AND family_id = public.current_user_family_id()
   )
   WITH CHECK (
-    is_legacy_orphan = FALSE
-    AND auth_user_id = auth.uid()
+    auth_user_id = auth.uid()
+    AND family_id IS NOT NULL
     AND family_id = public.current_user_family_id()
   );
 
--- 7.3 `public.children` policies
+-- 6.3 `public.children`
 DROP POLICY IF EXISTS "children_select_own_family" ON public.children;
 CREATE POLICY "children_select_own_family"
   ON public.children FOR SELECT
@@ -657,35 +460,15 @@ CREATE POLICY "children_delete_own_family"
   TO authenticated
   USING (family_id = public.current_user_family_id());
 
--- 7.4 `public.family_invitations` policies
-DROP POLICY IF EXISTS "family_invitations_select_own_family" ON public.family_invitations;
-CREATE POLICY "family_invitations_select_own_family"
-  ON public.family_invitations FOR SELECT
-  TO authenticated
-  USING (
-    family_id = public.current_user_family_id()
-    OR LOWER(invited_email) = LOWER(COALESCE(auth.jwt() ->> 'email', ''))
-  );
-
-DROP POLICY IF EXISTS "family_invitations_insert_own_family" ON public.family_invitations;
-CREATE POLICY "family_invitations_insert_own_family"
-  ON public.family_invitations FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    family_id = public.current_user_family_id()
-    AND invited_by_user_id IN (
-      SELECT u.id FROM public.users u WHERE u.auth_user_id = auth.uid() AND u.is_legacy_orphan = FALSE
-    )
-  );
-
-DROP POLICY IF EXISTS "family_invitations_update_own_family" ON public.family_invitations;
-CREATE POLICY "family_invitations_update_own_family"
-  ON public.family_invitations FOR UPDATE
+-- 6.4 `public.co_parent_pairings`
+DROP POLICY IF EXISTS "co_parent_pairings_all_own_family" ON public.co_parent_pairings;
+CREATE POLICY "co_parent_pairings_all_own_family"
+  ON public.co_parent_pairings FOR ALL
   TO authenticated
   USING (family_id = public.current_user_family_id())
   WITH CHECK (family_id = public.current_user_family_id());
 
--- 7.5 `public.extended_family` policies
+-- 6.5 `public.extended_family`
 DROP POLICY IF EXISTS "extended_family_all_own_family" ON public.extended_family;
 CREATE POLICY "extended_family_all_own_family"
   ON public.extended_family FOR ALL
@@ -693,7 +476,7 @@ CREATE POLICY "extended_family_all_own_family"
   USING (family_id = public.current_user_family_id())
   WITH CHECK (family_id = public.current_user_family_id());
 
--- 7.6 `public.wellness_diagnostics` policies
+-- 6.6 `public.wellness_diagnostics`
 DROP POLICY IF EXISTS "wellness_diagnostics_all_own_family" ON public.wellness_diagnostics;
 CREATE POLICY "wellness_diagnostics_all_own_family"
   ON public.wellness_diagnostics FOR ALL
@@ -701,7 +484,7 @@ CREATE POLICY "wellness_diagnostics_all_own_family"
   USING (family_id = public.current_user_family_id())
   WITH CHECK (family_id = public.current_user_family_id());
 
--- 7.7 `public.bedtime_stories` policies
+-- 6.7 `public.bedtime_stories`
 DROP POLICY IF EXISTS "bedtime_stories_all_own_family" ON public.bedtime_stories;
 CREATE POLICY "bedtime_stories_all_own_family"
   ON public.bedtime_stories FOR ALL
@@ -709,15 +492,12 @@ CREATE POLICY "bedtime_stories_all_own_family"
   USING (family_id = public.current_user_family_id())
   WITH CHECK (family_id = public.current_user_family_id());
 
--- 7.8 `public.catalog_items` policies (Public/Global items with `family_id IS NULL` are read-only; family-specific items scoped to `family_id`)
+-- 6.8 `public.catalog_items`
 DROP POLICY IF EXISTS "catalog_items_select_policy" ON public.catalog_items;
 CREATE POLICY "catalog_items_select_policy"
   ON public.catalog_items FOR SELECT
   TO anon, authenticated
-  USING (
-    family_id IS NULL
-    OR family_id = public.current_user_family_id()
-  );
+  USING (family_id IS NULL OR family_id = public.current_user_family_id());
 
 DROP POLICY IF EXISTS "catalog_items_write_own_family" ON public.catalog_items;
 CREATE POLICY "catalog_items_write_own_family"
@@ -727,35 +507,3 @@ CREATE POLICY "catalog_items_write_own_family"
   WITH CHECK (family_id IS NOT NULL AND family_id = public.current_user_family_id());
 
 COMMIT;
-
--- ============================================================================
--- ROLLBACK CONSIDERATIONS & REVERSAL SCRIPT (MANUAL / EMERGENCY ONLY)
--- ============================================================================
--- Because this migration is strictly additive and non-destructive, rolling back
--- policies and helper functions does not lose any existing data in `public.families`,
--- `public.users`, or `public.children`:
---
--- BEGIN;
--- DROP POLICY IF EXISTS "catalog_items_write_own_family" ON public.catalog_items;
--- DROP POLICY IF EXISTS "catalog_items_select_policy" ON public.catalog_items;
--- DROP POLICY IF EXISTS "bedtime_stories_all_own_family" ON public.bedtime_stories;
--- DROP POLICY IF EXISTS "wellness_diagnostics_all_own_family" ON public.wellness_diagnostics;
--- DROP POLICY IF EXISTS "extended_family_all_own_family" ON public.extended_family;
--- DROP POLICY IF EXISTS "family_invitations_update_own_family" ON public.family_invitations;
--- DROP POLICY IF EXISTS "family_invitations_insert_own_family" ON public.family_invitations;
--- DROP POLICY IF EXISTS "family_invitations_select_own_family" ON public.family_invitations;
--- DROP POLICY IF EXISTS "children_delete_own_family" ON public.children;
--- DROP POLICY IF EXISTS "children_update_own_family" ON public.children;
--- DROP POLICY IF EXISTS "children_insert_own_family" ON public.children;
--- DROP POLICY IF EXISTS "children_select_own_family" ON public.children;
--- DROP POLICY IF EXISTS "users_update_self_only" ON public.users;
--- DROP POLICY IF EXISTS "users_select_own_or_family" ON public.users;
--- DROP POLICY IF EXISTS "families_update_own_family" ON public.families;
--- DROP POLICY IF EXISTS "families_select_own_family" ON public.families;
--- DROP FUNCTION IF EXISTS public.accept_co_parent_invitation(TEXT, TEXT, TEXT);
--- DROP FUNCTION IF EXISTS public.bootstrap_authenticated_family_space(TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT);
--- DROP FUNCTION IF EXISTS public.current_user_family_id();
--- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS chk_users_active_requires_auth_and_family;
--- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS fk_users_family_id;
--- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS fk_users_auth_user_id;
--- COMMIT;
