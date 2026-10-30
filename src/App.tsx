@@ -1461,11 +1461,11 @@ export default function App() {
     showToast(
       genuinePhoneVerified
         ? lang === 'en'
-          ? 'Country, City, Currency & Verified Phone updated!'
-          : 'تم تحديث الدولة والمدينة والعملة وتوثيق رقم الهاتف الدولي بنجاح!'
+          ? 'Settings updated and phone number verified.'
+          : 'تم تحديث الإعدادات والتحقق من رقم الجوال بنجاح.'
         : lang === 'en'
-        ? 'Country, City, Currency & Phone saved locally (SMS verification pending).'
-        : 'تم حفظ الدولة والمدينة والعملة ورقم الهاتف محلياً (توثيق SMS عبر السحابة قيد التفعيل).'
+        ? 'Settings saved on this device. Phone verification is still pending.'
+        : 'تم حفظ الإعدادات على هذا الجهاز. لم يكتمل التحقق من رقم الجوال بعد.'
     );
   };
 
