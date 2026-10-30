@@ -406,6 +406,7 @@ export class MasterBackendService implements MasterControllerAPI {
     lastSyncedAt: null,
   };
   private batterySummary: FamilyBatterySummary;
+  private latestChildren: ChildProfile[] = DEFAULT_SEED.kids;
   private allStories: BedtimeStoryRecord[];
   private sequencedCatalog: SequencedCatalogItem[];
   private sequenceCounter: number = 1050;
@@ -611,7 +612,8 @@ export class MasterBackendService implements MasterControllerAPI {
   public async recomputeBatteryDiagnostics(
     state?: FamilySpaceState
   ): Promise<FamilyBatterySummary> {
-    const kids = state?.kids && state.kids.length > 0 ? state.kids : DEFAULT_SEED.kids;
+    const kids = state?.kids && state.kids.length > 0 ? state.kids : this.latestChildren;
+    if (state?.kids?.length) this.latestChildren = state.kids;
     const totalTasks = state?.tasks?.length || 1;
     const doneTasks = state?.tasks?.filter((t) => t.done).length || 0;
     const completionRatio = totalTasks > 0 ? doneTasks / totalTasks : 0.75;
@@ -645,7 +647,6 @@ export class MasterBackendService implements MasterControllerAPI {
               matchedKid && isValidUuid(matchedKid.remoteId) ? String(matchedKid.remoteId) : null;
             if (!remoteChildUuid) return null;
             return {
-              id: diag.id,
               family_id: verifiedFamilyUuid,
               child_id: remoteChildUuid,
               child_name: diag.childName,
@@ -662,7 +663,7 @@ export class MasterBackendService implements MasterControllerAPI {
         if (rows.length > 0) {
           await supabaseClient
             .from('wellness_diagnostics')
-            .upsert(rows, { onConflict: 'id' });
+            .upsert(rows, { onConflict: 'family_id,child_id' });
         }
         return nextSummary;
       },
@@ -887,25 +888,33 @@ export class MasterBackendService implements MasterControllerAPI {
         }
         const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
         await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
-        const rows = Object.values(this.batterySummary.childrenDiagnostics)
-          .filter((d) => isValidUuid(d.id))
-          .map((d) => ({
-            id: d.id,
+        const childByLocalId = new Map(this.latestChildren.map((kid) => [kid.id, kid]));
+        const rows = Object.values(this.batterySummary.childrenDiagnostics).flatMap((d) => {
+          const child = childByLocalId.get(d.childId);
+          const childUuid = child && isValidUuid(child.remoteId) ? child.remoteId : null;
+          if (!childUuid) return [];
+          return [{
             family_id: verifiedFamilyUuid,
+            child_id: childUuid,
             child_name: d.childName,
             age_stage: d.ageStage,
             overall_score: d.overallScore,
             sleep_score: d.sleepScore,
             nutrition_score: d.nutritionScore,
             mood_score: d.moodScore,
+            routine_score: d.routineCompletionScore,
             routine_completion_score: d.routineCompletionScore,
             status_level: d.statusLevel,
             recommendation_ar: d.recommendationAr,
             recommendation_en: d.recommendationEn,
             updated_at: d.updatedAt,
-          }));
+          }];
+        });
         if (rows.length > 0) {
-          await supabaseClient.from('wellness_diagnostics').upsert(rows, { onConflict: 'id' });
+          const { error } = await supabaseClient
+            .from('wellness_diagnostics')
+            .upsert(rows, { onConflict: 'family_id,child_id' });
+          if (error) throw error;
         }
         return this.batterySummary;
       },
