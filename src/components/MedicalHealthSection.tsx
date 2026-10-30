@@ -456,75 +456,9 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         </div>
       )}
 
-      {/* TAB 2B: SOS & DOSAGE QUICK HUB (دليل الطوارئ والجرعات) */}
+      {/* TAB 2B: FAMILY EMERGENCY PREPAREDNESS — NO DOSAGE OR DIAGNOSIS */}
       {activeTab === 'sos_dosage' && (
-        <div
-          id="sos-dosage-quick-hub"
-          data-testid="sos-dosage-quick-hub"
-          className="space-y-4 animate-tab-enter"
-        >
-          {/* Strict Medical Disclaimer Banner */}
-          <div className="rounded-2xl border-2 border-amber-400/90 dark:border-amber-500/60 bg-amber-50/95 dark:bg-[#1F1A14] p-4 flex items-start gap-3 shadow-2xs">
-            <span className="text-2xl shrink-0">⚠️</span>
-            <div className="space-y-1 min-w-0">
-              <div className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 leading-snug">
-                {isEn
-                  ? 'Strict Medical Disclaimer — Reference Only'
-                  : 'إخلاء مسؤولية طبي صارم — مرجع استرشادي فقط'}
-              </div>
-              <p className="text-xs sm:text-sm font-semibold text-amber-900 dark:text-amber-100/90 leading-relaxed">
-                {isEn
-                  ? 'Weight-based dosage values are standard pediatric reference estimates and do NOT replace a physician’s prescription. Always verify bottle concentration (e.g., 120mg/5ml vs 250mg/5ml) and consult your pediatrician immediately if fever exceeds 38.5°C or persists.'
-                  : 'حسابات الجرعات المعروضة مبنية على المعادلات الإرشادية القياسية لوزن الطفل ولا تُغني بأي حال عن روشتة طبيب الأطفال المختص. تأكد دائمًا من تركيز العبوة الدوائية واستشر الطوارئ فورًا إذا زادت الحرارة عن 38.5°م أو صاحبتها أعراض خمول.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-            {/* Part 1: Emergency Contacts Quick Reference */}
-            <div className="rounded-2xl border border-rose-200 dark:border-rose-500/40 bg-rose-50/60 dark:bg-[#101D26] p-4 space-y-3 shadow-2xs">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm sm:text-base font-extrabold text-rose-950 dark:text-rose-200 flex items-center gap-2">
-                  <span>🚑</span>
-                  <span>
-                    {isEn
-                      ? `Emergency SOS Numbers (${country === 'SA' ? 'Saudi Arabia' : 'Egypt'})`
-                      : `أرقام الطوارئ السريعة (${country === 'SA' ? 'السعودية' : 'مصر'})`}
-                  </span>
-                </h3>
-                <span className="px-2.5 py-1 rounded-full bg-rose-600 text-white text-xs font-extrabold">
-                  24/7 SOS
-                </span>
-              </div>
-
-              <div className="space-y-2.5">
-                {[
-                  {
-                    id: 'sos-ambulance',
-                    titleAr: 'الإسعاف والطوارئ الطبية العاجلة',
-                    titleEn: 'National Ambulance & Emergency ER',
-                    number: country === 'SA' ? '997' : '123',
-                    descAr: 'للحالات الطارئة، التشنجات الحرارية، أو صعوبة التنفس',
-                    descEn: 'For urgent pediatric ER, febrile seizures, or breathing distress',
-                  },
-                  {
-                    id: 'sos-poison',
-                    titleAr: 'مركز السموم والطوارئ الدوائية',
-                    titleEn: 'Poison Control & Overdose Hotline',
-                    number: country === 'SA' ? '937' : '137',
-                    descAr: 'في حال ابتلاع دواء أو منظف منزلي عن طريق الخطأ',
-                    descEn: 'Immediate guidance for accidental ingestion or medication overdose',
-                  },
-                  {
-                    id: 'sos-pediatric',
-                    titleAr: 'الخط الساخن لاستشارات طب الأطفال والحمى',
-                    titleEn: '24/7 Pediatric Fever &      {/* TAB 2B: FAMILY EMERGENCY PREPAREDNESS — NO DOSAGE OR DIAGNOSIS */}
-      {activeTab === 'sos_dosage' && (
-        <div
-          id="sos-dosage-quick-hub"
-          data-testid="sos-dosage-quick-hub"
-          className="space-y-4 animate-tab-enter"
-        >
+        <div id="sos-dosage-quick-hub" data-testid="sos-dosage-quick-hub" className="space-y-4 animate-tab-enter">
           <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-600/50 bg-amber-50 dark:bg-[#1F1A14] p-4 flex items-start gap-3">
             <span className="text-2xl shrink-0">⚠️</span>
             <div className="space-y-1">
@@ -538,54 +472,22 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               </p>
             </div>
           </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              {
-                icon: '📞',
-                titleAr: 'أرقام التواصل المهمة',
-                titleEn: 'Important contact numbers',
-                bodyAr: 'احفظ رقم الطوارئ المحلي، ومركز السموم الرسمي إن توفر، ورقم طبيب الطفل.',
-                bodyEn: 'Save your official local emergency number, poison center if available, and your child’s clinician.',
-              },
-              {
-                icon: '📍',
-                titleAr: 'معلومات الوصول',
-                titleEn: 'Location details',
-                bodyAr: 'احتفظ بعنوان المنزل الدقيق وأقرب معلم واضح لمشاركته مع خدمات الطوارئ.',
-                bodyEn: 'Keep your exact home address and a nearby landmark ready to share with emergency responders.',
-              },
-              {
-                icon: '🧒',
-                titleAr: 'بطاقة تعريف الطفل',
-                titleEn: 'Child information card',
-                bodyAr: 'جهّز اسم الطفل وعمره وبيانات ولي الأمر وأي حساسية أو حالة صحية أدخلتها بنفسك.',
-                bodyEn: 'Have the child’s name, age, parent contact, and any allergies or conditions you personally recorded.',
-              },
-              {
-                icon: '💊',
-                titleAr: 'قائمة الأدوية',
-                titleEn: 'Medication list',
-                bodyAr: 'سجّل أسماء الأدوية وتركيز العبوة كما هي على الملصق، واتبع تعليمات الطبيب أو الصيدلي فقط.',
-                bodyEn: 'Record medicine names and package concentrations exactly as printed; follow a clinician or pharmacist’s instructions.',
-              },
+              { icon: '📞', titleAr: 'أرقام التواصل المهمة', titleEn: 'Important contact numbers', bodyAr: 'احفظ رقم الطوارئ المحلي، ومركز السموم الرسمي إن توفر، ورقم طبيب الطفل.', bodyEn: 'Save your official local emergency number, poison center if available, and your child’s clinician.' },
+              { icon: '📍', titleAr: 'معلومات الوصول', titleEn: 'Location details', bodyAr: 'احتفظ بعنوان المنزل الدقيق وأقرب معلم واضح لمشاركته مع خدمات الطوارئ.', bodyEn: 'Keep your exact home address and a nearby landmark ready to share with emergency responders.' },
+              { icon: '🧒', titleAr: 'بطاقة تعريف الطفل', titleEn: 'Child information card', bodyAr: 'جهّز اسم الطفل وعمره وبيانات ولي الأمر وأي حساسية أو حالة صحية أدخلتها بنفسك.', bodyEn: 'Have the child’s name, age, parent contact, and any allergies or conditions you personally recorded.' },
+              { icon: '💊', titleAr: 'قائمة الأدوية', titleEn: 'Medication list', bodyAr: 'سجّل أسماء الأدوية وتركيز العبوة كما هي على الملصق، واتبع تعليمات الطبيب أو الصيدلي فقط.', bodyEn: 'Record medicine names and package concentrations exactly as printed; follow a clinician or pharmacist’s instructions.' },
             ].map((item) => (
               <div key={item.titleEn} className="rounded-2xl border border-rose-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 space-y-2">
                 <div className="text-2xl">{item.icon}</div>
-                <h4 className="text-sm font-extrabold text-[var(--color-text)]">
-                  {isEn ? item.titleEn : item.titleAr}
-                </h4>
-                <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
-                  {isEn ? item.bodyEn : item.bodyAr}
-                </p>
+                <h4 className="text-sm font-extrabold text-[var(--color-text)]">{isEn ? item.titleEn : item.titleAr}</h4>
+                <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? item.bodyEn : item.bodyAr}</p>
               </div>
             ))}
           </div>
-
           <div className="rounded-2xl border border-rose-200 dark:border-[#1E3646] bg-rose-50/70 dark:bg-[#101D26] p-4 space-y-2">
-            <h4 className="text-sm font-extrabold text-rose-950 dark:text-rose-200">
-              {isEn ? 'When urgent help may be needed' : 'متى تحتاج مساعدة عاجلة؟'}
-            </h4>
+            <h4 className="text-sm font-extrabold text-rose-950 dark:text-rose-200">{isEn ? 'When urgent help may be needed' : 'متى تحتاج مساعدة عاجلة؟'}</h4>
             <p className="text-xs leading-relaxed text-rose-900 dark:text-rose-100">
               {isEn
                 ? 'If a child has severe breathing difficulty, becomes unresponsive, has a seizure, or you believe there is immediate danger, contact emergency services now. Do not wait for an app response.'
@@ -595,7 +497,84 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         </div>
       )}
 
-isplayCity}</span>
+      {/* TAB 3: EVIDENCE-BASED MEDICAL & PSYCHOLOGICAL GUIDES */}
+      {activeTab === 'articles' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-tab-enter">
+          {medicalArticles.map((article) => {
+            const isSaved = savedMediaIds.includes(article.id);
+            return (
+              <MasterPatternCard
+                key={article.id}
+                tone="emerald"
+                categoryKey="medical"
+                itemIdOrIndex={article.id}
+                darkMode={darkMode}
+                onThumbnailClick={() => setReadingArticle(article)}
+                topLeftBadge={isEn ? 'Demo educational content · Not clinically reviewed' : 'محتوى توعوي تجريبي · غير معتمد كمراجعة طبية'}
+                topRightBadge={
+                  <span>
+                    👶 {article.ageStage === 'all' ? '0–8 yrs' : `${article.ageStage} yrs`}
+                  </span>
+                }
+                title={isEn ? article.titleEn : article.title}
+                metaLeft={
+                  <span>
+                    🩺 {locText(article.durationLabel, language)} · 📍 {displayCity}
+                  </span>
+                }
+                metaRightAction={
+                  <button
+                    type="button"
+                    onClick={() => setReadingArticle(article)}
+                    className="min-h-[44px] px-2 text-xs font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
+                  >
+                    {isEn ? 'Read Now' : 'اقرأ الآن'}
+                  </button>
+                }
+                bodyContent={
+                  <p className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
+                    {isEn ? article.summaryEn : article.summary}
+                  </p>
+                }
+                footerLeft={
+                  <PrimaryCtaButton
+                    variant="emerald"
+                    size="sm"
+                    onClick={() => setReadingArticle(article)}
+                  >
+                    📖 {isEn ? 'Open Guide' : 'قراءة الدليل'}
+                  </PrimaryCtaButton>
+                }
+                footerRight={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleSaveMedia(article.id);
+                      onShowToast(
+                        isSaved
+                          ? isEn
+                            ? 'Removed from saved guides'
+                            : 'تمت الإزالة من المحفوظات'
+                          : isEn
+                          ? 'Saved to medical guides'
+                          : 'تم الحفظ في مرجعك الطبي'
+                      );
+                    }}
+                    className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                  >
+                    {isSaved ? (isEn ? '🌟 Saved' : '🌟 محفوظ') : isEn ? '🔖 Save' : '🔖 حفظ'}
+                  </button>
+                }
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Compact Clinical Notice Strip (No Cross-Section Navigation) */}
+      <div className="rounded-2xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/60 dark:bg-[#101D26] px-4 py-2.5 text-xs font-bold text-emerald-950 dark:text-[#A5F3FC] flex flex-wrap items-center justify-between gap-2 soft-card-surface">
+        <span>⚕️ {isEn ? 'Guidance & Appointment Coordination Hub (Text & Clinical Records Only)' : 'ركن التوعية الطبية وتنسيق المواعيد الأسرية (سجلات وأدلة نصية طبية فقط)'}</span>
+        <span>📍 {displayCity}</span>
       </div>
 
       {/* Doctor Appointment Booking Modal */}
