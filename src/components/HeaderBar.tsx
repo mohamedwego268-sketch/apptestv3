@@ -169,21 +169,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onClick={() => setWeatherModalOpen(true)}
               title={
                 isEn
-                  ? `${localizedCity}: ${compactWeather.tempC}°C`
-                  : `طقس ${localizedCity}: ${compactWeather.tempC}°م`
+                  ? `View live weather for ${localizedCity}`
+                  : `عرض الطقس الحالي في ${localizedCity}`
               }
               aria-label={
                 isEn
-                  ? `Weather in ${localizedCity}: ${compactWeather.tempC}°C`
-                  : `طقس ${localizedCity} ${compactWeather.tempC} درجة`
+                  ? `View live weather in ${localizedCity}`
+                  : `عرض الطقس الحالي في ${localizedCity}`
               }
               className="header-control min-h-[42px] px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
             >
               <span className="text-base leading-none" aria-hidden="true">
                 {compactWeather.conditionEmoji}
               </span>
-              <span className="text-xs font-black tabular-nums text-sky-700 dark:text-sky-300">
-                {compactWeather.tempC}°
+              <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
+                {isEn ? 'Weather' : 'الطقس'}
               </span>
             </button>
           </div>
@@ -241,8 +241,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
                     {isEn
-                      ? 'Live temperature & clothing tips for Hamza, Laila & Youssef'
-                      : 'درجة الحرارة الآن ونصائح ملابس حمزة وليلى ويوسف'}
+                      ? 'Current conditions and useful family weather guidance'
+                      : 'حالة الطقس الحالية وإرشادات مناسبة للأسرة'}
                   </p>
                 </div>
               </div>
@@ -269,42 +269,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               }}
             />
 
-            {/* Extra Expanded Details: Humidity, Wind, UV & Child-Specific Guidance */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  💧 {isEn ? 'Humidity' : 'الرطوبة'}
-                </div>
-                <div className="text-sm font-bold text-sky-600 dark:text-sky-300 tabular-nums mt-0.5">
-                  {compactWeather.humidity}%
-                </div>
-              </div>
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  🌬️ {isEn ? 'Wind' : 'الرياح'}
-                </div>
-                <div className="text-sm font-bold text-[#0d9488] dark:text-[#2DD4BF] tabular-nums mt-0.5">
-                  {compactWeather.windKmh} {isEn ? 'km/h' : 'كم/س'}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] p-3 text-center">
-                <div className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  👕 {isEn ? 'Outfit' : 'الملابس'}
-                </div>
-                <div className="text-xs font-bold text-amber-700 dark:text-amber-300 mt-0.5">
-                  {isEn ? 'Light Cotton' : 'قطن خفيف'}
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-teal-500/25 bg-teal-50/60 dark:bg-[#142430] p-4 space-y-1.5">
-              <div className="text-base font-semibold text-[#0d9488] dark:text-[#2DD4BF]">
-                🧭 {isEn ? 'Tailored Parenting Weather Advice:' : 'توصية الطقس اليوم لحمزة وليلى ويوسف:'}
-              </div>
-              <p className="text-sm leading-relaxed text-[var(--color-text)] dark:text-[#CBD5E1]">
+            <div className="rounded-2xl border border-sky-500/25 bg-sky-50/70 dark:bg-[#142430] p-3 space-y-1.5">
+              <p className="text-sm font-bold text-sky-800 dark:text-sky-200">
+                {isEn ? 'A quick reminder' : 'تذكير سريع'}
+              </p>
+              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
                 {isEn
-                  ? 'Great weather for Youssef’s afternoon sports practice and a 20-minute stroller walk with baby Hamza before sunset. Pack an extra water bottle for Laila at nursery.'
-                  : 'الجو مناسب جداً لتمرين يوسف بعد العصر، وتمشية خفيفة بعربية الرضيع مع حمزة لمدة ٢٠ دقيقة قبل الغروب، مع تزويد ليلى بزمزمية مياه إضافية في الحضانة.'}
+                  ? 'Check the live conditions before outdoor activities, and adapt clothing and hydration to the actual weather.'
+                  : 'راجع حالة الطقس الفعلية قبل الخروج، واختاروا الملابس وكمية الميه حسب الجو واحتياج كل طفل.'}
               </p>
             </div>
 
