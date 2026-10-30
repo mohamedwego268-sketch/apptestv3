@@ -4596,7 +4596,7 @@ export function calculateChildAge(
 /** Resolve legacy city names, English aliases and sub-cities to one canonical region ID. */
 export function resolveCityRegionId(country: CountryCode, rawCity: string | null | undefined): string {
   const cities = COUNTRY_CITIES_MAP[country] || COUNTRY_CITIES_MAP.EG;
-  const normalize = (value: string) => value.trim().toLowerCase().replace(/\\s+/g, ' ');
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
   const target = typeof rawCity === 'string' ? normalize(rawCity) : '';
 
   if (!target) return cities[0].id;
