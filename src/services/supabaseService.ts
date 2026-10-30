@@ -2091,7 +2091,7 @@ export async function verifyAccountIdentityOtpInSupabase(
 ): Promise<VerifyAccountIdentityOtpResult> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const cleanToken = (params.token || '').trim();
-  if (!/^\\d{6}$/.test(cleanToken)) {
+  if (!/^\d{6}$/.test(cleanToken)) {
     return {
       verified: false,
       userId: null,
