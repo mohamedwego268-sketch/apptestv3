@@ -160,7 +160,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionAr:
       'اختار وقت يكون فيه الطفل صاحي وهادي، وحطه على بطنه على سطح ثابت وآمن مع مراقبتك طول الوقت. لو اتضايق، وقف وجرب وقت تاني.',
     captionEn:
-      'Place a safe toy within your baby's easy reach and stay close, talking or singing gently while supervising.',
+      "Place a safe toy within your baby's easy reach and stay close, talking or singing gently while supervising.",
     expertNameAr: 'معلومة إرشادية · راجع طبيب الأطفال عند القلق',
     expertNameEn: 'Nekbaar Parenting Tips',
     likesCount: 0,

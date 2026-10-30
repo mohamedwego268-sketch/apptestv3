@@ -335,6 +335,7 @@ const ICON_TO_BG_KEY: Record<ThreeDIconId, string> = {
   star: 'community',
   location: 'services',
   sparkles: 'community',
+  search: 'family',
 };
 
 export const SwipeableBannerCarousel: React.FC<SwipeableBannerCarouselProps> = ({

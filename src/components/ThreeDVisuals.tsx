@@ -21,7 +21,8 @@ export type ThreeDIconId =
   | 'shield'
   | 'star'
   | 'sparkles'
-  | 'location';
+  | 'location'
+  | 'search';
 
 interface ThreeDIconProps {
   id: ThreeDIconId;
@@ -506,6 +507,25 @@ export const ThreeDIcon: React.FC<ThreeDIconProps> = ({ id, size = 26, className
             fill={`url(#${uid}-coral-main)`}
           />
           <circle cx="24" cy="21" r="4.2" fill="#FFF7F4" />
+        </g>
+      )}
+
+      {id === 'search' && (
+        <g>
+          <circle
+            cx="21.5"
+            cy="21.5"
+            r="8.5"
+            stroke={`url(#${uid}-coral-main)`}
+            strokeWidth="3.5"
+            fill="none"
+          />
+          <path
+            d="M28 28L35 35"
+            stroke={`url(#${uid}-coral-main)`}
+            strokeWidth="3.8"
+            strokeLinecap="round"
+          />
         </g>
       )}
     </svg>
