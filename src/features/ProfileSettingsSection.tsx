@@ -276,7 +276,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               badgeLabel={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
               badgeTone="purple"
               cardTone="purple"
-              defaultOpen={true}
+              defaultOpen={false}
             >
               <div className="space-y-4">
                 <div>
@@ -360,7 +360,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 badgeLabel={lang === 'en' ? 'Local Backup' : 'نسخة احتياطية محلية'}
                 badgeTone="emerald"
                 cardTone="emerald"
-                defaultOpen={true}
+                defaultOpen={false}
               >
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-2.5">
@@ -442,7 +442,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             )}`}
             badgeTone="amber"
             cardTone="amber"
-            defaultOpen={false}
+            defaultOpen={true}
           >
             <div className="space-y-4">
               <div className="flex items-center gap-2">
