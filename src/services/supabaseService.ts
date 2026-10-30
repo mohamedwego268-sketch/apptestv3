@@ -572,9 +572,9 @@ export async function fetchUsersFromSupabase(
 
     if (!targetFamilyUuid) {
       return {
-        data: DEFAULT_SUPABASE_USERS,
+        data: [],
         resolvedFamilyId: SHARED_FAMILY_ID,
-        error: null,
+        error: 'No authenticated family UUID is available; no user records were loaded.',
       };
     }
 
@@ -596,13 +596,12 @@ export async function fetchUsersFromSupabase(
 
     let detectedFamilyId: string | number = targetFamilyUuid;
 
-    const mappedUsers: User[] = data.map((row: Record<string, unknown>, idx: number) => {
-      const fallback = DEFAULT_SUPABASE_USERS[idx] || DEFAULT_SUPABASE_USERS[0];
+    const mappedUsers: User[] = data.map((row: Record<string, unknown>) => {
       const rawName =
         (typeof row.name === 'string' && row.name.trim()) ||
         (typeof row.full_name === 'string' && row.full_name.trim()) ||
         (typeof row.first_name === 'string' && row.first_name.trim()) ||
-        fallback.name;
+        '';
 
       const rawRole = typeof row.role === 'string' ? row.role.toLowerCase() : '';
       const isMother =
@@ -616,7 +615,7 @@ export async function fetchUsersFromSupabase(
       const phoneVal =
         (typeof row.phone === 'string' && row.phone.trim()) ||
         (typeof row.phone_number === 'string' && row.phone_number.trim()) ||
-        fallback.phone;
+        '';
 
       const rowFamilyId = isValidUuid(row.family_id)
         ? row.family_id.trim()
@@ -637,7 +636,7 @@ export async function fetchUsersFromSupabase(
           typeof row.full_name === 'string' && row.full_name.trim()
             ? row.full_name.trim()
             : rawName,
-        role: isMother ? 'mother' : 'father',
+        role: rawRole === 'mother' || rawRole === 'mom' || rawRole.includes('أم') ? 'mother' : 'father',
         phone: phoneVal,
         phone_number: phoneVal,
         email: typeof row.email === 'string' ? row.email : undefined,
@@ -649,7 +648,7 @@ export async function fetchUsersFromSupabase(
     return { data: mappedUsers, resolvedFamilyId: detectedFamilyId, error: null };
   } catch (err) {
     return {
-      data: DEFAULT_SUPABASE_USERS,
+      data: [],
       resolvedFamilyId: familyId,
       error: err instanceof Error ? err.message : 'Network error while fetching users.',
     };
@@ -1461,7 +1460,7 @@ export function normalizeOnboardingAuthPayload(
   return {
     mode: payload.mode === 'signin' ? 'signin' : 'signup',
     email: (payload.email || '').trim(),
-    password: (payload.password || '').trim() || 'Nekbaar#2026',
+    password: (payload.password || '').trim(),
     phone: (payload.phone || '').trim(),
     parentName: resolvedParentName,
     role: normalizedRole,
@@ -1533,6 +1532,29 @@ export async function authenticateParentWithSupabase(
     phone: normalized.phone,
     country: normalized.country,
   };
+
+  if (!normalized.email || !normalized.password) {
+    return {
+      success: false,
+      authenticated: false,
+      identityVerified: false,
+      emailVerified: false,
+      phoneVerified: false,
+      pendingEmailVerification: false,
+      accountCreated: false,
+      profileCreated: false,
+      familyLinked: false,
+      userId: canonicalUserId,
+      familyId: sharedFamilyId,
+      verifiedFamilyUuid: null,
+      sessionEmail: normalized.email,
+      user: fallbackUserSummary,
+      family: null,
+      sharedChildren: [],
+      syncedToDb: false,
+      error: 'البريد الإلكتروني وكلمة المرور مطلوبان لتسجيل الدخول الآمن.',
+    };
+  }
 
   if (normalized.mode === 'signup' && !normalized.parentName) {
     return {
@@ -2645,11 +2667,15 @@ export async function saveOnboardingChildrenToSupabase(
   const targetFamilyId =
     typeof params.familyId === 'string' && isValidUuid(params.familyId)
       ? params.familyId.trim()
-      : typeof params.familyId === 'number' &&
-        Number.isFinite(params.familyId) &&
-        params.familyId > 0
-      ? params.familyId
-      : SHARED_FAMILY_ID;
+      : null;
+
+  if (!targetFamilyId) {
+    return {
+      synced: false,
+      savedChildren: [],
+      error: 'Write blocked: a verified family UUID is required before saving children.',
+    };
+  }
 
   // Deduplicate by normalized (name + birth) so retries never create duplicate child records
   const seenKeys = new Set<string>();
@@ -2737,7 +2763,7 @@ export async function saveOnboardingChildrenToSupabase(
     const existingByKey = new Map<string, string>();
     for (const existingChild of existingDbRes.data) {
       if (isValidUuid(existingChild.remote_id)) {
-        const nameKey = (existingChild.name || '').trim().toLowerCase();
+        const nameKey = `${(existingChild.name || '').trim().toLowerCase()}::${(existingChild.birth || '').trim()}`;
         existingByKey.set(nameKey, existingChild.remote_id.trim());
       }
     }
@@ -2746,7 +2772,7 @@ export async function saveOnboardingChildrenToSupabase(
       const ageInfo = calculateChildAge(child.birth || '2022-05-14', 'ar');
       const matchedRemoteUuid =
         (isValidUuid(child.remote_id) && child.remote_id.trim()) ||
-        existingByKey.get(child.name.trim().toLowerCase()) ||
+        existingByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`) ||
         undefined;
       if (matchedRemoteUuid) {
         child.remote_id = matchedRemoteUuid;
@@ -2810,20 +2836,30 @@ export async function saveOnboardingChildrenToSupabase(
       });
     }
 
-    // Confirm database persistence before reporting `synced: true`
-    const synced = Boolean(
-      !error &&
-        Array.isArray(insertedRows) &&
-        insertedRows.length === mappedChildren.length
+    // Verify persistence by reading the family rows back; an upsert response alone is not enough.
+    if (error) {
+      return { synced: false, savedChildren: mappedChildren, error: error.message };
+    }
+    const verifyRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient);
+    if (verifyRes.error) {
+      return { synced: false, savedChildren: mappedChildren, error: `Write completed but read-back verification failed: ${verifyRes.error}` };
+    }
+    const persistedByKey = new Map(
+      verifyRes.data.map((row) => [`${(row.name || '').trim().toLowerCase()}::${(row.birth || '').trim()}`, row])
+    );
+    const verifiedChildren = mappedChildren.map((child) => {
+      const persisted = persistedByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`);
+      return persisted && isValidUuid(persisted.remote_id)
+        ? { ...child, remote_id: persisted.remote_id, family_id: verifiedFamilyUuid }
+        : child;
+    });
+    const synced = verifiedChildren.every((child) =>
+      isValidUuid(child.remote_id) && persistedByKey.has(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`)
     );
     return {
       synced,
-      savedChildren: mappedChildren,
-      error: error
-        ? error.message
-        : !synced
-        ? 'Unable to confirm saved children records in Supabase.'
-        : null,
+      savedChildren: verifiedChildren,
+      error: synced ? null : 'Write returned but one or more child records could not be verified after saving.',
     };
   } catch (err) {
     return {
