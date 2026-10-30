@@ -353,12 +353,9 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(OnboardingFlowController.loadDraft(), null);
 
     const detected = await OnboardingFlowController.detectInitialState();
-    assert.equal(detected.step, 'DASHBOARD');
-    assert.equal(detected.profile?.fullName, 'أحمد المنصور');
-    // Crucial Phase 1 check: localStorage session alone must NOT be treated as verified DB ownership
-    assert.equal(detected.profile?.isDbVerified, false);
-    assert.equal(detected.profile?.syncedToDb, false);
-    assert.equal(detected.profile?.verifiedFamilyId, null);
+    assert.equal(detected.step, 'WELCOME_PROFILE');
+    assert.equal(detected.profile, undefined);
+    // A cached profile alone is never enough to enter a family workspace without a live Auth session.
 
     const childCheck = validateChildInput({ name: 'فريدة', birth: '2022-03-15' });
     assert.equal(childCheck.valid, true);
