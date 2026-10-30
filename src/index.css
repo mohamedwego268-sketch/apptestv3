@@ -1666,9 +1666,10 @@ body {
   line-height: 1.45;
 }
 .mobile-app-shell p {
-  font-size: 0.875rem;
-  line-height: 1.62;
+  font-size: 0.9rem;
+  line-height: 1.68;
 }
+/* Small labels stay readable without overpowering dense cards and controls. */
 .mobile-app-shell .text-xs,
 .mobile-app-shell [class*="text-[11px]"],
 .mobile-app-shell [class*="text-[10px]"],
@@ -1677,14 +1678,8 @@ body {
   line-height: 1.5 !important;
 }
 .mobile-app-shell .text-sm {
-  font-size: 0.9375rem;
-}
-.mobile-app-shell p {
-  font-size: 0.9rem;
-  line-height: 1.68;
-}
-.mobile-app-shell .text-sm {
   font-size: 0.875rem;
+  line-height: 1.55;
 }
 .mobile-app-shell #main-sticky-header {
   min-height: 58px;
