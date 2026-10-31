@@ -116,16 +116,16 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
     <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
       {/* Compact Profile Hero Warm Image Card for Unified Family Space */}
       <div
-        className="image-bg-card rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 space-y-2.5"
+        className="image-bg-card rounded-xl p-2.5 space-y-2"
         style={{
           backgroundImage: getCardBackgroundSpec('settings', state.darkMode).backgroundImageCss,
           borderColor: parentProfileSpec.badgeBorderCss,
         }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-12 h-12 rounded-2xl bg-white/90 dark:bg-[#142430] border border-white dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
-              <ThreeDIcon id="family" size={28} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-[#142430] border border-white dark:border-[#1E3646] shadow-2xs flex items-center justify-center shrink-0">
+              <ThreeDIcon id="family" size={22} />
             </div>
             <div className="min-w-0">
               <span
@@ -139,10 +139,10 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 <SoftFilledIcon id="family" size={12} boxSize="sm" />
                 <span>{lang === 'en' ? parentProfileSpec.roleBadgeEn : parentProfileSpec.roleBadgeAr}</span>
               </span>
-              <h2 className="image-card-title text-base sm:text-xl font-extrabold mt-0.5 leading-snug">
+              <h2 className="image-card-title text-sm font-extrabold mt-0.5 leading-snug">
                 {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h2>
-              <div className="image-card-subtitle text-xs font-bold tabular-nums leading-relaxed">
+              <div className="image-card-subtitle text-[10px] font-bold tabular-nums leading-tight">
                 {state.country === 'SA'
                   ? lang === 'en'
                     ? 'Saudi Arabia'
@@ -162,14 +162,14 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <button
               type="button"
               onClick={() => onNavigateTo('family')}
-              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
+              className="min-h-[32px] px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
               {lang === 'en' ? 'Family & Permissions' : 'الأسرة والصلاحيات'}
             </button>
             <button
               type="button"
               onClick={onToggleShowInnerSettings}
-              className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
+              className="min-h-[32px] px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] shadow-2xs cursor-pointer"
             >
               {showInnerSettings
                 ? lang === 'en'
@@ -198,100 +198,16 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
         </div>
       </div>
 
-      {/* Dedicated Dark / Light Mode Accessibility Toggle Card in Profile (الحساب) */}
-      <MasterPatternCard
-        id="profile-dark-mode-card"
-        tone="indigo"
-        categoryKey="settings"
-        itemIdOrIndex={1}
-        darkMode={state.darkMode}
-        onThumbnailClick={onToggleDarkMode}
-        topLeftBadge={
-          state.darkMode
-            ? lang === 'en'
-              ? 'Active · Night Mode'
-              : 'مفعّل · الوضع الليلي'
-            : lang === 'en'
-            ? 'Light Mode'
-            : 'الوضع النهاري'
-        }
-        topRightBadge={
-          <span>
-            {state.darkMode
-              ? lang === 'en'
-                ? '🌙 Night'
-                : '🌙 ليلي'
-              : lang === 'en'
-              ? '☀️ Day'
-              : '☀️ نهاري'}
-          </span>
-        }
-        titlePrefixSlot={<SoftFilledIcon id={state.darkMode ? 'star' : 'sparkles'} size={20} />}
-        title={
-          lang === 'en'
-            ? 'Eye-Comfort Dark Mode'
-            : 'الوضع الليلي المريح للعين'
-        }
-        metaLeft={
-          <span>
-            {lang === 'en'
-              ? 'Balanced dark tones for comfortable evening reading.'
-              : 'درجات لونية هادئة ومريحة للعين أثناء التصفح المسائي.'}
-          </span>
-        }
-        footerLeft={
-          <UnifiedBadge
-            label={
-              state.darkMode
-                ? lang === 'en'
-                  ? 'Active · Night Mode'
-                  : 'مفعّل · الوضع الليلي'
-                : lang === 'en'
-                ? 'Light Mode'
-                : 'الوضع النهاري'
-            }
-            tone="indigo"
-            iconId="settings"
-          />
-        }
-        footerRight={
-          <button
-            id="profile-dark-mode-switch"
-            type="button"
-            role="switch"
-            aria-checked={Boolean(state.darkMode)}
-            aria-label={
-              lang === 'en'
-                ? 'Toggle Dark Mode'
-                : 'تبديل الوضع الليلي والنهاري'
-            }
-            onClick={onToggleDarkMode}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-2 border shadow-2xs active:scale-95 transition-all cursor-pointer ${
-              state.darkMode
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-500'
-                : 'bg-[var(--color-control-bg)] hover:border-[var(--color-accent)] text-[var(--color-text)] border-[var(--color-border)]'
-            }`}
-          >
-            <span
-              aria-hidden="true"
-              className={`w-8 h-4 rounded-full p-0.5 flex items-center transition-colors ${
-                state.darkMode ? 'bg-indigo-900/80 justify-end' : 'bg-slate-200 justify-start'
-              }`}
-            >
-              <span className="w-3 h-3 rounded-full bg-white shadow-xs block" />
-            </span>
-            <span>
-              {state.darkMode
-                ? lang === 'en'
-                  ? 'Switch to Light Mode'
-                  : 'التبديل للوضع النهاري'
-                : lang === 'en'
-                ? 'Enable Dark Mode'
-                : 'تشغيل الوضع الليلي'}
-            </span>
-          </button>
-        }
-      />
+      <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'Eye-comfort dark mode' : 'الوضع الليلي المريح للعين'}</p>
+          <p className="text-[10px] text-[var(--color-muted)]">{state.darkMode ? (lang === 'en' ? 'Night mode is on' : 'الوضع الليلي مفعّل') : (lang === 'en' ? 'Day mode is on' : 'الوضع النهاري مفعّل')}</p>
+        </div>
+        <button id="profile-dark-mode-switch" type="button" role="switch" aria-checked={Boolean(state.darkMode)} aria-label={lang === 'en' ? 'Toggle dark mode' : 'تبديل الوضع الليلي والنهاري'} onClick={onToggleDarkMode}
+          className={`min-h-[32px] shrink-0 px-3 rounded-lg text-[10px] font-extrabold border ${state.darkMode ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-[var(--color-control-bg)] text-[var(--color-text)] border-[var(--color-border)]'}`}>
+          {state.darkMode ? (lang === 'en' ? '☀️ Day mode' : '☀️ نهاري') : (lang === 'en' ? '🌙 Night mode' : '🌙 ليلي')}
+        </button>
+      </div>
 
       {/* Inner Settings Section inside Profile Screen */}
       {showInnerSettings && (
