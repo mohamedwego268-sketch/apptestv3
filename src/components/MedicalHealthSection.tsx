@@ -11,6 +11,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar } from './ThreeDVisuals';
+import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   BannerSlideItem,
   CompareArrowsIcon,
@@ -172,6 +173,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         ariaLabel={isEn ? 'Medical Highlights Carousel' : 'لافتات الرعاية الطبية المتحركة'}
       />
 
+      <SectionToolsDrawer language={language} titleAr="أدوات الرعاية الصحية" titleEn="Health tools">
       {/* Segmented Navigation inside Medical Hub */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div
@@ -245,6 +247,8 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
           📍 {isEn ? `Near ${displayCity})` : `بالقرب من (${city})`}
         </button>
       </div>
+
+      </SectionToolsDrawer>
 
       {/* TAB 1: DOCTORS, PEDIATRICIANS & PSYCHOLOGISTS DIRECTORY */}
       {activeTab === 'doctors' && (
