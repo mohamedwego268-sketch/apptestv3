@@ -1517,16 +1517,26 @@ h1, h2, h3, h4 {
 }
 
 /* Force single-column or 2-column mobile layouts inside the 430px frame even on wide desktop monitors */
-.mobile-app-shell .lg\:grid-cols-12,
-.mobile-app-shell .lg\:grid-cols-4,
-.mobile-app-shell .lg\:grid-cols-3,
-.mobile-app-shell .xl\:grid-cols-4,
-.mobile-app-shell .xl\:grid-cols-3,
-.mobile-app-shell .md\:grid-cols-4,
-.mobile-app-shell .md\:grid-cols-3,
-.mobile-app-shell .sm\:grid-cols-4,
-.mobile-app-shell .sm\:grid-cols-3 {
+.mobile-app-shell .lg\:grid-cols-12:not(.grid-cols-2),
+.mobile-app-shell .lg\:grid-cols-4:not(.grid-cols-2),
+.mobile-app-shell .lg\:grid-cols-3:not(.grid-cols-2),
+.mobile-app-shell .xl\:grid-cols-4:not(.grid-cols-2),
+.mobile-app-shell .xl\:grid-cols-3:not(.grid-cols-2),
+.mobile-app-shell .md\:grid-cols-4:not(.grid-cols-2),
+.mobile-app-shell .md\:grid-cols-3:not(.grid-cols-2),
+.mobile-app-shell .sm\:grid-cols-4:not(.grid-cols-2),
+.mobile-app-shell .sm\:grid-cols-3:not(.grid-cols-2) {
   grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+}
+
+/* Keep intentional two-column mobile cards at two columns even on desktop
+   browsers, where viewport-based sm/md/lg utilities would otherwise expand
+   the 430px app shell into cramped 3–6 column grids. */
+.mobile-app-shell .grid-cols-2[class*="sm:grid-cols-"],
+.mobile-app-shell .grid-cols-2[class*="md:grid-cols-"],
+.mobile-app-shell .grid-cols-2[class*="lg:grid-cols-"],
+.mobile-app-shell .grid-cols-2[class*="xl:grid-cols-"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 .mobile-app-shell .lg\:col-span-8,
