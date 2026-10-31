@@ -16,6 +16,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
+import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   CARD_STOCK_PHOTO_URLS,
   getCardBackgroundSpec,
@@ -2110,6 +2111,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       )}
 
+      <SectionToolsDrawer language={language} titleAr="أدوات المتجر" titleEn="Store tools" badgeCount={activeFiltersCount}>
       {/* Search & Quick Category Navigation Bar */}
       <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -2342,6 +2344,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
         )}
       </div>
+
+      </SectionToolsDrawer>
 
       {/* =====================================================================
           SMART PRODUCT COMPARISON MATRIX (Side-by-Side Specs, Price & Rating)
