@@ -81,7 +81,6 @@ export interface FamilyAppModalsProps {
   onSelectPreciseCity: (combinedValue: string) => void;
   onUseCurrentLocation: () => void;
   geoStatus?: 'idle' | 'locating' | 'active';
-  onSelectParentProfile: (role: 'mom' | 'dad') => void;
   onEnableHighContrast: () => void;
   onToggleDarkMode: () => void;
   bedtimeMode?: boolean;
@@ -151,7 +150,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onSelectPreciseCity,
   onUseCurrentLocation,
   geoStatus = 'idle',
-  onSelectParentProfile,
   onEnableHighContrast,
   onToggleDarkMode,
   bedtimeMode = false,
@@ -1350,31 +1348,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       </button>
                     </div>
 
-                    {/* Row 4: Independent Account Session Status & Sign-Out Gate (Zero Quick-Toggle Buttons) */}
-                    <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] p-2.5 flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <SoftFilledIcon id="family" size={16} />
-                        <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                          {state.activeParentAccount === 'father'
-                            ? isEn
-                              ? 'Active Session: Ahmed (Father)'
-                              : 'الجلسة المستقلة: أحمد (الأب)'
-                            : isEn
-                            ? 'Active Session: Mariam (Mother)'
-                            : 'الجلسة المستقلة: مريم (الأم)'}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onCloseRoleModal();
-                          onSelectParentProfile(state.role === 'dad' ? 'dad' : 'mom');
-                        }}
-                        className="min-h-[40px] px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-500/40 bg-rose-50/90 dark:bg-[#1A2634] text-rose-900 dark:text-rose-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        🔒 {isEn ? 'Sign Out / Session Gate' : 'خروج لبوابة الحساب المستقل'}
-                      </button>
-                    </div>
+
                   </div>
                 )}
               </div>
