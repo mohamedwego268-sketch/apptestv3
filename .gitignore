@@ -2,9 +2,15 @@ node_modules/
 build/
 dist/
 coverage/
+.aistudio/
 .DS_Store
 *.log
+*.zip
+*.bak
+*.pre-*.html
+bun.lock
 .env*
 !.env.example
 server/.env*
 backend/.env*
+
