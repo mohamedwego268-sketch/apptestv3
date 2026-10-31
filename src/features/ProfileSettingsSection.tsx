@@ -93,6 +93,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   onSaveBottomInternationalAndPhone,
 }) => {
   const lang = state.language;
+  const personalCountry = state.parentAccounts[state.activeParentAccount]?.country || state.country;
 
   return (
     <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
@@ -477,7 +478,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                    {lang === 'en' ? 'Country & Calling Code' : 'الدولة ومفتاح الاتصال الدولي'}
+                    {lang === 'en' ? 'Family service country' : 'دولة موقع الأسرة والخدمات'}
                   </label>
                   <select
                     id="settingsCountry"
@@ -538,8 +539,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 <div>
                   <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     {lang === 'en'
-                      ? `Mobile phone number (${settingsCountry === 'SA' ? '+966' : '+20'})`
-                      : `رقم الجوال (${settingsCountry === 'SA' ? '+966' : '+20'})`}
+                      ? `Mobile phone number (${personalCountry === 'SA' ? '+966' : '+20'})`
+                      : `رقم الجوال (${personalCountry === 'SA' ? '+966' : '+20'})`}
                   </label>
                   <input
                     id="settingsPhoneInput"
@@ -547,7 +548,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     dir="ltr"
                     value={settingsPhoneInput}
                     onChange={(e) => onChangeSettingsPhoneInput(e.target.value)}
-                    placeholder={settingsCountry === 'SA' ? '512345678' : '1012345678'}
+                    placeholder={personalCountry === 'SA' ? '512345678' : '1012345678'}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm tabular-nums text-[var(--color-text)]"
                   />
                 </div>
@@ -602,8 +603,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                       ? 'Verify OTP & Save Settings'
                       : 'تأكيد رمز OTP وحفظ الدولة والهاتف'
                     : lang === 'en'
-                    ? 'Save Country, City, Currency & Phone'
-                    : 'حفظ إعدادات الدولة والمدينة والعملة والهاتف'}
+                    ? 'Save family service location & phone'
+                    : 'حفظ موقع الأسرة والخدمات ورقم الجوال'}
                 </PrimaryCtaButton>
               </div>
             </div>
