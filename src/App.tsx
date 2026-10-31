@@ -1736,26 +1736,6 @@ export default function App() {
     state.darkMode
   );
 
-  const handleSelectParentProfile = (targetRole: 'mom' | 'dad') => {
-    const isDad = targetRole === 'dad';
-    const nextName = isDad ? 'بابا أحمد' : 'ماما مريم';
-    setState((prev) => ({
-      ...prev,
-      role: targetRole,
-      activeParentAccount: isDad ? 'father' : 'mother',
-      parentName: nextName,
-    }));
-    showToast(
-      isDad
-        ? lang === 'en'
-          ? 'Switched to Father View: Ahmad'
-          : 'تم التبديل إلى حساب الأب: أحمد'
-        : lang === 'en'
-        ? 'Switched to Mother View: Maryam'
-        : 'تم التبديل إلى حساب الأم: مريم'
-    );
-  };
-
   const handleAddVoiceMomentToChild = (kidId: number, moment: VoiceVaultMoment) => {
     setState((prev) => ({
       ...prev,
@@ -3255,10 +3235,6 @@ export default function App() {
           geoStatus={geoStatus}
           bedtimeMode={bedtimeMode}
           onToggleBedtimeMode={handleToggleBedtimeMode}
-          onSelectParentProfile={(role) => {
-            handleSelectParentProfile(role);
-            setRoleModalOpen(false);
-          }}
           onEnableHighContrast={() => {
             setState((prev) => ({ ...prev, role: 'high-contrast', darkMode: false }));
             setRoleModalOpen(false);
