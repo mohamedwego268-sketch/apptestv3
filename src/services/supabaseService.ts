@@ -3250,3 +3250,207 @@ export async function deleteChildFromSupabase(
   }
 }
 
+
+
+/* -------------------------------------------------------------------------- */
+/* Family homes & child-care schedule API                                     */
+/* -------------------------------------------------------------------------- */
+
+export interface FamilyHomeRecord {
+  id: string;
+  family_id: string;
+  label: string;
+  country: CountryCode;
+  city: string;
+  currency: CurrencyCode;
+  timezone: string;
+  is_primary: boolean;
+}
+
+export interface FamilyHomeChildRecord {
+  id: string;
+  name: string;
+  current_home_id: string | null;
+}
+
+export interface ChildHomeScheduleRecord {
+  id: string;
+  child_id: string;
+  home_id: string;
+  schedule_kind: 'weekly' | 'one_time';
+  weekday: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  timezone: string;
+  is_active: boolean;
+}
+
+async function getVerifiedFamilyHomesContext() {
+  if (!supabaseClient) throw new Error('Supabase is not configured.');
+  const context = await resolveVerifiedFamilyContext(supabaseClient);
+  if (!context.authenticated || !isValidUuid(context.verifiedFamilyId) || !isValidUuid(context.profileUserId)) {
+    throw new Error(context.error || 'يجب تسجيل الدخول بحساب موثّق قبل إدارة أماكن الأسرة.');
+  }
+  return {
+    client: supabaseClient,
+    familyId: context.verifiedFamilyId,
+    profileUserId: context.profileUserId,
+    authUserId: context.userId!,
+  };
+}
+
+export async function fetchFamilyHomesWorkspace(): Promise<{
+  homes: FamilyHomeRecord[];
+  children: FamilyHomeChildRecord[];
+  schedules: ChildHomeScheduleRecord[];
+  error: string | null;
+}> {
+  try {
+    const { client, familyId } = await getVerifiedFamilyHomesContext();
+    const [homesRes, childrenRes, schedulesRes] = await Promise.all([
+      withSupabaseRetry(() => client.from('family_homes')
+        .select('id,family_id,label,country,city,currency,timezone,is_primary')
+        .eq('family_id', familyId).order('is_primary', { ascending: false }).order('created_at')),
+      withSupabaseRetry(() => client.from('children')
+        .select('id,name,current_home_id').eq('family_id', familyId).order('created_at')),
+      withSupabaseRetry(() => client.from('child_home_schedules')
+        .select('id,child_id,home_id,schedule_kind,weekday,start_time,end_time,starts_at,ends_at,timezone,is_active')
+        .eq('family_id', familyId).eq('is_active', true).order('created_at')),
+    ]);
+    const error = homesRes.error || childrenRes.error || schedulesRes.error;
+    if (error) throw new Error(error.message);
+    return {
+      homes: (homesRes.data || []) as FamilyHomeRecord[],
+      children: (childrenRes.data || []) as FamilyHomeChildRecord[],
+      schedules: (schedulesRes.data || []) as ChildHomeScheduleRecord[],
+      error: null,
+    };
+  } catch (err) {
+    return {
+      homes: [],
+      children: [],
+      schedules: [],
+      error: err instanceof Error ? err.message : 'تعذر تحميل أماكن الأسرة.',
+    };
+  }
+}
+
+export async function saveMyParentLocation(params: {
+  country: CountryCode;
+  city: string;
+  currency: CurrencyCode;
+  timezone?: string;
+}): Promise<{ error: string | null }> {
+  try {
+    const { client, familyId, profileUserId } = await getVerifiedFamilyHomesContext();
+    const { error } = await withSupabaseRetry(() => client.from('parent_locations').upsert({
+      user_id: profileUserId,
+      family_id: familyId,
+      country: params.country,
+      city: params.city.trim(),
+      currency: params.currency,
+      timezone: params.timezone || (params.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh'),
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' }));
+    return { error: error?.message || null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'تعذر حفظ موقع حسابك.' };
+  }
+}
+
+export async function createFamilyHome(params: {
+  label: string;
+  country: CountryCode;
+  city: string;
+  currency: CurrencyCode;
+  timezone?: string;
+}): Promise<{ home: FamilyHomeRecord | null; error: string | null }> {
+  try {
+    const { client, familyId, authUserId } = await getVerifiedFamilyHomesContext();
+    const label = params.label.trim().slice(0, 80) || 'منزل إضافي';
+    const city = params.city.trim().slice(0, 120);
+    if (!city) throw new Error('اختَر المدينة أولاً.');
+    const { data, error } = await withSupabaseRetry(() => client.from('family_homes').insert({
+      family_id: familyId,
+      label,
+      country: params.country,
+      city,
+      currency: params.currency,
+      timezone: params.timezone || (params.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh'),
+      is_primary: false,
+      created_by: authUserId,
+    }).select('id,family_id,label,country,city,currency,timezone,is_primary').single());
+    if (error) throw new Error(error.message);
+    return { home: data as FamilyHomeRecord, error: null };
+  } catch (err) {
+    return { home: null, error: err instanceof Error ? err.message : 'تعذر إضافة المكان.' };
+  }
+}
+
+export async function setChildCurrentHome(params: {
+  childId: string;
+  homeId: string | null;
+}): Promise<{ error: string | null }> {
+  try {
+    const { client, familyId } = await getVerifiedFamilyHomesContext();
+    if (!isValidUuid(params.childId) || (params.homeId !== null && !isValidUuid(params.homeId))) {
+      throw new Error('بيانات الطفل أو المنزل غير صالحة.');
+    }
+    const { data, error } = await withSupabaseRetry(() => client.from('children')
+      .update({ current_home_id: params.homeId, updated_at: new Date().toISOString() })
+      .eq('id', params.childId).eq('family_id', familyId).select('id').maybeSingle());
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error('لم يتم تحديث مكان الطفل. تحقق من صلاحيات الحساب.');
+    return { error: null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'تعذر تحديث مكان الطفل.' };
+  }
+}
+
+export async function createChildHomeWeeklySchedule(params: {
+  childId: string;
+  homeId: string;
+  weekday: number;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+}): Promise<{ schedule: ChildHomeScheduleRecord | null; error: string | null }> {
+  try {
+    const { client, familyId, authUserId } = await getVerifiedFamilyHomesContext();
+    if (!isValidUuid(params.childId) || !isValidUuid(params.homeId)) throw new Error('اختَر الطفل والمنزل.');
+    if (!Number.isInteger(params.weekday) || params.weekday < 0 || params.weekday > 6) throw new Error('اليوم المحدد غير صالح.');
+    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(params.startTime) || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(params.endTime) || params.startTime === params.endTime) {
+      throw new Error('حدد وقت بداية ونهاية صحيحين.');
+    }
+    const { data, error } = await withSupabaseRetry(() => client.from('child_home_schedules').insert({
+      family_id: familyId,
+      child_id: params.childId,
+      home_id: params.homeId,
+      schedule_kind: 'weekly',
+      weekday: params.weekday,
+      start_time: params.startTime,
+      end_time: params.endTime,
+      timezone: params.timezone,
+      is_active: true,
+      created_by: authUserId,
+    }).select('id,child_id,home_id,schedule_kind,weekday,start_time,end_time,starts_at,ends_at,timezone,is_active').single());
+    if (error) throw new Error(error.message);
+    return { schedule: data as ChildHomeScheduleRecord, error: null };
+  } catch (err) {
+    return { schedule: null, error: err instanceof Error ? err.message : 'تعذر حفظ جدول الإقامة.' };
+  }
+}
+
+export async function deleteChildHomeSchedule(scheduleId: string): Promise<{ error: string | null }> {
+  try {
+    const { client, familyId } = await getVerifiedFamilyHomesContext();
+    if (!isValidUuid(scheduleId)) throw new Error('معرّف الجدول غير صالح.');
+    const { error } = await withSupabaseRetry(() => client.from('child_home_schedules')
+      .delete().eq('id', scheduleId).eq('family_id', familyId));
+    return { error: error?.message || null };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : 'تعذر حذف الموعد.' };
+  }
+}
