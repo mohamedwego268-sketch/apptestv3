@@ -957,175 +957,140 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
             active: topicFilter === 'nursery',
             onClick: () => setTopicFilter(topicFilter === 'nursery' ? 'all' : 'nursery'),
           },
+          {
+            id: 'topic-behavior',
+            icon: '💛',
+            labelAr: 'السلوك',
+            labelEn: 'Behavior',
+            active: topicFilter === 'behavior',
+            onClick: () => setTopicFilter(topicFilter === 'behavior' ? 'all' : 'behavior'),
+          },
+          {
+            id: 'topic-nutrition',
+            icon: '🍎',
+            labelAr: 'التغذية',
+            labelEn: 'Nutrition',
+            active: topicFilter === 'nutrition',
+            onClick: () => setTopicFilter(topicFilter === 'nutrition' ? 'all' : 'nutrition'),
+          },
+          {
+            id: 'topic-sleep',
+            icon: '🌙',
+            labelAr: 'النوم',
+            labelEn: 'Sleep',
+            active: topicFilter === 'sleep',
+            onClick: () => setTopicFilter(topicFilter === 'sleep' ? 'all' : 'sleep'),
+          },
+          {
+            id: 'topic-experiences',
+            icon: '✨',
+            labelAr: 'التجارب',
+            labelEn: 'Experiences',
+            active: topicFilter === 'experiences',
+            onClick: () => setTopicFilter(topicFilter === 'experiences' ? 'all' : 'experiences'),
+          },
         ]}
-      >
-      {/* Post Composer Collapsible Card */}
-      <CollapsibleSectionCard
-        id="community-post-composer-accordion"
-        title={isEn ? 'Share an Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالاً'}
-        subtitle={
-          isEn
-            ? 'Connect with parents and share family experiences across Egypt & Saudi Arabia'
-            : 'تواصل مع أولياء الأمور وتبادل الخبرات الأسرية في مصر والسعودية'
-        }
-        iconId="star"
-        cardTone="amber"
-        badgeLabel={isEn ? 'Write Post' : 'إنشاء مشاركة'}
-        badgeTone="amber"
-        isOpen={composerOpen}
-        onToggle={(next) => setComposerOpen(next)}
-      >
-        <form onSubmit={handlePublishPost} className="space-y-4 pt-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      />
+
+      {/* Post Composer Collapsible Card (toggled from SectionToolsDrawer '+ New Post' action) */}
+      {composerOpen && (
+        <CollapsibleSectionCard
+          id="community-post-composer-accordion"
+          title={isEn ? 'Share an Experience or Ask a Question' : 'شارك تجربتك أو اطرح سؤالاً'}
+          subtitle={
+            isEn
+              ? 'Connect with parents and share family experiences across Egypt & Saudi Arabia'
+              : 'تواصل مع أولياء الأمور وتبادل الخبرات الأسرية في مصر والسعودية'
+          }
+          iconId="star"
+          cardTone="amber"
+          badgeLabel={isEn ? 'Write Post' : 'إنشاء مشاركة'}
+          badgeTone="amber"
+          isOpen={composerOpen}
+          onToggle={(next) => setComposerOpen(next)}
+        >
+          <form onSubmit={handlePublishPost} className="space-y-4 pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
+                  {isEn ? 'Topic Category' : 'قسم النقاش'}
+                </label>
+                <select
+                  value={newPostTopic}
+                  onChange={(e) => setNewPostTopic(e.target.value as CommunityPost['topicId'])}
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+                >
+                  <option value="experiences">{isEn ? 'Parent Experiences' : 'تجارب الأمهات والآباء'}</option>
+                  <option value="sleep">{isEn ? 'Sleep & Routine' : 'نوم الرضع والروتين'}</option>
+                  <option value="nutrition">{isEn ? 'Child Nutrition' : 'التغذية واللانش بوكس'}</option>
+                  <option value="nursery">{isEn ? 'Nurseries & Schools' : 'الحضانات والمدارس'}</option>
+                  <option value="behavior">{isEn ? 'Behavior & Emotions' : 'السلوك والمشاعر'}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
+                  {isEn ? 'Child Age Stage' : 'المرحلة العمرية للطفل'}
+                </label>
+                <select
+                  value={newPostAge}
+                  onChange={(e) => setNewPostAge(e.target.value)}
+                  className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+                >
+                  <option value="0–2 سنوات">{isEn ? '0–2 Years' : 'من أول يوم لـ سنتين (0–2)'}</option>
+                  <option value="2–5 سنوات">{isEn ? '2–5 Years' : 'من 2 إلى 5 سنوات'}</option>
+                  <option value="5–8 سنوات">{isEn ? '5–8 Years' : 'من 5 إلى 8 سنوات'}</option>
+                </select>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-                {isEn ? 'Topic Category' : 'قسم النقاش'}
+                {isEn ? 'Post Title / Question' : 'عنوان السؤال أو التجربة'}
               </label>
-              <select
-                value={newPostTopic}
-                onChange={(e) => setNewPostTopic(e.target.value as CommunityPost['topicId'])}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
-              >
-                <option value="experiences">{isEn ? 'Parent Experiences' : 'تجارب الأمهات والآباء'}</option>
-                <option value="sleep">{isEn ? 'Sleep & Routine' : 'نوم الرضع والروتين'}</option>
-                <option value="nutrition">{isEn ? 'Child Nutrition' : 'التغذية واللانش بوكس'}</option>
-                <option value="nursery">{isEn ? 'Nurseries & Schools' : 'الحضانات والمدارس'}</option>
-                <option value="behavior">{isEn ? 'Behavior & Emotions' : 'السلوك والمشاعر'}</option>
-              </select>
+              <input
+                type="text"
+                value={newPostTitle}
+                onChange={(e) => setNewPostTitle(e.target.value)}
+                placeholder={
+                  isEn
+                    ? 'e.g., How did you transition your toddler to a big bed?'
+                    : 'مثال: إزاي شجعتم أطفالكم على ترتيب ألعابهم بعد اللعب؟'
+                }
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
+              />
             </div>
+
             <div>
               <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-                {isEn ? 'Child Age Stage' : 'المرحلة العمرية للطفل'}
+                {isEn ? 'Details' : 'تفاصيل المشاركة'}
               </label>
-              <select
-                value={newPostAge}
-                onChange={(e) => setNewPostAge(e.target.value)}
-                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
-              >
-                <option value="0–2 سنوات">{isEn ? '0–2 Years' : 'من أول يوم لـ سنتين (0–2)'}</option>
-                <option value="2–5 سنوات">{isEn ? '2–5 Years' : 'من 2 إلى 5 سنوات'}</option>
-                <option value="5–8 سنوات">{isEn ? '5–8 Years' : 'من 5 إلى 8 سنوات'}</option>
-              </select>
+              <textarea
+                value={newPostBody}
+                onChange={(e) => setNewPostBody(e.target.value)}
+                placeholder={
+                  isEn
+                    ? 'Share context so other parents and specialists can help...'
+                    : 'اكتب تفاصيل سؤالك أو تجربتك ليستفيد باقي الآباء والأمهات...'
+                }
+                className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3.5 text-sm text-[var(--color-text)] min-h-[84px]"
+              />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-              {isEn ? 'Post Title / Question' : 'عنوان السؤال أو التجربة'}
-            </label>
-            <input
-              type="text"
-              value={newPostTitle}
-              onChange={(e) => setNewPostTitle(e.target.value)}
-              placeholder={
-                isEn
-                  ? 'e.g., How did you transition your toddler to a big bed?'
-                  : 'مثال: إزاي شجعتم أطفالكم على ترتيب ألعابهم بعد اللعب؟'
-              }
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-sm text-[var(--color-text)]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-extrabold text-[var(--color-text)] mb-1">
-              {isEn ? 'Details' : 'تفاصيل المشاركة'}
-            </label>
-            <textarea
-              value={newPostBody}
-              onChange={(e) => setNewPostBody(e.target.value)}
-              placeholder={
-                isEn
-                  ? 'Share context so other parents and specialists can help...'
-                  : 'اكتب تفاصيل سؤالك أو تجربتك ليستفيد باقي الآباء والأمهات...'
-              }
-              className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] p-3.5 text-sm text-[var(--color-text)] min-h-[84px]"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setComposerOpen(false)}
-              className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-muted)]"
-            >
-              {isEn ? 'Cancel' : 'إلغاء'}
-            </button>
-            <PrimaryCtaButton type="submit" variant="orange" size="sm">
-              {isEn ? 'Publish to Community' : 'نشر في المجتمع الآن'}
-            </PrimaryCtaButton>
-          </div>
-        </form>
-      </CollapsibleSectionCard>
-
-      {/* Topic Filter Bar, Search & Quick Actions in Collapsible Card */}
-      <CollapsibleSectionCard
-        id="community-topic-filter-card"
-        title={isEn ? 'Explore Topics & Search Discussions' : 'تصفية الموضوعات وبحث النقاشات'}
-        subtitle={
-          isEn
-            ? `${filteredPosts.length} active discussions found`
-            : `${filteredPosts.length} نقاشات وتجارب معروضة`
-        }
-        iconId="children"
-        cardTone="teal"
-        badgeLabel={`${filteredPosts.length}`}
-        badgeTone="teal"
-        defaultOpen={false}
-        headerAction={
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setComposerOpen((prev) => !prev);
-            }}
-            className="min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold bg-[#FF8C61] hover:bg-[#e86a3d] text-white shadow-2xs transition-all flex items-center gap-1.5"
-          >
-            <span>✍️</span>
-            <span>{isEn ? 'New Post' : 'مشاركة جديدة'}</span>
-          </button>
-        }
-      >
-        <div className="space-y-2.5 pt-2.5">
-          <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap no-scrollbar pb-0.5">
-            {[
-              { id: 'all', labelAr: 'الكل', labelEn: 'All' },
-              { id: 'experts', labelAr: '🏅 مساهمات المجتمع', labelEn: '🏅 Community contributors' },
-              { id: 'nursery', labelAr: '🏫 الحضانات', labelEn: '🏫 Nurseries' },
-              { id: 'behavior', labelAr: '💛 السلوك', labelEn: '💛 Behavior' },
-              { id: 'nutrition', labelAr: '🍎 التغذية', labelEn: '🍎 Nutrition' },
-              { id: 'sleep', labelAr: '🌙 النوم', labelEn: '🌙 Sleep' },
-              { id: 'experiences', labelAr: '✨ التجارب', labelEn: '✨ Experiences' },
-            ].map((tab) => (
+            <div className="flex justify-end gap-2">
               <button
-                key={tab.id}
                 type="button"
-                onClick={() => setTopicFilter(tab.id)}
-                className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  topicFilter === tab.id
-                    ? 'bg-[#0d9488] text-white shadow-2xs'
-                    : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
+                onClick={() => setComposerOpen(false)}
+                className="min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-muted)]"
               >
-                {isEn ? tab.labelEn : tab.labelAr}
+                {isEn ? 'Cancel' : 'إلغاء'}
               </button>
-            ))}
-          </div>
-
-          <input
-            type="search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={
-              isEn
-                ? '🔍 Search parent discussions, questions, or cities...'
-                : '🔍 ابحث في نقاشات وتجارب الوالدين (حضانة، فطور، شاشات)...'
-            }
-            className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-2.5 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
-          />
-        </div>
-      </CollapsibleSectionCard>
-
-      </SectionToolsDrawer>
+              <PrimaryCtaButton type="submit" variant="orange" size="sm">
+                {isEn ? 'Publish to Community' : 'نشر في المجتمع الآن'}
+              </PrimaryCtaButton>
+            </div>
+          </form>
+        </CollapsibleSectionCard>
+      )}
 
       {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
       <div

@@ -961,127 +961,112 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           },
         ]}
       >
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2">
-          <p className="text-xs font-extrabold text-[var(--color-text)]">{isEn ? 'Browse scope' : 'نطاق التصفح'}</p>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button type="button" onClick={() => setCityScopeFilter('all')} className={`min-h-[34px] rounded-lg px-2 text-[11px] font-bold ${cityScopeFilter === 'all' ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]' : 'bg-[var(--color-surface)] text-[var(--color-muted)]'}`}>{isEn ? 'All cities' : 'كل المدن'}</button>
-            <button type="button" onClick={() => setCityScopeFilter('local')} className={`min-h-[34px] rounded-lg px-2 text-[11px] font-bold truncate ${cityScopeFilter === 'local' ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]' : 'bg-[var(--color-surface)] text-[var(--color-muted)]'}`}>📍 {displayCity}</button>
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2.5">
+          <div className="space-y-1.5">
+            <p className="text-xs font-extrabold text-[var(--color-text)]">
+              {isEn ? 'Browse scope' : 'نطاق التصفح'}
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCityScopeFilter('all')}
+                className={`min-h-[34px] rounded-lg px-2 text-[11px] font-bold cursor-pointer ${
+                  cityScopeFilter === 'all'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
+                    : 'bg-[var(--color-surface)] text-[var(--color-muted)]'
+                }`}
+              >
+                {isEn ? 'All cities' : 'كل المدن'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCityScopeFilter('local')}
+                className={`min-h-[34px] rounded-lg px-2 text-[11px] font-bold truncate cursor-pointer ${
+                  cityScopeFilter === 'local'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]'
+                    : 'bg-[var(--color-surface)] text-[var(--color-muted)]'
+                }`}
+              >
+                📍 {displayCity}
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button type="button" onClick={() => { setStoreFlowStep('catalog'); setShowCartPanel(false); setShowComparePanel((prev) => !prev); }} className="min-h-[34px] rounded-lg border border-teal-300 bg-teal-50 text-teal-900 text-[11px] font-bold">⇄ {isEn ? 'Compare' : 'المقارنة'} ({comparedItems.length}/3)</button>
-            <button type="button" onClick={() => { setStoreFlowStep('catalog'); setShowCartPanel(false); setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev)); }} className="min-h-[34px] rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-900 text-[11px] font-bold">🛵 {isEn ? 'Tracking' : 'التتبع'}</button>
-          </div>
-        </div>
-      {/* Search & Quick Category Navigation Bar */}
-      <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5 soft-card-surface">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex-1 min-w-[210px]">
-            <label htmlFor="search" className="sr-only">
-              {isEn ? 'Search in Store & Services' : 'بحث في المتجر والخدمات'}
+
+          <div className="space-y-1">
+            <label
+              htmlFor="store-drawer-sort-select"
+              className="block text-xs font-extrabold text-[var(--color-text)]"
+            >
+              {isEn ? 'Sort products' : 'ترتيب المنتجات'}
             </label>
-            <input
-              id="search"
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                isEn
-                  ? '🔍 Search Montessori toys, schools, cotton apparel, clinics...'
-                  : '🔍 ابحث عن مدرسة، حضانة، ملابس قطنية، لعبة مونتيسوري، أو عيادة...'
-              }
-              className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
-            />
+            <select
+              id="store-drawer-sort-select"
+              aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="w-full min-h-[36px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+            >
+              <option value="featured">{isEn ? 'Sort: Featured' : 'الترتيب: المختارات'}</option>
+              <option value="price-asc">{isEn ? 'Price: Low to High' : 'السعر: الأقل أولًا'}</option>
+              <option value="price-desc">{isEn ? 'Price: High to Low' : 'السعر: الأعلى أولًا'}</option>
+              <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
+            </select>
           </div>
-
-          <select
-            aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
-          >
-            <option value="featured">{isEn ? 'Sort: Featured' : 'الترتيب: المختارات'}</option>
-            <option value="price-asc">{isEn ? 'Price: Low to High' : 'السعر: الأقل أولًا'}</option>
-            <option value="price-desc">{isEn ? 'Price: High to Low' : 'السعر: الأعلى أولًا'}</option>
-            <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
-          </select>
         </div>
+      </SectionToolsDrawer>
 
-        {/* Horizontal Swipeable Category Bar + Prominent Filter Button Right Beside Category Selectors */}
-        <div className="flex items-center gap-2.5 pt-0.5">
+      {/* Horizontal Swipeable Category Bar + Collapsible Filter Panel (triggered from SectionToolsDrawer) */}
+      <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 space-y-3 soft-card-surface">
+        <div
+          dir={isEn ? 'ltr' : 'rtl'}
+          className="horizontal-scroll-row !pb-1"
+          role="region"
+          aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
+        >
           <button
-            id="store-category-filter-btn"
-            data-testid="store-category-filter-btn"
             type="button"
-            onClick={() => setShowFilterPanel((prev) => !prev)}
-            aria-expanded={showFilterPanel}
-            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 shrink-0 shadow-xs ${
-              showFilterPanel || activeFiltersCount > 0
-                ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-md'
-                : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+            onClick={() => {
+              setActiveCategoryPageId(null);
+              setCategoryFilter('all');
+            }}
+            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeCategoryPageId === null
+                ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
+                : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
             }`}
           >
-            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M6 12h12m-9 8h6" />
-            </svg>
-            <span>{isEn ? 'Filter' : 'تصفية وفلترة'}</span>
-            {activeFiltersCount > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full text-[10px] font-black bg-white text-[#0B131A] tabular-nums">
-                {activeFiltersCount}
-              </span>
-            )}
+            <span>✨</span>
+            <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
           </button>
 
-          <div
-            dir={isEn ? 'ltr' : 'rtl'}
-            className="horizontal-scroll-row flex-1 !pb-1"
-            role="region"
-            aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
-          >
-            <button
-              type="button"
-              onClick={() => {
-                setActiveCategoryPageId(null);
-                setCategoryFilter('all');
-              }}
-              className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
-                activeCategoryPageId === null
-                  ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
-                  : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
-              }`}
-            >
-              <span>✨</span>
-              <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
-            </button>
-
-            {STORE_CATEGORY_SECTIONS.map((sec) => {
-              const isSelected = activeCategoryPageId === sec.id;
-              const secCount = filtered.filter((item) =>
-                (sec.matchCategories as readonly string[]).includes(item.category)
-              ).length;
-              return (
-                <button
-                  key={sec.id}
-                  type="button"
-                  data-testid={`store-category-pill-${sec.id}`}
-                  onClick={() => openCategoryFullPage(sec.id)}
-                  className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap ${
-                    isSelected
-                      ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
-                      : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
-                  }`}
-                >
-                  <span>{sec.emoji}</span>
-                  <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
-                    {secCount}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          {STORE_CATEGORY_SECTIONS.map((sec) => {
+            const isSelected = activeCategoryPageId === sec.id;
+            const secCount = filtered.filter((item) =>
+              (sec.matchCategories as readonly string[]).includes(item.category)
+            ).length;
+            return (
+              <button
+                key={sec.id}
+                type="button"
+                data-testid={`store-category-pill-${sec.id}`}
+                onClick={() => openCategoryFullPage(sec.id)}
+                className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                  isSelected
+                    ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
+                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                }`}
+              >
+                <span>{sec.emoji}</span>
+                <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
+                  {secCount}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Interactive Store Filter Panel (Price, Rating, Availability) */}
+        {/* Interactive Store Filter Panel (Price, Rating, Availability — toggled from SectionToolsDrawer) */}
         {showFilterPanel && (
           <div
             id="store-category-filter-panel"
@@ -1204,8 +1189,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           </div>
         )}
       </div>
-
-      </SectionToolsDrawer>
 
       {/* Compact store controls: location context + cart only. Filters and secondary actions live in the tools drawer. */}
       <div id="store-sticky-subheader" className="sticky top-[48px] z-20 rounded-xl border border-amber-200/60 dark:border-[#1E3646] bg-amber-50/90 dark:bg-[#101D26]/95 px-2.5 py-2 shadow-2xs flex items-center justify-between gap-2">

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   CountryCode,
   CurrencyCode,
@@ -31,6 +32,291 @@ import {
   VerificationChannel,
 } from '../services/OnboardingFlowController';
 import { ThreeDChildAvatar } from './ThreeDVisuals';
+
+export interface CompactPortalDropdownOption {
+  value: string;
+  label: string;
+}
+
+export interface CompactPortalDropdownProps {
+  id: string;
+  testId: string;
+  value: string;
+  options: CompactPortalDropdownOption[];
+  onChange: (nextValue: string) => void;
+  ariaLabel: string;
+  dir: 'rtl' | 'ltr';
+}
+
+/**
+ * Accessible, zero-card-expansion custom dropdown/listbox rendered via `createPortal`
+ * so opened Country/City menus are never clipped by `.onboarding-card-scroll` and
+ * long option labels wrap cleanly inside a bounded scrollable menu while the closed
+ * trigger stays locked at 42px height with truncated single-line text.
+ */
+export const CompactPortalDropdown: React.FC<CompactPortalDropdownProps> = ({
+  id,
+  testId,
+  value,
+  options,
+  onChange,
+  ariaLabel,
+  dir,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((opt) => opt.value === value)
+  );
+  const [activeIndex, setActiveIndex] = useState<number>(selectedIndex);
+  const [menuStyle, setMenuStyle] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  }>({
+    top: 0,
+    left: 0,
+    width: 160,
+    maxHeight: 232,
+  });
+
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const listboxRef = useRef<HTMLDivElement | null>(null);
+
+  const selectedOption = options[selectedIndex] || options[0];
+
+  const updateMenuPosition = () => {
+    const triggerEl = triggerRef.current;
+    if (!triggerEl || typeof window === 'undefined') return;
+    const rect = triggerEl.getBoundingClientRect();
+    const viewportW = window.innerWidth || 390;
+    const viewportH = window.innerHeight || 844;
+    const margin = 8;
+    const maxMenuH = 232;
+
+    const rawWidth = rect.width > 0 ? rect.width : 156;
+    const constrainedWidth = Math.max(
+      110,
+      Math.min(rawWidth, viewportW - margin * 2)
+    );
+    const constrainedLeft = Math.max(
+      margin,
+      Math.min(rect.left, viewportW - constrainedWidth - margin)
+    );
+
+    const spaceBelow = viewportH - rect.bottom - margin;
+    const spaceAbove = rect.top - margin;
+    const openUpward = spaceBelow < 150 && spaceAbove > spaceBelow;
+    const computedMaxHeight = openUpward
+      ? Math.min(maxMenuH, Math.max(120, spaceAbove - 4))
+      : Math.min(maxMenuH, Math.max(120, spaceBelow - 4));
+    const computedTop = openUpward
+      ? Math.max(margin, rect.top - computedMaxHeight - 4)
+      : Math.max(margin, rect.bottom + 4);
+
+    setMenuStyle({
+      top: Math.round(computedTop),
+      left: Math.round(constrainedLeft),
+      width: Math.round(constrainedWidth),
+      maxHeight: Math.round(computedMaxHeight),
+    });
+  };
+
+  useEffect(() => {
+    setActiveIndex(selectedIndex);
+  }, [selectedIndex, value]);
+
+  useEffect(() => {
+    if (!isOpen || typeof window === 'undefined') return;
+    updateMenuPosition();
+
+    const handleReposition = () => updateMenuPosition();
+    const handlePointerDownOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node | null;
+      if (!target) return;
+      if (triggerRef.current?.contains(target)) return;
+      if (listboxRef.current?.contains(target)) return;
+      setIsOpen(false);
+    };
+
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+    document.addEventListener('mousedown', handlePointerDownOutside);
+    document.addEventListener('touchstart', handlePointerDownOutside, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+      document.removeEventListener('mousedown', handlePointerDownOutside);
+      document.removeEventListener('touchstart', handlePointerDownOutside);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !listboxRef.current) return;
+    const activeOptionEl = listboxRef.current.querySelector<HTMLElement>(
+      `[data-option-index="${activeIndex}"]`
+    );
+    if (activeOptionEl && typeof activeOptionEl.scrollIntoView === 'function') {
+      activeOptionEl.scrollIntoView({ block: 'nearest' });
+    }
+  }, [isOpen, activeIndex]);
+
+  const handleSelectIndex = (idx: number) => {
+    const chosen = options[idx];
+    if (!chosen) return;
+    onChange(chosen.value);
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (options.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) {
+        setActiveIndex(selectedIndex);
+        setIsOpen(true);
+      } else {
+        setActiveIndex((prev) => (prev + 1) % options.length);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!isOpen) {
+        setActiveIndex(selectedIndex);
+        setIsOpen(true);
+      } else {
+        setActiveIndex((prev) => (prev - 1 + options.length) % options.length);
+      }
+    } else if (e.key === 'Home' && isOpen) {
+      e.preventDefault();
+      setActiveIndex(0);
+    } else if (e.key === 'End' && isOpen) {
+      e.preventDefault();
+      setActiveIndex(options.length - 1);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!isOpen) {
+        setActiveIndex(selectedIndex);
+        setIsOpen(true);
+      } else {
+        handleSelectIndex(activeIndex);
+      }
+    } else if (e.key === 'Escape' && isOpen) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    } else if (e.key === 'Tab' && isOpen) {
+      setIsOpen(false);
+    }
+  };
+
+  const listboxId = `${id}-listbox`;
+  const activeOptionId =
+    isOpen && options[activeIndex] ? `${id}-option-${activeIndex}` : undefined;
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        id={id}
+        data-testid={testId}
+        data-value={value}
+        dir={dir}
+        role="combobox"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        aria-activedescendant={activeOptionId}
+        onClick={() => {
+          if (!isOpen) {
+            setActiveIndex(selectedIndex);
+            updateMenuPosition();
+          }
+          setIsOpen((prev) => !prev);
+        }}
+        onKeyDown={handleKeyDown}
+        className="w-full min-w-0 min-h-[42px] h-[42px] px-2.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer flex items-center justify-between gap-1 text-start"
+      >
+        <span
+          data-testid={`${testId}-label`}
+          className="truncate min-w-0 flex-1 text-start"
+        >
+          {selectedOption ? selectedOption.label : value}
+        </span>
+        <span
+          aria-hidden="true"
+          className={`text-[10px] text-slate-400 dark:text-slate-500 shrink-0 transition-transform duration-150 ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        >
+          ▾
+        </span>
+      </button>
+
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={listboxRef}
+            id={listboxId}
+            data-testid={`${testId}-listbox`}
+            role="listbox"
+            aria-label={ariaLabel}
+            dir={dir}
+            style={{
+              position: 'fixed',
+              top: `${menuStyle.top}px`,
+              left: `${menuStyle.left}px`,
+              width: `${menuStyle.width}px`,
+              maxHeight: `${menuStyle.maxHeight}px`,
+            }}
+            className="z-[120] overflow-y-auto overscroll-contain rounded-xl border border-slate-200 dark:border-[#1E3646] bg-white dark:bg-[#101D26] shadow-2xl p-1 space-y-0.5"
+          >
+            {options.map((opt, idx) => {
+              const isSelected = opt.value === value;
+              const isFocused = idx === activeIndex;
+              return (
+                <button
+                  key={opt.value}
+                  id={`${id}-option-${idx}`}
+                  data-testid={`${testId}-option-${opt.value}`}
+                  data-option-index={idx}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  onMouseEnter={() => setActiveIndex(idx)}
+                  onClick={() => handleSelectIndex(idx)}
+                  className={`w-full rounded-lg px-2.5 py-2 text-xs font-bold text-start leading-snug break-words whitespace-normal flex items-start justify-between gap-1.5 transition-colors cursor-pointer ${
+                    isSelected
+                      ? 'bg-[#0d9488] text-white'
+                      : isFocused
+                      ? 'bg-teal-50 dark:bg-[#142430] text-slate-900 dark:text-white'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#142430]'
+                  }`}
+                >
+                  <span className="break-words whitespace-normal min-w-0 flex-1 text-start">
+                    {opt.label}
+                  </span>
+                  {isSelected && (
+                    <span aria-hidden="true" className="text-[10px] font-black shrink-0 mt-0.5">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+};
 
 export const NEKBAAR_ONBOARDING_CACHE_KEY = OnboardingFlowController.DRAFT_KEY;
 
@@ -1264,40 +1550,38 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 <>
                   {/* Unified Country + City + GPS/Manual Location Row */}
                   <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center">
-                    <select
+                    <CompactPortalDropdown
                       id="auth-country-select"
-                      data-testid="auth-country-select"
+                      testId="auth-country-select"
+                      dir={isEn ? 'ltr' : 'rtl'}
+                      ariaLabel={isEn ? 'Country' : 'الدولة'}
                       value={selectedCountryCode}
-                      onChange={(e) =>
-                        setSelectedCountryCode(e.target.value as SupportedAccountCountry)
+                      options={SUPPORTED_ACCOUNT_COUNTRIES.map((countryItem) => ({
+                        value: countryItem.code,
+                        label: `${isEn ? countryItem.nameEn : countryItem.nameAr} (${countryItem.dialCode})`,
+                      }))}
+                      onChange={(nextVal) =>
+                        setSelectedCountryCode(nextVal as SupportedAccountCountry)
                       }
-                      aria-label={isEn ? 'Country' : 'الدولة'}
-                      className="w-full min-w-0 min-h-[42px] px-2.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer truncate"
-                    >
-                      {SUPPORTED_ACCOUNT_COUNTRIES.map((countryItem) => (
-                        <option key={countryItem.code} value={countryItem.code}>
-                          {isEn ? countryItem.nameEn : countryItem.nameAr} ({countryItem.dialCode})
-                        </option>
-                      ))}
-                    </select>
+                    />
 
-                    <select
+                    <CompactPortalDropdown
                       id="auth-city-select"
-                      data-testid="auth-city-select"
+                      testId="auth-city-select"
+                      dir={isEn ? 'ltr' : 'rtl'}
+                      ariaLabel={isEn ? 'City' : 'المدينة'}
                       value={resolvedSelectedCityId}
-                      onChange={(e) => {
+                      options={activeCityOptions.map((cityItem) => ({
+                        value: cityItem.id,
+                        label: isEn
+                          ? cityItem.labelEn || cityItem.nameEn
+                          : cityItem.labelAr || cityItem.nameAr,
+                      }))}
+                      onChange={(nextVal) => {
                         setLocationMode('manual');
-                        setSelectedCityAr(e.target.value);
+                        setSelectedCityAr(nextVal);
                       }}
-                      aria-label={isEn ? 'City' : 'المدينة'}
-                      className="w-full min-w-0 min-h-[42px] px-2.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer truncate"
-                    >
-                      {activeCityOptions.map((cityItem) => (
-                        <option key={cityItem.id} value={cityItem.id}>
-                          {isEn ? (cityItem.labelEn || cityItem.nameEn) : (cityItem.labelAr || cityItem.nameAr)}
-                        </option>
-                      ))}
-                    </select>
+                    />
 
                     <button
                       type="button"

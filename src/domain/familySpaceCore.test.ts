@@ -3027,7 +3027,85 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
       .eq('id', 'cat-1');
     assert.equal(authCatalogDelete.error?.code, '42501');
   });
+
+  it('20. Stabilization & Pre-Upgrade Readiness: verifies CompactPortalDropdown for Country/City without resizing registration card, preserves official slogan, and confirms SectionToolsDrawer deduplication across Community, Store, and Children', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+
+    const onboardingSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/OnboardingFlowModal.tsx'),
+      'utf8'
+    );
+    const communitySrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/ParentsCommunitySection.tsx'),
+      'utf8'
+    );
+    const storeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/CommercialEcosystemSection.tsx'),
+      'utf8'
+    );
+    const childrenSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/ChildrenProfilesSection.tsx'),
+      'utf8'
+    );
+
+    // 1. Registration card dimensions, 42px field height, official slogan, and portal dropdowns
+    assert.ok(onboardingSrc.includes('max-w-[430px]'), 'Registration card width must remain 430px');
+    assert.ok(
+      onboardingSrc.includes('grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center'),
+      'Country/City two-column + GPS/Manual grid row must remain intact'
+    );
+    assert.ok(
+      onboardingSrc.includes('min-h-[42px] h-[42px]'),
+      'Country/City trigger controls must preserve 42px height'
+    );
+    assert.ok(
+      onboardingSrc.includes('createPortal('),
+      'Country and City dropdowns must render listbox via createPortal to avoid overflow clipping'
+    );
+    assert.ok(
+      onboardingSrc.includes('break-words whitespace-normal'),
+      'Opened portal menu must wrap long option labels cleanly'
+    );
+    assert.ok(
+      onboardingSrc.includes('role="combobox"') &&
+        onboardingSrc.includes('role="listbox"') &&
+        onboardingSrc.includes('role="option"'),
+      'Portal dropdown must provide combobox/listbox/option ARIA semantics'
+    );
+    assert.ok(
+      onboardingSrc.includes('مساحة تجمعنا.. وبحبهم نكبر'),
+      'Official Arabic slogan must remain intact'
+    );
+
+    // 2. SectionToolsDrawer deduplication across Community, Store, and Children
+    assert.ok(
+      communitySrc.includes('sectionId="community"'),
+      'Community section must render SectionToolsDrawer'
+    );
+    assert.equal(
+      communitySrc.includes('id="community-topic-filter-card"'),
+      false,
+      'Duplicated inline community topic/search/create-post card must be removed'
+    );
+
+    assert.ok(
+      storeSrc.includes('sectionId="store"'),
+      'Store section must render SectionToolsDrawer'
+    );
+    assert.equal(
+      storeSrc.includes('id="store-category-filter-btn"'),
+      false,
+      'Duplicated inline store filter button must be removed'
+    );
+
+    assert.ok(
+      childrenSrc.includes('sectionId="children"'),
+      'Children Profiles section must render SectionToolsDrawer'
+    );
+  });
 });
+
 
 
 
