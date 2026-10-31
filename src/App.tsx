@@ -125,6 +125,16 @@ export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => createEmptyFamilySpaceState());
   const stateRef = React.useRef(state);
   stateRef.current = state;
+  const activeParentProfile = state.parentAccounts[state.activeParentAccount];
+  const activeParentCountry = activeParentProfile?.country || state.country;
+  const activeParentCity = activeParentProfile?.city || state.city || (activeParentCountry === 'SA' ? 'الرياض' : 'القاهرة');
+  const activeParentCurrency = getSuggestedCurrencyForCountry(activeParentCountry);
+  const activeParentViewState: FamilySpaceState = {
+    ...state,
+    country: activeParentCountry,
+    city: activeParentCity,
+    currency: activeParentCurrency,
+  };
   const skipNextCloudSyncRef = React.useRef(false);
   const [activeFamilyStorageScope, setActiveFamilyStorageScope] = useState<string | null>(null);
   const [hydratedFamilyStorageScope, setHydratedFamilyStorageScope] = useState<string | null>(null);
@@ -332,6 +342,20 @@ export default function App() {
     setToastMsg(msg);
   };
 
+  const handlePersonalLocationSaved = React.useCallback((country: CountryCode, city: string) => {
+    setState((prev) => ({
+      ...prev,
+      parentAccounts: {
+        ...prev.parentAccounts,
+        [prev.activeParentAccount]: {
+          ...prev.parentAccounts[prev.activeParentAccount],
+          country,
+          city,
+        },
+      },
+    }));
+  }, []);
+
   const handleEnterPreviewMode = () => {
     // Bundled sample data only: no verified family scope, cloud hydration, or family storage writes.
     previewModeRef.current = true;
@@ -487,6 +511,7 @@ export default function App() {
                 ...familyState.parentAccounts[pid],
                 fullName: profile.fullName || familyState.parentAccounts[pid].fullName,
                 country: nextCountry,
+                city: profile.city || familyState.city,
                 email: profile.email || familyState.parentAccounts[pid].email,
                 phoneNumber: profile.phone || familyState.parentAccounts[pid].phoneNumber,
                 emailVerified: Boolean(profile.emailVerified),
@@ -1963,8 +1988,8 @@ export default function App() {
               isScrolled={isScrolled}
               bedtimeMode={bedtimeMode}
               onToggleBedtimeMode={handleToggleBedtimeMode}
-              country={state.country}
-              city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+              country={activeParentCountry}
+              city={activeParentCity}
               userCoords={userCoords}
               onSelectCity={(cCode, cName) => handleSelectPreciseCity(`${cCode}:${cName}`)}
             />
@@ -2233,7 +2258,7 @@ export default function App() {
             {/* PAGE 1: HOME DASHBOARD */}
             {activePage === 'home' && (
               <HomeDashboardSection
-                state={state}
+                state={activeParentViewState}
                 lang={lang}
                 parentProfileSpec={parentProfileSpec}
                 cartItemCount={cartItemCount}
@@ -2423,9 +2448,9 @@ export default function App() {
                       item.topic === 'psychology' ||
                       item.topic === 'milestones'
                   )}
-                  country={state.country}
-                  city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-                  currency={state.currency}
+                  country={activeParentCountry}
+                  city={activeParentCity}
+                  currency={activeParentCurrency}
                   language={state.language}
                   savedMediaIds={state.savedMediaIds}
                   darkMode={Boolean(state.darkMode)}
@@ -2497,7 +2522,7 @@ export default function App() {
               ) : (
                 <ParentsCommunitySection
                   parentName={state.parentName}
-                  city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                  city={activeParentCity}
                   language={state.language}
                   onShowToast={showToast}
                 />
@@ -2527,9 +2552,9 @@ export default function App() {
                 <SectionSkeletonLoader section="services" language={state.language} />
               ) : (
                 <CommercialEcosystemSection
-                  country={state.country}
-                  city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
-                  currency={state.currency}
+                  country={activeParentCountry}
+                  city={activeParentCity}
+                  currency={activeParentCurrency}
                   language={state.language}
                   darkMode={Boolean(state.darkMode)}
                   cart={state.cart}
@@ -2617,7 +2642,7 @@ export default function App() {
               <AiAssistantSection
                 kids={state.kids}
                 parentName={state.parentName}
-                city={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+                city={activeParentCity}
                 language={state.language}
                 darkMode={Boolean(state.darkMode)}
                 initialModelId={aiInitialModelId}
@@ -2820,19 +2845,7 @@ export default function App() {
               <FamilyHomesSection
                 state={state}
                 onShowToast={showToast}
-                onPersonalLocationSaved={(country) => {
-                  setState((prev) => ({
-                    ...prev,
-                    parentAccounts: {
-                      ...prev.parentAccounts,
-                      [prev.activeParentAccount]: {
-                        ...prev.parentAccounts[prev.activeParentAccount],
-                        country,
-                        phoneCode: country === 'SA' ? '+966' : '+20',
-                      },
-                    },
-                  }));
-                }}
+                onPersonalLocationSaved={handlePersonalLocationSaved}
               />
             )}
 
@@ -3389,9 +3402,6 @@ export default function App() {
             handleReplaySplashScreen();
           }}
           activePage={activePage}
-          onSelectPreciseCity={handleSelectPreciseCity}
-          onUseCurrentLocation={handleUseCurrentLocation}
-          geoStatus={geoStatus}
           bedtimeMode={bedtimeMode}
           onToggleBedtimeMode={handleToggleBedtimeMode}
           onEnableHighContrast={() => {
