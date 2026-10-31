@@ -8,8 +8,6 @@ import {
   FamilyMember,
   MediaContentItem,
   CommercialCatalogItem,
-  COUNTRY_CITIES_MAP,
-  resolveCityRegionId,
   formatCurrency,
   locText,
 } from '../../domain/familySpaceCore';
@@ -78,9 +76,6 @@ export interface FamilyAppModalsProps {
   onSelectAiSubActionFromDrawer?: (action: { modelId?: AiModelId; openHistory?: boolean }) => void;
   onReplaySplashFromDrawer?: () => void;
   activePage?: PageId;
-  onSelectPreciseCity: (combinedValue: string) => void;
-  onUseCurrentLocation: () => void;
-  geoStatus?: 'idle' | 'locating' | 'active';
   onEnableHighContrast: () => void;
   onToggleDarkMode: () => void;
   bedtimeMode?: boolean;
@@ -147,9 +142,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onSelectAiSubActionFromDrawer,
   onReplaySplashFromDrawer,
   activePage = 'home',
-  onSelectPreciseCity,
-  onUseCurrentLocation,
-  geoStatus = 'idle',
   onEnableHighContrast,
   onToggleDarkMode,
   bedtimeMode = false,
@@ -170,12 +162,10 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const isEn = lang === 'en';
   const [expandedAccordionId, setExpandedAccordionId] = useState<string>('home');
   const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(false);
-  const [locationAccordionOpen, setLocationAccordionOpen] = useState<boolean>(false);
   const [navigationSearch, setNavigationSearch] = useState<string>('');
-  const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
-  const resolvedDrawerCityId = resolveCityRegionId(state.country, state.city);
-  const resolvedDrawerCity =
-    activeCountryList.find((city) => city.id === resolvedDrawerCityId) || activeCountryList[0];
+  const activeParentProfile = state.parentAccounts[state.activeParentAccount];
+  const drawerCountry = activeParentProfile?.country || state.country;
+  const drawerCity = activeParentProfile?.city || state.city || (drawerCountry === 'SA' ? 'الرياض' : 'القاهرة');
 
   return (
     <>
@@ -1184,18 +1174,19 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setLocationAccordionOpen(true);
-                      window.setTimeout(() => document.getElementById('drawer-symmetric-location-selector')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+                      onNavigateFromDrawer?.('settings');
+                      onCloseRoleModal();
+                      window.setTimeout(() => document.getElementById('family-places-settings')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 250);
                     }}
                     className="drawer-brand-location min-h-[48px] min-w-0 rounded-2xl px-3 py-2 flex items-center gap-2.5 text-start"
                     aria-label={isEn ? 'Change country and city' : 'تغيير الدولة والمدينة'}
                   >
-                    <span className="text-xl shrink-0" aria-hidden="true">{state.country === 'SA' ? '🇸🇦' : '🇪🇬'}</span>
+                    <span className="text-xl shrink-0" aria-hidden="true">{drawerCountry === 'SA' ? '🇸🇦' : '🇪🇬'}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[10px] font-bold text-white/70">{isEn ? 'YOUR LOCATION' : 'موقع الأسرة'}</span>
+                      <span className="block text-[10px] font-bold text-white/70">{isEn ? 'YOUR LOCATION' : 'موقع حسابك'}</span>
                       <span className="block text-[13px] font-extrabold text-white truncate">
-                        {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)}
-                        <span className="font-medium text-white/75"> · {state.country === 'SA' ? (isEn ? 'Saudi Arabia' : 'السعودية') : (isEn ? 'Egypt' : 'مصر')}</span>
+                        {locText(drawerCity, lang)}
+                        <span className="font-medium text-white/75"> · {drawerCountry === 'SA' ? (isEn ? 'Saudi Arabia' : 'السعودية') : (isEn ? 'Egypt' : 'مصر')}</span>
                       </span>
                     </span>
                     <span className="text-white/75 text-sm shrink-0">{isEn ? 'Edit' : 'تعديل'}</span>
@@ -1212,7 +1203,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 </div>
                 <div className="relative z-10 mt-2 flex items-center justify-between text-[11px] font-semibold text-white/75">
                   <span>{isEn ? 'One place for everyday family life' : 'كل تفاصيل الأسرة في مكان واحد'}</span>
-                  <span dir="ltr" className="tabular-nums">{state.currency}</span>
+                  <span dir="ltr" className="tabular-nums">{drawerCountry === 'SA' ? 'SAR' : 'EGP'}</span>
                 </div>
               </section>
 
@@ -1384,160 +1375,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     </button>
                   )}
                 </label>
-
-              {/* Symmetric Country & Governorate/Region + GPS Filter Accordion inside Slide Bar */}
-              <div
-                data-testid="drawer-symmetric-location-selector"
-                className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] overflow-hidden soft-card-surface"
-              >
-                <button
-                  type="button"
-                  onClick={() => setLocationAccordionOpen((prev) => !prev)}
-                  aria-expanded={locationAccordionOpen}
-                  className="w-full p-3 flex items-center justify-between gap-2 text-start cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <SoftFilledIcon id="location" size={16} />
-                    <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
-                      {isEn
-                        ? state.country === 'EG'
-                          ? `Egypt governorates (${activeCountryList.length}) & GPS`
-                          : `Saudi regions / cities (${activeCountryList.length}) & GPS`
-                        : state.country === 'EG'
-                        ? `محافظات مصر (${activeCountryList.length}) والـ GPS`
-                        : `مناطق ومدن السعودية (${activeCountryList.length}) والـ GPS`}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <UnifiedBadge
-                      label={
-                        state.country === 'SA'
-                          ? isEn
-                            ? '🇸🇦 SAR'
-                            : '🇸🇦 ر.س'
-                          : isEn
-                          ? '🇪🇬 EGP'
-                          : '🇪🇬 ج.م'
-                      }
-                      tone="teal"
-                    />
-                    <span className="w-7 h-7 rounded-lg bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shrink-0">
-                      {locationAccordionOpen ? '⌄' : '›'}
-                    </span>
-                  </div>
-                </button>
-
-                {locationAccordionOpen && (
-                  <div className="px-3.5 pb-3.5 pt-2 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-2.5 animate-tab-enter">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        id="drawer-country-eg-btn"
-                        type="button"
-                        aria-pressed={state.country === 'EG'}
-                        onClick={() => {
-                          if (state.country !== 'EG') {
-                            onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`);
-                          }
-                        }}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          state.country === 'EG'
-                            ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                            : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
-                        }`}
-                      >
-                        <span>🇪🇬</span>
-                        <span>{isEn ? `Egypt (${COUNTRY_CITIES_MAP.EG.length} governorates · EGP)` : `مصر (${COUNTRY_CITIES_MAP.EG.length} محافظة · EGP)`}</span>
-                      </button>
-                      <button
-                        id="drawer-country-sa-btn"
-                        type="button"
-                        aria-pressed={state.country === 'SA'}
-                        onClick={() => {
-                          if (state.country !== 'SA') {
-                            onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`);
-                          }
-                        }}
-                        className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          state.country === 'SA'
-                            ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                            : 'bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
-                        }`}
-                      >
-                        <span>🇸🇦</span>
-                        <span>{isEn ? `Saudi Arabia (${COUNTRY_CITIES_MAP.SA.length} regions / cities · SAR)` : `السعودية (${COUNTRY_CITIES_MAP.SA.length} منطقة / مدينة · SAR)`}</span>
-                      </button>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label
-                        htmlFor="drawer-city-select"
-                        className="block text-[11px] font-extrabold text-[var(--color-muted)]"
-                      >
-                        {isEn
-                          ? `City / governorate in ${state.country === 'EG' ? 'Egypt' : 'Saudi Arabia'}`
-                          : state.country === 'EG'
-                          ? 'اختر المحافظة داخل مصر'
-                          : 'اختر المنطقة أو المدينة داخل السعودية'}
-                      </label>
-                      <div className="flex items-center gap-2">
-                      <select
-                        id="drawer-city-select"
-                        aria-label={
-                          isEn
-                            ? state.country === 'EG'
-                              ? 'Select Egyptian Governorate'
-                              : 'Select Saudi Region or City'
-                            : state.country === 'EG'
-                            ? 'اختر المحافظة في مصر'
-                            : 'اختر المنطقة أو المدينة في السعودية'
-                        }
-                        value={`${state.country}:${resolvedDrawerCityId}`}
-                        onChange={(e) => onSelectPreciseCity(e.target.value)}
-                        className="flex-1 min-w-0 min-h-[40px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] focus:outline-none focus:border-[#0d9488] cursor-pointer"
-                      >
-                        {activeCountryList.map((c, idx) => (
-                          <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
-                            {isEn
-                              ? `${idx + 1}. ${c.labelEn || c.nameEn} — ${c.regionEn}`
-                              : `${idx + 1}. ${c.labelAr || c.nameAr} — ${c.regionAr}`}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        id="drawer-gps-location-btn"
-                        type="button"
-                        onClick={onUseCurrentLocation}
-                        className={`min-h-[40px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold shrink-0 flex items-center gap-1.5 transition-all cursor-pointer ${
-                          geoStatus === 'active'
-                            ? 'bg-emerald-600 text-white shadow-2xs'
-                            : 'bg-[#0d9488] hover:bg-[#0f766e] text-white shadow-2xs'
-                        }`}
-                      >
-                        <SoftFilledIcon id="location" size={15} />
-                        <span>
-                          {geoStatus === 'locating'
-                            ? isEn
-                              ? 'GPS...'
-                              : 'تحديد...'
-                            : geoStatus === 'active'
-                            ? isEn
-                              ? 'GPS ✓'
-                              : 'موقعي ✓'
-                            : isEn
-                            ? 'GPS'
-                            : 'موقعي GPS'}
-                        </span>
-                      </button>
-                      </div>
-                      <p className="text-[10px] font-bold text-[var(--color-muted)]">
-                        {isEn
-                          ? `Selected: ${resolvedDrawerCity.nameEn} · ${resolvedDrawerCity.regionEn} · ${state.currency}`
-                          : `المحدد: ${resolvedDrawerCity.nameAr} · ${resolvedDrawerCity.regionAr} · ${state.currency}`}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
 
                 {(() => {
                   const masterAccordionSections: Array<{
