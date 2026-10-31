@@ -17,6 +17,7 @@ import {
 import { ThreeDChildAvatar, ThreeDIcon } from '../components/ThreeDVisuals';
 import { ChildGrowthChart } from '../components/ChildGrowthChart';
 import { ChildLifeTimelinePanel } from './ChildLifeTimelinePanel';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface ChildrenProfilesSectionProps {
   state: FamilySpaceState;
@@ -67,6 +68,30 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
           {isEn ? '+ Add Child Profile' : '+ إضافة طفل جديد'}
         </PrimaryCtaButton>
       </div>
+
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="children"
+        titleAr="أدوات ملفات الأطفال"
+        titleEn="Children tools"
+        badgeCount={state.kids.length}
+        quickActions={[
+          {
+            id: 'add-child',
+            icon: '➕',
+            labelAr: '+ إضافة طفل',
+            labelEn: '+ Add Child',
+            onClick: onOpenAddChild,
+          },
+          ...state.kids.map((kid) => ({
+            id: `edit-kid-${kid.id}`,
+            icon: kid.gender === 'girl' ? '👧' : '👦',
+            labelAr: `ملف ${locText(kid.name, 'ar')}`,
+            labelEn: `${locText(kid.name, 'en')} Profile`,
+            onClick: () => onOpenEditChild(kid),
+          })),
+        ]}
+      />
 
       {/* Interactive Recharts Growth Visualization (Height & Weight over Time) */}
       {state.kids.length > 0 && (

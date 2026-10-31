@@ -421,7 +421,7 @@ GRANT EXECUTE ON FUNCTION private.current_user_family_id() TO authenticated, ser
 CREATE OR REPLACE FUNCTION private.prevent_ownership_column_mutation()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
 DECLARE
@@ -450,7 +450,7 @@ BEGIN
       v_trusted_user_id := pg_catalog.current_setting('nekbaar.invitation_transfer_user_id', true);
       v_trusted_family_id := pg_catalog.current_setting('nekbaar.invitation_transfer_target_family_id', true);
 
-      IF pg_catalog.current_user IN ('anon', 'authenticated')
+      IF CURRENT_USER IN ('anon', 'authenticated', 'authenticator')
          OR NEW.family_id IS NULL
          OR COALESCE(v_trusted_user_id, '') <> OLD.id::text
          OR COALESCE(v_trusted_family_id, '') <> NEW.family_id::text THEN
@@ -473,7 +473,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.prevent_ownership_column_mutation() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.prevent_ownership_column_mutation() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.prevent_ownership_column_mutation() TO authenticated, service_role;
 
 DROP TRIGGER IF EXISTS trg_families_immutable_ownership ON public.families;
 CREATE TRIGGER trg_families_immutable_ownership
@@ -516,7 +517,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.enforce_child_belongs_to_family() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.enforce_child_belongs_to_family() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.enforce_child_belongs_to_family() TO authenticated, service_role;
 
 DROP TRIGGER IF EXISTS trg_wellness_diagnostics_child_family_check ON public.wellness_diagnostics;
 CREATE TRIGGER trg_wellness_diagnostics_child_family_check
@@ -550,7 +552,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.create_default_family_home() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.create_default_family_home() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.create_default_family_home() TO authenticated, service_role;
 
 DROP TRIGGER IF EXISTS families_create_default_home ON public.families;
 CREATE TRIGGER families_create_default_home
@@ -697,3 +700,4 @@ CREATE POLICY catalog_items_select_policy
 
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.catalog_items FROM anon, authenticated;
 GRANT SELECT ON public.catalog_items TO anon, authenticated;
+

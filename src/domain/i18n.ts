@@ -1,8 +1,12 @@
 import { LanguageCode } from './familySpaceCore';
 
+export const OFFICIAL_BRAND_SLOGAN_AR = 'مساحة تجمعنا.. وبحبهم نكبر';
+export const OFFICIAL_BRAND_SLOGAN_EN = 'Our shared space.. growing with love';
+
 export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
   ar: {
     brandName: 'نكبر',
+    brandSlogan: OFFICIAL_BRAND_SLOGAN_AR,
     navHome: 'الرئيسية',
     navChildren: 'إدارة الأطفال',
     navRoutine: 'الروتين اليومي',
@@ -72,6 +76,7 @@ export const UI_STRINGS: Record<LanguageCode, Record<string, string>> = {
   },
   en: {
     brandName: 'Nekbaar',
+    brandSlogan: OFFICIAL_BRAND_SLOGAN_AR,
     navHome: 'Dashboard',
     navChildren: 'Children 3D',
     navRoutine: 'Daily Routine',

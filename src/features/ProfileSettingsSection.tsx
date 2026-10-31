@@ -14,6 +14,7 @@ import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { t } from '../domain/i18n';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
 import { MasterPatternCard, PrimaryCtaButton, SoftFilledIcon, UnifiedBadge, CollapsibleSectionCard } from '../components/DesignSystem';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface ProfileSettingsSectionProps {
   state: FamilySpaceState;
@@ -182,6 +183,68 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Standardized Section Tools (أدوات القسم) immediately after the top profile banner */}
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="settings"
+        titleAr="أدوات الإعدادات"
+        titleEn="Settings tools"
+        badgeCount={unreadNotifCount}
+        quickActions={[
+          {
+            id: 'toggle-inner-settings',
+            icon: '⚙️',
+            labelAr: showInnerSettings ? 'إخفاء الإعدادات' : 'إعدادات الحساب',
+            labelEn: showInnerSettings ? 'Hide Settings' : 'App Settings',
+            active: showInnerSettings,
+            onClick: onToggleShowInnerSettings,
+          },
+          {
+            id: 'edit-account',
+            icon: '✏️',
+            labelAr: 'تعديل الحساب والمدينة',
+            labelEn: 'Edit Account & City',
+            onClick: onOpenOnboardingModal,
+          },
+          {
+            id: 'family-permissions',
+            icon: '👨‍👩‍👧‍👦',
+            labelAr: 'الأسرة والصلاحيات',
+            labelEn: 'Family & Permissions',
+            onClick: () => onNavigateTo('family'),
+          },
+          {
+            id: 'export-backup',
+            icon: '💾',
+            labelAr: 'تصدير نسخة احتياطية',
+            labelEn: 'Export Backup',
+            onClick: onExportJson,
+          },
+        ]}
+      >
+        <div className="space-y-2.5">
+          <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+            {lang === 'en' ? 'Quick Appearance & Language' : 'اختصارات المظهر واللغة'}
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={onToggleDarkMode}
+              className="min-h-[36px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+            >
+              {state.darkMode ? (lang === 'en' ? '☀️ Day Mode' : '☀️ الوضع النهاري') : (lang === 'en' ? '🌙 Night Mode' : '🌙 الوضع الليلي')}
+            </button>
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="min-h-[36px] px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-950/30 text-xs font-extrabold text-rose-700 dark:text-rose-300 cursor-pointer"
+            >
+              {lang === 'en' ? 'Sign Out' : 'تسجيل الخروج'}
+            </button>
+          </div>
+        </div>
+      </SectionToolsDrawer>
 
       <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2.5 flex items-center justify-between gap-3">
         <div className="min-w-0">

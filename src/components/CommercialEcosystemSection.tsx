@@ -914,7 +914,53 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         />
       )}
 
-      <SectionToolsDrawer language={language} titleAr="أدوات المتجر" titleEn="Store tools" badgeCount={activeFiltersCount}>
+      <SectionToolsDrawer
+        language={language}
+        sectionId="store"
+        titleAr="أدوات المتجر"
+        titleEn="Store tools"
+        badgeCount={activeFiltersCount}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholderAr="🔍 ابحث في المتجر والخدمات..."
+        searchPlaceholderEn="🔍 Search store & services..."
+        quickActions={[
+          {
+            id: 'filter-panel',
+            icon: '⚙️',
+            labelAr: 'تصفية وفلترة',
+            labelEn: 'Filters',
+            badge: activeFiltersCount > 0 ? activeFiltersCount : undefined,
+            active: showFilterPanel || activeFiltersCount > 0,
+            onClick: () => setShowFilterPanel((prev) => !prev),
+          },
+          {
+            id: 'compare-panel',
+            icon: '⇄',
+            labelAr: 'المقارنة',
+            labelEn: 'Compare',
+            badge: `${comparedItems.length}/3`,
+            active: showComparePanel,
+            onClick: () => {
+              setStoreFlowStep('catalog');
+              setShowCartPanel(false);
+              setShowComparePanel((prev) => !prev);
+            },
+          },
+          {
+            id: 'live-tracking',
+            icon: '🛵',
+            labelAr: 'تتبع الطلب',
+            labelEn: 'Tracking',
+            active: showLiveTracking,
+            onClick: () => {
+              setStoreFlowStep('catalog');
+              setShowCartPanel(false);
+              setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
+            },
+          },
+        ]}
+      >
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2">
           <p className="text-xs font-extrabold text-[var(--color-text)]">{isEn ? 'Browse scope' : 'نطاق التصفح'}</p>
           <div className="grid grid-cols-2 gap-1.5">

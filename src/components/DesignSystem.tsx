@@ -2632,7 +2632,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           </div>
         </div>
 
-        {/* Bilingual App Name ("نكبر / Nekbaar") Directly Underneath */}
+        {/* Bilingual App Name ("نكبر / Nekbaar") & Official Slogan Directly Underneath */}
         <div className="space-y-2 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
           <h1
             data-testid="splash-brand-title"
@@ -2644,6 +2644,12 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
               Nekbaar
             </span>
           </h1>
+          <p
+            data-testid="splash-brand-slogan"
+            className="text-sm sm:text-base font-extrabold text-slate-700 dark:text-slate-200 tracking-wide"
+          >
+            مساحة تجمعنا.. وبحبهم نكبر
+          </p>
         </div>
       </div>
 

@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import supabase, { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabase.js";
@@ -16,10 +18,11 @@ import {
  * Real PostgreSQL RLS Integration Test Suite for Nekbaar (Family Space)
  *
  * SAFETY & PRODUCTION DATA PROTECTION:
- * 1. Part A executes strictly non-destructive, read-only and anonymous-denial
- *    assertions against the live Supabase PostgreSQL instance (`SUPABASE_URL` /
- *    `VITE_SUPABASE_URL`) to verify table-level privilege revocations, RPC ACLs,
- *    and public catalog read-only protections without creating or modifying data.
+ * 1. Part A executes SQL migration security-context checks and strictly non-destructive,
+ *    read-only and anonymous-denial assertions against the live Supabase PostgreSQL
+ *    instance (`SUPABASE_URL` / `VITE_SUPABASE_URL`) to verify table-level privilege
+ *    revocations, RPC ACLs, and public catalog read-only protections without creating
+ *    or modifying data.
  * 2. Part B executes the 17-scenario authenticated multi-family PostgreSQL RLS
  *    integration matrix ONLY when an isolated test database is explicitly configured
  *    via `TEST_SUPABASE_URL`, `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY`
@@ -52,8 +55,60 @@ function createAnonClient(url: string, anonKey: string): SupabaseClient {
 }
 
 // ============================================================================
-// PART A: Live Non-Destructive PostgreSQL RLS & ACL Verification
+// PART A: Migration SQL Security Validation & Live Non-Destructive PostgreSQL Verification
 // ============================================================================
+
+test("Part A.0: Migration 20261031071500 & schema.sql fix 42P01 pg_catalog.current_user bug, enforce SECURITY INVOKER ownership trigger, and harden grants", () => {
+  const migrationPath = path.resolve(
+    process.cwd(),
+    "supabase/migrations/20261031071500_add_families_and_users_insert_rls_for_upsert.sql",
+  );
+  const schemaPath = path.resolve(process.cwd(), "supabase/schema.sql");
+
+  const migrationSql = fs.readFileSync(migrationPath, "utf8");
+  const schemaSql = fs.readFileSync(schemaPath, "utf8");
+
+  for (const [label, sqlText] of [
+    ["20261031071500 migration", migrationSql],
+    ["supabase/schema.sql", schemaSql],
+  ] as const) {
+    assert.equal(
+      /pg_catalog\.current_user/i.test(sqlText),
+      false,
+      `${label} must not contain invalid 'pg_catalog.current_user' (causes PostgreSQL 42P01)`,
+    );
+    assert.equal(
+      /pg_catalog\.session_user/i.test(sqlText),
+      false,
+      `${label} must not contain invalid 'pg_catalog.session_user'`,
+    );
+    assert.match(
+      sqlText,
+      /CREATE OR REPLACE FUNCTION private\.prevent_ownership_column_mutation\(\)\s+RETURNS TRIGGER\s+LANGUAGE plpgsql\s+SECURITY INVOKER\s+SET search_path = ''/i,
+      `${label} must define private.prevent_ownership_column_mutation() as SECURITY INVOKER with SET search_path = ''`,
+    );
+    assert.match(
+      sqlText,
+      /CURRENT_USER IN \('anon', 'authenticated', 'authenticator'\)/,
+      `${label} must verify CURRENT_USER IN ('anon', 'authenticated', 'authenticator') inside prevent_ownership_column_mutation`,
+    );
+    assert.match(
+      sqlText,
+      /GRANT EXECUTE ON FUNCTION private\.prevent_ownership_column_mutation\(\) TO authenticated, service_role;/,
+      `${label} must grant EXECUTE on trigger function prevent_ownership_column_mutation to authenticated, service_role`,
+    );
+    assert.match(
+      sqlText,
+      /GRANT EXECUTE ON FUNCTION private\.enforce_child_belongs_to_family\(\) TO authenticated, service_role;/,
+      `${label} must grant EXECUTE on trigger function enforce_child_belongs_to_family to authenticated, service_role`,
+    );
+    assert.match(
+      sqlText,
+      /GRANT EXECUTE ON FUNCTION private\.create_default_family_home\(\) TO authenticated, service_role;/,
+      `${label} must grant EXECUTE on trigger function create_default_family_home to authenticated, service_role`,
+    );
+  }
+});
 
 test("Part A.1: Live PostgreSQL denies anonymous SELECT, INSERT, UPDATE, and DELETE on all private family tables", async () => {
   const anonClient = createAnonClient(LIVE_SUPABASE_URL, LIVE_SUPABASE_ANON_KEY);

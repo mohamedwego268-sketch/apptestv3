@@ -21,6 +21,7 @@ import { useMaster } from '../services/MasterAppController';
 import { BatteryDiagnosticsView } from '../components/BatteryDiagnosticsView';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -434,6 +435,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   bedtimeMode = false,
   onToggleBedtimeMode,
   onOpenStoreCategory,
+  onReplaySplash,
 }) => {
   const isEn = lang === 'en';
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
@@ -1411,6 +1413,104 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         )}
       </div>
+
+      {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="dashboard"
+        titleAr="أدوات الرئيسية"
+        titleEn="Dashboard tools"
+        badgeCount={state.tasks.filter((t) => !t.done).length}
+        quickActions={[
+          {
+            id: 'routine-shortcut',
+            icon: '✅',
+            labelAr: 'مهام اليوم',
+            labelEn: 'Daily Routine',
+            badge: state.tasks.filter((t) => !t.done).length,
+            onClick: () => navigateTo('routine'),
+          },
+          {
+            id: 'calendar-shortcut',
+            icon: '📅',
+            labelAr: 'التقويم الأسري',
+            labelEn: 'Family Calendar',
+            badge: state.events.length,
+            onClick: () => navigateTo('calendar'),
+          },
+          {
+            id: 'children-shortcut',
+            icon: '👶',
+            labelAr: 'ملفات الأطفال',
+            labelEn: 'Children Profiles',
+            badge: state.kids.length,
+            onClick: () => navigateTo('children'),
+          },
+          ...(onToggleBedtimeMode
+            ? [
+                {
+                  id: 'toggle-bedtime',
+                  icon: '🌙',
+                  labelAr: bedtimeMode ? 'إيقاف وضع النوم' : 'وضع ما قبل النوم',
+                  labelEn: bedtimeMode ? 'Exit Bedtime Mode' : 'Bedtime Mode',
+                  active: Boolean(bedtimeMode),
+                  onClick: onToggleBedtimeMode,
+                },
+              ]
+            : []),
+        ]}
+      >
+        <div className="space-y-3">
+          {state.kids.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {isEn ? 'Active Child Focus' : 'تخصيص العرض حسب الطفل'}
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {state.kids.map((kid, idx) => (
+                  <button
+                    key={kid.id}
+                    type="button"
+                    onClick={() => setSelectedKidIdx(idx)}
+                    className={`min-h-[36px] px-3 py-1.5 rounded-xl border text-xs font-extrabold transition-colors cursor-pointer ${
+                      selectedKidIdx === idx
+                        ? 'border-[#0d9488] bg-[#0d9488] text-white'
+                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
+                    }`}
+                  >
+                    {locText(kid.name, lang)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
+            <button
+              type="button"
+              onClick={() => toggleAccordion('welcomeAudio')}
+              className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+            >
+              {openAccordions.welcomeAudio
+                ? isEn
+                  ? '🔊 Hide Audio Tip'
+                  : '🔊 إخفاء الرسالة الصوتية'
+                : isEn
+                ? '🔊 Show Audio Tip'
+                : '🔊 إظهار الرسالة الصوتية'}
+            </button>
+            {onReplaySplash && (
+              <button
+                type="button"
+                onClick={onReplaySplash}
+                className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+              >
+                {isEn ? '✨ Replay Welcome' : '✨ شاشة الترحيب'}
+              </button>
+            )}
+          </div>
+        </div>
+      </SectionToolsDrawer>
 
       {/* =====================================================================
           2. INSTAGRAM-STYLE REEL VIDEO PLAYER (< 60s) — PERMANENTLY VISIBLE (CHECKLIST #3 & #8)

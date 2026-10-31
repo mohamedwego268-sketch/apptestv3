@@ -1047,36 +1047,44 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-modal="true"
       aria-label={isEn ? 'Nekbaar Authentication' : 'نكبر'}
       dir={isEn ? 'ltr' : 'rtl'}
-      className="fixed inset-0 z-50 bg-slate-100/95 dark:bg-[#0B131A] overflow-hidden flex flex-col items-center justify-center p-2 pt-safe pb-safe"
+      className="fixed inset-0 z-50 h-dvh bg-slate-100/95 dark:bg-[#0B131A] overflow-hidden flex flex-col items-center justify-center px-4 pt-safe pb-safe"
     >
       <div className="w-full max-w-[430px] min-h-0 mx-auto my-auto flex flex-col justify-center">
-        {/* Viewport-bounded authentication card: content scrolls inside the phone frame */}
-        <div className="onboarding-card-scroll w-full max-h-[calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-16px)] overflow-y-auto overscroll-contain rounded-3xl bg-white dark:bg-[#101D26] border border-slate-200/80 dark:border-[#1E3646] shadow-xl p-4 sm:p-6 space-y-4 relative">
+        {/* Zero-scroll compact authentication card (controlled internal scroll fallback for virtual keyboards/landscape) */}
+        <div className="onboarding-card-scroll w-full max-h-[calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-12px)] overflow-y-auto overscroll-contain rounded-3xl bg-white dark:bg-[#101D26] border border-slate-200/80 dark:border-[#1E3646] shadow-xl p-3 sm:p-4 space-y-2 relative">
           {!isMandatoryGateway && (
             <button
               type="button"
               onClick={onClose}
               aria-label={isEn ? 'Close' : 'إغلاق'}
-              className="absolute top-4 end-4 min-w-[48px] min-h-[48px] rounded-full bg-slate-100 dark:bg-[#142430] text-slate-600 dark:text-slate-300 flex items-center justify-center text-sm font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+              className="absolute top-2.5 end-2.5 min-w-[36px] min-h-[36px] rounded-full bg-slate-100 dark:bg-[#142430] text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
             >
               ✕
             </button>
           )}
 
-          {/* Centered Brand Logo & Title */}
-          <div className="flex flex-col items-center text-center space-y-1 pt-0.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-md">
-              <span className="text-xl font-black text-white select-none">ن</span>
+          {/* Compact Brand Header: Logo + Brand Name + Official Slogan ("مساحة تجمعنا.. وبحبهم نكبر") */}
+          <div className="flex items-center justify-center gap-2.5 text-start">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-xs shrink-0">
+              <span className="text-base font-black text-white select-none">ن</span>
             </div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              {isEn ? 'Nekbaar' : 'نكبر'}
-            </h1>
+            <div className="min-w-0">
+              <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                {isEn ? 'Nekbaar' : 'نكبر'}
+              </h1>
+              <p
+                data-testid="onboarding-brand-slogan"
+                className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-tight"
+              >
+                مساحة تجمعنا.. وبحبهم نكبر
+              </p>
+            </div>
           </div>
 
           {errorMsg && (
             <div
               role="alert"
-              className="rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 px-4 py-2.5 text-xs font-bold text-rose-600 dark:text-rose-300 text-center"
+              className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 px-3 py-1.5 text-[11px] font-bold text-rose-600 dark:text-rose-300 text-center"
             >
               {errorMsg}
             </div>
@@ -1086,7 +1094,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <div
               role="status"
               data-testid="onboarding-db-sync-warning"
-              className="rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-4 py-2 text-xs font-bold text-amber-700 dark:text-amber-300 text-center"
+              className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 px-3 py-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 text-center"
             >
               {dbSyncWarning}
             </div>
@@ -1095,15 +1103,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           {pendingVerificationEmail && (
             <div
               data-testid="auth-otp-verification-box"
-              className="rounded-2xl bg-teal-50 dark:bg-[#142430] border border-teal-300 dark:border-teal-700/60 p-3.5 space-y-2.5"
+              className="rounded-2xl bg-teal-50 dark:bg-[#142430] border border-teal-300 dark:border-teal-700/60 p-2.5 space-y-2"
             >
-              <p className="text-xs font-extrabold text-teal-900 dark:text-teal-200 text-center">
+              <p className="text-[11px] font-extrabold text-teal-900 dark:text-teal-200 text-center">
                 {otpStatusMsg ||
                   (isEn
                     ? `Verify your email (${pendingVerificationEmail})`
                     : `تأكيد البريد الإلكتروني (${pendingVerificationEmail})`)}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <input
                   type="text"
                   inputMode="numeric"
@@ -1113,13 +1121,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   onChange={(e) => setVerificationOtpCode(e.target.value)}
                   placeholder={isEn ? '6-digit OTP code' : 'رمز التحقق (6 أرقام)'}
                   aria-label={isEn ? 'Verification code' : 'رمز التحقق'}
-                  className="flex-1 min-h-[42px] px-4 rounded-full border border-teal-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-xs font-bold text-slate-900 dark:text-white text-center"
+                  className="flex-1 min-h-[38px] px-3 rounded-xl border border-teal-300 dark:border-[#1E3646] bg-white dark:bg-[#101D26] text-xs font-bold text-slate-900 dark:text-white text-center"
                 />
                 <button
                   type="button"
                   data-testid="auth-otp-verify-btn"
                   onClick={handleVerifyIdentityOtp}
-                  className="min-h-[42px] px-4 rounded-full bg-[#0d9488] text-white text-xs font-black cursor-pointer"
+                  className="min-h-[38px] px-3.5 rounded-xl bg-[#0d9488] text-white text-xs font-black cursor-pointer"
                 >
                   {isEn ? 'Verify' : 'تأكيد'}
                 </button>
@@ -1138,12 +1146,12 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           )}
 
           {/* =================================================================
-              VIEW 1: MINIMALIST CARD-BASED SIGN-IN / REGISTRATION GATEWAY
+              VIEW 1: ZERO-SCROLL COMPACT MOBILE SIGN-IN / REGISTRATION GATEWAY
               ================================================================= */}
           {activeView === 'AUTH' && (
-            <form onSubmit={handleFirstStepSubmit} className="space-y-3.5" noValidate>
-              {/* Clean Top Segmented Toggle: Registration vs Sign-In */}
-              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-full bg-slate-100 dark:bg-[#142430] border border-slate-200/70 dark:border-[#1E3646]">
+            <form onSubmit={handleFirstStepSubmit} className="space-y-1.5" noValidate>
+              {/* 1. Compact Segmented Toggle: Registration vs Sign-In */}
+              <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-[#142430] border border-slate-200/70 dark:border-[#1E3646]">
                 <button
                   type="button"
                   data-testid="auth-tab-signup"
@@ -1151,9 +1159,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setErrorMsg(null);
                     setAuthMode('signup');
                   }}
-                  className={`min-h-[48px] rounded-full text-xs font-black transition-all cursor-pointer ${
+                  className={`min-h-[40px] rounded-xl text-xs font-black transition-all cursor-pointer ${
                     authMode === 'signup'
-                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-xs'
+                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-2xs'
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
@@ -1166,9 +1174,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setErrorMsg(null);
                     setAuthMode('signin');
                   }}
-                  className={`min-h-[48px] rounded-full text-xs font-black transition-all cursor-pointer ${
+                  className={`min-h-[40px] rounded-xl text-xs font-black transition-all cursor-pointer ${
                     authMode === 'signin'
-                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-xs'
+                      ? 'bg-white dark:bg-[#0d9488] text-slate-900 dark:text-white shadow-2xs'
                       : 'text-slate-500 dark:text-slate-400'
                   }`}
                 >
@@ -1176,13 +1184,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </button>
               </div>
 
-              {/* Family Role Selector Quick Toggle: [أب / Father] or [أم / Mother] */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* 2. Family Role Selector Quick Toggle: [أب / Father] or [أم / Mother] */}
+              <div className="grid grid-cols-2 gap-1.5">
                 <button
                   type="button"
                   data-testid="role-toggle-dad"
                   onClick={() => handleSelectRole('dad')}
-                  className={`min-h-[48px] rounded-full border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`min-h-[40px] rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     parentRole === 'dad'
                       ? 'border-[#0d9488] bg-[#0d9488]/10 text-[#0d9488] dark:text-[#2DD4BF]'
                       : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
@@ -1195,7 +1203,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   type="button"
                   data-testid="role-toggle-mom"
                   onClick={() => handleSelectRole('mom')}
-                  className={`min-h-[48px] rounded-full border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`min-h-[40px] rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     parentRole === 'mom'
                       ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-300'
                       : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
@@ -1206,7 +1214,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 </button>
               </div>
 
-              {/* Full Name (الاسم الكامل) */}
+              {/* 3. Full Name (الاسم الكامل) */}
               {authMode === 'signup' && (
                 <div>
                   <input
@@ -1218,13 +1226,13 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={isEn ? 'Full Name' : 'الاسم الكامل'}
                     aria-label={isEn ? 'Full Name' : 'الاسم الكامل'}
-                    className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
+                    className="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
                   />
                 </div>
               )}
 
-              {/* Email (البريد الإلكتروني) */}
-              <div>
+              {/* 4. Email & Password side-by-side compact 2-column grid */}
+              <div className="grid grid-cols-2 gap-1.5">
                 <input
                   id="auth-email-input"
                   data-testid="auth-email-input"
@@ -1235,12 +1243,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={isEn ? 'Email Address' : 'البريد الإلكتروني'}
                   aria-label={isEn ? 'Email Address' : 'البريد الإلكتروني'}
-                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
+                  className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
                 />
-              </div>
-
-              {/* Password (كلمة المرور) */}
-              <div>
                 <input
                   id="auth-password-input"
                   data-testid="auth-password-input"
@@ -1251,15 +1255,15 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isEn ? 'Password' : 'كلمة المرور'}
                   aria-label={isEn ? 'Password' : 'كلمة المرور'}
-                  className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
+                  className="w-full min-h-[42px] px-3 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors text-start"
                 />
               </div>
 
-              {/* Phone Number + Country Selector (Egypt & Saudi Arabia) */}
+              {/* 5 & 6. Location + Combined Dial-Code/Currency Badge & Phone Input */}
               {authMode === 'signup' && (
                 <>
-                  {/* Country Dropdown (markets supported end-to-end by the core account model) */}
-                  <div>
+                  {/* Unified Country + City + GPS/Manual Location Row */}
+                  <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center">
                     <select
                       id="auth-country-select"
                       data-testid="auth-country-select"
@@ -1268,7 +1272,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         setSelectedCountryCode(e.target.value as SupportedAccountCountry)
                       }
                       aria-label={isEn ? 'Country' : 'الدولة'}
-                      className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
+                      className="w-full min-w-0 min-h-[42px] px-2.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer truncate"
                     >
                       {SUPPORTED_ACCOUNT_COUNTRIES.map((countryItem) => (
                         <option key={countryItem.code} value={countryItem.code}>
@@ -1276,98 +1280,72 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         </option>
                       ))}
                     </select>
+
+                    <select
+                      id="auth-city-select"
+                      data-testid="auth-city-select"
+                      value={resolvedSelectedCityId}
+                      onChange={(e) => {
+                        setLocationMode('manual');
+                        setSelectedCityAr(e.target.value);
+                      }}
+                      aria-label={isEn ? 'City' : 'المدينة'}
+                      className="w-full min-w-0 min-h-[42px] px-2.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer truncate"
+                    >
+                      {activeCityOptions.map((cityItem) => (
+                        <option key={cityItem.id} value={cityItem.id}>
+                          {isEn ? (cityItem.labelEn || cityItem.nameEn) : (cityItem.labelAr || cityItem.nameAr)}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      data-testid="location-mode-gps-btn"
+                      onClick={handleDetectCurrentLocationGps}
+                      title={isEn ? 'Detect Current Location (GPS)' : 'تحديد الموقع الحالي (GPS)'}
+                      aria-label={isEn ? 'Current Location' : 'الموقع الحالي'}
+                      className={`min-h-[42px] px-2.5 rounded-xl border text-[11px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 ${
+                        locationMode === 'gps'
+                          ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
+                          : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      <span aria-hidden="true">📍</span>
+                      <span>{isLocatingGps ? '...' : 'GPS'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid="location-mode-manual-btn"
+                      onClick={() => setLocationMode('manual')}
+                      title={isEn ? 'Choose Your City Manually' : 'اختر مدينتك يدوياً'}
+                      aria-label={isEn ? 'Choose Your City' : 'اختر مدينتك'}
+                      className={`min-h-[42px] px-2.5 rounded-xl border text-[11px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 ${
+                        locationMode === 'manual'
+                          ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
+                          : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      <span aria-hidden="true">🏙️</span>
+                    </button>
                   </div>
 
-                  {/* Dynamic Location Feature: Current Location GPS vs Manual City Selection */}
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        data-testid="location-mode-gps-btn"
-                        onClick={handleDetectCurrentLocationGps}
-                        className={`min-h-[48px] px-3 rounded-full border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          locationMode === 'gps'
-                            ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
-                            : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
-                        }`}
-                      >
-                        <span>📍</span>
-                        <span>
-                          {isLocatingGps
-                            ? isEn
-                              ? 'Locating...'
-                              : 'جاري التحديد...'
-                            : isEn
-                            ? 'Current Location'
-                            : 'الموقع الحالي'}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        data-testid="location-mode-manual-btn"
-                        onClick={() => setLocationMode('manual')}
-                        className={`min-h-[48px] px-3 rounded-full border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                          locationMode === 'manual'
-                            ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
-                            : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
-                        }`}
-                      >
-                        <span>🏙️</span>
-                        <span>{isEn ? 'Choose Your City' : 'اختر مدينتك'}</span>
-                      </button>
+                  {/* Combined Country Dial-Code/Currency Badge + Phone Input */}
+                  <div className="flex items-center gap-1.5" dir="ltr">
+                    <div
+                      data-testid="onboarding-region-summary"
+                      title={`${isEn ? activeCountryObj.nameEn : activeCountryObj.nameAr} · ${
+                        isEn
+                          ? resolvedSelectedCity.labelEn || resolvedSelectedCity.nameEn || activeCountryObj.defaultCityEn
+                          : resolvedSelectedCity.labelAr || resolvedSelectedCity.nameAr
+                      }`}
+                      className="min-h-[42px] px-3 rounded-xl border border-teal-500/30 bg-teal-50/80 dark:bg-[#142430] text-[11px] font-black text-teal-900 dark:text-[#2DD4BF] inline-flex items-center justify-center gap-1 shrink-0 tabular-nums"
+                    >
+                      <span>{activeCountryObj.dialCode}</span>
+                      <span className="opacity-60">·</span>
+                      <span>{getSuggestedCurrencyForCountry(activeCountryObj.mappedCoreCountry)}</span>
                     </div>
-
-                    {locationMode === 'manual' ? (
-                      <select
-                        id="auth-city-select"
-                        data-testid="auth-city-select"
-                        value={resolvedSelectedCityId}
-                        onChange={(e) => setSelectedCityAr(e.target.value)}
-                        aria-label={isEn ? 'City' : 'المدينة'}
-                        className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:border-[#0d9488] transition-colors cursor-pointer"
-                      >
-                        {activeCityOptions.map((cityItem) => (
-                          <option key={cityItem.id} value={cityItem.id}>
-                            {isEn ? (cityItem.labelEn || cityItem.nameEn) : (cityItem.labelAr || cityItem.nameAr)}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <div className="min-h-[48px] px-5 rounded-full border border-teal-500/30 bg-teal-500/8 flex items-center justify-between text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF]">
-                        <span>
-                          📍{' '}
-                          {isEn
-                            ? resolvedSelectedCity.labelEn || resolvedSelectedCity.nameEn || activeCountryObj.defaultCityEn
-                            : (resolvedSelectedCity.labelAr || resolvedSelectedCity.nameAr)}
-                        </span>
-                        <span className="text-[11px] opacity-80">GPS</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Clear Country + City + Currency + Dial Code Summary Strip */}
-                  <div
-                    data-testid="onboarding-region-summary"
-                    className="rounded-2xl border border-teal-500/25 bg-teal-50/70 dark:bg-[#142430] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-extrabold text-teal-900 dark:text-[#2DD4BF]"
-                  >
-                    <span>
-                      🌍 {isEn ? activeCountryObj.nameEn : activeCountryObj.nameAr} ·{' '}
-                      {isEn
-                        ? resolvedSelectedCity.labelEn || resolvedSelectedCity.nameEn || activeCountryObj.defaultCityEn
-                        : (resolvedSelectedCity.labelAr || resolvedSelectedCity.nameAr)}
-                    </span>
-                    <span dir="ltr" className="tabular-nums">
-                      {activeCountryObj.dialCode} ·{' '}
-                      {getSuggestedCurrencyForCountry(activeCountryObj.mappedCoreCountry)}
-                    </span>
-                  </div>
-
-                  {/* Phone Number Input */}
-                  <div className="flex items-center gap-2" dir="ltr">
-                    <span className="min-h-[48px] px-4 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-100 dark:bg-[#142430] text-xs font-black text-slate-700 dark:text-slate-200 inline-flex items-center justify-center shrink-0 tabular-nums">
-                      {activeCountryObj.dialCode}
-                    </span>
                     <input
                       id="auth-phone-input"
                       data-testid="auth-phone-input"
@@ -1377,19 +1355,19 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder={isEn ? 'Phone Number' : 'رقم الهاتف'}
                       aria-label={isEn ? 'Phone Number' : 'رقم الهاتف'}
-                      className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
+                      className="w-full min-h-[42px] px-3.5 rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] transition-colors"
                     />
                   </div>
                 </>
               )}
 
-              {/* Smooth Pill Primary Action Button ("متابعة" / "Next") */}
+              {/* 7. Primary Action Button ("متابعة" / "Next") */}
               <button
                 type="submit"
                 id="auth-primary-submit-btn"
                 data-testid="auth-primary-submit-btn"
                 disabled={isSubmitting}
-                className="w-full min-h-[48px] rounded-full bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-sm font-black shadow-md transition-all cursor-pointer flex items-center justify-center"
+                className="w-full min-h-[42px] rounded-xl bg-[#0d9488] hover:bg-[#0f766e] active:scale-[0.99] text-white text-xs font-black shadow-sm transition-all cursor-pointer flex items-center justify-center"
               >
                 {isSubmitting
                   ? isEn
@@ -1400,37 +1378,41 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   : 'متابعة'}
               </button>
 
-              {/* App review uses bundled sample data only; it does not create or authenticate an account. */}
-              <div className="grid grid-cols-2 gap-2 pt-1" data-testid="auth-preview-actions">
-                <button type="button" id="auth-review-app-btn" data-testid="auth-review-app-btn" onClick={onPreviewRequest} className="min-h-[48px] rounded-full bg-gradient-to-r from-[#0d9488] to-[#269db4] text-white text-xs font-black shadow-md shadow-teal-900/10 hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                  <span aria-hidden="true">👀</span>{isEn ? 'Review the App' : 'مراجعة التطبيق'}
+              {/* 8. Secondary Preview / Skip Actions */}
+              <div className="grid grid-cols-2 gap-1.5" data-testid="auth-preview-actions">
+                <button
+                  type="button"
+                  id="auth-review-app-btn"
+                  data-testid="auth-review-app-btn"
+                  onClick={onPreviewRequest}
+                  className="min-h-[38px] rounded-xl bg-gradient-to-r from-[#0d9488] to-[#269db4] text-white text-[11px] font-black shadow-2xs hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span aria-hidden="true">👀</span>
+                  <span>{isEn ? 'Review the App' : 'مراجعة التطبيق'}</span>
                 </button>
-                <button type="button" id="auth-skip-preview-btn" data-testid="auth-skip-preview-btn" onClick={onPreviewRequest} className="min-h-[48px] rounded-full border border-teal-600/25 bg-teal-50 dark:bg-[#142c32] text-teal-800 dark:text-teal-200 text-xs font-extrabold hover:bg-teal-100 dark:hover:bg-[#183a42] active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer">
+                <button
+                  type="button"
+                  id="auth-skip-preview-btn"
+                  data-testid="auth-skip-preview-btn"
+                  onClick={onPreviewRequest}
+                  className="min-h-[38px] rounded-xl border border-teal-600/25 bg-teal-50 dark:bg-[#142c32] text-teal-800 dark:text-teal-200 text-[11px] font-extrabold hover:bg-teal-100 dark:hover:bg-[#183a42] active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer"
+                >
                   {isEn ? 'Skip for now' : 'تخطي الآن'}
                 </button>
               </div>
 
-              {/* Official Branded Social Logins: Gmail, iCloud, Facebook, Outlook */}
-              <div className="pt-2 space-y-2.5">
-                <div className="relative flex items-center justify-center">
-                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
-                  <span className="bg-white dark:bg-[#101D26] px-3 text-[11px] font-bold text-slate-400 shrink-0">
-                    {isEn ? 'Or continue with' : 'أو المتابعة السريعة عبر'}
-                  </span>
-                  <div className="border-t border-slate-200 dark:border-[#1E3646] w-full" />
-                </div>
-
-                <div className="grid grid-cols-4 gap-2">
-                  {/* Gmail */}
+              {/* 9. Compact Social Logins Row: Gmail, iCloud, Facebook, Outlook */}
+              <div className="pt-0.5 space-y-1">
+                <div className="grid grid-cols-4 gap-1.5">
                   <button
                     type="button"
                     data-testid="social-auth-gmail"
                     onClick={() => handleSocialQuickAuth('gmail')}
                     title="Gmail"
                     aria-label="Gmail"
-                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                    className="min-h-[38px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex items-center justify-center gap-1 px-1.5 transition-all active:scale-95 cursor-pointer"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="#EA4335"
                         d="M12 10.2v3.6h5.1c-.2 1.2-.9 2.2-1.9 2.9l3.1 2.4c1.8-1.7 2.8-4.1 2.8-7 0-.7-.1-1.3-.2-1.9H12z"
@@ -1448,77 +1430,74 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                         d="M12 5.8c1.5 0 2.8.5 3.9 1.5l2.9-2.9C17 2.8 14.7 2 12 2 8.2 2 5 4.2 3.4 7.3l3.2 2.4c.8-2.5 3.1-3.9 5.4-3.9z"
                       />
                     </svg>
-                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">
                       Gmail
                     </span>
                   </button>
 
-                  {/* iCloud */}
                   <button
                     type="button"
                     data-testid="social-auth-icloud"
                     onClick={() => handleSocialQuickAuth('icloud')}
                     title="iCloud"
                     aria-label="iCloud"
-                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                    className="min-h-[38px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex items-center justify-center gap-1 px-1.5 transition-all active:scale-95 cursor-pointer"
                   >
                     <svg
-                      className="w-4 h-4 text-slate-900 dark:text-white"
+                      className="w-3.5 h-3.5 text-slate-900 dark:text-white shrink-0"
                       viewBox="0 0 24 24"
                       fill="currentColor"
                       aria-hidden="true"
                     >
                       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                     </svg>
-                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">
                       iCloud
                     </span>
                   </button>
 
-                  {/* Facebook */}
                   <button
                     type="button"
                     data-testid="social-auth-facebook"
                     onClick={() => handleSocialQuickAuth('facebook')}
                     title="Facebook"
                     aria-label="Facebook"
-                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                    className="min-h-[38px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex items-center justify-center gap-1 px-1.5 transition-all active:scale-95 cursor-pointer"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         fill="#1877F2"
                         d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"
                       />
                     </svg>
-                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">
                       Facebook
                     </span>
                   </button>
 
-                  {/* Outlook */}
                   <button
                     type="button"
                     data-testid="social-auth-outlook"
                     onClick={() => handleSocialQuickAuth('outlook')}
                     title="Outlook"
                     aria-label="Outlook"
-                    className="min-h-[48px] rounded-2xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex flex-col items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer"
+                    className="min-h-[38px] rounded-xl border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] hover:border-slate-300 flex items-center justify-center gap-1 px-1.5 transition-all active:scale-95 cursor-pointer"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                       <path fill="#F25022" d="M3 3h8.5v8.5H3z" />
                       <path fill="#7FBA00" d="M12.5 3H21v8.5h-8.5z" />
                       <path fill="#00A4EF" d="M3 12.5h8.5V21H3z" />
                       <path fill="#FFB900" d="M12.5 12.5H21V21h-8.5z" />
                     </svg>
-                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 truncate">
                       Outlook
                     </span>
                   </button>
                 </div>
               </div>
 
-              {/* Bottom Toggle between Login and Registration */}
-              <div className="pt-1 text-center">
+              {/* 10. Bottom Toggle between Login and Registration */}
+              <div className="text-center">
                 <button
                   type="button"
                   data-testid="auth-mode-toggle-btn"
@@ -1526,7 +1505,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     setErrorMsg(null);
                     setAuthMode((prev) => (prev === 'signup' ? 'signin' : 'signup'));
                   }}
-                  className="min-h-[48px] px-4 rounded-full text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] hover:underline inline-flex items-center justify-center cursor-pointer"
+                  className="min-h-[34px] px-3 rounded-xl text-[11px] font-bold text-[#0d9488] dark:text-[#2DD4BF] hover:underline inline-flex items-center justify-center cursor-pointer"
                 >
                   {authMode === 'signup'
                     ? isEn

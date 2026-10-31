@@ -914,144 +914,51 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         ariaLabel={isEn ? 'Featured Community Stories' : 'قصص وتجارب من مجتمع الأهل'}
       />
 
-      {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
-      <div
-        id="community-story-reels-strip"
-        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-2.5 soft-card-surface shadow-xs"
+      <SectionToolsDrawer
+        language={language}
+        sectionId="community"
+        titleAr="أدوات المجتمع"
+        titleEn="Community tools"
+        badgeCount={filteredPosts.length}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholderAr="🔍 ابحث في نقاشات وتجارب الوالدين..."
+        searchPlaceholderEn="🔍 Search parent discussions..."
+        quickActions={[
+          {
+            id: 'new-post',
+            icon: '✍️',
+            labelAr: '+ مشاركة جديدة',
+            labelEn: '+ New Post',
+            active: composerOpen,
+            onClick: () => setComposerOpen((prev) => !prev),
+          },
+          {
+            id: 'topic-all',
+            labelAr: 'الكل',
+            labelEn: 'All',
+            badge: posts.length,
+            active: topicFilter === 'all',
+            onClick: () => setTopicFilter('all'),
+          },
+          {
+            id: 'topic-experts',
+            icon: '🏅',
+            labelAr: 'الخبراء',
+            labelEn: 'Experts',
+            active: topicFilter === 'experts',
+            onClick: () => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts'),
+          },
+          {
+            id: 'topic-nursery',
+            icon: '🏫',
+            labelAr: 'الحضانات',
+            labelEn: 'Nurseries',
+            active: topicFilter === 'nursery',
+            onClick: () => setTopicFilter(topicFilter === 'nursery' ? 'all' : 'nursery'),
+          },
+        ]}
       >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="space-y-0.5 min-w-0">
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold">
-              <span>🎬</span>
-              <span>
-                {isEn
-                  ? 'Family Stories & Community Tips'
-                  : 'قصص قصيرة ونصائح مجتمعية'}
-              </span>
-            </div>
-            <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-              {isEn
-                ? 'Quick Parenting Ideas & Family Stories'
-                : 'أفكار عملية وتجارب أسرية قصيرة'}
-            </h3>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts')}
-            className={`min-h-[32px] px-3 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
-              topicFilter === 'experts'
-                ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
-                : 'border-amber-400/50 bg-amber-50/90 dark:bg-[#142430] text-amber-900 dark:text-amber-300 hover:border-amber-400'
-            }`}
-          >
-            <span>🏅</span>
-            <span>
-              {topicFilter === 'experts'
-                ? isEn
-                  ? 'Community replies'
-                  : 'ردود الخبراء ✓'
-                : isEn
-                ? 'Expert Replies'
-                : 'منشورات الأطباء'}
-            </span>
-          </button>
-        </div>
-
-        {/* Horizontal Story Reels Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {familyStoryReels.map((reel) => {
-            const isSelectedReel = activeStoryReelId === reel.id;
-            return (
-              <button
-                key={reel.id}
-                type="button"
-                onClick={() => setActiveStoryReelId(isSelectedReel ? null : reel.id)}
-                className={`group relative overflow-hidden rounded-xl border text-start p-2 min-h-[96px] flex flex-col justify-between transition-all duration-300 cursor-pointer ${
-                  isSelectedReel
-                    ? 'border-amber-400 ring-2 ring-amber-400/30 scale-[1.01]'
-                    : 'border-[var(--color-border)] dark:border-[#1E3646] hover:border-amber-400/60 hover:scale-[1.01]'
-                }`}
-              >
-                <img
-                  src={reel.imageUrl}
-                  alt={isEn ? reel.titleEn : reel.titleAr}
-                  loading="lazy"
-                  decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background:
-                      'linear-gradient(to top, rgba(11, 19, 26, 0.94) 0%, rgba(16, 29, 38, 0.58) 55%, rgba(11, 19, 26, 0.25) 100%)',
-                  }}
-                />
-
-                <div className="relative z-10 flex flex-wrap items-center justify-between gap-1 w-full">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-flex items-center gap-1 leading-snug break-words ${
-                      reel.isExpert
-                        ? 'bg-amber-400 text-slate-950 shadow-2xs'
-                        : 'bg-teal-500 text-white'
-                    }`}
-                  >
-                    <span>{reel.isExpert ? '🏅' : '🌟'}</span>
-                    <span>
-                      {isEn ? reel.roleEn.replace('🏅 ', '') : reel.roleAr.replace('🏅 ', '')}
-                    </span>
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded-full bg-black/65 text-white text-[10px] font-extrabold tabular-nums">
-                    ▶ {reel.duration}
-                  </span>
-                </div>
-
-                <div className="relative z-10 space-y-1 pt-2">
-                  <div className="text-xs font-extrabold text-amber-300 leading-snug break-words">
-                    {reel.emoji} {isEn ? reel.authorEn : reel.authorAr}
-                  </div>
-                  <div className="text-xs sm:text-sm font-black text-white leading-snug break-words">
-                    {isEn ? reel.titleEn : reel.titleAr}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Active Story Reel Inline Viewer */}
-        {activeStoryReel && (
-          <div className="rounded-2xl border border-amber-400/50 bg-amber-50/85 dark:bg-[#142430] p-3.5 flex items-start justify-between gap-3 animate-fade-in">
-            <div className="space-y-1 flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9.5px] font-black">
-                  {isEn ? activeStoryReel.roleEn : activeStoryReel.roleAr}
-                </span>
-                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? activeStoryReel.authorEn : activeStoryReel.authorAr}
-                </span>
-              </div>
-              <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {activeStoryReel.emoji} {isEn ? activeStoryReel.titleEn : activeStoryReel.titleAr}
-              </h4>
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                {isEn ? activeStoryReel.summaryEn : activeStoryReel.summaryAr}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActiveStoryReelId(null)}
-              aria-label={isEn ? 'Close story reel' : 'إغلاق القصة'}
-              className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0B131A] text-white flex items-center justify-center cursor-pointer shrink-0"
-            >
-              ×
-            </button>
-          </div>
-        )}
-      </div>
-
-      <SectionToolsDrawer language={language} titleAr="أدوات المجتمع" titleEn="Community tools" badgeCount={filteredPosts.length}>
       {/* Post Composer Collapsible Card */}
       <CollapsibleSectionCard
         id="community-post-composer-accordion"
@@ -1219,6 +1126,143 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       </CollapsibleSectionCard>
 
       </SectionToolsDrawer>
+
+      {/* Short-Form Family Story Reels Preview Strip & Verified Golden Experts Highlight */}
+      <div
+        id="community-story-reels-strip"
+        className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-2.5 soft-card-surface shadow-xs"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="space-y-0.5 min-w-0">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold">
+              <span>🎬</span>
+              <span>
+                {isEn
+                  ? 'Family Stories & Community Tips'
+                  : 'قصص قصيرة ونصائح مجتمعية'}
+              </span>
+            </div>
+            <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn
+                ? 'Quick Parenting Ideas & Family Stories'
+                : 'أفكار عملية وتجارب أسرية قصيرة'}
+            </h3>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setTopicFilter(topicFilter === 'experts' ? 'all' : 'experts')}
+            className={`min-h-[32px] px-3 py-1 rounded-xl text-[10.5px] font-extrabold border transition-all flex items-center gap-1 cursor-pointer ${
+              topicFilter === 'experts'
+                ? 'border-amber-500 bg-amber-500 text-slate-950 shadow-sm'
+                : 'border-amber-400/50 bg-amber-50/90 dark:bg-[#142430] text-amber-900 dark:text-amber-300 hover:border-amber-400'
+            }`}
+          >
+            <span>🏅</span>
+            <span>
+              {topicFilter === 'experts'
+                ? isEn
+                  ? 'Community replies'
+                  : 'ردود الخبراء ✓'
+                : isEn
+                ? 'Expert Replies'
+                : 'منشورات الأطباء'}
+            </span>
+          </button>
+        </div>
+
+        {/* Horizontal Story Reels Strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {familyStoryReels.map((reel) => {
+            const isSelectedReel = activeStoryReelId === reel.id;
+            return (
+              <button
+                key={reel.id}
+                type="button"
+                onClick={() => setActiveStoryReelId(isSelectedReel ? null : reel.id)}
+                className={`group relative overflow-hidden rounded-xl border text-start p-2 min-h-[96px] flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                  isSelectedReel
+                    ? 'border-amber-400 ring-2 ring-amber-400/30 scale-[1.01]'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] hover:border-amber-400/60 hover:scale-[1.01]'
+                }`}
+              >
+                <img
+                  src={reel.imageUrl}
+                  alt={isEn ? reel.titleEn : reel.titleAr}
+                  loading="lazy"
+                  decoding="async"
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 group-hover:scale-105 transition-transform duration-500"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      'linear-gradient(to top, rgba(11, 19, 26, 0.94) 0%, rgba(16, 29, 38, 0.58) 55%, rgba(11, 19, 26, 0.25) 100%)',
+                  }}
+                />
+
+                <div className="relative z-10 flex flex-wrap items-center justify-between gap-1 w-full">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-black inline-flex items-center gap-1 leading-snug break-words ${
+                      reel.isExpert
+                        ? 'bg-amber-400 text-slate-950 shadow-2xs'
+                        : 'bg-teal-500 text-white'
+                    }`}
+                  >
+                    <span>{reel.isExpert ? '🏅' : '🌟'}</span>
+                    <span>
+                      {isEn ? reel.roleEn.replace('🏅 ', '') : reel.roleAr.replace('🏅 ', '')}
+                    </span>
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-black/65 text-white text-[10px] font-extrabold tabular-nums">
+                    ▶ {reel.duration}
+                  </span>
+                </div>
+
+                <div className="relative z-10 space-y-1 pt-2">
+                  <div className="text-xs font-extrabold text-amber-300 leading-snug break-words">
+                    {reel.emoji} {isEn ? reel.authorEn : reel.authorAr}
+                  </div>
+                  <div className="text-xs sm:text-sm font-black text-white leading-snug break-words">
+                    {isEn ? reel.titleEn : reel.titleAr}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Story Reel Inline Viewer */}
+        {activeStoryReel && (
+          <div className="rounded-2xl border border-amber-400/50 bg-amber-50/85 dark:bg-[#142430] p-3.5 flex items-start justify-between gap-3 animate-fade-in">
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[9.5px] font-black">
+                  {isEn ? activeStoryReel.roleEn : activeStoryReel.roleAr}
+                </span>
+                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? activeStoryReel.authorEn : activeStoryReel.authorAr}
+                </span>
+              </div>
+              <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                {activeStoryReel.emoji} {isEn ? activeStoryReel.titleEn : activeStoryReel.titleAr}
+              </h4>
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                {isEn ? activeStoryReel.summaryEn : activeStoryReel.summaryAr}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveStoryReelId(null)}
+              aria-label={isEn ? 'Close story reel' : 'إغلاق القصة'}
+              className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0B131A] text-white flex items-center justify-center cursor-pointer shrink-0"
+            >
+              ×
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Community Feed Cards with Soft Pastel Tints */}
       {filteredPosts.length === 0 ? (

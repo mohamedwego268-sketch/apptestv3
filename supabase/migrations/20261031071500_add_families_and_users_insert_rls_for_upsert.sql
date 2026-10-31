@@ -64,7 +64,7 @@ GRANT EXECUTE ON FUNCTION private.current_user_family_id() TO authenticated, ser
 CREATE OR REPLACE FUNCTION private.prevent_ownership_column_mutation()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
 DECLARE
@@ -93,7 +93,12 @@ BEGIN
       v_trusted_user_id := pg_catalog.current_setting('nekbaar.invitation_transfer_user_id', true);
       v_trusted_family_id := pg_catalog.current_setting('nekbaar.invitation_transfer_target_family_id', true);
 
-      IF pg_catalog.current_user IN ('anon', 'authenticated')
+      -- Because this trigger function is SECURITY INVOKER:
+      --   * Direct PostgREST client UPDATE/UPSERT runs with CURRENT_USER IN ('anon', 'authenticated', 'authenticator')
+      --     and is unconditionally blocked from mutating a non-null family_id.
+      --   * Validated co-parent transfer inside SECURITY DEFINER `private.accept_family_invitation_impl`
+      --     runs as the function owner (not 'anon'/'authenticated') with exact transaction-local GUC values.
+      IF CURRENT_USER IN ('anon', 'authenticated', 'authenticator')
          OR NEW.family_id IS NULL
          OR COALESCE(v_trusted_user_id, '') <> OLD.id::text
          OR COALESCE(v_trusted_family_id, '') <> NEW.family_id::text THEN
@@ -116,7 +121,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.prevent_ownership_column_mutation() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.prevent_ownership_column_mutation() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.prevent_ownership_column_mutation() TO authenticated, service_role;
 
 DROP TRIGGER IF EXISTS trg_families_immutable_ownership ON public.families;
 CREATE TRIGGER trg_families_immutable_ownership
@@ -524,7 +530,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.enforce_child_belongs_to_family() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.enforce_child_belongs_to_family() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.enforce_child_belongs_to_family() TO authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION private.create_default_family_home()
 RETURNS trigger
@@ -544,7 +551,8 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION private.create_default_family_home() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION private.create_default_family_home() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.create_default_family_home() TO authenticated, service_role;
 
 -- ----------------------------------------------------------------------------
 -- 5. Supporting Indexes for All Foreign Keys (Advisor Remediation)
@@ -933,6 +941,9 @@ BEGIN
         'image/jpeg',
         'image/png',
         'image/webp',
+        'image/gif',
+        'video/mp4',
+        'video/webm',
         'audio/webm',
         'audio/mp4',
         'audio/mpeg'
@@ -961,6 +972,8 @@ BEGIN
       USING (
         bucket_id = 'family-media'
         AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
         AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
       );
 
@@ -972,6 +985,8 @@ BEGIN
       WITH CHECK (
         bucket_id = 'family-media'
         AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
         AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
         AND owner = (SELECT auth.uid())
       );
@@ -984,12 +999,16 @@ BEGIN
       USING (
         bucket_id = 'family-media'
         AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
         AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
         AND owner = (SELECT auth.uid())
       )
       WITH CHECK (
         bucket_id = 'family-media'
         AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
         AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
         AND owner = (SELECT auth.uid())
       );
@@ -1002,6 +1021,8 @@ BEGIN
       USING (
         bucket_id = 'family-media'
         AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
         AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
       );
   END IF;
