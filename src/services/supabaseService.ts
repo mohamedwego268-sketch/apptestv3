@@ -2710,6 +2710,7 @@ export async function saveOnboardingLocationToSupabase(
   params: SaveOnboardingLocationPayload,
   customClient?: SupabaseClient | null
 ): Promise<{ synced: boolean; family: Family; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const country: CountryCode = params.country === 'SA' ? 'SA' : 'EG';
   const city = (params.city || '').trim() || (country === 'SA' ? 'الرياض' : 'القاهرة');
   const currency: CurrencyCode =
@@ -2728,8 +2729,33 @@ export async function saveOnboardingLocationToSupabase(
       currency,
       activeParent,
     },
-    customClient
+    activeClient
   );
+
+  // The onboarding location belongs to this parent account as well as setting the
+  // initial family service area. Keep the parent's private location in its own row.
+  if (res.synced && activeClient) {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (isValidUuid(verifiedCtx.profileUserId) && isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      const { error: locationError } = await withSupabaseRetry(() =>
+        activeClient.from('parent_locations').upsert({
+          user_id: verifiedCtx.profileUserId,
+          family_id: verifiedCtx.verifiedFamilyId,
+          country,
+          city,
+          currency,
+          timezone: country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      );
+      return {
+        synced: res.synced,
+        family: res.family,
+        error: res.error || locationError?.message || null,
+      };
+    }
+  }
+
   return { synced: res.synced, family: res.family, error: res.error };
 }
 
