@@ -151,7 +151,7 @@ export default function App() {
   }>({ visible: false, fadingOut: false, targetPage: 'home' });
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-  const [showInnerSettings, setShowInnerSettings] = useState<boolean>(true);
+  const [showInnerSettings, setShowInnerSettings] = useState<boolean>(false);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [geoStatus, setGeoStatus] = useState<'idle' | 'locating' | 'active'>('idle');
   const [bedtimeMode, setBedtimeMode] = useState<boolean>(false);
