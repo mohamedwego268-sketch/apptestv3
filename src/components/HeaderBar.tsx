@@ -195,13 +195,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             aria-label={`${brandName} — ${localizedSlogan}`}
             className="min-h-[42px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
-            <div className="min-w-0 text-end flex flex-col items-end justify-center flex-wrap">
-              <span className="font-black text-[17px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
+            <div className="min-w-0 flex items-baseline justify-end gap-1.5 whitespace-nowrap text-end">
+              <span className="shrink-0 font-black text-[17px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
                 {brandName}
               </span>
               <span
                 data-testid="header-official-slogan-badge"
-                className="text-[10px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-tight break-words mt-0.5"
+                className="min-w-0 max-w-[145px] truncate text-[9px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-none"
+                title={localizedSlogan}
               >
                 {localizedSlogan}
               </span>
