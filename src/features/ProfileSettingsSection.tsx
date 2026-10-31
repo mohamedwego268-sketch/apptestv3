@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FamilySpaceState,
   ParentThemeRole,
@@ -94,6 +94,23 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 }) => {
   const lang = state.language;
   const personalCountry = state.parentAccounts[state.activeParentAccount]?.country || state.country;
+  const [fontScale, setFontScale] = useState<'compact' | 'standard' | 'large'>(() => {
+    try {
+      const saved = window.localStorage.getItem('nekbaar-font-scale-v1');
+      return saved === 'compact' || saved === 'large' ? saved : 'standard';
+    } catch {
+      return 'standard';
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.fontScale = fontScale;
+    try {
+      window.localStorage.setItem('nekbaar-font-scale-v1', fontScale);
+    } catch {
+      // Keep the in-session preference when storage is unavailable.
+    }
+  }, [fontScale]);
 
   return (
     <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
@@ -163,6 +180,21 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 : 'إعدادات الحساب'}
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2.5 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}</p>
+          <p className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Applies across all screens' : 'يتطبق على شاشات التطبيق بالكامل'}</p>
+        </div>
+        <div className="inline-flex shrink-0 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] p-0.5" role="group" aria-label={lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}>
+          {(['compact', 'standard', 'large'] as const).map((size) => (
+            <button key={size} type="button" onClick={() => setFontScale(size)} aria-pressed={fontScale === size}
+              className={`min-h-[32px] px-2 rounded-lg text-[10px] font-extrabold transition-colors ${fontScale === size ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm' : 'text-[var(--color-muted)]'}`}>
+              {size === 'compact' ? (lang === 'en' ? 'Small' : 'صغير') : size === 'standard' ? (lang === 'en' ? 'Default' : 'افتراضي') : (lang === 'en' ? 'Large' : 'كبير')}
+            </button>
+          ))}
         </div>
       </div>
 
