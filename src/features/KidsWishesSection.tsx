@@ -16,6 +16,7 @@ import {
   SoftFilledIcon,
 } from '../components/DesignSystem';
 import { ThreeDIcon } from '../components/ThreeDVisuals';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface KidsWishesSectionProps {
   state: FamilySpaceState;
@@ -70,6 +71,7 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
         </div>
       </div>
 
+      <SectionToolsDrawer language={lang} titleAr="أدوات الأمنيات" titleEn="Wishes tools">
       <div className="flex flex-wrap items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] p-1.5 rounded-2xl w-max max-w-full">
         <button
           type="button"
@@ -98,6 +100,8 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
           </button>
         ))}
       </div>
+
+      </SectionToolsDrawer>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
