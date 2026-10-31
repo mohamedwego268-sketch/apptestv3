@@ -3010,7 +3010,7 @@ async function hashFamilyPairingToken(token: string): Promise<string> {
   if (typeof crypto === 'undefined' || !crypto.subtle) {
     throw new Error('Secure invitation tokens are not supported in this browser.');
   }
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token.trim().toUpperCase()));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
@@ -3021,7 +3021,7 @@ function generateSecureFamilyPairingToken(): string {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
-  return `NKB-${token}`;
+  return `NKB-${token.toUpperCase()}`;
 }
 
 export async function linkCoParentAccountInSupabase(
@@ -3030,7 +3030,7 @@ export async function linkCoParentAccountInSupabase(
 ): Promise<CoParentLinkResult> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const targetFamilyId = payload.familyId || SHARED_FAMILY_ID;
-  const resolvedToken = payload.pairingToken?.trim() || generateSecureFamilyPairingToken();
+  const resolvedToken = payload.pairingToken?.trim().toUpperCase() || generateSecureFamilyPairingToken();
   const pendingPartnerUserId = '';
 
   // The local record is an invitation draft only. It must never imply that the other parent accepted.
@@ -3105,6 +3105,22 @@ export async function linkCoParentAccountInSupabase(
       };
     }
 
+    const expectedPartnerRole =
+      verifiedCtx.role === 'father' ? 'mother' :
+      verifiedCtx.role === 'mother' ? 'father' : null;
+    if (!expectedPartnerRole || payload.partnerRole !== expectedPartnerRole) {
+      return {
+        linked: false,
+        invitationCreated: false,
+        syncedToDb: false,
+        familyId: verifiedFamilyUuid,
+        partnerUserId: pendingPartnerUserId,
+        pairingToken: resolvedToken,
+        method: payload.method,
+        error: 'يجب أن تكون الدعوة موجهة إلى ولي الأمر الآخر، وليس إلى نفس دور حسابك.',
+      };
+    }
+
     const pairingTokenHash = await hashFamilyPairingToken(resolvedToken);
     const now = new Date();
     const { error: pairErr } = await withSupabaseTimeout(
@@ -3148,6 +3164,42 @@ export async function linkCoParentAccountInSupabase(
       pairingToken: resolvedToken,
       method: payload.method,
       error: err instanceof Error ? err.message : 'Failed to create the family invitation.',
+    };
+  }
+}
+
+
+
+export async function acceptFamilyInvitation(
+  pairingToken: string
+): Promise<{ accepted: boolean; familyId: string | null; error: string | null }> {
+  if (!supabaseClient) {
+    return { accepted: false, familyId: null, error: 'Supabase client is not initialized.' };
+  }
+  const token = pairingToken.trim().toUpperCase();
+  if (!/^NKB-[0-9A-F]{48}$/.test(token)) {
+    return { accepted: false, familyId: null, error: 'رمز الدعوة غير صحيح. راجع الرمز المرسل لك.' };
+  }
+  try {
+    const tokenHash = await hashFamilyPairingToken(token);
+    const { data, error } = await withSupabaseTimeout(
+      supabaseClient.rpc('accept_family_invitation', { p_token_hash: tokenHash }),
+      6500
+    );
+    if (error) throw new Error(error.message);
+    const response = data && typeof data === 'object' ? data as Record<string, unknown> : {};
+    const familyId = typeof response.family_id === 'string' && isValidUuid(response.family_id)
+      ? response.family_id
+      : null;
+    if (response.accepted !== true || !familyId) {
+      throw new Error('لم يتم تأكيد ربط الحساب بالأسرة.');
+    }
+    return { accepted: true, familyId, error: null };
+  } catch (err) {
+    return {
+      accepted: false,
+      familyId: null,
+      error: err instanceof Error ? err.message : 'تعذر قبول دعوة الأسرة.',
     };
   }
 }
