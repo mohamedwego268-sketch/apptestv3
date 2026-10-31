@@ -69,6 +69,8 @@ import {
   deleteChildFromSupabase,
   fetchFamilySpaceFromSupabase,
   isValidUuid,
+  resolveVerifiedFamilyContext,
+  supabaseClient,
   saveOnboardingChildrenToSupabase,
   syncFamilySpaceToSupabase,
   verifyAccountIdentityOtpInSupabase,
@@ -121,6 +123,9 @@ const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds mus
 
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => createEmptyFamilySpaceState());
+  const stateRef = React.useRef(state);
+  stateRef.current = state;
+  const skipNextCloudSyncRef = React.useRef(false);
   const [activeFamilyStorageScope, setActiveFamilyStorageScope] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<PageId>('home');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
@@ -376,6 +381,7 @@ export default function App() {
     setSupabaseStatus('loading');
     setSupabaseErrorMsg(null);
     const { hydratedState, snapshot } = await master.controller.bootstrapWithAppState(state);
+    skipNextCloudSyncRef.current = true;
     setState(hydratedState);
     if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
       setSupabaseStatus('error');
@@ -396,6 +402,7 @@ export default function App() {
     setSupabaseStatus('loading');
     master.controller.bootstrapWithAppState(state).then(({ hydratedState, snapshot }) => {
       if (!isMounted) return;
+      skipNextCloudSyncRef.current = true;
       setState(hydratedState);
       if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
         setSupabaseStatus('error');
@@ -496,24 +503,88 @@ export default function App() {
     });
   }, []);
 
-  // Debounced cloud sync is disabled until a verified family scope is active.
+  // Persist shared and private workspace changes only after the verified cloud state is hydrated.
   useEffect(() => {
-    if (!activeFamilyStorageScope) return;
-    const syncTimer = setTimeout(() => {
-      void master.forceSyncNow(state);
-    }, 1500);
-    return () => clearTimeout(syncTimer);
-  }, [
-    master,
-    activeFamilyStorageScope,
-    state.kids,
-    state.tasks,
-    state.family,
-    state.parentAccounts,
-    state.city,
-    state.country,
-    state.currency,
-  ]);
+    if (
+      !activeFamilyStorageScope ||
+      isPreviewMode ||
+      supabaseStatus !== 'ready' ||
+      !isValidUuid(state.verifiedFamilyId) ||
+      state.verifiedFamilyId !== activeFamilyStorageScope
+    ) return;
+
+    if (skipNextCloudSyncRef.current) {
+      skipNextCloudSyncRef.current = false;
+      return;
+    }
+
+    const syncTimer = window.setTimeout(() => {
+      void master.forceSyncNow(state).then((synced) => {
+        if (!synced) {
+          setSupabaseErrorMsg('تعذر مزامنة بعض التغييرات حالياً. ستظل محفوظة محلياً وتُعاد المحاولة عند الاتصال.');
+        } else {
+          setSupabaseErrorMsg(null);
+        }
+      });
+    }, 1200);
+
+    const retryWhenOnline = () => {
+      void master.forceSyncNow(stateRef.current).then((synced) => {
+        if (synced) setSupabaseErrorMsg(null);
+      });
+    };
+    window.addEventListener('online', retryWhenOnline);
+
+    return () => {
+      window.clearTimeout(syncTimer);
+      window.removeEventListener('online', retryWhenOnline);
+    };
+  }, [master.forceSyncNow, activeFamilyStorageScope, state, supabaseStatus, isPreviewMode]);
+
+  // Other parent changes are hydrated immediately from the shared family workspace.
+  useEffect(() => {
+    const client = supabaseClient;
+    if (!activeFamilyStorageScope || !client || isPreviewMode) return;
+    let active = true;
+    let channel: ReturnType<typeof client.channel> | null = null;
+
+    void resolveVerifiedFamilyContext(client).then((context) => {
+      if (
+        !active ||
+        !context.authenticated ||
+        !context.userId ||
+        context.verifiedFamilyId !== activeFamilyStorageScope
+      ) return;
+
+      channel = client
+        .channel(`family-shared-state-${activeFamilyStorageScope}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'family_shared_state',
+            filter: `family_id=eq.${activeFamilyStorageScope}`,
+          },
+          async (payload) => {
+            const newRow = payload.new as Record<string, unknown> | null;
+            if (!newRow || newRow.updated_by === context.userId) return;
+            const result = await fetchFamilySpaceFromSupabase(stateRef.current, client);
+            if (!active || result.error) return;
+            skipNextCloudSyncRef.current = true;
+            setState(result.nextState);
+          }
+        )
+        .subscribe();
+    }).catch(() => {
+      // Initial hydration remains the fallback if realtime cannot connect.
+    });
+
+    return () => {
+      active = false;
+      if (channel) void client.removeChannel(channel);
+    };
+  }, [activeFamilyStorageScope, isPreviewMode]);
 
   // Sync settings inputs when state changes externally
   useEffect(() => {
