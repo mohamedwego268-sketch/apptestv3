@@ -84,7 +84,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const localizedCity = locText(activeCity, lang);
   const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
   const localizedSlogan = isEn
-    ? 'One space that brings us together — we grow with love'
+    ? 'Our shared space.. growing with love'
     : 'مساحة تجمعنا.. وبحبهم نكبر';
 
   return (
