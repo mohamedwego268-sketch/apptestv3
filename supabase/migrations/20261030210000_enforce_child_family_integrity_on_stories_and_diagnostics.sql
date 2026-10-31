@@ -120,6 +120,7 @@ CREATE INDEX IF NOT EXISTS idx_bedtime_stories_child_family
 ALTER TABLE public.wellness_diagnostics ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS wellness_diagnostics_family_all ON public.wellness_diagnostics;
+DROP POLICY IF EXISTS wellness_diagnostics_all_own_family ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_select_family ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_insert_family ON public.wellness_diagnostics;
 DROP POLICY IF EXISTS wellness_diagnostics_update_family ON public.wellness_diagnostics;
@@ -196,6 +197,7 @@ CREATE POLICY wellness_diagnostics_delete_family
 ALTER TABLE public.bedtime_stories ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS bedtime_stories_family_all ON public.bedtime_stories;
+DROP POLICY IF EXISTS bedtime_stories_all_own_family ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_select_family ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_insert_family ON public.bedtime_stories;
 DROP POLICY IF EXISTS bedtime_stories_update_family ON public.bedtime_stories;
