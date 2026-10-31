@@ -758,7 +758,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
               </div>
 
               {/* Manual Code Input Row */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="text"
                   dir="ltr"
@@ -766,12 +766,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                   onChange={(e) => setManualCodeInput(e.target.value)}
                   placeholder="FS-FAM-8824"
                   aria-label={isEn ? 'Manual Family Code' : 'كود الأسرة اليدوي'}
-                  className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-mono font-bold text-center"
+                  className="min-w-0 flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-mono font-bold text-center"
                 />
                 <button
                   type="button"
                   onClick={handleManualCodeJoin}
-                  className="min-h-[36px] px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-extrabold whitespace-nowrap"
+                  className="min-h-[36px] shrink-0 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-[11px] font-extrabold whitespace-nowrap"
                 >
                   🔑 {isEn ? 'Join by Code' : 'ربط بالكود'}
                 </button>
