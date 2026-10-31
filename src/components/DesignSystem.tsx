@@ -819,7 +819,7 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
             {displayLabel}
           </div>
           <p className="text-sm sm:text-base font-extrabold text-[#2DD4BF]">
-            {isEn ? 'Growing Together with Love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+            {isEn ? 'Our shared space.. growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
           </p>
 
           {/* Enlarged Glowing Progress Indicator */}
