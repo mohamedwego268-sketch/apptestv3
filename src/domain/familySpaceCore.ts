@@ -651,6 +651,7 @@ export interface ParentAccountProfile {
   fullName: string;
   relationshipRole: 'الأم' | 'الأب';
   country: CountryCode;
+  city?: string;
   phoneCode: '+20' | '+966';
   phoneNumber: string;
   phoneVerified: boolean;
