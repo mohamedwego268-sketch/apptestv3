@@ -386,12 +386,14 @@ export async function resolveVerifiedFamilyContext(
       row && typeof row.full_name === 'string' && row.full_name.trim()
         ? row.full_name.trim()
         : null;
+    const normalizedRowRole =
+      row && typeof row.role === 'string' ? row.role.trim().toLowerCase() : '';
     const rowRole: 'father' | 'mother' | null =
-      row && typeof row.role === 'string'
-        ? row.role.toLowerCase() === 'father' || row.role.toLowerCase() === 'dad'
-          ? 'father'
-          : 'mother'
-        : null;
+      ['father', 'dad', 'الأب'].includes(normalizedRowRole)
+        ? 'father'
+        : ['mother', 'mom', 'الأم'].includes(normalizedRowRole)
+          ? 'mother'
+          : null;
     const rowPhone =
       row && typeof row.phone === 'string' && row.phone.trim() ? row.phone.trim() : null;
 
