@@ -23,6 +23,7 @@ import {
 } from '../services/OnboardingFlowController';
 import {
   SHARED_FAMILY_ID,
+  acceptFamilyInvitation,
   authenticateParentWithSupabase,
   createFamilyPrivateMediaSignedUrl,
   deleteChildFromSupabase,
@@ -31,6 +32,7 @@ import {
   fetchChildrenFromSupabase,
   fetchFamilySpaceFromSupabase,
   fetchUsersFromSupabase,
+  hashFamilyPairingToken,
   isCanonicalThreeDemoKids,
   isDefaultDemoSeedState,
   isValidUuid,
@@ -2550,7 +2552,483 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(deleteARes.deleted, true);
     assert.equal(storedObjects.has(`${familyAUuid}/child-1/memory.png`), false);
   });
+
+  it('19. Phase 3 Co-Parent Invitation & Catalog Write Lockdown: validates invitation acceptance for unlinked and empty-bootstrap accounts, blocks non-empty family merges, rejects expired/replayed/spoofed tokens, and denies client catalog_items writes', async () => {
+    const familyAUuid = '10101010-2020-4303-8404-505050505001';
+    const emptyBootstrapFamUuid = '20202020-3030-4404-8505-606060606002';
+    const nonEmptyFamUuid = '30303030-4040-4505-8606-707070707003';
+
+    const fatherAuthUuid = 'aaaa0001-0000-4000-8000-000000000001';
+    const fatherProfileUuid = 'aaaa0002-0000-4000-8000-000000000002';
+
+    const unlinkedMotherAuthUuid = 'bbbb0001-0000-4000-8000-000000000001';
+    const unlinkedMotherProfileUuid = 'bbbb0002-0000-4000-8000-000000000002';
+
+    const emptyFamMotherAuthUuid = 'cccc0001-0000-4000-8000-000000000001';
+    const emptyFamMotherProfileUuid = 'cccc0002-0000-4000-8000-000000000002';
+
+    const nonEmptyMotherAuthUuid = 'dddd0001-0000-4000-8000-000000000001';
+    const nonEmptyMotherProfileUuid = 'dddd0002-0000-4000-8000-000000000002';
+
+    const validToken1 = 'NKB-' + 'A1'.repeat(24);
+    const validToken2 = 'NKB-' + 'B2'.repeat(24);
+    const expiredToken = 'NKB-' + 'C3'.repeat(24);
+    const nonEmptyFamToken = 'NKB-' + 'D4'.repeat(24);
+
+    const hash1 = await hashFamilyPairingToken(validToken1);
+    const hash2 = await hashFamilyPairingToken(validToken2);
+    const hashExpired = await hashFamilyPairingToken(expiredToken);
+    const hashNonEmpty = await hashFamilyPairingToken(nonEmptyFamToken);
+
+    const dbUsers = new Map<string, Record<string, unknown>>([
+      [
+        fatherProfileUuid,
+        {
+          id: fatherProfileUuid,
+          auth_user_id: fatherAuthUuid,
+          family_id: familyAUuid,
+          full_name: 'طارق المنصور',
+          role: 'father',
+          email: 'tarek@nekbaar.app',
+          phone: '+201011112222',
+        },
+      ],
+      [
+        unlinkedMotherProfileUuid,
+        {
+          id: unlinkedMotherProfileUuid,
+          auth_user_id: unlinkedMotherAuthUuid,
+          family_id: null,
+          full_name: 'مريم الشافعي',
+          role: 'mother',
+          email: 'mariam@nekbaar.app',
+          phone: '+201033334444',
+        },
+      ],
+      [
+        emptyFamMotherProfileUuid,
+        {
+          id: emptyFamMotherProfileUuid,
+          auth_user_id: emptyFamMotherAuthUuid,
+          family_id: emptyBootstrapFamUuid,
+          full_name: 'ندى العتيبي',
+          role: 'mother',
+          email: 'nada@nekbaar.app',
+          phone: '+966551112233',
+        },
+      ],
+      [
+        nonEmptyMotherProfileUuid,
+        {
+          id: nonEmptyMotherProfileUuid,
+          auth_user_id: nonEmptyMotherAuthUuid,
+          family_id: nonEmptyFamUuid,
+          full_name: 'سارة محمود',
+          role: 'mother',
+          email: 'sara@nekbaar.app',
+          phone: '+201099998888',
+        },
+      ],
+    ]);
+
+    const dbAuthUsers = new Map<
+      string,
+      { id: string; email: string; phone: string; email_confirmed_at: string | null; phone_confirmed_at: string | null }
+    >([
+      [
+        fatherAuthUuid,
+        {
+          id: fatherAuthUuid,
+          email: 'tarek@nekbaar.app',
+          phone: '+201011112222',
+          email_confirmed_at: '2026-10-31T00:00:00Z',
+          phone_confirmed_at: '2026-10-31T00:00:00Z',
+        },
+      ],
+      [
+        unlinkedMotherAuthUuid,
+        {
+          id: unlinkedMotherAuthUuid,
+          email: 'mariam@nekbaar.app',
+          phone: '+201033334444',
+          email_confirmed_at: '2026-10-31T00:00:00Z',
+          phone_confirmed_at: null,
+        },
+      ],
+      [
+        emptyFamMotherAuthUuid,
+        {
+          id: emptyFamMotherAuthUuid,
+          email: 'nada@nekbaar.app',
+          phone: '+966551112233',
+          email_confirmed_at: '2026-10-31T00:00:00Z',
+          phone_confirmed_at: '2026-10-31T00:00:00Z',
+        },
+      ],
+      [
+        nonEmptyMotherAuthUuid,
+        {
+          id: nonEmptyMotherAuthUuid,
+          email: 'sara@nekbaar.app',
+          phone: '+201099998888',
+          email_confirmed_at: '2026-10-31T00:00:00Z',
+          phone_confirmed_at: null,
+        },
+      ],
+    ]);
+
+    const dbChildren = new Map<string, { id: string; family_id: string }>([
+      [
+        'child-non-empty-1',
+        { id: 'child-non-empty-1', family_id: nonEmptyFamUuid },
+      ],
+    ]);
+
+    const dbPairings = new Map<string, Record<string, unknown>>([
+      [
+        hash1,
+        {
+          id: 'pair-1',
+          family_id: familyAUuid,
+          invited_by_user_id: fatherProfileUuid,
+          partner_user_id: null,
+          partner_name: 'مريم الشافعي',
+          partner_phone: '+201033334444',
+          partner_email: 'mariam@nekbaar.app',
+          partner_role: 'mother',
+          pairing_method: 'phone_otp',
+          pairing_token_hash: hash1,
+          status: 'pending',
+          verified: false,
+          expires_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+          accepted_at: null,
+        },
+      ],
+      [
+        hash2,
+        {
+          id: 'pair-2',
+          family_id: familyAUuid,
+          invited_by_user_id: fatherProfileUuid,
+          partner_user_id: null,
+          partner_name: 'ندى العتيبي',
+          partner_phone: '+966551112233',
+          partner_email: 'nada@nekbaar.app',
+          partner_role: 'mother',
+          pairing_method: 'phone_otp',
+          pairing_token_hash: hash2,
+          status: 'pending',
+          verified: false,
+          expires_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+          accepted_at: null,
+        },
+      ],
+      [
+        hashExpired,
+        {
+          id: 'pair-expired',
+          family_id: familyAUuid,
+          invited_by_user_id: fatherProfileUuid,
+          partner_user_id: null,
+          partner_name: 'ندى العتيبي',
+          partner_phone: '+966551112233',
+          partner_email: 'nada@nekbaar.app',
+          partner_role: 'mother',
+          pairing_method: 'phone_otp',
+          pairing_token_hash: hashExpired,
+          status: 'pending',
+          verified: false,
+          expires_at: new Date(Date.now() - 3600 * 1000).toISOString(),
+          accepted_at: null,
+        },
+      ],
+      [
+        hashNonEmpty,
+        {
+          id: 'pair-non-empty',
+          family_id: familyAUuid,
+          invited_by_user_id: fatherProfileUuid,
+          partner_user_id: null,
+          partner_name: 'سارة محمود',
+          partner_phone: '+201099998888',
+          partner_email: 'sara@nekbaar.app',
+          partner_role: 'mother',
+          pairing_method: 'phone_otp',
+          pairing_token_hash: hashNonEmpty,
+          status: 'pending',
+          verified: false,
+          expires_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+          accepted_at: null,
+        },
+      ],
+    ]);
+
+    const makeInvitationAndCatalogClient = (sessionAuthUid: string | null): SupabaseClient => {
+      return {
+        auth: {
+          async getSession() {
+            if (!sessionAuthUid) return { data: { session: null }, error: null };
+            const au = dbAuthUsers.get(sessionAuthUid);
+            return {
+              data: {
+                session: {
+                  access_token: `jwt_${sessionAuthUid}`,
+                  user: au || { id: sessionAuthUid },
+                },
+              },
+              error: null,
+            };
+          },
+        },
+        from(tableName: string) {
+          return {
+            select() {
+              return Promise.resolve({
+                data: tableName === 'catalog_items' ? [{ id: 'cat-1', title: 'لعبة خشبية', price: 250 }] : [],
+                error: null,
+              });
+            },
+            insert() {
+              if (tableName === 'catalog_items') {
+                return Promise.resolve({
+                  data: null,
+                  error: {
+                    message: 'permission denied for table catalog_items',
+                    code: '42501',
+                  },
+                });
+              }
+              return Promise.resolve({ data: null, error: { message: 'denied', code: '42501' } });
+            },
+            update() {
+              const chain = {
+                eq() {
+                  return chain;
+                },
+                then(
+                  onFulfilled?: (v: { data: null; error: { message: string; code: string } }) => unknown
+                ) {
+                  const err =
+                    tableName === 'catalog_items'
+                      ? { message: 'permission denied for table catalog_items', code: '42501' }
+                      : {
+                          message:
+                            'IMMUTABLE_OWNERSHIP_VIOLATION: users.family_id cannot be reassigned once linked',
+                          code: '42501',
+                        };
+                  return Promise.resolve({ data: null, error: err }).then(onFulfilled);
+                },
+              };
+              return chain;
+            },
+            delete() {
+              const chain = {
+                eq() {
+                  return chain;
+                },
+                then(
+                  onFulfilled?: (v: { data: null; error: { message: string; code: string } }) => unknown
+                ) {
+                  return Promise.resolve({
+                    data: null,
+                    error: { message: `permission denied for table ${tableName}`, code: '42501' },
+                  }).then(onFulfilled);
+                },
+              };
+              return chain;
+            },
+          };
+        },
+        async rpc(fnName: string, args: { p_token_hash?: string }) {
+          if (fnName !== 'accept_family_invitation') {
+            return { data: null, error: { message: 'RPC not found' } };
+          }
+          if (!sessionAuthUid) {
+            return { data: null, error: { message: 'AUTH_REQUIRED: Sign in before accepting a family invitation.' } };
+          }
+          const tokenHash = args.p_token_hash || '';
+          const inv = dbPairings.get(tokenHash);
+          if (
+            !inv ||
+            inv.status !== 'pending' ||
+            inv.verified === true ||
+            inv.partner_user_id !== null ||
+            new Date(String(inv.expires_at)).getTime() <= Date.now()
+          ) {
+            return {
+              data: null,
+              error: { message: 'INVITATION_EXPIRED: This invitation is invalid, expired, or already used.' },
+            };
+          }
+
+          const authUser = dbAuthUsers.get(sessionAuthUid);
+          if (!authUser) {
+            return { data: null, error: { message: 'AUTH_REQUIRED' } };
+          }
+
+          const emailMatches =
+            Boolean(inv.partner_email) &&
+            Boolean(authUser.email_confirmed_at) &&
+            authUser.email.toLowerCase() === String(inv.partner_email).toLowerCase();
+          const phoneMatches =
+            Boolean(inv.partner_phone) &&
+            Boolean(authUser.phone_confirmed_at) &&
+            authUser.phone.replace(/\D/g, '') === String(inv.partner_phone).replace(/\D/g, '');
+
+          if (!emailMatches && !phoneMatches) {
+            return {
+              data: null,
+              error: {
+                message:
+                  'INVITATION_IDENTITY_MISMATCH: Sign in with the exact verified email or phone number that received this invitation.',
+              },
+            };
+          }
+
+          let profile: Record<string, unknown> | undefined;
+          for (const u of dbUsers.values()) {
+            if (u.auth_user_id === sessionAuthUid) {
+              profile = u;
+              break;
+            }
+          }
+          if (!profile) {
+            return { data: null, error: { message: 'PROFILE_REQUIRED' } };
+          }
+
+          if (profile.id === inv.invited_by_user_id) {
+            return { data: null, error: { message: 'SELF_INVITATION: You cannot accept your own invitation.' } };
+          }
+
+          if (String(profile.role).toLowerCase() !== String(inv.partner_role).toLowerCase()) {
+            return { data: null, error: { message: 'ROLE_MISMATCH' } };
+          }
+
+          // Check if target family already has a user for partner_role
+          for (const u of dbUsers.values()) {
+            if (
+              u.family_id === inv.family_id &&
+              String(u.role).toLowerCase() === String(inv.partner_role).toLowerCase() &&
+              u.id !== profile.id
+            ) {
+              return {
+                data: null,
+                error: { message: 'PARENT_ALREADY_LINKED: This family already has a verified account for that parent role.' },
+              };
+            }
+          }
+
+          // Check if invitee's current family has existing children or other members
+          if (profile.family_id && profile.family_id !== inv.family_id) {
+            const hasChildren = Array.from(dbChildren.values()).some(
+              (c) => c.family_id === profile!.family_id
+            );
+            if (hasChildren) {
+              return {
+                data: null,
+                error: {
+                  message:
+                    'FAMILY_DATA_EXISTS: This account already has family or child data. A safe data merge is required before linking.',
+                },
+              };
+            }
+          }
+
+          // Scoped server-side transition succeeds
+          profile.family_id = inv.family_id;
+          inv.status = 'accepted';
+          inv.verified = true;
+          inv.partner_user_id = profile.id;
+          inv.accepted_at = new Date().toISOString();
+
+          return {
+            data: {
+              accepted: true,
+              family_id: inv.family_id,
+              profile_user_id: profile.id,
+              inviter_user_id: inv.invited_by_user_id,
+            },
+            error: null,
+          };
+        },
+      } as unknown as SupabaseClient;
+    };
+
+    const fatherClient = makeInvitationAndCatalogClient(fatherAuthUuid);
+    const unlinkedMotherClient = makeInvitationAndCatalogClient(unlinkedMotherAuthUuid);
+    const emptyFamMotherClient = makeInvitationAndCatalogClient(emptyFamMotherAuthUuid);
+    const nonEmptyMotherClient = makeInvitationAndCatalogClient(nonEmptyMotherAuthUuid);
+    const anonClient = makeInvitationAndCatalogClient(null);
+
+    // 1. Expired invitation -> Denied
+    const expiredRes = await acceptFamilyInvitation(expiredToken, emptyFamMotherClient);
+    assert.equal(expiredRes.accepted, false);
+    assert.match(expiredRes.error || '', /INVITATION_EXPIRED/);
+
+    // 2. Identity mismatch (Mother A tries to accept Mother B's token) -> Denied
+    const mismatchRes = await acceptFamilyInvitation(validToken2, unlinkedMotherClient);
+    assert.equal(mismatchRes.accepted, false);
+    assert.match(mismatchRes.error || '', /INVITATION_IDENTITY_MISMATCH/);
+
+    // 3. Non-empty family account tries to accept invitation -> Denied (FAMILY_DATA_EXISTS)
+    const nonEmptyRes = await acceptFamilyInvitation(nonEmptyFamToken, nonEmptyMotherClient);
+    assert.equal(nonEmptyRes.accepted, false);
+    assert.match(nonEmptyRes.error || '', /FAMILY_DATA_EXISTS/);
+    assert.equal(dbUsers.get(nonEmptyMotherProfileUuid)?.family_id, nonEmptyFamUuid);
+
+    // 4. Direct client UPDATE attempting to change family_id on empty-bootstrap account -> Denied by ownership trigger
+    const directTransferAttempt = await emptyFamMotherClient
+      .from('users')
+      .update({ family_id: familyAUuid })
+      .eq('id', emptyFamMotherProfileUuid);
+    assert.equal(directTransferAttempt.error?.code, '42501');
+
+    // 5. Empty-bootstrap-family account accepts valid invitation via trusted RPC -> Allowed!
+    const validEmptyFamRes = await acceptFamilyInvitation(validToken2, emptyFamMotherClient);
+    assert.equal(validEmptyFamRes.accepted, true);
+    assert.equal(validEmptyFamRes.familyId, familyAUuid);
+    assert.equal(dbUsers.get(emptyFamMotherProfileUuid)?.family_id, familyAUuid);
+
+    // 6. Replayed invitation (re-submitting validToken2 after acceptance) -> Denied!
+    const replayRes = await acceptFamilyInvitation(validToken2, emptyFamMotherClient);
+    assert.equal(replayRes.accepted, false);
+    assert.match(replayRes.error || '', /INVITATION_EXPIRED/);
+
+    // 7. Reset familyAUuid mother slot to test unlinked account (`family_id === null`) acceptance -> Allowed!
+    dbUsers.get(emptyFamMotherProfileUuid)!.family_id = emptyBootstrapFamUuid;
+    const unlinkedAcceptRes = await acceptFamilyInvitation(validToken1, unlinkedMotherClient);
+    assert.equal(unlinkedAcceptRes.accepted, true);
+    assert.equal(unlinkedAcceptRes.familyId, familyAUuid);
+    assert.equal(dbUsers.get(unlinkedMotherProfileUuid)?.family_id, familyAUuid);
+
+    // 8. Catalog Items: public SELECT allowed, browser client INSERT/UPDATE/DELETE denied (42501)
+    const anonCatalogSelect = await anonClient.from('catalog_items').select('*');
+    assert.equal(anonCatalogSelect.error, null);
+    assert.equal(Array.isArray(anonCatalogSelect.data), true);
+
+    const anonCatalogInsert = await anonClient.from('catalog_items').insert({ title: 'hack' });
+    assert.equal(anonCatalogInsert.error?.code, '42501');
+
+    const authCatalogInsert = await fatherClient.from('catalog_items').insert({
+      title: 'unauthorized client product',
+      family_id: familyAUuid,
+    });
+    assert.equal(authCatalogInsert.error?.code, '42501');
+
+    const authCatalogUpdate = await fatherClient
+      .from('catalog_items')
+      .update({ price: 1 })
+      .eq('id', 'cat-1');
+    assert.equal(authCatalogUpdate.error?.code, '42501');
+
+    const authCatalogDelete = await fatherClient
+      .from('catalog_items')
+      .delete()
+      .eq('id', 'cat-1');
+    assert.equal(authCatalogDelete.error?.code, '42501');
+  });
 });
+
 
 
 

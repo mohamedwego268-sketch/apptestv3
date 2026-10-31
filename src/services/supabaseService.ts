@@ -3274,7 +3274,7 @@ export interface CoParentLinkResult {
  * Step 5 of Onboarding Wizard — Co-Parent Integration Module:
  * Persists pairing locally and only writes to Supabase if a verified Auth session + UUID family_id exist.
  */
-async function hashFamilyPairingToken(token: string): Promise<string> {
+export async function hashFamilyPairingToken(token: string): Promise<string> {
   if (typeof crypto === 'undefined' || !crypto.subtle) {
     throw new Error('Secure invitation tokens are not supported in this browser.');
   }
@@ -3282,7 +3282,7 @@ async function hashFamilyPairingToken(token: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-function generateSecureFamilyPairingToken(): string {
+export function generateSecureFamilyPairingToken(): string {
   if (typeof crypto === 'undefined' || !crypto.getRandomValues) {
     throw new Error('Secure invitation tokens are not supported in this browser.');
   }
@@ -3419,9 +3419,11 @@ export async function linkCoParentAccountInSupabase(
 
 
 export async function acceptFamilyInvitation(
-  pairingToken: string
+  pairingToken: string,
+  customClient?: SupabaseClient | null
 ): Promise<{ accepted: boolean; familyId: string | null; error: string | null }> {
-  if (!supabaseClient) {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
     return { accepted: false, familyId: null, error: 'Supabase client is not initialized.' };
   }
   const token = pairingToken.trim().toUpperCase();
@@ -3431,7 +3433,7 @@ export async function acceptFamilyInvitation(
   try {
     const tokenHash = await hashFamilyPairingToken(token);
     const { data, error } = await withSupabaseTimeout(
-      supabaseClient.rpc('accept_family_invitation', { p_token_hash: tokenHash }),
+      activeClient.rpc('accept_family_invitation', { p_token_hash: tokenHash }),
       6500
     );
     if (error) throw new Error(error.message);
