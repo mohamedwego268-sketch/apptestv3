@@ -193,10 +193,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             type="button"
             onClick={() => onNavigate('home')}
             aria-label={`${brandName} — ${localizedSlogan}`}
-            className="min-h-[42px] px-1 flex items-center gap-2 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
+            className="min-h-[36px] px-0.5 flex items-center gap-1 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
           >
-            <div className="min-w-0 flex items-baseline justify-end gap-1.5 whitespace-nowrap text-end">
-              <span className="shrink-0 font-black text-[17px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
+            <div className="min-w-0 flex items-baseline justify-end gap-1 whitespace-nowrap text-end">
+              <span className="shrink-0 font-black text-[14px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
                 {brandName}
               </span>
               <span
@@ -207,7 +207,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 {localizedSlogan}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
               <ThreeDIcon id="home" size={20} />
             </div>
           </button>
