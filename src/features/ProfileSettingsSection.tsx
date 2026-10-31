@@ -113,7 +113,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   }, [fontScale]);
 
   return (
-    <section className="space-y-4" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
+    <section className="space-y-2.5" aria-label={lang === 'en' ? 'Profile & Settings' : 'حساب الأسرة والإعدادات'}>
       {/* Compact Profile Hero Warm Image Card for Unified Family Space */}
       <div
         className="image-bg-card rounded-xl p-2.5 space-y-2"
@@ -155,7 +155,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1">
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenOnboardingModal}>
               {lang === 'en' ? 'Edit Account & City' : 'تحديث بيانات الحساب والموقع'}
             </PrimaryCtaButton>
