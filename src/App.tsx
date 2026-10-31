@@ -1503,7 +1503,6 @@ export default function App() {
           ...prev.parentAccounts,
           [pid]: {
             ...prev.parentAccounts[pid],
-            country: settingsCountry,
             phoneCode: personalCountry === 'SA' ? '+966' : '+20',
             phoneNumber: phoneCheck.normalized,
             // Never mark phoneVerified true unless genuinely confirmed by Supabase Auth!
