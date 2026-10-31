@@ -1430,7 +1430,9 @@ export default function App() {
   };
 
   const handleSaveBottomInternationalAndPhone = async () => {
-    const phoneCheck = validatePhoneForCountry(settingsPhoneInput, settingsCountry);
+    const currentParent = state.parentAccounts[state.activeParentAccount];
+    const personalCountry = currentParent.country === 'SA' ? 'SA' : 'EG';
+    const phoneCheck = validatePhoneForCountry(settingsPhoneInput, personalCountry);
     if (!phoneCheck.valid) {
       showToast(
         lang === 'en'
@@ -1440,9 +1442,7 @@ export default function App() {
       return;
     }
 
-    const currentParent = state.parentAccounts[state.activeParentAccount];
-    const phoneOrCountryChanged =
-      settingsCountry !== state.country || phoneCheck.normalized !== currentParent.phoneNumber;
+    const phoneOrCountryChanged = phoneCheck.normalized !== currentParent.phoneNumber;
 
     if (phoneOrCountryChanged && !settingsOtpStep && !isPreviewMode) {
       setSettingsOtpStep(true);
@@ -1504,7 +1504,7 @@ export default function App() {
           [pid]: {
             ...prev.parentAccounts[pid],
             country: settingsCountry,
-            phoneCode: settingsCountry === 'SA' ? '+966' : '+20',
+            phoneCode: personalCountry === 'SA' ? '+966' : '+20',
             phoneNumber: phoneCheck.normalized,
             // Never mark phoneVerified true unless genuinely confirmed by Supabase Auth!
             phoneVerified: genuinePhoneVerified,
@@ -2680,7 +2680,23 @@ export default function App() {
             )}
 
             {activePage === 'settings' && (
-              <FamilyHomesSection state={state} onShowToast={showToast} />
+              <FamilyHomesSection
+                state={state}
+                onShowToast={showToast}
+                onPersonalLocationSaved={(country) => {
+                  setState((prev) => ({
+                    ...prev,
+                    parentAccounts: {
+                      ...prev.parentAccounts,
+                      [prev.activeParentAccount]: {
+                        ...prev.parentAccounts[prev.activeParentAccount],
+                        country,
+                        phoneCode: country === 'SA' ? '+966' : '+20',
+                      },
+                    },
+                  }));
+                }}
+              />
             )}
 
             {/* PAGES 13–15: LEGAL POLICIES & DIGITAL CONTACT US */}
