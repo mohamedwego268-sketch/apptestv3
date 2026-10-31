@@ -1379,7 +1379,12 @@ export async function persistFamilyWorkspaceStateToSupabase(
       disputeFreezeActive: state.disputeFreezeActive,
     };
     if (!isCanonicalThreeDemoKids(state.kids)) {
-      sharedPayload.kids = state.kids;
+      // Keep large local-only photo/audio data out of JSONB. Media moves to private Storage in a later phase.
+      sharedPayload.kids = state.kids.map(({ photoDataUrl, voiceMoments, ...kid }) => ({
+        ...kid,
+        photoDataUrl: undefined,
+        voiceMoments: undefined,
+      }));
     }
 
     const privatePayload: Record<string, unknown> = {
