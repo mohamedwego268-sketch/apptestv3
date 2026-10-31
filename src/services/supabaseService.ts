@@ -54,6 +54,8 @@ export const SUPABASE_TABLES = {
   EXTENDED_FAMILY: 'extended_family',
   CATALOG_ITEMS: 'catalog_items',
   CO_PARENT_PAIRINGS: 'co_parent_pairings',
+  FAMILY_SHARED_STATE: 'family_shared_state',
+  PARENT_PRIVATE_STATE: 'parent_private_state',
 } as const;
 
 /**
@@ -1013,7 +1015,7 @@ export async function fetchFamilySpaceFromSupabase(
       };
     }
 
-    const [usersResult, childrenResult, familiesRes, extendedFamilyRes, catalogRes] =
+    const [usersResult, childrenResult, familiesRes, extendedFamilyRes, catalogRes, sharedStateRes, privateStateRes] =
       await Promise.all([
         fetchUsersFromSupabase(verifiedFamilyUuid, activeClient),
         fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient),
@@ -1034,12 +1036,25 @@ export async function fetchFamilySpaceFromSupabase(
         withSupabaseRetry(() =>
           activeClient.from(SUPABASE_TABLES.CATALOG_ITEMS).select('*').limit(50)
         ),
+        withSupabaseRetry(() =>
+          activeClient.from(SUPABASE_TABLES.FAMILY_SHARED_STATE)
+            .select('payload,version,updated_at').eq('family_id', verifiedFamilyUuid).maybeSingle()
+        ),
+        withSupabaseRetry(() =>
+          activeClient.from(SUPABASE_TABLES.PARENT_PRIVATE_STATE)
+            .select('payload,version,updated_at')
+            .eq('auth_user_id', verifiedCtx.userId)
+            .eq('family_id', verifiedFamilyUuid)
+            .maybeSingle()
+        ),
       ]);
 
     const queryErrors = [
       usersResult.error,
       childrenResult.error,
       familiesRes.error?.message,
+      sharedStateRes.error?.message,
+      privateStateRes.error?.message,
     ].filter(Boolean) as string[];
 
     const familiesRows = Array.isArray(familiesRes.data) ? familiesRes.data : [];
@@ -1136,28 +1151,91 @@ export async function fetchFamilySpaceFromSupabase(
           : detectedActiveRole,
     };
 
-    const activeParentProfile =
-      familyEntity.active_parent === 'father'
-        ? updatedParentAccounts.father
-        : updatedParentAccounts.mother;
+    const sharedPayload =
+      sharedStateRes.data?.payload && typeof sharedStateRes.data.payload === 'object' && !Array.isArray(sharedStateRes.data.payload)
+        ? sharedStateRes.data.payload as Record<string, unknown>
+        : {};
+    const privatePayload =
+      privateStateRes.data?.payload && typeof privateStateRes.data.payload === 'object' && !Array.isArray(privateStateRes.data.payload)
+        ? privateStateRes.data.payload as Record<string, unknown>
+        : {};
+
+    const authenticatedParentRole: 'father' | 'mother' =
+      verifiedCtx.role === 'father' || verifiedCtx.role === 'mother'
+        ? verifiedCtx.role
+        : detectedActiveRole;
+    const privateParentProfile =
+      privatePayload.parentProfile && typeof privatePayload.parentProfile === 'object' && !Array.isArray(privatePayload.parentProfile)
+        ? privatePayload.parentProfile as Partial<ParentAccountProfile>
+        : null;
+    if (privateParentProfile) {
+      updatedParentAccounts = {
+        ...updatedParentAccounts,
+        [authenticatedParentRole]: {
+          ...updatedParentAccounts[authenticatedParentRole],
+          ...privateParentProfile,
+        },
+      };
+    }
+
+    const activeParentProfile = updatedParentAccounts[authenticatedParentRole];
+    const sharedKids = Array.isArray(sharedPayload.kids)
+      ? sharedPayload.kids as ChildProfile[]
+      : updatedKids;
+    const resolvedKids = childrenResult.data.length > 0 ? updatedKids : sharedKids;
+    const resolvedFamily = extendedRows.length > 0
+      ? updatedExtendedFamily
+      : Array.isArray(sharedPayload.family)
+        ? sharedPayload.family as FamilyMember[]
+        : updatedExtendedFamily;
 
     const nextState: FamilySpaceState = {
       ...normalizeAppData({
         ...currentState,
         verifiedFamilyId: verifiedFamilyUuid,
         parentAccounts: updatedParentAccounts,
-        kids: updatedKids,
-        family: updatedExtendedFamily,
+        kids: resolvedKids,
+        family: resolvedFamily,
         country: familyEntity.country || currentState.country,
         city: familyEntity.city || currentState.city,
         currency: familyEntity.currency || currentState.currency,
-        activeParentAccount: familyEntity.active_parent || detectedActiveRole,
-        role: (familyEntity.active_parent || detectedActiveRole) === 'father' ? 'dad' : 'mom',
+        activeParentAccount: authenticatedParentRole,
+        role: authenticatedParentRole === 'father' ? 'dad' : 'mom',
+        tasks: Array.isArray(sharedPayload.tasks) ? sharedPayload.tasks : currentState.tasks,
+        events: Array.isArray(sharedPayload.events) ? sharedPayload.events : currentState.events,
+        wishes: Array.isArray(sharedPayload.wishes) ? sharedPayload.wishes : currentState.wishes,
+        invitations: Array.isArray(sharedPayload.invitations) ? sharedPayload.invitations : currentState.invitations,
+        disputeFreezeActive: typeof sharedPayload.disputeFreezeActive === 'boolean'
+          ? sharedPayload.disputeFreezeActive
+          : currentState.disputeFreezeActive,
+        parentName: typeof privatePayload.parentName === 'string'
+          ? privatePayload.parentName
+          : activeParentProfile.fullName || currentState.parentName,
+        language: privatePayload.language === 'en' || privatePayload.language === 'ar'
+          ? privatePayload.language
+          : currentState.language,
+        calendarMode: privatePayload.calendarMode === 'month' || privatePayload.calendarMode === 'week'
+          ? privatePayload.calendarMode
+          : currentState.calendarMode,
+        savedMediaIds: Array.isArray(privatePayload.savedMediaIds) ? privatePayload.savedMediaIds : currentState.savedMediaIds,
+        readNotificationIds: Array.isArray(privatePayload.readNotificationIds) ? privatePayload.readNotificationIds : currentState.readNotificationIds,
+        cart: Array.isArray(privatePayload.cart) ? privatePayload.cart : currentState.cart,
+        recentlyViewedProductIds: Array.isArray(privatePayload.recentlyViewedProductIds)
+          ? privatePayload.recentlyViewedProductIds
+          : currentState.recentlyViewedProductIds,
+        shippingAddress: privatePayload.shippingAddress && typeof privatePayload.shippingAddress === 'object'
+          ? privatePayload.shippingAddress
+          : currentState.shippingAddress,
+        orders: Array.isArray(privatePayload.orders) ? privatePayload.orders : currentState.orders,
+        darkMode: typeof privatePayload.darkMode === 'boolean' ? privatePayload.darkMode : currentState.darkMode,
       }),
       verifiedFamilyId: verifiedFamilyUuid,
-      kids: updatedKids,
+      kids: resolvedKids,
       parentAccounts: updatedParentAccounts,
-      parentName: activeParentProfile.fullName || currentState.parentName,
+      activeParentAccount: authenticatedParentRole,
+      parentName: typeof privatePayload.parentName === 'string'
+        ? privatePayload.parentName
+        : activeParentProfile.fullName || currentState.parentName,
     };
 
     const mappedCatalog: CommercialCatalogItem[] = catalogRows.map(
