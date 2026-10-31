@@ -22,7 +22,9 @@ export type ThreeDIconId =
   | 'star'
   | 'sparkles'
   | 'location'
-  | 'search';
+  | 'search'
+  | 'community'
+  | 'messages';
 
 interface ThreeDIconProps {
   id: ThreeDIconId;
@@ -526,6 +528,24 @@ export const ThreeDIcon: React.FC<ThreeDIconProps> = ({ id, size = 26, className
             strokeWidth="3.8"
             strokeLinecap="round"
           />
+        </g>
+      )}
+
+      {id === 'community' && (
+        <g>
+          <circle cx="18" cy="18" r="6" fill={`url(#${uid}-coral-main)`} />
+          <circle cx="31" cy="19" r="5" fill={`url(#${uid}-coral-soft)`} />
+          <path d="M7.5 36C8.5 28.5 13 25 18 25C23 25 27.5 28.5 28.5 36Z" fill={`url(#${uid}-coral-main)`} />
+          <path d="M26 27C31.5 24.5 38.5 28 40 35.5H30C29.5 32 28 29 26 27Z" fill={`url(#${uid}-coral-soft)`} />
+          <circle cx="36" cy="11" r="2" fill={`url(#${uid}-teal-accent)`} />
+        </g>
+      )}
+
+      {id === 'messages' && (
+        <g>
+          <path d="M9.5 12.5C9.5 10.6 11 9 13 9H34C36 9 37.5 10.6 37.5 12.5V27C37.5 29 36 30.5 34 30.5H21L13 37V30.5C11 30.5 9.5 29 9.5 27Z" fill={`url(#${uid}-coral-main)`} />
+          <path d="M16 18H31M16 23H27" stroke="#FFF7F4" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="36" cy="36" r="4" fill={`url(#${uid}-teal-accent)`} />
         </g>
       )}
     </svg>
