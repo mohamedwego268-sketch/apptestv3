@@ -1200,7 +1200,9 @@ export async function fetchFamilySpaceFromSupabase(
         city: familyEntity.city || currentState.city,
         currency: familyEntity.currency || currentState.currency,
         activeParentAccount: authenticatedParentRole,
-        role: authenticatedParentRole === 'father' ? 'dad' : 'mom',
+        role: privatePayload.themeRole === 'dad' || privatePayload.themeRole === 'mom' || privatePayload.themeRole === 'high-contrast'
+          ? privatePayload.themeRole
+          : authenticatedParentRole === 'father' ? 'dad' : 'mom',
         tasks: Array.isArray(sharedPayload.tasks) ? sharedPayload.tasks : currentState.tasks,
         events: Array.isArray(sharedPayload.events) ? sharedPayload.events : currentState.events,
         wishes: Array.isArray(sharedPayload.wishes) ? sharedPayload.wishes : currentState.wishes,
