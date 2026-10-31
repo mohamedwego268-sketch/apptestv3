@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { LanguageCode, sanitizeUserText } from '../domain/familySpaceCore';
+import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   BannerSlideItem,
   CollapsibleSectionCard,
@@ -1050,6 +1051,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         )}
       </div>
 
+      <SectionToolsDrawer language={language} titleAr="أدوات المجتمع" titleEn="Community tools" badgeCount={filteredPosts.length}>
       {/* Post Composer Collapsible Card */}
       <CollapsibleSectionCard
         id="community-post-composer-accordion"
@@ -1215,6 +1217,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           />
         </div>
       </CollapsibleSectionCard>
+
+      </SectionToolsDrawer>
 
       {/* Community Feed Cards with Soft Pastel Tints */}
       {filteredPosts.length === 0 ? (
