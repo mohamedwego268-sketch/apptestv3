@@ -657,14 +657,20 @@ export default function App() {
     });
   };
 
-  // Precise City/Governorate Dropdown Change Handler (SA & EG individual cities)
+  // Country -> city selection follows the same canonical location catalog used by onboarding.
   const handleSelectPreciseCity = (combinedValue: string) => {
-    const [countryRaw, cityVal] = combinedValue.split(':');
-    const nextCountry: CountryCode = countryRaw === 'SA' ? 'SA' : 'EG';
-    const cityObj =
-      COUNTRY_CITIES_MAP[nextCountry].find(
-        (c) => c.id === cityVal || c.id.startsWith(cityVal) || cityVal.startsWith(c.id)
-      ) || COUNTRY_CITIES_MAP[nextCountry][0];
+    const separatorIndex = combinedValue.indexOf(':');
+    if (separatorIndex < 0) return;
+
+    const countryRaw = combinedValue.slice(0, separatorIndex);
+    const cityRaw = combinedValue.slice(separatorIndex + 1);
+    if (countryRaw !== 'EG' && countryRaw !== 'SA') return;
+
+    const nextCountry: CountryCode = countryRaw;
+    const cityId = resolveCityRegionId(nextCountry, cityRaw);
+    const cityObj = COUNTRY_CITIES_MAP[nextCountry].find((city) => city.id === cityId);
+    if (!cityObj) return;
+
     const nextCurrency = getSuggestedCurrencyForCountry(nextCountry);
 
     setState((prev) => ({
@@ -677,6 +683,10 @@ export default function App() {
         city: cityObj.id,
       },
     }));
+    setSettingsCountry(nextCountry);
+    setSettingsCity(cityObj.id);
+    setSettingsCurrency(nextCurrency);
+    setCurrencySuggestionBanner(null);
     setUserCoords({ lat: cityObj.lat, lng: cityObj.lng });
     setGeoStatus('active');
     showToast(
