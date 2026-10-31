@@ -1733,18 +1733,10 @@ body {
 .mobile-app-shell #main-sticky-header button:focus-visible {
   outline-offset: 2px;
 }
-.mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
-  font-size: 10px !important;
-  line-height: 1.25 !important;
-}
 @media (max-width: 360px) {
   .mobile-app-shell #main-sticky-header .header-control {
     min-height: 40px;
     min-width: 40px;
-  }
-  .mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
-    max-width: 145px;
-    text-wrap: balance;
   }
 }
 
@@ -1998,15 +1990,9 @@ body {
 .drawer-panel button { min-height: 32px; }
 .drawer-brand-location, .drawer-brand-language { padding: 5px 7px !important; font-size: 0.68rem !important; }
 
-/* Keep the brand line visible without colliding with the logo or header actions. */
-#main-sticky-header [data-testid="header-official-slogan-badge"] {
-  max-width: clamp(66px, 22vw, 104px) !important;
-  font-size: 8px !important;
-  letter-spacing: -0.02em;
-}
+/* Compact header controls on mobile viewports. */
 #main-sticky-header .header-control { min-height: 36px !important; min-width: 36px !important; }
 @media (max-width: 380px) {
-  #main-sticky-header [data-testid="header-official-slogan-badge"] { max-width: 66px !important; font-size: 7px !important; }
   #main-sticky-header .header-control { min-height: 32px !important; min-width: 32px !important; }
 }
 
@@ -2022,15 +2008,8 @@ body {
 
 /* Higher-specificity mobile overrides for the header and auth form. */
 .mobile-app-shell #main-sticky-header .header-control { min-height: 34px !important; min-width: 34px !important; }
-.mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
-  max-width: clamp(58px, 18vw, 92px) !important;
-  font-size: 8px !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-}
 .mobile-app-shell #main-sticky-header .header-control span { font-size: 9px !important; }
 @media (max-width: 380px) {
-  .mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] { max-width: 58px !important; font-size: 7px !important; }
   .mobile-app-shell #main-sticky-header .header-control { min-height: 31px !important; min-width: 31px !important; }
 }
 .mobile-app-shell .onboarding-card-scroll form > :not([hidden]) ~ :not([hidden]) {

@@ -417,8 +417,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       emoji: newStoryEmoji,
       titleAr: cleanText,
       titleEn: cleanText,
-      summaryAr: `لحظة عائلية مشاركة من ${sanitizeUserText(city, 40)} — مساحة تجمعنا.. وبحبهم نكبر.`,
-      summaryEn: `Shared family moment from ${sanitizeUserText(city, 40)} — A space that brings us together.`,
+      summaryAr: `لحظة عائلية مشاركة من ${sanitizeUserText(city, 40)}.`,
+      summaryEn: `Shared family moment from ${sanitizeUserText(city, 40)}.`,
       imageUrl:
         'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=80',
     };

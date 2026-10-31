@@ -1144,7 +1144,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               <section className="drawer-brand-panel relative overflow-hidden rounded-[22px] p-3 text-white">
                 <div className="drawer-brand-orb drawer-brand-orb-one" aria-hidden="true" />
                 <div className="drawer-brand-orb drawer-brand-orb-two" aria-hidden="true" />
-                <div className="relative z-10 flex items-start justify-between gap-3">
+                <div className="relative z-10 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="drawer-brand-mark w-12 h-12 rounded-2xl flex items-center justify-center shrink-0">
                       <ThreeDIcon id="home" size={25} />
@@ -1156,9 +1156,6 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       <h2 id="roleModalTitle" className="text-lg font-black leading-tight text-white mt-0.5">
                         {isEn ? 'Nekbaar' : 'نكبر'}
                       </h2>
-                      <p className="text-[13px] font-semibold text-white/85 mt-0.5">
-                        {isEn ? 'Our shared space.. growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
-                      </p>
                     </div>
                   </div>
                   <button

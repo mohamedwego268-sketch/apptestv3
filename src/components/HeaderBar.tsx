@@ -83,9 +83,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const activeCity = city || (country === 'SA' ? 'الرياض' : 'القاهرة');
   const localizedCity = locText(activeCity, lang);
   const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
-  const localizedSlogan = isEn
-    ? 'Our shared space.. growing with love'
-    : 'مساحة تجمعنا.. وبحبهم نكبر';
 
   return (
     <>
@@ -188,25 +185,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </button>
           </div>
 
-          {/* Compact Brand Wordmark & Localized Official Slogan */}
+          {/* Compact Brand Wordmark & Logo */}
           <button
             type="button"
             onClick={() => onNavigate('home')}
-            aria-label={`${brandName} — ${localizedSlogan}`}
-            className="min-h-[36px] px-0.5 flex items-center gap-1 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 flex-1 justify-end"
+            aria-label={brandName}
+            className="min-h-[36px] px-0.5 flex items-center gap-1.5 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 shrink-0 justify-end"
           >
-            <div className="min-w-0 flex items-baseline justify-end gap-1 whitespace-nowrap text-end">
-              <span className="shrink-0 font-black text-[14px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
-                {brandName}
-              </span>
-              <span
-                data-testid="header-official-slogan-badge"
-                className="min-w-0 max-w-[145px] truncate text-[9px] font-semibold text-[#0d9488] dark:text-[#2DD4BF] leading-none"
-                title={localizedSlogan}
-              >
-                {localizedSlogan}
-              </span>
-            </div>
+            <span className="shrink-0 font-black text-[15px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
+              {brandName}
+            </span>
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
               <ThreeDIcon id="home" size={20} />
             </div>

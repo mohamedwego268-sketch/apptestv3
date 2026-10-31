@@ -820,9 +820,6 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
           <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight">
             {displayLabel}
           </div>
-          <p className="text-sm sm:text-base font-extrabold text-[#2DD4BF]">
-            {isEn ? 'Our shared space.. growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
-          </p>
 
           {/* Enlarged Glowing Progress Indicator */}
           <div className="w-64 sm:w-80 mx-auto h-3 rounded-full bg-slate-800/90 border border-teal-500/30 overflow-hidden shadow-inner">
@@ -2635,7 +2632,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           </div>
         </div>
 
-        {/* Bilingual App Name ("نكبر / Nekbaar") & Official Bilingual Slogan Directly Underneath */}
+        {/* Bilingual App Name ("نكبر / Nekbaar") Directly Underneath */}
         <div className="space-y-2 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
           <h1
             data-testid="splash-brand-title"
@@ -2647,18 +2644,6 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
               Nekbaar
             </span>
           </h1>
-          <p
-            data-testid="splash-brand-slogan"
-            className="text-base sm:text-xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-relaxed"
-          >
-            مساحة تجمعنا.. وبحبهم نكبر
-          </p>
-          <p
-            data-testid="splash-brand-slogan-en"
-            className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed"
-          >
-            Our shared space.. growing with love
-          </p>
         </div>
       </div>
 

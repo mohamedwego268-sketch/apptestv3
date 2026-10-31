@@ -266,10 +266,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     [childrenList]
   );
 
-  const officialSlogan = isEn
-    ? 'Our shared space.. growing with love'
-    : 'مساحة تجمعنا.. وبحبهم نكبر';
-
   // Normalize legacy city names and GPS sub-cities to the canonical region ID.
   useEffect(() => {
     if (selectedCityAr !== resolvedSelectedCityId) {
@@ -1067,7 +1063,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             </button>
           )}
 
-          {/* Centered Brand Logo, Title & Official Slogan */}
+          {/* Centered Brand Logo & Title */}
           <div className="flex flex-col items-center text-center space-y-1 pt-0.5">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-md">
               <span className="text-xl font-black text-white select-none">ن</span>
@@ -1075,12 +1071,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
               {isEn ? 'Nekbaar' : 'نكبر'}
             </h1>
-            <p
-              data-testid="auth-official-slogan"
-              className="text-xs font-bold text-[#0d9488] dark:text-[#2DD4BF] leading-snug"
-            >
-              {officialSlogan}
-            </p>
           </div>
 
           {errorMsg && (
