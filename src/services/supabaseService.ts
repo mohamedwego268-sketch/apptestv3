@@ -1345,6 +1345,98 @@ export async function fetchFamilySpaceFromSupabase(
  * 3. Blocks syncing default Demo Seed data (Hamza, Laila, Youssef) as real database records.
  * 4. Separates local numeric IDs (`1, 2, 3`) from remote database UUIDs (`remoteId`).
  */
+export async function persistFamilyWorkspaceStateToSupabase(
+  state: FamilySpaceState,
+  customClient?: SupabaseClient | null
+): Promise<{ synced: boolean; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) return { synced: false, error: 'Supabase client is not initialized.' };
+  if (isDefaultDemoSeedState(state)) return { synced: false, error: null };
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    const familyId = verifiedCtx.verifiedFamilyId;
+    const authUserId = verifiedCtx.userId;
+    const activeRole = verifiedCtx.role;
+    if (
+      !verifiedCtx.authenticated ||
+      !isValidUuid(familyId) ||
+      !isValidUuid(authUserId) ||
+      (activeRole !== 'father' && activeRole !== 'mother')
+    ) {
+      return { synced: false, error: verifiedCtx.error || 'A verified parent account is required to save family workspace data.' };
+    }
+
+    const now = new Date().toISOString();
+    const sharedPayload: Record<string, unknown> = {
+      tasks: state.tasks,
+      events: state.events,
+      wishes: state.wishes,
+      family: state.family,
+      invitations: state.invitations,
+      disputeFreezeActive: state.disputeFreezeActive,
+    };
+    if (!isCanonicalThreeDemoKids(state.kids)) {
+      sharedPayload.kids = state.kids;
+    }
+
+    const privatePayload: Record<string, unknown> = {
+      parentRole: activeRole,
+      parentName: state.parentName,
+      themeRole: state.role,
+      language: state.language,
+      calendarMode: state.calendarMode,
+      savedMediaIds: state.savedMediaIds,
+      readNotificationIds: state.readNotificationIds,
+      cart: state.cart,
+      recentlyViewedProductIds: state.recentlyViewedProductIds,
+      shippingAddress: state.shippingAddress,
+      orders: state.orders,
+      darkMode: Boolean(state.darkMode),
+      parentProfile: state.parentAccounts[activeRole],
+    };
+
+    const [sharedVersionRes, privateVersionRes] = await Promise.all([
+      withSupabaseRetry(() => activeClient.from(SUPABASE_TABLES.FAMILY_SHARED_STATE)
+        .select('version').eq('family_id', familyId).maybeSingle()),
+      withSupabaseRetry(() => activeClient.from(SUPABASE_TABLES.PARENT_PRIVATE_STATE)
+        .select('version').eq('auth_user_id', authUserId).eq('family_id', familyId).maybeSingle()),
+    ]);
+    if (sharedVersionRes.error || privateVersionRes.error) {
+      throw new Error(sharedVersionRes.error?.message || privateVersionRes.error?.message || 'Could not read workspace versions.');
+    }
+
+    const sharedVersion = Number(sharedVersionRes.data?.version || 0) + 1;
+    const privateVersion = Number(privateVersionRes.data?.version || 0) + 1;
+
+    const [sharedWrite, privateWrite] = await Promise.all([
+      withSupabaseRetry(() => activeClient.from(SUPABASE_TABLES.FAMILY_SHARED_STATE).upsert({
+        family_id: familyId,
+        payload: sharedPayload,
+        version: sharedVersion,
+        updated_by: authUserId,
+        updated_at: now,
+      }, { onConflict: 'family_id' })),
+      withSupabaseRetry(() => activeClient.from(SUPABASE_TABLES.PARENT_PRIVATE_STATE).upsert({
+        auth_user_id: authUserId,
+        family_id: familyId,
+        payload: privatePayload,
+        version: privateVersion,
+        updated_at: now,
+      }, { onConflict: 'auth_user_id' })),
+    ]);
+
+    const writeError = sharedWrite.error || privateWrite.error;
+    if (writeError) throw new Error(writeError.message);
+    return { synced: true, error: null };
+  } catch (err) {
+    return {
+      synced: false,
+      error: err instanceof Error ? err.message : 'Unable to persist family workspace state.',
+    };
+  }
+}
+
 export async function syncFamilySpaceToSupabase(
   state: FamilySpaceState,
   customClient?: SupabaseClient | null
@@ -1491,6 +1583,9 @@ export async function syncFamilySpaceToSupabase(
         return false;
       }
     }
+
+    const workspaceSync = await persistFamilyWorkspaceStateToSupabase(state, activeClient);
+    if (!workspaceSync.synced) return false;
 
     return true;
   } catch {
