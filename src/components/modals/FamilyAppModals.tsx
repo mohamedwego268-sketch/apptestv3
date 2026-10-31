@@ -1169,7 +1169,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         {isEn ? 'Nekbaar' : 'نكبر'}
                       </h2>
                       <p className="text-[13px] font-semibold text-white/85 mt-0.5">
-                        {isEn ? 'Family Space' : 'مساحة الأسرة'}
+                        {isEn ? 'Our shared space.. growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
                       </p>
                     </div>
                   </div>
@@ -1213,7 +1213,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   </button>
                 </div>
                 <div className="relative z-10 mt-2 flex items-center justify-between text-[11px] font-semibold text-white/75">
-                  <span>{isEn ? 'A calmer way to manage family life' : 'كل ما يهم الأسرة.. أقرب وأسهل'}</span>
+                  <span>{isEn ? 'One place for everyday family life' : 'كل تفاصيل الأسرة في مكان واحد'}</span>
                   <span dir="ltr" className="tabular-nums">{state.currency}</span>
                 </div>
               </section>
