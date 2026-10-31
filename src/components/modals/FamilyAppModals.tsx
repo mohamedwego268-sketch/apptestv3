@@ -2243,7 +2243,9 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       >
                         {activeCountryList.map((c, idx) => (
                           <option key={`drw-${state.country}-${c.id}`} value={`${state.country}:${c.id}`}>
-                            {isEn ? `${idx + 1}. ${c.nameEn}` : `${idx + 1}. ${c.nameAr}`}
+                            {isEn
+                              ? `${idx + 1}. ${c.labelEn || c.nameEn} — ${c.regionEn}`
+                              : `${idx + 1}. ${c.labelAr || c.nameAr} — ${c.regionAr}`}
                           </option>
                         ))}
                       </select>
