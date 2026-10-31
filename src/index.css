@@ -1894,17 +1894,37 @@ body {
 }
 
 
-/* Community story viewer: keep the 9:16 canvas inside short phone viewports. */
+/* Community stories: native full-screen phone canvas; vertical 9:16 preview on larger screens. */
 .community-story-frame {
-  width: min(100%, 380px, 50dvh);
-  aspect-ratio: 9 / 16;
-  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px);
+  width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
   min-height: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+@media (min-width: 640px) {
+  .community-story-frame {
+    width: min(100%, 430px, calc((100dvh - 48px) * 9 / 16));
+    height: auto;
+    max-height: calc(100dvh - 48px);
+    aspect-ratio: 9 / 16;
+    border-radius: 28px;
+  }
 }
 
 @supports not (height: 100dvh) {
   .community-story-frame {
-    width: min(100%, 380px, 50vh);
-    max-height: calc(100vh - 24px);
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  @media (min-width: 640px) {
+    .community-story-frame {
+      width: min(100%, 430px, calc((100vh - 48px) * 9 / 16));
+      height: auto;
+      max-height: calc(100vh - 48px);
+    }
   }
 }
