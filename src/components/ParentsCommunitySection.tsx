@@ -760,14 +760,14 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           data-testid="community-story-viewer-modal"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 backdrop-blur-md p-0 sm:p-3 animate-fade-in"
           onClick={() => setStoryModalId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative flex w-full max-w-md items-center justify-center overflow-hidden"
+            className="relative flex h-[100dvh] w-full max-w-[430px] items-center justify-center overflow-hidden sm:h-auto"
           >
-            <div className="community-story-frame relative max-w-full rounded-[28px] border border-white/20 bg-[#0B131A] text-white shadow-2xl overflow-hidden flex flex-col">
+            <div className="community-story-frame relative max-w-full rounded-none border-0 bg-[#0B131A] text-white shadow-2xl overflow-hidden flex flex-col sm:rounded-[28px] sm:border">
               <img
                 src={activeModalStory.imageUrl}
                 alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
@@ -779,7 +779,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               />
 
               {/* Story Top Progress Segments & Author Header */}
-              <div className="relative z-10 p-3.5 sm:p-4 space-y-2.5 shrink-0">
+              <div className="relative z-10 px-3.5 pt-[max(14px,env(safe-area-inset-top))] pb-3.5 sm:p-4 space-y-2.5 shrink-0">
                 <div className="flex items-center gap-1.5">
                   {familyStoryReels.map((s, idx) => (
                     <div
@@ -857,7 +857,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </div>
 
               {/* Story Footer Controls & Quick Reactions */}
-              <div className="relative z-10 p-3 sm:p-3.5 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-center sm:justify-between gap-2 shrink-0">
+              <div className="relative z-10 px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] sm:p-3.5 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-center sm:justify-between gap-2 shrink-0">
                 <div className="flex items-center justify-center flex-wrap gap-1.5">
                   {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
                     <button
