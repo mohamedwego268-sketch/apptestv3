@@ -915,7 +915,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       )}
 
       <SectionToolsDrawer language={language} titleAr="أدوات المتجر" titleEn="Store tools" badgeCount={activeFiltersCount}>
-      <SectionToolsDrawer language={language} titleAr="أدوات المتجر" titleEn="Store tools" badgeCount={activeFiltersCount}>
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2">
           <p className="text-xs font-extrabold text-[var(--color-text)]">{isEn ? 'Browse scope' : 'نطاق التصفح'}</p>
           <div className="grid grid-cols-2 gap-1.5">
