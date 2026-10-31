@@ -1540,7 +1540,11 @@ h1, h2, h3, h4 {
 /* Enforce Minimum 48px Touch Targets & Ergonomic Micro-Interactions */
 .mobile-app-shell button,
 .mobile-app-shell [role="button"],
-.mobile-app-shell [role="tab"],
+.mobile-app-shell [role="tab"] {
+  min-height: 44px;
+  min-width: 0;
+}
+
 .mobile-app-shell input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
 .mobile-app-shell select {
   min-height: 48px;
@@ -1670,12 +1674,36 @@ body {
   line-height: 1.68;
 }
 /* Small labels stay readable without overpowering dense cards and controls. */
-.mobile-app-shell .text-xs,
-.mobile-app-shell [class*="text-[11px]"],
-.mobile-app-shell [class*="text-[10px]"],
-.mobile-app-shell [class*="text-[9px]"] {
+.mobile-app-shell .text-xs {
   font-size: 0.8125rem !important;
   line-height: 1.5 !important;
+}
+
+/* Preserve a clear hierarchy: metadata remains compact instead of being
+   inflated to body-copy size inside badges, chips and dense cards. */
+.mobile-app-shell [class*="text-[11px]"],
+.mobile-app-shell [class*="text-[11.5px]"] {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+}
+
+.mobile-app-shell [class*="text-[10px]"],
+.mobile-app-shell [class*="text-[10.5px]"] {
+  font-size: 0.71875rem !important;
+  line-height: 1.35 !important;
+}
+
+.mobile-app-shell [class*="text-[9px]"],
+.mobile-app-shell [class*="text-[9.5px]"],
+.mobile-app-shell [class*="text-[8.5px]"] {
+  font-size: 0.6875rem !important;
+  line-height: 1.3 !important;
+}
+
+/* Long Arabic compounds and URLs must wrap instead of widening cards. */
+.mobile-app-shell :is(h1, h2, h3, h4, p, label, li) {
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 .mobile-app-shell .text-sm {
   font-size: 0.875rem;
@@ -1853,4 +1881,20 @@ body {
 }
 .drawer-brand-panel .text-\[11px\] {
   font-size: 0.75rem !important;
+}
+
+
+/* Community story viewer: keep the 9:16 canvas inside short phone viewports. */
+.community-story-frame {
+  width: min(100%, 380px, 50dvh);
+  aspect-ratio: 9 / 16;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px);
+  min-height: 0;
+}
+
+@supports not (height: 100dvh) {
+  .community-story-frame {
+    width: min(100%, 380px, 50vh);
+    max-height: calc(100vh - 24px);
+  }
 }
