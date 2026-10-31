@@ -25,12 +25,13 @@ import {
 interface FamilyHomesSectionProps {
   state: FamilySpaceState;
   onShowToast: (message: string) => void;
+  onPersonalLocationSaved: (country: CountryCode) => void;
 }
 
 const WEEKDAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 const WEEKDAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, onShowToast }) => {
+export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, onShowToast, onPersonalLocationSaved }) => {
   const isEn = state.language === 'en';
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,6 +72,10 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
     setHomes(result.homes);
     setChildren(result.children);
     setSchedules(result.schedules);
+    if (result.parentLocation) {
+      setPersonalCountry(result.parentLocation.country);
+      setPersonalCity(result.parentLocation.city);
+    }
     setScheduleChildId((current) => current || result.children[0]?.id || '');
     setScheduleHomeId((current) => current || result.homes.find((home) => !home.is_primary)?.id || result.homes[0]?.id || '');
   }, []);
@@ -152,6 +157,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
       timezone: personalCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
     });
     setSaving(false);
+    if (!result.error) onPersonalLocationSaved(personalCountry);
     onShowToast(result.error || (isEn ? 'Your private location has been saved.' : 'تم حفظ موقع حسابك الشخصي بشكل مستقل.'));
   };
 
