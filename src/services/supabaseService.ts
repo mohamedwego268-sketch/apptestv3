@@ -3241,27 +3241,7 @@ export async function linkCoParentAccountInSupabase(
   const resolvedToken = payload.pairingToken?.trim().toUpperCase() || generateSecureFamilyPairingToken();
   const pendingPartnerUserId = '';
 
-  // The local record is an invitation draft only. It must never imply that the other parent accepted.
-  try {
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(
-        'nekbaar_coparent_pairing_v2',
-        JSON.stringify({
-          familyId: targetFamilyId,
-          partnerName: payload.partnerName.trim(),
-          partnerPhone: payload.partnerPhone.trim(),
-          partnerEmail: payload.partnerEmail.trim(),
-          method: payload.method,
-          pairingToken: resolvedToken,
-          status: 'pending',
-          verified: false,
-          linkedAt: new Date().toISOString(),
-        })
-      );
-    }
-  } catch {
-    // Ignore local storage errors
-  }
+  // Keep the one-time raw invitation code in component memory only; the database stores its hash.
 
   if (!activeClient) {
     return {
