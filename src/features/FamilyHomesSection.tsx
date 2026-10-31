@@ -25,7 +25,7 @@ import {
 interface FamilyHomesSectionProps {
   state: FamilySpaceState;
   onShowToast: (message: string) => void;
-  onPersonalLocationSaved: (country: CountryCode) => void;
+  onPersonalLocationSaved: (country: CountryCode, city: string) => void;
 }
 
 const WEEKDAYS_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -48,9 +48,10 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
   const [acceptToken, setAcceptToken] = useState('');
   const [inviteSaving, setInviteSaving] = useState(false);
 
+  const initialParentCity = state.parentAccounts[state.activeParentAccount]?.city || state.city;
   const initialCountry = state.parentAccounts[state.activeParentAccount]?.country || state.country;
   const [personalCountry, setPersonalCountry] = useState<CountryCode>(initialCountry);
-  const [personalCity, setPersonalCity] = useState<string>(() => COUNTRY_CITIES_MAP[initialCountry].some((city) => city.id === state.city) ? state.city : COUNTRY_CITIES_MAP[initialCountry][0]?.id || '');
+  const [personalCity, setPersonalCity] = useState<string>(() => COUNTRY_CITIES_MAP[initialCountry].some((city) => city.id === initialParentCity) ? initialParentCity : COUNTRY_CITIES_MAP[initialCountry][0]?.id || '');
   const [homeLabel, setHomeLabel] = useState('');
   const [homeCountry, setHomeCountry] = useState<CountryCode>(state.country);
   const [homeCity, setHomeCity] = useState<string>(state.city || COUNTRY_CITIES_MAP[state.country][0]?.id || '');
@@ -75,10 +76,11 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
     if (result.parentLocation) {
       setPersonalCountry(result.parentLocation.country);
       setPersonalCity(result.parentLocation.city);
+      onPersonalLocationSaved(result.parentLocation.country, result.parentLocation.city);
     }
     setScheduleChildId((current) => current || result.children[0]?.id || '');
     setScheduleHomeId((current) => current || result.homes.find((home) => !home.is_primary)?.id || result.homes[0]?.id || '');
-  }, []);
+  }, [onPersonalLocationSaved]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -157,7 +159,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
       timezone: personalCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
     });
     setSaving(false);
-    if (!result.error) onPersonalLocationSaved(personalCountry);
+    if (!result.error) onPersonalLocationSaved(personalCountry, personalCity);
     onShowToast(result.error || (isEn ? 'Your private location has been saved.' : 'تم حفظ موقع حسابك الشخصي بشكل مستقل.'));
   };
 
@@ -232,7 +234,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
   const childName = (childId: string) => children.find((child) => child.id === childId)?.name || (isEn ? 'Child' : 'الطفل');
 
   return (
-    <section className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] overflow-hidden" aria-label={isEn ? 'Family places' : 'أماكن الأسرة'}>
+    <section id="family-places-settings" className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] overflow-hidden" aria-label={isEn ? 'Family places' : 'أماكن الأسرة'}>
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
