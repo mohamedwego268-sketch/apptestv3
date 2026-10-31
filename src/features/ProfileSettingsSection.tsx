@@ -97,7 +97,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
   const [fontScale, setFontScale] = useState<'compact' | 'standard' | 'large'>(() => {
     try {
       const saved = window.localStorage.getItem('nekbaar-font-scale-v1');
-      return saved === 'compact' || saved === 'large' ? saved : 'standard';
+      return saved === 'standard' || saved === 'large' ? saved : 'compact';
     } catch {
       return 'standard';
     }
