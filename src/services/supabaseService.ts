@@ -2993,6 +2993,7 @@ export interface CoParentLinkPayload {
 
 export interface CoParentLinkResult {
   linked: boolean;
+  invitationCreated?: boolean;
   syncedToDb: boolean;
   familyId: string | number;
   partnerUserId: string;
@@ -3005,31 +3006,46 @@ export interface CoParentLinkResult {
  * Step 5 of Onboarding Wizard — Co-Parent Integration Module:
  * Persists pairing locally and only writes to Supabase if a verified Auth session + UUID family_id exist.
  */
+async function hashFamilyPairingToken(token: string): Promise<string> {
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    throw new Error('Secure invitation tokens are not supported in this browser.');
+  }
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSecureFamilyPairingToken(): string {
+  if (typeof crypto === 'undefined' || !crypto.getRandomValues) {
+    throw new Error('Secure invitation tokens are not supported in this browser.');
+  }
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  const token = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `NKB-${token}`;
+}
+
 export async function linkCoParentAccountInSupabase(
   payload: CoParentLinkPayload,
   customClient?: SupabaseClient | null
 ): Promise<CoParentLinkResult> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const targetFamilyId = payload.familyId || SHARED_FAMILY_ID;
-  const partnerUserId =
-    payload.partnerRole === 'father' ? 'parent-ahmad' : 'parent-maryam';
-  const resolvedToken =
-    payload.pairingToken?.trim() ||
-    generateFamilyPairingToken(targetFamilyId, payload.partnerPhone);
+  const resolvedToken = payload.pairingToken?.trim() || generateSecureFamilyPairingToken();
+  const pendingPartnerUserId = '';
 
-  // Persist pairing draft locally first without marking verified=true unless DB session is verified
+  // The local record is an invitation draft only. It must never imply that the other parent accepted.
   try {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(
         'nekbaar_coparent_pairing_v2',
         JSON.stringify({
           familyId: targetFamilyId,
-          partnerUserId,
           partnerName: payload.partnerName.trim(),
           partnerPhone: payload.partnerPhone.trim(),
           partnerEmail: payload.partnerEmail.trim(),
           method: payload.method,
           pairingToken: resolvedToken,
+          status: 'pending',
           verified: false,
           linkedAt: new Date().toISOString(),
         })
@@ -3042,9 +3058,10 @@ export async function linkCoParentAccountInSupabase(
   if (!activeClient) {
     return {
       linked: false,
+      invitationCreated: false,
       syncedToDb: false,
       familyId: targetFamilyId,
-      partnerUserId,
+      partnerUserId: pendingPartnerUserId,
       pairingToken: resolvedToken,
       method: payload.method,
       error: 'Supabase client is not initialized.',
@@ -3056,46 +3073,67 @@ export async function linkCoParentAccountInSupabase(
     const verifiedFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
       ? verifiedCtx.verifiedFamilyId
       : null;
+    const inviterProfileId = isValidUuid(verifiedCtx.profileUserId)
+      ? verifiedCtx.profileUserId
+      : null;
 
-    if (!verifiedCtx.authenticated || !verifiedFamilyUuid) {
+    if (!verifiedCtx.authenticated || !verifiedFamilyUuid || !inviterProfileId) {
       return {
         linked: false,
+        invitationCreated: false,
         syncedToDb: false,
         familyId: targetFamilyId,
-        partnerUserId,
+        partnerUserId: pendingPartnerUserId,
         pairingToken: resolvedToken,
         method: payload.method,
         error:
           verifiedCtx.error ||
-          'Write blocked: Authenticated session and verified UUID family_id are required.',
+          'Write blocked: verified account and family membership are required.',
       };
     }
 
-    const genuinelyVerified = Boolean(verifiedCtx.emailVerified || verifiedCtx.phoneVerified);
+    if (!payload.partnerEmail.trim() && !payload.partnerPhone.trim()) {
+      return {
+        linked: false,
+        invitationCreated: false,
+        syncedToDb: false,
+        familyId: verifiedFamilyUuid,
+        partnerUserId: pendingPartnerUserId,
+        pairingToken: resolvedToken,
+        method: payload.method,
+        error: 'أضف بريد ولي الأمر الآخر أو رقم جواله قبل إرسال الدعوة.',
+      };
+    }
+
+    const pairingTokenHash = await hashFamilyPairingToken(resolvedToken);
+    const now = new Date();
     const { error: pairErr } = await withSupabaseTimeout(
-      activeClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).upsert(
-        {
-          family_id: verifiedFamilyUuid,
-          partner_name:
-            payload.partnerName.trim() ||
-            (payload.partnerRole === 'father' ? 'أحمد (الأب)' : 'مريم (الأم)'),
-          partner_phone: payload.partnerPhone.trim(),
-          partner_email: payload.partnerEmail.trim(),
-          partner_role: payload.partnerRole,
-          pairing_method: payload.method,
-          pairing_token_hash: resolvedToken,
-          verified: genuinelyVerified,
-          linked_at: new Date().toISOString(),
-        },
-        { onConflict: 'pairing_token_hash' }
-      )
+      activeClient.from(SUPABASE_TABLES.CO_PARENT_PAIRINGS).insert({
+        family_id: verifiedFamilyUuid,
+        invited_by_user_id: inviterProfileId,
+        partner_user_id: null,
+        partner_name:
+          payload.partnerName.trim() ||
+          (payload.partnerRole === 'father' ? 'الأب' : 'الأم'),
+        partner_phone: payload.partnerPhone.trim(),
+        partner_email: payload.partnerEmail.trim().toLowerCase(),
+        partner_role: payload.partnerRole,
+        pairing_method: payload.method,
+        pairing_token_hash: pairingTokenHash,
+        status: 'pending',
+        verified: false,
+        linked_at: now.toISOString(),
+        expires_at: new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString(),
+        accepted_at: null,
+      })
     );
 
     return {
-      linked: !pairErr,
+      linked: false,
+      invitationCreated: !pairErr,
       syncedToDb: !pairErr,
       familyId: verifiedFamilyUuid,
-      partnerUserId,
+      partnerUserId: pendingPartnerUserId,
       pairingToken: resolvedToken,
       method: payload.method,
       error: pairErr ? pairErr.message : null,
@@ -3103,12 +3141,13 @@ export async function linkCoParentAccountInSupabase(
   } catch (err) {
     return {
       linked: false,
+      invitationCreated: false,
       syncedToDb: false,
       familyId: targetFamilyId,
-      partnerUserId,
+      partnerUserId: pendingPartnerUserId,
       pairingToken: resolvedToken,
       method: payload.method,
-      error: err instanceof Error ? err.message : null,
+      error: err instanceof Error ? err.message : 'Failed to create the family invitation.',
     };
   }
 }
