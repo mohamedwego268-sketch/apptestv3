@@ -698,7 +698,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               <label className="block text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
                 {isEn ? 'Pick a Mood Icon' : 'اختر رمز اللحظة'}
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {['🌟', '🧸', '🍱', '🏅', '❤️', '🌙'].map((em) => (
                   <button
                     key={em}
