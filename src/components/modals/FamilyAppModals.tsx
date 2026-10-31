@@ -176,6 +176,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const [navigationSearch, setNavigationSearch] = useState<string>('');
   const activeCountryList = COUNTRY_CITIES_MAP[state.country] || COUNTRY_CITIES_MAP.EG;
   const resolvedDrawerCityId = resolveCityRegionId(state.country, state.city);
+  const resolvedDrawerCity =
+    activeCountryList.find((city) => city.id === resolvedDrawerCityId) || activeCountryList[0];
 
   return (
     <>
@@ -2145,11 +2147,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
                       {isEn
                         ? state.country === 'EG'
-                          ? 'Egypt Governorate (27) & GPS'
-                          : 'Saudi Region (15) & GPS'
+                          ? `Egypt governorates (${activeCountryList.length}) & GPS`
+                          : `Saudi regions / cities (${activeCountryList.length}) & GPS`
                         : state.country === 'EG'
-                        ? 'محافظة مصر (٢٧ محافظة) والـ GPS'
-                        : 'منطقة السعودية (١٥ منطقة) والـ GPS'}
+                        ? `محافظات مصر (${activeCountryList.length}) والـ GPS`
+                        : `مناطق ومدن السعودية (${activeCountryList.length}) والـ GPS`}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
@@ -2178,7 +2180,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         id="drawer-country-eg-btn"
                         type="button"
                         aria-pressed={state.country === 'EG'}
-                        onClick={() => onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`)}
+                        onClick={() => {
+                          if (state.country !== 'EG') {
+                            onSelectPreciseCity(`EG:${COUNTRY_CITIES_MAP.EG[0].id}`);
+                          }
+                        }}
                         className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           state.country === 'EG'
                             ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
@@ -2192,7 +2198,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                         id="drawer-country-sa-btn"
                         type="button"
                         aria-pressed={state.country === 'SA'}
-                        onClick={() => onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`)}
+                        onClick={() => {
+                          if (state.country !== 'SA') {
+                            onSelectPreciseCity(`SA:${COUNTRY_CITIES_MAP.SA[0].id}`);
+                          }
+                        }}
                         className={`py-2 px-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           state.country === 'SA'
                             ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
@@ -2204,7 +2214,18 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="space-y-1.5">
+                      <label
+                        htmlFor="drawer-city-select"
+                        className="block text-[11px] font-extrabold text-[var(--color-muted)]"
+                      >
+                        {isEn
+                          ? `City / governorate in ${state.country === 'EG' ? 'Egypt' : 'Saudi Arabia'}`
+                          : state.country === 'EG'
+                          ? 'اختر المحافظة داخل مصر'
+                          : 'اختر المنطقة أو المدينة داخل السعودية'}
+                      </label>
+                      <div className="flex items-center gap-2">
                       <select
                         id="drawer-city-select"
                         aria-label={
@@ -2251,6 +2272,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                             : 'موقعي GPS'}
                         </span>
                       </button>
+                      </div>
+                      <p className="text-[10px] font-bold text-[var(--color-muted)]">
+                        {isEn
+                          ? `Selected: ${resolvedDrawerCity.nameEn} · ${resolvedDrawerCity.regionEn} · ${state.currency}`
+                          : `المحدد: ${resolvedDrawerCity.nameAr} · ${resolvedDrawerCity.regionAr} · ${state.currency}`}
+                      </p>
                     </div>
                   </div>
                 )}
