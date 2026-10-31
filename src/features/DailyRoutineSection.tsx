@@ -17,6 +17,7 @@ import {
   PrimaryCtaButton,
   UnifiedBadge,
 } from '../components/DesignSystem';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface DailyRoutineSectionProps {
   state: FamilySpaceState;
@@ -108,9 +109,11 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             </PrimaryCtaButton>
           </div>
         </div>
+      </div>
 
+      <SectionToolsDrawer language={lang} titleAr="أدوات الروتين" titleEn="Routine tools">
         {/* Quick Reminder Status Filter Pills */}
-        <div className="image-card-glass-panel rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-2.5 flex flex-wrap items-center justify-between gap-2">
           <div
             className="flex flex-wrap items-center gap-1.5"
             role="group"
@@ -184,7 +187,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             </select>
           </div>
         </div>
-      </div>
+      </SectionToolsDrawer>
 
       <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
         {/* Day / Week / Month Tabs & Filters */}
