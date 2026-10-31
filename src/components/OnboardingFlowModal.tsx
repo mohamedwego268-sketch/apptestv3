@@ -1051,11 +1051,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       aria-modal="true"
       aria-label={isEn ? 'Nekbaar Authentication' : 'نكبر'}
       dir={isEn ? 'ltr' : 'rtl'}
-      className="fixed inset-0 z-50 bg-slate-100/95 dark:bg-[#0B131A] overflow-y-auto flex flex-col items-center justify-start sm:justify-center p-3 pt-safe pb-safe"
+      className="fixed inset-0 z-50 bg-slate-100/95 dark:bg-[#0B131A] overflow-hidden flex flex-col items-center justify-center p-2 pt-safe pb-safe"
     >
-      <div className="w-full max-w-[430px] mx-auto my-auto flex flex-col justify-center">
-        {/* Minimalist Card Container */}
-        <div className="w-full rounded-3xl bg-white dark:bg-[#101D26] border border-slate-200/80 dark:border-[#1E3646] shadow-xl p-5 sm:p-6 space-y-5 relative">
+      <div className="w-full max-w-[430px] min-h-0 mx-auto my-auto flex flex-col justify-center">
+        {/* Viewport-bounded authentication card: content scrolls inside the phone frame */}
+        <div className="onboarding-card-scroll w-full max-h-[calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-16px)] overflow-y-auto overscroll-contain rounded-3xl bg-white dark:bg-[#101D26] border border-slate-200/80 dark:border-[#1E3646] shadow-xl p-4 sm:p-6 space-y-4 relative">
           {!isMandatoryGateway && (
             <button
               type="button"
@@ -1068,9 +1068,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           )}
 
           {/* Centered Brand Logo, Title & Official Slogan */}
-          <div className="flex flex-col items-center text-center space-y-1.5 pt-1">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-md">
-              <span className="text-2xl font-black text-white select-none">ن</span>
+          <div className="flex flex-col items-center text-center space-y-1 pt-0.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-md">
+              <span className="text-xl font-black text-white select-none">ن</span>
             </div>
             <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
               {isEn ? 'Nekbaar' : 'نكبر'}
