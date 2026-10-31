@@ -1680,12 +1680,12 @@ body {
   line-height: 1.45;
 }
 .mobile-app-shell p {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 0.875rem;
+  line-height: 1.58;
 }
 /* Small labels stay readable without overpowering dense cards and controls. */
 .mobile-app-shell .text-xs {
-  font-size: 0.875rem !important;
+  font-size: 0.8125rem !important;
   line-height: 1.45 !important;
 }
 
@@ -1693,20 +1693,20 @@ body {
    inflated to body-copy size inside badges, chips and dense cards. */
 .mobile-app-shell [class*="text-[11px]"],
 .mobile-app-shell [class*="text-[11.5px]"] {
-  font-size: 0.857rem !important;
+  font-size: 0.75rem !important;
   line-height: 1.4 !important;
 }
 
 .mobile-app-shell [class*="text-[10px]"],
 .mobile-app-shell [class*="text-[10.5px]"] {
-  font-size: 0.8214rem !important;
+  font-size: 0.6875rem !important;
   line-height: 1.35 !important;
 }
 
 .mobile-app-shell [class*="text-[9px]"],
 .mobile-app-shell [class*="text-[9.5px]"],
 .mobile-app-shell [class*="text-[8.5px]"] {
-  font-size: 0.7857rem !important;
+  font-size: 0.625rem !important;
   line-height: 1.3 !important;
 }
 
@@ -1716,7 +1716,7 @@ body {
   overflow-wrap: break-word;
 }
 .mobile-app-shell .text-sm {
-  font-size: 0.9286rem;
+  font-size: 0.875rem;
   line-height: 1.55;
 }
 .mobile-app-shell #main-sticky-header {
