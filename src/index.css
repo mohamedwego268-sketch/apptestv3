@@ -1966,21 +1966,21 @@ body {
 
 
 /* User-selectable app typography scale. Compact is the default recommendation for dense mobile screens. */
-:root[data-font-scale="compact"] .mobile-app-shell {
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell {
   --font-size-base: 12px;
   --font-size-caption: 10px;
   --font-size-body: 12px;
   --font-size-section: 15px;
   --font-size-page-title: 17px;
 }
-:root[data-font-scale="compact"] .mobile-app-shell .text-xs { font-size: 0.72rem !important; line-height: 1.35 !important; }
-:root[data-font-scale="compact"] .mobile-app-shell .text-sm { font-size: 0.82rem !important; line-height: 1.4 !important; }
-:root[data-font-scale="compact"] .mobile-app-shell .text-base { font-size: 0.92rem !important; line-height: 1.4 !important; }
-:root[data-font-scale="compact"] .mobile-app-shell .text-lg { font-size: 1.02rem !important; line-height: 1.35 !important; }
-:root[data-font-scale="compact"] .mobile-app-shell .text-xl { font-size: 1.15rem !important; line-height: 1.3 !important; }
-:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[10px]"] { font-size: 9px !important; }
-:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[11px]"] { font-size: 9.5px !important; }
-:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[10.5px]"] { font-size: 9px !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell .text-xs { font-size: 0.72rem !important; line-height: 1.35 !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell .text-sm { font-size: 0.82rem !important; line-height: 1.4 !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell .text-base { font-size: 0.92rem !important; line-height: 1.4 !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell .text-lg { font-size: 1.02rem !important; line-height: 1.35 !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell .text-xl { font-size: 1.15rem !important; line-height: 1.3 !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell [class*="text-[10px]"] { font-size: 9px !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell [class*="text-[11px]"] { font-size: 9.5px !important; }
+:root:not([data-font-scale="standard"]):not([data-font-scale="large"]) .mobile-app-shell [class*="text-[10.5px]"] { font-size: 9px !important; }
 :root[data-font-scale="large"] .mobile-app-shell .text-xs { font-size: 0.9rem !important; }
 :root[data-font-scale="large"] .mobile-app-shell .text-sm { font-size: 1rem !important; }
 :root[data-font-scale="large"] .mobile-app-shell .text-base { font-size: 1.12rem !important; }
@@ -2018,3 +2018,27 @@ body {
 #onboarding-wizard-modal .onboarding-card-scroll form button { min-height: 40px !important; }
 #onboarding-wizard-modal .onboarding-card-scroll form input,
 #onboarding-wizard-modal .onboarding-card-scroll form select { padding-inline: 14px !important; }
+
+
+/* Higher-specificity mobile overrides for the header and auth form. */
+.mobile-app-shell #main-sticky-header .header-control { min-height: 34px !important; min-width: 34px !important; }
+.mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] {
+  max-width: clamp(58px, 18vw, 92px) !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+.mobile-app-shell #main-sticky-header .header-control span { font-size: 9px !important; }
+@media (max-width: 380px) {
+  .mobile-app-shell #main-sticky-header [data-testid="header-official-slogan-badge"] { max-width: 58px !important; font-size: 7px !important; }
+  .mobile-app-shell #main-sticky-header .header-control { min-height: 31px !important; min-width: 31px !important; }
+}
+.mobile-app-shell .onboarding-card-scroll form > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 7px !important;
+}
+.mobile-app-shell .onboarding-card-scroll form .grid { gap: 6px !important; }
+.mobile-app-shell button[data-testid="section-tools-open-btn"] {
+  min-height: 32px !important;
+  padding: 5px 9px !important;
+  font-size: 10px !important;
+}
