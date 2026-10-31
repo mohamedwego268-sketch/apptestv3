@@ -2573,7 +2573,7 @@ export interface InteractiveSplashScreenProps {
  * First Login / Splash Intro Screen for نكبر (Nekbaar).
  * Positions the central boy/girl illustration in the upper-middle space,
  * renders the app name in Arabic & English ("نكبر / Nekbaar") and the official slogan
- * in Arabic & English ("مساحة تجمعنا.. وبحبهم نكبر / A space that brings us together.. and through love we grow")
+ * in Arabic & English ("مساحة تجمعنا.. وبحبهم نكبر / Our shared space.. growing with love")
  * directly underneath, and places copyright ownership strictly at the very bottom.
  */
 export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = ({
@@ -2655,7 +2655,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
             data-testid="splash-brand-slogan-en"
             className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 leading-relaxed"
           >
-            A space that brings us together.. and through love we grow
+            Our shared space.. growing with love
           </p>
         </div>
       </div>
