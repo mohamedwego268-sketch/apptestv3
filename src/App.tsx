@@ -127,6 +127,7 @@ export default function App() {
   stateRef.current = state;
   const skipNextCloudSyncRef = React.useRef(false);
   const [activeFamilyStorageScope, setActiveFamilyStorageScope] = useState<string | null>(null);
+  const [hydratedFamilyStorageScope, setHydratedFamilyStorageScope] = useState<string | null>(null);
   const [activePage, setActivePage] = useState<PageId>('home');
   const [isTabLoading, setIsTabLoading] = useState<boolean>(false);
   const tabLoadingTimerRef = React.useRef<number | null>(null);
@@ -374,20 +375,27 @@ export default function App() {
 
   const loadFromSupabase = React.useCallback(async () => {
     if (!activeFamilyStorageScope) {
+      setHydratedFamilyStorageScope(null);
       setSupabaseStatus('ready');
       setSupabaseErrorMsg(null);
       return;
     }
+    setHydratedFamilyStorageScope(null);
     setSupabaseStatus('loading');
     setSupabaseErrorMsg(null);
     const { hydratedState, snapshot } = await master.controller.bootstrapWithAppState(state);
     skipNextCloudSyncRef.current = true;
     setState(hydratedState);
-    if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
+    if (
+      snapshot.lifecycleState === 'Offline-Fallback' ||
+      hydratedState.verifiedFamilyId !== activeFamilyStorageScope
+    ) {
       setSupabaseStatus('error');
-      setSupabaseErrorMsg(snapshot.retryTelemetry.lastError);
+      setSupabaseErrorMsg(snapshot.retryTelemetry.lastError || 'تعذر تحميل بيانات الأسرة من السحابة.');
     } else {
+      setHydratedFamilyStorageScope(activeFamilyStorageScope);
       setSupabaseStatus('ready');
+      setSupabaseErrorMsg(null);
     }
   }, [master.controller, activeFamilyStorageScope, state]);
 
@@ -399,17 +407,27 @@ export default function App() {
       return;
     }
     let isMounted = true;
+    setHydratedFamilyStorageScope(null);
     setSupabaseStatus('loading');
     master.controller.bootstrapWithAppState(state).then(({ hydratedState, snapshot }) => {
       if (!isMounted) return;
       skipNextCloudSyncRef.current = true;
       setState(hydratedState);
-      if (snapshot.lifecycleState === 'Offline-Fallback' && snapshot.retryTelemetry.lastError) {
+      if (
+        snapshot.lifecycleState === 'Offline-Fallback' ||
+        hydratedState.verifiedFamilyId !== activeFamilyStorageScope
+      ) {
         setSupabaseStatus('error');
-        setSupabaseErrorMsg(snapshot.retryTelemetry.lastError);
+        setSupabaseErrorMsg(snapshot.retryTelemetry.lastError || 'تعذر تحميل بيانات الأسرة من السحابة.');
       } else {
+        setHydratedFamilyStorageScope(activeFamilyStorageScope);
         setSupabaseStatus('ready');
+        setSupabaseErrorMsg(null);
       }
+    }).catch((error: unknown) => {
+      if (!isMounted) return;
+      setSupabaseStatus('error');
+      setSupabaseErrorMsg(error instanceof Error ? error.message : 'تعذر تحميل بيانات الأسرة من السحابة.');
     });
     return () => {
       isMounted = false;
@@ -507,6 +525,7 @@ export default function App() {
   useEffect(() => {
     if (
       !activeFamilyStorageScope ||
+      hydratedFamilyStorageScope !== activeFamilyStorageScope ||
       isPreviewMode ||
       supabaseStatus !== 'ready' ||
       !isValidUuid(state.verifiedFamilyId) ||
@@ -542,6 +561,7 @@ export default function App() {
   }, [
     master.forceSyncNow,
     activeFamilyStorageScope,
+    hydratedFamilyStorageScope,
     supabaseStatus,
     isPreviewMode,
     state.verifiedFamilyId,
@@ -570,10 +590,22 @@ export default function App() {
     state.darkMode,
   ]);
 
+  // If the first cloud hydration failed while offline, hydrate before allowing any upload when connectivity returns.
+  useEffect(() => {
+    if (
+      !activeFamilyStorageScope ||
+      isPreviewMode ||
+      hydratedFamilyStorageScope === activeFamilyStorageScope
+    ) return;
+    const retryHydration = () => { void loadFromSupabase(); };
+    window.addEventListener('online', retryHydration);
+    return () => window.removeEventListener('online', retryHydration);
+  }, [activeFamilyStorageScope, hydratedFamilyStorageScope, isPreviewMode, loadFromSupabase]);
+
   // Other parent changes are hydrated immediately from the shared family workspace.
   useEffect(() => {
     const client = supabaseClient;
-    if (!activeFamilyStorageScope || !client || isPreviewMode) return;
+    if (!activeFamilyStorageScope || hydratedFamilyStorageScope !== activeFamilyStorageScope || !client || isPreviewMode) return;
     let active = true;
     let channel: ReturnType<typeof client.channel> | null = null;
 
@@ -613,7 +645,7 @@ export default function App() {
       active = false;
       if (channel) void client.removeChannel(channel);
     };
-  }, [activeFamilyStorageScope, isPreviewMode]);
+  }, [activeFamilyStorageScope, hydratedFamilyStorageScope, isPreviewMode]);
 
   // Sync settings inputs when state changes externally
   useEffect(() => {
