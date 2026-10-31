@@ -1963,3 +1963,58 @@ body {
   min-width: 0;
   box-sizing: border-box;
 }
+
+
+/* User-selectable app typography scale. Compact is the default recommendation for dense mobile screens. */
+:root[data-font-scale="compact"] .mobile-app-shell {
+  --font-size-base: 12px;
+  --font-size-caption: 10px;
+  --font-size-body: 12px;
+  --font-size-section: 15px;
+  --font-size-page-title: 17px;
+}
+:root[data-font-scale="compact"] .mobile-app-shell .text-xs { font-size: 0.72rem !important; line-height: 1.35 !important; }
+:root[data-font-scale="compact"] .mobile-app-shell .text-sm { font-size: 0.82rem !important; line-height: 1.4 !important; }
+:root[data-font-scale="compact"] .mobile-app-shell .text-base { font-size: 0.92rem !important; line-height: 1.4 !important; }
+:root[data-font-scale="compact"] .mobile-app-shell .text-lg { font-size: 1.02rem !important; line-height: 1.35 !important; }
+:root[data-font-scale="compact"] .mobile-app-shell .text-xl { font-size: 1.15rem !important; line-height: 1.3 !important; }
+:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[10px]"] { font-size: 9px !important; }
+:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[11px]"] { font-size: 9.5px !important; }
+:root[data-font-scale="compact"] .mobile-app-shell [class*="text-[10.5px]"] { font-size: 9px !important; }
+:root[data-font-scale="large"] .mobile-app-shell .text-xs { font-size: 0.9rem !important; }
+:root[data-font-scale="large"] .mobile-app-shell .text-sm { font-size: 1rem !important; }
+:root[data-font-scale="large"] .mobile-app-shell .text-base { font-size: 1.12rem !important; }
+:root[data-font-scale="large"] .mobile-app-shell .text-lg { font-size: 1.25rem !important; }
+:root[data-font-scale="large"] .mobile-app-shell .text-xl { font-size: 1.4rem !important; }
+
+/* Compact side navigation: smaller footprint, tighter rows, and calmer typography. */
+.drawer-panel { width: min(78vw, 292px) !important; padding: 8px !important; }
+.drawer-brand-panel { padding: 9px !important; gap: 6px !important; }
+.drawer-brand-orb { width: 34px !important; height: 34px !important; }
+.drawer-brand-mark { font-size: 0.9rem !important; }
+.drawer-section-title { font-size: 0.72rem !important; line-height: 1.3 !important; margin-block: 6px 3px !important; }
+.drawer-subitem { font-size: 0.7rem !important; line-height: 1.3 !important; padding-block: 6px !important; }
+.drawer-nav-group { border-radius: 12px !important; margin-block: 4px !important; }
+.drawer-panel button { min-height: 32px; }
+.drawer-brand-location, .drawer-brand-language { padding: 5px 7px !important; font-size: 0.68rem !important; }
+
+/* Keep the brand line visible without colliding with the logo or header actions. */
+#main-sticky-header [data-testid="header-official-slogan-badge"] {
+  max-width: clamp(66px, 22vw, 104px) !important;
+  font-size: 8px !important;
+  letter-spacing: -0.02em;
+}
+#main-sticky-header .header-control { min-height: 36px !important; min-width: 36px !important; }
+@media (max-width: 380px) {
+  #main-sticky-header [data-testid="header-official-slogan-badge"] { max-width: 66px !important; font-size: 7px !important; }
+  #main-sticky-header .header-control { min-height: 32px !important; min-width: 32px !important; }
+}
+
+/* Registration form: reduce vertical footprint while preserving tap-safe controls. */
+#onboarding-wizard-modal .onboarding-card-scroll { padding: 12px !important; }
+#onboarding-wizard-modal .onboarding-card-scroll form { gap: 8px !important; }
+#onboarding-wizard-modal .onboarding-card-scroll input,
+#onboarding-wizard-modal .onboarding-card-scroll select,
+#onboarding-wizard-modal .onboarding-card-scroll form button { min-height: 40px !important; }
+#onboarding-wizard-modal .onboarding-card-scroll form input,
+#onboarding-wizard-modal .onboarding-card-scroll form select { padding-inline: 14px !important; }
