@@ -337,6 +337,7 @@ export default function App() {
     previewModeRef.current = true;
     setIsPreviewMode(true);
     setActiveFamilyStorageScope(null);
+    setHydratedFamilyStorageScope(null);
     setRecognizedProfile(null);
     setSettingsOtpStep(false);
     setSettingsOtpCode('');
@@ -448,6 +449,7 @@ export default function App() {
         if (step === 'DASHBOARD' && profile && isValidUuid(profile.verifiedFamilyId)) {
           const familyState = loadFamilySpaceStateForFamily(profile.verifiedFamilyId);
           setActiveFamilyStorageScope(profile.verifiedFamilyId);
+          setHydratedFamilyStorageScope(null);
           setRecognizedProfile(profile);
           setOnboardingModalOpen(false);
           setActivePage('home');
@@ -496,6 +498,7 @@ export default function App() {
           });
         } else {
           setActiveFamilyStorageScope(null);
+    setHydratedFamilyStorageScope(null);
           setRecognizedProfile(null);
           setState(createEmptyFamilySpaceState());
           setOnboardingModalOpen(true);
@@ -514,6 +517,7 @@ export default function App() {
       if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !authenticated)) {
         setRecognizedProfile(null);
         setActiveFamilyStorageScope(null);
+    setHydratedFamilyStorageScope(null);
         setState(createEmptyFamilySpaceState());
         setOnboardingModalOpen(true);
         setActivePage('home');
@@ -1690,6 +1694,7 @@ export default function App() {
     master.controller.resetSessionState();
     setRecognizedProfile(null);
     setActiveFamilyStorageScope(null);
+    setHydratedFamilyStorageScope(null);
     setState(createEmptyFamilySpaceState());
     setRoleModalOpen(false);
     setChildModalOpen(false);
@@ -1701,6 +1706,7 @@ export default function App() {
     OnboardingFlowController.clearSession();
     setRecognizedProfile(null);
     setActiveFamilyStorageScope(null);
+    setHydratedFamilyStorageScope(null);
     const fresh = createEmptyFamilySpaceState();
     resetFamilySpaceState();
     setState(fresh);
@@ -3220,6 +3226,7 @@ export default function App() {
               setRecognizedProfile(persistedSession);
             }
             setActiveFamilyStorageScope(verifiedFamilyUuid);
+            setHydratedFamilyStorageScope(null);
             setState((prev) => {
               const baseState = verifiedFamilyUuid
                 ? loadFamilySpaceStateForFamily(verifiedFamilyUuid)
