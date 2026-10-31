@@ -679,16 +679,16 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleCreateParentStory}
-            className="w-full max-w-md rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 shadow-2xl"
+            className="w-full max-w-md max-h-[calc(100dvh-24px)] overflow-y-auto overscroll-contain rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                📸 {isEn ? 'Share a Family Moment' : 'شارك لحظة ولحظتك اليومية مع أطفالك'}
+              <h3 className="min-w-0 flex-1 text-sm sm:text-base font-black leading-snug break-words text-[var(--color-text)] dark:text-[#F8FAFC]">
+                📸 {isEn ? 'Share a Family Moment' : 'شارك لحظة من يومكم'}
               </h3>
               <button
                 type="button"
                 onClick={() => setAddStoryModalOpen(false)}
-                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                className="min-h-[44px] min-w-[44px] rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer shrink-0"
               >
                 ×
               </button>
@@ -760,14 +760,14 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
           data-testid="community-story-viewer-modal"
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] animate-fade-in"
           onClick={() => setStoryModalId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="fixed inset-0 z-50 max-w-md mx-auto flex items-center justify-center p-3 sm:p-4 overflow-hidden"
+            className="relative flex w-full max-w-md items-center justify-center overflow-hidden"
           >
-            <div className="relative w-full max-w-[380px] aspect-[9/16] max-h-[86vh] rounded-[28px] overflow-hidden border border-white/20 bg-[#0B131A] text-white shadow-2xl flex flex-col justify-between">
+            <div className="community-story-frame relative max-w-full rounded-[28px] border border-white/20 bg-[#0B131A] text-white shadow-2xl overflow-hidden flex flex-col">
               <img
                 src={activeModalStory.imageUrl}
                 alt={isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
@@ -846,7 +846,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </button>
 
               {/* Story Center Content */}
-              <div className="relative z-10 px-6 py-4 text-center space-y-2.5 my-auto overflow-y-auto max-h-full">
+              <div className="relative z-10 flex-1 min-h-0 px-5 py-3 text-center space-y-2.5 overflow-y-auto overscroll-contain flex flex-col items-center justify-center">
                 <span className="inline-block text-4xl">{activeModalStory.emoji}</span>
                 <h4 className="text-base sm:text-xl font-black leading-snug break-words">
                   {isEn ? activeModalStory.titleEn : activeModalStory.titleAr}
@@ -857,8 +857,8 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
               </div>
 
               {/* Story Footer Controls & Quick Reactions */}
-              <div className="relative z-10 p-3.5 sm:p-4 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
-                <div className="flex items-center gap-1.5">
+              <div className="relative z-10 p-3 sm:p-3.5 border-t border-white/15 bg-black/60 backdrop-blur-xs flex flex-wrap items-center justify-center sm:justify-between gap-2 shrink-0">
+                <div className="flex items-center justify-center flex-wrap gap-1.5">
                   {['❤️', '👏', '🌟', '🤲'].map((reactEmoji) => (
                     <button
                       key={reactEmoji}
@@ -877,7 +877,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center justify-center flex-wrap gap-1.5">
                   <button
                     type="button"
                     onClick={() => {
