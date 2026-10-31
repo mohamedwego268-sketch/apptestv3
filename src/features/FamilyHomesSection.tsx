@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   COUNTRY_CITIES_MAP,
   CountryCode,
@@ -40,7 +40,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
 
   const initialCountry = state.parentAccounts[state.activeParentAccount]?.country || state.country;
   const [personalCountry, setPersonalCountry] = useState<CountryCode>(initialCountry);
-  const [personalCity, setPersonalCity] = useState<string>(state.city || COUNTRY_CITIES_MAP[initialCountry][0]?.id || '');
+  const [personalCity, setPersonalCity] = useState<string>(() => COUNTRY_CITIES_MAP[initialCountry].some((city) => city.id === state.city) ? state.city : COUNTRY_CITIES_MAP[initialCountry][0]?.id || '');
   const [homeLabel, setHomeLabel] = useState('');
   const [homeCountry, setHomeCountry] = useState<CountryCode>(state.country);
   const [homeCity, setHomeCity] = useState<string>(state.city || COUNTRY_CITIES_MAP[state.country][0]?.id || '');
@@ -72,14 +72,15 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
   }, [expanded, refresh]);
 
   useEffect(() => {
-    if (!expanded || !supabaseClient || !state.verifiedFamilyId) return;
-    const channel = supabaseClient
+    const client = supabaseClient;
+    if (!expanded || !client || !state.verifiedFamilyId) return;
+    const channel = client
       .channel('family-homes-workspace')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'family_homes', filter: `family_id=eq.${state.verifiedFamilyId}` }, () => void refresh())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'child_home_schedules', filter: `family_id=eq.${state.verifiedFamilyId}` }, () => void refresh())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'children', filter: `family_id=eq.${state.verifiedFamilyId}` }, () => void refresh())
       .subscribe();
-    return () => { void supabaseClient.removeChannel(channel); };
+    return () => { void client.removeChannel(channel); };
   }, [expanded, refresh, state.verifiedFamilyId]);
 
   const personalCities = COUNTRY_CITIES_MAP[personalCountry] || COUNTRY_CITIES_MAP.EG;
