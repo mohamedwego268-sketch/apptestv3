@@ -290,15 +290,15 @@ export const PrimaryCtaButton: React.FC<PrimaryCtaButtonProps> = ({
 }) => {
   const sizeClasses =
     size === 'sm'
-      ? 'min-h-[48px] px-4 py-2 rounded-xl text-xs font-extrabold tracking-tight'
+      ? 'min-h-[44px] max-w-full px-4 py-2 rounded-xl text-xs font-extrabold tracking-tight'
       : size === 'lg'
-      ? 'min-h-[48px] px-5 py-2.5 rounded-2xl text-sm font-extrabold tracking-tight'
-      : 'min-h-[48px] px-4.5 py-2.5 rounded-xl text-xs font-extrabold tracking-tight';
+      ? 'min-h-[44px] max-w-full px-5 py-2.5 rounded-2xl text-sm font-extrabold tracking-tight'
+      : 'min-h-[44px] max-w-full px-4 py-2.5 rounded-xl text-xs font-extrabold tracking-tight';
   const variantTone = CTA_BUTTON_VARIANTS[variant] || CTA_BUTTON_VARIANTS.orange;
   return (
     <button
       type="button"
-      className={`${sizeClasses} ${variantTone} active:scale-95 transition-all duration-300 ease-in-out inline-flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${className}`}
+      className={`${sizeClasses} ${variantTone} active:scale-95 transition-all duration-300 ease-in-out inline-flex flex-wrap items-center justify-center gap-1.5 text-center leading-snug break-words cursor-pointer ${className}`}
       {...rest}
     >
       {children}
