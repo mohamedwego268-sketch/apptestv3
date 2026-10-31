@@ -539,7 +539,36 @@ export default function App() {
       window.clearTimeout(syncTimer);
       window.removeEventListener('online', retryWhenOnline);
     };
-  }, [master.forceSyncNow, activeFamilyStorageScope, state, supabaseStatus, isPreviewMode]);
+  }, [
+    master.forceSyncNow,
+    activeFamilyStorageScope,
+    supabaseStatus,
+    isPreviewMode,
+    state.verifiedFamilyId,
+    state.activeParentAccount,
+    state.parentName,
+    state.role,
+    state.country,
+    state.city,
+    state.currency,
+    state.language,
+    state.calendarMode,
+    state.disputeFreezeActive,
+    state.savedMediaIds,
+    state.events,
+    state.kids,
+    state.tasks,
+    state.wishes,
+    state.family,
+    state.parentAccounts,
+    state.invitations,
+    state.readNotificationIds,
+    state.cart,
+    state.recentlyViewedProductIds,
+    state.shippingAddress,
+    state.orders,
+    state.darkMode,
+  ]);
 
   // Other parent changes are hydrated immediately from the shared family workspace.
   useEffect(() => {
