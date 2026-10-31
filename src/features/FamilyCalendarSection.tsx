@@ -17,6 +17,7 @@ import {
   SoftFilledIcon,
   UnifiedBadge,
 } from '../components/DesignSystem';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 
 export interface FamilyCalendarSectionProps {
   state: FamilySpaceState;
@@ -78,6 +79,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
       </div>
 
       <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
+        <SectionToolsDrawer language={lang} titleAr="أدوات التقويم" titleEn="Calendar tools">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -159,6 +161,8 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
             />
           </div>
         </div>
+
+        </SectionToolsDrawer>
 
         {/* Events Grid Cards with Standardized SoftFilledIcon & UnifiedBadge */}
         {isEventRangeReversed ? (
