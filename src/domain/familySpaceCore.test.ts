@@ -24,7 +24,9 @@ import {
 import {
   SHARED_FAMILY_ID,
   authenticateParentWithSupabase,
+  createFamilyPrivateMediaSignedUrl,
   deleteChildFromSupabase,
+  deleteFamilyPrivateMediaFromStorage,
   ensureSharedFamilyRecordInSupabase,
   fetchChildrenFromSupabase,
   fetchFamilySpaceFromSupabase,
@@ -43,6 +45,8 @@ import {
   signInWithOAuthProviderInSupabase,
   signOutFromSupabase,
   syncFamilySpaceToSupabase,
+  uploadFamilyPrivateMediaToStorage,
+  validateFamilyStorageObjectPath,
   verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
 import {
@@ -1748,7 +1752,806 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(postOtpSignupRes.success, true);
     assert.equal(postOtpSignupRes.verifiedFamilyUuid, familyUuid);
   });
+
+  it('17. Phase 3 Security Matrix: enforces family read/write isolation, child modification boundaries, user profile insert/upsert policies, immutable ownership triggers, and anonymous access denial', async () => {
+    const familyAUuid = 'aaaa1111-2222-4333-8444-555555555501';
+    const familyBUuid = 'bbbb1111-2222-4333-8444-555555555502';
+    const authUserAUuid = 'aaaa2222-2222-4333-8444-555555555501';
+    const authUserBUuid = 'bbbb2222-2222-4333-8444-555555555502';
+    const userRowAUuid = 'aaaa3333-2222-4333-8444-555555555501';
+    const userRowBUuid = 'bbbb3333-2222-4333-8444-555555555502';
+    const childAUuid = 'aaaa4444-2222-4333-8444-555555555501';
+    const childBUuid = 'bbbb4444-2222-4333-8444-555555555502';
+
+    const dbFamilies = new Map<string, Record<string, unknown>>([
+      [
+        familyAUuid,
+        {
+          id: familyAUuid,
+          family_name: 'أسرة طارق',
+          country: 'EG',
+          city: 'القاهرة',
+          currency: 'EGP',
+          active_parent: 'father',
+          created_by: authUserAUuid,
+        },
+      ],
+      [
+        familyBUuid,
+        {
+          id: familyBUuid,
+          family_name: 'أسرة ندى',
+          country: 'SA',
+          city: 'الرياض',
+          currency: 'SAR',
+          active_parent: 'mother',
+          created_by: authUserBUuid,
+        },
+      ],
+    ]);
+
+    const dbUsers = new Map<string, Record<string, unknown>>([
+      [
+        userRowAUuid,
+        {
+          id: userRowAUuid,
+          auth_user_id: authUserAUuid,
+          family_id: familyAUuid,
+          full_name: 'طارق المنصور',
+          role: 'father',
+          email: 'tarek@nekbaar.app',
+          country: 'EG',
+          is_legacy_orphan: false,
+        },
+      ],
+      [
+        userRowBUuid,
+        {
+          id: userRowBUuid,
+          auth_user_id: authUserBUuid,
+          family_id: familyBUuid,
+          full_name: 'ندى العتيبي',
+          role: 'mother',
+          email: 'nada@nekbaar.app',
+          country: 'SA',
+          is_legacy_orphan: false,
+        },
+      ],
+    ]);
+
+    const dbChildren = new Map<string, Record<string, unknown>>([
+      [
+        childAUuid,
+        {
+          id: childAUuid,
+          family_id: familyAUuid,
+          name: 'كريم طارق',
+          gender: 'boy',
+          birth: '2021-06-15',
+          age_stage: 'EARLY_CHILDHOOD',
+          passions_or_heroes: 'الفضاء',
+        },
+      ],
+      [
+        childBUuid,
+        {
+          id: childBUuid,
+          family_id: familyBUuid,
+          name: 'سلمى ندى',
+          gender: 'girl',
+          birth: '2022-04-10',
+          age_stage: 'EARLY_CHILDHOOD',
+          passions_or_heroes: 'الرسم',
+        },
+      ],
+    ]);
+
+    const makeStrictRlsClient = (sessionAuthUid: string | null): SupabaseClient => {
+      const resolveMyFamilyId = (): string | null => {
+        if (!sessionAuthUid) return null;
+        for (const u of dbUsers.values()) {
+          if (
+            u.auth_user_id === sessionAuthUid &&
+            typeof u.family_id === 'string' &&
+            !u.is_legacy_orphan
+          ) {
+            return u.family_id;
+          }
+        }
+        return null;
+      };
+
+      const makeTableBuilder = (tableName: string) => {
+        const filters: Array<{ col: string; val: unknown }> = [];
+        let op: 'select' | 'insert' | 'update' | 'upsert' | 'delete' = 'select';
+        let payloadRows: Array<Record<string, unknown>> = [];
+        let singleMode = false;
+
+        const run = async (): Promise<{
+          data: unknown;
+          error: null | { message: string; code: string };
+        }> => {
+          const myFamilyId = resolveMyFamilyId();
+
+          // Anonymous access to private tables -> Denied (42501)
+          if (!sessionAuthUid && tableName !== 'catalog_items') {
+            return {
+              data: null,
+              error: {
+                message: `permission denied for table ${tableName}`,
+                code: '42501',
+              },
+            };
+          }
+
+          if (op === 'select') {
+            let rows: Array<Record<string, unknown>> = [];
+            if (tableName === 'families') {
+              rows = Array.from(dbFamilies.values()).filter((r) => r.id === myFamilyId);
+            } else if (tableName === 'users') {
+              rows = Array.from(dbUsers.values()).filter(
+                (r) =>
+                  !r.is_legacy_orphan &&
+                  (r.auth_user_id === sessionAuthUid ||
+                    (r.auth_user_id && myFamilyId && r.family_id === myFamilyId))
+              );
+            } else if (tableName === 'children') {
+              rows = Array.from(dbChildren.values()).filter((r) => r.family_id === myFamilyId);
+            }
+            for (const f of filters) {
+              rows = rows.filter((r) => r[f.col] === f.val);
+            }
+            return {
+              data: singleMode ? (rows[0] ? { ...rows[0] } : null) : rows.map((r) => ({ ...r })),
+              error: null,
+            };
+          }
+
+          if (op === 'insert' || op === 'upsert') {
+            const saved: Array<Record<string, unknown>> = [];
+            for (const item of payloadRows) {
+              if (tableName === 'families') {
+                // Hardened `families_insert_own_family`: id = private.current_user_family_id()
+                if (!myFamilyId || item.id !== myFamilyId) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'new row violates row-level security policy for table "families"',
+                      code: '42501',
+                    },
+                  };
+                }
+                const existing = dbFamilies.get(myFamilyId);
+                if (
+                  existing &&
+                  existing.created_by &&
+                  item.created_by !== undefined &&
+                  item.created_by !== existing.created_by
+                ) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'IMMUTABLE_OWNERSHIP_VIOLATION: families.created_by cannot be reassigned',
+                      code: '42501',
+                    },
+                  };
+                }
+                const next = { ...(existing || {}), ...item, id: myFamilyId };
+                dbFamilies.set(myFamilyId, next);
+                saved.push(next);
+              } else if (tableName === 'users') {
+                // Hardened `users_insert_self_only`: auth_user_id = auth.uid() AND family_id = current_user_family_id()
+                if (
+                  item.auth_user_id !== sessionAuthUid ||
+                  !myFamilyId ||
+                  item.family_id !== myFamilyId
+                ) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'new row violates row-level security policy for table "users"',
+                      code: '42501',
+                    },
+                  };
+                }
+                let existingKey: string | null = null;
+                for (const [k, v] of dbUsers.entries()) {
+                  if (v.auth_user_id === sessionAuthUid) {
+                    existingKey = k;
+                    break;
+                  }
+                }
+                const existing = existingKey ? dbUsers.get(existingKey) : undefined;
+                if (
+                  existing &&
+                  ((item.id && item.id !== existing.id) ||
+                    (item.auth_user_id && item.auth_user_id !== existing.auth_user_id) ||
+                    (item.family_id && item.family_id !== existing.family_id))
+                ) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'IMMUTABLE_OWNERSHIP_VIOLATION: user ownership identifiers cannot be changed',
+                      code: '42501',
+                    },
+                  };
+                }
+                const id = existingKey || String(item.id || userRowAUuid);
+                const next = { ...(existing || {}), ...item, id };
+                dbUsers.set(id, next);
+                saved.push(next);
+              } else if (tableName === 'children') {
+                if (!myFamilyId || item.family_id !== myFamilyId) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'new row violates row-level security policy for table "children"',
+                      code: '42501',
+                    },
+                  };
+                }
+                const id = typeof item.id === 'string' ? item.id : 'aaaa5555-2222-4333-8444-555555555599';
+                const existing = dbChildren.get(id);
+                if (existing && existing.family_id !== myFamilyId) {
+                  return {
+                    data: null,
+                    error: {
+                      message: 'IMMUTABLE_OWNERSHIP_VIOLATION: children.family_id cannot be reassigned',
+                      code: '42501',
+                    },
+                  };
+                }
+                const next = { ...(existing || {}), ...item, id };
+                dbChildren.set(id, next);
+                saved.push(next);
+              }
+            }
+            return { data: singleMode ? saved[0] ?? null : saved, error: null };
+          }
+
+          if (op === 'update') {
+            const patch = payloadRows[0] || {};
+            const updated: Array<Record<string, unknown>> = [];
+            if (tableName === 'families') {
+              for (const [k, v] of dbFamilies.entries()) {
+                if (filters.every((f) => v[f.col] === f.val) && k === myFamilyId) {
+                  if (
+                    (patch.id !== undefined && patch.id !== v.id) ||
+                    (patch.created_by !== undefined && patch.created_by !== v.created_by)
+                  ) {
+                    return {
+                      data: null,
+                      error: {
+                        message: 'IMMUTABLE_OWNERSHIP_VIOLATION: families ownership cannot be mutated',
+                        code: '42501',
+                      },
+                    };
+                  }
+                  const next = { ...v, ...patch };
+                  dbFamilies.set(k, next);
+                  updated.push(next);
+                }
+              }
+            } else if (tableName === 'users') {
+              for (const [k, v] of dbUsers.entries()) {
+                if (filters.every((f) => v[f.col] === f.val) && v.auth_user_id === sessionAuthUid) {
+                  if (
+                    (patch.id !== undefined && patch.id !== v.id) ||
+                    (patch.auth_user_id !== undefined && patch.auth_user_id !== v.auth_user_id) ||
+                    (patch.family_id !== undefined && patch.family_id !== v.family_id)
+                  ) {
+                    return {
+                      data: null,
+                      error: {
+                        message: 'IMMUTABLE_OWNERSHIP_VIOLATION: users ownership identifiers cannot be mutated',
+                        code: '42501',
+                      },
+                    };
+                  }
+                  const next = { ...v, ...patch };
+                  dbUsers.set(k, next);
+                  updated.push(next);
+                }
+              }
+            } else if (tableName === 'children') {
+              for (const [k, v] of dbChildren.entries()) {
+                if (filters.every((f) => v[f.col] === f.val) && v.family_id === myFamilyId) {
+                  if (
+                    (patch.id !== undefined && patch.id !== v.id) ||
+                    (patch.family_id !== undefined && patch.family_id !== v.family_id)
+                  ) {
+                    return {
+                      data: null,
+                      error: {
+                        message: 'IMMUTABLE_OWNERSHIP_VIOLATION: children ownership identifiers cannot be mutated',
+                        code: '42501',
+                      },
+                    };
+                  }
+                  const next = { ...v, ...patch };
+                  dbChildren.set(k, next);
+                  updated.push(next);
+                }
+              }
+            }
+            return { data: singleMode ? updated[0] ?? null : updated, error: null };
+          }
+
+          return { data: [], error: null };
+        };
+
+        const builder = {
+          select() {
+            return builder;
+          },
+          eq(col: string, val: unknown) {
+            filters.push({ col, val });
+            return builder;
+          },
+          limit() {
+            return builder;
+          },
+          maybeSingle() {
+            singleMode = true;
+            return builder;
+          },
+          single() {
+            singleMode = true;
+            return builder;
+          },
+          insert(rows: Record<string, unknown> | Array<Record<string, unknown>>) {
+            op = 'insert';
+            payloadRows = Array.isArray(rows) ? rows : [rows];
+            return builder;
+          },
+          upsert(rows: Record<string, unknown> | Array<Record<string, unknown>>) {
+            op = 'upsert';
+            payloadRows = Array.isArray(rows) ? rows : [rows];
+            return builder;
+          },
+          update(patch: Record<string, unknown>) {
+            op = 'update';
+            payloadRows = [patch];
+            return builder;
+          },
+          then(
+            onFulfilled?: (val: { data: unknown; error: null | { message: string; code: string } }) => unknown,
+            onRejected?: (err: unknown) => unknown
+          ) {
+            return run().then(onFulfilled, onRejected);
+          },
+        };
+        return builder;
+      };
+
+      return {
+        auth: {
+          async getSession() {
+            if (!sessionAuthUid) {
+              return { data: { session: null }, error: null };
+            }
+            return {
+              data: {
+                session: {
+                  access_token: `jwt_${sessionAuthUid}`,
+                  user: {
+                    id: sessionAuthUid,
+                    email: sessionAuthUid === authUserAUuid ? 'tarek@nekbaar.app' : 'nada@nekbaar.app',
+                    email_confirmed_at: '2026-10-31T00:00:00Z',
+                  },
+                },
+              },
+              error: null,
+            };
+          },
+        },
+        from(table: string) {
+          return makeTableBuilder(table);
+        },
+      } as unknown as SupabaseClient;
+    };
+
+    const clientA = makeStrictRlsClient(authUserAUuid);
+    const clientB = makeStrictRlsClient(authUserBUuid);
+    const anonClient = makeStrictRlsClient(null);
+
+    // 1. Parent reads own family -> Allowed
+    const ownUsersA = await fetchUsersFromSupabase(familyAUuid, clientA);
+    assert.equal(ownUsersA.error, null);
+    assert.equal(ownUsersA.data.length, 1);
+    assert.equal(ownUsersA.data[0].full_name, 'طارق المنصور');
+
+    // 2. Parent reads another family -> Denied
+    const crossUsersBReadsA = await fetchUsersFromSupabase(familyAUuid, clientB);
+    assert.equal(crossUsersBReadsA.data.length, 0);
+    assert.match(crossUsersBReadsA.error || '', /Cross-family read denied/);
+
+    const crossChildrenBReadsA = await fetchChildrenFromSupabase(familyAUuid, clientB);
+    assert.equal(crossChildrenBReadsA.data.length, 0);
+    assert.match(crossChildrenBReadsA.error || '', /Cross-family read denied/);
+
+    // 3. Parent modifies own child -> Allowed if authorized
+    const modifyOwnChildRes = await saveOnboardingChildrenToSupabase(
+      {
+        familyId: familyAUuid,
+        childrenList: [
+          {
+            id: 1,
+            remoteId: childAUuid,
+            name: 'كريم طارق المنصور',
+            birth: '2021-06-15',
+            gender: 'boy',
+            interests: 'الفضاء والروبوتات',
+            avatarTheme: 'astronaut',
+          },
+        ],
+      },
+      clientA
+    );
+    assert.equal(modifyOwnChildRes.synced, true);
+    assert.equal(dbChildren.get(childAUuid)?.name, 'كريم طارق المنصور');
+
+    // 4. Parent modifies another family's child -> Denied
+    const modifyOtherFamilyChildViaService = await saveOnboardingChildrenToSupabase(
+      {
+        familyId: familyAUuid,
+        childrenList: [
+          {
+            id: 1,
+            remoteId: childAUuid,
+            name: 'محاولة تعديل غير مصرح بها',
+            birth: '2021-06-15',
+            gender: 'boy',
+            interests: 'قرصنة',
+          },
+        ],
+      },
+      clientB
+    );
+    assert.equal(modifyOtherFamilyChildViaService.synced, false);
+    assert.match(modifyOtherFamilyChildViaService.error || '', /Cross-family write denied/);
+    assert.equal(dbChildren.get(childAUuid)?.name, 'كريم طارق المنصور');
+
+    // Direct DB upsert attempting to overwrite Family A's child UUID under Family B's session -> Denied by RLS/trigger
+    const directCrossChildOverwrite = await clientB.from('children').upsert({
+      id: childAUuid,
+      family_id: familyBUuid,
+      name: 'اختراق طفل أسرة أخرى',
+      gender: 'boy',
+      age_stage: 'EARLY_CHILDHOOD',
+    });
+    assert.equal(directCrossChildOverwrite.error?.code, '42501');
+    assert.equal(dbChildren.get(childAUuid)?.family_id, familyAUuid);
+
+    // 5. User inserts/upserts own profile -> Allowed
+    const ownProfileUpsert = await clientA.from('users').upsert({
+      id: userRowAUuid,
+      auth_user_id: authUserAUuid,
+      family_id: familyAUuid,
+      full_name: 'طارق المنصور المحدث',
+      role: 'father',
+    });
+    assert.equal(ownProfileUpsert.error, null);
+    assert.equal(dbUsers.get(userRowAUuid)?.full_name, 'طارق المنصور المحدث');
+
+    // 6. User inserts another user's profile -> Denied
+    const SpoofedUserInsert = await clientB.from('users').insert({
+      auth_user_id: authUserAUuid,
+      family_id: familyBUuid,
+      full_name: 'انتحال شخصية',
+      role: 'father',
+    });
+    assert.equal(SpoofedUserInsert.error?.code, '42501');
+
+    // 7. Authorized family UPSERT / update -> Allowed
+    const authorizedFamilyUpdate = await ensureSharedFamilyRecordInSupabase(
+      {
+        familyId: familyAUuid,
+        familyName: 'أسرة طارق — القاهرة الجديدة',
+        country: 'EG',
+        city: 'القاهرة',
+        currency: 'EGP',
+        activeParent: 'father',
+      },
+      clientA
+    );
+    assert.equal(authorizedFamilyUpdate.synced, true);
+    assert.equal(dbFamilies.get(familyAUuid)?.family_name, 'أسرة طارق — القاهرة الجديدة');
+
+    const authorizedFamilyUpsert = await clientA.from('families').upsert({
+      id: familyAUuid,
+      family_name: 'أسرة طارق — التجمع',
+      country: 'EG',
+      city: 'القاهرة',
+      currency: 'EGP',
+    });
+    assert.equal(authorizedFamilyUpsert.error, null);
+
+    // 8. Unauthorized family UPSERT -> Denied
+    const unauthorizedCrossFamilyUpdate = await ensureSharedFamilyRecordInSupabase(
+      {
+        familyId: familyAUuid,
+        familyName: 'استيلاء على أسرة طارق',
+      },
+      clientB
+    );
+    assert.equal(unauthorizedCrossFamilyUpdate.synced, false);
+    assert.match(unauthorizedCrossFamilyUpdate.error || '', /Cross-family write denied/);
+
+    const unauthorizedNewFamilyUpsert = await clientB.from('families').upsert({
+      id: 'cccc1111-2222-4333-8444-555555555599',
+      family_name: 'أسرة غير مصرح بإنشائها عبر المتصفح',
+      created_by: authUserBUuid,
+    });
+    assert.equal(unauthorizedNewFamilyUpsert.error?.code, '42501');
+
+    // 9. Anonymous access to private records -> Denied
+    const anonFamilies = await anonClient.from('families').select('*');
+    assert.equal(anonFamilies.error?.code, '42501');
+    const anonUsers = await anonClient.from('users').select('*');
+    assert.equal(anonUsers.error?.code, '42501');
+    const anonChildren = await anonClient.from('children').select('*');
+    assert.equal(anonChildren.error?.code, '42501');
+    const anonChildrenViaService = await fetchChildrenFromSupabase(familyAUuid, anonClient);
+    assert.equal(anonChildrenViaService.data.length, 0);
+    assert.ok(anonChildrenViaService.error);
+
+    // 10. User changes family ownership identifiers (`id`, `auth_user_id`, `family_id`, `created_by`) -> Denied
+    const mutateUserFamilyId = await clientA
+      .from('users')
+      .update({ family_id: familyBUuid })
+      .eq('id', userRowAUuid);
+    assert.equal(mutateUserFamilyId.error?.code, '42501');
+    assert.equal(dbUsers.get(userRowAUuid)?.family_id, familyAUuid);
+
+    const mutateUserAuthId = await clientA
+      .from('users')
+      .update({ auth_user_id: authUserBUuid })
+      .eq('id', userRowAUuid);
+    assert.equal(mutateUserAuthId.error?.code, '42501');
+    assert.equal(dbUsers.get(userRowAUuid)?.auth_user_id, authUserAUuid);
+
+    const mutateChildFamilyId = await clientA
+      .from('children')
+      .update({ family_id: familyBUuid })
+      .eq('id', childAUuid);
+    assert.equal(mutateChildFamilyId.error?.code, '42501');
+    assert.equal(dbChildren.get(childAUuid)?.family_id, familyAUuid);
+
+    const mutateFamilyCreatedBy = await clientA
+      .from('families')
+      .update({ created_by: authUserBUuid })
+      .eq('id', familyAUuid);
+    assert.equal(mutateFamilyCreatedBy.error?.code, '42501');
+    assert.equal(dbFamilies.get(familyAUuid)?.created_by, authUserAUuid);
+  });
+
+  it('18. Phase 3 Private Storage Isolation: allows verified family media upload/signed-url/delete and blocks cross-family or traversal access', async () => {
+    const familyAUuid = 'aaaa1111-2222-4333-8444-555555555501';
+    const familyBUuid = 'bbbb1111-2222-4333-8444-555555555502';
+    const authUserAUuid = 'aaaa2222-2222-4333-8444-555555555501';
+    const authUserBUuid = 'bbbb2222-2222-4333-8444-555555555502';
+
+    const storedObjects = new Map<string, { owner: string; familyFolder: string; contentType: string }>();
+
+    const makeStorageClient = (
+      sessionAuthUid: string | null,
+      verifiedFamilyId: string | null
+    ): SupabaseClient => {
+      return {
+        auth: {
+          async getSession() {
+            if (!sessionAuthUid) return { data: { session: null }, error: null };
+            return {
+              data: {
+                session: {
+                  access_token: `jwt_${sessionAuthUid}`,
+                  user: {
+                    id: sessionAuthUid,
+                    email: 'parent@nekbaar.app',
+                    email_confirmed_at: '2026-10-31T00:00:00Z',
+                  },
+                },
+              },
+              error: null,
+            };
+          },
+        },
+        from(table: string) {
+          if (table === 'users') {
+            return {
+              select() {
+                const chain = {
+                  eq() {
+                    return chain;
+                  },
+                  async limit() {
+                    if (!sessionAuthUid || !verifiedFamilyId) {
+                      return { data: [], error: null };
+                    }
+                    return {
+                      data: [
+                        {
+                          id: '11111111-2222-4333-8444-555555555500',
+                          auth_user_id: sessionAuthUid,
+                          family_id: verifiedFamilyId,
+                          full_name: 'والد موثق',
+                          role: 'father',
+                        },
+                      ],
+                      error: null,
+                    };
+                  },
+                };
+                return chain;
+              },
+            };
+          }
+          throw new Error(`Unexpected table ${table}`);
+        },
+        storage: {
+          from(bucketId: string) {
+            return {
+              async upload(path: string, _body: unknown, opts?: { contentType?: string }) {
+                const folder = path.split('/')[0] || '';
+                if (
+                  bucketId !== 'family-media' ||
+                  !sessionAuthUid ||
+                  !verifiedFamilyId ||
+                  folder !== verifiedFamilyId
+                ) {
+                  return {
+                    data: null,
+                    error: { message: 'new row violates row-level security policy for table "objects"' },
+                  };
+                }
+                storedObjects.set(path, {
+                  owner: sessionAuthUid,
+                  familyFolder: folder,
+                  contentType: opts?.contentType || 'application/octet-stream',
+                });
+                return { data: { path }, error: null };
+              },
+              async createSignedUrl(path: string, expiresIn: number) {
+                const folder = path.split('/')[0] || '';
+                if (
+                  bucketId !== 'family-media' ||
+                  !sessionAuthUid ||
+                  !verifiedFamilyId ||
+                  folder !== verifiedFamilyId ||
+                  !storedObjects.has(path)
+                ) {
+                  return {
+                    data: null,
+                    error: { message: 'Object not found or access denied by storage RLS policy' },
+                  };
+                }
+                return {
+                  data: {
+                    signedUrl: `https://qbwnzunusmaidciakuod.supabase.co/storage/v1/object/sign/family-media/${path}?token=signed_${expiresIn}`,
+                  },
+                  error: null,
+                };
+              },
+              async remove(paths: string[]) {
+                for (const p of paths) {
+                  const folder = p.split('/')[0] || '';
+                  if (
+                    bucketId !== 'family-media' ||
+                    !sessionAuthUid ||
+                    !verifiedFamilyId ||
+                    folder !== verifiedFamilyId
+                  ) {
+                    return {
+                      data: null,
+                      error: { message: 'Delete denied by storage.objects RLS policy' },
+                    };
+                  }
+                  storedObjects.delete(p);
+                }
+                return { data: paths, error: null };
+              },
+            };
+          },
+        },
+      } as unknown as SupabaseClient;
+    };
+
+    const storageClientA = makeStorageClient(authUserAUuid, familyAUuid);
+    const storageClientB = makeStorageClient(authUserBUuid, familyBUuid);
+    const anonStorageClient = makeStorageClient(null, null);
+
+    // Path validation unit checks
+    assert.equal(
+      validateFamilyStorageObjectPath(`${familyAUuid}/memories/photo1.jpg`, familyAUuid).valid,
+      true
+    );
+    assert.equal(
+      validateFamilyStorageObjectPath(`${familyAUuid}/../${familyBUuid}/photo1.jpg`, familyAUuid).valid,
+      false,
+      'Path traversal must be rejected'
+    );
+    assert.equal(
+      validateFamilyStorageObjectPath(`${familyBUuid}/memories/photo1.jpg`, familyAUuid).valid,
+      false,
+      'Cross-family folder prefix must be rejected'
+    );
+
+    // 1. Authorized Family A uploads private media -> Allowed
+    const filePayload = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    const uploadARes = await uploadFamilyPrivateMediaToStorage(
+      {
+        objectPath: `${familyAUuid}/child-1/memory.png`,
+        fileBody: filePayload,
+        contentType: 'image/png',
+      },
+      storageClientA
+    );
+    assert.equal(uploadARes.uploaded, true);
+    assert.equal(uploadARes.path, `${familyAUuid}/child-1/memory.png`);
+
+    // 2. Authorized Family A creates signed URL for its own private media -> Allowed
+    const signedUrlARes = await createFamilyPrivateMediaSignedUrl(
+      {
+        objectPath: `${familyAUuid}/child-1/memory.png`,
+        expiresInSeconds: 1800,
+      },
+      storageClientA
+    );
+    assert.equal(signedUrlARes.error, null);
+    assert.ok(signedUrlARes.signedUrl?.includes('/storage/v1/object/sign/family-media/'));
+
+    // 3. Unrelated Family B attempts to read/sign Family A's private media -> Denied
+    const crossFamilyReadRes = await createFamilyPrivateMediaSignedUrl(
+      {
+        objectPath: `${familyAUuid}/child-1/memory.png`,
+      },
+      storageClientB
+    );
+    assert.equal(crossFamilyReadRes.signedUrl, null);
+    assert.match(crossFamilyReadRes.error || '', /Cross-family storage access denied/);
+
+    // 4. Unrelated Family B attempts to upload into Family A's folder -> Denied
+    const crossFamilyUploadRes = await uploadFamilyPrivateMediaToStorage(
+      {
+        objectPath: `${familyAUuid}/child-1/injected.png`,
+        fileBody: filePayload,
+        contentType: 'image/png',
+      },
+      storageClientB
+    );
+    assert.equal(crossFamilyUploadRes.uploaded, false);
+    assert.match(crossFamilyUploadRes.error || '', /Cross-family storage access denied/);
+
+    // 5. Unrelated Family B attempts to delete Family A's private media -> Denied
+    const crossFamilyDeleteRes = await deleteFamilyPrivateMediaFromStorage(
+      `${familyAUuid}/child-1/memory.png`,
+      storageClientB
+    );
+    assert.equal(crossFamilyDeleteRes.deleted, false);
+    assert.match(crossFamilyDeleteRes.error || '', /Cross-family storage access denied/);
+    assert.equal(storedObjects.has(`${familyAUuid}/child-1/memory.png`), true);
+
+    // 6. Anonymous user attempts to read Family A's private media -> Denied
+    const anonReadRes = await createFamilyPrivateMediaSignedUrl(
+      {
+        objectPath: `${familyAUuid}/child-1/memory.png`,
+      },
+      anonStorageClient
+    );
+    assert.equal(anonReadRes.signedUrl, null);
+    assert.ok(anonReadRes.error);
+
+    // 7. Authorized Family A deletes its own private media -> Allowed
+    const deleteARes = await deleteFamilyPrivateMediaFromStorage(
+      `${familyAUuid}/child-1/memory.png`,
+      storageClientA
+    );
+    assert.equal(deleteARes.deleted, true);
+    assert.equal(storedObjects.has(`${familyAUuid}/child-1/memory.png`), false);
+  });
 });
+
 
 
 

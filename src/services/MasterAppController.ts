@@ -1015,23 +1015,29 @@ export class MasterBackendService implements MasterControllerAPI {
         }
         const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
         await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
-        await supabaseClient.from('bedtime_stories').upsert(
-          {
-            id: newStory.id,
-            sequence_code: newStory.sequenceCode,
-            family_id: verifiedFamilyUuid,
-            child_name: newStory.childName,
-            age_stage: newStory.ageStage,
-            title_ar: newStory.titleAr,
-            title_en: newStory.titleEn,
-            story_body_ar: newStory.storyBodyAr,
-            story_body_en: newStory.storyBodyEn,
-            moral_tag_ar: newStory.moralTagAr,
-            moral_tag_en: newStory.moralTagEn,
-            created_at: newStory.createdAt,
-          },
-          { onConflict: 'id' }
-        );
+        const remoteChildUuid = isValidUuid((targetKid as { remoteId?: string }).remoteId)
+          ? (targetKid as { remoteId?: string }).remoteId
+          : null;
+        const storyPayload: Record<string, unknown> = {
+          sequence_code: newStory.sequenceCode,
+          family_id: verifiedFamilyUuid,
+          child_id: remoteChildUuid,
+          child_name: newStory.childName,
+          age_stage: newStory.ageStage,
+          title_ar: newStory.titleAr,
+          title_en: newStory.titleEn,
+          story_body_ar: newStory.storyBodyAr,
+          story_body_en: newStory.storyBodyEn,
+          moral_tag_ar: newStory.moralTagAr,
+          moral_tag_en: newStory.moralTagEn,
+          created_at: newStory.createdAt,
+        };
+        if (isValidUuid(newStory.id)) {
+          storyPayload.id = newStory.id;
+        }
+        await supabaseClient
+          .from('bedtime_stories')
+          .upsert(storyPayload, { onConflict: 'sequence_code' });
         return newStory;
       },
       newStory,

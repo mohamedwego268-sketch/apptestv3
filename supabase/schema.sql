@@ -1,413 +1,456 @@
 -- ============================================================================
--- نكبر (Nekbaar) — Family Super App
--- Supabase PostgreSQL Relational Schema, Foreign Keys & Row Level Security (RLS)
--- Guarantees strict foreign-key integrity and zero cross-family data leaks
+-- نكبر (Nekbaar) — Canonical Supabase / PostgreSQL Database Schema & RLS
+-- Architecture: UUID-keyed multi-tenant family isolation (`private.current_user_family_id()`)
 -- ============================================================================
 
--- 1. Families Table (Root entity shared by Mother & Father)
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC;
+GRANT USAGE ON SCHEMA private TO authenticated, service_role;
+
+-- ----------------------------------------------------------------------------
+-- 1. Core Family & User Identity Tables
+-- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.families (
-  id BIGINT PRIMARY KEY,
-  family_name TEXT NOT NULL DEFAULT 'أسرة أحمد ومريم — نكبر',
-  country TEXT NOT NULL DEFAULT 'EG' CHECK (country IN ('EG', 'SA')),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_name TEXT NOT NULL DEFAULT 'أسرة نكبر',
+  country TEXT NOT NULL DEFAULT 'EG',
   city TEXT NOT NULL DEFAULT 'القاهرة',
-  currency TEXT NOT NULL DEFAULT 'EGP' CHECK (currency IN ('EGP', 'SAR', 'USD')),
-  active_parent TEXT NOT NULL DEFAULT 'mother' CHECK (active_parent IN ('mother', 'father')),
-  pairing_token TEXT DEFAULT 'NEKBAAR-FAM-1-SECURE',
+  currency TEXT NOT NULL DEFAULT 'EGP',
+  active_parent TEXT NOT NULL DEFAULT 'father',
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 2. Users Table (Parents: Ahmed & Mariam) with STRICT Foreign Key to families(id)
 CREATE TABLE IF NOT EXISTS public.users (
-  id TEXT PRIMARY KEY,
-  auth_uid UUID UNIQUE,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  name TEXT NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
+  family_id UUID REFERENCES public.families(id) ON DELETE RESTRICT,
   full_name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('father', 'mother')),
+  role TEXT NOT NULL CHECK (role IN ('father', 'mother', 'dad', 'mom')),
   email TEXT,
   phone TEXT,
-  phone_number TEXT,
-  country TEXT NOT NULL DEFAULT 'EG' CHECK (country IN ('EG', 'SA')),
-  verified BOOLEAN NOT NULL DEFAULT TRUE,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_users_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  country TEXT NOT NULL DEFAULT 'EG',
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
+  is_legacy_orphan BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Ensure foreign key exists even if `users` table was created earlier without the constraint
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'fk_users_family_id'
-  ) THEN
-    ALTER TABLE public.users
-      ADD CONSTRAINT fk_users_family_id
-      FOREIGN KEY (family_id)
-      REFERENCES public.families(id)
-      ON UPDATE CASCADE
-      ON DELETE CASCADE;
-  END IF;
-END $$;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_auth_user_id_unique
+  ON public.users (auth_user_id)
+  WHERE auth_user_id IS NOT NULL;
 
-CREATE INDEX IF NOT EXISTS idx_users_family_id ON public.users(family_id);
-CREATE INDEX IF NOT EXISTS idx_users_auth_uid ON public.users(auth_uid);
+CREATE INDEX IF NOT EXISTS idx_users_family_id
+  ON public.users (family_id);
 
--- 3. Children Table (Hamza 6m, Laila 4y, Youssef 8y) with STRICT Foreign Key to families(id)
+-- ----------------------------------------------------------------------------
+-- 2. Children & Child Life Records
+-- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.children (
-  id BIGINT PRIMARY KEY,
-  family_id BIGINT NOT NULL DEFAULT 1,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE RESTRICT,
   name TEXT NOT NULL,
-  birth TEXT NOT NULL,
-  gender TEXT NOT NULL CHECK (gender IN ('boy', 'girl', 'male', 'female')),
-  emoji TEXT DEFAULT '👶🏻',
-  avatar_theme TEXT DEFAULT 'astronaut',
-  interests TEXT DEFAULT '',
-  vaccinations_note TEXT DEFAULT '',
-  growth_height_cm NUMERIC,
-  growth_weight_kg NUMERIC,
+  age_stage TEXT NOT NULL DEFAULT 'EARLY_CHILDHOOD',
+  birth TEXT DEFAULT '',
+  gender TEXT NOT NULL DEFAULT 'boy' CHECK (gender IN ('boy', 'girl')),
+  passions_or_heroes TEXT NOT NULL DEFAULT '',
+  interests TEXT NOT NULL DEFAULT '',
+  emoji TEXT NOT NULL DEFAULT '👦🏻',
+  avatar_theme TEXT NOT NULL DEFAULT 'astronaut',
+  current_home_id UUID,
+  profile_details JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_children_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
+  CONSTRAINT children_id_family_id_unique UNIQUE (id, family_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_children_family_id
+  ON public.children (family_id);
+
+CREATE TABLE IF NOT EXISTS public.child_life_records (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  child_id UUID NOT NULL,
+  domain TEXT NOT NULL CHECK (
+    domain IN ('overview', 'health', 'education', 'character', 'memories', 'aspirations', 'rights')
+  ),
+  record_type TEXT NOT NULL,
+  title TEXT NOT NULL CHECK (char_length(btrim(title)) BETWEEN 1 AND 240),
+  summary TEXT NOT NULL DEFAULT '',
+  occurred_on DATE,
+  visibility TEXT NOT NULL DEFAULT 'family' CHECK (visibility IN ('family', 'parents_only', 'future_gift')),
+  unlock_on DATE,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(payload) = 'object'),
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT child_life_records_child_family_fk
+    FOREIGN KEY (child_id, family_id)
+    REFERENCES public.children (id, family_id)
     ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_children_family_id ON public.children(family_id);
+CREATE INDEX IF NOT EXISTS idx_child_life_records_family_child_domain
+  ON public.child_life_records (family_id, child_id, domain, occurred_on DESC NULLS LAST, created_at DESC);
 
--- 4. Extended Family Table (Grandparents, Uncles, Aunts) linked to families(id)
+-- ----------------------------------------------------------------------------
+-- 3. Extended Family, Co-Parent Pairings, Homes, Locations & Workspace State
+-- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.extended_family (
-  id BIGINT PRIMARY KEY,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  name TEXT NOT NULL,
-  role TEXT NOT NULL,
-  side TEXT NOT NULL,
-  phone_number TEXT DEFAULT '',
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL,
+  relation_type TEXT NOT NULL,
+  phone TEXT DEFAULT '',
   email TEXT DEFAULT '',
-  CONSTRAINT fk_extended_family_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  permission_scope TEXT NOT NULL DEFAULT 'viewer',
+  verified BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_extended_family_family_id ON public.extended_family(family_id);
+CREATE INDEX IF NOT EXISTS idx_extended_family_family_id
+  ON public.extended_family (family_id);
 
--- 5. Catalog Items Table (`PRD-XXXX` Sequenced Family Store & Services)
-CREATE TABLE IF NOT EXISTS public.catalog_items (
-  id BIGINT PRIMARY KEY,
-  sequence_code TEXT NOT NULL UNIQUE,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  name TEXT NOT NULL,
-  name_en TEXT NOT NULL DEFAULT 'Featured Family Item',
-  kind TEXT NOT NULL DEFAULT 'product' CHECK (kind IN ('product', 'service', 'offer')),
-  category TEXT NOT NULL DEFAULT 'toys',
-  category_label TEXT NOT NULL DEFAULT 'ألعاب وتنمية',
-  country TEXT NOT NULL DEFAULT 'ALL',
-  city TEXT NOT NULL DEFAULT 'القاهرة',
-  price_egp NUMERIC NOT NULL DEFAULT 450,
-  price_sar NUMERIC NOT NULL DEFAULT 95,
-  rating TEXT NOT NULL DEFAULT '4.9',
-  is_sponsored BOOLEAN NOT NULL DEFAULT FALSE,
-  description TEXT DEFAULT '',
-  emoji TEXT DEFAULT '🧸',
+CREATE TABLE IF NOT EXISTS public.co_parent_pairings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  inviter_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  partner_role TEXT NOT NULL CHECK (partner_role IN ('father', 'mother')),
+  partner_name TEXT NOT NULL,
+  partner_phone TEXT NOT NULL,
+  partner_email TEXT,
+  country TEXT NOT NULL DEFAULT 'EG',
+  verification_method TEXT NOT NULL CHECK (verification_method IN ('phone_otp', 'magic_link', 'invite_code')),
+  invite_code TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending_verification' CHECK (status IN ('pending_verification', 'verified', 'revoked')),
+  accepted_by_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  accepted_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_catalog_items_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_catalog_items_family_id ON public.catalog_items(family_id);
+CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_family_id
+  ON public.co_parent_pairings (family_id);
 
--- 6. Wellness / Battery Diagnostics Table linked to families(id) & children(id)
+CREATE TABLE IF NOT EXISTS public.family_homes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  name TEXT NOT NULL CHECK (char_length(btrim(name)) BETWEEN 2 AND 80),
+  home_kind TEXT NOT NULL DEFAULT 'family' CHECK (home_kind IN ('family', 'father', 'mother', 'extended', 'school', 'other')),
+  owner_parent_role TEXT CHECK (owner_parent_role IS NULL OR owner_parent_role IN ('father', 'mother')),
+  city TEXT NOT NULL DEFAULT '',
+  address_line TEXT NOT NULL DEFAULT '',
+  latitude DOUBLE PRECISION CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
+  longitude DOUBLE PRECISION CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180)),
+  is_default BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT family_homes_id_family_unique UNIQUE (id, family_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.child_home_schedules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  child_id UUID NOT NULL,
+  home_id UUID NOT NULL,
+  schedule_kind TEXT NOT NULL DEFAULT 'weekly' CHECK (schedule_kind IN ('weekly', 'date_range')),
+  weekday SMALLINT CHECK (weekday IS NULL OR (weekday >= 0 AND weekday <= 6)),
+  start_time TIME,
+  end_time TIME,
+  starts_at TIMESTAMPTZ,
+  ends_at TIMESTAMPTZ,
+  timezone TEXT NOT NULL DEFAULT 'Africa/Cairo',
+  notes TEXT NOT NULL DEFAULT '',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT child_home_schedules_child_family_fk
+    FOREIGN KEY (child_id, family_id) REFERENCES public.children (id, family_id) ON DELETE CASCADE,
+  CONSTRAINT child_home_schedules_home_family_fk
+    FOREIGN KEY (home_id, family_id) REFERENCES public.family_homes (id, family_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS public.parent_locations (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  parent_role TEXT NOT NULL CHECK (parent_role IN ('father', 'mother')),
+  sharing_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  latitude DOUBLE PRECISION CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
+  longitude DOUBLE PRECISION CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180)),
+  accuracy_meters DOUBLE PRECISION CHECK (accuracy_meters IS NULL OR accuracy_meters >= 0),
+  location_label TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.family_shared_state (
+  family_id UUID PRIMARY KEY REFERENCES public.families(id) ON DELETE CASCADE,
+  shared_payload JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(shared_payload) = 'object'),
+  updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.parent_private_state (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  parent_role TEXT NOT NULL CHECK (parent_role IN ('father', 'mother')),
+  private_payload JSONB NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(private_payload) = 'object'),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ----------------------------------------------------------------------------
+-- 4. Diagnostics, Stories & Public Catalog Tables
+-- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.wellness_diagnostics (
-  id TEXT PRIMARY KEY,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  child_id BIGINT NOT NULL,
-  child_name TEXT NOT NULL,
-  age_stage TEXT DEFAULT '0-2',
-  overall_score INTEGER NOT NULL DEFAULT 90,
-  sleep_score INTEGER NOT NULL DEFAULT 90,
-  nutrition_score INTEGER NOT NULL DEFAULT 90,
-  mood_score INTEGER NOT NULL DEFAULT 90,
-  routine_score INTEGER NOT NULL DEFAULT 85,
-  routine_completion_score INTEGER NOT NULL DEFAULT 85,
-  status_level TEXT NOT NULL DEFAULT 'optimal',
-  recommendation_ar TEXT DEFAULT '',
-  recommendation_en TEXT DEFAULT '',
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  child_id UUID,
+  overall_score INTEGER NOT NULL DEFAULT 80,
+  physical_energy INTEGER NOT NULL DEFAULT 80,
+  emotional_balance INTEGER NOT NULL DEFAULT 80,
+  social_connection INTEGER NOT NULL DEFAULT 80,
+  cognitive_focus INTEGER NOT NULL DEFAULT 80,
+  computed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_wellness_diagnostics_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  CONSTRAINT wellness_diagnostics_child_family_fk
+    FOREIGN KEY (child_id, family_id) REFERENCES public.children (id, family_id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_wellness_diagnostics_family_id ON public.wellness_diagnostics(family_id);
-
--- 7. AI Bedtime Stories Table (`STR-XXXX`) linked to families(id) & children(id)
 CREATE TABLE IF NOT EXISTS public.bedtime_stories (
-  id TEXT PRIMARY KEY,
-  sequence_code TEXT NOT NULL,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  child_id BIGINT NOT NULL,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  sequence_code TEXT UNIQUE NOT NULL,
+  family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
+  child_id UUID,
   child_name TEXT NOT NULL,
-  age_stage TEXT NOT NULL DEFAULT '0-2',
+  age_stage TEXT NOT NULL DEFAULT 'EARLY_CHILDHOOD',
   title_ar TEXT NOT NULL,
   title_en TEXT NOT NULL,
   story_body_ar TEXT NOT NULL,
   story_body_en TEXT NOT NULL,
-  moral_tag_ar TEXT DEFAULT '',
-  moral_tag_en TEXT DEFAULT '',
+  moral_tag_ar TEXT NOT NULL DEFAULT '',
+  moral_tag_en TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_bedtime_stories_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+  CONSTRAINT bedtime_stories_child_family_fk
+    FOREIGN KEY (child_id, family_id) REFERENCES public.children (id, family_id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_bedtime_stories_family_id ON public.bedtime_stories(family_id);
-
--- 8. Co-Parent Pairings Audit Table (OTP & QR Token Pairing Records)
-CREATE TABLE IF NOT EXISTS public.co_parent_pairings (
-  id TEXT PRIMARY KEY,
-  family_id BIGINT NOT NULL DEFAULT 1,
-  partner_user_id TEXT NOT NULL,
-  partner_name TEXT NOT NULL,
-  partner_phone TEXT NOT NULL,
-  partner_email TEXT,
-  pairing_method TEXT NOT NULL CHECK (pairing_method IN ('phone_otp', 'qr_token')),
-  pairing_token TEXT NOT NULL,
-  verified BOOLEAN NOT NULL DEFAULT TRUE,
-  linked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_co_parent_pairings_family_id
-    FOREIGN KEY (family_id)
-    REFERENCES public.families(id)
-    ON UPDATE CASCADE
-    ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS public.catalog_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  price NUMERIC NOT NULL DEFAULT 0,
+  description TEXT DEFAULT '',
+  category TEXT DEFAULT 'general',
+  currency TEXT DEFAULT 'EGP',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_family_id ON public.co_parent_pairings(family_id);
-
--- ============================================================================
--- ROW LEVEL SECURITY (RLS) & POLICIES (CRITICAL SECURITY ENFORCEMENT)
--- Prevents cross-family data leaks by scoping reads/writes to the user's family_id
--- ============================================================================
-
--- Helper security-definer function resolving the authenticated user's `family_id`
-CREATE OR REPLACE FUNCTION public.get_authenticated_family_id()
-RETURNS BIGINT
+-- ----------------------------------------------------------------------------
+-- 5. Security Helper Functions & Immutable Ownership Triggers
+-- ----------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION private.current_user_family_id()
+RETURNS UUID
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-SET search_path = public
+SET search_path = ''
 AS $$
-  SELECT COALESCE(
-    (
-      SELECT u.family_id
-      FROM public.users u
-      WHERE u.auth_uid = auth.uid()
-         OR u.id = auth.uid()::text
-         OR u.email = (auth.jwt() ->> 'email')
-      LIMIT 1
-    ),
-    (NULLIF(auth.jwt() -> 'user_metadata' ->> 'family_id', ''))::BIGINT,
-    1
-  );
+  SELECT u.family_id
+  FROM public.users AS u
+  WHERE u.auth_user_id = (SELECT auth.uid())
+    AND u.family_id IS NOT NULL
+    AND COALESCE(u.is_legacy_orphan, false) = false
+  ORDER BY u.created_at ASC
+  LIMIT 1;
 $$;
 
--- Enable Row Level Security on all tables
+REVOKE ALL ON FUNCTION private.current_user_family_id() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.current_user_family_id() TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.prevent_ownership_column_mutation()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF TG_TABLE_NAME = 'families' THEN
+    IF NEW.id IS DISTINCT FROM OLD.id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: families.id cannot be changed'
+        USING ERRCODE = '42501';
+    END IF;
+    IF OLD.created_by IS NOT NULL AND NEW.created_by IS DISTINCT FROM OLD.created_by THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: families.created_by cannot be reassigned'
+        USING ERRCODE = '42501';
+    END IF;
+  ELSIF TG_TABLE_NAME = 'users' THEN
+    IF NEW.id IS DISTINCT FROM OLD.id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: users.id cannot be changed'
+        USING ERRCODE = '42501';
+    END IF;
+    IF OLD.auth_user_id IS NOT NULL AND NEW.auth_user_id IS DISTINCT FROM OLD.auth_user_id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: users.auth_user_id cannot be reassigned'
+        USING ERRCODE = '42501';
+    END IF;
+    IF OLD.family_id IS NOT NULL AND NEW.family_id IS DISTINCT FROM OLD.family_id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: users.family_id cannot be reassigned once linked'
+        USING ERRCODE = '42501';
+    END IF;
+  ELSIF TG_TABLE_NAME = 'children' THEN
+    IF NEW.id IS DISTINCT FROM OLD.id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: children.id cannot be changed'
+        USING ERRCODE = '42501';
+    END IF;
+    IF NEW.family_id IS DISTINCT FROM OLD.family_id THEN
+      RAISE EXCEPTION 'IMMUTABLE_OWNERSHIP_VIOLATION: children.family_id cannot be reassigned'
+        USING ERRCODE = '42501';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION private.prevent_ownership_column_mutation() FROM PUBLIC;
+
+DROP TRIGGER IF EXISTS trg_families_immutable_ownership ON public.families;
+CREATE TRIGGER trg_families_immutable_ownership
+  BEFORE UPDATE ON public.families
+  FOR EACH ROW
+  EXECUTE FUNCTION private.prevent_ownership_column_mutation();
+
+DROP TRIGGER IF EXISTS trg_users_immutable_ownership ON public.users;
+CREATE TRIGGER trg_users_immutable_ownership
+  BEFORE UPDATE ON public.users
+  FOR EACH ROW
+  EXECUTE FUNCTION private.prevent_ownership_column_mutation();
+
+DROP TRIGGER IF EXISTS trg_children_immutable_ownership ON public.children;
+CREATE TRIGGER trg_children_immutable_ownership
+  BEFORE UPDATE ON public.children
+  FOR EACH ROW
+  EXECUTE FUNCTION private.prevent_ownership_column_mutation();
+
+-- ----------------------------------------------------------------------------
+-- 6. Row Level Security (RLS) Enforcement Across All Exposed Tables
+-- ----------------------------------------------------------------------------
 ALTER TABLE public.families ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.children ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.child_life_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.extended_family ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.catalog_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.co_parent_pairings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.family_homes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.child_home_schedules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.parent_locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.family_shared_state ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.parent_private_state ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wellness_diagnostics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bedtime_stories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.co_parent_pairings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.catalog_items ENABLE ROW LEVEL SECURITY;
 
--- 1. Policies for `families`
-DROP POLICY IF EXISTS "families_select_own_family" ON public.families;
-CREATE POLICY "families_select_own_family"
-  ON public.families FOR SELECT
-  USING (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
+REVOKE ALL ON public.families FROM anon;
+REVOKE ALL ON public.users FROM anon;
+REVOKE ALL ON public.children FROM anon;
+REVOKE ALL ON public.child_life_records FROM anon;
+REVOKE ALL ON public.extended_family FROM anon;
+REVOKE ALL ON public.co_parent_pairings FROM anon;
+REVOKE ALL ON public.family_homes FROM anon;
+REVOKE ALL ON public.child_home_schedules FROM anon;
+REVOKE ALL ON public.parent_locations FROM anon;
+REVOKE ALL ON public.family_shared_state FROM anon;
+REVOKE ALL ON public.parent_private_state FROM anon;
+REVOKE ALL ON public.wellness_diagnostics FROM anon;
+REVOKE ALL ON public.bedtime_stories FROM anon;
 
-DROP POLICY IF EXISTS "families_insert_own_family" ON public.families;
-CREATE POLICY "families_insert_own_family"
-  ON public.families FOR INSERT
-  WITH CHECK (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
+-- `public.families` policies
+DROP POLICY IF EXISTS families_select_own_family ON public.families;
+CREATE POLICY families_select_own_family
+  ON public.families FOR SELECT TO authenticated
+  USING (id = (SELECT private.current_user_family_id()));
 
-DROP POLICY IF EXISTS "families_update_own_family" ON public.families;
-CREATE POLICY "families_update_own_family"
-  ON public.families FOR UPDATE
-  USING (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL)
-  WITH CHECK (id = public.get_authenticated_family_id() OR auth.uid() IS NOT NULL);
+DROP POLICY IF EXISTS families_insert_own_family ON public.families;
+CREATE POLICY families_insert_own_family
+  ON public.families FOR INSERT TO authenticated
+  WITH CHECK (id = (SELECT private.current_user_family_id()));
 
-DROP POLICY IF EXISTS "families_delete_own_family" ON public.families;
-CREATE POLICY "families_delete_own_family"
-  ON public.families FOR DELETE
-  USING (id = public.get_authenticated_family_id());
+DROP POLICY IF EXISTS families_update_own_family ON public.families;
+CREATE POLICY families_update_own_family
+  ON public.families FOR UPDATE TO authenticated
+  USING (id = (SELECT private.current_user_family_id()))
+  WITH CHECK (id = (SELECT private.current_user_family_id()));
 
--- 2. Policies for `users` (Enforces strict `auth.uid() = id` / `auth_uid = auth.uid()` and shared `family_id` linkage)
-DROP POLICY IF EXISTS "users_select_own_family" ON public.users;
-CREATE POLICY "users_select_own_family"
-  ON public.users FOR SELECT
+-- `public.users` policies
+DROP POLICY IF EXISTS users_select_own_or_family ON public.users;
+CREATE POLICY users_select_own_or_family
+  ON public.users FOR SELECT TO authenticated
   USING (
-    id = auth.uid()::text
-    OR auth_uid = auth.uid()
-    OR family_id = public.get_authenticated_family_id()
+    COALESCE(is_legacy_orphan, false) = false
+    AND (
+      auth_user_id = (SELECT auth.uid())
+      OR (
+        auth_user_id IS NOT NULL
+        AND family_id IS NOT NULL
+        AND family_id = (SELECT private.current_user_family_id())
+      )
+    )
   );
 
-DROP POLICY IF EXISTS "users_insert_own_family" ON public.users;
-CREATE POLICY "users_insert_own_family"
-  ON public.users FOR INSERT
+DROP POLICY IF EXISTS users_insert_self_only ON public.users;
+CREATE POLICY users_insert_self_only
+  ON public.users FOR INSERT TO authenticated
   WITH CHECK (
-    id = auth.uid()::text
-    OR auth_uid = auth.uid()
-    OR family_id = public.get_authenticated_family_id()
+    auth_user_id = (SELECT auth.uid())
+    AND family_id IS NOT NULL
+    AND family_id = (SELECT private.current_user_family_id())
+    AND COALESCE(is_legacy_orphan, false) = false
   );
 
-DROP POLICY IF EXISTS "users_update_own_family" ON public.users;
-CREATE POLICY "users_update_own_family"
-  ON public.users FOR UPDATE
+DROP POLICY IF EXISTS users_update_self_only ON public.users;
+CREATE POLICY users_update_self_only
+  ON public.users FOR UPDATE TO authenticated
   USING (
-    id = auth.uid()::text
-    OR auth_uid = auth.uid()
-    OR family_id = public.get_authenticated_family_id()
+    auth_user_id = (SELECT auth.uid())
+    AND family_id IS NOT NULL
+    AND family_id = (SELECT private.current_user_family_id())
+    AND COALESCE(is_legacy_orphan, false) = false
   )
   WITH CHECK (
-    id = auth.uid()::text
-    OR auth_uid = auth.uid()
-    OR family_id = public.get_authenticated_family_id()
+    auth_user_id = (SELECT auth.uid())
+    AND family_id IS NOT NULL
+    AND family_id = (SELECT private.current_user_family_id())
+    AND COALESCE(is_legacy_orphan, false) = false
   );
 
-DROP POLICY IF EXISTS "users_delete_own_family" ON public.users;
-CREATE POLICY "users_delete_own_family"
-  ON public.users FOR DELETE
-  USING (
-    id = auth.uid()::text
-    OR auth_uid = auth.uid()
-  );
+-- `public.children` policies
+DROP POLICY IF EXISTS children_select_own_family ON public.children;
+CREATE POLICY children_select_own_family
+  ON public.children FOR SELECT TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
 
--- 3. Policies for `children`
-DROP POLICY IF EXISTS "children_select_own_family" ON public.children;
-CREATE POLICY "children_select_own_family"
-  ON public.children FOR SELECT
-  USING (family_id = public.get_authenticated_family_id());
+DROP POLICY IF EXISTS children_insert_own_family ON public.children;
+CREATE POLICY children_insert_own_family
+  ON public.children FOR INSERT TO authenticated
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
 
-DROP POLICY IF EXISTS "children_insert_own_family" ON public.children;
-CREATE POLICY "children_insert_own_family"
-  ON public.children FOR INSERT
-  WITH CHECK (family_id = public.get_authenticated_family_id());
+DROP POLICY IF EXISTS children_update_own_family ON public.children;
+CREATE POLICY children_update_own_family
+  ON public.children FOR UPDATE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
 
-DROP POLICY IF EXISTS "children_update_own_family" ON public.children;
-CREATE POLICY "children_update_own_family"
-  ON public.children FOR UPDATE
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
+DROP POLICY IF EXISTS children_delete_own_family ON public.children;
+CREATE POLICY children_delete_own_family
+  ON public.children FOR DELETE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
 
-DROP POLICY IF EXISTS "children_delete_own_family" ON public.children;
-CREATE POLICY "children_delete_own_family"
-  ON public.children FOR DELETE
-  USING (family_id = public.get_authenticated_family_id());
-
--- 4. Policies for `extended_family`
-DROP POLICY IF EXISTS "extended_family_all_own_family" ON public.extended_family;
-CREATE POLICY "extended_family_all_own_family"
-  ON public.extended_family FOR ALL
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
--- 5. Policies for `catalog_items` (Readable by family, writable for family catalog items with auth.uid() protection)
-DROP POLICY IF EXISTS "catalog_items_select_policy" ON public.catalog_items;
-CREATE POLICY "catalog_items_select_policy"
-  ON public.catalog_items FOR SELECT
-  USING (
-    family_id = public.get_authenticated_family_id()
-    OR country = 'ALL'
-    OR auth.uid() IS NOT NULL
-  );
-
-DROP POLICY IF EXISTS "catalog_items_insert_own_family" ON public.catalog_items;
-CREATE POLICY "catalog_items_insert_own_family"
-  ON public.catalog_items FOR INSERT
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
-DROP POLICY IF EXISTS "catalog_items_update_own_family" ON public.catalog_items;
-CREATE POLICY "catalog_items_update_own_family"
-  ON public.catalog_items FOR UPDATE
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
-DROP POLICY IF EXISTS "catalog_items_delete_own_family" ON public.catalog_items;
-CREATE POLICY "catalog_items_delete_own_family"
-  ON public.catalog_items FOR DELETE
-  USING (family_id = public.get_authenticated_family_id());
-
--- 6. Policies for `wellness_diagnostics`
-DROP POLICY IF EXISTS "wellness_diagnostics_all_own_family" ON public.wellness_diagnostics;
-CREATE POLICY "wellness_diagnostics_all_own_family"
-  ON public.wellness_diagnostics FOR ALL
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
--- 7. Policies for `bedtime_stories`
-DROP POLICY IF EXISTS "bedtime_stories_all_own_family" ON public.bedtime_stories;
-CREATE POLICY "bedtime_stories_all_own_family"
-  ON public.bedtime_stories FOR ALL
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
--- 8. Policies for `co_parent_pairings`
-DROP POLICY IF EXISTS "co_parent_pairings_all_own_family" ON public.co_parent_pairings;
-CREATE POLICY "co_parent_pairings_all_own_family"
-  ON public.co_parent_pairings FOR ALL
-  USING (family_id = public.get_authenticated_family_id())
-  WITH CHECK (family_id = public.get_authenticated_family_id());
-
--- ============================================================================
--- CANONICAL SEED DATA (Shared Family ID = 1)
--- ============================================================================
-
-INSERT INTO public.families (id, family_name, country, city, currency, active_parent, pairing_token)
-VALUES (1, 'أسرة أحمد ومريم — نكبر', 'EG', 'القاهرة', 'EGP', 'mother', 'NEKBAAR-FAM-1-SECURE')
-ON CONFLICT (id) DO UPDATE SET
-  family_name = EXCLUDED.family_name,
-  updated_at = NOW();
-
-INSERT INTO public.users (id, family_id, name, full_name, role, email, phone, phone_number, country, verified)
-VALUES
-  ('parent-ahmad', 1, 'أحمد (الأب)', 'أحمد (الأب)', 'father', 'ahmad.dad@nekbaar.app', '1012345678', '1012345678', 'EG', TRUE),
-  ('parent-maryam', 1, 'مريم (الأم)', 'مريم (الأم)', 'mother', 'maryam.mom@nekbaar.app', '1123456789', '1123456789', 'EG', TRUE)
-ON CONFLICT (id) DO UPDATE SET
-  family_id = EXCLUDED.family_id,
-  name = EXCLUDED.name,
-  full_name = EXCLUDED.full_name,
-  updated_at = NOW();
-
-INSERT INTO public.children (id, family_id, name, birth, gender, emoji, avatar_theme, interests, growth_height_cm, growth_weight_kg)
-VALUES
-  (1, 1, 'حمزة', '2026-04-20', 'boy', '👶🏻', 'astronaut', 'وقت البطن الحسي، تتبع الخشخيشة الخشبية، والمناغاة التفاعلية', 67, 7.8),
-  (2, 1, 'ليلى', '2022-05-14', 'girl', '👧🏻', 'artist', 'التلوين المائي والصلصال، أناشيد الحضانة، وتسمية المشاعر', 102, 16.2),
-  (3, 1, 'يوسف', '2018-09-10', 'boy', '👦🏻', 'astronaut', 'السباحة وكرة القدم، تجارب العلوم المدرسية، وألغاز الذكاء', 128, 26.5)
-ON CONFLICT (id) DO UPDATE SET
-  family_id = EXCLUDED.family_id,
-  name = EXCLUDED.name,
-  birth = EXCLUDED.birth,
-  updated_at = NOW();
-
-INSERT INTO public.catalog_items (id, sequence_code, family_id, name, name_en, kind, category, category_label, country, city, price_egp, price_sar, rating, is_sponsored, description, emoji)
-VALUES
-  (201, 'PRD-0001', 1, 'مكعبات مونتيسوري الخشبية الذكية', 'Montessori Smart Wooden Blocks', 'product', 'toys', 'ألعاب وتنمية', 'ALL', 'القاهرة', 650, 95, '4.9', TRUE, 'مجموعة خشبية آمنة لتنمية المهارات الحركية الدقيقة والتركيز.', '🧱'),
-  (202, 'PRD-0002', 1, 'سجادة وقت البطن الحسية للرضع', 'Infant Sensory Tummy-Time Mat', 'product', 'toys', 'مستلزمات الرضع', 'ALL', 'الرياض', 890, 135, '4.9', FALSE, 'سجادة قطنية مبطنة مع ألعاب معلقة لتقوية عضلات الرقبة والظهر لحمزة.', '👶🏻'),
-  (203, 'PRD-0003', 1, 'حقيبة التلوين المائي والفنون الإبداعية', 'Creative Watercolor & Art Studio Kit', 'product', 'toys', 'فنون وحضانة', 'ALL', 'القاهرة', 520, 79, '4.8', FALSE, 'ألوان مائية قابلة للغسل وكراسة رسم لتسمية المشاعر وتنمية خيال ليلى.', '🎨')
-ON CONFLICT (id) DO UPDATE SET
-  family_id = EXCLUDED.family_id,
-  name = EXCLUDED.name,
-  updated_at = NOW();
+-- `public.catalog_items` policies (public read-only, service_role write-only)
+DROP POLICY IF EXISTS catalog_items_select_public ON public.catalog_items;
+CREATE POLICY catalog_items_select_public
+  ON public.catalog_items FOR SELECT TO anon, authenticated
+  USING (true);

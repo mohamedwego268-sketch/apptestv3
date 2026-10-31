@@ -496,11 +496,23 @@ export async function ensureSharedFamilyRecordInSupabase(
     };
   }
 
-  // Only allow a verified UUID familyId (never send SHARED_FAMILY_ID = 1 to UUID column)
+  // Enforce strict family ownership: never fall back to an unverified client-supplied familyId,
+  // and reject any cross-family write attempt where rawFamilyId differs from verifiedFamilyId.
+  if (
+    isValidUuid(rawFamilyId) &&
+    isValidUuid(verifiedCtx.verifiedFamilyId) &&
+    rawFamilyId.trim() !== verifiedCtx.verifiedFamilyId
+  ) {
+    return {
+      family: fallbackRecord,
+      synced: false,
+      error:
+        'Write blocked: Cross-family write denied; requested family_id does not match authenticated family.',
+    };
+  }
+
   const targetFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
     ? verifiedCtx.verifiedFamilyId
-    : isValidUuid(rawFamilyId)
-    ? rawFamilyId.trim()
     : null;
 
   if (!targetFamilyUuid) {
@@ -608,10 +620,21 @@ export async function fetchUsersFromSupabase(
 
   try {
     const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (
+      isValidUuid(familyId) &&
+      isValidUuid(verifiedCtx.verifiedFamilyId) &&
+      familyId.trim() !== verifiedCtx.verifiedFamilyId
+    ) {
+      return {
+        data: [],
+        resolvedFamilyId: SHARED_FAMILY_ID,
+        error:
+          'Cross-family read denied: requested family_id does not match authenticated family.',
+      };
+    }
+
     const targetFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
       ? verifiedCtx.verifiedFamilyId
-      : isValidUuid(familyId)
-      ? familyId.trim()
       : null;
 
     if (!targetFamilyUuid) {
@@ -740,6 +763,24 @@ export async function fetchChildrenFromSupabase(
     if (!targetFamilyUuid) {
       // Never send SHARED_FAMILY_ID = 1 to a UUID column in Supabase
       return { data: [], error: null };
+    }
+
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      return {
+        data: [],
+        error:
+          verifiedCtx.error ||
+          'Read blocked: Active authenticated session with verified family membership is required.',
+      };
+    }
+
+    if (verifiedCtx.verifiedFamilyId !== targetFamilyUuid) {
+      return {
+        data: [],
+        error:
+          'Cross-family read denied: requested family_id does not match authenticated family.',
+      };
     }
 
     const { data, error } = await withSupabaseRetry(() =>
@@ -1468,6 +1509,14 @@ export async function syncFamilySpaceToSupabase(
 
     const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
     const authUserId = verifiedCtx.userId;
+
+    // Reject cross-family sync attempts if state carries a mismatched verifiedFamilyId
+    if (
+      isValidUuid(state.verifiedFamilyId) &&
+      state.verifiedFamilyId.trim() !== verifiedFamilyUuid
+    ) {
+      return false;
+    }
 
     const activeAccount =
       state.activeParentAccount === 'father'
@@ -3056,10 +3105,21 @@ export async function saveOnboardingChildrenToSupabase(
 
   try {
     const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (
+      isValidUuid(targetFamilyId) &&
+      isValidUuid(verifiedCtx.verifiedFamilyId) &&
+      targetFamilyId.trim() !== verifiedCtx.verifiedFamilyId
+    ) {
+      return {
+        synced: false,
+        savedChildren: mappedChildren,
+        error:
+          'Write blocked: Cross-family write denied; requested familyId does not match authenticated family.',
+      };
+    }
+
     const verifiedFamilyUuid = isValidUuid(verifiedCtx.verifiedFamilyId)
       ? verifiedCtx.verifiedFamilyId
-      : isValidUuid(targetFamilyId) && verifiedCtx.authenticated
-      ? targetFamilyId
       : null;
 
     if (!verifiedCtx.authenticated || !verifiedFamilyUuid) {
@@ -3712,7 +3772,7 @@ export async function createChildHomeWeeklySchedule(params: {
     const { client, familyId, authUserId } = await getVerifiedFamilyHomesContext();
     if (!isValidUuid(params.childId) || !isValidUuid(params.homeId)) throw new Error('اختَر الطفل والمنزل.');
     if (!Number.isInteger(params.weekday) || params.weekday < 0 || params.weekday > 6) throw new Error('اليوم المحدد غير صالح.');
-    if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(params.startTime) || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(params.endTime) || params.startTime === params.endTime) {
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(params.startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(params.endTime) || params.startTime === params.endTime) {
       throw new Error('حدد وقت بداية ونهاية صحيحين.');
     }
     const { data, error } = await withSupabaseRetry(() => client.from('child_home_schedules').insert({
@@ -3726,7 +3786,7 @@ export async function createChildHomeWeeklySchedule(params: {
       timezone: params.timezone,
       is_active: true,
       created_by: authUserId,
-    }).select('id,child_id,home_id,schedule_kind,weekday,start_time,end_time,starts_at,ends_at,timezone,is_active').single());
+    }).select('id,child_id,home_id,schedule_kind,weekday,start_time,end_time,timezone,is_active').single());
     if (error) throw new Error(error.message);
     return { schedule: data as ChildHomeScheduleRecord, error: null };
   } catch (err) {
@@ -3745,3 +3805,297 @@ export async function deleteChildHomeSchedule(scheduleId: string): Promise<{ err
     return { error: err instanceof Error ? err.message : 'تعذر حذف الموعد.' };
   }
 }
+
+// ============================================================================
+// Private Family Storage Helpers (`family-media` bucket, RLS-scoped by family UUID)
+// ============================================================================
+
+export const FAMILY_MEDIA_BUCKET = 'family-media' as const;
+export const MAX_FAMILY_MEDIA_BYTES = 10 * 1024 * 1024; // 10 MB
+export const ALLOWED_FAMILY_MEDIA_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'audio/webm',
+  'audio/mp4',
+  'audio/mpeg',
+] as const;
+
+export function validateFamilyStorageObjectPath(
+  objectPath: string,
+  verifiedFamilyId: string | null | undefined
+): { valid: boolean; normalizedPath: string | null; error: string | null } {
+  if (!isValidUuid(verifiedFamilyId)) {
+    return {
+      valid: false,
+      normalizedPath: null,
+      error: 'Storage access denied: A verified family UUID is required.',
+    };
+  }
+
+  const cleanFamilyId = verifiedFamilyId.trim();
+  const trimmedPath = typeof objectPath === 'string' ? objectPath.trim() : '';
+  if (!trimmedPath) {
+    return {
+      valid: false,
+      normalizedPath: null,
+      error: 'Storage access denied: Object path cannot be empty.',
+    };
+  }
+
+  if (
+    trimmedPath.startsWith('/') ||
+    trimmedPath.includes('..') ||
+    trimmedPath.includes('//') ||
+    trimmedPath.includes('\\')
+  ) {
+    return {
+      valid: false,
+      normalizedPath: null,
+      error: 'Storage access denied: Invalid or unsafe storage path.',
+    };
+  }
+
+  const segments = trimmedPath.split('/');
+  if (segments.length < 2 || segments.some((seg) => !seg.trim())) {
+    return {
+      valid: false,
+      normalizedPath: null,
+      error:
+        'Storage access denied: Path must follow <family_id>/<category_or_child>/<filename>.',
+    };
+  }
+
+  const folderFamilyId = segments[0].trim();
+  if (!isValidUuid(folderFamilyId) || folderFamilyId !== cleanFamilyId) {
+    return {
+      valid: false,
+      normalizedPath: null,
+      error:
+        'Cross-family storage access denied: Object path does not belong to the authenticated family.',
+    };
+  }
+
+  return {
+    valid: true,
+    normalizedPath: trimmedPath,
+    error: null,
+  };
+}
+
+export async function uploadFamilyPrivateMediaToStorage(
+  params: {
+    objectPath: string;
+    fileBody: Blob | Uint8Array | ArrayBuffer;
+    contentType: string;
+    byteLength?: number;
+    upsert?: boolean;
+  },
+  customClient?: SupabaseClient | null
+): Promise<{
+  uploaded: boolean;
+  path: string | null;
+  error: string | null;
+}> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return { uploaded: false, path: null, error: 'Supabase client is not initialized.' };
+  }
+
+  const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+  if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+    return {
+      uploaded: false,
+      path: null,
+      error:
+        verifiedCtx.error ||
+        'Storage upload blocked: Active authenticated session and verified family membership are required.',
+    };
+  }
+
+  const pathCheck = validateFamilyStorageObjectPath(
+    params.objectPath,
+    verifiedCtx.verifiedFamilyId
+  );
+  if (!pathCheck.valid || !pathCheck.normalizedPath) {
+    return {
+      uploaded: false,
+      path: null,
+      error: pathCheck.error || 'Invalid family storage path.',
+    };
+  }
+
+  const cleanMime = (params.contentType || '').trim().toLowerCase();
+  if (
+    !ALLOWED_FAMILY_MEDIA_MIME_TYPES.includes(
+      cleanMime as (typeof ALLOWED_FAMILY_MEDIA_MIME_TYPES)[number]
+    )
+  ) {
+    return {
+      uploaded: false,
+      path: null,
+      error: `Storage upload blocked: Unsupported MIME type "${cleanMime}".`,
+    };
+  }
+
+  const detectedSize =
+    typeof params.byteLength === 'number'
+      ? params.byteLength
+      : params.fileBody instanceof Blob
+      ? params.fileBody.size
+      : params.fileBody instanceof Uint8Array
+      ? params.fileBody.byteLength
+      : params.fileBody instanceof ArrayBuffer
+      ? params.fileBody.byteLength
+      : 0;
+
+  if (detectedSize <= 0 || detectedSize > MAX_FAMILY_MEDIA_BYTES) {
+    return {
+      uploaded: false,
+      path: null,
+      error: 'Storage upload blocked: File size must be between 1 byte and 10 MB.',
+    };
+  }
+
+  try {
+    const { data, error } = await activeClient.storage
+      .from(FAMILY_MEDIA_BUCKET)
+      .upload(pathCheck.normalizedPath, params.fileBody, {
+        contentType: cleanMime,
+        upsert: Boolean(params.upsert),
+      });
+
+    if (error) {
+      return { uploaded: false, path: null, error: error.message };
+    }
+
+    return {
+      uploaded: true,
+      path: data?.path || pathCheck.normalizedPath,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      uploaded: false,
+      path: null,
+      error: err instanceof Error ? err.message : 'Failed to upload private family media.',
+    };
+  }
+}
+
+export async function createFamilyPrivateMediaSignedUrl(
+  params: {
+    objectPath: string;
+    expiresInSeconds?: number;
+  },
+  customClient?: SupabaseClient | null
+): Promise<{
+  signedUrl: string | null;
+  error: string | null;
+}> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return { signedUrl: null, error: 'Supabase client is not initialized.' };
+  }
+
+  const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+  if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+    return {
+      signedUrl: null,
+      error:
+        verifiedCtx.error ||
+        'Storage read blocked: Active authenticated session and verified family membership are required.',
+    };
+  }
+
+  const pathCheck = validateFamilyStorageObjectPath(
+    params.objectPath,
+    verifiedCtx.verifiedFamilyId
+  );
+  if (!pathCheck.valid || !pathCheck.normalizedPath) {
+    return {
+      signedUrl: null,
+      error: pathCheck.error || 'Invalid family storage path.',
+    };
+  }
+
+  const boundedExpiry = Math.min(
+    Math.max(Math.trunc(params.expiresInSeconds ?? 3600), 60),
+    86400
+  );
+
+  try {
+    const { data, error } = await activeClient.storage
+      .from(FAMILY_MEDIA_BUCKET)
+      .createSignedUrl(pathCheck.normalizedPath, boundedExpiry);
+
+    if (error || !data?.signedUrl) {
+      return {
+        signedUrl: null,
+        error: error?.message || 'Failed to generate signed URL for private family media.',
+      };
+    }
+
+    return {
+      signedUrl: data.signedUrl,
+      error: null,
+    };
+  } catch (err) {
+    return {
+      signedUrl: null,
+      error: err instanceof Error ? err.message : 'Failed to generate signed URL.',
+    };
+  }
+}
+
+export async function deleteFamilyPrivateMediaFromStorage(
+  objectPath: string,
+  customClient?: SupabaseClient | null
+): Promise<{
+  deleted: boolean;
+  error: string | null;
+}> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return { deleted: false, error: 'Supabase client is not initialized.' };
+  }
+
+  const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+  if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+    return {
+      deleted: false,
+      error:
+        verifiedCtx.error ||
+        'Storage delete blocked: Active authenticated session and verified family membership are required.',
+    };
+  }
+
+  const pathCheck = validateFamilyStorageObjectPath(
+    objectPath,
+    verifiedCtx.verifiedFamilyId
+  );
+  if (!pathCheck.valid || !pathCheck.normalizedPath) {
+    return {
+      deleted: false,
+      error: pathCheck.error || 'Invalid family storage path.',
+    };
+  }
+
+  try {
+    const { error } = await activeClient.storage
+      .from(FAMILY_MEDIA_BUCKET)
+      .remove([pathCheck.normalizedPath]);
+
+    if (error) {
+      return { deleted: false, error: error.message };
+    }
+
+    return { deleted: true, error: null };
+  } catch (err) {
+    return {
+      deleted: false,
+      error: err instanceof Error ? err.message : 'Failed to delete private family media.',
+    };
+  }
+}
+
