@@ -82,6 +82,7 @@ import { DailyRoutineSection } from './features/DailyRoutineSection';
 import { FamilyCalendarSection } from './features/FamilyCalendarSection';
 import { KidsWishesSection } from './features/KidsWishesSection';
 import { ProfileSettingsSection } from './features/ProfileSettingsSection';
+import { FamilyHomesSection } from './features/FamilyHomesSection';
 import { FamilyAppModals } from './components/modals/FamilyAppModals';
 import { MedicalHealthSection } from './components/MedicalHealthSection';
 import { MediaPlatformSection } from './components/MediaPlatformSection';
@@ -2676,6 +2677,10 @@ export default function App() {
                 onChangeSettingsOtpCode={setSettingsOtpCode}
                 onSaveBottomInternationalAndPhone={handleSaveBottomInternationalAndPhone}
               />
+            )}
+
+            {activePage === 'settings' && (
+              <FamilyHomesSection state={state} onShowToast={showToast} />
             )}
 
             {/* PAGES 13–15: LEGAL POLICIES & DIGITAL CONTACT US */}
