@@ -1137,11 +1137,11 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="roleModalTitle"
-            className={`drawer-panel w-[min(88vw,390px)] max-w-[390px] h-[100dvh] overflow-y-auto overscroll-contain bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] px-4 pt-safe pb-safe space-y-4 shadow-2xl flex flex-col justify-between ${isEn ? 'drawer-enter-ltr' : 'drawer-enter-rtl'}`}
+            className={`drawer-panel w-[min(86vw,360px)] max-w-[360px] h-[100dvh] overflow-y-auto overscroll-contain bg-[var(--color-surface)] dark:bg-[#0B131A] border-e border-[var(--color-border)] dark:border-[#1E3646] px-3 pt-safe pb-safe space-y-3 shadow-2xl flex flex-col justify-between ${isEn ? 'drawer-enter-ltr' : 'drawer-enter-rtl'}`}
           >
             <div className="space-y-4">
               {/* Premium brand panel: identity, family location and one-tap language */}
-              <section className="drawer-brand-panel relative overflow-hidden rounded-[26px] p-4 text-white">
+              <section className="drawer-brand-panel relative overflow-hidden rounded-[22px] p-3 text-white">
                 <div className="drawer-brand-orb drawer-brand-orb-one" aria-hidden="true" />
                 <div className="drawer-brand-orb drawer-brand-orb-two" aria-hidden="true" />
                 <div className="relative z-10 flex items-start justify-between gap-3">
@@ -1170,7 +1170,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     ×
                   </button>
                 </div>
-                <div className="relative z-10 mt-4 grid grid-cols-[1fr_auto] gap-2 items-center">
+                <div className="relative z-10 mt-3 grid grid-cols-[1fr_auto] gap-1.5 items-center">
                   <button
                     type="button"
                     onClick={() => {
@@ -1201,7 +1201,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     <span className="text-[11px] font-black">{isEn ? 'عربي' : 'EN'}</span>
                   </button>
                 </div>
-                <div className="relative z-10 mt-2 flex items-center justify-between text-[11px] font-semibold text-white/75">
+                <div className="relative z-10 mt-1.5 flex items-center justify-between text-[10px] font-semibold text-white/75">
                   <span>{isEn ? 'One place for everyday family life' : 'كل تفاصيل الأسرة في مكان واحد'}</span>
                   <span dir="ltr" className="tabular-nums">{drawerCountry === 'SA' ? 'SAR' : 'EGP'}</span>
                 </div>
@@ -1233,9 +1233,9 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 </button>
 
                 {quickControlsAccordionOpen && (
-                  <div className="px-3 pb-3 pt-1.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-2 animate-tab-enter">
+                  <div className="px-2.5 pb-2.5 pt-1 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] space-y-1.5 animate-tab-enter">
                     {/* Row 1: Instant Language Switcher + Eye-Comfort Dark/Light Mode Switch */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         id="slidebar-language-toggle-btn"
                         type="button"
@@ -1272,7 +1272,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     </div>
 
                     {/* Row 2: Direct Links for Shopping Cart (السلة) & Wishlist (قائمة الأمنيات) */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         id="slidebar-cart-link-btn"
                         type="button"
@@ -1311,33 +1311,19 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       </button>
                     </div>
 
-                    {/* Row 3: Warm Bedtime Filter + Account & City Wizard */}
-                    <div className="grid grid-cols-2 gap-2">
-                      {onToggleBedtimeMode && (
-                        <button
-                          id="drawer-bedtime-mode-btn"
-                          type="button"
-                          onClick={onToggleBedtimeMode}
-                          className="min-h-[44px] px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-500/40 bg-amber-50/90 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-extrabold text-xs flex flex-wrap items-center justify-between gap-1 cursor-pointer"
-                        >
-                          <span className="inline-flex items-center gap-1">
-                            <span>🕯️</span>
-                            <span>{isEn ? 'Bedtime Filter' : 'هدوء المساء'}</span>
-                          </span>
-                          <span className="text-[9.5px] font-black">
-                            {bedtimeMode ? (isEn ? 'ON' : 'مفعّل') : isEn ? 'OFF' : 'إيقاف'}
-                          </span>
-                        </button>
-                      )}
+                    {/* Compact bedtime toggle only; account setup lives in the account settings flow. */}
+                    {onToggleBedtimeMode && (
                       <button
+                        id="drawer-bedtime-mode-btn"
                         type="button"
-                        onClick={onOpenOnboardingFromDrawer}
-                        className="min-h-[44px] px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-accent-soft)] text-[var(--color-role-text)] font-extrabold text-xs flex flex-wrap items-center justify-center gap-1.5 cursor-pointer"
+                        onClick={onToggleBedtimeMode}
+                        aria-pressed={bedtimeMode}
+                        className="w-full min-h-[36px] px-2.5 py-1 rounded-xl border border-amber-300/80 dark:border-amber-500/40 bg-amber-50/80 dark:bg-[#142430] text-amber-950 dark:text-amber-200 font-extrabold text-[11px] inline-flex items-center justify-between gap-2 cursor-pointer"
                       >
-                        <SoftFilledIcon id="sparkles" size={15} />
-                        <span>{isEn ? 'Account Wizard' : 'معالج الحساب والمدينة'}</span>
+                        <span className="inline-flex items-center gap-1.5"><span aria-hidden="true">🕯️</span><span>{isEn ? 'Bedtime Filter' : 'هدوء المساء'}</span></span>
+                        <span className="text-[10px] font-black">{bedtimeMode ? (isEn ? 'ON' : 'مفعّل') : isEn ? 'OFF' : 'إيقاف'}</span>
                       </button>
-                    </div>
+                    )}
 
 
                   </div>
