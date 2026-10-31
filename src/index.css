@@ -1863,11 +1863,11 @@ body {
 }
 @media (max-width: 360px) {
   .drawer-panel {
-    width: min(92vw, 390px);
-    padding-inline: 12px;
+    width: min(86vw, 360px);
+    padding-inline: 10px;
   }
   .drawer-brand-panel {
-    padding: 13px;
+    padding: 10px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1927,4 +1927,39 @@ body {
       max-height: calc(100vh - 48px);
     }
   }
+}
+
+
+/* Authentication stays inside the physical phone viewport; long forms scroll within the card. */
+#onboarding-wizard-modal {
+  width: 100%;
+  max-width: 100vw;
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+#onboarding-wizard-modal > div {
+  width: min(100%, 430px);
+  min-width: 0;
+  max-height: 100%;
+}
+
+.onboarding-card-scroll {
+  width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.onboarding-card-scroll input,
+.onboarding-card-scroll select,
+.onboarding-card-scroll textarea {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
