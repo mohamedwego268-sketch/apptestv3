@@ -1962,7 +1962,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     {
                       id: 'community',
                       pageId: 'community',
-                      iconId: 'star',
+                      iconId: 'community',
                       titleAr: 'مجتمع الأهل',
                       titleEn: 'Parent Community',
                       badgeAr: 'تواصل وتبادل',
@@ -2003,7 +2003,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     {
                       id: 'chat',
                       pageId: 'chat',
-                      iconId: 'shield',
+                      iconId: 'messages',
                       titleAr: 'الرسائل والمحادثات',
                       titleEn: 'Messages',
                       badgeAr: 'داخلي',
