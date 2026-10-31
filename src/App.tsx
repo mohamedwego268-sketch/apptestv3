@@ -73,6 +73,7 @@ import {
   supabaseClient,
   saveOnboardingChildrenToSupabase,
   syncFamilySpaceToSupabase,
+  saveMyParentLocation,
   verifyAccountIdentityOtpInSupabase,
 } from './services/supabaseService';
 import { useMasterController } from './services/MasterAppController';
@@ -351,6 +352,7 @@ export default function App() {
           ...prev.parentAccounts[prev.activeParentAccount],
           country,
           city,
+          phoneCode: country === 'SA' ? '+966' : '+20',
         },
       },
     }));
@@ -819,7 +821,8 @@ export default function App() {
     });
   };
 
-  // Country -> city selection follows the same canonical location catalog used by onboarding.
+  // Header and dashboard location controls update the active parent's private location,
+  // never the shared family service-area fields.
   const handleSelectPreciseCity = (combinedValue: string) => {
     const separatorIndex = combinedValue.indexOf(':');
     if (separatorIndex < 0) return;
@@ -834,27 +837,35 @@ export default function App() {
     if (!cityObj) return;
 
     const nextCurrency = getSuggestedCurrencyForCountry(nextCountry);
-
     setState((prev) => ({
       ...prev,
-      country: nextCountry,
-      city: cityObj.id,
-      currency: nextCurrency,
-      shippingAddress: {
-        ...prev.shippingAddress,
-        city: cityObj.id,
+      parentAccounts: {
+        ...prev.parentAccounts,
+        [prev.activeParentAccount]: {
+          ...prev.parentAccounts[prev.activeParentAccount],
+          country: nextCountry,
+          city: cityObj.id,
+          phoneCode: nextCountry === 'SA' ? '+966' : '+20',
+        },
       },
     }));
-    setSettingsCountry(nextCountry);
-    setSettingsCity(cityObj.id);
-    setSettingsCurrency(nextCurrency);
     setCurrencySuggestionBanner(null);
     setUserCoords({ lat: cityObj.lat, lng: cityObj.lng });
     setGeoStatus('active');
+    if (state.verifiedFamilyId) {
+      void saveMyParentLocation({
+        country: nextCountry,
+        city: cityObj.id,
+        currency: nextCurrency,
+        timezone: nextCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+      }).then((result) => {
+        if (result.error) showToast(result.error);
+      });
+    }
     showToast(
       lang === 'en'
-        ? `Location updated to ${cityObj.nameEn} (${nextCurrency}) — Nearby services sorted`
-        : `تم تحديد المدينة: ${cityObj.nameAr} (${nextCurrency}) وترتيب الخدمات الأقرب إليك`
+        ? `Your location updated to ${cityObj.nameEn} (${nextCurrency}) — Nearby services sorted`
+        : `تم تحديث موقع حسابك إلى ${cityObj.nameAr} (${nextCurrency}) وترتيب الخدمات الأقرب إليك`
     );
   };
 
@@ -868,22 +879,34 @@ export default function App() {
       setGeoStatus('active');
       setState((prev) => ({
         ...prev,
-        country: nearest.country,
-        city: nearest.city.id,
-        currency: nextCurrency,
-        shippingAddress: {
-          ...prev.shippingAddress,
-          city: nearest.city.id,
+        parentAccounts: {
+          ...prev.parentAccounts,
+          [prev.activeParentAccount]: {
+            ...prev.parentAccounts[prev.activeParentAccount],
+            country: nearest.country,
+            city: nearest.city.id,
+            phoneCode: nearest.country === 'SA' ? '+966' : '+20',
+          },
         },
       }));
+      if (state.verifiedFamilyId) {
+        void saveMyParentLocation({
+          country: nearest.country,
+          city: nearest.city.id,
+          currency: nextCurrency,
+          timezone: nearest.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+        }).then((result) => {
+          if (result.error) showToast(result.error);
+        });
+      }
       showToast(
         lang === 'en'
           ? fromGps
-            ? `GPS Active: Nearest city ${nearest.city.nameEn} (${nearest.distanceKm} km) — Sorted by proximity`
-            : `Location calibrated to ${nearest.city.nameEn} — Nearby clinics & stores sorted`
+            ? `GPS Active: Your nearest city is ${nearest.city.nameEn} (${nearest.distanceKm} km)`
+            : `Your location is set to ${nearest.city.nameEn} — Nearby services sorted`
           : fromGps
-          ? `تم تفعيل GPS: أقرب مدينة ${nearest.city.nameAr} (${nearest.distanceKm} كم) — تم ترتيب العيادات والمتاجر`
-          : `تم ضبط الموقع على ${nearest.city.nameAr} وترتيب العيادات والمتاجر الأقرب إليك`
+          ? `تم تحديد أقرب مدينة لحسابك: ${nearest.city.nameAr} (${nearest.distanceKm} كم)`
+          : `تم ضبط موقع حسابك على ${nearest.city.nameAr} وترتيب الخدمات الأقرب إليك`
       );
     };
 
@@ -893,17 +916,17 @@ export default function App() {
           applyDetectedCoords(pos.coords.latitude, pos.coords.longitude, true);
         },
         () => {
-          const currentCityList = COUNTRY_CITIES_MAP[state.country];
+          const currentCityList = COUNTRY_CITIES_MAP[activeParentCountry];
           const currentCityObj =
-            currentCityList.find((c) => c.id === state.city) || currentCityList[0];
+            currentCityList.find((c) => c.id === activeParentCity) || currentCityList[0];
           applyDetectedCoords(currentCityObj.lat, currentCityObj.lng, false);
         },
         { enableHighAccuracy: false, timeout: 4500, maximumAge: 60000 }
       );
     } else {
-      const currentCityList = COUNTRY_CITIES_MAP[state.country];
+      const currentCityList = COUNTRY_CITIES_MAP[activeParentCountry];
       const currentCityObj =
-        currentCityList.find((c) => c.id === state.city) || currentCityList[0];
+        currentCityList.find((c) => c.id === activeParentCity) || currentCityList[0];
       applyDetectedCoords(currentCityObj.lat, currentCityObj.lng, false);
     }
   };
@@ -3298,6 +3321,7 @@ export default function App() {
                     ...baseState.parentAccounts[pid],
                     fullName: parentName,
                     country,
+                    city,
                     phoneCode: country === 'SA' ? '+966' : '+20',
                     phoneNumber,
                     phoneVerified: genuinePhoneVerified,
