@@ -8,6 +8,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
+import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   BannerSlideItem,
   MasterPatternCard,
@@ -664,6 +665,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
         ariaLabel={isEn ? 'Featured Family Content' : 'المحتوى المميز'}
       />
 
+      <SectionToolsDrawer language={language} titleAr="أدوات المحتوى" titleEn="Media tools">
       {/* Mode Switcher Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-indigo-50/90 dark:bg-[#101D26] border border-indigo-200/80 dark:border-[#1E3646]">
@@ -745,6 +747,8 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           })}
         </div>
       )}
+
+      </SectionToolsDrawer>
 
       {/* FULL-SCREEN REELS MODAL OVERLAY */}
       {isFullScreenReel && (
