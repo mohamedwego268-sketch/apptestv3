@@ -3392,6 +3392,13 @@ export interface FamilyHomeChildRecord {
   current_home_id: string | null;
 }
 
+export interface ParentLocationRecord {
+  country: CountryCode;
+  city: string;
+  currency: CurrencyCode;
+  timezone: string;
+}
+
 export interface ChildHomeScheduleRecord {
   id: string;
   child_id: string;
@@ -3424,11 +3431,12 @@ export async function fetchFamilyHomesWorkspace(): Promise<{
   homes: FamilyHomeRecord[];
   children: FamilyHomeChildRecord[];
   schedules: ChildHomeScheduleRecord[];
+  parentLocation: ParentLocationRecord | null;
   error: string | null;
 }> {
   try {
-    const { client, familyId } = await getVerifiedFamilyHomesContext();
-    const [homesRes, childrenRes, schedulesRes] = await Promise.all([
+    const { client, familyId, profileUserId } = await getVerifiedFamilyHomesContext();
+    const [homesRes, childrenRes, schedulesRes, parentLocationRes] = await Promise.all([
       withSupabaseRetry(() => client.from('family_homes')
         .select('id,family_id,label,country,city,currency,timezone,is_primary')
         .eq('family_id', familyId).order('is_primary', { ascending: false }).order('created_at')),
@@ -3437,13 +3445,16 @@ export async function fetchFamilyHomesWorkspace(): Promise<{
       withSupabaseRetry(() => client.from('child_home_schedules')
         .select('id,child_id,home_id,schedule_kind,weekday,start_time,end_time,starts_at,ends_at,timezone,is_active')
         .eq('family_id', familyId).eq('is_active', true).order('created_at')),
+      withSupabaseRetry(() => client.from('parent_locations')
+        .select('country,city,currency,timezone').eq('user_id', profileUserId).maybeSingle()),
     ]);
-    const error = homesRes.error || childrenRes.error || schedulesRes.error;
+    const error = homesRes.error || childrenRes.error || schedulesRes.error || parentLocationRes.error;
     if (error) throw new Error(error.message);
     return {
       homes: (homesRes.data || []) as FamilyHomeRecord[],
       children: (childrenRes.data || []) as FamilyHomeChildRecord[],
       schedules: (schedulesRes.data || []) as ChildHomeScheduleRecord[],
+      parentLocation: (parentLocationRes.data || null) as ParentLocationRecord | null,
       error: null,
     };
   } catch (err) {
@@ -3451,6 +3462,7 @@ export async function fetchFamilyHomesWorkspace(): Promise<{
       homes: [],
       children: [],
       schedules: [],
+      parentLocation: null,
       error: err instanceof Error ? err.message : 'تعذر تحميل أماكن الأسرة.',
     };
   }
