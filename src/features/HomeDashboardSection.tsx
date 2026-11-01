@@ -23,6 +23,7 @@ import { BatteryDiagnosticsView } from '../components/BatteryDiagnosticsView';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
+import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -716,11 +717,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         careLogged: boolean;
       }
     >
-  >({
-    1: { sleepLogged: true, mealLogged: true, moodEmoji: '🥰', careLogged: true },
-    2: { sleepLogged: true, mealLogged: false, moodEmoji: '🎨', careLogged: true },
-    3: { sleepLogged: false, mealLogged: true, moodEmoji: '🏆', careLogged: true },
-  });
+  >({});
 
   // Daily Essentials Interactive State
   const [selectedMealSlot, setSelectedMealSlot] = useState<'breakfast' | 'lunchbox' | 'snack'>('lunchbox');
@@ -741,6 +738,57 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidId = activeKid?.id ?? 1;
   const activeKidAge = activeKid ? calculateChildAge(activeKid.birth, lang) : null;
   const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'your child' : 'طفلك';
+
+  // Hydrate the dashboard's one-tap indicators from today's real family records.
+  useEffect(() => {
+    const savedChildren = state.kids.filter((kid) => typeof kid.remoteId === 'string' && kid.remoteId);
+    if (!state.verifiedFamilyId || savedChildren.length === 0) {
+      setQuickPulseByKid({});
+      return;
+    }
+    let active = true;
+    void fetchDailyChildLifeRecords(savedChildren.map((kid) => String(kid.remoteId))).then(({ records }) => {
+      if (!active) return;
+      const remoteToLocal = new Map(savedChildren.map((kid) => [String(kid.remoteId), kid.id]));
+      const next: typeof quickPulseByKid = {};
+      for (const record of records) {
+        const localId = remoteToLocal.get(record.child_id);
+        if (localId === undefined) continue;
+        const current = next[localId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
+        if (record.record_type === 'sleep_log') current.sleepLogged = true;
+        if (record.record_type === 'nutrition') current.mealLogged = true;
+        if (record.record_type === 'emotional_social' && typeof record.details?.moodEmoji === 'string') {
+          current.moodEmoji = record.details.moodEmoji;
+        }
+        if (record.record_type === 'other' && record.details?.dashboardKind === 'care') current.careLogged = true;
+        next[localId] = current;
+      }
+      setQuickPulseByKid(next);
+    });
+    return () => { active = false; };
+  }, [state.verifiedFamilyId, state.kids]);
+
+  const saveDashboardChildLog = async (
+    recordType: 'sleep_log' | 'nutrition' | 'emotional_social' | 'other',
+    title: string,
+    details: Record<string, unknown> = {}
+  ): Promise<boolean> => {
+    if (!activeKid || !activeKid.remoteId) {
+      onShowToast?.(isEn ? 'Save this child profile to the family first, then log daily activity.' : 'احفظ ملف الطفل في حساب الأسرة أولاً، وبعدها سجّل النشاط اليومي.');
+      return false;
+    }
+    const result = await createChildLifeRecord({
+      childRemoteId: activeKid.remoteId,
+      recordType,
+      title,
+      details: { ...details, source: 'dashboard_quick_track' },
+    });
+    if (result.error || !result.record) {
+      onShowToast?.(isEn ? `Could not save: ${result.error || 'Unknown error'}` : `تعذر حفظ السجل: ${result.error || 'خطأ غير معروف'}`);
+      return false;
+    }
+    return true;
+  };
   const activeKidStageLabel = activeKidAge?.label || (isEn ? '6 Months' : '٦ شهور');
 
   // Standardized Child Color Helper (Hamza = Sky, Laila = Rose, Youssef = Amber)
@@ -1830,19 +1878,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     type="button"
                     data-testid="quick-pulse-sleep-btn"
                     onClick={() => {
-                      const next = !pulse.sleepLogged;
-                      setQuickPulseByKid((prev) => ({
-                        ...prev,
-                        [activeKidId]: { ...pulse, sleepLogged: next },
-                      }));
-                      if (next) {
-                        void master.recordChildWellnessBoost(activeKidId, 'sleep', 4);
-                      }
-                      onShowToast?.(
-                        isEn
-                          ? `🌙 ${activeKidName}: Sleep/Nap rhythm ${next ? 'logged ✓' : 'reset'}`
-                          : `🌙 ${activeKidName}: ${next ? 'تم توثيق القيلولة/النوم بضغطة واحدة ✓' : 'تم تحديث حالة النوم'}`
-                      );
+                      if (pulse.sleepLogged) return;
+                      void saveDashboardChildLog('sleep_log', 'تسجيل النوم أو القيلولة').then((saved) => {
+                        if (!saved) return;
+                        setQuickPulseByKid((prev) => ({
+                          ...prev,
+                          [activeKidId]: { ...pulse, sleepLogged: true },
+                        }));
+                        onShowToast?.(isEn ? `🌙 ${activeKidName}: sleep logged and saved ✓` : `🌙 تم حفظ سجل نوم ${activeKidName} بنجاح ✓`);
+                      });
                     }}
                     className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
                       pulse.sleepLogged
@@ -1861,19 +1905,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     type="button"
                     data-testid="quick-pulse-meal-btn"
                     onClick={() => {
-                      const next = !pulse.mealLogged;
-                      setQuickPulseByKid((prev) => ({
-                        ...prev,
-                        [activeKidId]: { ...pulse, mealLogged: next },
-                      }));
-                      if (next) {
-                        void master.recordChildWellnessBoost(activeKidId, 'nutrition', 4);
-                      }
-                      onShowToast?.(
-                        isEn
-                          ? `🥣 ${activeKidName}: Meal/Feed ${next ? 'logged ✓' : 'reset'}`
-                          : `🥣 ${activeKidName}: ${next ? 'تم تسجيل الوجبة/الرضعة بنجاح ✓' : 'تم تحديث حالة الوجبة'}`
-                      );
+                      if (pulse.mealLogged) return;
+                      void saveDashboardChildLog('nutrition', 'تسجيل وجبة أو رضعة').then((saved) => {
+                        if (!saved) return;
+                        setQuickPulseByKid((prev) => ({
+                          ...prev,
+                          [activeKidId]: { ...pulse, mealLogged: true },
+                        }));
+                        onShowToast?.(isEn ? `🥣 ${activeKidName}: meal saved ✓` : `🥣 تم حفظ سجل وجبة ${activeKidName} بنجاح ✓`);
+                      });
                     }}
                     className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
                       pulse.mealLogged
@@ -1894,16 +1934,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     onClick={() => {
                       const nextEmoji =
                         moodCycle[(moodCycle.indexOf(pulse.moodEmoji) + 1) % moodCycle.length];
-                      setQuickPulseByKid((prev) => ({
-                        ...prev,
-                        [activeKidId]: { ...pulse, moodEmoji: nextEmoji },
-                      }));
-                      void master.recordChildWellnessBoost(activeKidId, 'mood', 3);
-                      onShowToast?.(
-                        isEn
-                          ? `💛 ${activeKidName}’s mood updated to ${nextEmoji}`
-                          : `💛 تم تحديث مزاج ${activeKidName} اليوم إلى ${nextEmoji}`
-                      );
+                      void saveDashboardChildLog('emotional_social', 'تسجيل الحالة المزاجية', { moodEmoji: nextEmoji }).then((saved) => {
+                        if (!saved) return;
+                        setQuickPulseByKid((prev) => ({
+                          ...prev,
+                          [activeKidId]: { ...pulse, moodEmoji: nextEmoji },
+                        }));
+                        onShowToast?.(isEn ? `💛 ${activeKidName}’s mood saved as ${nextEmoji}` : `💛 تم حفظ مزاج ${activeKidName} اليوم: ${nextEmoji}`);
+                      });
                     }}
                     className="min-h-[48px] px-3.5 py-2.5 rounded-2xl border border-amber-500/40 bg-amber-500/12 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
                   >
@@ -1918,19 +1956,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     type="button"
                     data-testid="quick-pulse-care-btn"
                     onClick={() => {
-                      const next = !pulse.careLogged;
-                      setQuickPulseByKid((prev) => ({
-                        ...prev,
-                        [activeKidId]: { ...pulse, careLogged: next },
-                      }));
-                      if (next) {
-                        void master.recordChildWellnessBoost(activeKidId, 'routine', 4);
-                      }
-                      onShowToast?.(
-                        isEn
-                          ? `🩺 ${activeKidName}: Daily vitamin/care check ${next ? 'completed ✓' : 'reset'}`
-                          : `🩺 ${activeKidName}: ${next ? 'تم تأكيد فيتامين/رعاية اليوم ✓' : 'تم تحديث الرعاية الصحية'}`
-                      );
+                      if (pulse.careLogged) return;
+                      void saveDashboardChildLog('other', 'تسجيل الرعاية اليومية', { dashboardKind: 'care' }).then((saved) => {
+                        if (!saved) return;
+                        setQuickPulseByKid((prev) => ({
+                          ...prev,
+                          [activeKidId]: { ...pulse, careLogged: true },
+                        }));
+                        onShowToast?.(isEn ? `🩺 ${activeKidName}: daily care saved ✓` : `🩺 تم حفظ سجل الرعاية اليومية لـ ${activeKidName} ✓`);
+                      });
                     }}
                     className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
                       pulse.careLogged

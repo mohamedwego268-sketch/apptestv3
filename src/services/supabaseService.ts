@@ -3671,6 +3671,125 @@ export async function signInWithOAuthProviderInSupabase(
 }
 
 /**
+ * Daily child-life records used by the parent dashboard.
+ * These operations always resolve the authenticated, verified family and rely on
+ * the existing child_life_records RLS policies for family/child ownership.
+ */
+export type ChildLifeRecordType =
+  | 'sleep_log'
+  | 'nutrition'
+  | 'emotional_social'
+  | 'routine'
+  | 'medical_event'
+  | 'daily_note'
+  | 'other';
+
+export interface DailyChildLifeRecord {
+  id: string;
+  child_id: string;
+  record_type: ChildLifeRecordType;
+  title: string;
+  notes: string;
+  occurred_at: string;
+  details: Record<string, unknown>;
+}
+
+function getLocalDayBoundsIso(date = new Date()): { start: string; end: string } {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+export async function fetchDailyChildLifeRecords(
+  childRemoteIds: string[],
+  date = new Date(),
+  customClient?: SupabaseClient | null
+): Promise<{ records: DailyChildLifeRecord[]; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  const ids = [...new Set(childRemoteIds.filter(isValidUuid))];
+  if (!activeClient) return { records: [], error: 'Supabase client is not initialized.' };
+  if (ids.length === 0) return { records: [], error: null };
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      return { records: [], error: verifiedCtx.error || 'A verified family account is required.' };
+    }
+    const { start, end } = getLocalDayBoundsIso(date);
+    const { data, error } = await withSupabaseTimeout(
+      activeClient
+        .from('child_life_records')
+        .select('id,child_id,record_type,title,notes,occurred_at,details')
+        .eq('family_id', verifiedCtx.verifiedFamilyId)
+        .in('child_id', ids)
+        .gte('occurred_at', start)
+        .lt('occurred_at', end)
+        .order('occurred_at', { ascending: false })
+    );
+    if (error) throw error;
+    return {
+      records: (Array.isArray(data) ? data : []) as DailyChildLifeRecord[],
+      error: null,
+    };
+  } catch (err) {
+    return {
+      records: [],
+      error: err instanceof Error ? err.message : 'Unable to load today’s child records.',
+    };
+  }
+}
+
+export async function createChildLifeRecord(params: {
+  childRemoteId: string | number;
+  recordType: ChildLifeRecordType;
+  title: string;
+  notes?: string;
+  details?: Record<string, unknown>;
+  occurredAt?: string;
+}, customClient?: SupabaseClient | null): Promise<{ record: DailyChildLifeRecord | null; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) return { record: null, error: 'Supabase client is not initialized.' };
+  if (!isValidUuid(params.childRemoteId)) {
+    return { record: null, error: 'This child has not been saved to the family database yet.' };
+  }
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (
+      !verifiedCtx.authenticated ||
+      !isValidUuid(verifiedCtx.verifiedFamilyId) ||
+      !isValidUuid(verifiedCtx.userId)
+    ) {
+      return { record: null, error: verifiedCtx.error || 'A verified family account is required.' };
+    }
+    const payload = {
+      family_id: verifiedCtx.verifiedFamilyId,
+      child_id: String(params.childRemoteId),
+      record_type: params.recordType,
+      title: params.title.trim().slice(0, 160),
+      notes: (params.notes || '').trim().slice(0, 2000),
+      occurred_at: params.occurredAt || new Date().toISOString(),
+      details: params.details || {},
+      created_by: verifiedCtx.userId,
+    };
+    const { data, error } = await withSupabaseTimeout(
+      activeClient
+        .from('child_life_records')
+        .insert(payload)
+        .select('id,child_id,record_type,title,notes,occurred_at,details')
+        .single()
+    );
+    if (error) throw error;
+    return { record: data as DailyChildLifeRecord, error: null };
+  } catch (err) {
+    return {
+      record: null,
+      error: err instanceof Error ? err.message : 'Unable to save this child record.',
+    };
+  }
+}
+
+/**
  * Deletes a child record from `public.children` in Supabase ONLY when:
  * 1. The caller has an active authenticated session.
  * 2. The caller's verified `family_id` owns the child record.
