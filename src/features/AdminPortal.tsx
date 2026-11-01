@@ -33,6 +33,7 @@ type DirectoryUser = { id:string; name:string; role:string|null; email:string|nu
 type DirectoryFamily = { id:string; name:string; country:string; city:string; currency:string; active_parent:string; created_at:string; updated_at:string; members_count:number; children_count:number; pending_invitations:number };
 type CatalogItem = { id:string; code:string; title:string; name:string; name_en:string; item_type:string; kind:string; description:string|null; category:string; category_label:string; country:string; city:string; price_egp:number; price_sar:number; is_active:boolean; is_sponsored:boolean; emoji:string; created_at:string; updated_at:string };
 type AuditEvent = { id:number; action:string; target_type:string|null; target_id:string|null; actor_auth_user_id:string|null; actor_email:string|null; created_at:string };
+type AdminAccessContext = { authorized:boolean; role_key:string; role_name:string; is_super_admin:boolean; permissions:string[] };
 type StaffDirectory = { id:string; employee_code:string; name:string; email:string; phone:string|null; department:string; title:string; status:string; cohort:string; manager_id:string|null; manager_name:string|null; account_linked:boolean; start_date:string|null; created_at:string; updated_at:string };
 type AdminFamilyDetail = { id:string; name:string; country:string; city:string; currency:string; active_parent:string; created_at:string; updated_at:string; members:{id:string;name:string;role:string|null;email:string|null;phone:string|null;verified:boolean;created_at:string}[]; children:{id:string;name:string;age_stage:string;gender:string|null;birth:string|null;interests:string|null;passions_or_heroes:string|null;emoji:string;growth_height_cm:number|null;growth_weight_kg:number|null;life_records_count:number;last_record_at:string|null}[]; invitations:{id:string;partner_name:string;partner_email:string;partner_phone:string;partner_role:string;method:string;status:string;verified:boolean;expires_at:string;accepted_at:string|null;invited_by_name:string|null}[]; record_summary:{type:string;count:number;last_record_at:string}[] };
 type AdminUserDetail = { user:{id:string;name:string;role:string|null;email:string|null;phone:string|null;country:string;verified:boolean;auth_linked:boolean;created_at:string;updated_at:string}; family:AdminFamilyDetail|null };
@@ -59,6 +60,9 @@ const NAV: { id: PageKey; ar: string; en: string; icon: React.ElementType; group
   { id: 'security', ar: 'الأمان وسجل النشاط', en: 'Security & Audit', icon: ShieldCheck, group: 'system' },
   { id: 'settings', ar: 'إعدادات المنصة', en: 'Platform Settings', icon: Settings2, group: 'system' },
 ];
+
+const PAGE_PERMISSION: Record<PageKey,string> = { overview:'dashboard.view', analytics:'analytics.view', users:'users.view', families:'families.view', team:'team.view', access:'roles.view', content:'content.view', store:'store.view', security:'audit_logs.view', settings:'system.settings.view' };
+
 
 const COLORS = ['#0d9488', '#0284c7', '#f97316', '#8b5cf6', '#e86a3d', '#64748b'];
 const number = (n: number) => new Intl.NumberFormat('en-US').format(n || 0);
@@ -92,6 +96,7 @@ export default function AdminPortal() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [authorized, setAuthorized] = useState(false);
+  const [currentAccess, setCurrentAccess] = useState<AdminAccessContext|null>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -183,7 +188,8 @@ export default function AdminPortal() {
     const { data: sessionData } = await supabaseClient.auth.getSession();
     if (!sessionData.session) { setAuthorized(false); setChecking(false); setLoading(false); return; }
     const { data, error } = await supabaseClient.rpc('admin_verify_session');
-    const allowed = !error && Boolean(data?.authorized && data?.role === 'super_admin');
+    const allowed = !error && Boolean(data?.authorized);
+    setCurrentAccess(allowed ? {authorized:true,role_key:String(data?.role_key||data?.role||'employee'),role_name:String(data?.role_name||data?.role_key||'Staff'),is_super_admin:Boolean(data?.is_super_admin),permissions:Array.isArray(data?.permissions)?data.permissions:[]} : null);
     setAuthorized(allowed);
     setChecking(false);
     if (allowed) await loadSnapshot(period);
@@ -193,7 +199,7 @@ export default function AdminPortal() {
     void verify();
     if (!supabaseClient) return;
     const { data } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      if (!session) { setAuthorized(false); setSnapshot(null); }
+      if (!session) { setAuthorized(false); setCurrentAccess(null); setSnapshot(null); }
       else window.setTimeout(() => { void verify(); }, 0);
     });
     return () => data.subscription.unsubscribe();
@@ -221,6 +227,7 @@ export default function AdminPortal() {
   const logout = async () => {
     await supabaseClient?.auth.signOut();
     setAuthorized(false);
+    setCurrentAccess(null);
     setSnapshot(null);
   };
 
@@ -558,6 +565,11 @@ export default function AdminPortal() {
     </div>
   );
 
+  const can = (permission:string) => Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.includes(permission));
+  const canOpenPage = (pageKey:PageKey) => Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.includes(PAGE_PERMISSION[pageKey]));
+
+  useEffect(()=>{if(!authorized||!currentAccess)return;if(!canOpenPage(page)){const next=NAV.find(item=>canOpenPage(item.id));if(next)setPage(next.id);}},[authorized,currentAccess,page]);
+
   const Sidebar = () => (
     <aside className={'admin-sidebar ' + (mobileNav ? 'is-open' : '')}>
       <div className="admin-sidebar-brand">
@@ -568,11 +580,11 @@ export default function AdminPortal() {
       <div className="admin-workspace-pill"><span className="admin-online-dot"/><div><b>{t('المنصة الرئيسية','Main workspace')}</b><small>{t('بيئة الإنتاج','Production environment')}</small></div><ChevronDown size={15}/></div>
       {(['main','manage','system'] as const).map(group => <div className="admin-nav-group" key={group}>
         <div className="admin-nav-label">{group==='main'?t('الرئيسية','MAIN'):group==='manage'?t('إدارة المنصة','MANAGEMENT'):t('الحوكمة والنظام','GOVERNANCE')}</div>
-        {NAV.filter(item=>item.group===group).map(item=>{const Icon=item.icon;return <button key={item.id} onClick={()=>{setPage(item.id);setMobileNav(false);setQuery('');setDirectoryPage(0);}} className={'admin-nav-item '+(page===item.id?'active':'')}><Icon size={18}/><span>{t(item.ar,item.en)}</span>{item.id==='security'&&snapshot?.recent_admin_events?.length?<i>{snapshot.recent_admin_events.length}</i>:null}</button>})}
+        {NAV.filter(item=>item.group===group&&canOpenPage(item.id)).map(item=>{const Icon=item.icon;return <button key={item.id} onClick={()=>{setPage(item.id);setMobileNav(false);setQuery('');setDirectoryPage(0);}} className={'admin-nav-item '+(page===item.id?'active':'')}><Icon size={18}/><span>{t(item.ar,item.en)}</span>{item.id==='security'&&snapshot?.recent_admin_events?.length?<i>{snapshot.recent_admin_events.length}</i>:null}</button>})}
       </div>)}
       <div className="admin-sidebar-spacer"/>
       <div className="admin-sidebar-capacity"><div className="capacity-head"><span>{t('خطة التوسع','TEAM CAPACITY')}</span><TrendingUp size={15}/></div><strong>50 <small>/ 150</small></strong><div className="capacity-track"><i/></div><p>{t('المرحلة الأولى ثم التوسع للمرحلة الثانية','Phase 1, then scale to phase 2')}</p></div>
-      <div className="admin-profile"><div className="admin-avatar">SA</div><div><b>{t('مالك المنصة','Platform owner')}</b><small>Super Admin</small></div><button onClick={logout} title={t('تسجيل الخروج','Sign out')}><LogOut size={17}/></button></div>
+      <div className="admin-profile"><div className="admin-avatar">SA</div><div><b>{currentAccess?.is_super_admin?t('مالك المنصة','Platform owner'):t('عضو فريق نكبر','Nekbaar team member')}</b><small>{currentAccess?.role_name||currentAccess?.role_key||'—'}</small></div><button onClick={logout} title={t('تسجيل الخروج','Sign out')}><LogOut size={17}/></button></div>
     </aside>
   );
 
