@@ -541,6 +541,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </h4>
             </div>
           </div>
+          {item.kind === 'service' && <div className="flex flex-wrap items-center gap-1.5 px-0.5 text-[9.5px] font-extrabold text-[var(--color-muted)]"><span className="rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] px-1.5 py-0.5">⏱ {item.serviceDurationMinutes ? `${item.serviceDurationMinutes} ${isEn ? 'min' : 'دقيقة'}` : (isEn ? 'Duration on request' : 'المدة حسب الاتفاق')}</span>{item.bookingRequired && <span className="rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5">📅 {isEn ? 'Booking required' : 'يتطلب حجزاً'}</span>}{item.providerName && <span className="truncate">{item.providerName}</span>}</div>}
 
           {/* Layer 3 (Metadata & Tags Carousel): Hidden by default, revealed only on explicit user trigger */}
           {expandedProductMetaIds.includes(item.id) && (
@@ -759,7 +760,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   const cartEnriched = effectiveCheckoutCart
     .map((ci) => {
-      const product = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
+      const product = activeCatalogSource.find((p) => p.id === ci.productId) || COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
       if (!product) return null;
       const unitPrice = convertCatalogPrice(product.priceEGP, product.priceSAR, currency);
       return {
