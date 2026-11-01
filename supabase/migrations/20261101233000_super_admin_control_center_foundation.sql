@@ -76,7 +76,7 @@ begin
     ),
     'signup_series',(select coalesce(jsonb_agg(jsonb_build_object('date',d::date,'count',coalesce(x.cnt,0)) order by d),'[]'::jsonb)
       from generate_series(current_date-(v_days-1),current_date,interval '1 day') d
-      left join (select created_at::date day,count(*) cnt from public.users where created_at>=current_date-(v_days-1) group by created_at::date) x on x.day=d::date),
+      left join (select created_at::date as signup_date,count(*) as cnt from public.users where created_at>=current_date-(v_days-1) group by created_at::date) x on x.signup_date=d::date),
     'recent_users',(select coalesce(jsonb_agg(jsonb_build_object('id',u.id,'name',u.full_name,'role',u.role,'country',u.country,'created_at',u.created_at) order by u.created_at desc),'[]'::jsonb)
       from (select id,full_name,role,country,created_at from public.users order by created_at desc limit 8) u),
     'recent_families',(select coalesce(jsonb_agg(jsonb_build_object('id',f.id,'name',f.family_name,'country',f.country,'city',f.city,'created_at',f.created_at) order by f.created_at desc),'[]'::jsonb)
