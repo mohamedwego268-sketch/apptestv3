@@ -1621,7 +1621,7 @@ export default function App() {
     const isDad = settingsRole === 'dad';
     setState((prev) => ({
       ...prev,
-      parentName: settingsParentName.trim() || (isDad ? 'بابا (أحمد)' : 'ماما (مريم)'),
+      parentName: settingsParentName.trim() || prev.parentName || (isDad ? 'الأب' : 'الأم'),
       role: settingsRole,
       activeParentAccount: isDad ? 'father' : 'mother',
       language: settingsLanguage,
