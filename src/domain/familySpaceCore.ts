@@ -5264,15 +5264,8 @@ export function getParentProfileThemeSpec(
   const isDark = Boolean(darkMode);
   const rawName = (parentName || '').trim();
 
-  const resolvedNameAr = isDad
-    ? rawName && rawName.includes('بابا')
-      ? rawName
-      : 'بابا أحمد'
-    : rawName && rawName.includes('ماما')
-    ? rawName
-    : 'ماما مريم';
-
-  const resolvedNameEn = isDad ? 'Dad Ahmed' : 'Mom Maryam';
+  const resolvedNameAr = rawName || (isDad ? 'الأب' : 'الأم');
+  const resolvedNameEn = rawName || (isDad ? 'Father' : 'Mother');
 
   if (isDad) {
     return {
@@ -5281,10 +5274,10 @@ export function getParentProfileThemeSpec(
       paletteFamily: 'teal-slate',
       displayNameAr: resolvedNameAr,
       displayNameEn: resolvedNameEn,
-      greetingAr: 'أهلاً بيك يا بابا أحمد 👋',
-      greetingEn: `Welcome back, ${resolvedNameEn} 👋`,
-      roleBadgeAr: 'حساب الأب (أحمد) · تيل وأزرق أردوازي',
-      roleBadgeEn: 'Father Profile (Ahmed) · Teal & Slate Blue',
+      greetingAr: rawName ? `أهلاً بيك يا ${rawName} 👋` : 'أهلاً بيك 👋',
+      greetingEn: rawName ? `Welcome back, ${resolvedNameEn} 👋` : 'Welcome back 👋',
+      roleBadgeAr: 'حساب الأب · تيل وأزرق أردوازي',
+      roleBadgeEn: 'Father Profile · Teal & Slate Blue',
       accentHex: isDark ? '#2DD4BF' : '#0D9488',
       secondaryAccentHex: isDark ? '#38BDF8' : '#0284C7',
       badgeBgCss: isDark ? '#142430' : '#E0F2FE',
@@ -5300,10 +5293,10 @@ export function getParentProfileThemeSpec(
     paletteFamily: 'coral-rose',
     displayNameAr: resolvedNameAr,
     displayNameEn: resolvedNameEn,
-    greetingAr: 'أهلاً بيكي يا ماما مريم 👋',
+    greetingAr: rawName ? `أهلاً بيكي يا ${rawName} 👋` : 'أهلاً بيكي 👋',
     greetingEn: `Welcome back, ${resolvedNameEn} 👋`,
-    roleBadgeAr: 'حساب الأم (مريم) · مرجاني دافئ ووردي ناعم',
-    roleBadgeEn: 'Mother Profile (Maryam) · Soft Coral & Warm Rose',
+    roleBadgeAr: 'حساب الأم · مرجاني دافئ ووردي ناعم',
+    roleBadgeEn: 'Mother Profile · Soft Coral & Warm Rose',
     accentHex: isDark ? '#FF8C61' : '#E86A3D',
     secondaryAccentHex: isDark ? '#FB7185' : '#E11D48',
     badgeBgCss: isDark ? '#142430' : '#FFF1F2',
