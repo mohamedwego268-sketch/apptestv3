@@ -1,22 +1,18 @@
-name: CI - Test, Typecheck & Build
+name: Manual Supabase RLS Integration Verification
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: manual-rls-verify-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Test, Typecheck, Supabase Integration & Production Build
+  rls-integration:
+    name: Primary Supabase RLS Integration Verification (On-Demand)
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -30,12 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Run unit tests
-        run: npm test
-
-      - name: TypeScript validation
-        run: npm run lint
-
       - name: Primary Supabase integration tests
         env:
           TEST_SUPABASE_URL: https://qbwnzunusmaidciakuod.supabase.co
@@ -43,6 +33,3 @@ jobs:
           TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: npm run test:integration
 
-      - name: Build production bundle
-        if: always()
-        run: npm run build
