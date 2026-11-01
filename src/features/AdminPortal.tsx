@@ -30,6 +30,7 @@ type Snapshot = {
 };
 type DirectoryUser = { id:string; name:string; role:string|null; email:string|null; phone:string|null; country:string; verified:boolean; family_id:string|null; family_name:string|null; created_at:string; updated_at:string };
 type DirectoryFamily = { id:string; name:string; country:string; city:string; currency:string; active_parent:string; created_at:string; updated_at:string; members_count:number; children_count:number; pending_invitations:number };
+type CatalogItem = { id:string; code:string; title:string; name:string; name_en:string; item_type:string; kind:string; description:string|null; category:string; category_label:string; country:string; city:string; price_egp:number; price_sar:number; is_active:boolean; is_sponsored:boolean; emoji:string; created_at:string; updated_at:string };
 
 type PageKey = 'overview' | 'analytics' | 'users' | 'families' | 'team' | 'content' | 'security' | 'settings';
 const NAV: { id: PageKey; ar: string; en: string; icon: React.ElementType; group: string }[] = [
@@ -91,6 +92,11 @@ export default function AdminPortal() {
   const [directoryTotal, setDirectoryTotal] = useState(0);
   const [directoryPage, setDirectoryPage] = useState(0);
   const [directoryLoading, setDirectoryLoading] = useState(false);
+  const [catalogRows, setCatalogRows] = useState<CatalogItem[]>([]);
+  const [catalogModal, setCatalogModal] = useState(false);
+  const [editingCatalogId, setEditingCatalogId] = useState<string | null>(null);
+  const [savingCatalog, setSavingCatalog] = useState(false);
+  const [catalogForm, setCatalogForm] = useState({ title:'', nameEn:'', itemType:'product', category:'toys', categoryLabel:'ألعاب وتنمية', description:'', country:'ALL', city:'', priceEgp:'0', priceSar:'0', emoji:'🧸', isSponsored:false, isActive:true });
   const en = lang === 'en';
   const t = (ar: string, english: string) => en ? english : ar;
 
@@ -241,6 +247,74 @@ export default function AdminPortal() {
     await loadSnapshot(period, true);
   };
 
+  const loadCatalog = useCallback(async () => {
+    if (!supabaseClient || page !== 'content') return;
+    setDirectoryLoading(true);
+    const { data, error } = await supabaseClient.rpc('admin_get_catalog_directory', {
+      p_search: query.trim() || null, p_limit: 25, p_offset: directoryPage * 25
+    });
+    if (error) setToast(t('تعذر تحميل الكتالوج: ','Could not load catalog: ') + error.message);
+    else {
+      const result = data as { items?: CatalogItem[]; total_count?: number };
+      setCatalogRows(Array.isArray(result?.items) ? result.items : []);
+      setDirectoryTotal(Number(result?.total_count || 0));
+    }
+    setDirectoryLoading(false);
+  }, [page, query, directoryPage, en]);
+
+  useEffect(() => {
+    if (authorized && page === 'content') void loadCatalog();
+  }, [authorized, page, loadCatalog]);
+
+  const openCatalogModal = (item?: CatalogItem) => {
+    setEditingCatalogId(item?.id || null);
+    setCatalogForm(item ? {
+      title:item.title || item.name || '', nameEn:item.name_en || '', itemType:item.item_type || 'product',
+      category:item.category || 'toys', categoryLabel:item.category_label || '', description:item.description || '',
+      country:item.country || 'ALL', city:item.city || '', priceEgp:String(item.price_egp ?? 0),
+      priceSar:String(item.price_sar ?? 0), emoji:item.emoji || '🧸', isSponsored:Boolean(item.is_sponsored), isActive:Boolean(item.is_active)
+    } : { title:'', nameEn:'', itemType:'product', category:'toys', categoryLabel:'ألعاب وتنمية', description:'', country:'ALL', city:'', priceEgp:'0', priceSar:'0', emoji:'🧸', isSponsored:false, isActive:true });
+    setCatalogModal(true);
+  };
+
+  const saveCatalogItem = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!supabaseClient || savingCatalog) return;
+    setSavingCatalog(true);
+    const { error } = await supabaseClient.rpc('admin_save_catalog_item', {
+      p_id:editingCatalogId, p_title:catalogForm.title, p_name_en:catalogForm.nameEn,
+      p_item_type:catalogForm.itemType, p_category:catalogForm.category,
+      p_category_label:catalogForm.categoryLabel, p_description:catalogForm.description,
+      p_country:catalogForm.country, p_city:catalogForm.city,
+      p_price_egp:Number(catalogForm.priceEgp || 0), p_price_sar:Number(catalogForm.priceSar || 0),
+      p_emoji:catalogForm.emoji, p_is_sponsored:catalogForm.isSponsored, p_is_active:catalogForm.isActive
+    });
+    setSavingCatalog(false);
+    if (error) { setToast(t('تعذر حفظ العنصر: ','Could not save item: ') + error.message); return; }
+    setCatalogModal(false);
+    setToast(editingCatalogId ? t('تم تحديث عنصر الكتالوج.','Catalog item updated.') : t('تمت إضافة عنصر الكتالوج.','Catalog item created.'));
+    await loadCatalog();
+    await loadSnapshot(period,true);
+  };
+
+  const toggleCatalogStatus = async (item: CatalogItem) => {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.rpc('admin_save_catalog_item', {
+      p_id:item.id, p_title:item.title || item.name, p_name_en:item.name_en,
+      p_item_type:item.item_type || item.kind, p_category:item.category,
+      p_category_label:item.category_label, p_description:item.description || '',
+      p_country:item.country, p_city:item.city, p_price_egp:Number(item.price_egp || 0),
+      p_price_sar:Number(item.price_sar || 0), p_emoji:item.emoji,
+      p_is_sponsored:Boolean(item.is_sponsored), p_is_active:!item.is_active
+    });
+    if (error) setToast(t('تعذر تغيير حالة النشر: ','Could not change publish status: ') + error.message);
+    else {
+      setToast(item.is_active ? t('تم إيقاف نشر العنصر.','Item unpublished.') : t('تم نشر العنصر.','Item published.'));
+      await loadCatalog();
+      await loadSnapshot(period,true);
+    }
+  };
+
   const heading = NAV.find(item => item.id === page);
   const subtitle = page === 'overview'
     ? t('صورة موحدة لصحة المنصة ونموها وتشغيلها.','A unified view of platform health, growth and operations.')
@@ -326,7 +400,7 @@ export default function AdminPortal() {
 
           {page==='team' && <><section className="admin-kpi-grid three"><MetricCard label={t('موظفون نشطون','Active employees')} value={k?.staff_total||0} detail={t('على قوة العمل حالياً','Currently on workforce')} icon={Users} tone="teal"/><MetricCard label={t('قيد التجهيز','Planned / invited')} value={k?.staff_planned||0} detail={t('سجلات فريق قيد الإعداد','Team records being prepared')} icon={Clock3} tone="blue"/><MetricCard label={t('سعة المرحلة الأولى','Phase 1 capacity')} value={50} detail={t('هدف أول 6 شهور','First 6-month target')} icon={TrendingUp} tone="coral"/></section><section className="admin-panel"><div className="panel-heading"><div><h3>{t('هيكل فريق العمل','Workforce directory')}</h3><p>{t('إدارة الموظفين حسب الإدارات، حالات التوظيف، وخطة التوسع','Manage employees by department, employment status and scale plan')}</p></div><button className="admin-add-btn" onClick={()=>openStaffModal()}><Users size={15}/>{t('إضافة موظف','Add employee')}</button></div>{snapshot?.staff_directory?.length?<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('الموظف','Employee')}</th><th>{t('البريد','Email')}</th><th>{t('الإدارة','Department')}</th><th>{t('المسمى الوظيفي','Job title')}</th><th>{t('الحالة','Status')}</th><th>{t('المرحلة','Cohort')}</th><th>{t('إجراء','Action')}</th></tr></thead><tbody>{snapshot.staff_directory.map(s=><tr key={s.id}><td><b>{s.name}</b><small className="table-sub">{s.employee_code}</small></td><td>{s.email}</td><td>{deptLabel(s.department,en)}</td><td>{s.title||'—'}</td><td><span className={'status-pill '+s.status}>{s.status}</span></td><td>{s.cohort==='first_50'?t('أول 50','First 50'):t('حتى 150','Next 150')}</td><td><button className="admin-edit-btn" onClick={()=>openStaffModal(s)}>{t('تعديل','Edit')}</button></td></tr>)}</tbody></table></div>:<div className="team-empty"><div className="team-empty-icon"><UserRoundCog size={28}/></div><h3>{t('مساحة فريقك جاهزة للنمو','Your workforce space is ready to grow')}</h3><p>{t('ابدأ بإضافة أعضاء الفريق وتحديد الإدارة والمسمى الوظيفي وحالة التوظيف. يمكن ربط حساب الدخول لاحقاً عند تفعيل دعوات البريد.','Add team members and assign departments, job titles and employment status. Login accounts can be linked later when email invitations are enabled.')}</p><button className="admin-add-btn centered" onClick={()=>openStaffModal()}><Users size={15}/>{t('إضافة أول موظف','Add first employee')}</button><div className="team-targets"><span><b>50</b>{t('موظفاً · أول 6 شهور','employees · first 6 months')}</span><span><b>150</b>{t('موظفاً · خلال 12 شهراً','employees · by month 12')}</span></div></div>}</section></>}
 
-          {page==='content' && <section className="admin-panel"><div className="panel-heading"><div><h3>{t('المحتوى والخدمات','Content & services')}</h3><p>{t('حالة المحتوى التجاري والتفاعلي المسجل في قاعدة البيانات','Status of commercial and interactive content in database')}</p></div></div><div className="admin-kpi-grid embedded"><MetricCard label={t('عناصر كتالوج نشطة','Active catalog items')} value={k?.catalog_active||0} detail={t('منتجات وخدمات منشورة','Published products and services')} icon={Package} tone="teal"/><MetricCard label={t('سجلات حياة الأطفال','Child life records')} value={k?.child_records_total||0} detail={t('محتوى أنشأته الأسر','Family-created records')} icon={ClipboardList} tone="blue"/></div><div className="admin-info-note"><CircleHelp size={18}/><span>{t('إدارة المحتوى التفصيلية (إنشاء، مراجعة، نشر، وجدولة) ستكون ضمن المرحلة التالية بعد إغلاق لوحة المؤشرات الأساسية. لا توجد أزرار شكلية أو عمليات غير موصولة حالياً.','Full content workflows (create, review, publish and schedule) are the next delivery phase after the core control dashboard. No decorative or disconnected controls are shown.')}</span></div></section>}
+          {page==='content' && <><section className="admin-kpi-grid embedded"><MetricCard label={t('عناصر الكتالوج النشطة','Published catalog items')} value={k?.catalog_active||0} detail={t('عناصر ظاهرة في التطبيق','Items visible in the app')} icon={Package} tone="teal"/><MetricCard label={t('سجلات حياة الأطفال','Child life records')} value={k?.child_records_total||0} detail={t('محتوى أنشأته الأسر','Family-created records')} icon={ClipboardList} tone="blue"/></section><section className="admin-panel"><div className="panel-heading"><div><h3>{t('إدارة المحتوى والخدمات','Content & services management')}</h3><p>{t('إدارة عناصر الكتالوج الفعلية مع النشر والإيقاف وسجل تدقيق لكل تعديل','Manage live catalog items, publishing and changes with audit logging')}</p></div><div className="catalog-heading-actions"><label className="admin-search"><Search size={16}/><input value={query} onChange={e=>{setQuery(e.target.value);setDirectoryPage(0);}} placeholder={t('ابحث بالاسم أو الكود أو التصنيف…','Search title, code or category…')}/></label><button className="admin-add-btn" onClick={()=>openCatalogModal()}><Package size={15}/>{t('إضافة عنصر','Add item')}</button></div></div><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('العنصر','Item')}</th><th>{t('الكود','Code')}</th><th>{t('النوع','Type')}</th><th>{t('التصنيف','Category')}</th><th>{t('الدولة / المدينة','Market')}</th><th>{t('السعر EGP / SAR','Price EGP / SAR')}</th><th>{t('النشر','Publishing')}</th><th>{t('إجراءات','Actions')}</th></tr></thead><tbody>{catalogRows.map(item=><tr key={item.id}><td><div className="catalog-item-name"><span>{item.emoji||'📦'}</span><div><b>{item.title||item.name}</b><small>{item.name_en||'—'}</small></div></div></td><td><code>{item.code}</code></td><td>{item.item_type||item.kind}</td><td>{item.category_label||item.category}</td><td>{item.country||'ALL'} · {item.city||'—'}</td><td><span className="catalog-price">{number(Number(item.price_egp||0))} / {number(Number(item.price_sar||0))}</span></td><td><span className={'directory-verified '+(item.is_active?'is-verified':'')}>{item.is_active?t('منشور','Published'):t('متوقف','Unpublished')}</span></td><td><div className="catalog-actions"><button className="admin-edit-btn" onClick={()=>openCatalogModal(item)}>{t('تعديل','Edit')}</button><button className="admin-edit-btn" onClick={()=>void toggleCatalogStatus(item)}>{item.is_active?t('إيقاف','Unpublish'):t('نشر','Publish')}</button></div></td></tr>)}{!directoryLoading&&!catalogRows.length&&<tr><td colSpan={8} className="admin-empty-cell">{t('لا توجد عناصر كتالوج حتى الآن. أضف أول منتج أو خدمة من هنا.','No catalog items yet. Add the first product or service here.')}</td></tr>}</tbody></table>{directoryLoading&&<div className="directory-loading">{t('جارٍ تحميل الكتالوج…','Loading catalog…')}</div>}</div><div className="admin-pagination"><span>{t('إجمالي العناصر','Total items')}: <b>{number(directoryTotal)}</b></span><div><button disabled={directoryPage===0||directoryLoading} onClick={()=>setDirectoryPage(p=>Math.max(0,p-1))}>{t('السابق','Previous')}</button><small>{directoryTotal?directoryPage+1:0} / {Math.max(1,Math.ceil(directoryTotal/25))}</small><button disabled={(directoryPage+1)*25>=directoryTotal||directoryLoading} onClick={()=>setDirectoryPage(p=>p+1)}>{t('التالي','Next')}</button></div></div></section></>}
 
           {page==='security' && <section className="admin-two-col"><article className="admin-panel"><div className="panel-heading"><div><h3>{t('سجل إجراءات الإدارة','Administrative audit trail')}</h3><p>{t('سجل محمي للإجراءات الإدارية المسجلة','Protected log of recorded admin actions')}</p></div><ShieldCheck size={20}/></div>{snapshot?.recent_admin_events?.length?snapshot.recent_admin_events.map(e=><div className="audit-row" key={e.id}><span><ShieldCheck size={16}/></span><div><b>{e.action}</b><small>{e.target_type||'—'} · {e.target_id||'—'}</small></div><time>{dateLabel(e.created_at,en)}</time></div>):<div className="team-empty compact"><div className="team-empty-icon"><ShieldCheck size={25}/></div><h3>{t('سجل التدقيق جاهز','Audit trail is ready')}</h3><p>{t('لم تُسجل إجراءات إدارية بعد. السجل مصمم ليكون Append-only لمنع تعديل أو حذف الأثر الإداري.','No admin actions have been recorded yet. The audit log is append-only to prevent tampering.')}</p></div>}</article><article className="admin-panel"><div className="panel-heading"><div><h3>{t('حالة الحماية','Security posture')}</h3><p>{t('ضوابط الوصول الأساسية','Core access controls')}</p></div></div><div className="security-check"><CheckCircle2/><div><b>{t('التحقق من صلاحية Super Admin','Super Admin verification')}</b><small>{t('يتم من قاعدة البيانات عند كل جلسة','Verified from database each session')}</small></div><span>{t('مفعل','Active')}</span></div><div className="security-check"><LockKeyhole/><div><b>{t('مخطط الإدارة خاص','Private admin schema')}</b><small>{t('غير مكشوف مباشرة للمتصفح','Not directly exposed to browser')}</small></div><span>{t('مفعل','Active')}</span></div><div className="security-check"><FileText/><div><b>{t('سجل التدقيق غير قابل للتعديل','Append-only audit log')}</b><small>{t('منع UPDATE و DELETE على السجل','UPDATE and DELETE blocked')}</small></div><span>{t('مفعل','Active')}</span></div></article></section>}
 
@@ -336,6 +410,7 @@ export default function AdminPortal() {
         </main>
       </div>
       {staffModal&&<div className="admin-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setStaffModal(false);}}><form className="admin-staff-modal" onSubmit={saveStaff}><div className="admin-modal-head"><div><span className="admin-modal-kicker">{t('إدارة الفريق','WORKFORCE')}</span><h2>{editingStaffId?t('تعديل بيانات الموظف','Edit employee'):t('إضافة موظف جديد','Add a new employee')}</h2><p>{t('سجّل بيانات الموظف الأساسية وحدد مكانه في الهيكل.','Enter employee details and assign their place in the organization.')}</p></div><button type="button" className="admin-icon-btn" onClick={()=>setStaffModal(false)}><X size={17}/></button></div><div className="admin-staff-form-grid"><label>{t('الاسم بالكامل','Full name')}<input required value={staffForm.fullName} onChange={e=>setStaffForm(v=>({...v,fullName:e.target.value}))}/></label><label>{t('البريد الإلكتروني','Email')}<input required type="email" value={staffForm.email} onChange={e=>setStaffForm(v=>({...v,email:e.target.value}))}/></label><label>{t('رقم الهاتف','Phone')}<input value={staffForm.phone} onChange={e=>setStaffForm(v=>({...v,phone:e.target.value}))}/></label><label>{t('الإدارة','Department')}<select value={staffForm.department} onChange={e=>setStaffForm(v=>({...v,department:e.target.value}))}>{['executive','operations','sales','marketing','customer_success','content','product','engineering','finance','hr'].map(d=><option key={d} value={d}>{deptLabel(d,en)}</option>)}</select></label><label>{t('المسمى الوظيفي','Job title')}<input value={staffForm.jobTitle} onChange={e=>setStaffForm(v=>({...v,jobTitle:e.target.value}))}/></label><label>{t('خطة التوسع','Growth cohort')}<select value={staffForm.cohort} onChange={e=>setStaffForm(v=>({...v,cohort:e.target.value}))}><option value="first_50">{t('أول 50 موظف','First 50 employees')}</option><option value="next_150">{t('التوسع حتى 150','Scale to 150')}</option></select></label><label>{t('حالة التوظيف','Employment status')}<select value={staffForm.status} onChange={e=>setStaffForm(v=>({...v,status:e.target.value}))}><option value="planned">{t('مخطط','Planned')}</option><option value="invited">{t('تمت دعوته','Invited')}</option><option value="active">{t('نشط','Active')}</option><option value="on_leave">{t('إجازة','On leave')}</option><option value="inactive">{t('غير نشط','Inactive')}</option><option value="terminated">{t('انتهى التعاقد','Terminated')}</option></select></label></div><div className="admin-modal-actions"><button type="button" className="admin-cancel-btn" onClick={()=>setStaffModal(false)}>{t('إلغاء','Cancel')}</button><button className="admin-primary-btn" type="submit" disabled={savingStaff}>{savingStaff?t('جارٍ الحفظ…','Saving…'):t('حفظ بيانات الموظف','Save employee')}</button></div></form></div>}
+      {catalogModal&&<div className="admin-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setCatalogModal(false);}}><form className="admin-staff-modal catalog-modal" onSubmit={saveCatalogItem}><div className="admin-modal-head"><div><span className="admin-modal-kicker">{t('المحتوى والخدمات','CONTENT & SERVICES')}</span><h2>{editingCatalogId?t('تعديل عنصر الكتالوج','Edit catalog item'):t('إضافة عنصر جديد','Add catalog item')}</h2><p>{t('إدارة بيانات العرض والأسعار وحالة النشر. كل تعديل يسجل في سجل الإدارة.','Manage listing, prices and publishing. Every change is audited.')}</p></div><button type="button" className="admin-icon-btn" onClick={()=>setCatalogModal(false)}><X size={17}/></button></div><div className="admin-staff-form-grid"><label>{t('الاسم بالعربية','Arabic title')}<input required value={catalogForm.title} onChange={e=>setCatalogForm(v=>({...v,title:e.target.value}))}/></label><label>{t('الاسم بالإنجليزية','English title')}<input value={catalogForm.nameEn} onChange={e=>setCatalogForm(v=>({...v,nameEn:e.target.value}))}/></label><label>{t('نوع العنصر','Item type')}<select value={catalogForm.itemType} onChange={e=>setCatalogForm(v=>({...v,itemType:e.target.value}))}><option value="product">{t('منتج','Product')}</option><option value="service">{t('خدمة','Service')}</option><option value="digital_feature">{t('ميزة رقمية','Digital feature')}</option><option value="game">{t('لعبة','Game')}</option></select></label><label>{t('التصنيف البرمجي','Category key')}<input value={catalogForm.category} onChange={e=>setCatalogForm(v=>({...v,category:e.target.value}))} placeholder="toys"/></label><label>{t('اسم التصنيف','Category label')}<input value={catalogForm.categoryLabel} onChange={e=>setCatalogForm(v=>({...v,categoryLabel:e.target.value}))}/></label><label>{t('الدولة (ALL أو SA أو EG)','Country code')}<input value={catalogForm.country} onChange={e=>setCatalogForm(v=>({...v,country:e.target.value.toUpperCase()}))}/></label><label>{t('المدينة','City')}<input value={catalogForm.city} onChange={e=>setCatalogForm(v=>({...v,city:e.target.value}))}/></label><label>{t('السعر بالجنيه المصري','Price in EGP')}<input type="number" min="0" step="0.01" value={catalogForm.priceEgp} onChange={e=>setCatalogForm(v=>({...v,priceEgp:e.target.value}))}/></label><label>{t('السعر بالريال السعودي','Price in SAR')}<input type="number" min="0" step="0.01" value={catalogForm.priceSar} onChange={e=>setCatalogForm(v=>({...v,priceSar:e.target.value}))}/></label><label>{t('رمز / Emoji','Emoji')}<input value={catalogForm.emoji} onChange={e=>setCatalogForm(v=>({...v,emoji:e.target.value}))}/></label><label className="catalog-description">{t('الوصف','Description')}<textarea rows={3} value={catalogForm.description} onChange={e=>setCatalogForm(v=>({...v,description:e.target.value}))}/></label><label className="catalog-check"><input type="checkbox" checked={catalogForm.isSponsored} onChange={e=>setCatalogForm(v=>({...v,isSponsored:e.target.checked}))}/>{t('محتوى مميز / برعاية','Sponsored listing')}</label><label className="catalog-check"><input type="checkbox" checked={catalogForm.isActive} onChange={e=>setCatalogForm(v=>({...v,isActive:e.target.checked}))}/>{t('منشور ونشط في التطبيق','Published and active')}</label></div><div className="admin-modal-actions"><button type="button" className="admin-cancel-btn" onClick={()=>setCatalogModal(false)}>{t('إلغاء','Cancel')}</button><button className="admin-primary-btn" type="submit" disabled={savingCatalog}>{savingCatalog?t('جارٍ الحفظ…','Saving…'):t('حفظ العنصر','Save item')}</button></div></form></div>}
       {toast&&<div className="admin-toast"><CheckCircle2 size={17}/>{toast}</div>}
     </div>
   );

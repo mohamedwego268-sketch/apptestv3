@@ -107,3 +107,20 @@
 .family-card-stats span{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:9px;background:var(--admin-surface-2);color:var(--admin-muted);font-size:9px}
 .family-card-stats b{color:var(--admin-text);font:800 11px 'Plus Jakarta Sans',sans-serif}
 @media(max-width:640px){.admin-pagination{align-items:flex-start;flex-direction:column}.admin-pagination>div{width:100%;justify-content:space-between}.family-card-stats{gap:6px}}
+
+/* Catalog content operations */
+.catalog-heading-actions{display:flex;align-items:center;gap:9px}
+.catalog-item-name{display:flex;align-items:center;gap:9px;min-width:170px}
+.catalog-item-name>span{width:34px;height:34px;border-radius:10px;background:var(--admin-surface-2);display:grid;place-items:center;font-size:18px}
+.catalog-item-name b,.catalog-item-name small{display:block}
+.catalog-item-name b{font-size:10px}
+.catalog-item-name small{font-size:9px;color:var(--admin-muted);margin-top:3px}
+.catalog-price{font:700 10px 'Plus Jakarta Sans',sans-serif;white-space:nowrap}
+.catalog-actions{display:flex;gap:5px}
+.catalog-actions .admin-edit-btn{white-space:nowrap}
+.catalog-modal{max-width:760px}
+.catalog-description{grid-column:1/-1}
+.catalog-description textarea{width:100%;border:1px solid var(--admin-border);border-radius:10px;padding:10px;background:var(--admin-surface-2);color:var(--admin-text);font:inherit;resize:vertical}
+.catalog-check{display:flex!important;flex-direction:row!important;align-items:center;gap:8px}
+.catalog-check input{width:16px!important;height:16px;accent-color:var(--admin-teal)}
+@media(max-width:720px){.catalog-heading-actions{align-items:stretch;flex-direction:column;width:100%}.catalog-heading-actions .admin-search{width:100%}.catalog-modal{max-height:92vh;overflow:auto}}
