@@ -395,6 +395,7 @@ export interface OnboardingCompletionPayload {
   coParentName?: string;
   coParentEmail?: string;
   coParentPhone?: string;
+  coParentInvitationPending?: boolean;
   verificationChannel?: VerificationChannel;
   persistedSession?: UserSessionProfile;
   syncedToDb?: boolean;
@@ -1294,6 +1295,36 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : `${activeCountryObj.dialCode}${trimmedPhoneInput.replace(/^0+/, '')}`
       : '';
 
+    let coParentInvitationPending = false;
+    if (linkCoParent && !familyInvitationAccepted) {
+      const cleanPartnerEmail = coParentEmail.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanPartnerEmail)) {
+        setIsSubmitting(false);
+        setErrorMsg(isEn
+          ? 'Enter the co-parent email address so the invitation can be linked securely.'
+          : 'أدخل البريد الإلكتروني الصحيح لولي الأمر الآخر حتى نتمكن من إنشاء الدعوة وربطها بأمان.');
+        return;
+      }
+
+      const invitationRes = await linkCoParentAccountInSupabase({
+        familyId: verifiedFamilyUuid,
+        partnerRole: parentRole === 'dad' ? 'mother' : 'father',
+        partnerName: coParentName.trim(),
+        partnerPhone: coParentPhone.trim(),
+        partnerEmail: cleanPartnerEmail,
+        country: coreCountry,
+        method: 'qr_token',
+      });
+      if (!invitationRes.invitationCreated) {
+        setIsSubmitting(false);
+        setErrorMsg(invitationRes.error || (isEn
+          ? 'The family invitation could not be created. Please retry or skip for now.'
+          : 'تعذر إنشاء دعوة الأسرة. أعد المحاولة أو تخطَّ هذه الخطوة مؤقتًا.'));
+        return;
+      }
+      coParentInvitationPending = true;
+    }
+
     // Never mark an account as verified simply because database synchronization succeeded!
     const genuineEmailVerified = Boolean(emailVerifiedState);
     const genuinePhoneVerified = Boolean(phoneVerifiedState);
@@ -1318,7 +1349,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       isOtpVerified: genuineEmailVerified || genuinePhoneVerified,
       emailVerified: genuineEmailVerified,
       phoneVerified: genuinePhoneVerified,
-      isCoParentLinked: linkCoParent,
+      isCoParentLinked: familyInvitationAccepted,
       coParentName: coParentName.trim(),
       coParentEmail: coParentEmail.trim(),
       coParentPhone: coParentPhone.trim(),
@@ -1351,7 +1382,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         avatarTheme: primaryChild.avatarTheme,
       },
       childrenProfiles: enrichedChildrenList,
-      isCoParentLinked: linkCoParent,
+      isCoParentLinked: familyInvitationAccepted,
+      coParentInvitationPending,
       coParentName: sessionProfile.coParentName,
       coParentEmail: sessionProfile.coParentEmail,
       coParentPhone: sessionProfile.coParentPhone,
@@ -1978,9 +2010,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 <h2 className="text-base font-black text-slate-800 dark:text-slate-100">
                   {isEn ? 'Invite a Co-Parent' : 'دعوة ولي الأمر الآخر'}
                 </h2>
+                {familyInvitationAccepted && (
+                  <p className="mt-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                    {isEn
+                      ? 'Your account has joined the existing family space successfully.'
+                      : 'تم قبول دعوة الأسرة وربط حسابك بمساحة الأسرة الحالية بنجاح.'}
+                  </p>
+                )}
               </div>
 
-              <div className="space-y-3">
+              {!familyInvitationAccepted && <div className="space-y-3">
                 <input
                   type="text"
                   value={coParentName}
@@ -2007,7 +2046,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                   aria-label={isEn ? 'Co-Parent Phone' : 'رقم جوال ولي الأمر الآخر'}
                   className="w-full min-h-[48px] px-5 rounded-full border border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#0d9488] text-start"
                 />
-              </div>
+              </div>}
 
               <div className="space-y-2 pt-2">
                 <button
