@@ -44,25 +44,66 @@ const TEST_SUPABASE_ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY?.trim() || "";
 const TEST_SUPABASE_SERVICE_ROLE_KEY =
   process.env.TEST_SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
 
+type SupabaseJwtClaims = {
+  ref?: string;
+  role?: string;
+};
+
+function decodeSupabaseJwtClaims(key: string): SupabaseJwtClaims | null {
+  const payloadSegment = key.split(".")[1];
+  if (!payloadSegment) return null;
+
+  try {
+    return JSON.parse(
+      Buffer.from(payloadSegment, "base64url").toString("utf8"),
+    ) as SupabaseJwtClaims;
+  } catch {
+    return null;
+  }
+}
+
+const TEST_ANON_KEY_CLAIMS = decodeSupabaseJwtClaims(TEST_SUPABASE_ANON_KEY);
+const TEST_SERVICE_ROLE_KEY_CLAIMS = decodeSupabaseJwtClaims(
+  TEST_SUPABASE_SERVICE_ROLE_KEY,
+);
+
 const IS_ISOLATED_TEST_DB_CONFIGURED = Boolean(
-  TEST_SUPABASE_URL &&
-    TEST_SUPABASE_ANON_KEY &&
-    TEST_SUPABASE_SERVICE_ROLE_KEY &&
-    TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
-    !TEST_SUPABASE_URL.includes(PRODUCTION_PROJECT_REF) &&
-    !TEST_SUPABASE_ANON_KEY.includes("your-") &&
-    !TEST_SUPABASE_SERVICE_ROLE_KEY.includes("your-"),
+  TEST_SUPABASE_URL === DEDICATED_TEST_SUPABASE_URL &&
+    TEST_ANON_KEY_CLAIMS?.ref === DEDICATED_TEST_PROJECT_REF &&
+    TEST_ANON_KEY_CLAIMS?.role === "anon" &&
+    TEST_SERVICE_ROLE_KEY_CLAIMS?.ref === DEDICATED_TEST_PROJECT_REF &&
+    TEST_SERVICE_ROLE_KEY_CLAIMS?.role === "service_role",
 );
 
 function assertDedicatedTestEnvironment(): void {
-  assert.ok(
-    TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
-      !TEST_SUPABASE_URL.includes(PRODUCTION_PROJECT_REF),
-    `Explicit safety failure: Integration tests must target ONLY the dedicated test project (${DEDICATED_TEST_SUPABASE_URL}) and never production (${PRODUCTION_PROJECT_REF}). Current TEST_SUPABASE_URL: ${TEST_SUPABASE_URL}`,
+  assert.equal(
+    TEST_SUPABASE_URL,
+    DEDICATED_TEST_SUPABASE_URL,
+    `Explicit safety failure: Integration tests must target exactly ${DEDICATED_TEST_SUPABASE_URL}; production (${PRODUCTION_PROJECT_REF}) is forbidden.`,
+  );
+  assert.equal(
+    TEST_ANON_KEY_CLAIMS?.ref,
+    DEDICATED_TEST_PROJECT_REF,
+    "TEST_SUPABASE_ANON_KEY must be the legacy anon JWT issued by the dedicated test project.",
+  );
+  assert.equal(
+    TEST_ANON_KEY_CLAIMS?.role,
+    "anon",
+    "TEST_SUPABASE_ANON_KEY must carry the anon role.",
+  );
+  assert.equal(
+    TEST_SERVICE_ROLE_KEY_CLAIMS?.ref,
+    DEDICATED_TEST_PROJECT_REF,
+    "TEST_SUPABASE_SERVICE_ROLE_KEY must belong to the dedicated test project, never production.",
+  );
+  assert.equal(
+    TEST_SERVICE_ROLE_KEY_CLAIMS?.role,
+    "service_role",
+    "TEST_SUPABASE_SERVICE_ROLE_KEY must be the dedicated project's legacy service_role JWT.",
   );
   assert.ok(
     IS_ISOLATED_TEST_DB_CONFIGURED,
-    `Explicit integration test failure: TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for ${DEDICATED_TEST_SUPABASE_URL}.`,
+    `Explicit integration test failure: configure the exact test URL and matching anon/service_role JWTs for ${DEDICATED_TEST_SUPABASE_URL}.`,
   );
 }
 
