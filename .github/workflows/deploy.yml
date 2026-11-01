@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    name: Test, Typecheck & Production Build
+    name: Test, Typecheck, Supabase Integration & Production Build
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -35,6 +35,13 @@ jobs:
 
       - name: TypeScript validation
         run: npm run lint
+
+      - name: Isolated Supabase integration tests
+        env:
+          TEST_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run test:integration
 
       - name: Build production bundle
         run: npm run build
