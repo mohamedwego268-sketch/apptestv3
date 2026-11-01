@@ -91,3 +91,19 @@
 .admin-staff-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.admin-staff-form-grid label{font-size:10px;font-weight:800;color:var(--admin-muted)}.admin-staff-form-grid input,.admin-staff-form-grid select{display:block;width:100%;height:40px;border:1px solid var(--admin-border);border-radius:9px;background:var(--admin-surface-2);color:var(--admin-text);padding:0 10px;margin-top:6px;outline:0;font:600 11px var(--font-ui)}.admin-staff-form-grid input:focus,.admin-staff-form-grid select:focus{border-color:var(--admin-teal);box-shadow:0 0 0 3px #0d94881a}
 .admin-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;padding-top:16px;border-top:1px solid var(--admin-border)}.admin-modal-actions .admin-primary-btn{width:auto;min-width:160px;margin:0;padding:0 16px}.admin-cancel-btn{height:42px;padding:0 16px;border:1px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-muted);font:800 10px var(--font-ui);cursor:pointer}.admin-primary-btn:disabled{opacity:.65;cursor:wait}
 @media(max-width:560px){.admin-staff-modal{padding:17px}.admin-staff-form-grid{grid-template-columns:1fr}.admin-modal-actions .admin-primary-btn{min-width:0;flex:1}}
+
+/* Full, searchable admin directories */
+.directory-contact{display:flex;flex-direction:column;gap:3px;font-size:10px;max-width:210px;white-space:normal;overflow-wrap:anywhere}
+.directory-contact small{font-size:9px;color:var(--admin-muted)}
+.directory-verified{display:inline-flex;align-items:center;padding:4px 8px;border-radius:20px;background:#fff1e8;color:#b45309;font-size:9px;font-weight:800}
+.directory-verified.is-verified{background:#e5f7ef;color:#047857}
+.admin-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 2px 0;margin-top:12px;border-top:1px solid var(--admin-border);font-size:10px;color:var(--admin-muted)}
+.admin-pagination>div{display:flex;align-items:center;gap:10px}
+.admin-pagination button{border:1px solid var(--admin-border);background:var(--admin-surface);color:var(--admin-text);border-radius:9px;padding:7px 12px;font:700 10px var(--font-ui);cursor:pointer}
+.admin-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.admin-pagination small{font:700 10px 'Plus Jakarta Sans',sans-serif;min-width:36px;text-align:center}
+.directory-loading{padding:12px;text-align:center;color:var(--admin-muted);font-size:11px}
+.family-card-stats{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.family-card-stats span{display:inline-flex;align-items:center;gap:4px;padding:6px 8px;border-radius:9px;background:var(--admin-surface-2);color:var(--admin-muted);font-size:9px}
+.family-card-stats b{color:var(--admin-text);font:800 11px 'Plus Jakarta Sans',sans-serif}
+@media(max-width:640px){.admin-pagination{align-items:flex-start;flex-direction:column}.admin-pagination>div{width:100%;justify-content:space-between}.family-card-stats{gap:6px}}
