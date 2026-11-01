@@ -38,13 +38,14 @@ type AdminFamilyDetail = { id:string; name:string; country:string; city:string; 
 type AdminUserDetail = { user:{id:string;name:string;role:string|null;email:string|null;phone:string|null;country:string;verified:boolean;auth_linked:boolean;created_at:string;updated_at:string}; family:AdminFamilyDetail|null };
 type AnalyticsSnapshot = { generated_at:string; period_days:number; metrics:{users_total:number;verified_users:number;users_with_family:number;families_total:number;families_with_children:number;families_with_records:number;active_families_period:number;records_period:number;invitations_total:number;invitations_pending:number;invitations_accepted:number;invitation_acceptance_rate:number}; country_mix:{country:string;count:number}[]; role_mix:{role:string;count:number}[]; invitation_funnel:{status:string;count:number}[]; activity_series:{date:string;count:number}[] };
 
-type PageKey = 'overview' | 'analytics' | 'users' | 'families' | 'team' | 'content' | 'store' | 'security' | 'settings';
+type PageKey = 'overview' | 'analytics' | 'users' | 'families' | 'team' | 'access' | 'content' | 'store' | 'security' | 'settings';
 type B2BPartner = {id:string;partner_code:string;legal_name:string;display_name:string;partner_type:string;tax_number:string|null;country:string;city:string;contact_name:string|null;email:string|null;phone:string|null;website:string|null;status:string;currency:string;payment_terms_days:number;credit_limit:number;notes:string|null};
 type B2BProduct = {id:string;sku:string;partner_id:string|null;partner_name:string;name_ar:string;name_en:string;description:string|null;category:string;unit:string;min_order_qty:number;cost_price:number;wholesale_price:number;retail_price:number;currency:string;tax_rate:number;stock_qty:number|null;reserved_qty:number;reorder_level:number;price_tiers:{min_qty:number;unit_price:number}[];country:string;city:string|null;status:string};
 type B2BOrder = {id:string;order_no:string;status:string;currency:string;subtotal:number;tax_total:number;total:number;requested_delivery_date:string|null;created_at:string;buyer_name:string};
 type B2BQuote = {id:string;quote_no:string;order_id:string;order_no:string;status:string;valid_until:string|null;subtotal:number;tax_total:number;total:number;terms:string|null;created_at:string;buyer_name:string};
 type B2BInvoice = {id:string;invoice_no:string;order_id:string;order_no:string;status:string;currency:string;total:number;amount_paid:number;balance_due:number;due_date:string|null;issued_at:string|null;created_at:string;buyer_name:string};
 type B2BInventoryMovement = {id:number;movement_type:string;quantity_delta:number;reference:string;notes:string;created_at:string};
+type AdminRbacSnapshot = {roles:{role_key:string;display_name:string;description:string;is_system:boolean;permission_keys:string[]}[];permissions:{permission_key:string;area:string;action:string;description:string}[];staff:{id:string;employee_code:string;name:string;email:string;department:string;status:string;role_key:string;auth_user_id:string|null;account_linked:boolean}[];overrides:{auth_user_id:string;staff_id:string|null;staff_name:string|null;permission_key:string;effect:'grant'|'deny'}[]};
 type B2BStoreSnapshot = {metrics:{partners_total:number;partners_active:number;products_total:number;products_active:number;products_low_stock:number;orders_total:number;orders_open:number;quotes_pending:number;invoices_unpaid:number};partners_total:number;partners:B2BPartner[];products_total:number;products:B2BProduct[];orders:B2BOrder[];quotes_total:number;quotes:B2BQuote[];invoices_total:number;invoices:B2BInvoice[]};
 const NAV: { id: PageKey; ar: string; en: string; icon: React.ElementType; group: string }[] = [
   { id: 'overview', ar: 'الرؤية العامة', en: 'Overview', icon: LayoutDashboard, group: 'main' },
@@ -54,6 +55,7 @@ const NAV: { id: PageKey; ar: string; en: string; icon: React.ElementType; group
   { id: 'content', ar: 'المحتوى والخدمات', en: 'Content & Services', icon: BookOpen, group: 'manage' },
   { id: 'store', ar: 'المتجر وإدارة B2B', en: 'B2B Store & Commerce', icon: Store, group: 'manage' },
   { id: 'team', ar: 'فريق العمل', en: 'Team & Workforce', icon: UserRoundCog, group: 'manage' },
+  { id: 'access', ar: 'الأدوار والصلاحيات', en: 'Roles & Permissions', icon: ShieldCheck, group: 'manage' },
   { id: 'security', ar: 'الأمان وسجل النشاط', en: 'Security & Audit', icon: ShieldCheck, group: 'system' },
   { id: 'settings', ar: 'إعدادات المنصة', en: 'Platform Settings', icon: Settings2, group: 'system' },
 ];
@@ -102,6 +104,14 @@ export default function AdminPortal() {
   const [savingStaff, setSavingStaff] = useState(false);
   const [staffForm, setStaffForm] = useState({ fullName:'', email:'', phone:'', department:'operations', jobTitle:'', cohort:'first_50', status:'planned', managerId:'' });
   const [staffRows, setStaffRows] = useState<StaffDirectory[]>([]);
+  const [rbacSnapshot, setRbacSnapshot] = useState<AdminRbacSnapshot|null>(null);
+  const [rbacLoading, setRbacLoading] = useState(false);
+  const [rbacSaving, setRbacSaving] = useState(false);
+  const [rbacRoleKey, setRbacRoleKey] = useState('sales_manager');
+  const [rbacPermissionDraft, setRbacPermissionDraft] = useState<string[]>([]);
+  const [rbacStaffId, setRbacStaffId] = useState('');
+  const [rbacPermissionKey, setRbacPermissionKey] = useState('');
+  const [rbacEffect, setRbacEffect] = useState<'grant'|'deny'|'inherit'>('inherit');
   const [userRows, setUserRows] = useState<DirectoryUser[]>([]);
   const [familyRows, setFamilyRows] = useState<DirectoryFamily[]>([]);
   const [directoryTotal, setDirectoryTotal] = useState(0);
@@ -262,6 +272,31 @@ export default function AdminPortal() {
   };
 
   const closeDetailModal = () => { setDetailModalOpen(false); setUserDetail(null); setFamilyDetail(null); };
+
+  const loadRbacSnapshot = useCallback(async () => {
+    if(!supabaseClient||page!=='access')return;setRbacLoading(true);
+    const {data,error}=await supabaseClient.rpc('admin_get_rbac_snapshot');
+    if(error)setToast(t('تعذر تحميل الأدوار والصلاحيات: ','Could not load roles and permissions: ')+error.message);
+    else setRbacSnapshot(data as AdminRbacSnapshot);
+    setRbacLoading(false);
+  },[page,en]);
+  useEffect(()=>{if(authorized&&page==='access')void loadRbacSnapshot();},[authorized,page,loadRbacSnapshot]);
+  useEffect(()=>{const role=rbacSnapshot?.roles.find(r=>r.role_key===rbacRoleKey);if(role)setRbacPermissionDraft(role.permission_keys||[]);},[rbacSnapshot,rbacRoleKey]);
+  useEffect(()=>{if(!rbacStaffId&&rbacSnapshot?.staff.length){const linked=rbacSnapshot.staff.find(s=>s.account_linked);if(linked)setRbacStaffId(linked.id);}},[rbacSnapshot,rbacStaffId]);
+  const saveRolePermissions = async () => {
+    if(!supabaseClient||rbacSaving)return;setRbacSaving(true);
+    const {error}=await supabaseClient.rpc('admin_save_role_permissions',{p_role_key:rbacRoleKey,p_permission_keys:rbacPermissionDraft});
+    setRbacSaving(false);if(error)setToast(t('تعذر حفظ صلاحيات الدور: ','Could not save role permissions: ')+error.message);else{setToast(t('تم حفظ صلاحيات الدور.','Role permissions saved.'));await loadRbacSnapshot();}
+  };
+  const assignStaffRole = async (staffId:string,roleKey:string) => {
+    if(!supabaseClient)return;const {error}=await supabaseClient.rpc('admin_save_staff_role',{p_staff_id:staffId,p_role_key:roleKey});
+    if(error)setToast(t('تعذر تغيير دور الموظف: ','Could not change staff role: ')+error.message);else{setToast(t('تم تحديث دور الموظف.','Staff role updated.'));await loadRbacSnapshot();}
+  };
+  const saveStaffOverride = async () => {
+    if(!supabaseClient||!rbacStaffId||!rbacPermissionKey)return;setRbacSaving(true);
+    const {error}=await supabaseClient.rpc('admin_save_staff_permission_override',{p_staff_id:rbacStaffId,p_permission_key:rbacPermissionKey,p_effect:rbacEffect});
+    setRbacSaving(false);if(error)setToast(t('تعذر حفظ الاستثناء: ','Could not save override: ')+error.message);else{setToast(t('تم تحديث الاستثناء الفردي.','Individual permission override updated.'));await loadRbacSnapshot();}
+  };
 
   const loadStaffDirectory = useCallback(async () => {
     if (!supabaseClient || page !== 'team') return;
@@ -619,6 +654,23 @@ export default function AdminPortal() {
               {directoryLoading&&<div className="directory-loading">{t('جارٍ تحديث بيانات المتجر…','Loading store data…')}</div>}
             </section>
           </>}
+
+          {page==='access'&&<div className="rbac-layout">
+  <section className="admin-panel"><div className="panel-heading"><div><h3>{t('مصفوفة الأدوار والصلاحيات','Role permission matrix')}</h3><p>{t('حدد ما يستطيع كل دور رؤيته أو إدارته. صلاحيات المالك الكاملة ثابتة ولا يمكن منحها لدور آخر.','Define what each role can view or manage. Owner-level access is fixed and cannot be assigned to another role.')}</p></div></div>
+    {rbacLoading?<div className="directory-loading">{t('جارٍ تحميل إعدادات الوصول…','Loading access configuration…')}</div>:<>
+      <div className="rbac-role-picker"><label>{t('الدور','Role')}<select value={rbacRoleKey} onChange={e=>setRbacRoleKey(e.target.value)}>{(rbacSnapshot?.roles||[]).filter(r=>r.role_key!=='super_admin').map(r=><option key={r.role_key} value={r.role_key}>{r.display_name} · {r.role_key}</option>)}</select></label><p>{rbacSnapshot?.roles.find(r=>r.role_key===rbacRoleKey)?.description||''}</p></div>
+      <div className="rbac-permission-grid">{(rbacSnapshot?.permissions||[]).map(p=><label className="rbac-permission-item" key={p.permission_key}><input type="checkbox" checked={rbacPermissionDraft.includes(p.permission_key)} onChange={e=>setRbacPermissionDraft(v=>e.target.checked?[...v,p.permission_key]:v.filter(x=>x!==p.permission_key))}/><span><b>{p.permission_key}</b><small>{p.description}</small></span><caption>{p.area}</caption></label>)}</div>
+      <div className="admin-modal-actions"><span className="rbac-selected-count">{rbacPermissionDraft.length} {t('صلاحية محددة','permissions selected')}</span><button className="admin-primary-btn" disabled={rbacSaving||rbacRoleKey==='super_admin'} onClick={()=>void saveRolePermissions()}>{rbacSaving?t('جارٍ الحفظ…','Saving…'):t('حفظ صلاحيات الدور','Save role permissions')}</button></div>
+    </>}
+  </section>
+  <section className="admin-panel"><div className="panel-heading"><div><h3>{t('تعيين أدوار الموظفين','Assign staff roles')}</h3><p>{t('اربط كل موظف بالدور المناسب. حساب الموظف لا يحصل على دخول إداري قبل ربطه وتفعيل حسابه.','Assign each employee an appropriate role. No staff account receives admin access until linked and activated.')}</p></div></div>
+    <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('الموظف','Staff member')}</th><th>{t('الإدارة','Department')}</th><th>{t('حساب الدخول','Account')}</th><th>{t('الدور الحالي','Current role')}</th><th>{t('تعيين الدور','Assign role')}</th></tr></thead><tbody>{(rbacSnapshot?.staff||[]).map(s=><tr key={s.id}><td><b>{s.name}</b><small className="table-sub">{s.employee_code} · {s.email}</small></td><td>{deptLabel(s.department,en)}</td><td><span className={'directory-verified '+(s.account_linked?'is-verified':'')}>{s.account_linked?t('مرتبط','Linked'):t('غير مرتبط','Not linked')}</span></td><td>{s.role_key}</td><td><select className="rbac-role-select" value={s.role_key} onChange={e=>void assignStaffRole(s.id,e.target.value)}>{(rbacSnapshot?.roles||[]).filter(r=>r.role_key!=='super_admin').map(r=><option key={r.role_key} value={r.role_key}>{r.display_name}</option>)}</select></td></tr>)}{!rbacSnapshot?.staff.length&&<tr><td colSpan={5} className="admin-empty-cell">{t('أضف الموظفين من صفحة فريق العمل، ثم ارجع لتعيين أدوارهم.','Add employees in Team & Workforce, then return here to assign their roles.')}</td></tr>}</tbody></table></div>
+  </section>
+  <section className="admin-panel"><div className="panel-heading"><div><h3>{t('استثناءات الصلاحيات الفردية','Individual permission overrides')}</h3><p>{t('امنح أو امنع صلاحية لموظف بعينه دون تغيير صلاحيات بقية أصحاب الدور.','Grant or deny one permission for a specific employee without changing the role for everyone else.')}</p></div></div>
+    <div className="rbac-override-form"><label>{t('الموظف المرتبط بحساب','Linked staff account')}<select value={rbacStaffId} onChange={e=>setRbacStaffId(e.target.value)}><option value="">{t('اختر موظفاً','Select staff')}</option>{(rbacSnapshot?.staff||[]).filter(s=>s.account_linked).map(s=><option key={s.id} value={s.id}>{s.name} · {s.employee_code}</option>)}</select></label><label>{t('الصلاحية','Permission')}<select value={rbacPermissionKey} onChange={e=>setRbacPermissionKey(e.target.value)}><option value="">{t('اختر صلاحية','Select permission')}</option>{(rbacSnapshot?.permissions||[]).map(p=><option key={p.permission_key} value={p.permission_key}>{p.permission_key}</option>)}</select></label><label>{t('التأثير','Effect')}<select value={rbacEffect} onChange={e=>setRbacEffect(e.target.value as 'grant'|'deny'|'inherit')}><option value="grant">{t('منح','Grant')}</option><option value="deny">{t('منع','Deny')}</option><option value="inherit">{t('العودة للدور','Inherit from role')}</option></select></label><button className="admin-primary-btn" disabled={rbacSaving||!rbacStaffId||!rbacPermissionKey} onClick={()=>void saveStaffOverride()}>{t('حفظ الاستثناء','Save override')}</button></div>
+    <div className="rbac-override-list">{(rbacSnapshot?.overrides||[]).map(o=><div key={o.auth_user_id+o.permission_key}><b>{o.staff_name||o.auth_user_id}</b><span>{o.permission_key}</span><badge color={o.effect==='deny'?'danger':'success'}>{o.effect}</badge></div>)}{!rbacSnapshot?.overrides.length&&<p className="admin-empty-cell">{t('لا توجد استثناءات فردية حالياً.','No individual overrides configured.')}</p>}</div>
+  </section>
+</div>}
 
           {page==='content' && <><section className="admin-kpi-grid embedded"><MetricCard label={t('عناصر الكتالوج النشطة','Published catalog items')} value={k?.catalog_active||0} detail={t('عناصر ظاهرة في التطبيق','Items visible in the app')} icon={Package} tone="teal"/><MetricCard label={t('سجلات حياة الأطفال','Child life records')} value={k?.child_records_total||0} detail={t('محتوى أنشأته الأسر','Family-created records')} icon={ClipboardList} tone="blue"/></section><section className="admin-panel"><div className="panel-heading"><div><h3>{t('إدارة المحتوى والخدمات','Content & services management')}</h3><p>{t('إدارة عناصر الكتالوج الفعلية مع النشر والإيقاف وسجل تدقيق لكل تعديل','Manage live catalog items, publishing and changes with audit logging')}</p></div><div className="catalog-heading-actions"><label className="admin-search"><Search size={16}/><input value={query} onChange={e=>{setQuery(e.target.value);setDirectoryPage(0);}} placeholder={t('ابحث بالاسم أو الكود أو التصنيف…','Search title, code or category…')}/></label><button className="admin-add-btn" onClick={()=>openCatalogModal()}><Package size={15}/>{t('إضافة عنصر','Add item')}</button></div></div><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('العنصر','Item')}</th><th>{t('الكود','Code')}</th><th>{t('النوع','Type')}</th><th>{t('التصنيف','Category')}</th><th>{t('الدولة / المدينة','Market')}</th><th>{t('السعر EGP / SAR','Price EGP / SAR')}</th><th>{t('النشر','Publishing')}</th><th>{t('إجراءات','Actions')}</th></tr></thead><tbody>{catalogRows.map(item=><tr key={item.id}><td><div className="catalog-item-name"><span>{item.emoji||'📦'}</span><div><b>{item.title||item.name}</b><small>{item.name_en||'—'}</small></div></div></td><td><code>{item.code}</code></td><td>{item.item_type||item.kind}</td><td>{item.category_label||item.category}</td><td>{item.country||'ALL'} · {item.city||'—'}</td><td><span className="catalog-price">{number(Number(item.price_egp||0))} / {number(Number(item.price_sar||0))}</span></td><td><span className={'directory-verified '+(item.is_active?'is-verified':'')}>{item.is_active?t('منشور','Published'):t('متوقف','Unpublished')}</span></td><td><div className="catalog-actions"><button className="admin-edit-btn" onClick={()=>openCatalogModal(item)}>{t('تعديل','Edit')}</button><button className="admin-edit-btn" onClick={()=>void toggleCatalogStatus(item)}>{item.is_active?t('إيقاف','Unpublish'):t('نشر','Publish')}</button></div></td></tr>)}{!directoryLoading&&!catalogRows.length&&<tr><td colSpan={8} className="admin-empty-cell">{t('لا توجد عناصر كتالوج حتى الآن. أضف أول منتج أو خدمة من هنا.','No catalog items yet. Add the first product or service here.')}</td></tr>}</tbody></table>{directoryLoading&&<div className="directory-loading">{t('جارٍ تحميل الكتالوج…','Loading catalog…')}</div>}</div><div className="admin-pagination"><span>{t('إجمالي العناصر','Total items')}: <b>{number(directoryTotal)}</b></span><div><button disabled={directoryPage===0||directoryLoading} onClick={()=>setDirectoryPage(p=>Math.max(0,p-1))}>{t('السابق','Previous')}</button><small>{directoryTotal?directoryPage+1:0} / {Math.max(1,Math.ceil(directoryTotal/25))}</small><button disabled={(directoryPage+1)*25>=directoryTotal||directoryLoading} onClick={()=>setDirectoryPage(p=>p+1)}>{t('التالي','Next')}</button></div></div></section></>}
 
