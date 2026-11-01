@@ -437,11 +437,11 @@ test(
         familyAId,
         "bootstrap_authenticated_family_space must return a valid family_id for Family A",
       );
+      createdFamilyIds.push(familyAId);
       const parentAProfileId: string = Array.isArray(bootA.data)
         ? bootA.data[0]?.user_id
         : bootA.data?.user_id;
       assert.ok(parentAProfileId, "Family A bootstrap must return the public.users profile user_id");
-      createdFamilyIds.push(familyAId);
 
       const bootB = await parentB.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family B",
@@ -461,11 +461,11 @@ test(
         familyBId,
         "bootstrap_authenticated_family_space must return a valid family_id for Family B",
       );
+      createdFamilyIds.push(familyBId);
       const parentBProfileId: string = Array.isArray(bootB.data)
         ? bootB.data[0]?.user_id
         : bootB.data?.user_id;
       assert.ok(parentBProfileId, "Family B bootstrap must return the public.users profile user_id");
-      createdFamilyIds.push(familyBId);
 
       // Every invitee must have a verified profile and an empty placeholder family before accepting.
       const bootUnlinked = await inviteeUnlinked.client.rpc("bootstrap_authenticated_family_space", {
@@ -643,11 +643,12 @@ test(
       const soloFamilyId: string = Array.isArray(bootSolo.data)
         ? bootSolo.data[0]?.family_id
         : bootSolo.data?.family_id;
+      assert.ok(soloFamilyId, "Solo invitee bootstrap must return a family ID");
+      createdFamilyIds.push(soloFamilyId);
       const soloProfileId: string = Array.isArray(bootSolo.data)
         ? bootSolo.data[0]?.user_id
         : bootSolo.data?.user_id;
-      assert.ok(soloFamilyId && soloProfileId, "Solo invitee bootstrap must return profile and family IDs");
-      createdFamilyIds.push(soloFamilyId);
+      assert.ok(soloProfileId, "Solo invitee bootstrap must return a profile ID");
 
       const tokenSolo = await createPairingInvitation(
         parentB.client,
