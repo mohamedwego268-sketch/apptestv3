@@ -721,11 +721,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Daily Essentials Interactive State
   const [selectedMealSlot, setSelectedMealSlot] = useState<'breakfast' | 'lunchbox' | 'snack'>('lunchbox');
-  const [waterCupsByKid, setWaterCupsByKid] = useState<Record<number, number>>({
-    1: 2, // Hamza (6m)
-    2: 4, // Laila (4y)
-    3: 6, // Youssef (8y)
-  });
+  const [waterCupsByKid, setWaterCupsByKid] = useState<Record<number, number>>({});
   const [selectedSportSlot, setSelectedSportSlot] = useState<'outdoor' | 'balance' | 'cardio'>('outdoor');
   const [completedSportByKid, setCompletedSportByKid] = useState<Record<number, boolean>>({});
   const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(false);
@@ -751,12 +747,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       if (!active) return;
       const remoteToLocal = new Map(savedChildren.map((kid) => [String(kid.remoteId), kid.id]));
       const next: typeof quickPulseByKid = {};
+      const hydration: Record<number, number> = {};
+      const sports: Record<number, boolean> = {};
       for (const record of records) {
         const localId = remoteToLocal.get(record.child_id);
         if (localId === undefined) continue;
         const current = next[localId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
         if (record.record_type === 'sleep_log') current.sleepLogged = true;
-        if (record.record_type === 'nutrition') current.mealLogged = true;
+        if (record.record_type === 'nutrition' && record.details?.dashboardKind === 'hydration') {
+          hydration[localId] = Math.max(0, (hydration[localId] || 0) + Number(record.details.cups || 0));
+        }
+        if (record.record_type === 'nutrition' && record.details?.dashboardKind !== 'hydration') current.mealLogged = true;
+        if (record.record_type === 'sports') sports[localId] = true;
         if (record.record_type === 'emotional_social' && typeof record.details?.moodEmoji === 'string') {
           current.moodEmoji = record.details.moodEmoji;
         }
@@ -764,6 +766,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         next[localId] = current;
       }
       setQuickPulseByKid(next);
+      setWaterCupsByKid(hydration);
+      setCompletedSportByKid(sports);
     });
     return () => { active = false; };
   }, [state.verifiedFamilyId, state.kids]);
@@ -1091,22 +1095,27 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       : activeKidAge && activeKidAge.years < 5
       ? 5
       : 7;
-  const currentWaterCups = waterCupsByKid[activeKidId] ?? (targetWaterCups > 2 ? 4 : 1);
+  const currentWaterCups = waterCupsByKid[activeKidId] ?? 0;
   const waterProgressPct = Math.min(100, Math.round((currentWaterCups / targetWaterCups) * 100));
 
-  const handleAdjustWater = (delta: number) => {
-    setWaterCupsByKid((prev) => {
-      const current = prev[activeKidId] ?? (targetWaterCups > 2 ? 4 : 1);
-      const next = Math.max(0, Math.min(10, current + delta));
-      if (delta > 0 && next === targetWaterCups) {
-        onShowToast?.(
-          isEn
-            ? `🎉 Bravo! ${activeKidName} completed today's hydration goal (${targetWaterCups} cups)!`
-            : `🎉 برافو! أتمّ ${activeKidName} هدف شرب المياه اليومي (${targetWaterCups} أكواب)!`
-        );
-      }
-      return { ...prev, [activeKidId]: next };
-    });
+  const handleAdjustWater = async (delta: number) => {
+    const current = waterCupsByKid[activeKidId] ?? 0;
+    const next = Math.max(0, Math.min(10, current + delta));
+    if (next === current || !activeKid) return;
+    const saved = await saveDashboardChildLog(
+      'nutrition',
+      delta > 0 ? 'تسجيل شرب الماء' : 'تصحيح تسجيل شرب الماء',
+      { dashboardKind: 'hydration', cups: delta }
+    );
+    if (!saved) return;
+    setWaterCupsByKid((prev) => ({ ...prev, [activeKidId]: next }));
+    if (delta > 0 && next >= targetWaterCups) {
+      onShowToast?.(
+        isEn
+          ? `🎉 Bravo! ${activeKidName} reached today's hydration goal (${targetWaterCups} cups)!`
+          : `🎉 برافو! وصل ${activeKidName} لهدف شرب المياه اليومي (${targetWaterCups} أكواب)!`
+      );
+    }
   };
 
   const sportActivities = useMemo(() => {
@@ -1906,7 +1915,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     data-testid="quick-pulse-meal-btn"
                     onClick={() => {
                       if (pulse.mealLogged) return;
-                      void saveDashboardChildLog('nutrition', 'تسجيل وجبة أو رضعة').then((saved) => {
+                      void saveDashboardChildLog('nutrition', 'تسجيل وجبة أو رضعة', { dashboardKind: 'meal' }).then((saved) => {
                         if (!saved) return;
                         setQuickPulseByKid((prev) => ({
                           ...prev,
@@ -2640,17 +2649,19 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   type="button"
                   data-testid="home-sports-complete-btn"
                   onClick={() => {
-                    const nextState = !isSportDoneToday;
-                    setCompletedSportByKid((prev) => ({ ...prev, [activeKidId]: nextState }));
-                    onShowToast?.(
-                      nextState
-                        ? isEn
-                          ? `🏅 Great job! ${activeKidName} completed today's physical activity!`
-                          : `🏅 بطل اليوم! أتمّ ${activeKidName} النشاط الرياضي اليومي بنجاح!`
-                        : isEn
-                        ? 'Activity status reset'
-                        : 'تمت إعادة ضبط حالة النشاط الرياضي'
-                    );
+                    if (isSportDoneToday) return;
+                    void saveDashboardChildLog('sports', isEn ? currentSport.titleEn : currentSport.titleAr, {
+                      dashboardKind: 'sports',
+                      activityId: selectedSportSlot,
+                    }).then((saved) => {
+                      if (!saved) return;
+                      setCompletedSportByKid((prev) => ({ ...prev, [activeKidId]: true }));
+                      onShowToast?.(
+                        isEn
+                          ? `🏅 ${activeKidName}’s activity was saved for today ✓`
+                          : `🏅 تم حفظ نشاط ${activeKidName} الرياضي اليوم ✓`
+                      );
+                    });
                   }}
                   className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer ${
                     isSportDoneToday

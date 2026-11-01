@@ -3678,6 +3678,7 @@ export async function signInWithOAuthProviderInSupabase(
 export type ChildLifeRecordType =
   | 'sleep_log'
   | 'nutrition'
+  | 'sports'
   | 'emotional_social'
   | 'routine'
   | 'medical_event'
