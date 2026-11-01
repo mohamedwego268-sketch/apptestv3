@@ -402,7 +402,7 @@ test(
         partner_phone: "",
         partner_email: partnerEmail.toLowerCase(),
         partner_role: partnerRole,
-        pairing_method: "email",
+        pairing_method: "qr_token",
         pairing_token_hash: tokenHash,
         status: "pending",
       });
