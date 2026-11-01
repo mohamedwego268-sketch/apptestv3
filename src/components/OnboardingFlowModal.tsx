@@ -22,8 +22,10 @@ import {
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
   SHARED_FAMILY_ID,
+  acceptPendingFamilyInvitationForCurrentUser,
   authenticateParentWithSupabase,
   isValidUuid,
+  linkCoParentAccountInSupabase,
   normalizeOnboardingRoleToAccount,
   resendAccountVerificationOtpInSupabase,
   saveOnboardingChildrenToSupabase,
@@ -536,13 +538,9 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [coParentName, setCoParentName] = useState<string>(
     cachedDraft?.coParentName || (parentRole === 'dad' ? 'مريم' : 'أحمد')
   );
-  const [coParentEmail, setCoParentEmail] = useState<string>(
-    cachedDraft?.coParentEmail ||
-      (parentRole === 'dad' ? 'maryam.mom@nekbaar.app' : 'ahmad.dad@nekbaar.app')
-  );
-  const [coParentPhone, setCoParentPhone] = useState<string>(
-    cachedDraft?.coParentPhone || '559876543'
-  );
+  const [coParentEmail, setCoParentEmail] = useState<string>(cachedDraft?.coParentEmail || '');
+  const [coParentPhone, setCoParentPhone] = useState<string>(cachedDraft?.coParentPhone || '');
+  const [familyInvitationAccepted, setFamilyInvitationAccepted] = useState<boolean>(false);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -741,10 +739,47 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       } else {
         setPendingVerificationEmail(null);
       }
+      let effectiveAuthRes = authRes;
+      let invitationAccepted = false;
+      if (authRes.success) {
+        const invitationRes = await acceptPendingFamilyInvitationForCurrentUser();
+        if (invitationRes.error) {
+          setAuthSyncedToDb(false);
+          return {
+            ...authRes,
+            success: false,
+            error: invitationRes.error,
+          };
+        }
+        if (invitationRes.accepted && invitationRes.restoredAccount) {
+          const restored = invitationRes.restoredAccount;
+          const restoredUser = restored.userProfile;
+          effectiveAuthRes = {
+            ...authRes,
+            verifiedFamilyUuid: restored.verifiedFamilyId,
+            family: restored.family,
+            sharedChildren: restored.children,
+            user: {
+              ...authRes.user,
+              id: restoredUser?.id || authRes.user.id,
+              full_name: restoredUser?.full_name || authRes.user.full_name,
+              name: restoredUser?.full_name || authRes.user.name,
+              role: restoredUser?.role || authRes.user.role,
+              email: restoredUser?.email || authRes.user.email,
+              phone: restoredUser?.phone || authRes.user.phone,
+              country: restoredUser?.country || authRes.user.country,
+            },
+            coParentInvitationAccepted: true,
+          };
+          invitationAccepted = true;
+        }
+      }
+      setFamilyInvitationAccepted(invitationAccepted);
+
 
       // The database is authoritative on sign-in, including an empty child list.
-      const restoredChildrenDraft = Array.isArray(authRes.sharedChildren)
-        ? authRes.sharedChildren.map((child, idx) => ({
+      const restoredChildrenDraft = Array.isArray(effectiveAuthRes.sharedChildren)
+        ? effectiveAuthRes.sharedChildren.map((child, idx) => ({
             id: child.id || idx + 1,
             remoteId: child.remote_id,
             name: child.name,
@@ -758,18 +793,18 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       if (authMode === 'signin') {
         setChildrenList(restoredChildrenDraft);
         const savedCountry = resolveCountryCode(
-          authRes.family?.country || authRes.user?.country,
+          effectiveAuthRes.family?.country || effectiveAuthRes.user?.country,
           selectedCountryCode
         );
-        const savedCity = typeof authRes.family?.city === 'string' ? authRes.family.city : '';
+        const savedCity = typeof effectiveAuthRes.family?.city === 'string' ? effectiveAuthRes.family.city : '';
         const savedName =
-          typeof authRes.user?.full_name === 'string'
-            ? authRes.user.full_name
-            : typeof authRes.user?.name === 'string'
-            ? authRes.user.name
+          typeof effectiveAuthRes.user?.full_name === 'string'
+            ? effectiveAuthRes.user.full_name
+            : typeof effectiveAuthRes.user?.name === 'string'
+            ? effectiveAuthRes.user.name
             : '';
-        const savedRole = String(authRes.user?.role || '').toLowerCase();
-        const savedPhone = typeof authRes.user?.phone === 'string' ? authRes.user.phone.trim() : '';
+        const savedRole = String(effectiveAuthRes.user?.role || '').toLowerCase();
+        const savedPhone = typeof effectiveAuthRes.user?.phone === 'string' ? effectiveAuthRes.user.phone.trim() : '';
         const dialCode = getCountryDialCode(savedCountry);
         const nationalPhone = savedPhone.startsWith(dialCode)
           ? savedPhone.slice(dialCode.length)
@@ -784,26 +819,26 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         setChildrenList(restoredChildrenDraft);
       }
 
-      const locRes = authMode === 'signin'
+      const locRes = authMode === 'signin' || invitationAccepted
         ? { synced: true, error: null }
-        : authRes.success && isValidUuid(authRes.verifiedFamilyUuid)
+        : effectiveAuthRes.success && isValidUuid(effectiveAuthRes.verifiedFamilyUuid)
         ? await saveOnboardingLocationToSupabase({
-            familyId: authRes.verifiedFamilyUuid,
+            familyId: effectiveAuthRes.verifiedFamilyUuid,
             familyName: resolvedFamilyName,
             country: params.coreCountry,
             city: params.resolvedCity,
             currency: resolvedCurrency,
             activeParent: normalizedRole,
           })
-        : { synced: false, error: authRes.error || 'No verified family UUID; location write was blocked.' };
+        : { synced: false, error: effectiveAuthRes.error || 'No verified family UUID; location write was blocked.' };
 
-      if (authRes.success && authRes.syncedToDb && locRes.synced) {
+      if (effectiveAuthRes.success && effectiveAuthRes.syncedToDb && locRes.synced) {
         setAuthSyncedToDb(true);
         setDbSyncWarning(null);
       } else {
         setAuthSyncedToDb(false);
         setDbSyncWarning(
-          authRes.error ||
+          effectiveAuthRes.error ||
             (isEn
               ? 'Saved locally on this device. Cloud database sync failed or is unavailable.'
               : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.')
