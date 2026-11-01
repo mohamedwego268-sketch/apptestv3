@@ -5111,7 +5111,8 @@ export function getPaymentMethodLabels(method: CheckoutPaymentMethodType): {
 export function calculateCheckoutSummary(
   cart: CartItem[],
   currency: CurrencyCode,
-  paymentMethod: CheckoutPaymentMethodType
+  paymentMethod: CheckoutPaymentMethodType,
+  catalog: CommercialCatalogItem[] = COMMERCIAL_CATALOG
 ): {
   subtotal: number;
   deliveryFee: number;
@@ -5127,7 +5128,7 @@ export function calculateCheckoutSummary(
   let subtotal = 0;
   let itemCount = 0;
   for (const ci of cart) {
-    const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
+    const prod = catalog.find((p) => p.id === ci.productId);
     if (!prod) continue;
     const unitPrice = convertCatalogPrice(prod.priceEGP, prod.priceSAR, resolvedCurrency);
     subtotal += unitPrice * ci.quantity;
