@@ -3072,8 +3072,8 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     // 1. Registration card dimensions, 42px field height, official slogan, and portal dropdowns
     assert.ok(onboardingSrc.includes('max-w-[430px]'), 'Registration card width must remain 430px');
     assert.ok(
-      onboardingSrc.includes('grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center'),
-      'Country/City two-column + GPS/Manual grid row must remain intact'
+      onboardingSrc.includes('grid-cols-[1fr_1fr_auto] gap-1.5 items-center'),
+      'Country/City two-column + GPS grid row must remain intact'
     );
     assert.ok(
       onboardingSrc.includes('min-h-[42px] h-[42px]'),
@@ -3463,8 +3463,42 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.ok(calendarSrc.includes('sectionId="calendar"'));
     assert.ok(wishesSrc.includes('sectionId="wishes"'));
     assert.ok(homeSrc.includes('sectionId="dashboard"'));
+
+    // 3. Shopping cart is strictly excluded from Community ('community') and Account ('settings', 'account', 'family')
+    assert.ok(
+      drawerSrc.includes("CART_EXCLUDED_SECTION_IDS") &&
+        drawerSrc.includes("'community'") &&
+        drawerSrc.includes("'settings'") &&
+        drawerSrc.includes("showCartInSection"),
+      'SectionToolsDrawer must explicitly exclude shopping cart from Community and Account sections'
+    );
+    assert.equal(
+      communitySrc.includes('onOpenCart') || communitySrc.includes('cartItemCount'),
+      false,
+      'Community section must not pass cart props or render a shopping cart'
+    );
+    assert.equal(
+      settingsSrc.includes('onOpenCart') || settingsSrc.includes('cartItemCount'),
+      false,
+      'Account/ProfileSettings section must not pass cart props or render a shopping cart'
+    );
+    assert.ok(
+      storeSrc.includes('onOpenCart') && storeSrc.includes('cartItemCount'),
+      'Store section must preserve full shopping cart access and item count'
+    );
+
+    const modalsSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/modals/FamilyAppModals.tsx'),
+      'utf8'
+    );
+    assert.ok(
+      modalsSrc.includes("activePage !== 'community'") &&
+        modalsSrc.includes("activePage !== 'settings'"),
+      'Slidebar menu must hide shopping cart shortcut when activePage is community or settings/account'
+    );
   });
 });
+
 
 
 

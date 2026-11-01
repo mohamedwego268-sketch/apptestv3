@@ -1273,22 +1273,26 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                       </button>
                     </div>
 
-                    {/* Row 2: Direct Links for Shopping Cart (السلة) & Wishlist (قائمة الأمنيات) */}
+                    {/* Row 2: Direct Links for Shopping Cart (hidden in Community & Account) & Wishlist */}
                     <div className="grid grid-cols-2 gap-1.5">
-                      <button
-                        id="slidebar-cart-link-btn"
-                        type="button"
-                        onClick={onOpenCartFromDrawer}
-                        className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
-                      >
-                        <span className="inline-flex items-center gap-1.5">
-                          <span>🛒</span>
-                          <span>{isEn ? 'Cart' : 'السلة'}</span>
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black tabular-nums">
-                          {cartItemCount}
-                        </span>
-                      </button>
+                      {activePage !== 'community' &&
+                        activePage !== 'settings' &&
+                        activePage !== 'family' && (
+                          <button
+                            id="slidebar-cart-link-btn"
+                            type="button"
+                            onClick={onOpenCartFromDrawer}
+                            className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
+                          >
+                            <span className="inline-flex items-center gap-1.5">
+                              <span>🛒</span>
+                              <span>{isEn ? 'Cart' : 'السلة'}</span>
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-[#FF8C61] text-white text-[10px] font-black tabular-nums">
+                              {cartItemCount}
+                            </span>
+                          </button>
+                        )}
 
                       <button
                         id="slidebar-wishlist-link-btn"
@@ -1301,7 +1305,13 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                             onCloseRoleModal();
                           }
                         }}
-                        className="min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#FF8C61] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all"
+                        className={`min-h-[44px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] hover:border-[#FF8C61] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] flex flex-wrap items-center justify-between gap-1.5 cursor-pointer transition-all ${
+                          activePage === 'community' ||
+                          activePage === 'settings' ||
+                          activePage === 'family'
+                            ? 'col-span-2'
+                            : ''
+                        }`}
                       >
                         <span className="inline-flex items-center gap-1.5">
                           <span>🧡</span>

@@ -4,7 +4,6 @@ import path from "node:path";
 import test from "node:test";
 import dotenv from "dotenv";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import supabase, { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabase.js";
 import {
   acceptFamilyInvitation,
   createFamilyPrivateMediaSignedUrl,
@@ -27,21 +26,15 @@ for (const envFile of [".env.test", ".env.local", ".env"]) {
  * Real PostgreSQL RLS Integration Test Suite for Nekbaar (Family Space)
  *
  * SAFETY & PRODUCTION DATA PROTECTION:
- * 1. Part A executes SQL migration security-context checks and strictly non-destructive,
- *    read-only and anonymous-denial assertions against the live Supabase PostgreSQL
- *    instance (`SUPABASE_URL` / `VITE_SUPABASE_URL`) to verify table-level privilege
- *    revocations, RPC ACLs, and public catalog read-only protections without creating
- *    or modifying data.
- * 2. Part B executes the 17-scenario authenticated multi-family PostgreSQL RLS
- *    integration matrix ONLY when the dedicated isolated test project (`nekbaar-test`,
- *    ref: `hbnxaqoaoeqaetvgbkgb`) is configured via `TEST_SUPABASE_URL`,
- *    `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY` (and never executes
- *    destructive fixtures against production project `qbwnzunusmaidciakuod`).
+ * - Never runs integration tests against the production Supabase project (`qbwnzunusmaidciakuod`).
+ * - Uses ONLY the dedicated isolated test project (`nekbaar-test`, ref: `hbnxaqoaoeqaetvgbkgb`,
+ *   URL: `https://hbnxaqoaoeqaetvgbkgb.supabase.co`) configured via `TEST_SUPABASE_URL`,
+ *   `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY`.
+ * - Missing tables, RPCs (`PGRST202` / `PGRST205`), permissions, or missing test environment
+ *   variables cause an explicit test failure.
  */
 
-const LIVE_SUPABASE_URL = SUPABASE_URL;
-const LIVE_SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
-
+export const PRODUCTION_PROJECT_REF = "qbwnzunusmaidciakuod";
 export const DEDICATED_TEST_PROJECT_REF = "hbnxaqoaoeqaetvgbkgb";
 export const DEDICATED_TEST_SUPABASE_URL = `https://${DEDICATED_TEST_PROJECT_REF}.supabase.co`;
 
@@ -55,12 +48,26 @@ const IS_ISOLATED_TEST_DB_CONFIGURED = Boolean(
   TEST_SUPABASE_URL &&
     TEST_SUPABASE_ANON_KEY &&
     TEST_SUPABASE_SERVICE_ROLE_KEY &&
-    !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod") &&
+    TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
+    !TEST_SUPABASE_URL.includes(PRODUCTION_PROJECT_REF) &&
     !TEST_SUPABASE_ANON_KEY.includes("your-") &&
     !TEST_SUPABASE_SERVICE_ROLE_KEY.includes("your-"),
 );
 
+function assertDedicatedTestEnvironment(): void {
+  assert.ok(
+    TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
+      !TEST_SUPABASE_URL.includes(PRODUCTION_PROJECT_REF),
+    `Explicit safety failure: Integration tests must target ONLY the dedicated test project (${DEDICATED_TEST_SUPABASE_URL}) and never production (${PRODUCTION_PROJECT_REF}). Current TEST_SUPABASE_URL: ${TEST_SUPABASE_URL}`,
+  );
+  assert.ok(
+    IS_ISOLATED_TEST_DB_CONFIGURED,
+    `Explicit integration test failure: TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for ${DEDICATED_TEST_SUPABASE_URL}.`,
+  );
+}
+
 function createAnonClient(url: string, anonKey: string): SupabaseClient {
+  assertDedicatedTestEnvironment();
   return createClient(url, anonKey, {
     auth: {
       persistSession: false,
@@ -71,7 +78,7 @@ function createAnonClient(url: string, anonKey: string): SupabaseClient {
 }
 
 // ============================================================================
-// PART A: Migration SQL Security Validation & Live Non-Destructive PostgreSQL Verification
+// PART A: Migration SQL Security Validation & Dedicated Test DB Privilege Verification
 // ============================================================================
 
 test("Part A.0: Migration 20261031071500 & schema.sql fix 42P01 pg_catalog.current_user bug, enforce SECURITY INVOKER ownership trigger, and harden grants", () => {
@@ -126,8 +133,8 @@ test("Part A.0: Migration 20261031071500 & schema.sql fix 42P01 pg_catalog.curre
   }
 });
 
-test("Part A.1: Live PostgreSQL denies anonymous SELECT, INSERT, UPDATE, and DELETE on all private family tables", async () => {
-  const anonClient = createAnonClient(LIVE_SUPABASE_URL, LIVE_SUPABASE_ANON_KEY);
+test("Part A.1: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymous SELECT, INSERT, UPDATE, and DELETE on all private family tables", async () => {
+  const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const privateTables = [
     "families",
@@ -154,13 +161,13 @@ test("Part A.1: Live PostgreSQL denies anonymous SELECT, INSERT, UPDATE, and DEL
     assert.equal(
       selectRes.error?.code,
       "42501",
-      `Expected SQLSTATE 42501 on anonymous SELECT from public.${table}, got ${selectRes.error?.code}: ${selectRes.error?.message}`,
+      `Expected SQLSTATE 42501 on anonymous SELECT from public.${table} on test project ${DEDICATED_TEST_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
     );
   }
 });
 
-test("Part A.2: Live PostgreSQL allows anonymous SELECT on catalog_items and denies anonymous INSERT, UPDATE, and DELETE", async () => {
-  const anonClient = createAnonClient(LIVE_SUPABASE_URL, LIVE_SUPABASE_ANON_KEY);
+test("Part A.2: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) allows anonymous SELECT on catalog_items and denies anonymous INSERT, UPDATE, and DELETE", async () => {
+  const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const selectRes = await anonClient
     .from("catalog_items")
@@ -169,7 +176,7 @@ test("Part A.2: Live PostgreSQL allows anonymous SELECT on catalog_items and den
   assert.equal(
     selectRes.error,
     null,
-    `Expected anonymous SELECT on catalog_items to succeed, got: ${selectRes.error?.message}`,
+    `Expected anonymous SELECT on catalog_items to succeed on test project ${DEDICATED_TEST_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
   );
   assert.ok(Array.isArray(selectRes.data));
 
@@ -196,14 +203,14 @@ test("Part A.2: Live PostgreSQL allows anonymous SELECT on catalog_items and den
   assert.equal(deleteRes.error?.code, "42501");
 });
 
-test("Part A.3: Live PostgreSQL denies anonymous RPC execution on bootstrap_authenticated_family_space and accept_family_invitation", async () => {
-  const anonClient = createAnonClient(LIVE_SUPABASE_URL, LIVE_SUPABASE_ANON_KEY);
+test("Part A.3: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymous RPC execution on bootstrap_authenticated_family_space and accept_family_invitation", async () => {
+  const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const bootstrapRes = await anonClient.rpc(
     "bootstrap_authenticated_family_space",
     {
       p_family_name: "Anon Attempt",
-      p_country: "Egypt",
+      p_country: "EG",
       p_full_name: "Anon User",
       p_role: "father",
     },
@@ -212,7 +219,11 @@ test("Part A.3: Live PostgreSQL denies anonymous RPC execution on bootstrap_auth
     bootstrapRes.error,
     "Expected anonymous bootstrap_authenticated_family_space RPC to fail",
   );
-  assert.equal(bootstrapRes.error?.code, "42501");
+  assert.equal(
+    bootstrapRes.error?.code,
+    "42501",
+    `Expected SQLSTATE 42501 on anonymous bootstrap_authenticated_family_space RPC on test project ${DEDICATED_TEST_PROJECT_REF}, got [${bootstrapRes.error?.code}]: ${bootstrapRes.error?.message}`,
+  );
 
   const acceptRes = await anonClient.rpc("accept_family_invitation", {
     p_token_hash: "0".repeat(64),
@@ -221,7 +232,11 @@ test("Part A.3: Live PostgreSQL denies anonymous RPC execution on bootstrap_auth
     acceptRes.error,
     "Expected anonymous accept_family_invitation RPC to fail",
   );
-  assert.equal(acceptRes.error?.code, "42501");
+  assert.equal(
+    acceptRes.error?.code,
+    "42501",
+    `Expected SQLSTATE 42501 on anonymous accept_family_invitation RPC on test project ${DEDICATED_TEST_PROJECT_REF}, got [${acceptRes.error?.code}]: ${acceptRes.error?.message}`,
+  );
 });
 
 test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-Arab-League-countries SQL schema/migration verification", () => {
@@ -248,6 +263,10 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
     ".env.example must document the dedicated test project URL https://hbnxaqoaoeqaetvgbkgb.supabase.co",
   );
   assert.ok(
+    envExampleText.includes("region: ap-south-1"),
+    ".env.example must document the dedicated test project region as ap-south-1",
+  );
+  assert.ok(
     envExampleText.includes("TEST_SUPABASE_ANON_KEY") &&
       envExampleText.includes("TEST_SUPABASE_SERVICE_ROLE_KEY"),
     ".env.example must document TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_ROLE_KEY",
@@ -258,7 +277,7 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
     ".env.example must never expose service_role in VITE_ variables",
   );
 
-  // Verify 22 Arab League countries and currencies in schema.sql and 20261031120000 migration
+  // Verify 22 Arab League countries, currencies, and required RPCs in schema.sql and 20261031120000 migration
   const schemaSql = fs.readFileSync(
     path.resolve(process.cwd(), "supabase/schema.sql"),
     "utf8",
@@ -269,6 +288,12 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
       "supabase/migrations/20261031120000_support_all_22_arab_league_countries.sql",
     ),
     "utf8",
+  );
+
+  assert.ok(
+    schemaSql.includes("CREATE OR REPLACE FUNCTION public.bootstrap_authenticated_family_space") &&
+      schemaSql.includes("CREATE OR REPLACE FUNCTION public.accept_family_invitation"),
+    "supabase/schema.sql must define public.bootstrap_authenticated_family_space and public.accept_family_invitation RPCs",
   );
 
   for (const code of ALL_ARAB_COUNTRY_CODES) {
@@ -301,12 +326,17 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
 
 test(
   "Part B: Full 17-scenario authenticated multi-family PostgreSQL RLS & Storage integration suite",
-  {
-    skip: !IS_ISOLATED_TEST_DB_CONFIGURED
-      ? "Blocked from executing live destructive fixtures: TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_ROLE_KEY for isolated test project https://hbnxaqoaoeqaetvgbkgb.supabase.co are not set in the current environment (.env.test / process.env)."
-      : false,
-  },
-  async (t) => {
+  async () => {
+    assert.ok(
+      IS_ISOLATED_TEST_DB_CONFIGURED,
+      `Explicit integration test failure: TEST_SUPABASE_URL (${TEST_SUPABASE_URL || "unset"}), TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for the dedicated test project (${DEDICATED_TEST_PROJECT_REF}). Missing test environment configuration must fail explicitly rather than skip.`,
+    );
+    assert.ok(
+      TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
+        !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod"),
+      `Explicit safety failure: Integration tests must target only the dedicated test project (${DEDICATED_TEST_PROJECT_REF}) and never production.`,
+    );
+
     const adminClient = createClient(
       TEST_SUPABASE_URL,
       TEST_SUPABASE_SERVICE_ROLE_KEY,
@@ -381,6 +411,7 @@ test(
       const inviteeSolo = await createAuthenticatedParent(emailInviteSolo);
 
       // Bootstrap Family A and Family B via hardened RPC
+      // Missing tables, RPCs (such as PGRST202), or permissions MUST cause an explicit test failure.
       const bootA = await parentA.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family A",
         p_country: "EG",
@@ -388,22 +419,18 @@ test(
         p_role: "father",
       });
 
-      if (bootA.error?.code === "PGRST202") {
-        t.diagnostic(
-          `BLOCKER: Dedicated test project (${TEST_SUPABASE_URL}) Auth Admin & JWT sign-in succeeded for 4 isolated test users, ` +
-            `but public.bootstrap_authenticated_family_space returned PGRST202 (empty public schema). ` +
-            `PostgREST API keys (TEST_SUPABASE_ANON_KEY / TEST_SUPABASE_SERVICE_ROLE_KEY) cannot execute raw DDL without ` +
-            `SUPABASE_ACCESS_TOKEN (Management API) or TEST_DATABASE_URL (PostgreSQL connection string). ` +
-            `Apply supabase/schema.sql and supabase/migrations/20261031120000_support_all_22_arab_league_countries.sql ` +
-            `in the nekbaar-test (hbnxaqoaoeqaetvgbkgb) SQL Editor to initialize the schema.`,
-        );
-        return;
-      }
-
-      assert.equal(bootA.error, null, bootA.error?.message);
+      assert.equal(
+        bootA.error,
+        null,
+        `Explicit failure calling public.bootstrap_authenticated_family_space on test project ${DEDICATED_TEST_PROJECT_REF}: [${bootA.error?.code ?? "ERROR"}] ${bootA.error?.message ?? "Unknown RPC error"}. Ensure supabase/schema.sql and all migrations in supabase/migrations/ are applied to test project ${DEDICATED_TEST_PROJECT_REF}.`,
+      );
       const familyAId: string = Array.isArray(bootA.data)
         ? bootA.data[0]?.family_id
         : bootA.data?.family_id;
+      assert.ok(
+        familyAId,
+        "bootstrap_authenticated_family_space must return a valid family_id for Family A",
+      );
 
       const bootB = await parentB.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family B",
@@ -411,8 +438,18 @@ test(
         p_full_name: "Parent B",
         p_role: "mother",
       });
-      assert.equal(bootB.error, null, bootB.error?.message);
-      const familyBId: string = bootB.data.family_id;
+      assert.equal(
+        bootB.error,
+        null,
+        `Explicit failure calling public.bootstrap_authenticated_family_space for Family B: [${bootB.error?.code ?? "ERROR"}] ${bootB.error?.message ?? "Unknown RPC error"}`,
+      );
+      const familyBId: string = Array.isArray(bootB.data)
+        ? bootB.data[0]?.family_id
+        : bootB.data?.family_id;
+      assert.ok(
+        familyBId,
+        "bootstrap_authenticated_family_space must return a valid family_id for Family B",
+      );
 
       // 1. Parent A can read own family
       const { data: ownFamilyA, error: ownFamilyAErr } = await parentA.client

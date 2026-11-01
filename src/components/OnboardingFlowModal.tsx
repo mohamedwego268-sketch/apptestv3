@@ -1564,8 +1564,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               {/* 5 & 6. Location + Combined Dial-Code/Currency Badge & Phone Input */}
               {authMode === 'signup' && (
                 <>
-                  {/* Unified Country + City + GPS/Manual Location Row */}
-                  <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-1.5 items-center">
+                  {/* Unified Country + City + GPS Location Row */}
+                  <div className="grid grid-cols-[1fr_1fr_auto] gap-1.5 items-center">
                     <CompactPortalDropdown
                       id="auth-country-select"
                       testId="auth-country-select"
@@ -1613,21 +1613,6 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                     >
                       <span aria-hidden="true">📍</span>
                       <span>{isLocatingGps ? '...' : 'GPS'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      data-testid="location-mode-manual-btn"
-                      onClick={() => setLocationMode('manual')}
-                      title={isEn ? 'Choose Your City Manually' : 'اختر مدينتك يدوياً'}
-                      aria-label={isEn ? 'Choose Your City' : 'اختر مدينتك'}
-                      className={`min-h-[42px] px-2.5 rounded-xl border text-[11px] font-extrabold inline-flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 ${
-                        locationMode === 'manual'
-                          ? 'border-[#0d9488] bg-[#0d9488]/12 text-[#0d9488] dark:text-[#2DD4BF]'
-                          : 'border-slate-200 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-slate-600 dark:text-slate-300'
-                      }`}
-                    >
-                      <span aria-hidden="true">🏙️</span>
                     </button>
                   </div>
 

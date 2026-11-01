@@ -725,3 +725,797 @@ CREATE POLICY catalog_items_select_policy
 REVOKE INSERT, UPDATE, DELETE, TRUNCATE ON public.catalog_items FROM anon, authenticated;
 GRANT SELECT ON public.catalog_items TO anon, authenticated;
 
+-- `public.parent_locations`
+DROP POLICY IF EXISTS parent_locations_select_self ON public.parent_locations;
+CREATE POLICY parent_locations_select_self
+  ON public.parent_locations FOR SELECT TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.users u
+    WHERE u.id = parent_locations.user_id
+      AND u.auth_user_id = (SELECT auth.uid())
+      AND u.family_id = parent_locations.family_id
+  ));
+
+DROP POLICY IF EXISTS parent_locations_insert_self ON public.parent_locations;
+CREATE POLICY parent_locations_insert_self
+  ON public.parent_locations FOR INSERT TO authenticated
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.users u
+    WHERE u.id = parent_locations.user_id
+      AND u.auth_user_id = (SELECT auth.uid())
+      AND u.family_id = parent_locations.family_id
+  ));
+
+DROP POLICY IF EXISTS parent_locations_update_self ON public.parent_locations;
+CREATE POLICY parent_locations_update_self
+  ON public.parent_locations FOR UPDATE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.users u
+    WHERE u.id = parent_locations.user_id
+      AND u.auth_user_id = (SELECT auth.uid())
+      AND u.family_id = parent_locations.family_id
+  ))
+  WITH CHECK (EXISTS (
+    SELECT 1 FROM public.users u
+    WHERE u.id = parent_locations.user_id
+      AND u.auth_user_id = (SELECT auth.uid())
+      AND u.family_id = parent_locations.family_id
+  ));
+
+DROP POLICY IF EXISTS parent_locations_delete_self ON public.parent_locations;
+CREATE POLICY parent_locations_delete_self
+  ON public.parent_locations FOR DELETE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.users u
+    WHERE u.id = parent_locations.user_id
+      AND u.auth_user_id = (SELECT auth.uid())
+      AND u.family_id = parent_locations.family_id
+  ));
+
+-- `public.family_homes`
+DROP POLICY IF EXISTS family_homes_select_own_family ON public.family_homes;
+CREATE POLICY family_homes_select_own_family
+  ON public.family_homes FOR SELECT TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS family_homes_insert_own_family ON public.family_homes;
+CREATE POLICY family_homes_insert_own_family
+  ON public.family_homes FOR INSERT TO authenticated
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS family_homes_update_own_family ON public.family_homes;
+CREATE POLICY family_homes_update_own_family
+  ON public.family_homes FOR UPDATE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS family_homes_delete_own_family ON public.family_homes;
+CREATE POLICY family_homes_delete_own_family
+  ON public.family_homes FOR DELETE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+-- `public.child_home_schedules`
+DROP POLICY IF EXISTS child_home_schedules_select_own_family ON public.child_home_schedules;
+CREATE POLICY child_home_schedules_select_own_family
+  ON public.child_home_schedules FOR SELECT TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS child_home_schedules_insert_own_family ON public.child_home_schedules;
+CREATE POLICY child_home_schedules_insert_own_family
+  ON public.child_home_schedules FOR INSERT TO authenticated
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS child_home_schedules_update_own_family ON public.child_home_schedules;
+CREATE POLICY child_home_schedules_update_own_family
+  ON public.child_home_schedules FOR UPDATE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS child_home_schedules_delete_own_family ON public.child_home_schedules;
+CREATE POLICY child_home_schedules_delete_own_family
+  ON public.child_home_schedules FOR DELETE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+-- `public.family_shared_state`
+DROP POLICY IF EXISTS family_shared_state_select_own_family ON public.family_shared_state;
+CREATE POLICY family_shared_state_select_own_family
+  ON public.family_shared_state FOR SELECT TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS family_shared_state_insert_own_family ON public.family_shared_state;
+CREATE POLICY family_shared_state_insert_own_family
+  ON public.family_shared_state FOR INSERT TO authenticated
+  WITH CHECK (
+    family_id = (SELECT private.current_user_family_id())
+    AND updated_by = (SELECT auth.uid())
+  );
+
+DROP POLICY IF EXISTS family_shared_state_update_own_family ON public.family_shared_state;
+CREATE POLICY family_shared_state_update_own_family
+  ON public.family_shared_state FOR UPDATE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (
+    family_id = (SELECT private.current_user_family_id())
+    AND updated_by = (SELECT auth.uid())
+  );
+
+-- `public.parent_private_state`
+DROP POLICY IF EXISTS parent_private_state_select_self ON public.parent_private_state;
+CREATE POLICY parent_private_state_select_self
+  ON public.parent_private_state FOR SELECT TO authenticated
+  USING (
+    auth_user_id = (SELECT auth.uid())
+    AND family_id = (SELECT private.current_user_family_id())
+  );
+
+DROP POLICY IF EXISTS parent_private_state_insert_self ON public.parent_private_state;
+CREATE POLICY parent_private_state_insert_self
+  ON public.parent_private_state FOR INSERT TO authenticated
+  WITH CHECK (
+    auth_user_id = (SELECT auth.uid())
+    AND family_id = (SELECT private.current_user_family_id())
+  );
+
+DROP POLICY IF EXISTS parent_private_state_update_self ON public.parent_private_state;
+CREATE POLICY parent_private_state_update_self
+  ON public.parent_private_state FOR UPDATE TO authenticated
+  USING (
+    auth_user_id = (SELECT auth.uid())
+    AND family_id = (SELECT private.current_user_family_id())
+  )
+  WITH CHECK (
+    auth_user_id = (SELECT auth.uid())
+    AND family_id = (SELECT private.current_user_family_id())
+  );
+
+DROP POLICY IF EXISTS parent_private_state_delete_self ON public.parent_private_state;
+CREATE POLICY parent_private_state_delete_self
+  ON public.parent_private_state FOR DELETE TO authenticated
+  USING (
+    auth_user_id = (SELECT auth.uid())
+    AND family_id = (SELECT private.current_user_family_id())
+  );
+
+-- `public.child_life_records`
+DROP POLICY IF EXISTS child_life_records_select_own_family ON public.child_life_records;
+CREATE POLICY child_life_records_select_own_family
+  ON public.child_life_records FOR SELECT TO authenticated
+  USING (
+    family_id = (SELECT private.current_user_family_id())
+    AND EXISTS (
+      SELECT 1 FROM public.children c
+      WHERE c.id = child_life_records.child_id
+        AND c.family_id = child_life_records.family_id
+    )
+  );
+
+DROP POLICY IF EXISTS child_life_records_insert_own_family ON public.child_life_records;
+CREATE POLICY child_life_records_insert_own_family
+  ON public.child_life_records FOR INSERT TO authenticated
+  WITH CHECK (
+    family_id = (SELECT private.current_user_family_id())
+    AND (created_by IS NULL OR created_by = (SELECT auth.uid()))
+    AND EXISTS (
+      SELECT 1 FROM public.children c
+      WHERE c.id = child_life_records.child_id
+        AND c.family_id = child_life_records.family_id
+    )
+  );
+
+DROP POLICY IF EXISTS child_life_records_update_own_family ON public.child_life_records;
+CREATE POLICY child_life_records_update_own_family
+  ON public.child_life_records FOR UPDATE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (
+    family_id = (SELECT private.current_user_family_id())
+    AND EXISTS (
+      SELECT 1 FROM public.children c
+      WHERE c.id = child_life_records.child_id
+        AND c.family_id = child_life_records.family_id
+    )
+  );
+
+DROP POLICY IF EXISTS child_life_records_delete_own_family ON public.child_life_records;
+CREATE POLICY child_life_records_delete_own_family
+  ON public.child_life_records FOR DELETE TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()));
+
+-- `public.extended_family`, `public.wellness_diagnostics`, `public.bedtime_stories`, `public.battery_diagnostics`, `public.ai_bedtime_stories`, `public.daily_compass_content`
+DROP POLICY IF EXISTS extended_family_all_own_family ON public.extended_family;
+CREATE POLICY extended_family_all_own_family
+  ON public.extended_family FOR ALL TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS wellness_diagnostics_all_own_family ON public.wellness_diagnostics;
+CREATE POLICY wellness_diagnostics_all_own_family
+  ON public.wellness_diagnostics FOR ALL TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS bedtime_stories_all_own_family ON public.bedtime_stories;
+CREATE POLICY bedtime_stories_all_own_family
+  ON public.bedtime_stories FOR ALL TO authenticated
+  USING (family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS battery_diagnostics_select_own_family ON public.battery_diagnostics;
+CREATE POLICY battery_diagnostics_select_own_family
+  ON public.battery_diagnostics FOR SELECT TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS battery_diagnostics_insert_own_family ON public.battery_diagnostics;
+CREATE POLICY battery_diagnostics_insert_own_family
+  ON public.battery_diagnostics FOR INSERT TO authenticated
+  WITH CHECK (
+    family_id IS NOT NULL
+    AND family_id = (SELECT private.current_user_family_id())
+    AND (
+      user_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM public.users u
+        WHERE u.id = battery_diagnostics.user_id
+          AND u.auth_user_id = (SELECT auth.uid())
+          AND u.family_id = battery_diagnostics.family_id
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS battery_diagnostics_update_own_family ON public.battery_diagnostics;
+CREATE POLICY battery_diagnostics_update_own_family
+  ON public.battery_diagnostics FOR UPDATE TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (
+    family_id IS NOT NULL
+    AND family_id = (SELECT private.current_user_family_id())
+    AND (
+      user_id IS NULL
+      OR EXISTS (
+        SELECT 1 FROM public.users u
+        WHERE u.id = battery_diagnostics.user_id
+          AND u.auth_user_id = (SELECT auth.uid())
+          AND u.family_id = battery_diagnostics.family_id
+      )
+    )
+  );
+
+DROP POLICY IF EXISTS battery_diagnostics_delete_own_family ON public.battery_diagnostics;
+CREATE POLICY battery_diagnostics_delete_own_family
+  ON public.battery_diagnostics FOR DELETE TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS ai_bedtime_stories_select_own_family ON public.ai_bedtime_stories;
+CREATE POLICY ai_bedtime_stories_select_own_family
+  ON public.ai_bedtime_stories FOR SELECT TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS ai_bedtime_stories_insert_own_family ON public.ai_bedtime_stories;
+CREATE POLICY ai_bedtime_stories_insert_own_family
+  ON public.ai_bedtime_stories FOR INSERT TO authenticated
+  WITH CHECK (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS ai_bedtime_stories_update_own_family ON public.ai_bedtime_stories;
+CREATE POLICY ai_bedtime_stories_update_own_family
+  ON public.ai_bedtime_stories FOR UPDATE TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()))
+  WITH CHECK (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS ai_bedtime_stories_delete_own_family ON public.ai_bedtime_stories;
+CREATE POLICY ai_bedtime_stories_delete_own_family
+  ON public.ai_bedtime_stories FOR DELETE TO authenticated
+  USING (family_id IS NOT NULL AND family_id = (SELECT private.current_user_family_id()));
+
+DROP POLICY IF EXISTS daily_compass_content_public_read ON public.daily_compass_content;
+CREATE POLICY daily_compass_content_public_read
+  ON public.daily_compass_content FOR SELECT TO anon, authenticated
+  USING (true);
+
+-- ============================================================================
+-- 7. RPC Functions (`accept_family_invitation` & `bootstrap_authenticated_family_space`)
+-- ============================================================================
+CREATE OR REPLACE FUNCTION private.accept_family_invitation_impl(p_token_hash text)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_auth_uid uuid := auth.uid();
+  v_invitation public.co_parent_pairings%ROWTYPE;
+  v_auth_user auth.users%ROWTYPE;
+  v_profile public.users%ROWTYPE;
+  v_inviter_role text;
+  v_email_matches boolean := false;
+  v_phone_matches boolean := false;
+  v_auth_phone_digits text;
+  v_invite_phone_digits text;
+BEGIN
+  IF v_auth_uid IS NULL THEN
+    RAISE EXCEPTION 'AUTH_REQUIRED: Sign in before accepting a family invitation.';
+  END IF;
+
+  IF p_token_hash IS NULL OR p_token_hash !~ '^[0-9a-f]{64}$' THEN
+    RAISE EXCEPTION 'INVALID_INVITATION: The invitation code is invalid.';
+  END IF;
+
+  PERFORM pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext(v_auth_uid::text));
+
+  SELECT * INTO v_invitation
+  FROM public.co_parent_pairings
+  WHERE pairing_token_hash = p_token_hash
+  FOR UPDATE;
+
+  IF NOT FOUND
+     OR v_invitation.status <> 'pending'
+     OR v_invitation.verified = true
+     OR v_invitation.partner_user_id IS NOT NULL
+     OR v_invitation.accepted_at IS NOT NULL
+     OR v_invitation.expires_at <= pg_catalog.now() THEN
+    RAISE EXCEPTION 'INVITATION_EXPIRED: This invitation is invalid, expired, or already used.';
+  END IF;
+
+  SELECT * INTO v_auth_user
+  FROM auth.users
+  WHERE id = v_auth_uid;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'AUTH_REQUIRED: Authenticated account was not found.';
+  END IF;
+
+  v_email_matches := COALESCE(
+    COALESCE(v_invitation.partner_email, '') <> ''
+    AND v_auth_user.email_confirmed_at IS NOT NULL
+    AND pg_catalog.lower(COALESCE(v_auth_user.email, '')) = pg_catalog.lower(v_invitation.partner_email),
+    false
+  );
+
+  v_auth_phone_digits := pg_catalog.regexp_replace(COALESCE(v_auth_user.phone, ''), '\D', '', 'g');
+  v_invite_phone_digits := pg_catalog.regexp_replace(COALESCE(v_invitation.partner_phone, ''), '\D', '', 'g');
+  v_phone_matches := COALESCE(
+    COALESCE(v_invite_phone_digits, '') <> ''
+    AND v_auth_user.phone_confirmed_at IS NOT NULL
+    AND pg_catalog.length(v_auth_phone_digits) >= 9
+    AND pg_catalog.length(v_invite_phone_digits) >= 9
+    AND v_auth_phone_digits = v_invite_phone_digits,
+    false
+  );
+
+  IF NOT (v_email_matches OR v_phone_matches) THEN
+    RAISE EXCEPTION 'INVITATION_IDENTITY_MISMATCH: Sign in with the exact verified email or phone number that received this invitation.';
+  END IF;
+
+  SELECT * INTO v_profile
+  FROM public.users
+  WHERE auth_user_id = v_auth_uid
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'PROFILE_REQUIRED: Complete account setup before accepting a family invitation.';
+  END IF;
+
+  IF v_profile.id = v_invitation.invited_by_user_id THEN
+    RAISE EXCEPTION 'SELF_INVITATION: You cannot accept your own invitation.';
+  END IF;
+
+  IF pg_catalog.lower(COALESCE(v_profile.role, '')) NOT IN ('father', 'mother') THEN
+    RAISE EXCEPTION 'PARENT_ROLE_REQUIRED: Only a verified parent account can accept this co-parent invitation.';
+  END IF;
+
+  IF pg_catalog.lower(COALESCE(v_profile.role, '')) <> pg_catalog.lower(v_invitation.partner_role) THEN
+    RAISE EXCEPTION 'ROLE_MISMATCH: This invitation was issued for a different parent role.';
+  END IF;
+
+  PERFORM 1
+  FROM public.families
+  WHERE id = v_invitation.family_id
+  FOR UPDATE;
+
+  SELECT pg_catalog.lower(COALESCE(u.role, '')) INTO v_inviter_role
+  FROM public.users AS u
+  WHERE u.id = v_invitation.invited_by_user_id
+    AND u.family_id = v_invitation.family_id;
+
+  IF v_inviter_role IS NULL
+     OR v_inviter_role NOT IN ('father', 'mother')
+     OR v_inviter_role = pg_catalog.lower(v_invitation.partner_role) THEN
+    RAISE EXCEPTION 'INVITER_INVALID: The inviting parent is not an active member of this family.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM public.users AS u
+    WHERE u.family_id = v_invitation.family_id
+      AND pg_catalog.lower(COALESCE(u.role, '')) = pg_catalog.lower(v_invitation.partner_role)
+      AND u.id <> v_profile.id
+  ) THEN
+    RAISE EXCEPTION 'PARENT_ALREADY_LINKED: This family already has a verified account for that parent role.';
+  END IF;
+
+  IF v_profile.family_id IS NOT NULL AND v_profile.family_id <> v_invitation.family_id THEN
+    PERFORM 1
+    FROM public.families
+    WHERE id = v_profile.family_id
+    FOR UPDATE;
+
+    IF EXISTS (SELECT 1 FROM public.children WHERE family_id = v_profile.family_id)
+       OR EXISTS (SELECT 1 FROM public.extended_family WHERE family_id = v_profile.family_id)
+       OR EXISTS (
+         SELECT 1 FROM public.users AS u
+         WHERE u.family_id = v_profile.family_id AND u.id <> v_profile.id
+       )
+       OR EXISTS (SELECT 1 FROM public.child_life_records WHERE family_id = v_profile.family_id)
+       OR EXISTS (SELECT 1 FROM public.wellness_diagnostics WHERE family_id = v_profile.family_id)
+       OR EXISTS (SELECT 1 FROM public.bedtime_stories WHERE family_id = v_profile.family_id)
+       OR EXISTS (SELECT 1 FROM public.child_home_schedules WHERE family_id = v_profile.family_id)
+       OR EXISTS (
+         SELECT 1 FROM public.co_parent_pairings AS cp
+         WHERE cp.family_id = v_profile.family_id AND cp.status = 'accepted'
+       ) THEN
+      RAISE EXCEPTION 'FAMILY_DATA_EXISTS: This account already has family or child data. A safe data merge is required before linking.';
+    END IF;
+  END IF;
+
+  PERFORM pg_catalog.set_config('nekbaar.invitation_transfer_user_id', v_profile.id::text, true);
+  PERFORM pg_catalog.set_config('nekbaar.invitation_transfer_target_family_id', v_invitation.family_id::text, true);
+
+  UPDATE public.users
+  SET family_id = v_invitation.family_id,
+      updated_at = pg_catalog.now()
+  WHERE id = v_profile.id;
+
+  PERFORM pg_catalog.set_config('nekbaar.invitation_transfer_user_id', '', true);
+  PERFORM pg_catalog.set_config('nekbaar.invitation_transfer_target_family_id', '', true);
+
+  UPDATE public.parent_locations
+  SET family_id = v_invitation.family_id,
+      updated_at = pg_catalog.now()
+  WHERE user_id = v_profile.id;
+
+  UPDATE public.parent_private_state
+  SET family_id = v_invitation.family_id,
+      updated_at = pg_catalog.now()
+  WHERE auth_user_id = v_auth_uid;
+
+  UPDATE public.co_parent_pairings
+  SET partner_user_id = v_profile.id,
+      status = 'accepted',
+      verified = true,
+      accepted_at = pg_catalog.now()
+  WHERE id = v_invitation.id;
+
+  RETURN pg_catalog.jsonb_build_object(
+    'accepted', true,
+    'family_id', v_invitation.family_id,
+    'profile_user_id', v_profile.id,
+    'inviter_user_id', v_invitation.invited_by_user_id
+  );
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.accept_family_invitation(p_token_hash text)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $function$
+  SELECT private.accept_family_invitation_impl(p_token_hash);
+$function$;
+
+REVOKE ALL ON FUNCTION private.accept_family_invitation_impl(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.accept_family_invitation_impl(text) TO authenticated, service_role;
+
+REVOKE ALL ON FUNCTION public.accept_family_invitation(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.accept_family_invitation(text) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.bootstrap_authenticated_family_space(
+  p_full_name text DEFAULT NULL,
+  p_role text DEFAULT NULL,
+  p_phone text DEFAULT NULL,
+  p_country text DEFAULT NULL,
+  p_city text DEFAULT NULL,
+  p_currency text DEFAULT NULL,
+  p_family_name text DEFAULT NULL
+)
+RETURNS TABLE(family_id uuid, user_id uuid)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_auth_uid uuid := (SELECT auth.uid());
+  v_auth_email text;
+  v_meta jsonb := '{}'::jsonb;
+  v_existing_user_id uuid;
+  v_existing_family_id uuid;
+  v_target_family_id uuid;
+  v_full_name text;
+  v_role text;
+  v_phone text;
+  v_country text;
+  v_city text;
+  v_currency text;
+  v_family_name text;
+BEGIN
+  IF v_auth_uid IS NULL THEN
+    RAISE EXCEPTION 'Authentication required to bootstrap family space' USING ERRCODE = '42501';
+  END IF;
+
+  PERFORM pg_advisory_xact_lock(hashtext('bootstrap_family_space:' || v_auth_uid::text));
+
+  SELECT u.email, COALESCE(u.raw_user_meta_data, '{}'::jsonb)
+  INTO v_auth_email, v_meta
+  FROM auth.users AS u
+  WHERE u.id = v_auth_uid;
+
+  SELECT u.id, u.family_id
+  INTO v_existing_user_id, v_existing_family_id
+  FROM public.users AS u
+  WHERE u.auth_user_id = v_auth_uid
+  ORDER BY u.created_at ASC
+  LIMIT 1;
+
+  v_role := LOWER(COALESCE(NULLIF(BTRIM(p_role), ''), NULLIF(BTRIM(v_meta ->> 'role'), ''), 'mother'));
+  IF v_role IN ('dad', 'father', 'أب') THEN
+    v_role := 'father';
+  ELSE
+    v_role := 'mother';
+  END IF;
+
+  v_country := UPPER(COALESCE(NULLIF(BTRIM(p_country), ''), NULLIF(BTRIM(v_meta ->> 'country'), ''), 'SA'));
+  IF v_country NOT IN ('EG','SA','AE','KW','QA','BH','OM','IQ','JO','PS','LB','SY','YE','SD','LY','TN','DZ','MA','MR','SO','DJ','KM') THEN
+    v_country := 'SA';
+  END IF;
+
+  v_currency := UPPER(COALESCE(NULLIF(BTRIM(p_currency), ''), NULLIF(BTRIM(v_meta ->> 'currency'), ''), ''));
+  IF v_currency NOT IN ('EGP','SAR','AED','KWD','QAR','BHD','OMR','IQD','JOD','ILS','LBP','SYP','YER','SDG','LYD','TND','DZD','MAD','MRU','SOS','DJF','KMF') THEN
+    v_currency := CASE v_country
+      WHEN 'EG' THEN 'EGP'
+      WHEN 'SA' THEN 'SAR'
+      WHEN 'AE' THEN 'AED'
+      WHEN 'KW' THEN 'KWD'
+      WHEN 'QA' THEN 'QAR'
+      WHEN 'BH' THEN 'BHD'
+      WHEN 'OM' THEN 'OMR'
+      WHEN 'IQ' THEN 'IQD'
+      WHEN 'JO' THEN 'JOD'
+      WHEN 'PS' THEN 'ILS'
+      WHEN 'LB' THEN 'LBP'
+      WHEN 'SY' THEN 'SYP'
+      WHEN 'YE' THEN 'YER'
+      WHEN 'SD' THEN 'SDG'
+      WHEN 'LY' THEN 'LYD'
+      WHEN 'TN' THEN 'TND'
+      WHEN 'DZ' THEN 'DZD'
+      WHEN 'MA' THEN 'MAD'
+      WHEN 'MR' THEN 'MRU'
+      WHEN 'SO' THEN 'SOS'
+      WHEN 'DJ' THEN 'DJF'
+      WHEN 'KM' THEN 'KMF'
+      ELSE 'SAR'
+    END;
+  END IF;
+
+  v_city := COALESCE(
+    NULLIF(BTRIM(p_city), ''),
+    NULLIF(BTRIM(v_meta ->> 'city'), ''),
+    CASE v_country
+      WHEN 'EG' THEN 'القاهرة'
+      WHEN 'SA' THEN 'الرياض'
+      WHEN 'AE' THEN 'دبي'
+      WHEN 'KW' THEN 'مدينة الكويت'
+      WHEN 'QA' THEN 'الدوحة'
+      WHEN 'BH' THEN 'المنامة'
+      WHEN 'OM' THEN 'مسقط'
+      WHEN 'IQ' THEN 'بغداد'
+      WHEN 'JO' THEN 'عمّان'
+      WHEN 'PS' THEN 'رام الله'
+      WHEN 'LB' THEN 'بيروت'
+      WHEN 'SY' THEN 'دمشق'
+      WHEN 'YE' THEN 'صنعاء'
+      WHEN 'SD' THEN 'الخرطوم'
+      WHEN 'LY' THEN 'طرابلس'
+      WHEN 'TN' THEN 'تونس'
+      WHEN 'DZ' THEN 'الجزائر'
+      WHEN 'MA' THEN 'الرباط'
+      WHEN 'MR' THEN 'نواكشوط'
+      WHEN 'SO' THEN 'مقديشو'
+      WHEN 'DJ' THEN 'جيبوتي'
+      WHEN 'KM' THEN 'موروني'
+      ELSE 'الرياض'
+    END
+  );
+
+  v_full_name := COALESCE(
+    NULLIF(BTRIM(p_full_name), ''),
+    NULLIF(BTRIM(v_meta ->> 'full_name'), ''),
+    NULLIF(SPLIT_PART(COALESCE(v_auth_email, ''), '@', 1), ''),
+    CASE WHEN v_role = 'father' THEN 'أحمد' ELSE 'مريم' END
+  );
+
+  v_phone := COALESCE(NULLIF(BTRIM(p_phone), ''), NULLIF(BTRIM(v_meta ->> 'phone'), ''));
+
+  v_family_name := COALESCE(
+    NULLIF(BTRIM(p_family_name), ''),
+    NULLIF(BTRIM(v_meta ->> 'family_name'), ''),
+    'أسرة ' || v_full_name || ' — نكبر'
+  );
+
+  IF v_existing_family_id IS NOT NULL THEN
+    v_target_family_id := v_existing_family_id;
+  ELSE
+    SELECT f.id
+    INTO v_target_family_id
+    FROM public.families AS f
+    WHERE f.created_by = v_auth_uid
+    ORDER BY f.created_at ASC
+    LIMIT 1;
+  END IF;
+
+  IF v_target_family_id IS NULL THEN
+    INSERT INTO public.families (
+      family_name,
+      country,
+      city,
+      currency,
+      active_parent,
+      created_by
+    )
+    VALUES (
+      v_family_name,
+      v_country,
+      v_city,
+      v_currency,
+      v_role,
+      v_auth_uid
+    )
+    RETURNING id INTO v_target_family_id;
+  END IF;
+
+  IF v_existing_user_id IS NULL THEN
+    INSERT INTO public.users (
+      auth_user_id,
+      family_id,
+      full_name,
+      role,
+      email,
+      phone,
+      country,
+      verified
+    )
+    VALUES (
+      v_auth_uid,
+      v_target_family_id,
+      v_full_name,
+      v_role,
+      v_auth_email,
+      v_phone,
+      v_country,
+      true
+    )
+    RETURNING id INTO v_existing_user_id;
+  ELSE
+    UPDATE public.users
+    SET family_id = COALESCE(public.users.family_id, v_target_family_id),
+        full_name = COALESCE(NULLIF(BTRIM(p_full_name), ''), public.users.full_name),
+        role = COALESCE(NULLIF(BTRIM(v_role), ''), public.users.role),
+        email = COALESCE(v_auth_email, public.users.email),
+        phone = COALESCE(v_phone, public.users.phone),
+        country = COALESCE(v_country, public.users.country),
+        updated_at = now()
+    WHERE id = v_existing_user_id;
+  END IF;
+
+  RETURN QUERY SELECT v_target_family_id, v_existing_user_id;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.bootstrap_authenticated_family_space(text, text, text, text, text, text, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.bootstrap_authenticated_family_space(text, text, text, text, text, text, text) TO authenticated, service_role;
+
+-- ============================================================================
+-- 8. Private Family Media Storage Bucket (`family-media`) & `storage.objects` RLS
+-- ============================================================================
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'storage' AND table_name = 'buckets'
+  ) THEN
+    INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+    VALUES (
+      'family-media',
+      'family-media',
+      false,
+      10485760,
+      ARRAY[
+        'image/jpeg',
+        'image/png',
+        'image/webp',
+        'image/gif',
+        'video/mp4',
+        'video/webm',
+        'audio/webm',
+        'audio/mp4',
+        'audio/mpeg'
+      ]
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET
+      public = false,
+      file_size_limit = EXCLUDED.file_size_limit,
+      allowed_mime_types = EXCLUDED.allowed_mime_types;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.tables
+    WHERE table_schema = 'storage' AND table_name = 'objects'
+  ) THEN
+    DROP POLICY IF EXISTS family_media_select_own_family ON storage.objects;
+    CREATE POLICY family_media_select_own_family
+      ON storage.objects FOR SELECT TO authenticated
+      USING (
+        bucket_id = 'family-media'
+        AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
+        AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
+      );
+
+    DROP POLICY IF EXISTS family_media_insert_own_family ON storage.objects;
+    CREATE POLICY family_media_insert_own_family
+      ON storage.objects FOR INSERT TO authenticated
+      WITH CHECK (
+        bucket_id = 'family-media'
+        AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
+        AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
+        AND owner = (SELECT auth.uid())
+      );
+
+    DROP POLICY IF EXISTS family_media_update_own_family ON storage.objects;
+    CREATE POLICY family_media_update_own_family
+      ON storage.objects FOR UPDATE TO authenticated
+      USING (
+        bucket_id = 'family-media'
+        AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
+        AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
+        AND owner = (SELECT auth.uid())
+      )
+      WITH CHECK (
+        bucket_id = 'family-media'
+        AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
+        AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
+        AND owner = (SELECT auth.uid())
+      );
+
+    DROP POLICY IF EXISTS family_media_delete_own_family ON storage.objects;
+    CREATE POLICY family_media_delete_own_family
+      ON storage.objects FOR DELETE TO authenticated
+      USING (
+        bucket_id = 'family-media'
+        AND (SELECT private.current_user_family_id()) IS NOT NULL
+        AND name IS NOT NULL
+        AND name !~ '(^|/)\.\.(/|$)'
+        AND (storage.foldername(name))[1] = (SELECT private.current_user_family_id())::text
+      );
+  END IF;
+END $$;
+
+-- ============================================================================
+-- 9. Client Table Privilege Tightening
+-- ============================================================================
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon;
+GRANT SELECT ON TABLE public.catalog_items, public.daily_compass_content TO anon;
+REVOKE TRUNCATE, REFERENCES, TRIGGER, MAINTAIN ON ALL TABLES IN SCHEMA public FROM authenticated;
+
+
