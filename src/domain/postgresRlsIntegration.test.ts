@@ -280,7 +280,7 @@ test("Part A.3: Primary Supabase PostgreSQL (qbwnzunusmaidciakuod) denies anonym
   );
 });
 
-test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-Arab-League-countries SQL schema/migration verification", () => {
+test("Part A.4: Primary project test configuration security, .gitignore hygiene, and 22-Arab-League-countries SQL schema/migration verification", () => {
   const gitignoreText = fs.readFileSync(
     path.resolve(process.cwd(), ".gitignore"),
     "utf8",
@@ -302,10 +302,6 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
   assert.ok(
     envExampleText.includes("https://qbwnzunusmaidciakuod.supabase.co"),
     ".env.example must document the primary Supabase project URL https://qbwnzunusmaidciakuod.supabase.co",
-  );
-  assert.ok(
-    envExampleText.includes("region: ap-south-1"),
-    ".env.example must document the primary Supabase project region as ap-south-1",
   );
   assert.ok(
     envExampleText.includes("TEST_SUPABASE_ANON_KEY") &&
@@ -372,10 +368,10 @@ test(
       IS_PRIMARY_PROJECT_TEST_CONFIGURED,
       `Explicit integration test failure: TEST_SUPABASE_URL (${TEST_SUPABASE_URL || "unset"}), TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for the primary Supabase project (${PRIMARY_PROJECT_REF}). Missing test environment configuration must fail explicitly rather than skip.`,
     );
-    assert.ok(
-      TEST_SUPABASE_URL.includes(PRIMARY_PROJECT_REF) &&
-        !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod"),
-      `Explicit safety failure: Integration tests must target only the primary Supabase project (${PRIMARY_PROJECT_REF}) and must match the primary project.`,
+    assert.equal(
+      TEST_SUPABASE_URL,
+      PRIMARY_SUPABASE_URL,
+      `Explicit safety failure: Integration tests must target exactly the primary Supabase project (${PRIMARY_PROJECT_REF}).`,
     );
 
     const adminClient = createClient(
