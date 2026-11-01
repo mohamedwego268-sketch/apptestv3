@@ -11,12 +11,8 @@ interface AppErrorBoundaryState {
 
 function getSafeDiagnostic(message: string | null): string {
   if (!message) return 'Unexpected runtime error';
-  return message
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, '[email]')
-    .replace(/\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b/gi, '[id]')
-    .replace(/https?:\\/\\/\\S+/gi, '[url]')
-    .replace(/\\beyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\b/g, '[token]')
-    .slice(0, 180);
+  // Keep only the first short line; avoid rendering stack traces or URLs.
+  return message.split('\n')[0].slice(0, 140);
 }
 
 export class AppErrorBoundary extends React.Component<
