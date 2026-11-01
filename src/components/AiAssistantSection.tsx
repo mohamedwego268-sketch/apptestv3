@@ -502,25 +502,25 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
         <div
           id="ai-platform-control-bar"
           data-testid="ai-platform-control-bar"
-          className="flex flex-wrap items-center justify-between gap-2.5 pb-3.5 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]"
+          className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)]/70 dark:border-[#1E3646]"
         >
           {/* Left / Start: Side History Drawer Toggle + New Chat + Child Selector */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               id="ai-history-drawer-toggle-btn"
               data-testid="ai-history-drawer-toggle-btn"
               type="button"
               onClick={() => setShowHistoryDrawer((prev) => !prev)}
               aria-expanded={showHistoryDrawer}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all inline-flex items-center gap-1.5 cursor-pointer ${
+              className={`min-h-[32px] h-8 px-2.5 py-1 rounded-lg text-[11px] font-extrabold border transition-all inline-flex items-center gap-1.5 cursor-pointer ${
                 showHistoryDrawer
                   ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
                   : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488]'
               }`}
             >
               <span>🗂️</span>
-              <span>{isEn ? 'Chat History' : 'سجل المحادثات'}</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-black/15 text-[10px] tabular-nums">
+              <span>{isEn ? 'History' : 'السجل'}</span>
+              <span className="px-1 py-0.2 rounded-md bg-black/12 text-[10px] tabular-nums">
                 {savedThreads.length}
               </span>
             </button>
@@ -530,7 +530,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
               data-testid="ai-new-chat-btn"
               type="button"
               onClick={handleStartNewChat}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] transition-all inline-flex items-center gap-1 cursor-pointer"
+              className="min-h-[32px] h-8 px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-teal-500/35 bg-teal-500/10 hover:bg-[#0d9488] hover:text-white text-[#0d9488] dark:text-[#2DD4BF] transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <span>＋</span>
               <span>{isEn ? 'New Chat' : 'محادثة جديدة'}</span>
@@ -541,7 +541,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                 value={selectedKid?.id || 0}
                 onChange={(e) => setSelectedKidId(Number(e.target.value))}
                 aria-label={isEn ? 'Select Child Profile' : 'اختيار ملف الطفل'}
-                className="min-h-[38px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                className="min-h-[32px] h-8 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] px-2.5 py-1 text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
               >
                 {kids.map((k) => {
                   const ageSpec = calculateChildAge(k.birth, language);
@@ -559,7 +559,7 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
           <div
             role="tablist"
             aria-label={isEn ? 'Switch AI Assistant Model' : 'تبديل موديل المساعد الذكي'}
-            className="flex items-center gap-1 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 border border-[var(--color-border)] dark:border-[#1E3646] overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
+            className="flex items-center gap-0.5 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-0.5 border border-[var(--color-border)] dark:border-[#1E3646] overflow-x-auto whitespace-nowrap no-scrollbar max-w-full"
           >
             {AI_MODELS_SPEC.map((mod) => {
               const isSelected = activeModelId === mod.id;
@@ -579,13 +579,13 @@ export const AiAssistantSection: React.FC<AiAssistantSectionProps> = ({
                         : `تم تبديل موديل المساعد إلى: «${mod.nameAr}»`
                     );
                   }}
-                  className={`min-h-[34px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all inline-flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                  className={`min-h-[28px] h-7 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold transition-all inline-flex items-center gap-1 shrink-0 cursor-pointer ${
                     isSelected
                       ? 'bg-[#0d9488] text-white shadow-2xs'
                       : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                   }`}
                 >
-                  <span>{mod.emoji}</span>
+                  <span className="text-xs">{mod.emoji}</span>
                   <span>{isEn ? mod.nameEn : mod.nameAr}</span>
                 </button>
               );

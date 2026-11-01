@@ -533,34 +533,35 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
   return (
     <div
       data-sticky-topbar="true"
-      className={`sticky top-[64px] z-20 glass-sticky-subheader backdrop-blur-md rounded-2xl border ${toneClasses.card} p-3 shadow-sm flex flex-wrap items-center justify-between gap-2.5 transition-all duration-300 ease-in-out`}
+      className={`sticky top-[48px] z-20 glass-sticky-subheader backdrop-blur-md rounded-xl border ${toneClasses.card} px-2.5 py-1.5 shadow-2xs flex items-center justify-between gap-2 transition-all duration-200`}
     >
-      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <button
           type="button"
           onClick={onBack}
           aria-label={backLabel || (isEn ? 'Back to Home' : 'رجوع للرئيسية')}
-          className="min-h-[48px] px-3 py-2 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] text-xs font-extrabold flex items-center gap-1.5 shadow-2xs active:scale-95 transition-all duration-300 ease-in-out shrink-0 cursor-pointer"
+          className="min-h-[32px] h-8 px-2.5 py-1 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] text-[11px] font-extrabold inline-flex items-center gap-1 shadow-2xs active:scale-95 transition-all shrink-0 cursor-pointer"
         >
           <span className="text-xs leading-none">{isEn ? '←' : '→'}</span>
-          <span>{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
+          <span className="leading-none">{backLabel || (isEn ? 'Back' : 'رجوع')}</span>
         </button>
 
-        <SoftFilledIcon id={iconId} boxSize="sm" />
+        <div className="h-4 w-[1px] bg-slate-200/80 dark:bg-[#1E3646] shrink-0" aria-hidden="true" />
 
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold text-[var(--color-text)] leading-snug break-words">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <SoftFilledIcon id={iconId} boxSize="sm" size={16} />
+          <h1 className="text-xs sm:text-[13px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] truncate leading-tight">
             {title}
           </h1>
           {(subtitle || badge) && (
-            <div className="text-xs text-gray-500 dark:text-[#94A3B8] leading-snug break-words mt-0.5">
-              {subtitle || badge}
-            </div>
+            <span className="hidden sm:inline text-[10.5px] font-medium text-gray-500 dark:text-[#94A3B8] truncate">
+              · {subtitle || badge}
+            </span>
           )}
         </div>
       </div>
 
-      {rightSlot && <div className="flex flex-wrap items-center gap-1.5 shrink-0 ms-auto">{rightSlot}</div>}
+      {rightSlot && <div className="flex items-center gap-1.5 shrink-0 ms-auto">{rightSlot}</div>}
     </div>
   );
 };

@@ -228,15 +228,15 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           : 'تواصل معنا (قنوات رقمية فقط)'
       }
     >
-      {/* Sub-Navigation Switcher Bar between Privacy, Terms & IP, and Digital Contact Us */}
-      <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5" role="tablist" aria-label="السياسات والتواصل الرقمي">
+      {/* Compact Sub-Navigation Switcher Bar between Privacy, Terms & IP, and Digital Contact Us */}
+      <div className="rounded-xl border border-slate-200/85 dark:border-[#1E3646] bg-[var(--color-surface)] px-2.5 py-1.5 shadow-2xs flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1" role="tablist" aria-label="السياسات والتواصل الرقمي">
           <button
             type="button"
             role="tab"
             aria-selected={pageType === 'privacy'}
             onClick={() => onNavigateSubPage('privacy')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all inline-flex items-center gap-1 cursor-pointer ${
               pageType === 'privacy'
                 ? 'bg-teal-600 text-white shadow-2xs'
                 : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -251,7 +251,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             role="tab"
             aria-selected={pageType === 'terms'}
             onClick={() => onNavigateSubPage('terms')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all inline-flex items-center gap-1 cursor-pointer ${
               pageType === 'terms'
                 ? 'bg-indigo-600 text-white shadow-2xs'
                 : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -260,8 +260,8 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             <span>📜</span>
             <span>
               {isEn
-                ? 'Terms & Intellectual Property'
-                : 'الشروط والأحكام وحقوق الملكية'}
+                ? 'Terms & IP'
+                : 'الشروط وحقوق الملكية'}
             </span>
           </button>
 
@@ -270,7 +270,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             role="tab"
             aria-selected={pageType === 'contact'}
             onClick={() => onNavigateSubPage('contact')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-all inline-flex items-center gap-1 cursor-pointer ${
               pageType === 'contact'
                 ? 'bg-orange-600 text-white shadow-2xs'
                 : 'bg-[var(--color-control-muted)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -281,7 +281,7 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
           </button>
         </div>
 
-        <span className="text-[11px] font-bold text-[var(--color-muted)] px-2">
+        <span className="text-[10.5px] font-bold text-[var(--color-muted)] px-1.5">
           {pageType === 'contact'
             ? isEn
               ? '🌐 100% Digital Support'

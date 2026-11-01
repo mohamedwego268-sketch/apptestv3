@@ -561,11 +561,11 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
             </h2>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[var(--color-control-muted)] p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-[var(--color-control-muted)] p-0.5 rounded-lg border border-slate-200/70 dark:border-[#1E3646]">
             <button
               type="button"
               onClick={() => setQrMode('generate')}
-              className={`px-3 py-1.5 rounded-lg text-[11.5px] font-extrabold transition-all ${
+              className={`min-h-[28px] px-2.5 py-1 rounded-md text-[11px] font-extrabold transition-all cursor-pointer ${
                 qrMode === 'generate'
                   ? 'bg-teal-700 text-white shadow-2xs'
                   : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
@@ -576,7 +576,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
             <button
               type="button"
               onClick={() => setQrMode('scan')}
-              className={`px-3 py-1.5 rounded-lg text-[11.5px] font-extrabold transition-all ${
+              className={`min-h-[28px] px-2.5 py-1 rounded-md text-[11px] font-extrabold transition-all cursor-pointer ${
                 qrMode === 'scan'
                   ? 'bg-[var(--color-accent)] text-white shadow-2xs'
                   : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'

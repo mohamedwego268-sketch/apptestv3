@@ -78,21 +78,20 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
         </div>
       </div>
 
-      <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
-        <SectionToolsDrawer language={lang} sectionId="calendar" titleAr="أدوات التقويم" titleEn="Calendar tools">
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-          <div className="flex flex-wrap items-center gap-2">
+      <SectionToolsDrawer language={lang} sectionId="calendar" titleAr="أدوات التقويم" titleEn="Calendar tools">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={() => onSetEventRange(0)}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="min-h-[32px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all cursor-pointer"
             >
               {isEn ? 'Today' : 'اليوم'}
             </button>
             <button
               type="button"
               onClick={() => onSetEventRange(7)}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="min-h-[32px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] transition-all cursor-pointer"
             >
               {isEn ? 'Next 7 Days' : 'الأيام السبعة القادمة'}
             </button>
@@ -102,14 +101,14 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
                 setEventFrom('');
                 setEventTo('');
               }}
-              className="min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] transition-all duration-300 ease-in-out active:scale-95 cursor-pointer"
+              className="min-h-[32px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] transition-all cursor-pointer"
             >
               {isEn ? `All Events (${state.events.length})` : `كل الأحداث (${state.events.length})`}
             </button>
           </div>
 
           <div
-            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 rounded-2xl border border-transparent dark:border-[#1E3646]"
+            className="flex items-center gap-1 bg-[var(--color-control-muted)] dark:bg-[#142430] p-0.5 rounded-lg border border-transparent dark:border-[#1E3646]"
             role="group"
             aria-label={isEn ? 'Date display mode' : 'نظام عرض التاريخ'}
           >
@@ -122,9 +121,9 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
                 key={mode.id}
                 type="button"
                 onClick={() => onChangeCalendarMode(mode.id as CalendarDisplayMode)}
-                className={`px-3 py-1 text-xs font-extrabold rounded-xl transition-all duration-300 ease-in-out whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`px-2.5 py-1 text-[11px] font-extrabold rounded-md transition-all whitespace-nowrap shrink-0 cursor-pointer ${
                   state.calendarMode === mode.id
-                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-xs'
+                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-2xs'
                     : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
                 }`}
               >
@@ -164,6 +163,7 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
 
         </SectionToolsDrawer>
 
+      <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
         {/* Events Grid Cards with Standardized SoftFilledIcon & UnifiedBadge */}
         {isEventRangeReversed ? (
           <div

@@ -71,18 +71,18 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Notifications Feed (2 columns) */}
         <div className="lg:col-span-2 rounded-[24px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 space-y-4 shadow-2xs">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 className="text-base font-extrabold text-[var(--color-text)]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                 {isEn
                   ? `Daily Smart Alerts (${notifications.length})`
                   : `تنبيهات اليوم الذكية (${notifications.length})`}
               </h3>
-              <div className="text-xs font-bold text-[var(--color-muted)]">
+              <span className="px-2 py-0.5 rounded-md bg-teal-500/10 text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                 {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
-              </div>
+              </span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 id="toggle-empty-notifications-btn"
                 type="button"
@@ -102,7 +102,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
                       : 'تمت استعادة الإشعارات اليومية بنجاح'
                   );
                 }}
-                className="min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors"
+                className="min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[var(--color-accent)] transition-colors cursor-pointer"
               >
                 {isDismissedAll
                   ? isEn

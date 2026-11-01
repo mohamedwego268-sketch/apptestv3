@@ -1,19 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   CountryCode,
   LanguageCode,
   ParentThemeRole,
-  getDefaultCityForCountry,
-  locText,
 } from '../domain/familySpaceCore';
-import { PageId } from '../context/FamilyAppContext';
-import { ThreeDIcon } from './ThreeDVisuals';
-import { LiveWeatherWidget } from './LiveWeatherWidget';
-
-export interface HeaderBarNavOption {
-  id: PageId;
-  shortLabel: string;
-}
+import { SoftFilledIcon } from './DesignSystem';
 
 export interface HeaderBarProfileSpec {
   role: ParentThemeRole;
@@ -28,265 +19,154 @@ export interface HeaderBarProps {
   lang: LanguageCode;
   brandName: string;
   darkMode: boolean;
-  bedtimeMode?: boolean;
   unreadNotifCount: number;
   openTasksCount?: number;
   parentProfileSpec: HeaderBarProfileSpec;
-  activePage: PageId;
-  navItems?: HeaderBarNavOption[];
-  onNavigate: (pageId: PageId) => void;
+  activePage: string;
+  navItems: Array<{ id: any; shortLabel: string }>;
+  onNavigate: (page: any) => void;
   onToggleDarkMode: () => void;
-  onToggleBedtimeMode?: () => void;
-  onToggleLanguage: () => void;
-  onOpenSmartPlanner?: () => void;
+  onToggleLanguage?: () => void;
+  onOpenSmartPlanner: () => void;
   onOpenProfileDrawer: () => void;
-  isScrolled?: boolean;
+  isScrolled: boolean;
+  bedtimeMode?: boolean;
+  onToggleBedtimeMode?: () => void;
   country?: CountryCode;
   city?: string;
   userCoords?: { lat: number; lng: number } | null;
-  onSelectCity?: (country: CountryCode, city: string) => void;
+  onSelectCity?: (country: CountryCode, cityName: string) => void;
 }
 
-const COMPACT_HEADER_WEATHER: Record<
-  string,
-  { tempC: number; conditionEmoji: string; labelAr: string; labelEn: string; humidity: number; windKmh: number }
-> = {
-  القاهرة: { tempC: 27, conditionEmoji: '☀️', labelAr: 'مشمس ومعتدل', labelEn: 'Sunny & Mild', humidity: 42, windKmh: 14 },
-  الإسكندرية: { tempC: 24, conditionEmoji: '🌤️', labelAr: 'نسيم بحري لطيف', labelEn: 'Sea Breeze', humidity: 58, windKmh: 18 },
-  الجيزة: { tempC: 28, conditionEmoji: '☀️', labelAr: 'مشمس ودافئ', labelEn: 'Sunny & Warm', humidity: 40, windKmh: 13 },
-  المنصورة: { tempC: 26, conditionEmoji: '⛅', labelAr: 'غائم جزئياً', labelEn: 'Partly Cloudy', humidity: 48, windKmh: 12 },
-  الرياض: { tempC: 33, conditionEmoji: '☀️', labelAr: 'مشمس وصافٍ', labelEn: 'Clear & Sunny', humidity: 22, windKmh: 15 },
-  جدة: { tempC: 31, conditionEmoji: '🌤️', labelAr: 'دافئ ساحلي', labelEn: 'Warm Coastal', humidity: 62, windKmh: 16 },
-  الدمام: { tempC: 32, conditionEmoji: '☀️', labelAr: 'مشمس ومستقر', labelEn: 'Sunny & Calm', humidity: 50, windKmh: 14 },
-};
-
-/**
- * HeaderBar Component for نكبر (Nekbaar).
- * Clean flexbox layout:
- * 1. Hamburger Menu Trigger (☰)
- * 2. Quick Notifications Bell Button with Live Unread Badge
- * 3. Super-Compact Minimalist Weather Widget directly beside the Notification Bell (opens Expanded Weather Details Modal on click)
- * 4. Brand Wordmark ("نكبر" / "Nekbaar")
- */
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   lang,
-  brandName,
   darkMode,
   unreadNotifCount,
   activePage,
   onNavigate,
   onOpenProfileDrawer,
-  isScrolled = false,
-  country = 'EG',
-  city = 'القاهرة',
-  userCoords = null,
-  onSelectCity,
+  isScrolled,
 }) => {
   const isEn = lang === 'en';
-  const isNotificationsActive = activePage === 'notifications';
-  const [weatherModalOpen, setWeatherModalOpen] = useState<boolean>(false);
-
-  const activeCity = city || getDefaultCityForCountry(country);
-  const localizedCity = locText(activeCity, lang);
-  const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
 
   return (
-    <>
-      <header
-        id="main-sticky-header"
-        data-scrolled={isScrolled ? 'true' : 'false'}
-        className="sticky top-0 z-30 w-full border-b border-gray-200/80 dark:border-[#1E3646] glass-sticky-header transition-all duration-200 select-none"
-      >
-        <div className="max-w-[430px] mx-auto px-3 py-1.5 flex items-center justify-between gap-2">
-          {/* Compact Control Group: Menu + Notifications + Weather */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              id="master-slidebar-trigger-btn"
-              data-testid="master-slidebar-trigger-btn"
-              type="button"
-              onClick={onOpenProfileDrawer}
-              title={isEn ? 'Explore Family Space' : 'استكشف مساحة الأسرة'}
-              aria-label={isEn ? 'Open Family Navigation' : 'فتح قائمة الأسرة'}
-              className="header-control min-h-[42px] px-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
+    <header
+      id="main-sticky-header"
+      data-testid="minimal-top-header-bar"
+      className={`sticky top-0 z-50 transition-all duration-200 ${
+        isScrolled
+          ? 'glass-sticky-header shadow-xs border-b border-gray-200/80 dark:border-[#1E3646]'
+          : 'bg-[var(--color-surface)]/95 dark:bg-[#101D26]/95 border-b border-gray-200/60 dark:border-[#1E3646]'
+      }`}
+    >
+      <div className="w-full max-w-[430px] mx-auto px-3 py-1.5 min-h-[46px] flex items-center justify-between gap-2">
+        {/* Start: Brand Logo + Official Slogan */}
+        <button
+          id="brand-home-btn"
+          type="button"
+          onClick={() => onNavigate('home')}
+          aria-label={isEn ? 'Nekbaar — Home' : 'نكبر — الرئيسية'}
+          className="flex items-center gap-2 text-start group focus:outline-none min-w-0 shrink cursor-pointer"
+        >
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 36 36"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
-              <svg
-                className="w-4 h-4 text-[#0d9488] dark:text-[#2DD4BF]"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 6.5h16M4 12h16M4 17.5h11"
-                  stroke="currentColor"
-                  strokeWidth="2.3"
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="text-xs font-bold">
-                {isEn ? 'Explore' : 'استكشف'}
-              </span>
-            </button>
-
-            <button
-              id="header-notifications-quick-btn"
-              data-testid="header-notifications-quick-btn"
-              type="button"
-              onClick={() => onNavigate('notifications')}
-              title={isEn ? 'Notifications' : 'التنبيهات'}
-              aria-label={isEn ? 'Notifications' : 'التنبيهات'}
-              className={`header-control relative min-h-[42px] min-w-[42px] rounded-xl border inline-flex items-center justify-center shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer ${
-                isNotificationsActive
-                  ? 'border-[#0d9488] bg-[#0d9488] text-white'
-                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#FF8C61] text-[var(--color-text)] dark:text-[#F8FAFC]'
-              }`}
-            >
-              <svg
-                className={`w-[18px] h-[18px] ${
-                  isNotificationsActive ? 'text-white' : 'text-[#FF8C61]'
-                }`}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              {unreadNotifCount > 0 && (
-                <span
-                  data-testid="header-notifications-unread-badge"
-                  className="absolute -top-1 -end-1 px-1 min-w-[16px] h-[16px] rounded-full bg-[#FF8C61] text-white text-[9px] font-black inline-flex items-center justify-center tabular-nums shadow-2xs"
-                >
-                  {unreadNotifCount}
-                </span>
-              )}
-            </button>
-
-            <button
-              id="header-weather-quick-btn"
-              data-testid="header-weather-quick-btn"
-              type="button"
-              onClick={() => setWeatherModalOpen(true)}
-              title={
-                isEn
-                  ? `View live weather for ${localizedCity}`
-                  : `عرض الطقس الحالي في ${localizedCity}`
-              }
-              aria-label={
-                isEn
-                  ? `View live weather in ${localizedCity}`
-                  : `عرض الطقس الحالي في ${localizedCity}`
-              }
-              className="header-control min-h-[42px] px-2 rounded-xl border border-sky-500/30 dark:border-[#1E3646] bg-sky-50/80 dark:bg-[#142430] hover:border-sky-500 text-[var(--color-text)] dark:text-[#F8FAFC] inline-flex items-center justify-center gap-1 shadow-2xs active:scale-95 transition-transform duration-150 shrink-0 cursor-pointer"
-            >
-              <span className="text-sm leading-none" aria-hidden="true">
-                {compactWeather.conditionEmoji}
-              </span>
-              <span className="text-xs font-bold text-sky-700 dark:text-sky-300">
-                {isEn ? 'Weather' : 'الطقس'}
-              </span>
-            </button>
+              <circle cx="12.5" cy="11.5" r="3.2" fill="#FFFFFF" />
+              <circle cx="23.5" cy="11.5" r="3.2" fill="#FFFFFF" />
+              <circle cx="18" cy="15.5" r="2.6" fill="#FDE68A" />
+              <path
+                d="M7.5 23.5C7.5 19.8 10.6 17.5 14.2 17.5H21.8C25.4 17.5 28.5 19.8 28.5 23.5V25.2C28.5 26.5 27.4 27.5 26.1 27.5H9.9C8.6 27.5 7.5 26.5 7.5 25.2V23.5Z"
+                fill="#FFFFFF"
+                fillOpacity="0.92"
+              />
+              <path
+                d="M18 25.2C18 25.2 13.5 22.3 13.5 19.8C13.5 18.5 14.5 17.6 15.7 17.6C16.6 17.6 17.5 18.1 18 18.9C18.5 18.1 19.4 17.6 20.3 17.6C21.5 17.6 22.5 18.5 22.5 19.8C22.5 22.3 18 25.2 18 25.2Z"
+                fill="#FF8C61"
+              />
+            </svg>
           </div>
-
-          {/* Compact Brand Wordmark & Logo */}
-          <button
-            type="button"
-            onClick={() => onNavigate('home')}
-            aria-label={brandName}
-            className="min-h-[36px] px-0.5 flex items-center gap-1.5 text-start group focus:outline-none active:scale-95 transition-transform duration-150 cursor-pointer min-w-0 shrink-0 justify-end"
-          >
-            <span className="shrink-0 font-black text-[15px] text-[var(--color-text)] dark:text-[#F8FAFC] leading-tight tracking-tight">
-              {brandName}
+          <div className="leading-tight min-w-0">
+            <span className="block font-extrabold text-sm tracking-tight text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+              {isEn ? 'Nekbaar' : 'نكبر'}
             </span>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#0d9488] to-[#FF8C61] flex items-center justify-center p-0.5 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-              <ThreeDIcon id="home" size={20} />
-            </div>
+            <span className="block text-[9.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF] truncate">
+              {isEn ? 'Growing together with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+            </span>
+          </div>
+        </button>
+
+        {/* End: Compact Notifications Bell + Slidebar Drawer Button */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {/* 1. Notifications Bell */}
+          <button
+            id="header-notifications-btn"
+            data-testid="header-notifications-btn"
+            type="button"
+            onClick={() => onNavigate('notifications')}
+            aria-label={
+              unreadNotifCount > 0
+                ? isEn
+                  ? `Notifications (${unreadNotifCount} unread)`
+                  : `الإشعارات (${unreadNotifCount} غير مقروءة)`
+                : isEn
+                ? 'Notifications'
+                : 'الإشعارات'
+            }
+            className={`relative min-w-[34px] min-h-[34px] w-[34px] h-[34px] rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+              activePage === 'notifications'
+                ? 'border-[#0d9488] bg-[#0d9488]/12'
+                : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488]'
+            }`}
+          >
+            <SoftFilledIcon id="notifications" size={16} />
+            {unreadNotifCount > 0 && (
+              <span
+                data-testid="header-notifications-badge"
+                className="absolute -top-1 -end-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF8C61] text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums shadow-2xs"
+              >
+                {unreadNotifCount}
+              </span>
+            )}
+          </button>
+
+          {/* 2. Slidebar Menu Button */}
+          <button
+            id="header-slidebar-menu-btn"
+            data-testid="header-slidebar-menu-btn"
+            type="button"
+            onClick={onOpenProfileDrawer}
+            aria-label={isEn ? 'Open navigation menu' : 'فتح القائمة الجانبية'}
+            className="min-h-[34px] h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+          >
+            <span className="flex flex-col items-center justify-center gap-[3px] w-3.5" aria-hidden="true">
+              <span
+                className={`block w-3.5 h-[1.8px] rounded-full ${
+                  darkMode ? 'bg-[#F8FAFC]' : 'bg-slate-800'
+                }`}
+              />
+              <span
+                className={`block w-3.5 h-[1.8px] rounded-full ${
+                  darkMode ? 'bg-[#2DD4BF]' : 'bg-[#0d9488]'
+                }`}
+              />
+              <span
+                className={`block w-2.5 h-[1.8px] rounded-full self-end ${
+                  darkMode ? 'bg-[#F8FAFC]' : 'bg-slate-800'
+                }`}
+              />
+            </span>
+            <span className="text-[11px] font-extrabold leading-none">
+              {isEn ? 'Menu' : 'القائمة'}
+            </span>
           </button>
         </div>
-      </header>
-
-      {/* Expanded Weather Details Modal when clicking the Header Weather Widget */}
-      {weatherModalOpen && (
-        <div
-          id="header-weather-details-modal"
-          data-testid="header-weather-details-modal"
-          role="dialog"
-          aria-modal="true"
-          aria-label={isEn ? 'Expanded Family Weather Details' : 'تفاصيل الطقس وتوصيات ملابس وخروج الأطفال'}
-          onClick={() => setWeatherModalOpen(false)}
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-3 animate-fade-in"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-[430px] rounded-3xl border border-gray-100 dark:border-[#1E3646] bg-white dark:bg-[#101D26] p-4 space-y-4 shadow-2xl max-h-[88dvh] overflow-y-auto pb-safe"
-          >
-            <div className="flex items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#1E3646]">
-              <div className="flex items-center gap-2.5">
-                <span className="w-11 h-11 rounded-2xl bg-sky-500/15 text-sky-600 dark:text-sky-300 flex items-center justify-center text-xl shrink-0">
-                  {compactWeather.conditionEmoji}
-                </span>
-                <div>
-                  <h3 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {isEn
-                      ? `Family Weather · ${localizedCity}`
-                      : `حالة الطقس ودليل الأطفال · ${localizedCity}`}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                    {isEn
-                      ? 'Local weather and practical family tips'
-                      : 'حالة الطقس ونصائح مناسبة لأنشطة الأسرة'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                data-testid="close-header-weather-modal-btn"
-                onClick={() => setWeatherModalOpen(false)}
-                aria-label={isEn ? 'Close weather modal' : 'إغلاق نافذة الطقس'}
-                className="min-w-[48px] min-h-[48px] rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] text-base font-bold flex items-center justify-center active:scale-95 transition-all duration-300 ease-in-out cursor-pointer shrink-0"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Interactive LiveWeatherWidget inside modal */}
-            <LiveWeatherWidget
-              city={activeCity}
-              country={country}
-              language={lang}
-              darkMode={darkMode}
-              userCoords={userCoords}
-              onSelectCity={(cCode, cName) => {
-                onSelectCity?.(cCode, cName);
-              }}
-            />
-
-            <div className="rounded-2xl border border-sky-500/25 bg-sky-50/70 dark:bg-[#142430] p-3 space-y-1.5">
-              <p className="text-sm font-bold text-sky-800 dark:text-sky-200">
-                {isEn ? 'A quick reminder' : 'تذكير سريع'}
-              </p>
-              <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-200">
-                {isEn
-                  ? 'Check local conditions before heading out, then adjust clothing, sun protection and hydration to the day.'
-                  : 'تحققوا من حالة الطقس قبل الخروج، واختاروا الملابس ووسائل الحماية والترطيب بما يناسب اليوم.'}
-              </p>
-            </div>
-
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => setWeatherModalOpen(false)}
-                className="w-full min-h-[48px] px-5 py-3 rounded-2xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-sm font-bold active:scale-95 transition-all duration-300 ease-in-out cursor-pointer"
-              >
-                {isEn ? 'Done' : 'تم'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+      </div>
+    </header>
   );
 };

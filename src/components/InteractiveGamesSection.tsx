@@ -318,10 +318,10 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
   };
 
   return (
-    <div className="space-y-4">
-      {/* Parent Approval & Child Stage Selector Bar */}
-      <div className="rounded-[20px] border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/75 dark:bg-[#101D26] p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-2xs">
-        <div className="flex flex-wrap items-center gap-2.5">
+    <div className="space-y-3">
+      {/* Compact Parent Approval & Child Stage Selector Toolbar */}
+      <div className="rounded-xl border border-emerald-200/80 dark:border-[#1E3646] bg-emerald-50/75 dark:bg-[#101D26] px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+        <div className="flex items-center gap-2 min-w-0">
           {activeKid && (
             <ThreeDChildAvatar
               name={activeKid.name}
@@ -333,52 +333,41 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
               size="sm"
             />
           )}
-          <div>
-            <label htmlFor="gameChildSelector" className="block text-xs font-extrabold text-[var(--color-text)]">
-              🎮 {isEn ? 'Playing Profile:' : 'الطفل الذي يلعب الآن:'}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <label htmlFor="gameChildSelector" className="text-[11px] font-extrabold text-[var(--color-text)] whitespace-nowrap">
+              🎮 {isEn ? 'Player:' : 'الطفل:'}
             </label>
-            <div className="flex items-center gap-2 mt-1">
-              <select
-                id="gameChildSelector"
-                value={selectedKidId}
-                onChange={(e) => setSelectedKidId(Number(e.target.value))}
-                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1 text-xs font-extrabold text-[var(--color-text)] shadow-2xs"
-              >
-                {kids.map((k) => (
-                  <option key={k.id} value={k.id}>
-                    {locText(k.name, language)} ({calculateChildAge(k.birth, language).label})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <select
+              id="gameChildSelector"
+              value={selectedKidId}
+              onChange={(e) => setSelectedKidId(Number(e.target.value))}
+              className="min-h-[30px] h-[30px] rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2 py-0.5 text-[11px] font-extrabold text-[var(--color-text)] shadow-2xs"
+            >
+              {kids.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {locText(k.name, language)} ({calculateChildAge(k.birth, language).label})
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs">
-            <input
-              type="checkbox"
-              checked={parentApprovedSession}
-              onChange={(e) => setParentApprovedSession(e.target.checked)}
-              className="accent-[var(--color-accent)]"
-            />
-            <span>
-              🛡️ {isEn ? 'Parent-supervised play session' : 'جلسة لعب بإشراف ولي الأمر'}
-            </span>
-          </label>
-          <button
-            type="button"
-            onClick={onExitGamesToDashboard}
-            className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-xs font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs"
-          >
-            {isEn ? '← Home' : '← الرئيسية'}
-          </button>
-        </div>
+        <label className="inline-flex items-center gap-1.5 min-h-[30px] px-2.5 py-1 rounded-lg bg-white dark:bg-[#142430] border border-emerald-200 dark:border-[#1E3646] text-[11px] font-extrabold text-[var(--color-text)] cursor-pointer shadow-2xs">
+          <input
+            type="checkbox"
+            checked={parentApprovedSession}
+            onChange={(e) => setParentApprovedSession(e.target.checked)}
+            className="accent-[var(--color-accent)]"
+          />
+          <span>
+            🛡️ {isEn ? 'Supervised play' : 'بإشراف ولي الأمر'}
+          </span>
+        </label>
       </div>
 
-      {/* 4-Game Grid Switcher Cards (Memory, Coloring, Puzzle, Math) */}
+      {/* Compact 4-Game Segmented Switcher Toolbar (Memory, Coloring, Puzzle, Math) */}
       <div
-        className="grid grid-cols-2 lg:grid-cols-4 gap-2.5"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-2"
         role="tablist"
         aria-label={isEn ? 'Choose a Kids Game' : 'اختر اللعبة التعليمية'}
       >
@@ -391,7 +380,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
             subAr: 'مطابقة البطاقات',
             subEn: 'Flip & Match Pairs',
             badge: `${matchedPairsCount}/${INITIAL_MEMORY_PAIRS.length}`,
-            activeClass: 'border-purple-500 bg-purple-50/90',
+            activeClass: 'border-purple-500 bg-purple-50/90 dark:bg-purple-950/30',
             badgeClass: 'bg-purple-100 text-purple-900',
           },
           {
@@ -402,7 +391,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
             subAr: 'تلوين صاروخ الفضاء',
             subEn: 'Paint Space Rocket',
             badge: `${coloringTapsCount} 🎨`,
-            activeClass: 'border-pink-500 bg-pink-50/90',
+            activeClass: 'border-pink-500 bg-pink-50/90 dark:bg-pink-950/30',
             badgeClass: 'bg-pink-100 text-pink-900',
           },
           {
@@ -413,7 +402,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
             subAr: 'ترتيب لوحة الطبيعة',
             subEn: 'Swap & Solve Tiles',
             badge: isPuzzleSolved ? '✓' : `${puzzleMoves}`,
-            activeClass: 'border-sky-500 bg-sky-50/90',
+            activeClass: 'border-sky-500 bg-sky-50/90 dark:bg-sky-950/30',
             badgeClass: 'bg-sky-100 text-sky-900',
           },
           {
@@ -424,7 +413,7 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
             subAr: 'عدّ وجمع الأشكال',
             subEn: 'Count & Add Fun',
             badge: `⭐ ${mathScore}`,
-            activeClass: 'border-amber-500 bg-amber-50/90',
+            activeClass: 'border-amber-500 bg-amber-50/90 dark:bg-amber-950/30',
             badgeClass: 'bg-amber-100 text-amber-900',
           },
         ].map((g) => {
@@ -436,17 +425,17 @@ export const InteractiveGamesSection: React.FC<InteractiveGamesSectionProps> = (
               role="tab"
               aria-selected={isCurrent}
               onClick={() => setActiveGame(g.id)}
-              className={`rounded-2xl border p-3 flex flex-col justify-between gap-2 text-start transition-all cursor-pointer ${
+              className={`rounded-xl border px-2.5 py-2 flex flex-col justify-between gap-1 text-start transition-all cursor-pointer ${
                 isCurrent
-                  ? `${g.activeClass} shadow-2xs ring-2 ring-black/5`
+                  ? `${g.activeClass} shadow-2xs ring-1 ring-black/5`
                   : 'border-[var(--color-border)] bg-[var(--color-surface)] hover:border-[var(--color-accent)]'
               }`}
             >
-              <div className="w-full flex items-center justify-between gap-2">
-                <span className="w-10 h-10 rounded-xl bg-white shadow-2xs flex items-center justify-center text-xl shrink-0">
+              <div className="w-full flex items-center justify-between gap-1.5">
+                <span className="w-7 h-7 rounded-lg bg-white dark:bg-[#142430] shadow-2xs flex items-center justify-center text-sm shrink-0">
                   {g.emoji}
                 </span>
-                <span className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold tabular-nums ${g.badgeClass}`}>
+                <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold tabular-nums ${g.badgeClass}`}>
                   {g.badge}
                 </span>
               </div>

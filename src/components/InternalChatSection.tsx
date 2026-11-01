@@ -216,7 +216,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-white/90 border border-white/80 max-w-2xl mx-auto">
+        <div className="flex flex-wrap items-center justify-center gap-1 p-1 rounded-xl bg-white/95 border border-white/80 max-w-xl mx-auto shadow-2xs">
           {[
             { id: 'all', labelAr: 'الكل', labelEn: 'All' },
             { id: 'nursery', labelAr: 'الحضانة', labelEn: 'Nursery' },
@@ -227,7 +227,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setCategoryFilter(tab.id as typeof categoryFilter)}
-              className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap ${
+              className={`min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
                 categoryFilter === tab.id
                   ? 'bg-[#FF8C61] text-white shadow-2xs'
                   : 'text-slate-700 hover:bg-orange-50'
@@ -252,7 +252,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                   : 'تمت استعادة المحادثات النشطة بنجاح'
               );
             }}
-            className="min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border border-orange-200 bg-orange-50 text-orange-950 hover:bg-orange-100 transition-colors whitespace-nowrap"
+            className="min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-orange-200 bg-orange-50 text-orange-950 hover:bg-orange-100 transition-colors whitespace-nowrap cursor-pointer"
           >
             {chatsArchived
               ? isEn

@@ -1,382 +1,373 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { LanguageCode } from '../domain/familySpaceCore';
-import { useOptionalFamilyAppContext } from '../context/FamilyAppContext';
 
-export interface SectionToolAction {
+export interface SectionQuickAction {
   id: string;
   labelAr: string;
   labelEn: string;
   icon?: string;
-  active?: boolean;
   badge?: string | number;
+  active?: boolean;
+  tone?: 'teal' | 'orange' | 'indigo' | 'rose' | 'neutral';
   closeOnSelect?: boolean;
   onClick: () => void;
 }
 
 export interface SectionToolsDrawerProps {
   language: LanguageCode;
-  titleAr: string;
-  titleEn: string;
-  sectionId?: string;
+  sectionId: string;
+  titleAr?: string;
+  titleEn?: string;
+  subtitleAr?: string;
+  subtitleEn?: string;
+  /** Optional active filter/sort count badge shown on the compact trigger button */
   badgeCount?: number;
+  /** Optional quick action chips rendered inside the slide-over drawer */
+  quickActions?: SectionQuickAction[];
+  /** Optional shopping cart item count; when onOpenCart is provided, renders a cart shortcut inside the drawer and badge on trigger */
   cartItemCount?: number;
+  /** Optional callback to open the shopping cart modal or navigate to the store cart */
   onOpenCart?: () => void;
-  quickActions?: SectionToolAction[];
+  /** Optional unified search bar inside the drawer */
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholderAr?: string;
   searchPlaceholderEn?: string;
+  /** Optional clear/reset callback for filters inside the drawer */
+  onResetFilters?: () => void;
+  hasActiveFilters?: boolean;
+  /** Custom section-specific filter/sort/tool controls rendered inside the drawer body */
   children?: React.ReactNode;
 }
 
-const CART_EXCLUDED_SECTION_IDS = new Set([
-  'community',
-  'settings',
-  'account',
-  'family',
-  'permissions',
-  'homes',
-]);
+const TONE_CLASSES: Record<NonNullable<SectionQuickAction['tone']>, string> = {
+  teal:
+    'border-[#0d9488]/30 bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white',
+  orange:
+    'border-[#EA580C]/30 bg-orange-500/10 text-[#EA580C] dark:text-[#FDBA74] hover:bg-[#EA580C] hover:text-white',
+  indigo:
+    'border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-600 hover:text-white',
+  rose:
+    'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white',
+  neutral:
+    'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488]',
+};
 
 /**
- * Standardized Section Tools (`أدوات القسم`) side sheet.
- * Positioned immediately after each section's top banner/announcement board,
- * aligned to the start edge (`justify-start` in both RTL and LTR),
- * and centralizing section-specific search, filter, sort, and quick tools
- * inside a soft, premium, mobile-first side sheet.
- *
- * Shopping cart shortcuts are strictly excluded from Community (`community`)
- * and Account (`settings` / `account` / `family`) sections and preserved in
- * the Store (`store`) section.
+ * Sections where the shopping cart must NEVER be displayed:
+ * - 'community' (Parents Community / مجتمع الآباء والأمهات)
+ * - 'settings' / 'account' / 'family' (Account & Settings / الحساب والإعدادات)
  */
+const CART_EXCLUDED_SECTION_IDS = new Set(['community', 'settings', 'account', 'family']);
+
 export const SectionToolsDrawer: React.FC<SectionToolsDrawerProps> = ({
   language,
-  titleAr,
-  titleEn,
   sectionId,
+  titleAr = 'أدوات القسم',
+  titleEn = 'Section tools',
+  subtitleAr = 'الفلاتر والفرز والاختصارات السريعة',
+  subtitleEn = 'Filters, sorting & quick actions',
   badgeCount = 0,
-  cartItemCount,
-  onOpenCart,
   quickActions = [],
+  cartItemCount = 0,
+  onOpenCart,
   searchValue,
   onSearchChange,
-  searchPlaceholderAr,
-  searchPlaceholderEn,
+  searchPlaceholderAr = 'ابحث داخل هذا القسم...',
+  searchPlaceholderEn = 'Search in this section...',
+  onResetFilters,
+  hasActiveFilters = false,
   children,
 }) => {
   const isEn = language === 'en';
-  const [isOpen, setIsOpen] = useState(false);
-  const appCtx = useOptionalFamilyAppContext();
-
-  const normalizedSectionId = (sectionId || '').trim().toLowerCase();
-  const isCartExcludedSection = CART_EXCLUDED_SECTION_IDS.has(normalizedSectionId);
-  const showCartInSection =
-    !isCartExcludedSection &&
-    (Boolean(onOpenCart) || normalizedSectionId === 'store' || typeof cartItemCount === 'number');
-
-  const contextCartCount =
-    appCtx?.state?.cart?.reduce((sum, entry) => sum + (entry.quantity || 0), 0) ?? 0;
-  const resolvedCartCount = showCartInSection
-    ? typeof cartItemCount === 'number'
-      ? cartItemCount
-      : contextCartCount
-    : 0;
-
-  const activeQuickActionsCount = quickActions.filter((a) => Boolean(a.active)).length;
-  const searchActiveCount = searchValue && searchValue.trim().length > 0 ? 1 : 0;
-  const resolvedBadgeCount = badgeCount + searchActiveCount + activeQuickActionsCount;
+  const showCartInSection = Boolean(onOpenCart) && !CART_EXCLUDED_SECTION_IDS.has(sectionId);
+  const [open, setOpen] = useState(false);
+  const drawerTitleId = useId();
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!open) return undefined;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        setOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [open]);
 
-  const handleOpenCart = () => {
-    if (!showCartInSection) return;
-    if (onOpenCart) {
-      onOpenCart();
-      setIsOpen(false);
-      return;
-    }
-    if (appCtx?.navigateTo) {
-      appCtx.navigateTo('services');
-      setIsOpen(false);
-    }
-  };
-
-  const subtitleText = showCartInSection
-    ? isEn
-      ? 'Search, smart filters, cart & section tools'
-      : 'البحث والفلاتر الذكية والسلة وأدوات القسم'
-    : isEn
-      ? 'Search, smart filters & quick section tools'
-      : 'البحث والفلاتر الذكية وأدوات التخصيص السريعة';
+  const effectiveBadgeCount =
+    badgeCount + (hasActiveFilters ? 1 : 0) + (searchValue && searchValue.trim() ? 1 : 0);
 
   return (
-    <>
-      <div
-        data-testid={sectionId ? `section-tools-bar-${sectionId}` : 'section-tools-bar'}
-        dir={isEn ? 'ltr' : 'rtl'}
-        className="w-full flex items-center justify-start"
+    <div
+      data-testid={`section-tools-bar-${sectionId}`}
+      dir={isEn ? 'ltr' : 'rtl'}
+      className="flex items-center justify-between gap-2"
+    >
+      {/* Compact, refined section toolbar trigger */}
+      <button
+        type="button"
+        id={`section-tools-open-btn-${sectionId}`}
+        data-testid="section-tools-open-btn"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={`section-tools-drawer-${sectionId}`}
+        className="group inline-flex items-center gap-1.5 min-h-[34px] h-[34px] px-2.5 py-1 rounded-xl border border-slate-200/85 dark:border-[#1E3646] bg-white/95 dark:bg-[#101D26]/95 hover:border-[#0d9488]/60 hover:bg-teal-50/40 dark:hover:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] text-[11px] font-extrabold shadow-2xs transition-all cursor-pointer"
       >
-        <button
-          type="button"
-          data-testid="section-tools-open-btn"
-          aria-haspopup="dialog"
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen(true)}
-          className="group min-h-[44px] inline-flex items-center gap-2.5 rounded-2xl border border-teal-600/20 dark:border-teal-400/20 bg-gradient-to-b from-white to-slate-50/95 dark:from-[#12222E] dark:to-[#0E1A24] px-4 py-2 text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] shadow-sm shadow-teal-950/5 hover:border-[#0d9488]/50 hover:shadow-md active:scale-[0.99] transition-all duration-200 cursor-pointer shrink-0"
+        <span
+          aria-hidden="true"
+          className="w-5 h-5 rounded-md bg-teal-500/12 dark:bg-teal-400/15 text-[#0d9488] dark:text-[#2DD4BF] inline-flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
         >
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="8" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="16" y2="18" />
+            <circle cx="6" cy="6" r="2" fill="currentColor" />
+            <circle cx="14" cy="12" r="2" fill="currentColor" />
+            <circle cx="18" cy="18" r="2" fill="currentColor" />
+          </svg>
+        </span>
+        <span className="tracking-tight leading-none">{isEn ? titleEn : titleAr}</span>
+        {effectiveBadgeCount > 0 && (
           <span
-            aria-hidden="true"
-            className="w-7 h-7 rounded-xl bg-teal-500/12 dark:bg-teal-400/15 border border-teal-500/20 text-[#0d9488] dark:text-[#2DD4BF] inline-flex items-center justify-center text-sm shadow-2xs group-hover:scale-105 transition-transform"
+            data-testid="section-tools-active-badge"
+            className="min-w-[18px] h-[18px] px-1 rounded-md bg-[#0d9488] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums leading-none"
           >
-            ☷
+            {effectiveBadgeCount}
           </span>
-          <span className="tracking-tight">{isEn ? 'Section tools' : 'أدوات القسم'}</span>
-          <span className="text-[11px] font-bold text-[var(--color-muted)] dark:text-[#94A3B8] hidden sm:inline">
-            · {isEn ? titleEn : titleAr}
+        )}
+        {showCartInSection && cartItemCount > 0 && (
+          <span
+            data-testid="section-tools-trigger-cart-badge"
+            className="inline-flex items-center gap-0.5 px-1.5 h-[18px] rounded-md bg-[#EA580C]/12 text-[#EA580C] dark:text-[#FDBA74] text-[10px] font-black tabular-nums leading-none"
+          >
+            <span aria-hidden="true" className="text-[10px]">🛒</span>
+            <span>{cartItemCount}</span>
           </span>
-          {resolvedBadgeCount > 0 && (
-            <span
-              data-testid="section-tools-active-badge"
-              className="min-w-5 h-5 rounded-full bg-gradient-to-r from-[#0d9488] to-[#0f766e] px-1.5 text-[10px] font-black text-white inline-flex items-center justify-center tabular-nums shadow-2xs"
-            >
-              {resolvedBadgeCount}
-            </span>
-          )}
-          {showCartInSection && resolvedCartCount > 0 && (
-            <span
-              data-testid="section-tools-trigger-cart-badge"
-              className="min-h-5 rounded-full bg-gradient-to-r from-[#FF8C61] to-[#F97316] px-2 py-0.5 text-[10px] font-black text-white inline-flex items-center gap-1 tabular-nums shadow-2xs"
-            >
-              <span aria-hidden="true">🛒</span>
-              <span>{resolvedCartCount}</span>
-            </span>
-          )}
-        </button>
-      </div>
+        )}
+      </button>
 
-      {isOpen && (
-        <div
-          data-testid="section-tools-backdrop"
-          className="fixed inset-0 z-[95] bg-slate-950/45 backdrop-blur-md flex items-stretch transition-opacity duration-200"
-          role="presentation"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setIsOpen(false);
-          }}
-        >
-          <aside
-            data-testid="section-tools-drawer"
-            role="dialog"
-            aria-modal="true"
-            aria-label={isEn ? titleEn : titleAr}
+      {/* Slide-Over Tools Drawer rendered via Portal */}
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[1300] flex justify-end bg-slate-950/45 backdrop-blur-[2px] animate-fade-in"
             dir={isEn ? 'ltr' : 'rtl'}
-            className="w-[min(92vw,390px)] max-w-[390px] h-[100dvh] flex flex-col overflow-hidden bg-gradient-to-b from-[#FFFFFF] via-[#F8FAFC] to-[#F1F5F9]/95 dark:from-[#0E1A24] dark:via-[#0B141C] dark:to-[#091118] border-e border-slate-200/80 dark:border-[#1E3646] rounded-e-3xl pt-safe pb-safe shadow-[0_24px_60px_-15px_rgba(15,23,42,0.42)] animate-tab-enter"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setOpen(false);
+            }}
           >
-            {/* Soft Premium Sheet Header */}
-            <div className="shrink-0 px-4 pt-4 pb-3.5 border-b border-slate-200/75 dark:border-[#1E3646]/90 bg-white/85 dark:bg-[#0E1A24]/90 backdrop-blur-md">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
+            <aside
+              id={`section-tools-drawer-${sectionId}`}
+              data-testid="section-tools-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={drawerTitleId}
+              className="relative w-[min(86vw,340px)] max-w-[340px] h-full bg-[var(--color-surface)] dark:bg-[#101D26] border-s border-[var(--color-border)] dark:border-[#1E3646] shadow-2xl flex flex-col justify-between overflow-hidden"
+            >
+              {/* Compact Drawer Header */}
+              <div className="px-3.5 py-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)]/80 dark:bg-[#142430]/90 flex items-center justify-between gap-2">
+                <div className="min-w-0 flex items-center gap-2">
+                  <span
                     aria-hidden="true"
-                    className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500/15 via-teal-500/10 to-emerald-500/5 dark:from-teal-400/20 dark:to-teal-500/5 border border-teal-500/25 dark:border-teal-400/25 text-[#0d9488] dark:text-[#2DD4BF] flex items-center justify-center text-base font-black shrink-0 shadow-2xs"
+                    className="w-6 h-6 rounded-lg bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] inline-flex items-center justify-center shrink-0"
                   >
-                    ☷
-                  </div>
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="4" y1="6" x2="20" y2="6" />
+                      <line x1="8" y1="12" x2="20" y2="12" />
+                      <line x1="4" y1="18" x2="16" y2="18" />
+                    </svg>
+                  </span>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#0d9488] dark:bg-[#2DD4BF]" />
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0d9488] dark:text-[#2DD4BF]">
-                        {isEn ? 'Section Workspace' : 'مساحة أدوات القسم'}
-                      </span>
-                    </div>
-                    <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate mt-0.5">
+                    <h3
+                      id={drawerTitleId}
+                      className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] truncate leading-tight"
+                    >
                       {isEn ? titleEn : titleAr}
-                    </h2>
-                    <p className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
-                      {subtitleText}
+                    </h3>
+                    <p className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] truncate">
+                      {isEn ? subtitleEn : subtitleAr}
                     </p>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  data-testid="section-tools-close-btn"
-                  onClick={() => setIsOpen(false)}
-                  aria-label={isEn ? 'Close section tools' : 'إغلاق أدوات القسم'}
-                  className="min-w-[44px] min-h-[44px] w-11 h-11 shrink-0 rounded-2xl border border-slate-200/80 dark:border-[#1E3646] bg-slate-100/80 dark:bg-[#142430] hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-600 dark:hover:text-rose-300 text-[var(--color-text)] dark:text-[#F8FAFC] text-lg font-black inline-flex items-center justify-center transition-all cursor-pointer active:scale-95"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {showCartInSection && onOpenCart && (
+                    <button
+                      type="button"
+                      data-testid="section-tools-cart-btn"
+                      onClick={() => {
+                        setOpen(false);
+                        onOpenCart();
+                      }}
+                      className="min-h-[30px] h-[30px] px-2.5 py-1 rounded-lg border border-[#EA580C]/35 bg-orange-500/10 hover:bg-[#EA580C] hover:text-white text-[#EA580C] dark:text-[#FDBA74] text-[11px] font-extrabold inline-flex items-center gap-1 transition-all cursor-pointer"
+                    >
+                      <span aria-hidden="true">🛒</span>
+                      <span>{isEn ? 'Cart' : 'السلة'}</span>
+                      <span
+                        data-testid="section-tools-cart-count"
+                        className="min-w-[16px] h-4 px-1 rounded-md bg-[#EA580C] text-white text-[10px] font-black inline-flex items-center justify-center tabular-nums"
+                      >
+                        {cartItemCount}
+                      </span>
+                    </button>
+                  )}
 
-            {/* Scrollable Sheet Body */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-4">
-              {/* Store-only Shopping Cart Shortcut */}
-              {showCartInSection && (
-                <div className="rounded-2xl p-1 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-teal-500/10 border border-amber-300/60 dark:border-amber-500/30 shadow-2xs">
                   <button
                     type="button"
-                    data-testid="section-tools-cart-btn"
-                    onClick={handleOpenCart}
-                    className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl bg-white/95 dark:bg-[#132330] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-between gap-2.5 text-xs font-extrabold hover:bg-amber-50/60 dark:hover:bg-[#172B3A] transition-all cursor-pointer"
+                    data-testid="section-tools-close-btn"
+                    onClick={() => setOpen(false)}
+                    aria-label={isEn ? 'Close section tools' : 'إغلاق أدوات القسم'}
+                    className="w-7 h-7 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-rose-400 hover:text-rose-600 text-xs font-black inline-flex items-center justify-center transition-colors cursor-pointer"
                   >
-                    <span className="inline-flex items-center gap-2.5">
-                      <span
-                        aria-hidden="true"
-                        className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-300 inline-flex items-center justify-center text-sm"
-                      >
-                        🛒
-                      </span>
-                      <span className="flex flex-col items-start text-start">
-                        <span>{isEn ? 'Shopping Cart' : 'سلة التسوق'}</span>
-                        <span className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                          {isEn ? 'Review selected family items' : 'مراجعة المنتجات المختارة للعائلة'}
-                        </span>
-                      </span>
-                    </span>
-                    <span
-                      data-testid="section-tools-cart-count"
-                      className={`min-w-7 h-7 px-2.5 rounded-full text-xs font-black inline-flex items-center justify-center tabular-nums shadow-2xs ${
-                        resolvedCartCount > 0
-                          ? 'bg-gradient-to-r from-[#FF8C61] to-[#F97316] text-white'
-                          : 'bg-slate-200/90 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
-                      }`}
-                    >
-                      {resolvedCartCount}
-                    </span>
+                    ✕
                   </button>
                 </div>
-              )}
+              </div>
 
-              {/* Unified Section Search Input inside Section Tools */}
-              {onSearchChange && (
-                <div className="rounded-2xl border border-slate-200/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#111F2B] p-3 shadow-2xs space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="block text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#E2E8F0]">
-                      {isEn ? 'Quick Search' : 'البحث السريع في القسم'}
-                    </label>
-                    {searchValue && searchValue.trim().length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => onSearchChange('')}
-                        className="text-[10px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
-                      >
-                        {isEn ? 'Clear' : 'مسح'}
-                      </button>
-                    )}
-                  </div>
-                  <div className="relative flex items-center">
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute start-3 text-xs text-[var(--color-muted)] dark:text-[#94A3B8]"
+              {/* Drawer Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-3.5 space-y-3.5">
+                {/* Unified Section Search Input */}
+                {typeof onSearchChange === 'function' && (
+                  <div className="space-y-1">
+                    <label
+                      htmlFor={`section-tools-search-${sectionId}`}
+                      className="block text-[10px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]"
                     >
-                      🔍
-                    </span>
-                    <input
-                      type="search"
-                      data-testid="section-tools-search-input"
-                      value={searchValue ?? ''}
-                      onChange={(e) => onSearchChange(e.target.value)}
-                      placeholder={
-                        isEn
-                          ? searchPlaceholderEn || 'Search in this section...'
-                          : searchPlaceholderAr || 'ابحث في هذا القسم...'
-                      }
-                      aria-label={isEn ? titleEn : titleAr}
-                      className="w-full min-h-[44px] rounded-xl border border-slate-200/90 dark:border-[#1E3646] bg-slate-50/90 dark:bg-[#142430] ps-9 pe-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] placeholder:text-[var(--color-muted)] focus:outline-none focus:border-[#0d9488] focus:bg-white dark:focus:bg-[#172A38] transition-colors"
-                    />
+                      {isEn ? 'Quick Search' : 'بحث سريع داخل القسم'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        id={`section-tools-search-${sectionId}`}
+                        data-testid="section-tools-search-input"
+                        type="search"
+                        value={searchValue ?? ''}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        placeholder={isEn ? searchPlaceholderEn : searchPlaceholderAr}
+                        className="w-full min-h-[34px] h-[34px] ps-3 pe-8 py-1 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC] focus:outline-none focus:border-[#0d9488]"
+                      />
+                      {searchValue && searchValue.trim().length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => onSearchChange('')}
+                          aria-label={isEn ? 'Clear search' : 'مسح البحث'}
+                          className="absolute top-1/2 -translate-y-1/2 end-1.5 w-5 h-5 rounded-md bg-slate-200/80 dark:bg-slate-700 text-[10px] font-black text-slate-700 dark:text-slate-200 inline-flex items-center justify-center cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Quick Actions / Filters Card */}
-              {quickActions.length > 0 && (
-                <div className="rounded-2xl border border-slate-200/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#111F2B] p-3 shadow-2xs space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#E2E8F0]">
-                      {isEn ? 'Views & Quick Filters' : 'طرق العرض والفلاتر السريعة'}
-                    </span>
-                    {activeQuickActionsCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black tabular-nums">
-                        {activeQuickActionsCount}
-                      </span>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {quickActions.map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        data-testid={`section-tool-chip-${action.id}`}
-                        onClick={() => {
-                          action.onClick();
-                          if (action.closeOnSelect) {
-                            setIsOpen(false);
-                          }
-                        }}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-xs font-extrabold flex items-center justify-between gap-1.5 transition-all duration-150 cursor-pointer active:scale-[0.98] ${
-                          action.active
-                            ? 'border-[#0d9488] bg-gradient-to-r from-[#0d9488] to-[#0f766e] text-white shadow-sm shadow-teal-950/15'
-                            : 'border-slate-200/85 dark:border-[#1E3646] bg-slate-50/85 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#0d9488]/60 hover:bg-white dark:hover:bg-[#182B3A]'
-                        }`}
-                      >
-                        <span className="inline-flex items-center gap-1.5 truncate">
-                          {action.icon && (
-                            <span aria-hidden="true" className="text-sm shrink-0">
-                              {action.icon}
-                            </span>
-                          )}
-                          <span className="truncate">{isEn ? action.labelEn : action.labelAr}</span>
-                        </span>
-                        {action.badge !== undefined && (
-                          <span
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-black tabular-nums shrink-0 ${
-                              action.active
-                                ? 'bg-white/25 text-white'
-                                : 'bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
-                            }`}
+                {/* Quick Action Chips */}
+                {quickActions.length > 0 && (
+                  <div className="space-y-1.5">
+                    <div className="text-[10px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                      {isEn ? 'Quick Actions' : 'إجراءات سريعة'}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {quickActions.map((action) => {
+                        const toneClass = action.active
+                          ? 'border-[#0d9488] bg-[#0d9488] text-white shadow-2xs'
+                          : TONE_CLASSES[action.tone || 'neutral'];
+                        return (
+                          <button
+                            key={action.id}
+                            type="button"
+                            data-testid={`section-tool-chip-${action.id}`}
+                            onClick={() => {
+                              action.onClick();
+                              if (action.closeOnSelect !== false) {
+                                setOpen(false);
+                              }
+                            }}
+                            className={`min-h-[34px] px-2.5 py-1.5 rounded-lg border text-[11px] font-extrabold inline-flex items-center justify-between gap-1.5 transition-all cursor-pointer text-start ${toneClass}`}
                           >
-                            {action.badge}
-                          </span>
-                        )}
-                      </button>
-                    ))}
+                            <span className="inline-flex items-center gap-1.5 min-w-0">
+                              {action.icon && <span aria-hidden="true" className="text-xs shrink-0">{action.icon}</span>}
+                              <span className="truncate">{isEn ? action.labelEn : action.labelAr}</span>
+                            </span>
+                            {action.badge !== undefined && (
+                              <span
+                                className={`px-1 py-0.2 rounded text-[10px] font-black tabular-nums shrink-0 ${
+                                  action.active
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-black/8 dark:bg-white/10 text-current'
+                                }`}
+                              >
+                                {action.badge}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Section-Specific Custom Tools */}
-              {children && (
-                <div className="rounded-2xl border border-slate-200/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#111F2B] p-3.5 shadow-2xs space-y-3">
-                  {children}
-                </div>
-              )}
-            </div>
+                {/* Section-Specific Filters / Controls */}
+                {children && (
+                  <div
+                    data-testid={`section-tools-custom-body-${sectionId}`}
+                    className="space-y-3"
+                  >
+                    {children}
+                  </div>
+                )}
+              </div>
 
-            {/* Soft Sheet Footer */}
-            <div className="shrink-0 px-4 py-3 border-t border-slate-200/75 dark:border-[#1E3646]/90 bg-white/85 dark:bg-[#0E1A24]/90 backdrop-blur-md">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="w-full min-h-[44px] rounded-xl bg-gradient-to-r from-[#0d9488] to-[#0f766e] hover:from-[#0f766e] hover:to-[#115e59] text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer active:scale-[0.99]"
-              >
-                {isEn ? 'Done & Return to Section' : 'تم والعودة للقسم'}
-              </button>
-            </div>
-          </aside>
-        </div>
-      )}
-    </>
+              {/* Compact Drawer Footer */}
+              <div className="px-3.5 py-2.5 border-t border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)]/80 dark:bg-[#142430]/90 flex items-center justify-between gap-2">
+                {onResetFilters ? (
+                  <button
+                    type="button"
+                    data-testid="section-tools-reset-btn"
+                    onClick={() => onResetFilters()}
+                    className="min-h-[32px] h-8 px-2.5 py-1 rounded-lg border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] text-[11px] font-extrabold text-[var(--color-muted)] hover:text-[var(--color-text)] cursor-pointer"
+                  >
+                    {isEn ? 'Reset' : 'إعادة ضبط'}
+                  </button>
+                ) : (
+                  <span className="text-[10px] font-bold text-[var(--color-muted)]">
+                    {isEn ? 'Settings saved automatically' : 'يتم تطبيق الاختيارات فورًا'}
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  data-testid="section-tools-done-btn"
+                  onClick={() => setOpen(false)}
+                  className="min-h-[32px] h-8 px-3.5 py-1 rounded-lg bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold shadow-2xs transition-colors cursor-pointer"
+                >
+                  {isEn ? 'Done' : 'تم'}
+                </button>
+              </div>
+            </aside>
+          </div>,
+          document.body
+        )}
+    </div>
   );
 };
-
-
