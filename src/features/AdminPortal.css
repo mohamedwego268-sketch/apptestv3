@@ -167,3 +167,23 @@
 .admin-detail-chips{display:flex;gap:8px;flex-wrap:wrap}
 .admin-detail-chips span{padding:6px 9px;border-radius:99px;background:var(--admin-surface);border:1px solid var(--admin-border);font-size:10px;font-weight:800}
 @media(max-width:640px){.admin-detail-grid,.admin-detail-children{grid-template-columns:1fr}.admin-detail-list>div{align-items:flex-start;flex-direction:column;gap:3px}.admin-detail-modal{max-height:94vh}.admin-detail-body{padding-bottom:8px}}
+
+
+/* B2B store and trade management */
+.b2b-store-panel{overflow:hidden}
+.b2b-tabs{display:flex;gap:8px;flex-wrap:wrap;padding:0 0 15px;margin-bottom:4px;border-bottom:1px solid var(--admin-border)}
+.b2b-tabs button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--admin-border);border-radius:11px;background:var(--admin-surface-2);color:var(--admin-muted);padding:9px 12px;font:800 10px var(--font-ui);cursor:pointer;transition:.18s}
+.b2b-tabs button.active{background:linear-gradient(120deg,#0d9488,#0284c7);border-color:transparent;color:#fff;box-shadow:0 5px 14px #0284c729}
+.b2b-tabs button b{font-size:9px;padding:2px 6px;border-radius:20px;background:#ffffff24}
+.b2b-order-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.b2b-order-summary>div{display:grid;gap:5px;padding:13px;border:1px solid var(--admin-border);border-radius:12px;background:var(--admin-surface-2)}
+.b2b-order-summary span{font-size:9px;color:var(--admin-muted);font-weight:700}
+.b2b-order-summary b{font-size:20px;font-weight:900;color:var(--admin-text);font-variant-numeric:tabular-nums}
+.b2b-modal{width:min(100%,780px)}
+.b2b-modal .admin-staff-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.b2b-modal .catalog-description{grid-column:1/-1}
+.b2b-store-panel .panel-heading{align-items:flex-start}
+.b2b-store-panel .catalog-heading-actions{flex-wrap:wrap;justify-content:flex-end}
+.b2b-store-panel .admin-table{min-width:850px}
+@media(max-width:760px){.b2b-order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.b2b-store-panel .panel-heading{flex-direction:column}.b2b-store-panel .catalog-heading-actions{width:100%;justify-content:stretch}.b2b-store-panel .catalog-heading-actions .admin-search{flex:1;min-width:0}.b2b-store-panel .catalog-heading-actions .admin-add-btn{white-space:nowrap}}
+@media(max-width:560px){.b2b-modal .admin-staff-form-grid{grid-template-columns:1fr}.b2b-modal .catalog-description{grid-column:auto}.b2b-tabs{display:grid;grid-template-columns:1fr}.b2b-tabs button{justify-content:space-between}}
