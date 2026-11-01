@@ -598,7 +598,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       coParentName,
       coParentEmail,
       coParentPhone,
-      isCoParentLinked: true,
+      isCoParentLinked: familyInvitationAccepted,
     });
   }, [
     activeView,
@@ -773,6 +773,11 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             coParentInvitationAccepted: true,
           };
           invitationAccepted = true;
+          setVerifiedFamilyUuid(restored.verifiedFamilyId);
+          if (restored.family?.country) {
+            setSelectedCountryCode(resolveCountryCode(restored.family.country, params.coreCountry));
+          }
+          if (restored.family?.city) setSelectedCityAr(restored.family.city);
         }
       }
       setFamilyInvitationAccepted(invitationAccepted);
@@ -845,7 +850,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               : 'تم حفظ بياناتك محلياً؛ تعذرت المزامنة مع قاعدة البيانات السحابية حالياً.')
         );
       }
-      return authRes;
+      return effectiveAuthRes;
     } catch {
       setAuthSyncedToDb(false);
       setDbSyncWarning(
