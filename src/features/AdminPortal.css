@@ -124,3 +124,15 @@
 .catalog-check{display:flex!important;flex-direction:row!important;align-items:center;gap:8px}
 .catalog-check input{width:16px!important;height:16px;accent-color:var(--admin-teal)}
 @media(max-width:720px){.catalog-heading-actions{align-items:stretch;flex-direction:column;width:100%}.catalog-heading-actions .admin-search{width:100%}.catalog-modal{max-height:92vh;overflow:auto}}
+
+/* Audit operations */
+.admin-security-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,.9fr);gap:15px}
+.audit-table-list{min-height:150px}
+.audit-event-main{flex:1;min-width:0}
+.audit-event-main b{display:block;font-size:11px}
+.audit-event-main small{display:block;font-size:9px;color:var(--admin-muted);overflow-wrap:anywhere;margin-top:4px}
+.audit-row time{font-size:9px;color:var(--admin-muted);white-space:nowrap}
+.security-advisory{margin-top:17px;padding:12px;border-radius:12px;background:var(--admin-surface-2);border:1px solid var(--admin-border)}
+.security-advisory b{font-size:10px}
+.security-advisory p{font-size:9px;line-height:1.8;color:var(--admin-muted);margin:6px 0 0}
+@media(max-width:1000px){.admin-security-layout{grid-template-columns:1fr}}
