@@ -81,6 +81,7 @@ import {
   syncFamilySpaceToSupabase,
   saveMyParentLocation,
   verifyAccountIdentityOtpInSupabase,
+  linkCoParentAccountInSupabase,
 } from './services/supabaseService';
 import { useMasterController } from './services/MasterAppController';
 import { getLocalizedDocumentTitle, locText } from './utils/familyFormatters';
@@ -2762,6 +2763,23 @@ export default function App() {
                       ...prev.invitations,
                     ],
                   }));
+                }}
+                onCreateCoParentInvitation={async (payload) => {
+                  const currentState = stateRef.current;
+                  const activeProfile = currentState.parentAccounts[currentState.activeParentAccount];
+                  const result = await linkCoParentAccountInSupabase({
+                    familyId: currentState.verifiedFamilyId || '',
+                    partnerRole: payload.partnerRole,
+                    partnerName: payload.partnerName,
+                    partnerPhone: payload.partnerPhone,
+                    partnerEmail: payload.partnerEmail,
+                    country: activeProfile?.country || currentState.country,
+                    method: 'qr_token',
+                  });
+                  return {
+                    success: result.invitationCreated === true && !result.error,
+                    error: result.error,
+                  };
                 }}
                 onUpdateInvitationStatus={(invitationId, status) => {
                   setState((prev) => {
