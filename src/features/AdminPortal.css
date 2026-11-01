@@ -136,3 +136,7 @@
 .security-advisory b{font-size:10px}
 .security-advisory p{font-size:9px;line-height:1.8;color:var(--admin-muted);margin:6px 0 0}
 @media(max-width:1000px){.admin-security-layout{grid-template-columns:1fr}}
+
+
+/* Workforce hierarchy helper text */
+.admin-form-note{margin:0 0 4px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:11px;background:var(--admin-surface-2);color:var(--admin-muted);font-size:11px;line-height:1.8}
