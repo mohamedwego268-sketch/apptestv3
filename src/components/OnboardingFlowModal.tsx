@@ -22,7 +22,6 @@ import {
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
   SHARED_FAMILY_ID,
-  acceptPendingFamilyInvitationForCurrentUser,
   authenticateParentWithSupabase,
   isValidUuid,
   linkCoParentAccountInSupabase,
@@ -749,47 +748,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       } else {
         setPendingVerificationEmail(null);
       }
-      let effectiveAuthRes = authRes;
-      let invitationAccepted = false;
-      if (authRes.success) {
-        const invitationRes = await acceptPendingFamilyInvitationForCurrentUser();
-        if (invitationRes.error) {
-          setAuthSyncedToDb(false);
-          return {
-            ...authRes,
-            success: false,
-            error: invitationRes.error,
-          };
-        }
-        if (invitationRes.accepted && invitationRes.restoredAccount) {
-          const restored = invitationRes.restoredAccount;
-          const restoredUser = restored.userProfile;
-          effectiveAuthRes = {
-            ...authRes,
-            verifiedFamilyUuid: restored.verifiedFamilyId,
-            family: restored.family,
-            sharedChildren: restored.children,
-            user: {
-              ...authRes.user,
-              id: restoredUser?.id || authRes.user.id,
-              full_name: restoredUser?.full_name || authRes.user.full_name,
-              name: restoredUser?.full_name || authRes.user.name,
-              role: restoredUser?.role || authRes.user.role,
-              email: restoredUser?.email || authRes.user.email,
-              phone: restoredUser?.phone || authRes.user.phone,
-              country: restoredUser?.country || authRes.user.country,
-            },
-            coParentInvitationAccepted: true,
-          };
-          invitationAccepted = true;
-          setVerifiedFamilyUuid(restored.verifiedFamilyId);
-          if (restored.family?.country) {
-            setSelectedCountryCode(resolveCountryCode(restored.family.country, params.coreCountry));
-          }
-          if (restored.family?.city) setSelectedCityAr(restored.family.city);
-        }
-      }
-      setFamilyInvitationAccepted(invitationAccepted);
+      const effectiveAuthRes = authRes;
+      // Co-parent invitations require an explicit decision by the invited parent.
+      const invitationAccepted = false;
+      setFamilyInvitationAccepted(false);
 
 
       // The database is authoritative on sign-in, including an empty child list.

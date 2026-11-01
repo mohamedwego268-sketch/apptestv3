@@ -17,7 +17,7 @@ import {
   sanitizeUserText,
   validatePhoneForCountry,
 } from '../domain/familySpaceCore';
-import { verifyAccountIdentityOtpInSupabase } from '../services/supabaseService';
+import { fetchPendingCoParentInvitations, PendingCoParentInvitation, respondToCoParentInvitation, verifyAccountIdentityOtpInSupabase } from '../services/supabaseService';
 import { PrimaryCtaButton } from './DesignSystem';
 
 export type SixFamilyRoleId =
@@ -308,6 +308,12 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   const [invExpires, setInvExpires] = useState('2026-12-31');
   const [invKidIds, setInvKidIds] = useState<number[]>(kids[0] ? [kids[0].id] : []);
   const [invFeedback, setInvFeedback] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+  const [incomingInvitations,setIncomingInvitations]=useState<PendingCoParentInvitation[]>([]);
+  const [incomingInvitationsLoading,setIncomingInvitationsLoading]=useState(true);
+  const [incomingInvitationBusyId,setIncomingInvitationBusyId]=useState<string|null>(null);
+  const [contactPickerMessage,setContactPickerMessage]=useState<string|null>(null);
+  React.useEffect(()=>{let active=true;void fetchPendingCoParentInvitations().then(result=>{if(!active)return;setIncomingInvitations(result.invitations);setIncomingInvitationsLoading(false);});return()=>{active=false;};},[]);
+
 
   const inviteUrl = `https://familyspace.app/join/${familyInviteCode}`;
 
@@ -478,6 +484,26 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
         ? '✅ Identity verified via Supabase Auth!'
         : '✅ تم توثيق الهوية بنجاح عبر Supabase Auth!',
     });
+  };
+
+  const handlePickPhoneContact = async () => {
+    const contactNavigator=navigator as Navigator & {contacts?:{select:(properties:string[],options?:{multiple?:boolean})=>Promise<Array<{name?:string[];tel?:string[]}>>}};
+    if(!contactNavigator.contacts?.select){setContactPickerMessage(isEn?'Contact selection is not supported here. Enter the number manually.':'اختيار جهات الاتصال غير مدعوم هنا. يمكنك كتابة الرقم يدويًا.');return;}
+    try{
+      const selected=await contactNavigator.contacts.select(['name','tel'],{multiple:false});
+      const contact=selected[0];const phone=contact?.tel?.find(value=>value.trim());if(!phone)return;
+      setInvPhone(phone.trim());const name=contact?.name?.find(value=>value.trim());if(name&&!invName.trim())setInvName(sanitizeUserText(name,80));
+      setContactPickerMessage(isEn?'Contact phone number added.':'تمت إضافة رقم جهة الاتصال.');
+    }catch(error){if(error instanceof Error&&error.name==='AbortError')return;setContactPickerMessage(isEn?'Could not access contacts. Enter the number manually.':'تعذر الوصول لجهات الاتصال. أدخل الرقم يدويًا.');}
+  };
+  const handleRespondToIncomingInvitation = async (invitation:PendingCoParentInvitation,accept:boolean) => {
+    setIncomingInvitationBusyId(invitation.invitationId);
+    const result=await respondToCoParentInvitation(invitation.invitationId,accept);
+    setIncomingInvitationBusyId(null);
+    if(result.error){onShowToast?.(result.error);return;}
+    setIncomingInvitations(previous=>previous.filter(item=>item.invitationId!==invitation.invitationId));
+    if(result.accepted){onShowToast?.(isEn?'Family invitation accepted.':'تم قبول الدعوة وربط مساحة الأسرة.');window.location.reload();return;}
+    onShowToast?.(isEn?'Invitation declined.':'تم رفض الدعوة.');
   };
 
   const handleToggleInvitedKid = (kidId: number) => {
@@ -1179,6 +1205,10 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 placeholder={getCountryMetadata(invCountry).phoneRule.exampleLocal}
                 className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-bold tabular-nums"
               />
+              <button type="button" onClick={handlePickPhoneContact} className="mt-1.5 min-h-[38px] w-full rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-extrabold text-teal-800">
+                👥 {isEn ? 'Choose from phone contacts' : 'اختيار من جهات اتصال الهاتف'}
+              </button>
+              {contactPickerMessage && <p role="status" className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{contactPickerMessage}</p>}
             </div>
           </div>
 
@@ -1237,6 +1267,20 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
           </PrimaryCtaButton>
         </form>
 
+        <div className="lg:col-span-2 rounded-[20px] border border-teal-200 bg-teal-50/70 p-4 space-y-3 dark:border-teal-900 dark:bg-teal-950/20">
+          <h3 className="text-sm font-extrabold text-[var(--color-text)]">📥 {isEn?'Invitations waiting for your decision':'دعوات واردة تحتاج إلى قرارك'}</h3>
+          {incomingInvitationsLoading ? <p className="text-xs text-[var(--color-muted)]">{isEn?'Checking invitations…':'جارٍ التحقق من الدعوات الواردة…'}</p>
+          : incomingInvitations.length===0 ? <p className="text-xs text-[var(--color-muted)]">{isEn?'No pending invitations for this account.':'لا توجد دعوات معلقة لهذا الحساب حاليًا.'}</p>
+          : incomingInvitations.map(invitation=><div key={invitation.invitationId} className="rounded-xl border border-teal-200 bg-white p-3 space-y-2 dark:border-teal-900 dark:bg-[#101D26]">
+            <div className="text-xs font-extrabold text-[var(--color-text)]">{isEn?invitation.inviterName+' invited you to '+invitation.familyName:'دعاك '+invitation.inviterName+' للانضمام إلى '+invitation.familyName}</div>
+            <div className="text-[11px] text-[var(--color-muted)]">{isEn?'Role:':'الصفة:'} {invitation.partnerRole==='mother'?(isEn?'Mother':'الأم'):(isEn?'Father':'الأب')} · {isEn?'Expires:':'تنتهي:'} {new Date(invitation.expiresAt).toLocaleDateString(isEn?'en':'ar')}</div>
+            <div className="flex gap-2">
+              <button type="button" disabled={incomingInvitationBusyId===invitation.invitationId} onClick={()=>void handleRespondToIncomingInvitation(invitation,true)} className="min-h-[40px] flex-1 rounded-xl bg-emerald-600 px-3 py-2 text-xs font-extrabold text-white disabled:opacity-50">{isEn?'Accept & join':'قبول والانضمام'}</button>
+              <button type="button" disabled={incomingInvitationBusyId===invitation.invitationId} onClick={()=>void handleRespondToIncomingInvitation(invitation,false)} className="min-h-[40px] flex-1 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-extrabold text-red-700 disabled:opacity-50">{isEn?'Decline':'رفض الدعوة'}</button>
+            </div>
+          </div>)}
+        </div>
+
         {/* Invitations Lifecycle & Active Family Members (2 cols) */}
         <div className="lg:col-span-2 space-y-3.5">
           <div className="rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 space-y-2.5 shadow-2xs">
@@ -1291,22 +1335,9 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
 
                       <div className="flex items-center gap-1.5">
                         {inv.status === 'pending' && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => onUpdateInvitationStatus(inv.id, 'accepted')}
-                              className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold bg-emerald-600 text-white"
-                            >
-                              {isEn ? 'Accept' : 'قبول'}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => onUpdateInvitationStatus(inv.id, 'cancelled')}
-                              className="px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] text-red-700"
-                            >
-                              {isEn ? 'Cancel' : 'إلغاء'}
-                            </button>
-                          </>
+                          <span className="rounded-lg bg-amber-50 px-2.5 py-1 text-[10px] font-extrabold text-amber-800">
+                            {isEn ? 'Waiting for recipient response' : 'في انتظار رد الطرف المدعو'}
+                          </span>
                         )}
                         {inv.status === 'accepted' && (
                           <button

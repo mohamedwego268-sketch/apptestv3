@@ -3478,6 +3478,48 @@ export async function acceptFamilyInvitation(
  * exact confirmed email. The database reuses the hardened invitation acceptance
  * function, so role, expiry, family and existing-data checks remain authoritative.
  */
+export interface PendingCoParentInvitation {
+  invitationId: string; inviterName: string; familyName: string; partnerName: string;
+  partnerRole: 'father' | 'mother'; expiresAt: string; invitedAt: string;
+}
+export async function fetchPendingCoParentInvitations(customClient?: SupabaseClient | null): Promise<{invitations: PendingCoParentInvitation[]; error: string | null}> {
+ const client=customClient!==undefined?customClient:supabaseClient;
+ if(!client) return {invitations:[],error:'Supabase client is not initialized.'};
+ try {
+  const ctx=await resolveVerifiedFamilyContext(client);
+  if(!ctx.authenticated||!ctx.userId) return {invitations:[],error:ctx.error||null};
+  const {data,error}=await withSupabaseTimeout(client.rpc('get_pending_coparent_invitations_for_current_user'),6500);
+  if(error) throw new Error(error.message);
+  const rows=Array.isArray(data)?data as Array<Record<string,unknown>>:[];
+  return {invitations:rows.flatMap(row=>typeof row.invitation_id==='string'&&isValidUuid(row.invitation_id)?[{
+   invitationId:row.invitation_id,inviterName:typeof row.inviter_name==='string'?row.inviter_name:'ولي الأمر',
+   familyName:typeof row.family_name==='string'?row.family_name:'',partnerName:typeof row.partner_name==='string'?row.partner_name:'',
+   partnerRole:row.partner_role==='father'?'father':'mother',expiresAt:typeof row.expires_at==='string'?row.expires_at:'',
+   invitedAt:typeof row.invited_at==='string'?row.invited_at:''}]:[]),error:null};
+ } catch(e) {return {invitations:[],error:e instanceof Error?e.message:'تعذر تحميل الدعوات الواردة.'};}
+}
+export async function respondToCoParentInvitation(invitationId:string,accept:boolean,customClient?:SupabaseClient|null):Promise<{accepted:boolean;declined:boolean;restoredAccount:RestoredAuthenticatedAccount|null;error:string|null}> {
+ const client=customClient!==undefined?customClient:supabaseClient;
+ if(!client) return {accepted:false,declined:false,restoredAccount:null,error:'Supabase client is not initialized.'};
+ if(!isValidUuid(invitationId)) return {accepted:false,declined:false,restoredAccount:null,error:'معرّف الدعوة غير صالح.'};
+ try {
+  const ctx=await resolveVerifiedFamilyContext(client);
+  if(!ctx.authenticated||!ctx.userId) throw new Error(ctx.error||'يجب تسجيل الدخول وتأكيد البريد الإلكتروني أولاً.');
+  const {data,error}=await withSupabaseTimeout(client.rpc('respond_to_coparent_invitation',{p_invitation_id:invitationId,p_accept:accept}),9000);
+  if(error) throw new Error(error.message);
+  const response=data&&typeof data==='object'?data as Record<string,unknown>:{};
+  if(accept&&response.accepted===true) {
+   const familyId=typeof response.family_id==='string'?response.family_id:null;
+   const restored=await restoreAuthenticatedAccountFromSupabase(client);
+   if(!familyId||!isValidUuid(familyId)||!restored.restored||restored.verifiedFamilyId!==familyId)
+    throw new Error(restored.error||'تم قبول الدعوة، لكن تعذر تحميل مساحة الأسرة.');
+   return {accepted:true,declined:false,restoredAccount:restored,error:null};
+  }
+  if(!accept&&response.declined===true) return {accepted:false,declined:true,restoredAccount:null,error:null};
+  throw new Error('لم يتم تحديث حالة الدعوة.');
+ } catch(e) {return {accepted:false,declined:false,restoredAccount:null,error:e instanceof Error?e.message:'تعذر الرد على دعوة الأسرة.'};}
+}
+
 export async function acceptPendingFamilyInvitationForCurrentUser(
   customClient?: SupabaseClient | null
 ): Promise<{
