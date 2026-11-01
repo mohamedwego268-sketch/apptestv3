@@ -67,7 +67,7 @@ const TEST_SERVICE_ROLE_KEY_CLAIMS = decodeSupabaseJwtClaims(
   TEST_SUPABASE_SERVICE_ROLE_KEY,
 );
 
-const IS_ISOLATED_TEST_DB_CONFIGURED = Boolean(
+const IS_PRIMARY_PROJECT_TEST_CONFIGURED = Boolean(
   TEST_SUPABASE_URL === PRIMARY_SUPABASE_URL &&
     TEST_ANON_KEY_CLAIMS?.ref === PRIMARY_PROJECT_REF &&
     TEST_ANON_KEY_CLAIMS?.role === "anon" &&
@@ -94,15 +94,15 @@ function assertPrimaryProjectTestEnvironment(): void {
   assert.equal(
     TEST_SERVICE_ROLE_KEY_CLAIMS?.ref,
     PRIMARY_PROJECT_REF,
-    "TEST_SUPABASE_SERVICE_ROLE_KEY must belong to the primary Supabase project, never production.",
+    "TEST_SUPABASE_SERVICE_ROLE_KEY must belong to the primary Supabase project.",
   );
   assert.equal(
     TEST_SERVICE_ROLE_KEY_CLAIMS?.role,
     "service_role",
-    "TEST_SUPABASE_SERVICE_ROLE_KEY must be the dedicated project's legacy service_role JWT.",
+    "TEST_SUPABASE_SERVICE_ROLE_KEY must be the primary project's legacy service_role JWT.",
   );
   assert.ok(
-    IS_ISOLATED_TEST_DB_CONFIGURED,
+    IS_PRIMARY_PROJECT_TEST_CONFIGURED,
     `Explicit integration test failure: configure the exact test URL and matching anon/service_role JWTs for ${PRIMARY_SUPABASE_URL}.`,
   );
 }
@@ -119,7 +119,7 @@ function createAnonClient(url: string, anonKey: string): SupabaseClient {
 }
 
 // ============================================================================
-// PART A: Migration SQL Security Validation & Dedicated Test DB Privilege Verification
+// PART A: Migration SQL Security Validation & Primary DB Privilege Verification
 // ============================================================================
 
 test("Part A.0: Migration 20261031071500 & schema.sql fix 42P01 pg_catalog.current_user bug, enforce SECURITY INVOKER ownership trigger, and harden grants", () => {
@@ -300,8 +300,8 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
     "utf8",
   );
   assert.ok(
-    envExampleText.includes("https://hbnxaqoaoeqaetvgbkgb.supabase.co"),
-    ".env.example must document the primary Supabase project URL https://hbnxaqoaoeqaetvgbkgb.supabase.co",
+    envExampleText.includes("https://qbwnzunusmaidciakuod.supabase.co"),
+    ".env.example must document the primary Supabase project URL https://qbwnzunusmaidciakuod.supabase.co",
   );
   assert.ok(
     envExampleText.includes("region: ap-south-1"),
@@ -369,7 +369,7 @@ test(
   "Part B: Full 17-scenario authenticated multi-family PostgreSQL RLS & Storage integration suite",
   async () => {
     assert.ok(
-      IS_ISOLATED_TEST_DB_CONFIGURED,
+      IS_PRIMARY_PROJECT_TEST_CONFIGURED,
       `Explicit integration test failure: TEST_SUPABASE_URL (${TEST_SUPABASE_URL || "unset"}), TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for the primary Supabase project (${PRIMARY_PROJECT_REF}). Missing test environment configuration must fail explicitly rather than skip.`,
     );
     assert.ok(
