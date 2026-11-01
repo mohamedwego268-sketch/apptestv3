@@ -1,12 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  ALL_ARAB_COUNTRY_CODES,
   CountryCode,
   CurrencyCode,
   LanguageCode,
   ParentThemeRole,
   calculateChildAge,
+  findNearestCityByCoords,
+  getCountryDialCode,
+  getCountryMetadata,
+  getDefaultCityForCountry,
   getSuggestedCurrencyForCountry,
+  isSupportedCountryCode,
+  resolveCountryCode,
+  resolveCurrencyCode,
   COUNTRY_CITIES_MAP,
   resolveCityRegionId,
   validateChildInput,
@@ -343,48 +351,24 @@ export interface AllowedCountryOption {
 }
 
 /**
- * Enabled account markets: Egypt and Saudi Arabia. Other markets should only be
- * added after country-specific phone, currency, location and service data are ready.
+ * Enabled account markets: All 22 Arab League countries from the centralized registry.
  */
-export const SUPPORTED_ACCOUNT_COUNTRIES: AllowedCountryOption[] = [
-  {
-    code: 'EG',
-    mappedCoreCountry: 'EG',
-    dialCode: '+20',
-    defaultCityAr: 'القاهرة',
-    defaultCityEn: 'Cairo',
-    nameAr: 'مصر',
-    nameEn: 'Egypt',
-    phonePlaceholder: '1012345678',
-    cities: [
-      { ar: 'القاهرة', en: 'Cairo' },
-      { ar: 'الإسكندرية', en: 'Alexandria' },
-      { ar: 'الجيزة', en: 'Giza' },
-      { ar: 'المنصورة', en: 'Mansoura' },
-      { ar: 'طنطا', en: 'Tanta' },
-      { ar: 'أسيوط', en: 'Asyut' },
-    ],
-  },
-  {
-    code: 'SA',
-    mappedCoreCountry: 'SA',
-    dialCode: '+966',
-    defaultCityAr: 'الرياض',
-    defaultCityEn: 'Riyadh',
-    nameAr: 'السعودية',
-    nameEn: 'Saudi Arabia',
-    phonePlaceholder: '551234567',
-    cities: [
-      { ar: 'الرياض', en: 'Riyadh' },
-      { ar: 'جدة', en: 'Jeddah' },
-      { ar: 'الدمام', en: 'Dammam' },
-      { ar: 'مكة المكرمة', en: 'Makkah' },
-      { ar: 'المدينة المنورة', en: 'Madinah' },
-      { ar: 'الخبر', en: 'Khobar' },
-    ],
-  },
-
-];
+export const SUPPORTED_ACCOUNT_COUNTRIES: AllowedCountryOption[] = ALL_ARAB_COUNTRY_CODES.map(
+  (code) => {
+    const meta = getCountryMetadata(code);
+    return {
+      code: meta.code,
+      mappedCoreCountry: meta.code,
+      dialCode: meta.dialCode,
+      defaultCityAr: meta.defaultCity,
+      defaultCityEn: meta.defaultCityEn,
+      nameAr: meta.nameAr,
+      nameEn: meta.nameEn,
+      phonePlaceholder: meta.phoneRule.exampleLocal,
+      cities: meta.cities.map((c) => ({ ar: c.nameAr, en: c.nameEn })),
+    };
+  }
+);
 
 export interface OnboardingCompletionPayload {
   parentName: string;
@@ -423,6 +407,7 @@ interface OnboardingFlowModalProps {
   initialParentName: string;
   initialRole: ParentThemeRole;
   language: LanguageCode;
+  onToggleLanguage?: (nextLanguage: LanguageCode) => void;
   onClose: () => void;
   onPreviewRequest: () => void;
   onCompleteOnboarding: (payload: OnboardingCompletionPayload) => void;
@@ -438,11 +423,28 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   initialParentName,
   initialRole,
   language,
+  onToggleLanguage,
   onClose,
   onPreviewRequest,
   onCompleteOnboarding,
 }) => {
-  const isEn = language === 'en';
+  const [internalLanguage, setInternalLanguage] = useState<LanguageCode>(language);
+  useEffect(() => {
+    setInternalLanguage(language);
+  }, [language]);
+  const effectiveLanguage: LanguageCode = internalLanguage;
+  const isEn = effectiveLanguage === 'en';
+
+  const handleSwitchLanguage = () => {
+    const nextLang: LanguageCode = effectiveLanguage === 'ar' ? 'en' : 'ar';
+    setInternalLanguage(nextLang);
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = nextLang === 'en' ? 'ltr' : 'rtl';
+      document.documentElement.lang = nextLang;
+    }
+    onToggleLanguage?.(nextLang);
+  };
+
   const cachedDraft = React.useMemo(() => OnboardingFlowController.loadDraft(), []);
   const tempSavedUser = React.useMemo(() => {
     try {
@@ -482,20 +484,32 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   );
   const [email, setEmail] = useState<string>(tempSavedUser?.email || cachedDraft?.email || '');
   const [password, setPassword] = useState<string>('');
-  const [selectedCountryCode, setSelectedCountryCode] = useState<SupportedAccountCountry>(
-    tempSavedUser?.country &&
-      SUPPORTED_ACCOUNT_COUNTRIES.some((c) => c.code === tempSavedUser.country)
-      ? (tempSavedUser.country as SupportedAccountCountry)
-      : cachedDraft?.selectedCountry === 'SA' || initialCountry === 'SA'
-      ? 'SA'
-      : 'EG'
-  );
+  const [selectedCountryCode, setSelectedCountryCode] = useState<SupportedAccountCountry>(() => {
+    if (tempSavedUser?.country && isSupportedCountryCode(tempSavedUser.country)) {
+      return tempSavedUser.country;
+    }
+    if (cachedDraft?.selectedCountry && isSupportedCountryCode(cachedDraft.selectedCountry)) {
+      return cachedDraft.selectedCountry;
+    }
+    if (isSupportedCountryCode(initialCountry)) {
+      return initialCountry;
+    }
+    return 'EG';
+  });
   const [locationMode, setLocationMode] = useState<'gps' | 'manual'>('manual');
   const [selectedCityAr, setSelectedCityAr] = useState<string>(
     tempSavedUser?.city ||
       cachedDraft?.selectedCity ||
       initialCity ||
-      (initialCountry === 'SA' ? 'الرياض' : 'القاهرة')
+      getDefaultCityForCountry(
+        tempSavedUser?.country && isSupportedCountryCode(tempSavedUser.country)
+          ? tempSavedUser.country
+          : cachedDraft?.selectedCountry && isSupportedCountryCode(cachedDraft.selectedCountry)
+          ? cachedDraft.selectedCountry
+          : isSupportedCountryCode(initialCountry)
+          ? initialCountry
+          : 'EG'
+      )
   );
   const [isLocatingGps, setIsLocatingGps] = useState<boolean>(false);
   const [phone, setPhone] = useState<string>(tempSavedUser?.phone || cachedDraft?.phone || '');
@@ -625,72 +639,52 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
       return;
     }
 
-    const cityCoordinates: Array<{ country: 'SA' | 'EG'; city: string; lat: number; lon: number }> = [
-      { country: 'SA', city: 'الخبر', lat: 26.2172, lon: 50.1971 },
-      { country: 'SA', city: 'الدمام', lat: 26.4207, lon: 50.0888 },
-      { country: 'SA', city: 'الرياض', lat: 24.7136, lon: 46.6753 },
-      { country: 'SA', city: 'جدة', lat: 21.4858, lon: 39.1925 },
-      { country: 'SA', city: 'مكة المكرمة', lat: 21.3891, lon: 39.8579 },
-      { country: 'SA', city: 'المدينة المنورة', lat: 24.5247, lon: 39.5692 },
-      { country: 'SA', city: 'الجبيل', lat: 27.0174, lon: 49.6583 },
-      { country: 'SA', city: 'أبها', lat: 18.2164, lon: 42.5053 },
-      { country: 'EG', city: 'القاهرة', lat: 30.0444, lon: 31.2357 },
-      { country: 'EG', city: 'الإسكندرية', lat: 31.2001, lon: 29.9187 },
-      { country: 'EG', city: 'الجيزة', lat: 30.0131, lon: 31.2089 },
-      { country: 'EG', city: 'المنصورة', lat: 31.0409, lon: 31.3785 },
-      { country: 'EG', city: 'طنطا', lat: 30.7865, lon: 31.0004 },
-      { country: 'EG', city: 'أسيوط', lat: 27.1809, lon: 31.1837 },
-    ];
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        const isEgypt = latitude >= 21.5 && latitude <= 32.5 && longitude >= 24.5 && longitude <= 36;
-        const isSaudi = latitude >= 16 && latitude <= 33.5 && longitude >= 34 && longitude <= 56;
-        const detectedCountry = isEgypt ? 'EG' : isSaudi ? 'SA' : null;
+        const nearest = findNearestCityByCoords(latitude, longitude);
+        const dist = nearest.distanceKm;
 
-        if (!detectedCountry) {
+        if (dist > 600) {
           setIsLocatingGps(false);
           setLocationMode('manual');
-          setErrorMsg(isEn
-            ? 'Your location is outside the supported countries. Please choose Egypt or Saudi Arabia and select a city.'
-            : 'موقعك خارج نطاق مصر والسعودية. اختر الدولة والمدينة يدويًا.');
+          setErrorMsg(
+            isEn
+              ? 'Your location is outside the supported Arab countries. Please choose your country and city manually.'
+              : 'موقعك خارج نطاق الدول العربية المدعومة. اختر الدولة والمدينة يدويًا.'
+          );
           return;
         }
 
-        const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-        const distanceKm = (a: number, b: number, c: number, d: number) => {
-          const dLat = toRadians(c - a);
-          const dLon = toRadians(d - b);
-          const h = Math.sin(dLat / 2) ** 2 +
-            Math.cos(toRadians(a)) * Math.cos(toRadians(c)) * Math.sin(dLon / 2) ** 2;
-          return 6371 * 2 * Math.asin(Math.sqrt(h));
-        };
-        const nearestCity = cityCoordinates
-          .filter((city) => city.country === detectedCountry)
-          .map((city) => ({ ...city, distance: distanceKm(latitude, longitude, city.lat, city.lon) }))
-          .sort((a, b) => a.distance - b.distance)[0];
-
-        setSelectedCountryCode(detectedCountry);
-        if (nearestCity && nearestCity.distance <= 100) {
-          setSelectedCityAr(nearestCity.city);
+        setSelectedCountryCode(nearest.country);
+        if (dist <= 250) {
+          setSelectedCityAr(nearest.city.id);
           setErrorMsg(null);
         } else {
           setLocationMode('manual');
-          setErrorMsg(isEn
-            ? 'Country detected, but the nearest supported city is not accurate enough. Please select your city manually.'
-            : 'تم تحديد الدولة، لكن لا يمكن تأكيد المدينة بدقة كافية. اختر مدينتك يدويًا.');
+          setErrorMsg(
+            isEn
+              ? 'Country detected, but the nearest supported city is not accurate enough. Please select your city manually.'
+              : 'تم تحديد الدولة، لكن لا يمكن تأكيد المدينة بدقة كافية. اختر مدينتك يدويًا.'
+          );
         }
         setIsLocatingGps(false);
       },
       (error) => {
         setIsLocatingGps(false);
         setLocationMode('manual');
-        const message = error.code === 1
-          ? (isEn ? 'Allow location permission for this site, then try again.' : 'اسمح للمتصفح بالوصول للموقع ثم حاول مرة أخرى.')
-          : error.code === 3
-          ? (isEn ? 'Location request timed out. Try again or select your city manually.' : 'انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر المدينة يدويًا.')
-          : (isEn ? 'Could not determine your location. Select your city manually.' : 'تعذر تحديد موقعك. اختر المدينة يدويًا.');
+        const message =
+          error.code === 1
+            ? isEn
+              ? 'Allow location permission for this site, then try again.'
+              : 'اسمح للمتصفح بالوصول للموقع ثم حاول مرة أخرى.'
+            : error.code === 3
+            ? isEn
+              ? 'Location request timed out. Try again or select your city manually.'
+              : 'انتهت مهلة تحديد الموقع. حاول مرة أخرى أو اختر المدينة يدويًا.'
+            : isEn
+            ? 'Could not determine your location. Select your city manually.'
+            : 'تعذر تحديد موقعك. اختر المدينة يدويًا.';
         setErrorMsg(message);
       },
       { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
@@ -763,7 +757,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
         : [];
       if (authMode === 'signin') {
         setChildrenList(restoredChildrenDraft);
-        const savedCountry = authRes.family?.country === 'EG' ? 'EG' : 'SA';
+        const savedCountry = resolveCountryCode(
+          authRes.family?.country || authRes.user?.country,
+          selectedCountryCode
+        );
         const savedCity = typeof authRes.family?.city === 'string' ? authRes.family.city : '';
         const savedName =
           typeof authRes.user?.full_name === 'string'
@@ -773,7 +770,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             : '';
         const savedRole = String(authRes.user?.role || '').toLowerCase();
         const savedPhone = typeof authRes.user?.phone === 'string' ? authRes.user.phone.trim() : '';
-        const dialCode = savedCountry === 'SA' ? '+966' : '+20';
+        const dialCode = getCountryDialCode(savedCountry);
         const nationalPhone = savedPhone.startsWith(dialCode)
           ? savedPhone.slice(dialCode.length)
           : savedPhone.replace(/^\+\d{1,3}/, '');
@@ -1001,12 +998,17 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           : [];
 
         if (restoredChildren.length > 0) {
-          const restoredCountry: 'SA' | 'EG' = authRes.family?.country === 'EG' ? 'EG' : 'SA';
-          const restoredCurrency: 'SAR' | 'EGP' =
-            authRes.family?.currency === 'EGP' || restoredCountry === 'EG' ? 'EGP' : 'SAR';
+          const restoredCountry: CountryCode = resolveCountryCode(
+            authRes.family?.country || authRes.user?.country,
+            selectedCountryCode
+          );
+          const restoredCurrency: CurrencyCode = resolveCurrencyCode(
+            authRes.family?.currency,
+            restoredCountry
+          );
           const restoredCity =
             (typeof authRes.family?.city === 'string' && authRes.family.city.trim()) ||
-            (restoredCountry === 'EG' ? 'القاهرة' : 'الرياض');
+            getDefaultCityForCountry(restoredCountry);
           const restoredRole: 'dad' | 'mom' =
             String(authRes.user?.role || '').toLowerCase() === 'mother' ||
             String(authRes.user?.role || '').toLowerCase() === 'mom'
@@ -1018,7 +1020,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             (restoredRole === 'dad' ? 'أحمد' : 'مريم');
           const rawRestoredPhone =
             typeof authRes.user?.phone === 'string' ? authRes.user.phone.trim() : '';
-          const dialCode = restoredCountry === 'SA' ? '+966' : '+20';
+          const dialCode = getCountryDialCode(restoredCountry);
           const restoredPhone = rawRestoredPhone
             ? rawRestoredPhone.startsWith('+')
               ? rawRestoredPhone
@@ -1349,6 +1351,20 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
             </button>
           )}
 
+          {/* Compact Language Switcher (44x44 touch target, top-start corner, preserves card dimensions & state) */}
+          <button
+            type="button"
+            id="onboarding-language-switcher"
+            data-testid="onboarding-language-switcher"
+            onClick={handleSwitchLanguage}
+            aria-label={isEn ? 'Switch language to Arabic' : 'تغيير اللغة إلى الإنجليزية'}
+            title={isEn ? 'العربية' : 'English'}
+            className="absolute top-2 start-2 min-w-[44px] min-h-[44px] px-2.5 rounded-full bg-slate-100/90 dark:bg-[#142430] border border-slate-200/80 dark:border-[#1E3646] text-slate-700 dark:text-slate-200 flex items-center justify-center gap-1 text-[11px] font-black hover:bg-teal-50 dark:hover:bg-[#183040] hover:border-[#0d9488]/40 transition-colors cursor-pointer z-10"
+          >
+            <span aria-hidden="true" className="text-xs leading-none">🌐</span>
+            <span>{isEn ? 'عربي' : 'EN'}</span>
+          </button>
+
           {/* Compact Brand Header: Logo + Brand Name + Official Slogan ("مساحة تجمعنا.. وبحبهم نكبر") */}
           <div className="flex items-center justify-center gap-2.5 text-start">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0d9488] to-[#14b8a6] flex items-center justify-center shadow-xs shrink-0">
@@ -1362,7 +1378,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
                 data-testid="onboarding-brand-slogan"
                 className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] leading-tight"
               >
-                مساحة تجمعنا.. وبحبهم نكبر
+                {isEn ? 'Our shared space.. growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
               </p>
             </div>
           </div>

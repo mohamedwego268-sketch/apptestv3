@@ -10,7 +10,9 @@ import {
   DemoShippingAddress,
   LanguageCode,
   calculateCheckoutSummary,
+  convertCatalogPrice,
   formatCurrency,
+  getCountryMetadata,
   getEmptyStateCopy,
   getPaymentMethodLabels,
   locText,
@@ -458,8 +460,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     item: CommercialCatalogItem,
     layoutMode: 'carousel' | 'grid'
   ) => {
-    const priceVal = currency === 'SAR' ? item.priceSAR : item.priceEGP;
-    const origVal = currency === 'SAR' ? item.originalPriceSAR : item.originalPriceEGP;
+    const priceVal = convertCatalogPrice(item.priceEGP, item.priceSAR, currency);
+    const origVal =
+      item.originalPriceEGP && item.originalPriceSAR
+        ? convertCatalogPrice(item.originalPriceEGP, item.originalPriceSAR, currency)
+        : undefined;
     const displayTitle = isEn ? item.nameEn : item.name;
     const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
     const tone = PASTEL_CARD_TONES[toneKey];
@@ -715,7 +720,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن' || item.city.includes(city);
       if (!matchesCountry || !matchesCity) return false;
     }
-    const itemPrice = currency === 'SAR' ? item.priceSAR : item.priceEGP;
+    const itemPrice = convertCatalogPrice(item.priceEGP, item.priceSAR, currency);
     if (priceRangeFilter === 'under300' && itemPrice >= 300) return false;
     if (priceRangeFilter === '300to800' && (itemPrice < 300 || itemPrice > 800)) return false;
     if (priceRangeFilter === 'above800' && itemPrice <= 800) return false;
@@ -740,8 +745,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     }
     return true;
   }).sort((a, b) => {
-    const priceA = currency === 'SAR' ? a.priceSAR : a.priceEGP;
-    const priceB = currency === 'SAR' ? b.priceSAR : b.priceEGP;
+    const priceA = convertCatalogPrice(a.priceEGP, a.priceSAR, currency);
+    const priceB = convertCatalogPrice(b.priceEGP, b.priceSAR, currency);
     if (sortBy === 'price-asc') return priceA - priceB;
     if (sortBy === 'price-desc') return priceB - priceA;
     if (sortBy === 'rating') return Number(b.rating) - Number(a.rating);
@@ -756,7 +761,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     .map((ci) => {
       const product = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
       if (!product) return null;
-      const unitPrice = currency === 'SAR' ? product.priceSAR : product.priceEGP;
+      const unitPrice = convertCatalogPrice(product.priceEGP, product.priceSAR, currency);
       return {
         ...ci,
         product,
@@ -920,6 +925,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         titleAr="أدوات المتجر"
         titleEn="Store tools"
         badgeCount={activeFiltersCount}
+        cartItemCount={cartTotalCount}
+        onOpenCart={() => {
+          setShowCartPanel(true);
+          setStoreFlowStep('checkout');
+        }}
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         searchPlaceholderAr="🔍 ابحث في المتجر والخدمات..."
@@ -941,6 +951,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             labelEn: 'Compare',
             badge: `${comparedItems.length}/3`,
             active: showComparePanel,
+            closeOnSelect: true,
             onClick: () => {
               setStoreFlowStep('catalog');
               setShowCartPanel(false);
@@ -953,6 +964,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             labelAr: 'تتبع الطلب',
             labelEn: 'Tracking',
             active: showLiveTracking,
+            closeOnSelect: true,
             onClick: () => {
               setStoreFlowStep('catalog');
               setShowCartPanel(false);
@@ -961,7 +973,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           },
         ]}
       >
-        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2.5">
+        <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-3">
+          {/* Market Context */}
+          <div className="flex items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)] pb-2 border-b border-[var(--color-border)]">
+            <span>
+              {getCountryMetadata(country).flag}{' '}
+              {isEn ? getCountryMetadata(country).nameEn : getCountryMetadata(country).nameAr} · {displayCity}
+            </span>
+            <span className="font-extrabold text-[var(--color-text)]">{currency}</span>
+          </div>
+
           <div className="space-y-1.5">
             <p className="text-xs font-extrabold text-[var(--color-text)]">
               {isEn ? 'Browse scope' : 'نطاق التصفح'}
@@ -1012,197 +1033,162 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
             </select>
           </div>
-        </div>
-      </SectionToolsDrawer>
 
-      {/* Horizontal Swipeable Category Bar + Collapsible Filter Panel (triggered from SectionToolsDrawer) */}
-      <div className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 space-y-3 soft-card-surface">
-        <div
-          dir={isEn ? 'ltr' : 'rtl'}
-          className="horizontal-scroll-row !pb-1"
-          role="region"
-          aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategoryPageId(null);
-              setCategoryFilter('all');
-            }}
-            className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeCategoryPageId === null
-                ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
-                : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
-            }`}
-          >
-            <span>✨</span>
-            <span>{isEn ? 'All Category Rows' : 'جميع الأقسام (صفوف أفقية)'}</span>
-          </button>
-
-          {STORE_CATEGORY_SECTIONS.map((sec) => {
-            const isSelected = activeCategoryPageId === sec.id;
-            const secCount = filtered.filter((item) =>
-              (sec.matchCategories as readonly string[]).includes(item.category)
-            ).length;
-            return (
+          {/* Store Category Navigation inside Section Tools */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-extrabold text-[var(--color-text)]">
+              {isEn ? 'Store Categories' : 'أقسام المتجر'}
+            </p>
+            <div className="flex flex-wrap gap-1.5" role="region" aria-label={isEn ? 'Store Category Navigation' : 'شريط أقسام المتجر'}>
               <button
-                key={sec.id}
                 type="button"
-                data-testid={`store-category-pill-${sec.id}`}
-                onClick={() => openCategoryFullPage(sec.id)}
-                className={`min-h-[42px] px-4 py-2 rounded-xl text-xs font-extrabold border transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
-                    : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                onClick={() => {
+                  setActiveCategoryPageId(null);
+                  setCategoryFilter('all');
+                }}
+                className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeCategoryPageId === null
+                    ? 'bg-[#0d9488] text-white border-teal-500 shadow-sm'
+                    : 'bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
                 }`}
               >
-                <span>{sec.emoji}</span>
-                <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/15 text-current tabular-nums">
-                  {secCount}
-                </span>
+                <span>✨</span>
+                <span>{isEn ? 'All Category Rows' : 'جميع الأقسام'}</span>
               </button>
-            );
-          })}
-        </div>
 
-        {/* Interactive Store Filter Panel (Price, Rating, Availability — toggled from SectionToolsDrawer) */}
-        {showFilterPanel && (
+              {STORE_CATEGORY_SECTIONS.map((sec) => {
+                const isSelected = activeCategoryPageId === sec.id;
+                const secCount = filtered.filter((item) =>
+                  (sec.matchCategories as readonly string[]).includes(item.category)
+                ).length;
+                return (
+                  <button
+                    key={sec.id}
+                    type="button"
+                    data-testid={`store-category-pill-${sec.id}`}
+                    onClick={() => openCategoryFullPage(sec.id)}
+                    className={`min-h-[36px] px-3 py-1.5 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-sm'
+                        : 'bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#FF8C61]'
+                    }`}
+                  >
+                    <span>{sec.emoji}</span>
+                    <span>{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                    <span className="px-1.5 py-0.5 rounded-full text-[9.5px] bg-black/15 text-current tabular-nums">
+                      {secCount}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Smart Store Filters (Price, Rating, Availability) inside Section Tools */}
           <div
             id="store-category-filter-panel"
             data-testid="store-category-filter-panel"
-            className="soft-card-surface rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 space-y-4 animate-page-enter"
+            className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3 space-y-3"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-border)] dark:border-[#1E3646]">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  🎛️ {isEn ? 'Smart Store Filters (Price · Rating · Availability)' : 'فلترة المتجر الذكية (السعر · التقييم · التوفر)'}
-                </span>
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-teal-500/15 text-teal-700 dark:text-[#A5F3FC] tabular-nums">
-                  {filtered.length} {isEn ? 'items match' : 'منتج وخدمة مطابقة'}
-                </span>
+            <div className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--color-border)] dark:border-[#1E3646]">
+              <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
+                🎛️ {isEn ? 'Smart Store Filters' : 'فلترة المتجر الذكية'}
+              </span>
+              <button
+                type="button"
+                onClick={resetStoreFilters}
+                className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] hover:border-[#FF8C61]"
+              >
+                {isEn ? 'Reset All' : 'إعادة ضبط'}
+              </button>
+            </div>
+
+            {/* 1. Price Filter */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                💰 {isEn ? `Price Range (${currency})` : `نطاق السعر (${currency})`}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={resetStoreFilters}
-                  className="px-3 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] hover:border-[#FF8C61]"
-                >
-                  {isEn ? 'Reset All' : 'إعادة ضبط الفلاتر'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowFilterPanel(false)}
-                  aria-label={isEn ? 'Close filter panel' : 'إغلاق لوحة الفلترة'}
-                  className="w-8 h-8 rounded-xl text-lg font-black leading-none bg-[#0d9488] text-white flex items-center justify-center shrink-0 cursor-pointer"
-                >
-                  ×
-                </button>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { id: 'all', labelAr: 'كل الأسعار', labelEn: 'All Prices' },
+                  { id: 'under300', labelAr: 'أقل من ٣٠٠', labelEn: 'Under 300' },
+                  { id: '300to800', labelAr: '٣٠٠ إلى ٨٠٠', labelEn: '300 – 800' },
+                  { id: 'above800', labelAr: 'أكثر من ٨٠٠', labelEn: 'Above 800' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setPriceRangeFilter(opt.id as typeof priceRangeFilter)}
+                    className={`px-2 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                      priceRangeFilter === opt.id
+                        ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
+                        : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                    }`}
+                  >
+                    {isEn ? opt.labelEn : opt.labelAr}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {/* 1. Price Filter */}
-              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
-                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
-                  💰 {isEn ? `Price Range (${currency})` : `نطاق السعر (${currency === 'SAR' ? 'ر.س' : 'ج.م'})`}
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'all', labelAr: 'كل الأسعار', labelEn: 'All Prices' },
-                    { id: 'under300', labelAr: 'أقل من ٣٠٠', labelEn: 'Under 300' },
-                    { id: '300to800', labelAr: '٣٠٠ إلى ٨٠٠', labelEn: '300 – 800' },
-                    { id: 'above800', labelAr: 'أكثر من ٨٠٠', labelEn: 'Above 800' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setPriceRangeFilter(opt.id as typeof priceRangeFilter)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
-                        priceRangeFilter === opt.id
-                          ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
-                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                      }`}
-                    >
-                      {isEn ? opt.labelEn : opt.labelAr}
-                    </button>
-                  ))}
-                </div>
+            {/* 2. Rating Filter */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                ⭐ {isEn ? 'Minimum Parent Rating' : 'تقييم الأمهات والآباء'}
               </div>
-
-              {/* 2. Rating Filter */}
-              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
-                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
-                  ⭐ {isEn ? 'Minimum Parent Rating' : 'تقييم الأمهات والآباء'}
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { val: 0, labelAr: 'كل التقييمات', labelEn: 'All Ratings' },
-                    { val: 4.5, labelAr: '⭐ +4.5 ممتاز', labelEn: '⭐ 4.5+ & Up' },
-                    { val: 4.8, labelAr: '⭐ +4.8 فائق', labelEn: '⭐ 4.8+ Top' },
-                    { val: 4.9, labelAr: '⭐ +4.9 النخبة', labelEn: '⭐ 4.9+ Elite' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.val}
-                      type="button"
-                      onClick={() => setMinRatingFilter(opt.val)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
-                        minRatingFilter === opt.val
-                          ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-2xs'
-                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                      }`}
-                    >
-                      {isEn ? opt.labelEn : opt.labelAr}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 3. Availability Filter */}
-              <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/60 dark:bg-[#142430] p-3 space-y-2">
-                <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
-                  🚚 {isEn ? 'Availability & Delivery' : 'التوفر والشحن السريع'}
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'all', labelAr: 'الكل متاح', labelEn: 'All Available' },
-                    { id: 'express', labelAr: 'شحن فوري (منتجات)', labelEn: 'Express In-Stock' },
-                    { id: 'local', labelAr: `متاح في ${displayCity}`, labelEn: `In ${displayCity}` },
-                    { id: 'offers', labelAr: 'عروض وخصومات', labelEn: 'Active Deals' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setAvailabilityFilter(opt.id as typeof availabilityFilter)}
-                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
-                        availabilityFilter === opt.id
-                          ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
-                          : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                      }`}
-                    >
-                      {isEn ? opt.labelEn : opt.labelAr}
-                    </button>
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { val: 0, labelAr: 'كل التقييمات', labelEn: 'All Ratings' },
+                  { val: 4.5, labelAr: '⭐ +4.5 ممتاز', labelEn: '⭐ 4.5+ & Up' },
+                  { val: 4.8, labelAr: '⭐ +4.8 فائق', labelEn: '⭐ 4.8+ Top' },
+                  { val: 4.9, labelAr: '⭐ +4.9 النخبة', labelEn: '⭐ 4.9+ Elite' },
+                ].map((opt) => (
+                  <button
+                    key={opt.val}
+                    type="button"
+                    onClick={() => setMinRatingFilter(opt.val)}
+                    className={`px-2 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                      minRatingFilter === opt.val
+                        ? 'bg-[#FF8C61] text-white border-[#FF8C61] shadow-2xs'
+                        : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                    }`}
+                  >
+                    {isEn ? opt.labelEn : opt.labelAr}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Compact store controls: location context + cart only. Filters and secondary actions live in the tools drawer. */}
-      <div id="store-sticky-subheader" className="sticky top-[48px] z-20 rounded-xl border border-amber-200/60 dark:border-[#1E3646] bg-amber-50/90 dark:bg-[#101D26]/95 px-2.5 py-2 shadow-2xs flex items-center justify-between gap-2">
-        <div className="min-w-0 flex items-center gap-2">
-          <span className="w-7 h-7 rounded-lg bg-white dark:bg-[#142430] flex items-center justify-center shrink-0"><ThreeDIcon id="services" size={17} /></span>
-          <div className="min-w-0">
-            <p className="text-[11px] font-extrabold text-[var(--color-text)] truncate">{isEn ? 'Family store' : 'متجر الأسرة'}</p>
-            <p className="text-[9px] font-bold text-[var(--color-muted)] truncate">{country === 'SA' ? (isEn ? '🇸🇦 Saudi Arabia' : '🇸🇦 السعودية') : isEn ? '🇪🇬 Egypt' : '🇪🇬 مصر'} · {displayCity} · {currency}</p>
+            {/* 3. Availability Filter */}
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
+                🚚 {isEn ? 'Availability & Delivery' : 'التوفر والشحن السريع'}
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { id: 'all', labelAr: 'الكل متاح', labelEn: 'All Available' },
+                  { id: 'express', labelAr: 'شحن فوري (منتجات)', labelEn: 'Express In-Stock' },
+                  { id: 'local', labelAr: `متاح في ${displayCity}`, labelEn: `In ${displayCity}` },
+                  { id: 'offers', labelAr: 'عروض وخصومات', labelEn: 'Active Deals' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setAvailabilityFilter(opt.id as typeof availabilityFilter)}
+                    className={`px-2 py-1.5 rounded-lg text-[11px] font-extrabold border transition-all ${
+                      availabilityFilter === opt.id
+                        ? 'bg-[#0d9488] text-white border-teal-500 shadow-2xs'
+                        : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                    }`}
+                  >
+                    {isEn ? opt.labelEn : opt.labelAr}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        <PrimaryCtaButton variant="orange" size="sm" onClick={() => { setShowCartPanel(true); setStoreFlowStep('checkout'); }}>
-          🛒 {isEn ? `Cart (${cartTotalCount})` : `السلة (${cartTotalCount})`}
-        </PrimaryCtaButton>
-      </div>
+      </SectionToolsDrawer>
 
       {/* Checkout progress appears only while completing an order, not while browsing the store. */}
       {storeFlowStep !== 'catalog' && (
@@ -2318,7 +2304,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
               {comparedItems.map((cItem) => {
-                const cPrice = currency === 'SAR' ? cItem.priceSAR : cItem.priceEGP;
+                const cPrice = convertCatalogPrice(cItem.priceEGP, cItem.priceSAR, currency);
                 const cTitle = isEn ? cItem.nameEn : cItem.name;
                 return (
                   <div

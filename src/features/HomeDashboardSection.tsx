@@ -6,6 +6,7 @@ import {
   LanguageCode,
   VoiceVaultMoment,
   calculateChildAge,
+  getDefaultCityForCountry,
   locText,
   sanitizeUserText,
 } from '../domain/familySpaceCore';
@@ -732,7 +733,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [completedSportByKid, setCompletedSportByKid] = useState<Record<number, boolean>>({});
   const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(false);
 
-  const activeCity = state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة');
+  const activeCity = state.city || getDefaultCityForCountry(state.country);
   const localizedCity = locText(activeCity, lang);
 
   // Active child for Quick Tracking & Daily Essentials
@@ -1421,6 +1422,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         titleAr="أدوات الرئيسية"
         titleEn="Dashboard tools"
         badgeCount={state.tasks.filter((t) => !t.done).length}
+        cartItemCount={cartItemCount}
+        onOpenCart={() => navigateTo('services')}
         quickActions={[
           {
             id: 'routine-shortcut',

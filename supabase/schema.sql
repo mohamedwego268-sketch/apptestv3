@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS public.family_homes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
   label TEXT NOT NULL DEFAULT 'منزل الأسرة',
-  country TEXT NOT NULL CHECK (country IN ('EG','SA')),
+  country TEXT NOT NULL CHECK (country IN ('EG','SA','AE','KW','QA','BH','OM','IQ','JO','PS','LB','SY','YE','SD','LY','TN','DZ','MA','MR','SO','DJ','KM')),
   city TEXT NOT NULL,
-  currency TEXT NOT NULL CHECK (currency IN ('EGP','SAR')),
+  currency TEXT NOT NULL CHECK (currency IN ('EGP','SAR','AED','KWD','QAR','BHD','OMR','IQD','JOD','ILS','LBP','SYP','YER','SDG','LYD','TND','DZD','MAD','MRU','SOS','DJF','KMF')),
   timezone TEXT NOT NULL DEFAULT 'UTC',
   is_primary BOOLEAN NOT NULL DEFAULT FALSE,
   created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
@@ -198,9 +198,9 @@ CREATE TABLE IF NOT EXISTS public.parent_locations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL UNIQUE REFERENCES public.users(id) ON DELETE CASCADE,
   family_id UUID NOT NULL REFERENCES public.families(id) ON DELETE CASCADE,
-  country TEXT NOT NULL CHECK (country IN ('EG','SA')),
+  country TEXT NOT NULL CHECK (country IN ('EG','SA','AE','KW','QA','BH','OM','IQ','JO','PS','LB','SY','YE','SD','LY','TN','DZ','MA','MR','SO','DJ','KM')),
   city TEXT NOT NULL,
-  currency TEXT NOT NULL CHECK (currency IN ('EGP','SAR')),
+  currency TEXT NOT NULL CHECK (currency IN ('EGP','SAR','AED','KWD','QAR','BHD','OMR','IQD','JOD','ILS','LBP','SYP','YER','SDG','LYD','TND','DZD','MAD','MRU','SOS','DJF','KMF')),
   timezone TEXT NOT NULL DEFAULT 'UTC',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -544,7 +544,31 @@ BEGIN
   INSERT INTO public.family_homes (family_id, label, country, city, currency, timezone, is_primary, created_by)
   VALUES (
     NEW.id, 'منزل الأسرة', NEW.country, NEW.city, NEW.currency,
-    CASE WHEN NEW.country = 'EG' THEN 'Africa/Cairo' ELSE 'Asia/Riyadh' END,
+    CASE NEW.country
+      WHEN 'EG' THEN 'Africa/Cairo'
+      WHEN 'SA' THEN 'Asia/Riyadh'
+      WHEN 'AE' THEN 'Asia/Dubai'
+      WHEN 'KW' THEN 'Asia/Kuwait'
+      WHEN 'QA' THEN 'Asia/Qatar'
+      WHEN 'BH' THEN 'Asia/Bahrain'
+      WHEN 'OM' THEN 'Asia/Muscat'
+      WHEN 'IQ' THEN 'Asia/Baghdad'
+      WHEN 'JO' THEN 'Asia/Amman'
+      WHEN 'PS' THEN 'Asia/Gaza'
+      WHEN 'LB' THEN 'Asia/Beirut'
+      WHEN 'SY' THEN 'Asia/Damascus'
+      WHEN 'YE' THEN 'Asia/Aden'
+      WHEN 'SD' THEN 'Africa/Khartoum'
+      WHEN 'LY' THEN 'Africa/Tripoli'
+      WHEN 'TN' THEN 'Africa/Tunis'
+      WHEN 'DZ' THEN 'Africa/Algiers'
+      WHEN 'MA' THEN 'Africa/Casablanca'
+      WHEN 'MR' THEN 'Africa/Nouakchott'
+      WHEN 'SO' THEN 'Africa/Mogadishu'
+      WHEN 'DJ' THEN 'Africa/Djibouti'
+      WHEN 'KM' THEN 'Indian/Comoro'
+      ELSE 'Asia/Riyadh'
+    END,
     true, NEW.created_by
   )
   ON CONFLICT DO NOTHING;

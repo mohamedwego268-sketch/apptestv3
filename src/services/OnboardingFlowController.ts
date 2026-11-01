@@ -1,4 +1,10 @@
-import { CountryCode, DEFAULT_SEED, ParentThemeRole } from '../domain/familySpaceCore';
+import {
+  CountryCode,
+  DEFAULT_SEED,
+  ParentThemeRole,
+  getDefaultCityForCountry,
+  resolveCountryCode,
+} from '../domain/familySpaceCore';
 import { AvatarAccessoryTheme } from '../domain/assetManifest3D';
 import {
   Child,
@@ -296,6 +302,15 @@ export class OnboardingFlowController {
               rawRole === 'dad' ||
               (sessionUser.email || '').toLowerCase().includes('ahmad');
 
+            const restoredCountry: CountryCode = resolveCountryCode(
+              restored.family?.country ?? meta.country,
+              'EG'
+            );
+            const restoredCity: string =
+              (typeof restored.family?.city === 'string' && restored.family.city.trim()) ||
+              (typeof meta.city === 'string' && meta.city.trim()) ||
+              getDefaultCityForCountry(restoredCountry);
+
             // Never trust user_metadata.family_id as verified family ownership,
             // and never mark emailVerified/phoneVerified true unless confirmed by Supabase Auth!
             const resolvedProfile: UserSessionProfile = {
@@ -318,12 +333,8 @@ export class OnboardingFlowController {
                 (typeof meta.phone === 'string' && meta.phone.trim()) ||
                 sessionUser.phone ||
                 '551234567',
-              city:
-                restored.family?.city ||
-                (typeof meta.city === 'string' && meta.city.trim()) ||
-                'الدمام',
-              country:
-                restored.family?.country === 'EG' || meta.country === 'EG' ? 'EG' : 'SA',
+              city: restoredCity,
+              country: restoredCountry,
               childrenCount:
                 restored.restored && restored.children.length > 0
                   ? restored.children.length
@@ -418,11 +429,11 @@ export class OnboardingFlowController {
           typeof parsed.familyId === 'number' && Number.isFinite(parsed.familyId)
             ? parsed.familyId
             : SHARED_FAMILY_ID,
-        selectedCountry: parsed.selectedCountry === 'EG' ? 'EG' : 'SA',
+        selectedCountry: resolveCountryCode(parsed.selectedCountry, 'EG'),
         selectedCity:
           typeof parsed.selectedCity === 'string' && parsed.selectedCity.trim()
             ? parsed.selectedCity
-            : 'الدمام',
+            : getDefaultCityForCountry(resolveCountryCode(parsed.selectedCountry, 'EG')),
         verificationChannel:
           parsed.verificationChannel === 'email' ? 'email' : 'sms',
         otpCode: typeof parsed.otpCode === 'string' ? parsed.otpCode : '1234',
@@ -462,6 +473,10 @@ export class OnboardingFlowController {
     try {
       const existingDraft = this.loadDraft();
       const stepNumber = data.stepNumber || this.stepToNumber(step);
+      const resolvedCountry = resolveCountryCode(
+        data.selectedCountry ?? existingDraft?.selectedCountry,
+        'EG'
+      );
       const updated: OnboardingDraftData = {
         currentStep: step,
         stepNumber,
@@ -471,9 +486,11 @@ export class OnboardingFlowController {
         email: data.email ?? existingDraft?.email ?? 'maryam.mom@nekbaar.app',
         phone: data.phone ?? existingDraft?.phone ?? '551234567',
         familyId: data.familyId ?? existingDraft?.familyId ?? SHARED_FAMILY_ID,
-        selectedCountry:
-          data.selectedCountry ?? existingDraft?.selectedCountry ?? 'SA',
-        selectedCity: data.selectedCity ?? existingDraft?.selectedCity ?? 'الدمام',
+        selectedCountry: resolvedCountry,
+        selectedCity:
+          data.selectedCity ??
+          existingDraft?.selectedCity ??
+          getDefaultCityForCountry(resolvedCountry),
         verificationChannel:
           data.verificationChannel ?? existingDraft?.verificationChannel ?? 'sms',
         otpCode: data.otpCode ?? existingDraft?.otpCode ?? '1234',

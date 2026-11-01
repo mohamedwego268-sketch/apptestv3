@@ -4,6 +4,7 @@ import {
   FamilySpaceState,
   LanguageCode,
   WishItem,
+  convertCatalogPrice,
   formatCurrency,
   getEmptyStateCopy,
   locText,
@@ -71,7 +72,13 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
         </div>
       </div>
 
-      <SectionToolsDrawer language={lang} titleAr="أدوات الأمنيات" titleEn="Wishes tools">
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="wishes"
+        titleAr="أدوات الأمنيات"
+        titleEn="Wishes tools"
+        badgeCount={wishKidTab !== 'all' ? 1 : 0}
+      >
       <div className="flex flex-wrap items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#101D26] border border-[var(--color-border)] dark:border-[#1E3646] p-1.5 rounded-2xl w-max max-w-full">
         <button
           type="button"
@@ -219,7 +226,7 @@ export const KidsWishesSection: React.FC<KidsWishesSectionProps> = ({
               { emoji: '🧩', iconId: 'games' as const, title: 'لعبة تركيب خشبية', egp: 280, sar: 75 },
               { emoji: '🎨', iconId: 'wishes' as const, title: 'حقيبة ألوان مائية آمنة', egp: 150, sar: 42 },
             ].map((idea, idx) => {
-              const p = state.currency === 'SAR' ? idea.sar : idea.egp;
+              const p = convertCatalogPrice(idea.egp, idea.sar, state.currency);
               return (
                 <MasterPatternCard
                   key={idea.title}

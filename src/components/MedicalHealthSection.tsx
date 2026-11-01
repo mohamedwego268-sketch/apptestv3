@@ -7,7 +7,9 @@ import {
   LanguageCode,
   MediaContentItem,
   calculateChildAge,
+  convertCatalogPrice,
   formatCurrency,
+  getCountryMetadata,
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDChildAvatar } from './ThreeDVisuals';
@@ -173,114 +175,120 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
         ariaLabel={isEn ? 'Medical Highlights Carousel' : 'لافتات الرعاية الطبية المتحركة'}
       />
 
-      <SectionToolsDrawer language={language} titleAr="أدوات الرعاية الصحية" titleEn="Health tools">
-      {/* Segmented Navigation inside Medical Hub */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div
-          className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646] max-w-full"
-          role="tablist"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'doctors'}
-            onClick={() => setActiveTab('doctors')}
-            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-              activeTab === 'doctors'
-                ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
-            }`}
+      <SectionToolsDrawer
+        language={language}
+        sectionId="medical"
+        titleAr="أدوات الرعاية الصحية"
+        titleEn="Health tools"
+        badgeCount={
+          (filterByUserCity ? 1 : 0) +
+          (specialtyFilter !== 'all' ? 1 : 0) +
+          (activeTab !== 'doctors' ? 1 : 0)
+        }
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholderAr="🔍 ابحث عن طبيب أطفال، أخصائي تخاطب، أو عيادة..."
+        searchPlaceholderEn="🔍 Search pediatrician, speech therapist, or clinic..."
+      >
+        <div className="space-y-3">
+          {/* Segmented Navigation inside Medical Hub */}
+          <div
+            className="grid grid-cols-1 gap-1.5 p-1.5 rounded-2xl bg-emerald-50/90 dark:bg-[#101D26] border border-emerald-200/80 dark:border-[#1E3646]"
+            role="tablist"
           >
-            👩‍⚕️ {isEn ? `Doctors & Clinics (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
-          </button>
-          <button
-            id="medical-sos-dosage-tab-btn"
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'sos_dosage'}
-            onClick={() => setActiveTab('sos_dosage')}
-            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-              activeTab === 'sos_dosage'
-                ? 'bg-rose-600 text-white shadow-2xs'
-                : 'text-rose-900 dark:text-rose-200 hover:bg-rose-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            🚑 {isEn ? 'Emergency Preparedness' : 'الاستعداد للطوارئ'}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'child_records'}
-            onClick={() => setActiveTab('child_records')}
-            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-              activeTab === 'child_records'
-                ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            💉 {isEn ? `Growth & Vaccines (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'articles'}
-            onClick={() => setActiveTab('articles')}
-            className={`min-h-[44px] px-3.5 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-colors cursor-pointer ${
-              activeTab === 'articles'
-                ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            📋 {isEn ? `Guides (${medicalArticles.length})` : `أدلة طبية سريعة (${medicalArticles.length})`}
-          </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'doctors'}
+              onClick={() => setActiveTab('doctors')}
+              className={`min-h-[40px] px-3 py-2 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                activeTab === 'doctors'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              👩‍⚕️ {isEn ? `Doctors & Clinics (${filteredDoctors.length})` : `الأطباء والعيادات (${filteredDoctors.length})`}
+            </button>
+            <button
+              id="medical-sos-dosage-tab-btn"
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'sos_dosage'}
+              onClick={() => setActiveTab('sos_dosage')}
+              className={`min-h-[40px] px-3 py-2 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                activeTab === 'sos_dosage'
+                  ? 'bg-rose-600 text-white shadow-2xs'
+                  : 'text-rose-900 dark:text-rose-200 hover:bg-rose-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              🚑 {isEn ? 'Emergency Preparedness' : 'الاستعداد للطوارئ'}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'child_records'}
+              onClick={() => setActiveTab('child_records')}
+              className={`min-h-[40px] px-3 py-2 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                activeTab === 'child_records'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              💉 {isEn ? `Growth & Vaccines (${kids.length})` : `التطعيمات والنمو (${kids.length})`}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'articles'}
+              onClick={() => setActiveTab('articles')}
+              className={`min-h-[40px] px-3 py-2 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                activeTab === 'articles'
+                  ? 'bg-emerald-600 text-white shadow-2xs'
+                  : 'text-emerald-950 dark:text-[#F8FAFC] hover:bg-emerald-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              📋 {isEn ? `Guides (${medicalArticles.length})` : `أدلة طبية سريعة (${medicalArticles.length})`}
+            </button>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5">
+            <button
+              type="button"
+              onClick={() => setFilterByUserCity((prev) => !prev)}
+              className={`w-full min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-colors cursor-pointer ${
+                filterByUserCity
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
+                  : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
+              }`}
+            >
+              📍 {isEn ? `Near ${displayCity}` : `بالقرب من (${city})`}
+            </button>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-[var(--color-muted)]">
+                {isEn ? 'Filter by medical specialty' : 'تصفية حسب التخصص الطبي'}
+              </label>
+              <select
+                value={specialtyFilter}
+                onChange={(e) => setSpecialtyFilter(e.target.value)}
+                aria-label={isEn ? 'Filter by medical specialty' : 'تصفية حسب التخصص الطبي'}
+                className="w-full min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] dark:bg-[#142430] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
+              >
+                <option value="all">{isEn ? 'All Specialties' : 'كل التخصصات'}</option>
+                <option value="pediatrics">{isEn ? '🩺 Pediatrics & Growth' : '🩺 طب الأطفال والنمو'}</option>
+                <option value="psychology">{isEn ? '🧠 Psychology & Speech' : '🧠 إرشاد نفسي وتخاطب'}</option>
+              </select>
+            </div>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => setFilterByUserCity((prev) => !prev)}
-          className={`min-h-[44px] px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-extrabold border transition-colors cursor-pointer ${
-            filterByUserCity
-              ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-              : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] border-[var(--color-border)] dark:border-[#1E3646]'
-          }`}
-        >
-          📍 {isEn ? `Near ${displayCity})` : `بالقرب من (${city})`}
-        </button>
-      </div>
-
       </SectionToolsDrawer>
 
       {/* TAB 1: DOCTORS, PEDIATRICIANS & PSYCHOLOGISTS DIRECTORY */}
       {activeTab === 'doctors' && (
         <div className="space-y-3">
-          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shadow-2xs soft-card-surface">
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={
-                isEn
-                  ? '🔍 Search pediatrician, speech therapist, or clinic...'
-                  : '🔍 ابحث عن طبيب أطفال، أخصائي تخاطب، أو عيادة...'
-              }
-              aria-label={isEn ? 'Search doctors and clinics' : 'البحث في الأطباء والعيادات'}
-              className="flex-1 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)]"
-            />
-            <select
-              value={specialtyFilter}
-              onChange={(e) => setSpecialtyFilter(e.target.value)}
-              aria-label={isEn ? 'Filter by medical specialty' : 'تصفية حسب التخصص الطبي'}
-              className="min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
-            >
-              <option value="all">{isEn ? 'All Specialties' : 'كل التخصصات'}</option>
-              <option value="pediatrics">{isEn ? '🩺 Pediatrics & Growth' : '🩺 طب الأطفال والنمو'}</option>
-              <option value="psychology">{isEn ? '🧠 Psychology & Speech' : '🧠 إرشاد نفسي وتخاطب'}</option>
-            </select>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredDoctors.map((doc) => {
-              const fee = currency === 'SAR' ? doc.priceSAR : doc.priceEGP;
+              const fee = convertCatalogPrice(doc.priceEGP, doc.priceSAR, currency);
               const isPediatrics = doc.category === 'doctor';
               const isCompared = comparedDoctorIds.includes(doc.id);
               return (
@@ -476,6 +484,56 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
               </p>
             </div>
           </div>
+          {/* Official Country Emergency Numbers Card */}
+          {(() => {
+            const countryMeta = getCountryMetadata(country);
+            return (
+              <div
+                data-testid="medical-country-emergency-card"
+                className="rounded-2xl border border-rose-200 dark:border-[#1E3646] bg-white dark:bg-[#142430] p-4 space-y-2.5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h4 className="text-sm font-extrabold text-[var(--color-text)]">
+                    {countryMeta.flag}{' '}
+                    {isEn
+                      ? `Official Emergency Numbers — ${countryMeta.nameEn}`
+                      : `أرقام الطوارئ الرسمية — ${countryMeta.nameAr}`}
+                  </h4>
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white text-xs font-black tabular-nums">
+                    {isEn
+                      ? `Child Helpline: ${countryMeta.emergencyNumbers.childHelpline}`
+                      : `نجدة الطفل: ${countryMeta.emergencyNumbers.childHelpline}`}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded-xl bg-rose-50 dark:bg-[#101D26] p-2.5 border border-rose-200/70 dark:border-[#1E3646]">
+                    <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                      🚑 {isEn ? 'Ambulance' : 'الإسعاف'}
+                    </div>
+                    <div dir="ltr" className="text-base font-black text-rose-700 dark:text-rose-300 tabular-nums">
+                      {countryMeta.emergencyNumbers.ambulance}
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 dark:bg-[#101D26] p-2.5 border border-rose-200/70 dark:border-[#1E3646]">
+                    <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                      🚓 {isEn ? 'Police' : 'الشرطة'}
+                    </div>
+                    <div dir="ltr" className="text-base font-black text-rose-700 dark:text-rose-300 tabular-nums">
+                      {countryMeta.emergencyNumbers.police}
+                    </div>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 dark:bg-[#101D26] p-2.5 border border-rose-200/70 dark:border-[#1E3646]">
+                    <div className="text-[11px] font-bold text-[var(--color-muted)]">
+                      🚒 {isEn ? 'Civil Defense' : 'الدفاع المدني'}
+                    </div>
+                    <div dir="ltr" className="text-base font-black text-rose-700 dark:text-rose-300 tabular-nums">
+                      {countryMeta.emergencyNumbers.civilDefense}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { icon: '📞', titleAr: 'أرقام التواصل المهمة', titleEn: 'Important contact numbers', bodyAr: 'احفظ رقم الطوارئ المحلي، ومركز السموم الرسمي إن توفر، ورقم طبيب الطفل.', bodyEn: 'Save your official local emergency number, poison center if available, and your child’s clinician.' },

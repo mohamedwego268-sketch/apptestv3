@@ -665,89 +665,144 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
         ariaLabel={isEn ? 'Featured Family Content' : 'المحتوى المميز'}
       />
 
-      <SectionToolsDrawer language={language} titleAr="أدوات المحتوى" titleEn="Media tools">
-      {/* Mode Switcher Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-indigo-50/90 dark:bg-[#101D26] border border-indigo-200/80 dark:border-[#1E3646]">
-          <button
-            type="button"
-            onClick={() => setMediaViewMode('reels')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
-              mediaViewMode === 'reels'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            📱 {isEn ? 'Vertical Reels (9:16)' : 'ريلز الأسرة (9:16)'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMediaViewMode('audio')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
-              mediaViewMode === 'audio'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            🎙️ {isEn ? 'Podcasts & Audio Stories' : 'البودكاست والقصص الصوتية'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMediaViewMode('library')}
-            className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors whitespace-nowrap cursor-pointer ${
-              mediaViewMode === 'library'
-                ? 'bg-indigo-600 text-white shadow-2xs'
-                : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
-            }`}
-          >
-            🎥 {isEn ? 'Videos & Guides' : 'الفيديو والأدلة'}
-          </button>
-        </div>
+      <SectionToolsDrawer
+        language={language}
+        sectionId="media"
+        titleAr="أدوات المحتوى"
+        titleEn="Media tools"
+        badgeCount={
+          (selectedType !== 'all' ? 1 : 0) +
+          (selectedStage !== 'all' ? 1 : 0) +
+          (reelCategoryFilter !== 'all' ? 1 : 0)
+        }
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholderAr="🔍 ابحث في الفيديوهات والأدلة التربوية..."
+        searchPlaceholderEn="🔍 Search videos and parenting guides..."
+      >
+        <div className="space-y-3">
+          {/* Mode Switcher Tabs */}
+          <div className="grid grid-cols-1 gap-1.5 p-1.5 rounded-2xl bg-indigo-50/90 dark:bg-[#101D26] border border-indigo-200/80 dark:border-[#1E3646]">
+            <button
+              type="button"
+              onClick={() => setMediaViewMode('reels')}
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                mediaViewMode === 'reels'
+                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              📱 {isEn ? 'Vertical Reels (9:16)' : 'ريلز الأسرة (9:16)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMediaViewMode('audio')}
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                mediaViewMode === 'audio'
+                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              🎙️ {isEn ? 'Podcasts & Audio Stories' : 'البودكاست والقصص الصوتية'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setMediaViewMode('library')}
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl text-xs font-extrabold transition-colors text-start cursor-pointer ${
+                mediaViewMode === 'library'
+                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  : 'text-indigo-950 dark:text-[#F8FAFC] hover:bg-indigo-100/70 dark:hover:bg-[#142430]'
+              }`}
+            >
+              🎥 {isEn ? 'Videos & Guides' : 'الفيديو والأدلة'}
+            </button>
+          </div>
 
-        {mediaViewMode === 'reels' && (
-          <button
-            type="button"
-            onClick={() => setIsFullScreenReel(true)}
-            className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold shadow-2xs flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>⛶</span>
-            <span>{isEn ? 'Vertical Reels Player' : 'مشغل المقاطع القصيرة'}</span>
-          </button>
-        )}
-      </div>
+          {mediaViewMode === 'reels' && (
+            <button
+              type="button"
+              onClick={() => setIsFullScreenReel(true)}
+              className="w-full min-h-[38px] px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>⛶</span>
+              <span>{isEn ? 'Vertical Reels Player' : 'مشغل المقاطع القصيرة'}</span>
+            </button>
+          )}
 
-      {/* Interactive Reels Category Filter Bar */}
-      {mediaViewMode === 'reels' && (
-        <div
-          role="tablist"
-          aria-label={isEn ? 'Filter Reels by Topic' : 'تصفية الريلز حسب الموضوع'}
-          className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1"
-        >
-          {REEL_TOPIC_FILTERS.map((topic) => {
-            const isActive = reelCategoryFilter === topic.id;
-            return (
-              <button
-                key={topic.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => {
-                  setReelCategoryFilter(topic.id);
-                  setActiveReelIndex(0);
-                }}
-                className={`min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-extrabold border transition-all whitespace-nowrap shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
-                    : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-indigo-400'
-                }`}
+          {/* Interactive Reels Category Filter Bar */}
+          {mediaViewMode === 'reels' && (
+            <div
+              role="tablist"
+              aria-label={isEn ? 'Filter Reels by Topic' : 'تصفية الريلز حسب الموضوع'}
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              {REEL_TOPIC_FILTERS.map((topic) => {
+                const isActive = reelCategoryFilter === topic.id;
+                return (
+                  <button
+                    key={topic.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      setReelCategoryFilter(topic.id);
+                      setActiveReelIndex(0);
+                    }}
+                    className={`min-h-[34px] px-3 py-1 rounded-full text-xs font-extrabold border transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                        : 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646] hover:border-indigo-400'
+                    }`}
+                  >
+                    {isEn ? topic.labelEn : topic.labelAr}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Library Content Type & Age Stage Filters */}
+          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-2.5">
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                { id: 'all', label: isEn ? 'All Media' : 'الكل' },
+                { id: 'video', label: isEn ? '🎬 Videos' : '🎬 فيديوهات' },
+                { id: 'guide', label: isEn ? '📘 Guides' : '📘 أدلة عملية' },
+                { id: 'saved', label: isEn ? `🌟 Saved (${savedMediaIds.length})` : `🌟 المحفوظات (${savedMediaIds.length})` },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setSelectedType(tab.id as typeof selectedType)}
+                  className={`min-h-[36px] px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
+                    selectedType === tab.id
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-[var(--color-surface)] text-[var(--color-muted)]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-1">
+              <label className="block text-[11px] font-extrabold text-[var(--color-muted)]">
+                {isEn ? 'Filter by child age' : 'تصفية حسب عمر الطفل'}
+              </label>
+              <select
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(e.target.value as AgeStage)}
+                aria-label={isEn ? 'Filter by child age' : 'تصفية حسب عمر الطفل'}
+                className="w-full min-h-[38px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
               >
-                {isEn ? topic.labelEn : topic.labelAr}
-              </button>
-            );
-          })}
+                <option value="all">{isEn ? 'All Ages (0–8 yrs)' : 'كل الأعمار (0–8)'}</option>
+                <option value="0-2">{isEn ? '0–2 Years' : '0–2 سنوات'}</option>
+                <option value="2-5">{isEn ? '2–5 Years' : '2–5 سنوات'}</option>
+                <option value="5-8">{isEn ? '5–8 Years' : '5–8 سنوات'}</option>
+              </select>
+            </div>
+          </div>
         </div>
-      )}
-
       </SectionToolsDrawer>
 
       {/* FULL-SCREEN REELS MODAL OVERLAY */}
@@ -1136,53 +1191,6 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
               </div>
             </div>
           )}
-
-          {/* Filter & Search Bar for Articles/Guides */}
-          <div className="rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3.5 space-y-2.5 shadow-2xs">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {[
-                  { id: 'all', label: isEn ? 'All Media' : 'الكل' },
-                  { id: 'video', label: isEn ? '🎬 Videos' : '🎬 فيديوهات' },
-                  { id: 'guide', label: isEn ? '📘 Guides' : '📘 أدلة عملية' },
-                  { id: 'saved', label: isEn ? `🌟 Saved (${savedMediaIds.length})` : `🌟 المحفوظات (${savedMediaIds.length})` },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setSelectedType(tab.id as typeof selectedType)}
-                    className={`min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-colors cursor-pointer ${
-                      selectedType === tab.id
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-[var(--color-control-muted)] text-[var(--color-muted)]'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <select
-                value={selectedStage}
-                onChange={(e) => setSelectedStage(e.target.value as AgeStage)}
-                aria-label={isEn ? 'Filter by child age' : 'تصفية حسب عمر الطفل'}
-                className="min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-extrabold text-[var(--color-text)]"
-              >
-                <option value="all">{isEn ? 'All Ages (0–8 yrs)' : 'كل الأعمار (0–8)'}</option>
-                <option value="0-2">{isEn ? '0–2 Years' : '0–2 سنوات'}</option>
-                <option value="2-5">{isEn ? '2–5 Years' : '2–5 سنوات'}</option>
-                <option value="5-8">{isEn ? '5–8 Years' : '5–8 سنوات'}</option>
-              </select>
-            </div>
-
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isEn ? '🔍 Search videos and parenting guides...' : '🔍 ابحث في الفيديوهات والأدلة التربوية...'}
-              className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3.5 py-2 text-xs sm:text-sm font-semibold text-[var(--color-text)]"
-            />
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredItems.map((item) => {

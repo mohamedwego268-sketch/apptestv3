@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import dotenv from "dotenv";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import supabase, { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabase.js";
 import {
@@ -13,6 +14,14 @@ import {
   uploadFamilyPrivateMediaToStorage,
   validateFamilyStorageObjectPath,
 } from "../services/supabaseService";
+import { ALL_ARAB_COUNTRY_CODES, ALL_ARAB_CURRENCIES } from "./arabCountriesRegistry";
+
+for (const envFile of [".env.test", ".env.local", ".env"]) {
+  const fullPath = path.resolve(process.cwd(), envFile);
+  if (fs.existsSync(fullPath)) {
+    dotenv.config({ path: fullPath, override: false });
+  }
+}
 
 /**
  * Real PostgreSQL RLS Integration Test Suite for Nekbaar (Family Space)
@@ -24,15 +33,20 @@ import {
  *    revocations, RPC ACLs, and public catalog read-only protections without creating
  *    or modifying data.
  * 2. Part B executes the 17-scenario authenticated multi-family PostgreSQL RLS
- *    integration matrix ONLY when an isolated test database is explicitly configured
- *    via `TEST_SUPABASE_URL`, `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY`
- *    (and never executes destructive fixtures against production project `qbwnzunusmaidciakuod`).
+ *    integration matrix ONLY when the dedicated isolated test project (`nekbaar-test`,
+ *    ref: `hbnxaqoaoeqaetvgbkgb`) is configured via `TEST_SUPABASE_URL`,
+ *    `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY` (and never executes
+ *    destructive fixtures against production project `qbwnzunusmaidciakuod`).
  */
 
 const LIVE_SUPABASE_URL = SUPABASE_URL;
 const LIVE_SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 
-const TEST_SUPABASE_URL = process.env.TEST_SUPABASE_URL?.trim() || "";
+export const DEDICATED_TEST_PROJECT_REF = "hbnxaqoaoeqaetvgbkgb";
+export const DEDICATED_TEST_SUPABASE_URL = `https://${DEDICATED_TEST_PROJECT_REF}.supabase.co`;
+
+const TEST_SUPABASE_URL =
+  process.env.TEST_SUPABASE_URL?.trim() || DEDICATED_TEST_SUPABASE_URL;
 const TEST_SUPABASE_ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY?.trim() || "";
 const TEST_SUPABASE_SERVICE_ROLE_KEY =
   process.env.TEST_SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
@@ -41,7 +55,9 @@ const IS_ISOLATED_TEST_DB_CONFIGURED = Boolean(
   TEST_SUPABASE_URL &&
     TEST_SUPABASE_ANON_KEY &&
     TEST_SUPABASE_SERVICE_ROLE_KEY &&
-    !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod"),
+    !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod") &&
+    !TEST_SUPABASE_ANON_KEY.includes("your-") &&
+    !TEST_SUPABASE_SERVICE_ROLE_KEY.includes("your-"),
 );
 
 function createAnonClient(url: string, anonKey: string): SupabaseClient {
@@ -208,19 +224,89 @@ test("Part A.3: Live PostgreSQL denies anonymous RPC execution on bootstrap_auth
   assert.equal(acceptRes.error?.code, "42501");
 });
 
+test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-Arab-League-countries SQL schema/migration verification", () => {
+  const gitignoreText = fs.readFileSync(
+    path.resolve(process.cwd(), ".gitignore"),
+    "utf8",
+  );
+  for (const requiredIgnore of [".env", ".env.local", ".env.test"]) {
+    assert.ok(
+      gitignoreText
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .includes(requiredIgnore),
+      `.gitignore must explicitly ignore ${requiredIgnore}`,
+    );
+  }
+
+  const envExampleText = fs.readFileSync(
+    path.resolve(process.cwd(), ".env.example"),
+    "utf8",
+  );
+  assert.ok(
+    envExampleText.includes("https://hbnxaqoaoeqaetvgbkgb.supabase.co"),
+    ".env.example must document the dedicated test project URL https://hbnxaqoaoeqaetvgbkgb.supabase.co",
+  );
+  assert.ok(
+    envExampleText.includes("TEST_SUPABASE_ANON_KEY") &&
+      envExampleText.includes("TEST_SUPABASE_SERVICE_ROLE_KEY"),
+    ".env.example must document TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_ROLE_KEY",
+  );
+  assert.equal(
+    /VITE_.*SERVICE_ROLE/i.test(envExampleText),
+    false,
+    ".env.example must never expose service_role in VITE_ variables",
+  );
+
+  // Verify 22 Arab League countries and currencies in schema.sql and 20261031120000 migration
+  const schemaSql = fs.readFileSync(
+    path.resolve(process.cwd(), "supabase/schema.sql"),
+    "utf8",
+  );
+  const countriesMigrationSql = fs.readFileSync(
+    path.resolve(
+      process.cwd(),
+      "supabase/migrations/20261031120000_support_all_22_arab_league_countries.sql",
+    ),
+    "utf8",
+  );
+
+  for (const code of ALL_ARAB_COUNTRY_CODES) {
+    assert.ok(
+      schemaSql.includes(`'${code}'`),
+      `supabase/schema.sql must support Arab League country code '${code}'`,
+    );
+    assert.ok(
+      countriesMigrationSql.includes(`'${code}'`),
+      `20261031120000 migration must support Arab League country code '${code}'`,
+    );
+  }
+
+  for (const currency of ALL_ARAB_CURRENCIES) {
+    assert.ok(
+      schemaSql.includes(`'${currency}'`),
+      `supabase/schema.sql must support Arab League currency '${currency}'`,
+    );
+    assert.ok(
+      countriesMigrationSql.includes(`'${currency}'`),
+      `20261031120000 migration must support Arab League currency '${currency}'`,
+    );
+  }
+});
+
 // ============================================================================
 // PART B: Full 17-Scenario Authenticated Multi-Family PostgreSQL RLS Matrix
-// (Runs against an isolated Supabase / PostgreSQL test environment)
+// (Runs against the dedicated isolated Supabase test project hbnxaqoaoeqaetvgbkgb)
 // ============================================================================
 
 test(
   "Part B: Full 17-scenario authenticated multi-family PostgreSQL RLS & Storage integration suite",
   {
     skip: !IS_ISOLATED_TEST_DB_CONFIGURED
-      ? "Skipped: Set TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY pointing to a non-production isolated Supabase test instance to execute destructive/multi-user authenticated PostgreSQL integration fixtures."
+      ? "Blocked from executing live destructive fixtures: TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_ROLE_KEY for isolated test project https://hbnxaqoaoeqaetvgbkgb.supabase.co are not set in the current environment (.env.test / process.env)."
       : false,
   },
-  async () => {
+  async (t) => {
     const adminClient = createClient(
       TEST_SUPABASE_URL,
       TEST_SUPABASE_SERVICE_ROLE_KEY,
@@ -297,16 +383,31 @@ test(
       // Bootstrap Family A and Family B via hardened RPC
       const bootA = await parentA.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family A",
-        p_country: "Egypt",
+        p_country: "EG",
         p_full_name: "Parent A",
         p_role: "father",
       });
+
+      if (bootA.error?.code === "PGRST202") {
+        t.diagnostic(
+          `BLOCKER: Dedicated test project (${TEST_SUPABASE_URL}) Auth Admin & JWT sign-in succeeded for 4 isolated test users, ` +
+            `but public.bootstrap_authenticated_family_space returned PGRST202 (empty public schema). ` +
+            `PostgREST API keys (TEST_SUPABASE_ANON_KEY / TEST_SUPABASE_SERVICE_ROLE_KEY) cannot execute raw DDL without ` +
+            `SUPABASE_ACCESS_TOKEN (Management API) or TEST_DATABASE_URL (PostgreSQL connection string). ` +
+            `Apply supabase/schema.sql and supabase/migrations/20261031120000_support_all_22_arab_league_countries.sql ` +
+            `in the nekbaar-test (hbnxaqoaoeqaetvgbkgb) SQL Editor to initialize the schema.`,
+        );
+        return;
+      }
+
       assert.equal(bootA.error, null, bootA.error?.message);
-      const familyAId: string = bootA.data.family_id;
+      const familyAId: string = Array.isArray(bootA.data)
+        ? bootA.data[0]?.family_id
+        : bootA.data?.family_id;
 
       const bootB = await parentB.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family B",
-        p_country: "Egypt",
+        p_country: "EG",
         p_full_name: "Parent B",
         p_role: "mother",
       });

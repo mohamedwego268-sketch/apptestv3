@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { CountryCode, LanguageCode, ParentThemeRole, locText } from '../domain/familySpaceCore';
+import {
+  CountryCode,
+  LanguageCode,
+  ParentThemeRole,
+  getDefaultCityForCountry,
+  locText,
+} from '../domain/familySpaceCore';
 import { PageId } from '../context/FamilyAppContext';
 import { ThreeDIcon } from './ThreeDVisuals';
 import { LiveWeatherWidget } from './LiveWeatherWidget';
@@ -80,7 +86,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   const isNotificationsActive = activePage === 'notifications';
   const [weatherModalOpen, setWeatherModalOpen] = useState<boolean>(false);
 
-  const activeCity = city || (country === 'SA' ? 'الرياض' : 'القاهرة');
+  const activeCity = city || getDefaultCityForCountry(country);
   const localizedCity = locText(activeCity, lang);
   const compactWeather = COMPACT_HEADER_WEATHER[activeCity] || COMPACT_HEADER_WEATHER['القاهرة'];
 

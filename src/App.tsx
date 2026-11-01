@@ -25,7 +25,13 @@ import {
   CalendarDisplayMode,
   TaskCadence,
   dateLocalISO,
+  convertCatalogPrice,
+  getCountryDialCode,
+  getCountryTimezone,
+  getDefaultCityForCountry,
   getSuggestedCurrencyForCountry,
+  isSupportedCountryCode,
+  resolveCountryCode,
   formatGregorianAndHijri,
   getChildDeletionSummary,
   deleteChildCascade,
@@ -128,7 +134,8 @@ export default function App() {
   stateRef.current = state;
   const activeParentProfile = state.parentAccounts[state.activeParentAccount];
   const activeParentCountry = activeParentProfile?.country || state.country;
-  const activeParentCity = activeParentProfile?.city || state.city || (activeParentCountry === 'SA' ? 'الرياض' : 'القاهرة');
+  const activeParentCity =
+    activeParentProfile?.city || state.city || getDefaultCityForCountry(activeParentCountry);
   const activeParentCurrency = getSuggestedCurrencyForCountry(activeParentCountry);
   const activeParentViewState: FamilySpaceState = {
     ...state,
@@ -352,7 +359,7 @@ export default function App() {
           ...prev.parentAccounts[prev.activeParentAccount],
           country,
           city,
-          phoneCode: country === 'SA' ? '+966' : '+20',
+          phoneCode: getCountryDialCode(country),
         },
       },
     }));
@@ -479,8 +486,9 @@ export default function App() {
           setRecognizedProfile(profile);
           setOnboardingModalOpen(false);
           setActivePage('home');
-          const nextCountry =
-            profile.country === 'SA' || profile.country === 'EG' ? profile.country : familyState.country;
+          const nextCountry = isSupportedCountryCode(profile.country)
+            ? profile.country
+            : familyState.country;
           const nextRole =
             profile.role === 'dad' || profile.role === 'mom' ? profile.role : familyState.role;
           const pid = nextRole === 'dad' ? 'father' : 'mother';
@@ -503,7 +511,7 @@ export default function App() {
             parentName: profile.fullName || familyState.parentName,
             role: nextRole,
             country: nextCountry,
-            city: profile.city || familyState.city,
+            city: profile.city || familyState.city || getDefaultCityForCountry(nextCountry),
             currency: getSuggestedCurrencyForCountry(nextCountry),
             activeParentAccount: pid,
             verifiedFamilyId: profile.verifiedFamilyId,
@@ -513,7 +521,8 @@ export default function App() {
                 ...familyState.parentAccounts[pid],
                 fullName: profile.fullName || familyState.parentAccounts[pid].fullName,
                 country: nextCountry,
-                city: profile.city || familyState.city,
+                city: profile.city || familyState.city || getDefaultCityForCountry(nextCountry),
+                phoneCode: getCountryDialCode(nextCountry),
                 email: profile.email || familyState.parentAccounts[pid].email,
                 phoneNumber: profile.phone || familyState.parentAccounts[pid].phoneNumber,
                 emailVerified: Boolean(profile.emailVerified),
@@ -683,7 +692,7 @@ export default function App() {
     setSettingsParentName(state.parentName);
     setSettingsRole(state.role);
     setSettingsCountry(state.country);
-    setSettingsCity(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'));
+    setSettingsCity(state.city || getDefaultCityForCountry(state.country));
     setSettingsLanguage(state.language);
     setSettingsCurrency(state.currency);
     setSettingsCalendarMode(state.calendarMode);
@@ -829,11 +838,13 @@ export default function App() {
 
     const countryRaw = combinedValue.slice(0, separatorIndex);
     const cityRaw = combinedValue.slice(separatorIndex + 1);
-    if (countryRaw !== 'EG' && countryRaw !== 'SA') return;
+    if (!isSupportedCountryCode(countryRaw)) return;
 
     const nextCountry: CountryCode = countryRaw;
     const cityId = resolveCityRegionId(nextCountry, cityRaw);
-    const cityObj = COUNTRY_CITIES_MAP[nextCountry].find((city) => city.id === cityId);
+    const cityObj =
+      COUNTRY_CITIES_MAP[nextCountry].find((city) => city.id === cityId) ||
+      COUNTRY_CITIES_MAP[nextCountry][0];
     if (!cityObj) return;
 
     const nextCurrency = getSuggestedCurrencyForCountry(nextCountry);
@@ -845,7 +856,7 @@ export default function App() {
           ...prev.parentAccounts[prev.activeParentAccount],
           country: nextCountry,
           city: cityObj.id,
-          phoneCode: nextCountry === 'SA' ? '+966' : '+20',
+          phoneCode: getCountryDialCode(nextCountry),
         },
       },
     }));
@@ -857,7 +868,7 @@ export default function App() {
         country: nextCountry,
         city: cityObj.id,
         currency: nextCurrency,
-        timezone: nextCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+        timezone: getCountryTimezone(nextCountry),
       }).then((result) => {
         if (result.error) showToast(result.error);
       });
@@ -885,7 +896,7 @@ export default function App() {
             ...prev.parentAccounts[prev.activeParentAccount],
             country: nearest.country,
             city: nearest.city.id,
-            phoneCode: nearest.country === 'SA' ? '+966' : '+20',
+            phoneCode: getCountryDialCode(nearest.country),
           },
         },
       }));
@@ -894,7 +905,7 @@ export default function App() {
           country: nearest.country,
           city: nearest.city.id,
           currency: nextCurrency,
-          timezone: nearest.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+          timezone: getCountryTimezone(nearest.country),
         }).then((result) => {
           if (result.error) showToast(result.error);
         });
@@ -1339,7 +1350,7 @@ export default function App() {
       showToast('أضف ملف طفل أولًا لإضافة أمنية');
       return;
     }
-    const price = state.currency === 'SAR' ? priceSAR : priceEGP;
+    const price = convertCatalogPrice(priceEGP, priceSAR, state.currency);
     setState((prev) => ({
       ...prev,
       wishes: [
@@ -1467,7 +1478,7 @@ export default function App() {
       .map((ci) => {
         const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
         if (!prod) return null;
-        const unitPrice = state.currency === 'SAR' ? prod.priceSAR : prod.priceEGP;
+        const unitPrice = convertCatalogPrice(prod.priceEGP, prod.priceSAR, state.currency);
         return {
           productId: ci.productId,
           name: state.language === 'en' ? prod.nameEn : prod.name,
@@ -1586,7 +1597,8 @@ export default function App() {
   // Settings & Internationalization handlers
   const handleCountryChangeInSettings = (nextCountry: CountryCode) => {
     setSettingsCountry(nextCountry);
-    const defaultCity = COUNTRY_CITIES_MAP[nextCountry][0]?.id || (nextCountry === 'SA' ? 'الرياض' : 'القاهرة');
+    const defaultCity =
+      COUNTRY_CITIES_MAP[nextCountry]?.[0]?.id || getDefaultCityForCountry(nextCountry);
     setSettingsCity(defaultCity);
     const suggested = getSuggestedCurrencyForCountry(nextCountry);
     if (settingsCurrency !== suggested) {
@@ -1615,7 +1627,7 @@ export default function App() {
 
   const handleSaveBottomInternationalAndPhone = async () => {
     const currentParent = state.parentAccounts[state.activeParentAccount];
-    const personalCountry = currentParent.country === 'SA' ? 'SA' : 'EG';
+    const personalCountry = resolveCountryCode(currentParent.country, state.country);
     const phoneCheck = validatePhoneForCountry(settingsPhoneInput, personalCountry);
     if (!phoneCheck.valid) {
       showToast(
@@ -1687,7 +1699,7 @@ export default function App() {
           ...prev.parentAccounts,
           [pid]: {
             ...prev.parentAccounts[pid],
-            phoneCode: personalCountry === 'SA' ? '+966' : '+20',
+            phoneCode: getCountryDialCode(personalCountry),
             phoneNumber: phoneCheck.normalized,
             // Never mark phoneVerified true unless genuinely confirmed by Supabase Auth!
             phoneVerified: genuinePhoneVerified,
@@ -3224,10 +3236,14 @@ export default function App() {
           isOpen={onboardingModalOpen}
           isMandatoryGateway={!recognizedProfile}
           initialCountry={state.country}
-          initialCity={state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة')}
+          initialCity={state.city || getDefaultCityForCountry(state.country)}
           initialParentName={state.parentName}
           initialRole={state.role}
           language={state.language}
+          onToggleLanguage={(nextLang) => {
+            setState((prev) => ({ ...prev, language: nextLang }));
+            setSettingsLanguage(nextLang);
+          }}
           onPreviewRequest={handleEnterPreviewMode}
           onClose={() => {
             if (recognizedProfile) {
@@ -3303,6 +3319,7 @@ export default function App() {
               );
               return {
                 ...baseState,
+                language: prev.language,
                 verifiedFamilyId: verifiedFamilyUuid,
                 parentName,
                 role,
@@ -3322,7 +3339,7 @@ export default function App() {
                     fullName: parentName,
                     country,
                     city,
-                    phoneCode: country === 'SA' ? '+966' : '+20',
+                    phoneCode: getCountryDialCode(country),
                     phoneNumber,
                     phoneVerified: genuinePhoneVerified,
                     email,

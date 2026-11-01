@@ -12,11 +12,67 @@
 
 import { AvatarAccessoryTheme } from './assetManifest3D';
 import { getProductUnsplashImageUrl } from './cardBackgrounds';
+import {
+  CountryCode,
+  CurrencyCode,
+  CityOption,
+  CityMetadata,
+  ArabCountryMetadata,
+  EmergencyContactsMetadata,
+  PhoneValidationRule,
+  ALL_ARAB_COUNTRY_CODES,
+  ALL_ARAB_CURRENCIES,
+  ARAB_COUNTRIES_REGISTRY,
+  COUNTRY_CITIES_MAP,
+  CURRENCY_METADATA_MAP,
+  isSupportedCountryCode,
+  isSupportedCurrencyCode,
+  resolveCountryCode,
+  resolveCurrencyCode,
+  getCountryMetadata,
+  getDefaultCityForCountry,
+  getSuggestedCurrencyForCountry as getSuggestedCurrencyFromRegistry,
+  getCountryTimezone,
+  getCountryDialCode,
+  getCitiesForCountry,
+  resolveValidCityForCountry,
+  getCityCoordinates,
+  convertCatalogPrice,
+  validatePhoneRuleForCountry,
+} from './arabCountriesRegistry';
+
+export type {
+  CountryCode,
+  CurrencyCode,
+  CityOption,
+  CityMetadata,
+  ArabCountryMetadata,
+  EmergencyContactsMetadata,
+  PhoneValidationRule,
+};
+
+export {
+  ALL_ARAB_COUNTRY_CODES,
+  ALL_ARAB_CURRENCIES,
+  ARAB_COUNTRIES_REGISTRY,
+  COUNTRY_CITIES_MAP,
+  CURRENCY_METADATA_MAP,
+  isSupportedCountryCode,
+  isSupportedCurrencyCode,
+  resolveCountryCode,
+  resolveCurrencyCode,
+  getCountryMetadata,
+  getDefaultCityForCountry,
+  getCountryTimezone,
+  getCountryDialCode,
+  getCitiesForCountry,
+  resolveValidCityForCountry,
+  getCityCoordinates,
+  convertCatalogPrice,
+};
 
 export type ParentThemeRole = 'mom' | 'dad' | 'high-contrast';
-export type CountryCode = 'EG' | 'SA';
 export type LanguageCode = 'ar' | 'en';
-export type CurrencyCode = 'EGP' | 'SAR';
 export type CalendarDisplayMode = 'both' | 'gregorian' | 'hijri';
 export type TaskCadence = 'daily' | 'weekly' | 'monthly';
 export type AgeStage = '0-2' | '2-5' | '5-8' | 'all';
@@ -455,6 +511,12 @@ export function locText(
   if (lang === 'ar') return str;
   if (enFallback) return enFallback;
   if (BILINGUAL_SEED_DICTIONARY[str]) return BILINGUAL_SEED_DICTIONARY[str];
+  for (const code of ALL_ARAB_COUNTRY_CODES) {
+    const cMeta = ARAB_COUNTRIES_REGISTRY[code];
+    if (cMeta.nameAr === str) return cMeta.nameEn;
+    const cityMatch = cMeta.cities.find((c) => c.nameAr === str || c.id === str);
+    if (cityMatch) return cityMatch.nameEn;
+  }
   return str
     .replace(/حمزة/g, 'Hamza')
     .replace(/ليلى/g, 'Laila')
@@ -652,7 +714,7 @@ export interface ParentAccountProfile {
   relationshipRole: 'الأم' | 'الأب';
   country: CountryCode;
   city?: string;
-  phoneCode: '+20' | '+966';
+  phoneCode: string;
   phoneNumber: string;
   phoneVerified: boolean;
   email: string;
@@ -939,72 +1001,6 @@ export const DEFAULT_PARENT_ACCOUNTS: {
   },
 };
 
-export interface CityOption {
-  id: string;
-  nameAr: string;
-  nameEn: string;
-  labelAr?: string;
-  labelEn?: string;
-  regionAr: string;
-  regionEn: string;
-  providersCount: number;
-  lat: number;
-  lng: number;
-  subCitiesAr?: string[];
-  subCitiesEn?: string[];
-}
-
-export const COUNTRY_CITIES_MAP: Record<CountryCode, CityOption[]> = {
-  EG: [
-    { id: 'القاهرة', nameAr: 'القاهرة', nameEn: 'Cairo', labelAr: 'القاهرة — محافظة القاهرة', labelEn: 'Cairo — Cairo Governorate', regionAr: 'محافظة القاهرة', regionEn: 'Cairo Governorate', providersCount: 48, lat: 30.0444, lng: 31.2357, subCitiesAr: ['القاهرة الجديدة', 'المعادي', 'مدينة نصر', 'مصر الجديدة', 'الزمالك'], subCitiesEn: ['New Cairo', 'Maadi', 'Nasr City', 'Heliopolis', 'Zamalek'] },
-    { id: 'الإسكندرية', nameAr: 'الإسكندرية', nameEn: 'Alexandria', labelAr: 'الإسكندرية — محافظة الإسكندرية', labelEn: 'Alexandria — Alexandria Governorate', regionAr: 'محافظة الإسكندرية', regionEn: 'Alexandria Governorate', providersCount: 34, lat: 31.2001, lng: 29.9187, subCitiesAr: ['سموحة', 'سيدي جابر', 'رشدي', 'برج العرب'], subCitiesEn: ['Smouha', 'Sidi Gaber', 'Roushdy', 'Borg El Arab'] },
-    { id: 'الجيزة', nameAr: 'الجيزة', nameEn: 'Giza', labelAr: 'الجيزة — محافظة الجيزة', labelEn: 'Giza — Giza Governorate', regionAr: 'محافظة الجيزة', regionEn: 'Giza Governorate', providersCount: 38, lat: 30.0131, lng: 31.2089, subCitiesAr: ['الشيخ زايد', '6 أكتوبر', 'الدقي', 'المهندسين'], subCitiesEn: ['Sheikh Zayed', '6th of October', 'Dokki', 'Mohandessin'] },
-    { id: 'الدقهلية', nameAr: 'الدقهلية', nameEn: 'Dakahlia', labelAr: 'الدقهلية — المنصورة', labelEn: 'Dakahlia — Mansoura', regionAr: 'محافظة الدقهلية (المنصورة)', regionEn: 'Dakahlia Governorate', providersCount: 22, lat: 31.0409, lng: 31.3785, subCitiesAr: ['المنصورة', 'طلخا', 'ميت غمر'], subCitiesEn: ['Mansoura', 'Talkha', 'Mit Ghamr'] },
-    { id: 'الشرقية', nameAr: 'الشرقية', nameEn: 'Sharqia', labelAr: 'الشرقية — الزقازيق والعاشر', labelEn: 'Sharqia — Zagazig', regionAr: 'محافظة الشرقية (الزقازيق)', regionEn: 'Sharqia Governorate', providersCount: 20, lat: 30.5877, lng: 31.5020, subCitiesAr: ['الزقازيق', 'العاشر من رمضان'], subCitiesEn: ['Zagazig', '10th of Ramadan'] },
-    { id: 'القليوبية', nameAr: 'القليوبية', nameEn: 'Qalyubia', labelAr: 'القليوبية — بنها والعبور', labelEn: 'Qalyubia — Banha', regionAr: 'محافظة القليوبية (بنها)', regionEn: 'Qalyubia Governorate', providersCount: 18, lat: 30.4660, lng: 31.1848, subCitiesAr: ['بنها', 'العبور', 'شبرا الخيمة'], subCitiesEn: ['Banha', 'Obour City', 'Shubra El Kheima'] },
-    { id: 'البحيرة', nameAr: 'البحيرة', nameEn: 'Beheira', labelAr: 'البحيرة — دمنهور', labelEn: 'Beheira — Damanhour', regionAr: 'محافظة البحيرة (دمنهور)', regionEn: 'Beheira Governorate', providersCount: 15, lat: 31.0341, lng: 30.4682 },
-    { id: 'الغربية', nameAr: 'الغربية', nameEn: 'Gharbia', labelAr: 'الغربية — طنطا والمحلة', labelEn: 'Gharbia — Tanta', regionAr: 'محافظة الغربية (طنطا)', regionEn: 'Gharbia Governorate', providersCount: 19, lat: 30.7865, lng: 31.0004, subCitiesAr: ['طنطا', 'المحلة الكبرى'], subCitiesEn: ['Tanta', 'El Mahalla El Kubra'] },
-    { id: 'المنوفية', nameAr: 'المنوفية', nameEn: 'Monufia', labelAr: 'المنوفية — شبين الكوم', labelEn: 'Monufia — Shibin El Kom', regionAr: 'محافظة المنوفية (شبين الكوم)', regionEn: 'Monufia Governorate', providersCount: 14, lat: 30.5503, lng: 31.0106 },
-    { id: 'المنيا', nameAr: 'المنيا', nameEn: 'Minya', labelAr: 'المنيا — محافظة المنيا', labelEn: 'Minya Governorate', regionAr: 'محافظة المنيا', regionEn: 'Minya Governorate', providersCount: 14, lat: 28.1099, lng: 30.7503 },
-    { id: 'سوهاج', nameAr: 'سوهاج', nameEn: 'Sohag', labelAr: 'سوهاج — محافظة سوهاج', labelEn: 'Sohag Governorate', regionAr: 'محافظة سوهاج', regionEn: 'Sohag Governorate', providersCount: 13, lat: 26.5591, lng: 31.6957 },
-    { id: 'أسيوط', nameAr: 'أسيوط', nameEn: 'Assiut', labelAr: 'أسيوط — محافظة أسيوط', labelEn: 'Assiut Governorate', regionAr: 'محافظة أسيوط', regionEn: 'Assiut Governorate', providersCount: 16, lat: 27.1783, lng: 31.1859 },
-    { id: 'بني سويف', nameAr: 'بني سويف', nameEn: 'Beni Suef', labelAr: 'بني سويف — محافظة بني سويف', labelEn: 'Beni Suef Governorate', regionAr: 'محافظة بني سويف', regionEn: 'Beni Suef Governorate', providersCount: 12, lat: 29.0661, lng: 31.0994 },
-    { id: 'الفيوم', nameAr: 'الفيوم', nameEn: 'Faiyum', labelAr: 'الفيوم — محافظة الفيوم', labelEn: 'Faiyum Governorate', regionAr: 'محافظة الفيوم', regionEn: 'Faiyum Governorate', providersCount: 12, lat: 29.3084, lng: 30.8428 },
-    { id: 'قنا', nameAr: 'قنا', nameEn: 'Qena', labelAr: 'قنا — محافظة قنا', labelEn: 'Qena Governorate', regionAr: 'محافظة قنا', regionEn: 'Qena Governorate', providersCount: 11, lat: 26.1551, lng: 32.7160 },
-    { id: 'كفر الشيخ', nameAr: 'كفر الشيخ', nameEn: 'Kafr El Sheikh', labelAr: 'كفر الشيخ — محافظة كفر الشيخ', labelEn: 'Kafr El Sheikh Governorate', regionAr: 'محافظة كفر الشيخ', regionEn: 'Kafr El Sheikh Governorate', providersCount: 12, lat: 31.1107, lng: 30.9388 },
-    { id: 'الأقصر', nameAr: 'الأقصر', nameEn: 'Luxor', labelAr: 'الأقصر — محافظة الأقصر', labelEn: 'Luxor Governorate', regionAr: 'محافظة الأقصر', regionEn: 'Luxor Governorate', providersCount: 11, lat: 25.6872, lng: 32.6396 },
-    { id: 'أسوان', nameAr: 'أسوان', nameEn: 'Aswan', labelAr: 'أسوان — محافظة أسوان', labelEn: 'Aswan Governorate', regionAr: 'محافظة أسوان', regionEn: 'Aswan Governorate', providersCount: 11, lat: 24.0889, lng: 32.8998 },
-    { id: 'دمياط', nameAr: 'دمياط', nameEn: 'Damietta', labelAr: 'دمياط — محافظة دمياط', labelEn: 'Damietta Governorate', regionAr: 'محافظة دمياط', regionEn: 'Damietta Governorate', providersCount: 13, lat: 31.4175, lng: 31.8144 },
-    { id: 'الإسماعيلية', nameAr: 'الإسماعيلية', nameEn: 'Ismailia', labelAr: 'الإسماعيلية — محافظة الإسماعيلية', labelEn: 'Ismailia Governorate', regionAr: 'محافظة الإسماعيلية', regionEn: 'Ismailia Governorate', providersCount: 14, lat: 30.5965, lng: 32.2715 },
-    { id: 'السويس', nameAr: 'السويس', nameEn: 'Suez', labelAr: 'السويس — محافظة السويس', labelEn: 'Suez Governorate', regionAr: 'محافظة السويس', regionEn: 'Suez Governorate', providersCount: 12, lat: 29.9668, lng: 32.5498 },
-    { id: 'بورسعيد', nameAr: 'بورسعيد', nameEn: 'Port Said', labelAr: 'بورسعيد — محافظة بورسعيد', labelEn: 'Port Said Governorate', regionAr: 'محافظة بورسعيد', regionEn: 'Port Said Governorate', providersCount: 14, lat: 31.2653, lng: 32.3019 },
-    { id: 'مطروح', nameAr: 'مطروح', nameEn: 'Matrouh', labelAr: 'مطروح — محافظة مطروح', labelEn: 'Matrouh Governorate', regionAr: 'محافظة مطروح', regionEn: 'Matrouh Governorate', providersCount: 9, lat: 31.3543, lng: 27.2373 },
-    { id: 'شمال سيناء', nameAr: 'شمال سيناء', nameEn: 'North Sinai', labelAr: 'شمال سيناء — العريش', labelEn: 'North Sinai — Arish', regionAr: 'محافظة شمال سيناء (العريش)', regionEn: 'North Sinai Governorate', providersCount: 8, lat: 31.1321, lng: 33.8033 },
-    { id: 'جنوب سيناء', nameAr: 'جنوب سيناء', nameEn: 'South Sinai', labelAr: 'جنوب سيناء — شرم الشيخ', labelEn: 'South Sinai — Sharm El Sheikh', regionAr: 'محافظة جنوب سيناء (شرم الشيخ)', regionEn: 'South Sinai Governorate', providersCount: 10, lat: 27.9158, lng: 34.3300 },
-    { id: 'الوادي الجديد', nameAr: 'الوادي الجديد', nameEn: 'New Valley', labelAr: 'الوادي الجديد — الخارجة', labelEn: 'New Valley Governorate', regionAr: 'محافظة الوادي الجديد', regionEn: 'New Valley Governorate', providersCount: 7, lat: 25.4390, lng: 30.5586 },
-    { id: 'البحر الأحمر', nameAr: 'البحر الأحمر', nameEn: 'Red Sea', labelAr: 'البحر الأحمر — الغردقة', labelEn: 'Red Sea — Hurghada', regionAr: 'محافظة البحر الأحمر (الغردقة)', regionEn: 'Red Sea Governorate', providersCount: 12, lat: 27.2579, lng: 33.8116 },
-  ],
-  SA: [
-    { id: 'الدمام', nameAr: 'الدمام', nameEn: 'Dammam', labelAr: 'الدمام — المنطقة الشرقية', labelEn: 'Dammam — Eastern Province', regionAr: 'المنطقة الشرقية (الدمام، الخبر، الظهران)', regionEn: 'Eastern Province', providersCount: 36, lat: 26.4207, lng: 50.0888, subCitiesAr: ['الدمام', 'الخبر', 'الظهران', 'الجبيل', 'الأحساء', 'القطيف'], subCitiesEn: ['Dammam', 'Khobar', 'Dhahran', 'Jubail', 'Al-Ahsa', 'Qatif'] },
-    { id: 'الرياض', nameAr: 'الرياض', nameEn: 'Riyadh', labelAr: 'الرياض — منطقة الرياض', labelEn: 'Riyadh — Riyadh Region', regionAr: 'منطقة الرياض', regionEn: 'Riyadh Region', providersCount: 46, lat: 24.7136, lng: 46.6753, subCitiesAr: ['الرياض', 'الدرعية', 'الخرج'], subCitiesEn: ['Riyadh', 'Diriyah', 'Al-Kharj'] },
-    { id: 'جدة', nameAr: 'جدة', nameEn: 'Jeddah', labelAr: 'جدة — منطقة مكة المكرمة', labelEn: 'Jeddah — Makkah Region', regionAr: 'منطقة مكة المكرمة (جدة)', regionEn: 'Makkah Region (Jeddah)', providersCount: 38, lat: 21.4858, lng: 39.1925, subCitiesAr: ['جدة', 'مكة المكرمة', 'رابغ'], subCitiesEn: ['Jeddah', 'Makkah', 'Rabigh'] },
-    { id: 'مكة المكرمة', nameAr: 'مكة المكرمة', nameEn: 'Makkah', labelAr: 'مكة المكرمة — منطقة مكة المكرمة', labelEn: 'Makkah — Makkah Region', regionAr: 'منطقة مكة المكرمة (مكة، جدة)', regionEn: 'Makkah Region (Makkah, Jeddah)', providersCount: 38, lat: 21.3891, lng: 39.8579, subCitiesAr: ['مكة المكرمة', 'جدة', 'رابغ'], subCitiesEn: ['Makkah', 'Jeddah', 'Rabigh'] },
-    { id: 'المدينة المنورة', nameAr: 'المدينة المنورة', nameEn: 'Madinah', labelAr: 'المدينة المنورة — منطقة المدينة المنورة', labelEn: 'Madinah — Madinah Region', regionAr: 'منطقة المدينة المنورة', regionEn: 'Madinah Region', providersCount: 24, lat: 24.5247, lng: 39.5692 },
-    { id: 'الشرقية / الدمام والخبر والجبيل', nameAr: 'الشرقية / الدمام والخبر والجبيل', nameEn: 'Eastern Province / Dammam, Khobar & Jubail', labelAr: 'المنطقة الشرقية — الدمام والخبر والجبيل', labelEn: 'Eastern Province — Dammam, Khobar & Jubail', regionAr: 'المنطقة الشرقية (الدمام، الخبر، الظهران، الجبيل، الأحساء)', regionEn: 'Eastern Province', providersCount: 36, lat: 26.4207, lng: 50.0888, subCitiesAr: ['الدمام', 'الخبر', 'الظهران', 'الجبيل', 'الأحساء', 'القطيف'], subCitiesEn: ['Dammam', 'Khobar', 'Dhahran', 'Jubail', 'Al-Ahsa', 'Qatif'] },
-    { id: 'القصيم', nameAr: 'القصيم', nameEn: 'Al-Qassim (Buraidah & Unaizah)', labelAr: 'القصيم — بريدة وعنيزة', labelEn: 'Al-Qassim — Buraidah & Unaizah', regionAr: 'منطقة القصيم (بريدة، عنيزة)', regionEn: 'Al-Qassim Region', providersCount: 19, lat: 26.3260, lng: 43.9750, subCitiesAr: ['بريدة', 'عنيزة', 'الرس'], subCitiesEn: ['Buraidah', 'Unaizah', 'Ar Rass'] },
-    { id: 'عسير', nameAr: 'عسير', nameEn: 'Asir (Abha & Khamis Mushait)', labelAr: 'عسير — أبها وخميس مشيط', labelEn: 'Asir — Abha & Khamis Mushait', regionAr: 'منطقة عسير (أبها، خميس مشيط)', regionEn: 'Asir Region', providersCount: 18, lat: 18.2164, lng: 42.5053, subCitiesAr: ['أبها', 'خميس مشيط', 'بيشة'], subCitiesEn: ['Abha', 'Khamis Mushait', 'Bisha'] },
-    { id: 'تبوك', nameAr: 'تبوك', nameEn: 'Tabuk', labelAr: 'تبوك — منطقة تبوك', labelEn: 'Tabuk — Tabuk Region', regionAr: 'منطقة تبوك', regionEn: 'Tabuk Region', providersCount: 14, lat: 28.3835, lng: 36.5662 },
-    { id: 'حائل', nameAr: 'حائل', nameEn: 'Hail', labelAr: 'حائل — منطقة حائل', labelEn: 'Hail — Hail Region', regionAr: 'منطقة حائل', regionEn: 'Hail Region', providersCount: 12, lat: 27.5114, lng: 41.7208 },
-    { id: 'جازان', nameAr: 'جازان', nameEn: 'Jazan', labelAr: 'جازان — منطقة جازان', labelEn: 'Jazan — Jazan Region', regionAr: 'منطقة جازان', regionEn: 'Jazan Region', providersCount: 13, lat: 16.8892, lng: 42.5511 },
-    { id: 'نجران', nameAr: 'نجران', nameEn: 'Najran', labelAr: 'نجران — منطقة نجران', labelEn: 'Najran — Najran Region', regionAr: 'منطقة نجران', regionEn: 'Najran Region', providersCount: 11, lat: 17.4924, lng: 44.1277 },
-    { id: 'الباحة', nameAr: 'الباحة', nameEn: 'Al-Baha', labelAr: 'الباحة — منطقة الباحة', labelEn: 'Al-Baha — Al-Baha Region', regionAr: 'منطقة الباحة', regionEn: 'Al-Baha Region', providersCount: 10, lat: 20.0129, lng: 41.4677 },
-    { id: 'الجوف', nameAr: 'الجوف', nameEn: 'Al-Jouf', labelAr: 'الجوف — سكاكا', labelEn: 'Al-Jouf — Sakaka', regionAr: 'منطقة الجوف (سكاكا)', regionEn: 'Al-Jouf Region', providersCount: 10, lat: 29.9697, lng: 40.2064 },
-    { id: 'الحدود الشمالية', nameAr: 'الحدود الشمالية', nameEn: 'Northern Borders (Arar & Rafha)', regionAr: 'منطقة الحدود الشمالية (عرعر، رفحاء)', regionEn: 'Northern Borders Region', providersCount: 9, lat: 30.9753, lng: 41.0381, subCitiesAr: ['عرعر', 'رفحاء', 'طريف'], subCitiesEn: ['Arar', 'Rafha', 'Turaif'] },
-    { id: 'الطائف', nameAr: 'الطائف', nameEn: 'Taif', regionAr: 'محافظة الطائف', regionEn: 'Taif Governorate', providersCount: 16, lat: 21.2703, lng: 40.4158 },
-    { id: 'ينبع', nameAr: 'ينبع', nameEn: 'Yanbu', regionAr: 'محافظة ينبع', regionEn: 'Yanbu Governorate', providersCount: 14, lat: 24.0895, lng: 38.0618 },
-  ],
-};
-
 /**
  * Calculates great-circle distance in kilometers between two GPS coordinates using Haversine formula.
  */
@@ -1029,17 +1025,19 @@ export function calculateDistanceKm(
 }
 
 /**
- * Finds the nearest supported city & country in Saudi Arabia or Egypt given GPS coordinates.
+ * Finds the nearest supported city & country across all 22 Arab League countries given GPS coordinates.
  */
 export function findNearestCityByCoords(
   lat: number,
-  lng: number
+  lng: number,
+  preferredCountry?: CountryCode
 ): { country: CountryCode; city: CityOption; distanceKm: number } {
-  let bestCountry: CountryCode = 'EG';
-  let bestCity: CityOption = COUNTRY_CITIES_MAP.EG[0];
+  const countriesToScan = preferredCountry ? [preferredCountry] : ALL_ARAB_COUNTRY_CODES;
+  let bestCountry: CountryCode = preferredCountry || 'EG';
+  let bestCity: CityOption = COUNTRY_CITIES_MAP[bestCountry][0];
   let bestDistance = Number.POSITIVE_INFINITY;
 
-  for (const country of ['EG', 'SA'] as CountryCode[]) {
+  for (const country of countriesToScan) {
     for (const cityOpt of COUNTRY_CITIES_MAP[country]) {
       const dist = calculateDistanceKm(lat, lng, cityOpt.lat, cityOpt.lng);
       if (dist < bestDistance) {
@@ -4041,36 +4039,14 @@ export function validatePhoneForCountry(
   phoneRaw: string,
   country: CountryCode
 ): { valid: boolean; normalized: string; fullInternational: string; errorAr?: string; errorEn?: string } {
-  const digits = (phoneRaw || '')
-    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
-    .replace(/\D/g, '');
-
-  if (country === 'EG') {
-    const cleaned = digits.startsWith('20') ? digits.slice(2) : digits.startsWith('0') ? digits.slice(1) : digits;
-    if (!/^1[0125]\d{8}$/.test(cleaned)) {
-      return {
-        valid: false,
-        normalized: cleaned,
-        fullInternational: `+20${cleaned}`,
-        errorAr: 'أدخل رقم هاتف مصري صحيح مكون من 10 أرقام بعد الكود (+20 10/11/12/15)',
-        errorEn: 'Enter a valid 10-digit Egyptian mobile number after +20 (e.g. 1012345678)',
-      };
-    }
-    return { valid: true, normalized: cleaned, fullInternational: `+20 ${cleaned}` };
-  }
-
-  // SA (+966)
-  const cleanedSA = digits.startsWith('966') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : digits;
-  if (!/^5\d{8}$/.test(cleanedSA)) {
-    return {
-      valid: false,
-      normalized: cleanedSA,
-      fullInternational: `+966${cleanedSA}`,
-      errorAr: 'أدخل رقم جوال سعودي صحيح يبدأ بـ 5 ومكون من 9 أرقام بعد الكود (+966 5XXXXXXXX)',
-      errorEn: 'Enter a valid 9-digit Saudi mobile number starting with 5 after +966',
-    };
-  }
-  return { valid: true, normalized: cleanedSA, fullInternational: `+966 ${cleanedSA}` };
+  const res = validatePhoneRuleForCountry(phoneRaw, country);
+  return {
+    valid: res.valid,
+    normalized: res.normalized,
+    fullInternational: res.fullInternational,
+    errorAr: res.errorAr,
+    errorEn: res.errorEn,
+  };
 }
 
 export function normalizeAppData(raw: unknown): FamilySpaceState {
@@ -4086,9 +4062,10 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   if (typeof input.parentName === 'string' && input.parentName.trim()) {
     base.parentName = input.parentName.trim().slice(0, 80);
   }
-  if (input.country === 'EG' || input.country === 'SA') {
-    base.country = input.country;
-    base.city = input.country === 'SA' ? 'الرياض' : 'القاهرة';
+  if (typeof input.country === 'string' && input.country.trim()) {
+    base.country = resolveCountryCode(input.country, base.country);
+    base.city = getDefaultCityForCountry(base.country);
+    base.currency = getSuggestedCurrencyFromRegistry(base.country);
   }
   if (typeof input.city === 'string' && input.city.trim()) {
     base.city = input.city.trim();
@@ -4096,8 +4073,8 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   if (input.language === 'ar' || input.language === 'en') {
     base.language = input.language;
   }
-  if (input.currency === 'EGP' || input.currency === 'SAR') {
-    base.currency = input.currency;
+  if (typeof input.currency === 'string' && isSupportedCurrencyCode(input.currency)) {
+    base.currency = input.currency.trim().toUpperCase() as CurrencyCode;
   }
   if (input.calendarMode === 'both' || input.calendarMode === 'gregorian' || input.calendarMode === 'hijri') {
     base.calendarMode = input.calendarMode;
@@ -4124,22 +4101,32 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   if (input.parentAccounts && typeof input.parentAccounts === 'object') {
     const pa = input.parentAccounts as Record<string, unknown>;
     if (pa.mother && typeof pa.mother === 'object') {
+      const mRaw = pa.mother as Partial<ParentAccountProfile>;
+      const mCountry = mRaw.country ? resolveCountryCode(mRaw.country, base.parentAccounts.mother.country) : base.parentAccounts.mother.country;
       base.parentAccounts.mother = {
         ...base.parentAccounts.mother,
-        ...(pa.mother as Partial<ParentAccountProfile>),
+        ...mRaw,
+        country: mCountry,
+        phoneCode: mRaw.phoneCode || getCountryDialCode(mCountry),
+        city: typeof mRaw.city === 'string' && mRaw.city.trim() ? mRaw.city.trim() : getDefaultCityForCountry(mCountry),
         notificationPrefs: {
           ...base.parentAccounts.mother.notificationPrefs,
-          ...((pa.mother as ParentAccountProfile).notificationPrefs || {}),
+          ...(mRaw.notificationPrefs || {}),
         },
       };
     }
     if (pa.father && typeof pa.father === 'object') {
+      const fRaw = pa.father as Partial<ParentAccountProfile>;
+      const fCountry = fRaw.country ? resolveCountryCode(fRaw.country, base.parentAccounts.father.country) : base.parentAccounts.father.country;
       base.parentAccounts.father = {
         ...base.parentAccounts.father,
-        ...(pa.father as Partial<ParentAccountProfile>),
+        ...fRaw,
+        country: fCountry,
+        phoneCode: fRaw.phoneCode || getCountryDialCode(fCountry),
+        city: typeof fRaw.city === 'string' && fRaw.city.trim() ? fRaw.city.trim() : getDefaultCityForCountry(fCountry),
         notificationPrefs: {
           ...base.parentAccounts.father.notificationPrefs,
-          ...((pa.father as ParentAccountProfile).notificationPrefs || {}),
+          ...(fRaw.notificationPrefs || {}),
         },
       };
     }
@@ -4348,7 +4335,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           kid: resolvedKid,
           ...(remoteChildId ? { remoteChildId } : {}),
           price: Number.isFinite(Number(w.price)) && Number(w.price) >= 0 ? Number(w.price) : 0,
-          currency: w.currency === 'SAR' ? 'SAR' : 'EGP',
+          currency: resolveCurrencyCode(w.currency, base.country),
           emoji: typeof w.emoji === 'string' && w.emoji ? w.emoji : '🎁',
           reserved: Boolean(w.reserved),
           progress,
@@ -4389,7 +4376,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           events: eventsFlag,
           emoji: typeof f.emoji === 'string' && f.emoji ? f.emoji : '👤',
           roleCategory: (f.roleCategory as ExtendedRoleCategory) || (isCore ? 'father' : 'grandparent'),
-          phoneCountry: f.phoneCountry === 'SA' ? 'SA' : 'EG',
+          phoneCountry: resolveCountryCode(f.phoneCountry, base.country),
           phoneNumber: typeof f.phoneNumber === 'string' ? f.phoneNumber : undefined,
           email: typeof f.email === 'string' ? f.email : undefined,
           assignedKidIds: assignedKids,
@@ -4456,7 +4443,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           roleLabel: String(inv.roleLabel ?? 'مقدم رعاية'),
           roleCategory: (inv.roleCategory as ExtendedRoleCategory) || 'nursery',
           side: String(inv.side ?? 'الحضانة والمدرسة'),
-          phoneCountry: inv.phoneCountry === 'SA' ? 'SA' : 'EG',
+          phoneCountry: resolveCountryCode(inv.phoneCountry, base.country),
           phoneNumber: String(inv.phoneNumber ?? ''),
           email: typeof inv.email === 'string' ? inv.email : undefined,
           assignedKidIds: assigned,
@@ -4596,7 +4583,8 @@ export function calculateChildAge(
 
 /** Resolve legacy city names, English aliases and sub-cities to one canonical region ID. */
 export function resolveCityRegionId(country: CountryCode, rawCity: string | null | undefined): string {
-  const cities = COUNTRY_CITIES_MAP[country] || COUNTRY_CITIES_MAP.EG;
+  const safeCountry = resolveCountryCode(country, 'EG');
+  const cities = COUNTRY_CITIES_MAP[safeCountry] || COUNTRY_CITIES_MAP.EG;
   const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
   const target = typeof rawCity === 'string' ? normalize(rawCity) : '';
 
@@ -4621,7 +4609,7 @@ export function resolveCityRegionId(country: CountryCode, rawCity: string | null
 }
 
 export function getSuggestedCurrencyForCountry(country: CountryCode): CurrencyCode {
-  return country === 'SA' ? 'SAR' : 'EGP';
+  return getSuggestedCurrencyFromRegistry(country);
 }
 
 export function formatCurrency(
@@ -4630,14 +4618,16 @@ export function formatCurrency(
   lang: LanguageCode = 'ar'
 ): string {
   const safeAmount = Number.isFinite(amount) ? amount : 0;
-  const locale = lang === 'en' ? 'en-US' : currency === 'SAR' ? 'ar-SA' : 'ar-EG';
+  const resolvedCurrency = resolveCurrencyCode(currency);
+  const meta = CURRENCY_METADATA_MAP[resolvedCurrency];
+  const locale = lang === 'en' ? 'en-US' : resolvedCurrency === 'EGP' ? 'ar-EG' : 'ar-SA';
   const formattedNum = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 0,
+    maximumFractionDigits: meta?.decimals ?? 0,
   }).format(safeAmount);
   if (lang === 'en') {
-    return `${formattedNum} ${currency}`;
+    return `${formattedNum} ${meta?.symbolEn || resolvedCurrency}`;
   }
-  return currency === 'SAR' ? `${formattedNum} ر.س` : `${formattedNum} ج.م`;
+  return `${formattedNum} ${meta?.symbolAr || resolvedCurrency}`;
 }
 
 export function formatGregorianAndHijri(
@@ -4650,7 +4640,9 @@ export function formatGregorianAndHijri(
   if (Number.isNaN(d.getTime())) {
     return { gregorian: dateStr, hijri: '', combined: dateStr };
   }
-  const baseLocale = lang === 'en' ? 'en-US' : country === 'SA' ? 'ar-SA' : 'ar-EG';
+  const safeCountry = resolveCountryCode(country, 'EG');
+  const timeZone = getCountryTimezone(safeCountry);
+  const baseLocale = lang === 'en' ? 'en-US' : safeCountry === 'EG' ? 'ar-EG' : 'ar-SA';
   let gregorian = dateStr;
   let hijri = '';
   try {
@@ -4659,6 +4651,7 @@ export function formatGregorianAndHijri(
       day: 'numeric',
       month: 'long',
       year: 'numeric',
+      timeZone,
     }).format(d);
   } catch {
     gregorian = dateStr;
@@ -4670,6 +4663,7 @@ export function formatGregorianAndHijri(
       day: 'numeric',
       month: 'long',
       year: 'numeric',
+      timeZone,
     }).format(d);
   } catch {
     hijri = '';
@@ -5120,22 +5114,31 @@ export function calculateCheckoutSummary(
   grandTotal: number;
   itemCount: number;
 } {
+  const resolvedCurrency = resolveCurrencyCode(currency);
+  const decimals = CURRENCY_METADATA_MAP[resolvedCurrency]?.decimals ?? 0;
+  const roundAmt = (val: number) =>
+    decimals > 0 ? Math.round(val * Math.pow(10, decimals)) / Math.pow(10, decimals) : Math.round(val);
+
   let subtotal = 0;
   let itemCount = 0;
   for (const ci of cart) {
     const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
     if (!prod) continue;
-    const unitPrice = currency === 'SAR' ? prod.priceSAR : prod.priceEGP;
+    const unitPrice = convertCatalogPrice(prod.priceEGP, prod.priceSAR, resolvedCurrency);
     subtotal += unitPrice * ci.quantity;
     itemCount += ci.quantity;
   }
-  const deliveryFee = itemCount > 0 ? (currency === 'SAR' ? 15 : 45) : 0;
-  const codFee = itemCount > 0 && paymentMethod === 'cod' ? (currency === 'SAR' ? 5 : 15) : 0;
+  subtotal = roundAmt(subtotal);
+  const deliveryFee = itemCount > 0 ? convertCatalogPrice(45, 15, resolvedCurrency) : 0;
+  const codFee =
+    itemCount > 0 && paymentMethod === 'cod'
+      ? convertCatalogPrice(15, 5, resolvedCurrency)
+      : 0;
   return {
     subtotal,
     deliveryFee,
     codFee,
-    grandTotal: subtotal + deliveryFee + codFee,
+    grandTotal: roundAmt(subtotal + deliveryFee + codFee),
     itemCount,
   };
 }

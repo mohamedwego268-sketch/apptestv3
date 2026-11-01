@@ -3,11 +3,31 @@ import { beforeEach, describe, it } from 'node:test';
 import {
   DEFAULT_SEED,
   STORAGE_KEY,
-  normalizeAppData,
-  validateChildInput,
+  ALL_ARAB_COUNTRY_CODES,
+  ALL_ARAB_CURRENCIES,
+  ARAB_COUNTRIES_REGISTRY,
+  COUNTRY_CITIES_MAP,
+  CURRENCY_METADATA_MAP,
+  convertCatalogPrice,
+  findNearestCityByCoords,
+  formatCurrency,
+  getCitiesForCountry,
+  getCityCoordinates,
+  getCountryDialCode,
+  getCountryMetadata,
+  getCountryTimezone,
+  getDefaultCityForCountry,
   getSuggestedCurrencyForCountry,
+  isSupportedCountryCode,
+  isSupportedCurrencyCode,
+  normalizeAppData,
   resolveCityRegionId,
+  resolveCountryCode,
+  resolveCurrencyCode,
+  validateChildInput,
+  validatePhoneForCountry,
 } from './familySpaceCore';
+import { formatCountryCurrencySummary } from '../utils/familyFormatters';
 import {
   createEmptyFamilySpaceState,
   getFamilySpaceStorageKey,
@@ -3103,6 +3123,346 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
       childrenSrc.includes('sectionId="children"'),
       'Children Profiles section must render SectionToolsDrawer'
     );
+  });
+
+  it('21. Task 1 — All 22 Arab League Countries Registry: validates complete metadata, currencies, dial codes, timezones, coordinates, emergency numbers, and phone validation', () => {
+    const expected22Codes = [
+      'EG', 'SA', 'AE', 'KW', 'QA', 'BH', 'OM', 'IQ', 'JO', 'PS', 'LB',
+      'SY', 'YE', 'SD', 'LY', 'TN', 'DZ', 'MA', 'MR', 'SO', 'DJ', 'KM',
+    ] as const;
+
+    const expected22Currencies = [
+      'EGP', 'SAR', 'AED', 'KWD', 'QAR', 'BHD', 'OMR', 'IQD', 'JOD', 'ILS', 'LBP',
+      'SYP', 'YER', 'SDG', 'LYD', 'TND', 'DZD', 'MAD', 'MRU', 'SOS', 'DJF', 'KMF',
+    ] as const;
+
+    assert.equal(ALL_ARAB_COUNTRY_CODES.length, 22);
+    assert.deepEqual(ALL_ARAB_COUNTRY_CODES, expected22Codes);
+    assert.equal(new Set(ALL_ARAB_COUNTRY_CODES).size, 22, 'All 22 country codes must be unique');
+
+    assert.equal(ALL_ARAB_CURRENCIES.length, 22);
+    assert.deepEqual(ALL_ARAB_CURRENCIES, expected22Currencies);
+    assert.equal(new Set(ALL_ARAB_CURRENCIES).size, 22, 'All 22 currency codes must be unique');
+
+    for (const code of expected22Codes) {
+      assert.equal(isSupportedCountryCode(code), true);
+      const meta = getCountryMetadata(code);
+      assert.equal(meta.code, code);
+      assert.ok(meta.nameAr.trim().length > 0, `Missing Arabic name for ${code}`);
+      assert.ok(meta.nameEn.trim().length > 0, `Missing English name for ${code}`);
+      assert.match(meta.dialCode, /^\+\d{1,3}$/, `Invalid dial code for ${code}: ${meta.dialCode}`);
+      assert.equal(getCountryDialCode(code), meta.dialCode);
+      assert.equal(isSupportedCurrencyCode(meta.currencyCode), true);
+      assert.equal(getSuggestedCurrencyForCountry(code), meta.currencyCode);
+      assert.ok(CURRENCY_METADATA_MAP[meta.currencyCode], `Missing currency metadata for ${meta.currencyCode}`);
+      assert.ok(meta.defaultTimezone.includes('/'), `Invalid IANA timezone for ${code}: ${meta.defaultTimezone}`);
+      assert.equal(getCountryTimezone(code), meta.defaultTimezone);
+      assert.ok(meta.defaultCity.trim().length > 0, `Missing default city for ${code}`);
+      assert.equal(getDefaultCityForCountry(code), meta.defaultCity);
+      assert.ok(meta.regions.length >= 2, `Expected administrative regions for ${code}`);
+      assert.ok(meta.emergencyNumbers.police.trim().length > 0, `Missing police emergency number for ${code}`);
+      assert.ok(meta.emergencyNumbers.ambulance.trim().length > 0, `Missing ambulance emergency number for ${code}`);
+      assert.ok(meta.emergencyNumbers.civilDefense.trim().length > 0, `Missing civil defense number for ${code}`);
+
+      // Cities & reliable coordinates
+      const cities = getCitiesForCountry(code);
+      assert.ok(cities.length >= 2, `Expected at least 2 major cities for ${code}`);
+      assert.deepEqual(COUNTRY_CITIES_MAP[code], cities);
+      for (const city of cities) {
+        assert.ok(city.nameAr.trim().length > 0);
+        assert.ok(city.nameEn.trim().length > 0);
+        assert.ok(Number.isFinite(city.lat) && city.lat >= -25 && city.lat <= 40, `Invalid lat for ${code}/${city.nameEn}`);
+        assert.ok(Number.isFinite(city.lng) && city.lng >= -20 && city.lng <= 65, `Invalid lng for ${code}/${city.nameEn}`);
+        const coords = getCityCoordinates(code, city.nameEn);
+        assert.equal(coords.lat, city.lat);
+        assert.equal(coords.lng, city.lng);
+      }
+
+      // Phone validation accepts valid sample and rejects too-short input
+      const validPhoneRes = validatePhoneForCountry(meta.phoneRule.exampleLocal, code);
+      assert.equal(validPhoneRes.valid, true, `Sample phone ${meta.phoneRule.exampleLocal} should be valid for ${code}`);
+      const invalidPhoneRes = validatePhoneForCountry('12', code);
+      assert.equal(invalidPhoneRes.valid, false, `Short phone '12' must be rejected for ${code}`);
+
+      // Currency formatting & catalog conversion
+      const converted = convertCatalogPrice(1000, 100, meta.currencyCode);
+      assert.ok(converted > 0, `Converted price for ${meta.currencyCode} must be positive`);
+      const formattedAr = formatCurrency(converted, meta.currencyCode, 'ar');
+      const formattedEn = formatCurrency(converted, meta.currencyCode, 'en');
+      assert.ok(formattedAr.includes(meta.currencySymbolAr));
+      assert.ok(formattedEn.includes(meta.currencySymbolEn));
+
+      const summaryAr = formatCountryCurrencySummary(code, meta.defaultCity, meta.currencyCode, 'both', 'ar');
+      const summaryEn = formatCountryCurrencySummary(code, meta.defaultCity, meta.currencyCode, 'both', 'en');
+      assert.ok(summaryAr.includes(meta.nameAr));
+      assert.ok(summaryEn.includes(meta.nameEn));
+    }
+
+    // Nearest city coordinate lookup across diverse Arab League countries
+    const dubaiMatch = findNearestCityByCoords(25.2048, 55.2708);
+    assert.equal(dubaiMatch.country, 'AE');
+    assert.equal(dubaiMatch.city.id, 'دبي');
+
+    const casablancaMatch = findNearestCityByCoords(33.5731, -7.5898);
+    assert.equal(casablancaMatch.country, 'MA');
+    assert.equal(casablancaMatch.city.id, 'الدار البيضاء');
+
+    const ammanMatch = findNearestCityByCoords(31.9539, 35.9106);
+    assert.equal(ammanMatch.country, 'JO');
+    assert.equal(ammanMatch.city.id, 'عمّان');
+  });
+
+  it('22. Task 1 — Non-EG/SA Country Persistence & Independent Parent Locations: never falls back to Saudi Arabia and keeps Father, Mother, and Family countries separate', async () => {
+    // 1. Verify resolveCountryCode supports ISO codes, Arabic names, and English names across all 22 countries
+    assert.equal(resolveCountryCode('AE'), 'AE');
+    assert.equal(resolveCountryCode('United Arab Emirates'), 'AE');
+    assert.equal(resolveCountryCode('الإمارات'), 'AE');
+    assert.equal(resolveCountryCode('KW'), 'KW');
+    assert.equal(resolveCountryCode('الكويت'), 'KW');
+    assert.equal(resolveCountryCode('MA'), 'MA');
+    assert.equal(resolveCountryCode('المغرب'), 'MA');
+    assert.equal(resolveCountryCode('JO'), 'JO');
+    assert.equal(resolveCountryCode('الأردن'), 'JO');
+    assert.equal(resolveCountryCode('QA'), 'QA');
+    assert.equal(resolveCountryCode('TN'), 'TN');
+    assert.equal(resolveCountryCode('DZ'), 'DZ');
+    assert.equal(resolveCountryCode('OM'), 'OM');
+    assert.equal(resolveCountryCode('BH'), 'BH');
+    assert.equal(resolveCountryCode('LB'), 'LB');
+
+    // 2. Onboarding auth payload normalization for non-EG/SA countries (e.g. AE, MA, KW, JO) never collapses to SA
+    for (const sample of [
+      { country: 'AE' as const, city: 'دبي', currency: 'AED' as const },
+      { country: 'KW' as const, city: 'مدينة الكويت', currency: 'KWD' as const },
+      { country: 'JO' as const, city: 'عمّان', currency: 'JOD' as const },
+      { country: 'MA' as const, city: 'الرباط', currency: 'MAD' as const },
+      { country: 'QA' as const, city: 'الدوحة', currency: 'QAR' as const },
+      { country: 'OM' as const, city: 'مسقط', currency: 'OMR' as const },
+      { country: 'TN' as const, city: 'تونس', currency: 'TND' as const },
+    ]) {
+      const normalizedPayload = normalizeOnboardingAuthPayload({
+        mode: 'signup',
+        fullName: 'والد تجريبي',
+        email: `parent.${sample.country.toLowerCase()}@nekbaar.app`,
+        phone: getCountryMetadata(sample.country).phoneRule.exampleLocal,
+        role: 'dad',
+        country: sample.country,
+        city: sample.city,
+      });
+      assert.equal(
+        normalizedPayload.country,
+        sample.country,
+        `Expected ${sample.country} not to collapse to SA`
+      );
+      assert.equal(normalizedPayload.city, sample.city);
+      assert.equal(normalizedPayload.currency, sample.currency);
+    }
+
+    // 3. Session persistence via OnboardingFlowController preserves non-EG/SA country and city
+    OnboardingFlowController.saveAuthenticatedSession(
+      {
+        userId: '550e8400-e29b-41d4-a716-446655440099',
+        familyId: '660e8400-e29b-41d4-a716-446655440099',
+        fullName: 'خالد الهاشمي',
+        parentName: 'خالد الهاشمي',
+        role: 'dad',
+        parentRole: 'dad',
+        email: 'khaled.ae@nekbaar.app',
+        phone: '+971501234567',
+        country: 'AE',
+        city: 'أبوظبي',
+        childrenCount: 2,
+        isCoParentLinked: true,
+        syncedToDb: true,
+      },
+      true
+    );
+
+    const savedAeProfile = OnboardingFlowController.getSavedProfile();
+    assert.ok(savedAeProfile);
+    assert.equal(savedAeProfile?.country, 'AE');
+    assert.equal(savedAeProfile?.city, 'أبوظبي');
+
+    // 4. Separate Father, Mother, and Family primary locations never overwrite one another
+    const multiCountryFamilyState = normalizeAppData({
+      ...DEFAULT_SEED,
+      country: 'EG',
+      city: 'القاهرة',
+      currency: 'EGP',
+      parentAccounts: {
+        father: {
+          ...DEFAULT_SEED.parentAccounts.father,
+          fullName: 'أحمد المنصور',
+          country: 'AE',
+          city: 'دبي',
+          phone: '+971501234567',
+        },
+        mother: {
+          ...DEFAULT_SEED.parentAccounts.mother,
+          fullName: 'مريم العلمي',
+          country: 'MA',
+          city: 'الرباط',
+          phone: '+212612345678',
+        },
+      },
+    });
+
+    assert.equal(multiCountryFamilyState.country, 'EG', 'Family primary country remains EG');
+    assert.equal(multiCountryFamilyState.city, 'القاهرة', 'Family primary city remains Cairo');
+    assert.equal(multiCountryFamilyState.currency, 'EGP', 'Family primary currency remains EGP');
+    assert.equal(multiCountryFamilyState.parentAccounts.father.country, 'AE', 'Father personal country remains AE');
+    assert.equal(multiCountryFamilyState.parentAccounts.father.city, 'دبي', 'Father personal city remains Dubai');
+    assert.equal(multiCountryFamilyState.parentAccounts.mother.country, 'MA', 'Mother personal country remains MA');
+    assert.equal(multiCountryFamilyState.parentAccounts.mother.city, 'الرباط', 'Mother personal city remains Rabat');
+
+    savePersistedFamilyState(multiCountryFamilyState);
+    const reloadedMultiCountry = loadPersistedFamilyState();
+    assert.equal(reloadedMultiCountry.country, 'EG');
+    assert.equal(reloadedMultiCountry.parentAccounts.father.country, 'AE');
+    assert.equal(reloadedMultiCountry.parentAccounts.father.city, 'دبي');
+    assert.equal(reloadedMultiCountry.parentAccounts.mother.country, 'MA');
+    assert.equal(reloadedMultiCountry.parentAccounts.mother.city, 'الرباط');
+  });
+
+  it('23. Task 2 — Compact Login Language Switcher: verifies 44px touch target, RTL/LTR direction sync, form & step state preservation, and root App language connection', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+
+    const onboardingSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/OnboardingFlowModal.tsx'),
+      'utf8'
+    );
+    const appSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/App.tsx'),
+      'utf8'
+    );
+
+    // 1. Verify compact language switcher button on login card
+    assert.ok(
+      onboardingSrc.includes('id="onboarding-language-switcher"') &&
+        onboardingSrc.includes('data-testid="onboarding-language-switcher"'),
+      'OnboardingFlowModal must render compact language switcher with id and data-testid'
+    );
+    assert.ok(
+      onboardingSrc.includes('min-w-[44px] min-h-[44px]'),
+      'Language switcher must meet minimum 44px touch target size'
+    );
+    assert.ok(
+      onboardingSrc.includes('onClick={handleSwitchLanguage}') &&
+        onboardingSrc.includes('onToggleLanguage?.(nextLang)'),
+      'Language switcher must invoke handleSwitchLanguage -> onToggleLanguage(nextLang)'
+    );
+    assert.ok(
+      onboardingSrc.includes("dir={isEn ? 'ltr' : 'rtl'}"),
+      'OnboardingFlowModal must update RTL/LTR direction immediately when language changes'
+    );
+    // Card dimensions remain untouched
+    assert.ok(
+      onboardingSrc.includes('max-w-[430px]'),
+      'Login card max-w-[430px] dimension must remain intact'
+    );
+    // Switching language only calls onToggleLanguage without resetting currentStep or form state
+    assert.ok(
+      appSrc.includes('onToggleLanguage={(nextLang) => {') &&
+        appSrc.includes('language: nextLang'),
+      'App.tsx must connect OnboardingFlowModal onToggleLanguage directly to root state.language'
+    );
+  });
+
+  it('24. Task 3 — Unified SectionToolsDrawer Across All Sections: verifies single entry point, shopping cart access with item count, state preservation, and removal of duplicate toolbars', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+
+    const drawerSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/SectionToolsDrawer.tsx'),
+      'utf8'
+    );
+    const storeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/CommercialEcosystemSection.tsx'),
+      'utf8'
+    );
+    const medicalSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/MedicalHealthSection.tsx'),
+      'utf8'
+    );
+    const communitySrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/ParentsCommunitySection.tsx'),
+      'utf8'
+    );
+    const mediaSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/MediaPlatformSection.tsx'),
+      'utf8'
+    );
+    const routineSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/DailyRoutineSection.tsx'),
+      'utf8'
+    );
+    const settingsSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/ProfileSettingsSection.tsx'),
+      'utf8'
+    );
+    const calendarSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/FamilyCalendarSection.tsx'),
+      'utf8'
+    );
+    const wishesSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/KidsWishesSection.tsx'),
+      'utf8'
+    );
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+
+    // 1. SectionToolsDrawer provides single compact trigger button when closed + shopping cart access with item count
+    assert.ok(
+      drawerSrc.includes('data-testid="section-tools-open-btn"'),
+      'SectionToolsDrawer must render single compact trigger button when closed'
+    );
+    assert.ok(
+      drawerSrc.includes('data-testid="section-tools-trigger-cart-badge"'),
+      'SectionToolsDrawer closed trigger must show cart count badge when cart has items'
+    );
+    assert.ok(
+      drawerSrc.includes('data-testid="section-tools-cart-btn"') &&
+        drawerSrc.includes('data-testid="section-tools-cart-count"'),
+      'SectionToolsDrawer panel must include shopping cart button and item count badge'
+    );
+    assert.ok(
+      drawerSrc.includes('data-testid="section-tools-search-input"'),
+      'SectionToolsDrawer must render unified search input inside drawer'
+    );
+
+    // 2. Every section uses SectionToolsDrawer with its sectionId and has no duplicate external filter/cart bars
+    assert.ok(storeSrc.includes('sectionId="store"'));
+    assert.equal(
+      storeSrc.includes('id="store-sticky-subheader"'),
+      false,
+      'Duplicate sticky cart subheader in Store section must be removed'
+    );
+    assert.ok(
+      storeSrc.includes('data-testid="store-category-filter-panel"'),
+      'Store smart filters must be rendered inside SectionToolsDrawer'
+    );
+
+    assert.ok(medicalSrc.includes('sectionId="medical"'));
+    assert.equal(
+      medicalSrc.includes('id="medical-specialty-filter-bar"'),
+      false,
+      'Duplicate specialty filter bar outside SectionToolsDrawer in Medical section must be removed'
+    );
+    assert.ok(
+      medicalSrc.includes('data-testid="medical-country-emergency-card"'),
+      'Medical section must display country-aware emergency numbers from arabCountriesRegistry'
+    );
+
+    assert.ok(communitySrc.includes('sectionId="community"'));
+    assert.ok(mediaSrc.includes('sectionId="media"'));
+    assert.ok(routineSrc.includes('sectionId="routine"'));
+    assert.ok(settingsSrc.includes('sectionId="settings"'));
+    assert.ok(calendarSrc.includes('sectionId="calendar"'));
+    assert.ok(wishesSrc.includes('sectionId="wishes"'));
+    assert.ok(homeSrc.includes('sectionId="dashboard"'));
   });
 });
 

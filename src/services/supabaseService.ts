@@ -11,8 +11,15 @@ import {
   FamilySpaceState,
   ParentAccountProfile,
   calculateChildAge,
+  getCountryDialCode,
+  getCountryTimezone,
+  getDefaultCityForCountry,
   getSuggestedCurrencyForCountry,
+  isSupportedCountryCode,
+  isSupportedCurrencyCode,
   normalizeAppData,
+  resolveCountryCode,
+  resolveCurrencyCode,
 } from '../domain/familySpaceCore';
 import {
   evaluateAuthSessionResponse,
@@ -472,13 +479,15 @@ export async function ensureSharedFamilyRecordInSupabase(
 ): Promise<{ family: Family; synced: boolean; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const rawFamilyId = params?.familyId ?? SHARED_FAMILY_ID;
-  const country = params?.country || 'SA';
+  const country: CountryCode = resolveCountryCode(params?.country, 'EG');
   const fallbackRecord: Family = {
     id: rawFamilyId,
     family_name: params?.familyName?.trim() || 'أسرة أحمد ومريم — نكبر',
     country,
-    city: params?.city?.trim() || (country === 'SA' ? 'الدمام' : 'القاهرة'),
-    currency: params?.currency || getSuggestedCurrencyForCountry(country),
+    city: params?.city?.trim() || getDefaultCityForCountry(country),
+    currency: isSupportedCurrencyCode(params?.currency)
+      ? resolveCurrencyCode(params?.currency, country)
+      : getSuggestedCurrencyForCountry(country),
     active_parent: params?.activeParent || 'mother',
     updated_at: new Date().toISOString(),
   };
@@ -707,7 +716,7 @@ export async function fetchUsersFromSupabase(
         phone: phoneVal,
         phone_number: phoneVal,
         email: typeof row.email === 'string' ? row.email : undefined,
-        country: row.country === 'SA' || row.country === 'EG' ? row.country : 'EG',
+        country: resolveCountryCode(row.country, 'EG'),
         verified: typeof row.verified === 'boolean' ? row.verified : true,
       };
     });
@@ -1123,10 +1132,15 @@ export async function fetchFamilySpaceFromSupabase(
         if (isFather) {
           detectedActiveRole = 'father';
           const cleanFatherName = rawName.includes('الأب') ? rawName : `${rawName} (الأب)`;
+          const fatherCountry = userEntity.country
+            ? resolveCountryCode(userEntity.country, updatedParentAccounts.father.country)
+            : updatedParentAccounts.father.country;
           const fatherProfile: ParentAccountProfile = {
             ...updatedParentAccounts.father,
             ...(isValidUuid(userEntity.id) ? { remoteUserId: userEntity.id } : {}),
             fullName: cleanFatherName,
+            country: fatherCountry,
+            phoneCode: getCountryDialCode(fatherCountry),
             phoneNumber: userEntity.phone || updatedParentAccounts.father.phoneNumber,
             email: userEntity.email || updatedParentAccounts.father.email,
           };
@@ -1134,10 +1148,15 @@ export async function fetchFamilySpaceFromSupabase(
         } else if (isMother) {
           detectedActiveRole = 'mother';
           const cleanMotherName = rawName.includes('الأم') ? rawName : `${rawName} (الأم)`;
+          const motherCountry = userEntity.country
+            ? resolveCountryCode(userEntity.country, updatedParentAccounts.mother.country)
+            : updatedParentAccounts.mother.country;
           const motherProfile: ParentAccountProfile = {
             ...updatedParentAccounts.mother,
             ...(isValidUuid(userEntity.id) ? { remoteUserId: userEntity.id } : {}),
             fullName: cleanMotherName,
+            country: motherCountry,
+            phoneCode: getCountryDialCode(motherCountry),
             phoneNumber: userEntity.phone || updatedParentAccounts.mother.phoneNumber,
             email: userEntity.email || updatedParentAccounts.mother.email,
           };
@@ -1163,6 +1182,9 @@ export async function fetchFamilySpaceFromSupabase(
     }
 
     const primaryFamilyRow = familiesRows[0] as Record<string, unknown> | undefined;
+    const resolvedFamCountry: CountryCode = isSupportedCountryCode(primaryFamilyRow?.country)
+      ? resolveCountryCode(primaryFamilyRow?.country, currentState.country)
+      : currentState.country;
     const familyEntity: Family = {
       id:
         typeof primaryFamilyRow?.id === 'string' && primaryFamilyRow.id.trim()
@@ -1172,19 +1194,14 @@ export async function fetchFamilySpaceFromSupabase(
         typeof primaryFamilyRow?.family_name === 'string' && primaryFamilyRow.family_name.trim()
           ? primaryFamilyRow.family_name
           : 'أسرة نكبر',
-      country:
-        primaryFamilyRow?.country === 'SA' || primaryFamilyRow?.country === 'EG'
-          ? primaryFamilyRow.country
-          : currentState.country,
+      country: resolvedFamCountry,
       city:
         typeof primaryFamilyRow?.city === 'string' && primaryFamilyRow.city.trim()
           ? primaryFamilyRow.city
-          : currentState.city,
-      currency:
-        primaryFamilyRow?.currency === 'SAR' ||
-        primaryFamilyRow?.currency === 'EGP'
-          ? primaryFamilyRow.currency
-          : currentState.currency,
+          : currentState.city || getDefaultCityForCountry(resolvedFamCountry),
+      currency: isSupportedCurrencyCode(primaryFamilyRow?.currency)
+        ? resolveCurrencyCode(primaryFamilyRow?.currency, resolvedFamCountry)
+        : currentState.currency || getSuggestedCurrencyForCountry(resolvedFamCountry),
       active_parent:
         primaryFamilyRow?.active_parent === 'father' ||
         primaryFamilyRow?.active_parent === 'mother'
@@ -1302,7 +1319,7 @@ export async function fetchFamilySpaceFromSupabase(
             : 'toys') || 'toys',
         categoryLabel:
           typeof row.category_label === 'string' ? row.category_label : 'ألعاب وتنمية',
-        country: row.country === 'EG' || row.country === 'SA' ? row.country : 'ALL',
+        country: isSupportedCountryCode(row.country) ? resolveCountryCode(row.country) : 'ALL',
         city: typeof row.city === 'string' ? row.city : 'القاهرة',
         priceEGP:
           typeof row.price_egp === 'number'
@@ -1717,13 +1734,12 @@ export function normalizeOnboardingAuthPayload(
     payload.fullName ??
     ''
   ).trim();
-  const country: CountryCode = payload.country === 'SA' ? 'SA' : 'EG';
+  const country: CountryCode = resolveCountryCode(payload.country, 'EG');
   const city =
-    (payload.city || '').trim() || (country === 'SA' ? 'الرياض' : 'القاهرة');
-  const currency: CurrencyCode =
-    payload.currency === 'SAR' || payload.currency === 'EGP'
-      ? payload.currency
-      : getSuggestedCurrencyForCountry(country);
+    (payload.city || '').trim() || getDefaultCityForCountry(country);
+  const currency: CurrencyCode = isSupportedCurrencyCode(payload.currency)
+    ? resolveCurrencyCode(payload.currency, country)
+    : getSuggestedCurrencyForCountry(country);
   const familyId =
     typeof payload.familyId === 'number' &&
     Number.isFinite(payload.familyId) &&
@@ -2262,23 +2278,23 @@ export async function authenticateParentWithSupabase(
       Array.isArray(famRows) && famRows.length > 0
         ? (famRows[0] as Record<string, unknown>)
         : null;
+    const restoredCountry: CountryCode = isSupportedCountryCode(restoredFamilyRow?.country)
+      ? resolveCountryCode(restoredFamilyRow?.country, normalized.country)
+      : normalized.country;
     const restoredFamily: Family = {
       id: verifiedFamilyUuid,
       family_name:
         (typeof restoredFamilyRow?.family_name === 'string' &&
           restoredFamilyRow.family_name.trim()) ||
         normalized.familyName,
-      country:
-        restoredFamilyRow?.country === 'EG' || restoredFamilyRow?.country === 'SA'
-          ? restoredFamilyRow.country
-          : normalized.country,
+      country: restoredCountry,
       city:
         (typeof restoredFamilyRow?.city === 'string' && restoredFamilyRow.city.trim()) ||
-        normalized.city,
-      currency:
-        restoredFamilyRow?.currency === 'EGP' || restoredFamilyRow?.currency === 'SAR'
-          ? restoredFamilyRow.currency
-          : normalized.currency,
+        normalized.city ||
+        getDefaultCityForCountry(restoredCountry),
+      currency: isSupportedCurrencyCode(restoredFamilyRow?.currency)
+        ? resolveCurrencyCode(restoredFamilyRow?.currency, restoredCountry)
+        : normalized.currency || getSuggestedCurrencyForCountry(restoredCountry),
       active_parent:
         restoredFamilyRow?.active_parent === 'father' ||
         restoredFamilyRow?.active_parent === 'mother'
@@ -2633,8 +2649,14 @@ export async function restoreAuthenticatedAccountFromSupabase(
       };
     }
 
-    const country: CountryCode =
-      rawFam.country === 'EG' || rawUser.country === 'EG' ? 'EG' : 'SA';
+    const familyCountry: CountryCode = resolveCountryCode(
+      rawFam.country ?? rawUser.country,
+      'EG'
+    );
+    const userCountry: CountryCode = resolveCountryCode(
+      rawUser.country ?? rawFam.country,
+      familyCountry
+    );
     const role: 'father' | 'mother' =
       rawUser.role === 'father' || rawUser.role === 'dad' ? 'father' : 'mother';
     const fullName =
@@ -2656,7 +2678,7 @@ export async function restoreAuthenticatedAccountFromSupabase(
         (typeof rawUser.phone === 'string' && rawUser.phone.trim()) ||
         verifiedCtx.phone ||
         '',
-      country,
+      country: userCountry,
     };
 
     const family: Family = {
@@ -2665,17 +2687,14 @@ export async function restoreAuthenticatedAccountFromSupabase(
         typeof rawFam.family_name === 'string' && rawFam.family_name.trim()
           ? rawFam.family_name.trim()
           : `أسرة ${fullName} — نكبر`,
-      country,
+      country: familyCountry,
       city:
         typeof rawFam.city === 'string' && rawFam.city.trim()
           ? rawFam.city.trim()
-          : country === 'EG'
-          ? 'القاهرة'
-          : 'الرياض',
-      currency:
-        rawFam.currency === 'EGP' || rawFam.currency === 'SAR'
-          ? rawFam.currency
-          : getSuggestedCurrencyForCountry(country),
+          : getDefaultCityForCountry(familyCountry),
+      currency: isSupportedCurrencyCode(rawFam.currency)
+        ? resolveCurrencyCode(rawFam.currency, familyCountry)
+        : getSuggestedCurrencyForCountry(familyCountry),
       active_parent:
         rawFam.active_parent === 'father' || rawFam.active_parent === 'mother'
           ? rawFam.active_parent
@@ -2940,12 +2959,11 @@ export async function saveOnboardingLocationToSupabase(
   customClient?: SupabaseClient | null
 ): Promise<{ synced: boolean; family: Family; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
-  const country: CountryCode = params.country === 'SA' ? 'SA' : 'EG';
-  const city = (params.city || '').trim() || (country === 'SA' ? 'الرياض' : 'القاهرة');
-  const currency: CurrencyCode =
-    params.currency === 'SAR' || params.currency === 'EGP'
-      ? params.currency
-      : getSuggestedCurrencyForCountry(country);
+  const country: CountryCode = resolveCountryCode(params.country, 'EG');
+  const city = (params.city || '').trim() || getDefaultCityForCountry(country);
+  const currency: CurrencyCode = isSupportedCurrencyCode(params.currency)
+    ? resolveCurrencyCode(params.currency, country)
+    : getSuggestedCurrencyForCountry(country);
   const activeParent = normalizeOnboardingRoleToAccount(params.activeParent);
   const familyName = (params.familyName || '').trim() || 'أسرة أحمد ومريم — نكبر';
 
@@ -2973,7 +2991,7 @@ export async function saveOnboardingLocationToSupabase(
           country,
           city,
           currency,
-          timezone: country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+          timezone: getCountryTimezone(country),
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
       );
@@ -3698,13 +3716,14 @@ export async function saveMyParentLocation(params: {
 }): Promise<{ error: string | null }> {
   try {
     const { client, familyId, profileUserId } = await getVerifiedFamilyHomesContext();
+    const safeCountry = resolveCountryCode(params.country, 'EG');
     const { error } = await withSupabaseRetry(() => client.from('parent_locations').upsert({
       user_id: profileUserId,
       family_id: familyId,
-      country: params.country,
-      city: params.city.trim(),
-      currency: params.currency,
-      timezone: params.timezone || (params.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh'),
+      country: safeCountry,
+      city: params.city.trim() || getDefaultCityForCountry(safeCountry),
+      currency: resolveCurrencyCode(params.currency, safeCountry),
+      timezone: params.timezone || getCountryTimezone(safeCountry),
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' }));
     return { error: error?.message || null };
@@ -3722,16 +3741,17 @@ export async function createFamilyHome(params: {
 }): Promise<{ home: FamilyHomeRecord | null; error: string | null }> {
   try {
     const { client, familyId, authUserId } = await getVerifiedFamilyHomesContext();
+    const safeCountry = resolveCountryCode(params.country, 'EG');
     const label = params.label.trim().slice(0, 80) || 'منزل إضافي';
     const city = params.city.trim().slice(0, 120);
     if (!city) throw new Error('اختَر المدينة أولاً.');
     const { data, error } = await withSupabaseRetry(() => client.from('family_homes').insert({
       family_id: familyId,
       label,
-      country: params.country,
+      country: safeCountry,
       city,
-      currency: params.currency,
-      timezone: params.timezone || (params.country === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh'),
+      currency: resolveCurrencyCode(params.currency, safeCountry),
+      timezone: params.timezone || getCountryTimezone(safeCountry),
       is_primary: false,
       created_by: authUserId,
     }).select('id,family_id,label,country,city,currency,timezone,is_primary').single());

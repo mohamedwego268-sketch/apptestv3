@@ -8,7 +8,11 @@ import {
   FamilyMember,
   MediaContentItem,
   CommercialCatalogItem,
+  convertCatalogPrice,
   formatCurrency,
+  getCountryMetadata,
+  getDefaultCityForCountry,
+  getSuggestedCurrencyForCountry,
   locText,
 } from '../../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../../domain/assetManifest3D';
@@ -165,7 +169,8 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const [navigationSearch, setNavigationSearch] = useState<string>('');
   const activeParentProfile = state.parentAccounts[state.activeParentAccount];
   const drawerCountry = activeParentProfile?.country || state.country;
-  const drawerCity = activeParentProfile?.city || state.city || (drawerCountry === 'SA' ? 'الرياض' : 'القاهرة');
+  const drawerCity = activeParentProfile?.city || state.city || getDefaultCityForCountry(drawerCountry);
+  const drawerCountryMeta = getCountryMetadata(drawerCountry);
 
   return (
     <>
@@ -1178,12 +1183,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     className="drawer-brand-location min-h-[48px] min-w-0 rounded-2xl px-3 py-2 flex items-center gap-2.5 text-start"
                     aria-label={isEn ? 'Change country and city' : 'تغيير الدولة والمدينة'}
                   >
-                    <span className="text-xl shrink-0" aria-hidden="true">{drawerCountry === 'SA' ? '🇸🇦' : '🇪🇬'}</span>
+                    <span className="text-xl shrink-0" aria-hidden="true">{drawerCountryMeta.flag}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[10px] font-bold text-white/70">{isEn ? 'YOUR LOCATION' : 'موقع حسابك'}</span>
                       <span className="block text-[13px] font-extrabold text-white truncate">
                         {locText(drawerCity, lang)}
-                        <span className="font-medium text-white/75"> · {drawerCountry === 'SA' ? (isEn ? 'Saudi Arabia' : 'السعودية') : (isEn ? 'Egypt' : 'مصر')}</span>
+                        <span className="font-medium text-white/75"> · {isEn ? drawerCountryMeta.nameEn : drawerCountryMeta.nameAr}</span>
                       </span>
                     </span>
                     <span className="text-white/75 text-sm shrink-0">{isEn ? 'Edit' : 'تعديل'}</span>
@@ -1200,7 +1205,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 </div>
                 <div className="relative z-10 mt-1.5 flex items-center justify-between text-[10px] font-semibold text-white/75">
                   <span>{isEn ? 'One place for everyday family life' : 'كل تفاصيل الأسرة في مكان واحد'}</span>
-                  <span dir="ltr" className="tabular-nums">{drawerCountry === 'SA' ? 'SAR' : 'EGP'}</span>
+                  <span dir="ltr" className="tabular-nums">{getSuggestedCurrencyForCountry(drawerCountry)}</span>
                 </div>
               </section>
 
@@ -2242,12 +2247,20 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
 
             <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 text-xs space-y-1 tabular-nums text-[var(--color-text)]">
               <div>
-                <strong>{lang === 'en' ? 'Price in Egypt: ' : 'السعر في مصر: '}</strong>
-                {formatCurrency(activeCommercialModal.priceEGP, 'EGP', state.language)}
-              </div>
-              <div>
-                <strong>{lang === 'en' ? 'Price in Saudi Arabia: ' : 'السعر في السعودية: '}</strong>
-                {formatCurrency(activeCommercialModal.priceSAR, 'SAR', state.language)}
+                <strong>
+                  {lang === 'en'
+                    ? `Price (${state.currency}): `
+                    : `السعر (${state.currency}): `}
+                </strong>
+                {formatCurrency(
+                  convertCatalogPrice(
+                    activeCommercialModal.priceEGP,
+                    activeCommercialModal.priceSAR,
+                    state.currency
+                  ),
+                  state.currency,
+                  state.language
+                )}
               </div>
               {activeCommercialModal.sellerName && (
                 <div>

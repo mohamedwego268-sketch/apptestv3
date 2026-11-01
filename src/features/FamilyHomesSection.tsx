@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
+  ALL_ARAB_COUNTRY_CODES,
+  ARAB_COUNTRIES_REGISTRY,
   COUNTRY_CITIES_MAP,
   CountryCode,
   CurrencyCode,
   FamilySpaceState,
+  getCountryMetadata,
+  getCountryTimezone,
   getSuggestedCurrencyForCountry,
   locText,
 } from '../domain/familySpaceCore';
@@ -156,7 +160,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
       country: personalCountry,
       city: personalCity,
       currency: getSuggestedCurrencyForCountry(personalCountry),
-      timezone: personalCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+      timezone: getCountryTimezone(personalCountry),
     });
     setSaving(false);
     if (!result.error) onPersonalLocationSaved(personalCountry, personalCity);
@@ -171,7 +175,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
       country: homeCountry,
       city: homeCity,
       currency: getSuggestedCurrencyForCountry(homeCountry),
-      timezone: homeCountry === 'EG' ? 'Africa/Cairo' : 'Asia/Riyadh',
+      timezone: getCountryTimezone(homeCountry),
     });
     setSaving(false);
     if (result.error) {
@@ -263,8 +267,14 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
             </div>
             <div className="grid grid-cols-2 gap-2">
               <select value={personalCountry} onChange={(e) => { const value = e.target.value as CountryCode; setPersonalCountry(value); setPersonalCity(COUNTRY_CITIES_MAP[value][0]?.id || ''); }} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]">
-                <option value="EG">{isEn ? 'Egypt' : 'مصر'}</option>
-                <option value="SA">{isEn ? 'Saudi Arabia' : 'السعودية'}</option>
+                {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                  const meta = ARAB_COUNTRIES_REGISTRY[code];
+                  return (
+                    <option key={code} value={code}>
+                      {meta.flag} {isEn ? meta.nameEn : meta.nameAr}
+                    </option>
+                  );
+                })}
               </select>
               <select value={personalCity} onChange={(e) => setPersonalCity(e.target.value)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]">
                 {personalCities.map((city) => <option key={city.id} value={city.id}>{isEn ? city.nameEn : city.nameAr}</option>)}
@@ -316,7 +326,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
                 <div key={home.id} className="rounded-xl border border-[var(--color-border)] p-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-sm font-bold text-[var(--color-text)] truncate">{home.label} {home.is_primary && <span className="text-[10px] text-teal-700 dark:text-teal-300">· {isEn ? 'Default' : 'أساسي'}</span>}</div>
-                    <div className="text-xs text-[var(--color-muted)] mt-1">{home.country === 'SA' ? '🇸🇦' : '🇪🇬'} {locText(home.city, state.language)} · {home.currency}</div>
+                    <div className="text-xs text-[var(--color-muted)] mt-1">{getCountryMetadata(home.country).flag} {locText(home.city, state.language)} · {home.currency}</div>
                   </div>
                   <span className="text-[10px] text-[var(--color-muted)]">{home.is_primary ? (isEn ? 'Default' : 'افتراضي') : (isEn ? 'Additional' : 'إضافي')}</span>
                 </div>
@@ -329,8 +339,14 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
               <input value={homeLabel} onChange={(e) => setHomeLabel(e.target.value)} maxLength={80} placeholder={isEn ? 'Place name (e.g. Mom’s home)' : 'اسم المكان (مثلاً: منزل ماما)'} className="w-full min-h-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]" />
               <div className="grid grid-cols-2 gap-2">
                 <select value={homeCountry} onChange={(e) => { const value = e.target.value as CountryCode; setHomeCountry(value); setHomeCity(COUNTRY_CITIES_MAP[value][0]?.id || ''); }} className="min-h-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]">
-                  <option value="EG">{isEn ? 'Egypt' : 'مصر'}</option>
-                  <option value="SA">{isEn ? 'Saudi Arabia' : 'السعودية'}</option>
+                  {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                    const meta = ARAB_COUNTRIES_REGISTRY[code];
+                    return (
+                      <option key={code} value={code}>
+                        {meta.flag} {isEn ? meta.nameEn : meta.nameAr}
+                      </option>
+                    );
+                  })}
                 </select>
                 <select value={homeCity} onChange={(e) => setHomeCity(e.target.value)} className="min-h-10 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]">
                   {homeCities.map((city) => <option key={city.id} value={city.id}>{isEn ? city.nameEn : city.nameAr}</option>)}

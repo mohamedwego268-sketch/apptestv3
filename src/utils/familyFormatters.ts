@@ -7,6 +7,7 @@ import {
   dateLocalISO,
   formatCurrency,
   formatGregorianAndHijri,
+  getCountryMetadata,
   locText,
 } from '../domain/familySpaceCore';
 
@@ -36,8 +37,8 @@ export function formatCountryCurrencySummary(
   lang: LanguageCode
 ): string {
   const isEn = lang === 'en';
-  const countryLabel =
-    country === 'SA' ? (isEn ? 'Saudi Arabia' : 'السعودية') : isEn ? 'Egypt' : 'مصر';
+  const meta = getCountryMetadata(country);
+  const countryLabel = isEn ? meta.nameEn : meta.nameAr;
   const calLabel =
     calendarMode === 'both'
       ? isEn
@@ -52,3 +53,4 @@ export function formatCountryCurrencySummary(
       : 'ميلادي';
   return `${countryLabel} (${locText(city, lang)}) · ${currency} · ${calLabel}`;
 }
+

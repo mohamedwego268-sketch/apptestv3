@@ -5,8 +5,14 @@ import {
   CountryCode,
   LanguageCode,
   CurrencyCode,
+  ALL_ARAB_COUNTRY_CODES,
+  ALL_ARAB_CURRENCIES,
+  ARAB_COUNTRIES_REGISTRY,
+  CURRENCY_METADATA_MAP,
   CalendarDisplayMode,
   COUNTRY_CITIES_MAP,
+  getCountryMetadata,
+  getDefaultCityForCountry,
   locText,
   ParentProfileThemeSpec,
 } from '../domain/familySpaceCore';
@@ -144,14 +150,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 {lang === 'en' ? parentProfileSpec.greetingEn : parentProfileSpec.greetingAr}
               </h2>
               <div className="image-card-subtitle text-[10px] font-bold tabular-nums leading-tight">
-                {state.country === 'SA'
-                  ? lang === 'en'
-                    ? 'Saudi Arabia'
-                    : 'السعودية'
-                  : lang === 'en'
-                  ? 'Egypt'
-                  : 'مصر'}{' '}
-                · {locText(state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'), lang)} · {state.currency}
+                {getCountryMetadata(state.country).flag}{' '}
+                {lang === 'en'
+                  ? getCountryMetadata(state.country).nameEn
+                  : getCountryMetadata(state.country).nameAr}{' '}
+                · {locText(state.city || getDefaultCityForCountry(state.country), lang)} · {state.currency}
               </div>
             </div>
           </div>
@@ -229,7 +232,11 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           </div>
           <div className="grid grid-cols-2 gap-1.5">
             <button
+              id="profile-dark-mode-switch"
               type="button"
+              role="switch"
+              aria-checked={Boolean(state.darkMode)}
+              aria-label={lang === 'en' ? 'Toggle dark mode' : 'تبديل الوضع الليلي والنهاري'}
               onClick={onToggleDarkMode}
               className="min-h-[36px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
             >
@@ -243,34 +250,28 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               {lang === 'en' ? 'Sign Out' : 'تسجيل الخروج'}
             </button>
           </div>
+
+          <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2.5 flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}</p>
+              <p className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Applies across all screens' : 'يتطبق على شاشات التطبيق بالكامل'}</p>
+            </div>
+            <div className="inline-flex shrink-0 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] p-0.5" role="group" aria-label={lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}>
+              {(['compact', 'standard', 'large'] as const).map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setFontScale(size)}
+                  aria-pressed={fontScale === size}
+                  className={`min-h-[32px] px-2 rounded-lg text-[10px] font-extrabold transition-colors ${fontScale === size ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm' : 'text-[var(--color-muted)]'}`}
+                >
+                  {size === 'compact' ? (lang === 'en' ? 'Small' : 'صغير') : size === 'standard' ? (lang === 'en' ? 'Default' : 'افتراضي') : (lang === 'en' ? 'Large' : 'كبير')}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </SectionToolsDrawer>
-
-      <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2.5 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}</p>
-          <p className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Applies across all screens' : 'يتطبق على شاشات التطبيق بالكامل'}</p>
-        </div>
-        <div className="inline-flex shrink-0 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] p-0.5" role="group" aria-label={lang === 'en' ? 'App text size' : 'حجم خطوط التطبيق'}>
-          {(['compact', 'standard', 'large'] as const).map((size) => (
-            <button key={size} type="button" onClick={() => setFontScale(size)} aria-pressed={fontScale === size}
-              className={`min-h-[32px] px-2 rounded-lg text-[10px] font-extrabold transition-colors ${fontScale === size ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] shadow-sm' : 'text-[var(--color-muted)]'}`}>
-              {size === 'compact' ? (lang === 'en' ? 'Small' : 'صغير') : size === 'standard' ? (lang === 'en' ? 'Default' : 'افتراضي') : (lang === 'en' ? 'Large' : 'كبير')}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'Eye-comfort dark mode' : 'الوضع الليلي المريح للعين'}</p>
-          <p className="text-[10px] text-[var(--color-muted)]">{state.darkMode ? (lang === 'en' ? 'Night mode is on' : 'الوضع الليلي مفعّل') : (lang === 'en' ? 'Day mode is on' : 'الوضع النهاري مفعّل')}</p>
-        </div>
-        <button id="profile-dark-mode-switch" type="button" role="switch" aria-checked={Boolean(state.darkMode)} aria-label={lang === 'en' ? 'Toggle dark mode' : 'تبديل الوضع الليلي والنهاري'} onClick={onToggleDarkMode}
-          className={`min-h-[32px] shrink-0 px-3 rounded-lg text-[10px] font-extrabold border ${state.darkMode ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-[var(--color-control-bg)] text-[var(--color-text)] border-[var(--color-border)]'}`}>
-          {state.darkMode ? (lang === 'en' ? '☀️ Day mode' : '☀️ نهاري') : (lang === 'en' ? '🌙 Night mode' : '🌙 ليلي')}
-        </button>
-      </div>
 
       {/* Inner Settings Section inside Profile Screen */}
       {showInnerSettings && (
@@ -457,8 +458,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 : 'حدد الدولة والمدينة والعملة، وأدر رقم هاتف الحساب'
             }
             iconId="location"
-            badgeLabel={`${state.country === 'SA' ? '+966 · SAR' : '+20 · EGP'} · ${locText(
-              state.city || (state.country === 'SA' ? 'الرياض' : 'القاهرة'),
+            badgeLabel={`${getCountryMetadata(state.country).dialCode} · ${state.currency} · ${locText(
+              state.city || getDefaultCityForCountry(state.country),
               lang
             )}`}
             badgeTone="amber"
@@ -468,24 +469,53 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <UnifiedBadge
-                  label={lang === 'en' ? 'Mobile Number' : 'رقم الجوال'}
+                  label={lang === 'en' ? 'Mobile Number & Arab Countries (22)' : 'رقم الجوال والدول العربية (22 دولة)'}
                   tone="amber"
                   iconId="shield"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mb-3" role="group" aria-label={lang === 'en' ? 'Choose country' : 'اختيار الدولة'}>
-                {([
-                  { code: 'EG' as const, flag: '🇪🇬', name: lang === 'en' ? 'Egypt' : 'مصر', currency: 'EGP' },
-                  { code: 'SA' as const, flag: '🇸🇦', name: lang === 'en' ? 'Saudi Arabia' : 'السعودية', currency: 'SAR' },
-                ]).map((country) => (
-                  <button key={country.code} type="button" data-testid={`settings-country-${country.code.toLowerCase()}-btn`} aria-pressed={settingsCountry === country.code} onClick={() => onCountryChangeInSettings(country.code)} className={`min-h-[58px] rounded-2xl border px-3 py-2 flex items-center gap-2 text-start transition-all ${settingsCountry === country.code ? 'border-[#0d9488] bg-teal-50 dark:bg-[#12343a] shadow-sm' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] hover:border-[#0d9488]/60'}`}>
-                    <span className="text-2xl" aria-hidden="true">{country.flag}</span>
-                    <span className="min-w-0 flex-1"><span className="block text-sm font-black text-[var(--color-text)]">{country.name}</span><span className="block text-[11px] font-bold text-[var(--color-muted)]">{COUNTRY_CITIES_MAP[country.code].length} {country.code === 'EG' ? (lang === 'en' ? 'governorates' : 'محافظة') : (lang === 'en' ? 'regions / cities' : 'منطقة / مدينة')} · {country.currency}</span></span>
-                    {settingsCountry === country.code && <span className="text-[#0d9488] font-black" aria-hidden="true">✓</span>}
-                  </button>
-                ))}
+              <div
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-3 max-h-56 overflow-y-auto pe-1"
+                role="group"
+                aria-label={lang === 'en' ? 'Choose country' : 'اختيار الدولة'}
+              >
+                {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                  const meta = ARAB_COUNTRIES_REGISTRY[code];
+                  return (
+                    <button
+                      key={code}
+                      type="button"
+                      data-testid={`settings-country-${code.toLowerCase()}-btn`}
+                      aria-pressed={settingsCountry === code}
+                      onClick={() => onCountryChangeInSettings(code)}
+                      className={`min-h-[54px] rounded-2xl border px-2.5 py-2 flex items-center gap-2 text-start transition-all cursor-pointer ${
+                        settingsCountry === code
+                          ? 'border-[#0d9488] bg-teal-50 dark:bg-[#12343a] shadow-sm'
+                          : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] hover:border-[#0d9488]/60'
+                      }`}
+                    >
+                      <span className="text-xl shrink-0" aria-hidden="true">
+                        {meta.flag}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-black text-[var(--color-text)] truncate">
+                          {lang === 'en' ? meta.nameEn : meta.nameAr}
+                        </span>
+                        <span className="block text-[10px] font-bold text-[var(--color-muted)] truncate">
+                          {(COUNTRY_CITIES_MAP[code] || []).length} {lang === 'en' ? 'cities' : 'مدن'} · {meta.currencyCode}
+                        </span>
+                      </span>
+                      {settingsCountry === code && (
+                        <span className="text-[#0d9488] font-black" aria-hidden="true">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label htmlFor="settingsCountry" className="block text-xs font-bold text-[var(--color-text)] mb-1">
@@ -497,20 +527,22 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     onChange={(e) => onCountryChangeInSettings(e.target.value as CountryCode)}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
                   >
-                    <option value="EG">{t(lang, 'countryEG')} (+20)</option>
-                    <option value="SA">{t(lang, 'countrySA')} (+966)</option>
+                    {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                      const meta = ARAB_COUNTRIES_REGISTRY[code];
+                      return (
+                        <option key={code} value={code}>
+                          {meta.flag} {lang === 'en' ? meta.nameEn : meta.nameAr} ({meta.dialCode})
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="settingsCity" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                    {settingsCountry === 'EG'
-                      ? lang === 'en'
-                        ? 'Governorate'
-                        : 'المحافظة'
-                      : lang === 'en'
-                      ? 'Region / City'
-                      : 'المنطقة والمدينة'}
+                    {lang === 'en'
+                      ? `Governorate / City (${getCountryMetadata(settingsCountry).nameEn})`
+                      : `المحافظة / المدينة (${getCountryMetadata(settingsCountry).nameAr})`}
                   </label>
                   <select
                     id="settingsCity"
@@ -542,16 +574,22 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     onChange={(e) => onChangeSettingsCurrency(e.target.value as CurrencyCode)}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#142430] px-3 py-2 text-sm font-bold text-gray-900 dark:text-[#F8FAFC]"
                   >
-                    <option value="EGP" className="text-gray-900 bg-white font-bold">{t(lang, 'currencyEGP')}</option>
-                    <option value="SAR" className="text-gray-900 bg-white font-bold">{t(lang, 'currencySAR')}</option>
+                    {ALL_ARAB_CURRENCIES.map((currCode) => {
+                      const currMeta = CURRENCY_METADATA_MAP[currCode];
+                      return (
+                        <option key={currCode} value={currCode} className="text-gray-900 bg-white font-bold">
+                          {currCode} — {lang === 'en' ? currMeta.nameEn : currMeta.nameAr} ({currMeta.symbolAr})
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
 
                 <div>
                   <label htmlFor="settingsPhoneInput" className="block text-xs font-bold text-[var(--color-text)] mb-1">
                     {lang === 'en'
-                      ? `Mobile phone number (${personalCountry === 'SA' ? '+966' : '+20'})`
-                      : `رقم الجوال (${personalCountry === 'SA' ? '+966' : '+20'})`}
+                      ? `Mobile phone number (${getCountryMetadata(personalCountry).dialCode})`
+                      : `رقم الجوال (${getCountryMetadata(personalCountry).dialCode})`}
                   </label>
                   <input
                     id="settingsPhoneInput"
@@ -559,7 +597,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     dir="ltr"
                     value={settingsPhoneInput}
                     onChange={(e) => onChangeSettingsPhoneInput(e.target.value)}
-                    placeholder={personalCountry === 'SA' ? '512345678' : '1012345678'}
+                    placeholder={getCountryMetadata(personalCountry).phoneRule.exampleLocal}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm tabular-nums text-[var(--color-text)]"
                   />
                 </div>
@@ -570,8 +608,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                 <div className="rounded-2xl bg-[var(--color-control-bg)] border border-[var(--color-border)] p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs font-bold">
                   <span>
                     {lang === 'en'
-                      ? `You selected ${settingsCountry === 'SA' ? 'Saudi Arabia' : 'Egypt'}. Switch to suggested currency (${currencySuggestionBanner})?`
-                      : `اخترت ${settingsCountry === 'SA' ? 'السعودية' : 'مصر'}. هل ترغب في التبديل إلى العملة المقترحة (${currencySuggestionBanner})؟`}
+                      ? `You selected ${getCountryMetadata(settingsCountry).nameEn}. Switch to suggested currency (${currencySuggestionBanner})?`
+                      : `اخترت ${getCountryMetadata(settingsCountry).nameAr}. هل ترغب في التبديل إلى العملة المقترحة (${currencySuggestionBanner})؟`}
                   </span>
                   <button
                     type="button"
@@ -605,8 +643,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <span className="text-xs font-bold text-[var(--color-muted)]">
                   {lang === 'en'
-                    ? 'Supports Egyptian (+20) & Saudi (+966) mobile formats'
-                    : 'يدعم التحقق القياسي للهاتف المصري (+20) والسعودي (+966)'}
+                    ? 'Supports all 22 Arab League mobile formats & dial codes'
+                    : 'يدعم التحقق القياسي لأرقام الجوال في جميع الدول العربية الـ 22'}
                 </span>
                 <PrimaryCtaButton variant="orange" onClick={onSaveBottomInternationalAndPhone}>
                   {settingsOtpStep

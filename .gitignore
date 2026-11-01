@@ -9,8 +9,10 @@ coverage/
 *.bak
 *.pre-*.html
 bun.lock
+.env
+.env.local
+.env.test
 .env*
 !.env.example
 server/.env*
 backend/.env*
-

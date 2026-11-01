@@ -50,6 +50,10 @@ export const FamilyAppProvider: React.FC<{
   return <FamilyAppContext.Provider value={value}>{children}</FamilyAppContext.Provider>;
 };
 
+export function useOptionalFamilyAppContext(): FamilyAppContextValue | null {
+  return useContext(FamilyAppContext);
+}
+
 export function useFamilyAppContext(): FamilyAppContextValue {
   const ctx = useContext(FamilyAppContext);
   if (!ctx) {
@@ -57,3 +61,4 @@ export function useFamilyAppContext(): FamilyAppContextValue {
   }
   return ctx;
 }
+

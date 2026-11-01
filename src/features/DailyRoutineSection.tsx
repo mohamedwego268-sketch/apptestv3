@@ -111,141 +111,155 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         </div>
       </div>
 
-      <SectionToolsDrawer language={lang} titleAr="أدوات الروتين" titleEn="Routine tools">
-        {/* Quick Reminder Status Filter Pills */}
-        <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-2.5 flex flex-wrap items-center justify-between gap-2">
-          <div
-            className="flex flex-wrap items-center gap-1.5"
-            role="group"
-            aria-label={isEn ? 'Filter by reminder status' : 'تصفية حسب حالة التذكير'}
-          >
-            <button
-              type="button"
-              onClick={() => setRoutineReminderFilter('all')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out cursor-pointer ${
-                routineReminderFilter === 'all'
-                  ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] border-transparent'
-                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)]'
-              }`}
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="routine"
+        titleAr="أدوات الروتين"
+        titleEn="Routine tools"
+        badgeCount={
+          (routineReminderFilter !== 'all' ? 1 : 0) +
+          (routineCadenceFilter !== 'all' ? 1 : 0) +
+          (routineKidFilter !== 'all' ? 1 : 0) +
+          (routineStatusFilter !== 'all' ? 1 : 0)
+        }
+      >
+        <div className="space-y-3">
+          {/* Quick Reminder Status Filter Pills */}
+          <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-2.5 space-y-2.5">
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="group"
+              aria-label={isEn ? 'Filter by reminder status' : 'تصفية حسب حالة التذكير'}
             >
-              {isEn ? `All (${state.tasks.length})` : `الكل (${state.tasks.length})`}
-            </button>
-            <button
-              type="button"
-              onClick={() => setRoutineReminderFilter('overdue')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
-                routineReminderFilter === 'overdue'
-                  ? 'bg-red-700 text-white border-red-700'
-                  : 'bg-red-50 dark:bg-[#142430] text-red-800 dark:text-rose-300 border-red-200 dark:border-[#1E3646] hover:bg-red-100'
-              }`}
-            >
-              {isEn
-                ? `Overdue (${routineRemindersSummary.overdueCount})`
-                : `تجاوزت الموعد (${routineRemindersSummary.overdueCount})`}
-            </button>
-            <button
-              type="button"
-              onClick={() => setRoutineReminderFilter('approaching')}
-              className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
-                routineReminderFilter === 'approaching'
-                  ? 'bg-amber-600 text-white border-amber-600'
-                  : 'bg-amber-50 dark:bg-[#142430] text-amber-900 dark:text-amber-300 border-amber-300 dark:border-[#1E3646] hover:bg-amber-100'
-              }`}
-            >
-              {isEn
-                ? `Approaching (${routineRemindersSummary.approachingCount})`
-                : `اقترب موعدها (${routineRemindersSummary.approachingCount})`}
-            </button>
+              <button
+                type="button"
+                onClick={() => setRoutineReminderFilter('all')}
+                className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out cursor-pointer ${
+                  routineReminderFilter === 'all'
+                    ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)] border-transparent'
+                    : 'border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)]'
+                }`}
+              >
+                {isEn ? `All (${state.tasks.length})` : `الكل (${state.tasks.length})`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoutineReminderFilter('overdue')}
+                className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
+                  routineReminderFilter === 'overdue'
+                    ? 'bg-red-700 text-white border-red-700'
+                    : 'bg-red-50 dark:bg-[#142430] text-red-800 dark:text-rose-300 border-red-200 dark:border-[#1E3646] hover:bg-red-100'
+                }`}
+              >
+                {isEn
+                  ? `Overdue (${routineRemindersSummary.overdueCount})`
+                  : `تجاوزت الموعد (${routineRemindersSummary.overdueCount})`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoutineReminderFilter('approaching')}
+                className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all duration-300 ease-in-out tabular-nums cursor-pointer ${
+                  routineReminderFilter === 'approaching'
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'bg-amber-50 dark:bg-[#142430] text-amber-900 dark:text-amber-300 border-amber-300 dark:border-[#1E3646] hover:bg-amber-100'
+                }`}
+              >
+                {isEn
+                  ? `Approaching (${routineRemindersSummary.approachingCount})`
+                  : `اقترب موعدها (${routineRemindersSummary.approachingCount})`}
+              </button>
+            </div>
+
+            {/* Compact Reminder Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <select
+                id="routineLeadWindow"
+                aria-label={isEn ? 'Reminder lead time' : 'مدة التنبيه قبل الموعد'}
+                value={routineApproachingWindow}
+                onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
+                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
+              >
+                <option value={30}>{isEn ? 'Alert 30m before' : 'تنبيه قبل 30 دقيقة'}</option>
+                <option value={60}>{isEn ? 'Alert 60m before' : 'تنبيه قبل 60 دقيقة'}</option>
+                <option value={90}>{isEn ? 'Alert 90m before' : 'تنبيه قبل 90 دقيقة'}</option>
+                <option value={120}>{isEn ? 'Alert 120m before' : 'تنبيه قبل 120 دقيقة'}</option>
+              </select>
+              <select
+                id="routineRefTime"
+                aria-label={isEn ? 'Reference time' : 'الوقت المرجعي لحساب التذكيرات'}
+                value={routineRefTimePreset}
+                onChange={(e) => setRoutineRefTimePreset(e.target.value)}
+                className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
+              >
+                <option value="live">{isEn ? 'Current time' : 'الوقت الحالي'}</option>
+                <option value="07:15">{isEn ? 'Morning (07:15 AM)' : 'صباحًا (07:15 ص)'}</option>
+                <option value="15:45">{isEn ? 'Afternoon (03:45 PM)' : 'عصرًا (03:45 م)'}</option>
+                <option value="18:20">{isEn ? 'Evening (06:20 PM)' : 'مساءً (06:20 م)'}</option>
+                <option value="20:30">{isEn ? 'Night (08:30 PM)' : 'ليلًا (08:30 م)'}</option>
+              </select>
+            </div>
           </div>
 
-          {/* Compact Reminder Controls */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <select
-              id="routineLeadWindow"
-              aria-label={isEn ? 'Reminder lead time' : 'مدة التنبيه قبل الموعد'}
-              value={routineApproachingWindow}
-              onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
-              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
+          {/* Day / Week / Month Tabs & Child/Status Filters inside Section Tools */}
+          <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] p-2.5 space-y-2.5">
+            <div
+              className="grid grid-cols-2 gap-1.5"
+              role="tablist"
+              aria-label={isEn ? 'Routine cadence' : 'نطاق تكرار الروتين'}
             >
-              <option value={30}>{isEn ? 'Alert 30m before' : 'تنبيه قبل 30 دقيقة'}</option>
-              <option value={60}>{isEn ? 'Alert 60m before' : 'تنبيه قبل 60 دقيقة'}</option>
-              <option value={90}>{isEn ? 'Alert 90m before' : 'تنبيه قبل 90 دقيقة'}</option>
-              <option value={120}>{isEn ? 'Alert 120m before' : 'تنبيه قبل 120 دقيقة'}</option>
-            </select>
-            <select
-              id="routineRefTime"
-              aria-label={isEn ? 'Reference time' : 'الوقت المرجعي لحساب التذكيرات'}
-              value={routineRefTimePreset}
-              onChange={(e) => setRoutineRefTimePreset(e.target.value)}
-              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
-            >
-              <option value="live">{isEn ? 'Current time' : 'الوقت الحالي'}</option>
-              <option value="07:15">{isEn ? 'Morning (07:15 AM)' : 'صباحًا (07:15 ص)'}</option>
-              <option value="15:45">{isEn ? 'Afternoon (03:45 PM)' : 'عصرًا (03:45 م)'}</option>
-              <option value="18:20">{isEn ? 'Evening (06:20 PM)' : 'مساءً (06:20 م)'}</option>
-              <option value="20:30">{isEn ? 'Night (08:30 PM)' : 'ليلًا (08:30 م)'}</option>
-            </select>
+              {[
+                { id: 'all', label: isEn ? 'All Periods' : 'كل الفترات' },
+                { id: 'daily', label: isEn ? 'Daily' : 'اليوم' },
+                { id: 'weekly', label: isEn ? 'Weekly' : 'الأسبوع' },
+                { id: 'monthly', label: isEn ? 'Monthly' : 'الشهر' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setRoutineCadenceFilter(tab.id as 'all' | TaskCadence)}
+                  className={`px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all duration-300 ease-in-out cursor-pointer ${
+                    routineCadenceFilter === tab.id
+                      ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-xs'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              <select
+                id="routineKidFilter"
+                aria-label={isEn ? 'Filter by child' : 'عرض مهام'}
+                value={routineKidFilter}
+                onChange={(e) => setRoutineKidFilter(e.target.value)}
+                className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+              >
+                <option value="all">{isEn ? 'Everyone in the family' : 'كل أفراد الأسرة'}</option>
+                {state.kids.map((k) => (
+                  <option key={k.id} value={String(k.id)}>
+                    {locText(k.name, lang)}
+                  </option>
+                ))}
+              </select>
+              <select
+                id="routineStatusFilter"
+                aria-label={isEn ? 'Task status' : 'حالة المهمة'}
+                value={routineStatusFilter}
+                onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
+                className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
+              >
+                <option value="all">{isEn ? 'All Statuses' : 'كل الحالات'}</option>
+                <option value="open">{isEn ? 'Open' : 'غير مكتملة'}</option>
+                <option value="done">{isEn ? 'Completed' : 'مكتملة'}</option>
+              </select>
+            </div>
           </div>
         </div>
       </SectionToolsDrawer>
 
       <div className="rounded-2xl sm:rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 soft-card-surface space-y-3.5">
-        {/* Day / Week / Month Tabs & Filters */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div
-            className="flex items-center gap-1.5 bg-[var(--color-control-muted)] dark:bg-[#142430] p-1 rounded-2xl border border-transparent dark:border-[#1E3646]"
-            role="tablist"
-            aria-label={isEn ? 'Routine cadence' : 'نطاق تكرار الروتين'}
-          >
-            {[
-              { id: 'all', label: isEn ? 'All Periods' : 'كل الفترات' },
-              { id: 'daily', label: isEn ? 'Daily' : 'اليوم' },
-              { id: 'weekly', label: isEn ? 'Weekly' : 'الأسبوع' },
-              { id: 'monthly', label: isEn ? 'Monthly' : 'الشهر' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setRoutineCadenceFilter(tab.id as 'all' | TaskCadence)}
-                className={`px-3.5 py-1.5 text-xs font-extrabold rounded-xl transition-all duration-300 ease-in-out whitespace-nowrap shrink-0 cursor-pointer ${
-                  routineCadenceFilter === tab.id
-                    ? 'bg-[var(--color-surface)] dark:bg-[#101D26] text-[var(--color-text)] shadow-xs'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              id="routineKidFilter"
-              aria-label={isEn ? 'Filter by child' : 'عرض مهام'}
-              value={routineKidFilter}
-              onChange={(e) => setRoutineKidFilter(e.target.value)}
-              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
-            >
-              <option value="all">{isEn ? 'Everyone in the family' : 'كل أفراد الأسرة'}</option>
-              {state.kids.map((k) => (
-                <option key={k.id} value={String(k.id)}>
-                  {locText(k.name, lang)}
-                </option>
-              ))}
-            </select>
-            <select
-              id="routineStatusFilter"
-              aria-label={isEn ? 'Task status' : 'حالة المهمة'}
-              value={routineStatusFilter}
-              onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
-              className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
-            >
-              <option value="all">{isEn ? 'All Statuses' : 'كل الحالات'}</option>
-              <option value="open">{isEn ? 'Open' : 'غير مكتملة'}</option>
-              <option value="done">{isEn ? 'Completed' : 'مكتملة'}</option>
-            </select>
-          </div>
-        </div>
 
         {/* Tasks Grid Cards with Standardized SoftFilledIcon & Visual Reminder Badges */}
         {filteredTasks.length === 0 ? (

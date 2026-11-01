@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import {
+  ALL_ARAB_COUNTRY_CODES,
+  ARAB_COUNTRIES_REGISTRY,
   ChildProfile,
   CountryCode,
   ExtendedRoleCategory,
@@ -8,6 +10,8 @@ import {
   InvitationStatus,
   LanguageCode,
   ParentAccountProfile,
+  getCountryDialCode,
+  getCountryMetadata,
   getDefaultPermissions,
   locText,
   sanitizeUserText,
@@ -433,7 +437,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
       // Save contact details locally without faking phoneVerified or emailVerified
       onUpdateParentAccount(editingParent, {
         country: countryInput,
-        phoneCode: countryInput === 'SA' ? '+966' : '+20',
+        phoneCode: getCountryDialCode(countryInput),
         phoneNumber: check.normalized,
         phoneVerified: false,
         email: emailInput.trim() || currentParent.email,
@@ -452,7 +456,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
 
     onUpdateParentAccount(editingParent, {
       country: countryInput,
-      phoneCode: countryInput === 'SA' ? '+966' : '+20',
+      phoneCode: getCountryDialCode(countryInput),
       phoneNumber: check.normalized,
       phoneVerified: verifyRes.phoneVerified,
       email: emailInput.trim() || currentParent.email,
@@ -939,22 +943,28 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
               onChange={(e) => setCountryInput(e.target.value as CountryCode)}
               className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-bold text-[var(--color-text)]"
             >
-              <option value="EG">🇪🇬 مصر (+20 Egypt)</option>
-              <option value="SA">🇸🇦 السعودية (+966 Saudi Arabia)</option>
+              {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                const meta = ARAB_COUNTRIES_REGISTRY[code];
+                return (
+                  <option key={code} value={code}>
+                    {meta.flag} {isEn ? meta.nameEn : meta.nameAr} ({meta.dialCode})
+                  </option>
+                );
+              })}
             </select>
           </div>
 
           <div>
             <label className="block text-[11px] font-extrabold text-[var(--color-text)] mb-1">
               {isEn
-                ? `Mobile (${countryInput === 'SA' ? '+966' : '+20'})`
-                : `رقم الجوال (${countryInput === 'SA' ? '+966' : '+20'})`}
+                ? `Mobile (${getCountryDialCode(countryInput)})`
+                : `رقم الجوال (${getCountryDialCode(countryInput)})`}
             </label>
             <input
               type="tel"
               value={phoneInput}
               onChange={(e) => setPhoneInput(e.target.value)}
-              placeholder={countryInput === 'SA' ? '512345678' : '1012345678'}
+              placeholder={getCountryMetadata(countryInput).phoneRule.exampleLocal}
               className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-1.5 text-xs font-bold tabular-nums"
             />
           </div>
@@ -1093,8 +1103,14 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 onChange={(e) => setInvCountry(e.target.value as CountryCode)}
                 className="w-full rounded-xl border border-[var(--color-border)] bg-white px-2 py-1.5 text-xs font-bold"
               >
-                <option value="EG">+20 EG</option>
-                <option value="SA">+966 SA</option>
+                {ALL_ARAB_COUNTRY_CODES.map((code) => {
+                  const meta = ARAB_COUNTRIES_REGISTRY[code];
+                  return (
+                    <option key={code} value={code}>
+                      {meta.flag} {meta.dialCode} {code}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="col-span-2">
@@ -1105,7 +1121,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 type="tel"
                 value={invPhone}
                 onChange={(e) => setInvPhone(e.target.value)}
-                placeholder={invCountry === 'SA' ? '512345678' : '1022334455'}
+                placeholder={getCountryMetadata(invCountry).phoneRule.exampleLocal}
                 className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-bold tabular-nums"
               />
             </div>

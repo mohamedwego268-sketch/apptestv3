@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ALL_ARAB_COUNTRY_CODES,
   COUNTRY_CITIES_MAP,
   CountryCode,
   LanguageCode,
+  getCitiesForCountry,
 } from '../domain/familySpaceCore';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
 import { UnifiedBadge } from './DesignSystem';
@@ -83,14 +85,23 @@ function buildCalibratedFiveDayForecast(
 }
 
 function resolveCityWeatherBaseline(country: CountryCode, cityName: string) {
-  const allCities = [...COUNTRY_CITIES_MAP.EG, ...COUNTRY_CITIES_MAP.SA];
+  const countryCities = getCitiesForCountry(country);
+  const allCities = ALL_ARAB_COUNTRY_CODES.flatMap((code) => COUNTRY_CITIES_MAP[code] || []);
   const matched =
+    countryCities.find(
+      (c) =>
+        c.id === cityName ||
+        c.nameAr === cityName ||
+        c.nameEn.toLowerCase() === cityName.toLowerCase()
+    ) ||
     allCities.find(
       (c) =>
         c.id === cityName ||
         c.nameAr === cityName ||
         c.nameEn.toLowerCase() === cityName.toLowerCase()
-    ) || (country === 'SA' ? COUNTRY_CITIES_MAP.SA[0] : COUNTRY_CITIES_MAP.EG[0]);
+    ) ||
+    countryCities[0] ||
+    COUNTRY_CITIES_MAP.EG[0];
 
   const lat = matched.lat;
   const lng = matched.lng;
@@ -324,7 +335,7 @@ export const LiveWeatherWidget: React.FC<LiveWeatherWidgetProps> = ({
   const displayCityName = isEn ? baseline.nameEn : baseline.nameAr;
 
   const quickCities = useMemo(
-    () => (country === 'SA' ? COUNTRY_CITIES_MAP.SA.slice(0, 8) : COUNTRY_CITIES_MAP.EG.slice(0, 8)),
+    () => getCitiesForCountry(country).slice(0, 8),
     [country]
   );
 
