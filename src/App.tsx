@@ -3260,6 +3260,7 @@ export default function App() {
             email,
             emailVerified,
             phoneVerified,
+            coParentInvitationPending,
             childProfile,
             childrenProfiles,
             skippedForLater,
@@ -3353,7 +3354,11 @@ export default function App() {
             setOnboardingModalOpen(false);
             navigateTo('home');
             showToast(
-              skippedForLater
+              coParentInvitationPending
+                ? lang === 'en'
+                  ? `Invitation created for ${email}. Ask the other parent to sign in with this exact verified email to join your family space.`
+                  : `تم إنشاء دعوة ولي الأمر الآخر على ${email}. اطلب منه التسجيل أو تسجيل الدخول بنفس البريد وتأكيده للانضمام لمساحة الأسرة.`
+                : skippedForLater
                 ? lang === 'en'
                   ? 'Progress saved locally! You can resume onboarding anytime from Settings.'
                   : 'تم حفظ تقدمك محلياً! يمكنك استكمال إعداد الحساب في أي وقت من الإعدادات.'
