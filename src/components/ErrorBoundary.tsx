@@ -9,6 +9,16 @@ interface AppErrorBoundaryState {
   errorMessage: string | null;
 }
 
+function getSafeDiagnostic(message: string | null): string {
+  if (!message) return 'Unexpected runtime error';
+  return message
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi, '[email]')
+    .replace(/\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b/gi, '[id]')
+    .replace(/https?:\\/\\/\\S+/gi, '[url]')
+    .replace(/\\beyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\b/g, '[token]')
+    .slice(0, 180);
+}
+
 export class AppErrorBoundary extends React.Component<
   AppErrorBoundaryProps,
   AppErrorBoundaryState
@@ -29,16 +39,17 @@ export class AppErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: unknown) {
-    // Keep console diagnostic minimal without crashing UI
-    console.warn('Nekbaar ErrorBoundary caught error:', error);
+    console.error('Nekbaar UI render failure:', error);
   }
 
   handleResetAndRetry = () => {
-    this.setState({ hasError: false, errorMessage: null });
+    window.location.reload();
   };
 
   render() {
     if (this.state.hasError) {
+      const diagnostic = getSafeDiagnostic(this.state.errorMessage);
+
       return (
         <div
           dir="rtl"
@@ -50,28 +61,28 @@ export class AppErrorBoundary extends React.Component<
             <div className="w-14 h-14 mx-auto rounded-2xl bg-teal-500/15 text-[#0d9488] flex items-center justify-center text-2xl">
               🛡️
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <h1 className="text-lg font-black">
-                حدث انقطاع مؤقت أثناء تحديث العرض
+                واجه التطبيق مشكلة أثناء عرض الصفحة
               </h1>
               <p className="text-xs font-semibold text-slate-600 dark:text-[#CBD5E1] leading-relaxed">
-                بيانات أسرتك وأطفالك (أحمد، مريم، حمزة، ليلى، ويوسف) محفوظة بأمان. اضغط أدناه لإعادة المحاولة فوراً.
+                لم يتم حذف بيانات الأسرة بسبب ظهور هذه الشاشة. أعد تشغيل التطبيق، وإذا تكررت المشكلة أرسل لنا رمز التشخيص التالي.
               </p>
+              <div
+                dir="ltr"
+                data-testid="app-error-diagnostic"
+                className="rounded-lg bg-slate-100 dark:bg-[#0B141A] px-3 py-2 text-left text-[11px] font-mono text-slate-700 dark:text-slate-300 break-words"
+              >
+                {diagnostic}
+              </div>
             </div>
-            <div className="flex items-center justify-center gap-2.5 pt-1">
+            <div className="flex items-center justify-center pt-1">
               <button
                 type="button"
                 onClick={this.handleResetAndRetry}
-                className="px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer"
+                className="min-h-[48px] px-5 py-2.5 rounded-xl text-xs font-black bg-[#0d9488] hover:bg-[#0f766e] text-white transition cursor-pointer"
               >
-                إعادة المحاولة / Retry
-              </button>
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="px-4 py-2.5 rounded-xl text-xs font-extrabold border border-slate-300 dark:border-[#1E3646] hover:border-[#0d9488] transition cursor-pointer"
-              >
-                تحديث الصفحة
+                إعادة تشغيل التطبيق
               </button>
             </div>
           </div>
