@@ -936,6 +936,11 @@ export interface CommercialCatalogItem {
   sellerName?: string;
   deliveryEstimateAr?: string;
   deliveryEstimateEn?: string;
+  serviceDurationMinutes?: number;
+  bookingRequired?: boolean;
+  fulfillmentMode?: 'shipping' | 'pickup' | 'online' | 'onsite' | 'at_home' | 'digital';
+  providerName?: string;
+  listingValidUntil?: string;
 }
 
 export type CommercialItem = CommercialCatalogItem;
