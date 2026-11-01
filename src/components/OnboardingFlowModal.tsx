@@ -622,6 +622,7 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
     coParentName,
     coParentEmail,
     coParentPhone,
+    familyInvitationAccepted,
     emailVerifiedState,
     phoneVerifiedState,
   ]);
