@@ -140,3 +140,30 @@
 
 /* Workforce hierarchy helper text */
 .admin-form-note{margin:0 0 4px;padding:10px 12px;border:1px solid var(--admin-border);border-radius:11px;background:var(--admin-surface-2);color:var(--admin-muted);font-size:11px;line-height:1.8}
+
+
+/* User and family detail views */
+.admin-text-action{border:0;background:transparent;color:var(--admin-teal);font:800 12px var(--font-ui);cursor:pointer;text-align:start;padding:2px 0}
+.admin-text-action:hover{text-decoration:underline}
+.family-detail-action{display:inline-flex;align-items:center;gap:4px;margin-top:12px}
+.admin-detail-modal{width:min(920px,calc(100vw - 28px));max-height:92vh;overflow:hidden;display:flex;flex-direction:column}
+.admin-detail-body{display:grid;gap:14px;overflow:auto;padding:2px 1px 12px;min-height:0}
+.admin-detail-section{border:1px solid var(--admin-border);border-radius:14px;background:var(--admin-surface-2);padding:14px}
+.admin-detail-section h3{font-size:13px;font-weight:900;margin:0 0 12px}
+.admin-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-detail-grid>div{min-width:0;display:grid;gap:4px}
+.admin-detail-grid small,.admin-detail-list small,.admin-detail-children small{font-size:10px;color:var(--admin-muted);line-height:1.7}
+.admin-detail-grid b{font-size:12px;overflow-wrap:anywhere}
+.admin-detail-list{display:grid;gap:8px}
+.admin-detail-list>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--admin-border)}
+.admin-detail-list>div:last-child{border-bottom:0}
+.admin-detail-list>div>small{flex:1;min-width:0}
+.admin-detail-list>div>span{font-size:10px;color:var(--admin-teal);white-space:nowrap}
+.admin-detail-children{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.admin-detail-children article{display:flex;gap:10px;align-items:flex-start;padding:11px;border-radius:12px;background:var(--admin-surface);border:1px solid var(--admin-border)}
+.admin-detail-children article>span{font-size:24px}
+.admin-detail-children article>div{display:grid;gap:3px;min-width:0}
+.admin-detail-children article b{font-size:12px}
+.admin-detail-chips{display:flex;gap:8px;flex-wrap:wrap}
+.admin-detail-chips span{padding:6px 9px;border-radius:99px;background:var(--admin-surface);border:1px solid var(--admin-border);font-size:10px;font-weight:800}
+@media(max-width:640px){.admin-detail-grid,.admin-detail-children{grid-template-columns:1fr}.admin-detail-list>div{align-items:flex-start;flex-direction:column;gap:3px}.admin-detail-modal{max-height:94vh}.admin-detail-body{padding-bottom:8px}}
