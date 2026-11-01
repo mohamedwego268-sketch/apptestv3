@@ -126,7 +126,7 @@ export default function AdminPortal() {
     if (!supabaseClient) return;
     const { data } = supabaseClient.auth.onAuthStateChange((_event, session) => {
       if (!session) { setAuthorized(false); setSnapshot(null); }
-      else void verify();
+      else window.setTimeout(() => { void verify(); }, 0);
     });
     return () => data.subscription.unsubscribe();
   }, []);
