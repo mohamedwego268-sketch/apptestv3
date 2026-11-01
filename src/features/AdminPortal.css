@@ -187,3 +187,7 @@
 .b2b-store-panel .admin-table{min-width:850px}
 @media(max-width:760px){.b2b-order-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.b2b-store-panel .panel-heading{flex-direction:column}.b2b-store-panel .catalog-heading-actions{width:100%;justify-content:stretch}.b2b-store-panel .catalog-heading-actions .admin-search{flex:1;min-width:0}.b2b-store-panel .catalog-heading-actions .admin-add-btn{white-space:nowrap}}
 @media(max-width:560px){.b2b-modal .admin-staff-form-grid{grid-template-columns:1fr}.b2b-modal .catalog-description{grid-column:auto}.b2b-tabs{display:grid;grid-template-columns:1fr}.b2b-tabs button{justify-content:space-between}}
+
+/* B2B order workflow control */
+.b2b-order-status-select{max-width:145px;min-width:110px;height:31px;border:1px solid var(--admin-border);border-radius:8px;background:var(--admin-surface-2);color:var(--admin-text);padding:0 8px;font:800 9px var(--font-ui);cursor:pointer}
+.b2b-order-status-select:focus{outline:2px solid #0d94884a;border-color:var(--admin-teal)}
