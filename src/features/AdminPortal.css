@@ -207,3 +207,11 @@
 .b2b-stock-history-btn{display:inline-flex;align-items:center;gap:5px}
 .b2b-collection-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .stock-warning{display:block;color:#c66a16;font-size:9px;font-weight:900;margin-top:3px}
+
+/* B2B order composition */
+.b2b-order-lines{grid-column:1/-1;display:grid;gap:10px;padding:12px;border:1px solid var(--admin-border);border-radius:12px;background:var(--admin-surface-2)}
+.b2b-order-lines-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.b2b-order-lines-head b{font-size:12px}
+.b2b-order-line{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:8px}
+.b2b-order-line select,.b2b-order-line input{min-width:0;height:38px;border:1px solid var(--admin-border);border-radius:9px;background:var(--admin-surface);color:var(--admin-text);padding:0 10px;font:600 11px var(--font-ui)}
+@media(max-width:560px){.b2b-order-lines{grid-column:auto}.b2b-order-line{grid-template-columns:minmax(0,1fr) 78px 32px}}
