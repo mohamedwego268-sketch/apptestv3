@@ -1073,19 +1073,26 @@ export class MasterBackendService implements MasterControllerAPI {
         const { data, error } = await supabaseClient
           .from(SUPABASE_TABLES.CATALOG_ITEMS)
           .select('*')
+          .eq('is_active', true)
+          .eq('marketplace_visible', true)
           .limit(50);
 
         if (error || !Array.isArray(data) || data.length === 0) {
           return fallbackSequenced;
         }
 
-        const remoteSequenced: SequencedCatalogItem[] = data.map(
+        const now = Date.now();
+        const visibleData = data.filter((row: Record<string, unknown>) => {
+          const startsAt = typeof row.listing_starts_at === 'string' ? Date.parse(row.listing_starts_at) : Number.NaN;
+          const endsAt = typeof row.listing_ends_at === 'string' ? Date.parse(row.listing_ends_at) : Number.NaN;
+          return (!Number.isFinite(startsAt) || startsAt <= now) && (!Number.isFinite(endsAt) || endsAt > now);
+        });
+        const remoteSequenced: SequencedCatalogItem[] = visibleData.map(
           (row: Record<string, unknown>, idx: number) => {
-            const numericId = typeof row.id === 'number' ? row.id : 2000 + idx + 1;
-            const rawSeq =
-              typeof row.sequence_code === 'string' && row.sequence_code.startsWith('PRD-')
-                ? row.sequence_code
-                : formatProductSequenceCode(numericId);
+            const rowCode = typeof row.code === 'string' && row.code.startsWith('PRD-') ? row.code : '';
+            const codeNumber = rowCode ? Number(rowCode.slice(4)) : Number.NaN;
+            const numericId = Number.isSafeInteger(codeNumber) && codeNumber > 0 ? codeNumber : (typeof row.id === 'number' ? row.id : 2000 + idx + 1);
+            const rawSeq = rowCode || (typeof row.sequence_code === 'string' && row.sequence_code.startsWith('PRD-') ? row.sequence_code : formatProductSequenceCode(numericId));
 
             return {
               id: numericId,
@@ -1094,9 +1101,9 @@ export class MasterBackendService implements MasterControllerAPI {
               name: typeof row.name === 'string' ? row.name : 'منتج عائلي مميز',
               nameEn: typeof row.name_en === 'string' ? row.name_en : 'Featured Family Item',
               kind:
-                row.kind === 'service' || row.kind === 'product' || row.kind === 'offer'
-                  ? row.kind
-                  : 'product',
+                row.item_type === 'service' || row.kind === 'service'
+                  ? 'service'
+                  : row.kind === 'offer' ? 'offer' : 'product',
               category:
                 (typeof row.category === 'string'
                   ? (row.category as CommercialCatalogItem['category'])
@@ -1114,14 +1121,17 @@ export class MasterBackendService implements MasterControllerAPI {
                   ? row.description
                   : 'منتج مختار بعناية لأطفال الأسرة.',
               emoji: typeof row.emoji === 'string' ? row.emoji : '🧸',
+              serviceDurationMinutes: typeof row.service_duration_minutes === 'number' ? row.service_duration_minutes : undefined,
+              bookingRequired: Boolean(row.booking_required),
+              fulfillmentMode: row.fulfillment_mode === 'pickup' || row.fulfillment_mode === 'online' || row.fulfillment_mode === 'onsite' || row.fulfillment_mode === 'at_home' || row.fulfillment_mode === 'digital' ? row.fulfillment_mode : 'shipping',
+              providerName: typeof row.provider_name === 'string' ? row.provider_name : undefined,
+              listingValidUntil: typeof row.listing_ends_at === 'string' ? row.listing_ends_at : undefined,
             };
           }
         );
 
-        const mergedById = new Map<number, SequencedCatalogItem>();
-        fallbackSequenced.forEach((item) => mergedById.set(item.id, item));
-        remoteSequenced.forEach((item) => mergedById.set(item.id, item));
-        return Array.from(mergedById.values());
+        if (remoteSequenced.length > 0) return remoteSequenced;
+        return fallbackSequenced;
       },
       fallbackSequenced,
       3
