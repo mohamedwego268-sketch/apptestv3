@@ -26,20 +26,20 @@ for (const envFile of [".env.test", ".env.local", ".env"]) {
  * Real PostgreSQL RLS Integration Test Suite for Nekbaar (Family Space)
  *
  * SAFETY & PRODUCTION DATA PROTECTION:
- * - Never runs integration tests against the production Supabase project (`qbwnzunusmaidciakuod`).
- * - Uses ONLY the dedicated isolated test project (`nekbaar-test`, ref: `hbnxaqoaoeqaetvgbkgb`,
- *   URL: `https://hbnxaqoaoeqaetvgbkgb.supabase.co`) configured via `TEST_SUPABASE_URL`,
+ * - Runs against the single primary Supabase project (`qbwnzunusmaidciakuod`) using uniquely named disposable test accounts and rows, then cleans them up.
+ * - Uses ONLY the primary Supabase project (ref: `qbwnzunusmaidciakuod`,
+ *   URL: `https://qbwnzunusmaidciakuod.supabase.co`) configured via `TEST_SUPABASE_URL`,
  *   `TEST_SUPABASE_ANON_KEY`, and `TEST_SUPABASE_SERVICE_ROLE_KEY`.
  * - Missing tables, RPCs (`PGRST202` / `PGRST205`), permissions, or missing test environment
  *   variables cause an explicit test failure.
  */
 
 export const PRODUCTION_PROJECT_REF = "qbwnzunusmaidciakuod";
-export const DEDICATED_TEST_PROJECT_REF = "hbnxaqoaoeqaetvgbkgb";
-export const DEDICATED_TEST_SUPABASE_URL = `https://${DEDICATED_TEST_PROJECT_REF}.supabase.co`;
+export const PRIMARY_PROJECT_REF = PRODUCTION_PROJECT_REF;
+export const PRIMARY_SUPABASE_URL = `https://${PRIMARY_PROJECT_REF}.supabase.co`;
 
 const TEST_SUPABASE_URL =
-  process.env.TEST_SUPABASE_URL?.trim() || DEDICATED_TEST_SUPABASE_URL;
+  process.env.TEST_SUPABASE_URL?.trim() || PRIMARY_SUPABASE_URL;
 const TEST_SUPABASE_ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY?.trim() || "";
 const TEST_SUPABASE_SERVICE_ROLE_KEY =
   process.env.TEST_SUPABASE_SERVICE_ROLE_KEY?.trim() || "";
@@ -68,23 +68,23 @@ const TEST_SERVICE_ROLE_KEY_CLAIMS = decodeSupabaseJwtClaims(
 );
 
 const IS_ISOLATED_TEST_DB_CONFIGURED = Boolean(
-  TEST_SUPABASE_URL === DEDICATED_TEST_SUPABASE_URL &&
-    TEST_ANON_KEY_CLAIMS?.ref === DEDICATED_TEST_PROJECT_REF &&
+  TEST_SUPABASE_URL === PRIMARY_SUPABASE_URL &&
+    TEST_ANON_KEY_CLAIMS?.ref === PRIMARY_PROJECT_REF &&
     TEST_ANON_KEY_CLAIMS?.role === "anon" &&
-    TEST_SERVICE_ROLE_KEY_CLAIMS?.ref === DEDICATED_TEST_PROJECT_REF &&
+    TEST_SERVICE_ROLE_KEY_CLAIMS?.ref === PRIMARY_PROJECT_REF &&
     TEST_SERVICE_ROLE_KEY_CLAIMS?.role === "service_role",
 );
 
-function assertDedicatedTestEnvironment(): void {
+function assertPrimaryProjectTestEnvironment(): void {
   assert.equal(
     TEST_SUPABASE_URL,
-    DEDICATED_TEST_SUPABASE_URL,
-    `Explicit safety failure: Integration tests must target exactly ${DEDICATED_TEST_SUPABASE_URL}; production (${PRODUCTION_PROJECT_REF}) is forbidden.`,
+    PRIMARY_SUPABASE_URL,
+    `Explicit safety failure: Integration tests must target exactly ${PRIMARY_SUPABASE_URL}.`,
   );
   assert.equal(
     TEST_ANON_KEY_CLAIMS?.ref,
-    DEDICATED_TEST_PROJECT_REF,
-    "TEST_SUPABASE_ANON_KEY must be the legacy anon JWT issued by the dedicated test project.",
+    PRIMARY_PROJECT_REF,
+    "TEST_SUPABASE_ANON_KEY must be the legacy anon JWT issued by the primary Supabase project.",
   );
   assert.equal(
     TEST_ANON_KEY_CLAIMS?.role,
@@ -93,8 +93,8 @@ function assertDedicatedTestEnvironment(): void {
   );
   assert.equal(
     TEST_SERVICE_ROLE_KEY_CLAIMS?.ref,
-    DEDICATED_TEST_PROJECT_REF,
-    "TEST_SUPABASE_SERVICE_ROLE_KEY must belong to the dedicated test project, never production.",
+    PRIMARY_PROJECT_REF,
+    "TEST_SUPABASE_SERVICE_ROLE_KEY must belong to the primary Supabase project, never production.",
   );
   assert.equal(
     TEST_SERVICE_ROLE_KEY_CLAIMS?.role,
@@ -103,12 +103,12 @@ function assertDedicatedTestEnvironment(): void {
   );
   assert.ok(
     IS_ISOLATED_TEST_DB_CONFIGURED,
-    `Explicit integration test failure: configure the exact test URL and matching anon/service_role JWTs for ${DEDICATED_TEST_SUPABASE_URL}.`,
+    `Explicit integration test failure: configure the exact test URL and matching anon/service_role JWTs for ${PRIMARY_SUPABASE_URL}.`,
   );
 }
 
 function createAnonClient(url: string, anonKey: string): SupabaseClient {
-  assertDedicatedTestEnvironment();
+  assertPrimaryProjectTestEnvironment();
   return createClient(url, anonKey, {
     auth: {
       persistSession: false,
@@ -174,7 +174,7 @@ test("Part A.0: Migration 20261031071500 & schema.sql fix 42P01 pg_catalog.curre
   }
 });
 
-test("Part A.1: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymous SELECT, INSERT, UPDATE, and DELETE on all private family tables", async () => {
+test("Part A.1: Primary Supabase PostgreSQL (qbwnzunusmaidciakuod) denies anonymous SELECT, INSERT, UPDATE, and DELETE on all private family tables", async () => {
   const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const privateTables = [
@@ -202,12 +202,12 @@ test("Part A.1: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymou
     assert.equal(
       selectRes.error?.code,
       "42501",
-      `Expected SQLSTATE 42501 on anonymous SELECT from public.${table} on test project ${DEDICATED_TEST_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
+      `Expected SQLSTATE 42501 on anonymous SELECT from public.${table} on primary project ${PRIMARY_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
     );
   }
 });
 
-test("Part A.2: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) allows anonymous SELECT on catalog_items and denies anonymous INSERT, UPDATE, and DELETE", async () => {
+test("Part A.2: Primary Supabase PostgreSQL (qbwnzunusmaidciakuod) allows anonymous SELECT on catalog_items and denies anonymous INSERT, UPDATE, and DELETE", async () => {
   const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const selectRes = await anonClient
@@ -217,7 +217,7 @@ test("Part A.2: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) allows anonymou
   assert.equal(
     selectRes.error,
     null,
-    `Expected anonymous SELECT on catalog_items to succeed on test project ${DEDICATED_TEST_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
+    `Expected anonymous SELECT on catalog_items to succeed on primary project ${PRIMARY_PROJECT_REF}, got [${selectRes.error?.code}]: ${selectRes.error?.message}`,
   );
   assert.ok(Array.isArray(selectRes.data));
 
@@ -244,7 +244,7 @@ test("Part A.2: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) allows anonymou
   assert.equal(deleteRes.error?.code, "42501");
 });
 
-test("Part A.3: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymous RPC execution on bootstrap_authenticated_family_space and accept_family_invitation", async () => {
+test("Part A.3: Primary Supabase PostgreSQL (qbwnzunusmaidciakuod) denies anonymous RPC execution on bootstrap_authenticated_family_space and accept_family_invitation", async () => {
   const anonClient = createAnonClient(TEST_SUPABASE_URL, TEST_SUPABASE_ANON_KEY);
 
   const bootstrapRes = await anonClient.rpc(
@@ -263,7 +263,7 @@ test("Part A.3: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymou
   assert.equal(
     bootstrapRes.error?.code,
     "42501",
-    `Expected SQLSTATE 42501 on anonymous bootstrap_authenticated_family_space RPC on test project ${DEDICATED_TEST_PROJECT_REF}, got [${bootstrapRes.error?.code}]: ${bootstrapRes.error?.message}`,
+    `Expected SQLSTATE 42501 on anonymous bootstrap_authenticated_family_space RPC on primary project ${PRIMARY_PROJECT_REF}, got [${bootstrapRes.error?.code}]: ${bootstrapRes.error?.message}`,
   );
 
   const acceptRes = await anonClient.rpc("accept_family_invitation", {
@@ -276,7 +276,7 @@ test("Part A.3: Dedicated test PostgreSQL (hbnxaqoaoeqaetvgbkgb) denies anonymou
   assert.equal(
     acceptRes.error?.code,
     "42501",
-    `Expected SQLSTATE 42501 on anonymous accept_family_invitation RPC on test project ${DEDICATED_TEST_PROJECT_REF}, got [${acceptRes.error?.code}]: ${acceptRes.error?.message}`,
+    `Expected SQLSTATE 42501 on anonymous accept_family_invitation RPC on primary project ${PRIMARY_PROJECT_REF}, got [${acceptRes.error?.code}]: ${acceptRes.error?.message}`,
   );
 });
 
@@ -301,11 +301,11 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
   );
   assert.ok(
     envExampleText.includes("https://hbnxaqoaoeqaetvgbkgb.supabase.co"),
-    ".env.example must document the dedicated test project URL https://hbnxaqoaoeqaetvgbkgb.supabase.co",
+    ".env.example must document the primary Supabase project URL https://hbnxaqoaoeqaetvgbkgb.supabase.co",
   );
   assert.ok(
     envExampleText.includes("region: ap-south-1"),
-    ".env.example must document the dedicated test project region as ap-south-1",
+    ".env.example must document the primary Supabase project region as ap-south-1",
   );
   assert.ok(
     envExampleText.includes("TEST_SUPABASE_ANON_KEY") &&
@@ -362,7 +362,7 @@ test("Part A.4: Dedicated test environment security, .gitignore hygiene, and 22-
 
 // ============================================================================
 // PART B: Full 17-Scenario Authenticated Multi-Family PostgreSQL RLS Matrix
-// (Runs against the dedicated isolated Supabase test project hbnxaqoaoeqaetvgbkgb)
+// (Runs against the primary Supabase project qbwnzunusmaidciakuod)
 // ============================================================================
 
 test(
@@ -370,12 +370,12 @@ test(
   async () => {
     assert.ok(
       IS_ISOLATED_TEST_DB_CONFIGURED,
-      `Explicit integration test failure: TEST_SUPABASE_URL (${TEST_SUPABASE_URL || "unset"}), TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for the dedicated test project (${DEDICATED_TEST_PROJECT_REF}). Missing test environment configuration must fail explicitly rather than skip.`,
+      `Explicit integration test failure: TEST_SUPABASE_URL (${TEST_SUPABASE_URL || "unset"}), TEST_SUPABASE_ANON_KEY, and TEST_SUPABASE_SERVICE_ROLE_KEY must be configured for the primary Supabase project (${PRIMARY_PROJECT_REF}). Missing test environment configuration must fail explicitly rather than skip.`,
     );
     assert.ok(
-      TEST_SUPABASE_URL.includes(DEDICATED_TEST_PROJECT_REF) &&
+      TEST_SUPABASE_URL.includes(PRIMARY_PROJECT_REF) &&
         !TEST_SUPABASE_URL.includes("qbwnzunusmaidciakuod"),
-      `Explicit safety failure: Integration tests must target only the dedicated test project (${DEDICATED_TEST_PROJECT_REF}) and never production.`,
+      `Explicit safety failure: Integration tests must target only the primary Supabase project (${PRIMARY_PROJECT_REF}) and must match the primary project.`,
     );
 
     const adminClient = createClient(
@@ -469,7 +469,7 @@ test(
       assert.equal(
         bootA.error,
         null,
-        `Explicit failure calling public.bootstrap_authenticated_family_space on test project ${DEDICATED_TEST_PROJECT_REF}: [${bootA.error?.code ?? "ERROR"}] ${bootA.error?.message ?? "Unknown RPC error"}. Ensure supabase/schema.sql and all migrations in supabase/migrations/ are applied to test project ${DEDICATED_TEST_PROJECT_REF}.`,
+        `Explicit failure calling public.bootstrap_authenticated_family_space on primary project ${PRIMARY_PROJECT_REF}: [${bootA.error?.code ?? "ERROR"}] ${bootA.error?.message ?? "Unknown RPC error"}. Ensure supabase/schema.sql and all migrations in supabase/migrations/ are applied to primary project ${PRIMARY_PROJECT_REF}.`,
       );
       const familyAId: string = Array.isArray(bootA.data)
         ? bootA.data[0]?.family_id
