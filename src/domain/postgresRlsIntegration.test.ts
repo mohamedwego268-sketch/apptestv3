@@ -353,6 +353,8 @@ test(
     const password = `NekbaarTest!${runId}#99`;
 
     const createdAuthUserIds: string[] = [];
+    const createdFamilyIds: string[] = [];
+    const createdStoragePaths: string[] = [];
 
     async function createAuthenticatedParent(email: string, phone?: string) {
       const { data: created, error: createErr } =
@@ -389,13 +391,17 @@ test(
       familyId: string,
       invitedByUserId: string,
       partnerEmail: string,
+      partnerRole: "father" | "mother",
     ) {
       const token = generateSecureFamilyPairingToken();
       const tokenHash = await hashFamilyPairingToken(token);
       const { error } = await client.from("co_parent_pairings").insert({
         family_id: familyId,
         invited_by_user_id: invitedByUserId,
+        partner_name: "Nekbaar Test Invitee",
+        partner_phone: "",
         partner_email: partnerEmail.toLowerCase(),
+        partner_role: partnerRole,
         pairing_method: "email",
         pairing_token_hash: tokenHash,
         status: "pending",
@@ -431,6 +437,11 @@ test(
         familyAId,
         "bootstrap_authenticated_family_space must return a valid family_id for Family A",
       );
+      const parentAProfileId: string = Array.isArray(bootA.data)
+        ? bootA.data[0]?.user_id
+        : bootA.data?.user_id;
+      assert.ok(parentAProfileId, "Family A bootstrap must return the public.users profile user_id");
+      createdFamilyIds.push(familyAId);
 
       const bootB = await parentB.client.rpc("bootstrap_authenticated_family_space", {
         p_family_name: "Family B",
@@ -450,6 +461,25 @@ test(
         familyBId,
         "bootstrap_authenticated_family_space must return a valid family_id for Family B",
       );
+      const parentBProfileId: string = Array.isArray(bootB.data)
+        ? bootB.data[0]?.user_id
+        : bootB.data?.user_id;
+      assert.ok(parentBProfileId, "Family B bootstrap must return the public.users profile user_id");
+      createdFamilyIds.push(familyBId);
+
+      // Every invitee must have a verified profile and an empty placeholder family before accepting.
+      const bootUnlinked = await inviteeUnlinked.client.rpc("bootstrap_authenticated_family_space", {
+        p_family_name: "Unlinked Placeholder",
+        p_country: "EG",
+        p_full_name: "Unlinked Invitee",
+        p_role: "mother",
+      });
+      assert.equal(bootUnlinked.error, null, bootUnlinked.error?.message);
+      const unlinkedFamilyId: string = Array.isArray(bootUnlinked.data)
+        ? bootUnlinked.data[0]?.family_id
+        : bootUnlinked.data?.family_id;
+      assert.ok(unlinkedFamilyId, "Unlinked invitee bootstrap must return a placeholder family_id");
+      createdFamilyIds.push(unlinkedFamilyId);
 
       // 1. Parent A can read own family
       const { data: ownFamilyA, error: ownFamilyAErr } = await parentA.client
@@ -474,7 +504,7 @@ test(
         .insert({
           family_id: familyAId,
           name: "Ziad",
-          birth_date: "2020-04-10",
+          birth: "2020-04-10",
           gender: "boy",
         })
         .select("id, family_id")
@@ -487,7 +517,7 @@ test(
         .insert({
           family_id: familyBId,
           name: "Laila",
-          birth_date: "2021-08-15",
+          birth: "2021-08-15",
           gender: "girl",
         })
         .select("id, family_id")
@@ -508,7 +538,7 @@ test(
         .insert({
           family_id: familyBId,
           name: "Intruder",
-          birth_date: "2022-01-01",
+          birth: "2022-01-01",
           gender: "boy",
         });
       assert.ok(crossChildInsertErr, "Parent A must not insert child into Family B");
@@ -525,7 +555,7 @@ test(
       const { error: hijackFamilyErr } = await parentA.client
         .from("users")
         .update({ family_id: familyBId })
-        .eq("id", parentA.user.id);
+        .eq("id", parentAProfileId);
       assert.ok(
         hijackFamilyErr,
         "Direct UPDATE of users.family_id must be rejected by trigger/RLS",
@@ -533,7 +563,7 @@ test(
 
       // 7. Parent A cannot insert or update a row with another user's auth_user_id
       const { error: impersonateErr } = await parentA.client.from("users").upsert({
-        id: parentB.user.id,
+        id: parentBProfileId,
         auth_user_id: parentB.user.id,
         family_id: familyAId,
         full_name: "Impersonated",
@@ -546,7 +576,7 @@ test(
         .from("users")
         .upsert(
           {
-            id: parentA.user.id,
+            id: parentAProfileId,
             auth_user_id: parentA.user.id,
             family_id: familyAId,
             full_name: "Parent A Updated",
@@ -560,7 +590,7 @@ test(
         .from("users")
         .upsert(
           {
-            id: parentA.user.id,
+            id: parentAProfileId,
             auth_user_id: parentA.user.id,
             family_id: familyBId,
             full_name: "Parent A Hijack",
@@ -587,8 +617,9 @@ test(
       const token1 = await createPairingInvitation(
         parentA.client,
         familyAId,
-        parentA.user.id,
+        parentAProfileId,
         emailInviteUnlinked,
+        "mother",
       );
       const accept1 = await acceptFamilyInvitation(token1, inviteeUnlinked.client);
       assert.equal(accept1.accepted, true, accept1.error || "Expected acceptance");
@@ -603,18 +634,27 @@ test(
         "bootstrap_authenticated_family_space",
         {
           p_family_name: "Solo Placeholder",
-          p_country: "Egypt",
+          p_country: "EG",
           p_full_name: "Solo Invitee",
-          p_role: "mother",
+          p_role: "father",
         },
       );
       assert.equal(bootSolo.error, null, bootSolo.error?.message);
+      const soloFamilyId: string = Array.isArray(bootSolo.data)
+        ? bootSolo.data[0]?.family_id
+        : bootSolo.data?.family_id;
+      const soloProfileId: string = Array.isArray(bootSolo.data)
+        ? bootSolo.data[0]?.user_id
+        : bootSolo.data?.user_id;
+      assert.ok(soloFamilyId && soloProfileId, "Solo invitee bootstrap must return profile and family IDs");
+      createdFamilyIds.push(soloFamilyId);
 
       const tokenSolo = await createPairingInvitation(
         parentB.client,
         familyBId,
-        parentB.user.id,
+        parentBProfileId,
         emailInviteSolo,
+        "father",
       );
       const acceptSolo = await acceptFamilyInvitation(tokenSolo, inviteeSolo.client);
       assert.equal(acceptSolo.accepted, true, acceptSolo.error || "Expected solo transfer");
@@ -624,8 +664,9 @@ test(
       const tokenNonEmpty = await createPairingInvitation(
         parentB.client,
         familyBId,
-        parentB.user.id,
+        parentBProfileId,
         emailA,
+        "father",
       );
       const nonEmptyRes = await acceptFamilyInvitation(tokenNonEmpty, parentA.client);
       assert.equal(nonEmptyRes.accepted, false);
@@ -633,6 +674,7 @@ test(
 
       // 16 & 17. Private storage is isolated between families; cross-family signed URL fails
       const objectPath = `${familyAId}/albums/${childA!.id}/first-step.jpg`;
+      createdStoragePaths.push(objectPath);
       const pathValidation = validateFamilyStorageObjectPath(objectPath, familyAId);
       assert.equal(pathValidation.valid, true);
 
@@ -673,9 +715,43 @@ test(
       );
       assert.equal(deleted.deleted, true);
     } finally {
-      for (const uid of createdAuthUserIds) {
-        await adminClient.auth.admin.deleteUser(uid);
+      const cleanupErrors: string[] = [];
+
+      if (createdStoragePaths.length > 0) {
+        const { error } = await adminClient.storage.from("family-media").remove(createdStoragePaths);
+        if (error) cleanupErrors.push(`Storage cleanup failed: ${error.message}`);
       }
+
+      if (createdFamilyIds.length > 0) {
+        const { error } = await adminClient
+          .from("co_parent_pairings")
+          .delete()
+          .in("family_id", [...new Set(createdFamilyIds)]);
+        if (error) cleanupErrors.push(`Invitation cleanup failed: ${error.message}`);
+      }
+
+      if (createdAuthUserIds.length > 0) {
+        const { error } = await adminClient
+          .from("users")
+          .delete()
+          .in("auth_user_id", createdAuthUserIds);
+        if (error) cleanupErrors.push(`Profile cleanup failed: ${error.message}`);
+      }
+
+      if (createdFamilyIds.length > 0) {
+        const { error } = await adminClient
+          .from("families")
+          .delete()
+          .in("id", [...new Set(createdFamilyIds)]);
+        if (error) cleanupErrors.push(`Family data cleanup failed: ${error.message}`);
+      }
+
+      for (const uid of createdAuthUserIds) {
+        const { error } = await adminClient.auth.admin.deleteUser(uid);
+        if (error) cleanupErrors.push(`Auth user cleanup failed for ${uid}: ${error.message}`);
+      }
+
+      assert.equal(cleanupErrors.length, 0, cleanupErrors.join("; "));
     }
   },
 );
