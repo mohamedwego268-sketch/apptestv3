@@ -185,6 +185,12 @@ interface FamilyPermissionsSectionProps {
     patch: Partial<ParentAccountProfile>
   ) => void;
   onCreateInvitation: (invitation: Omit<FamilyInvitation, 'id' | 'createdAt'>) => void;
+  onCreateCoParentInvitation?: (payload: {
+    partnerRole: 'father' | 'mother';
+    partnerName: string;
+    partnerPhone: string;
+    partnerEmail: string;
+  }) => Promise<{ success: boolean; error?: string | null }>;
   onUpdateInvitationStatus: (invitationId: number, status: InvitationStatus) => void;
   onInstantJoinFamilyMember?: (member: Omit<FamilyMember, 'id'>) => void;
   onShowToast?: (msg: string) => void;
@@ -256,6 +262,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
   onToggleDisputeFreeze,
   onUpdateParentAccount,
   onCreateInvitation,
+  onCreateCoParentInvitation,
   onUpdateInvitationStatus,
   onInstantJoinFamilyMember,
   onShowToast,
@@ -479,7 +486,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     );
   };
 
-  const handleSendInvitation = (e: React.FormEvent) => {
+  const handleSendInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!invName.trim()) {
       setInvFeedback({
@@ -488,11 +495,35 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
       });
       return;
     }
-    const phoneCheck = validatePhoneForCountry(invPhone, invCountry);
-    if (!phoneCheck.valid) {
+
+    const preset = SIX_FAMILY_ROLES.find((r) => r.id === invRoleCat) || SIX_FAMILY_ROLES[3];
+    const isCoParent = invRoleCat === 'father' || invRoleCat === 'mother';
+    const cleanInvEmail = sanitizeUserText(invEmail, 120).toLowerCase();
+    const cleanInvName = sanitizeUserText(invName, 80);
+    const hasEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanInvEmail);
+    const hasPhone = Boolean(invPhone.trim());
+    const phoneCheck = hasPhone ? validatePhoneForCountry(invPhone, invCountry) : null;
+
+    if (isCoParent && !hasEmail) {
       setInvFeedback({
         type: 'err',
-        text: isEn ? phoneCheck.errorEn || 'Invalid phone' : phoneCheck.errorAr || 'رقم الهاتف غير صالح',
+        text: isEn
+          ? 'A valid email is required to link the mother/father account automatically.'
+          : 'أدخل بريدًا إلكترونيًا صحيحًا للأم أو الأب حتى يتم ربط الحساب تلقائيًا.',
+      });
+      return;
+    }
+    if (!isCoParent && !hasPhone) {
+      setInvFeedback({
+        type: 'err',
+        text: isEn ? 'Enter a phone number for this relative.' : 'أدخل رقم جوال فرد العائلة.',
+      });
+      return;
+    }
+    if (hasPhone && !phoneCheck?.valid) {
+      setInvFeedback({
+        type: 'err',
+        text: isEn ? phoneCheck?.errorEn || 'Invalid phone' : phoneCheck?.errorAr || 'رقم الهاتف غير صالح',
       });
       return;
     }
@@ -503,11 +534,31 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
           ? 'Select at least one child profile.'
           : 'حدد طفلاً واحدًا على الأقل لربط الصلاحية به.',
       });
+      return;
     }
 
-    const preset = SIX_FAMILY_ROLES.find((r) => r.id === invRoleCat) || SIX_FAMILY_ROLES[3];
-    const cleanInvName = sanitizeUserText(invName, 80);
-    const cleanInvEmail = sanitizeUserText(invEmail, 120);
+    if (isCoParent) {
+      if (!onCreateCoParentInvitation) {
+        setInvFeedback({
+          type: 'err',
+          text: isEn ? 'Secure family invitations are unavailable right now.' : 'خدمة دعوات ربط حساب الوالدين غير متاحة حاليًا.',
+        });
+        return;
+      }
+      const cloudResult = await onCreateCoParentInvitation({
+        partnerRole: invRoleCat,
+        partnerName: cleanInvName,
+        partnerPhone: phoneCheck?.valid ? phoneCheck.normalized : '',
+        partnerEmail: cleanInvEmail,
+      });
+      if (!cloudResult.success) {
+        setInvFeedback({
+          type: 'err',
+          text: cloudResult.error || (isEn ? 'Could not create the secure invitation.' : 'تعذر إنشاء دعوة الربط الآمنة.'),
+        });
+        return;
+      }
+    }
 
     onCreateInvitation({
       recipientName: cleanInvName,
@@ -515,9 +566,9 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
       roleCategory: preset.category,
       side: preset.sideAr,
       phoneCountry: invCountry,
-      phoneNumber: phoneCheck.normalized,
-      email: cleanInvEmail || undefined,
-      assignedKidIds: invKidIds.length ? invKidIds : kids.map((k) => k.id),
+      phoneNumber: phoneCheck?.valid ? phoneCheck.normalized : '',
+      email: hasEmail ? cleanInvEmail : undefined,
+      assignedKidIds: invKidIds,
       permissions: {
         ...getDefaultPermissions(invRoleCat === 'father' || invRoleCat === 'mother'),
         ...preset.defaultPerms,
@@ -527,7 +578,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
         viewEducational: true,
       },
       status: 'pending',
-      expiresAt: invExpires || '2026-12-31',
+      expiresAt: invExpires,
       invitedByParent: editingParent,
     });
 
@@ -536,9 +587,13 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
     setInvEmail('');
     setInvFeedback({
       type: 'ok',
-      text: isEn
-        ? `✅ Invitation created for ${preset.labelEn}!`
-        : `✅ تم إرسال الدعوة بصفة (${preset.labelAr}) وتخصيص الصلاحيات بنجاح!`,
+      text: isCoParent
+        ? isEn
+          ? `Secure invitation created for ${cleanInvEmail}. The other parent must sign up and verify this exact email to join your family space.`
+          : `تم إنشاء دعوة ربط آمنة للبريد ${cleanInvEmail}. يجب على ولي الأمر التسجيل وتأكيد نفس البريد للانضمام إلى مساحة الأسرة.`
+        : isEn
+          ? `Invitation created for ${preset.labelEn}.`
+          : `تم إنشاء الدعوة بصفة (${preset.labelAr}) بنجاح.`,
     });
   };
 
@@ -1047,7 +1102,7 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
           className="rounded-[20px] border border-amber-200/80 bg-amber-50/60 p-4 space-y-2.5 shadow-2xs"
         >
           <h3 className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
-            {isEn ? '2. Invite Relative by Phone' : '٢. دعوة فرد عائلة عبر الجوال'}
+            {isEn ? '2. Invite a Family Member' : '٢. دعوة فرد من العائلة'}
           </h3>
 
           <div>
@@ -1125,6 +1180,21 @@ export const FamilyPermissionsSection: React.FC<FamilyPermissionsSectionProps> =
                 className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-1.5 text-xs font-bold tabular-nums"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-extrabold text-[var(--color-text)] mb-1">
+              {isEn ? 'Email Address (required for mother/father)' : 'البريد الإلكتروني (مطلوب لدعوة الأم أو الأب)'}
+            </label>
+            <input
+              type="email"
+              dir="ltr"
+              value={invEmail}
+              onChange={(e) => setInvEmail(e.target.value)}
+              placeholder="name@example.com"
+              className="w-full rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-bold"
+              autoComplete="email"
+            />
           </div>
 
           <div>
