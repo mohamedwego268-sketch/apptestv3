@@ -26,7 +26,7 @@ type Snapshot = {
   recent_families: { id: string; name: string; country: string; city: string; created_at: string }[];
   record_mix: { type: string; count: number }[];
   recent_admin_events: { id: number; action: string; target_type: string | null; target_id: string | null; created_at: string }[];
-  staff_directory: { id: string; employee_code: string; name: string; department: string; title: string; status: string; cohort: string }[];
+  staff_directory: { id: string; employee_code: string; name: string; email: string; phone: string | null; department: string; title: string; status: string; cohort: string }[];
 };
 
 type PageKey = 'overview' | 'analytics' | 'users' | 'families' | 'team' | 'content' | 'security' | 'settings';
@@ -80,6 +80,10 @@ export default function AdminPortal() {
   const [mobileNav, setMobileNav] = useState(false);
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
+  const [staffModal, setStaffModal] = useState(false);
+  const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
+  const [savingStaff, setSavingStaff] = useState(false);
+  const [staffForm, setStaffForm] = useState({ fullName:'', email:'', phone:'', department:'operations', jobTitle:'', cohort:'first_50', status:'planned' });
   const en = lang === 'en';
   const t = (ar: string, english: string) => en ? english : ar;
 
@@ -171,6 +175,40 @@ export default function AdminPortal() {
     setToast(t('تم تجهيز تقرير المؤشرات.','KPI report exported.'));
   };
 
+  const openStaffModal = (staff?: Snapshot['staff_directory'][number]) => {
+    setEditingStaffId(staff?.id || null);
+    setStaffForm(staff ? {
+      fullName: staff.name || '', email: staff.email || '', phone: staff.phone || '',
+      department: staff.department || 'operations', jobTitle: staff.title || '',
+      cohort: staff.cohort || 'first_50', status: staff.status || 'planned'
+    } : { fullName:'', email:'', phone:'', department:'operations', jobTitle:'', cohort:'first_50', status:'planned' });
+    setStaffModal(true);
+  };
+  const saveStaff = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!supabaseClient || savingStaff) return;
+    setSavingStaff(true);
+    const { data, error } = await supabaseClient.rpc('admin_save_staff', {
+      p_id: editingStaffId,
+      p_full_name: staffForm.fullName,
+      p_email: staffForm.email,
+      p_department: staffForm.department,
+      p_job_title: staffForm.jobTitle,
+      p_phone: staffForm.phone || null,
+      p_cohort: staffForm.cohort,
+      p_employment_status: staffForm.status,
+      p_employee_code: null
+    });
+    setSavingStaff(false);
+    if (error) {
+      setToast(t('تعذر حفظ الموظف: ','Could not save employee: ') + error.message);
+      return;
+    }
+    setStaffModal(false);
+    setToast(editingStaffId ? t('تم تحديث بيانات الموظف.','Employee updated.') : t('تمت إضافة الموظف إلى الهيكل.','Employee added to workforce.'));
+    await loadSnapshot(period, true);
+  };
+
   const heading = NAV.find(item => item.id === page);
   const subtitle = page === 'overview'
     ? t('صورة موحدة لصحة المنصة ونموها وتشغيلها.','A unified view of platform health, growth and operations.')
@@ -254,7 +292,7 @@ export default function AdminPortal() {
 
           {page==='families' && <section className="admin-panel"><div className="panel-heading"><div><h3>{t('دليل الأسر','Family directory')}</h3><p>{t('المساحات الأسرية المسجلة في المنصة','Family workspaces registered on the platform')}</p></div><label className="admin-search"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t('ابحث باسم الأسرة…','Search families…')}/></label></div><div className="admin-family-grid">{filteredFamilies.map(f=><article className="family-admin-card" key={f.id}><span className="family-symbol"><Building2 size={20}/></span><h4>{f.name||t('أسرة جديدة','New family')}</h4><p><Globe2 size={13}/>{f.city} · {f.country}</p><small>{t('تاريخ الإنشاء','Created')}: {dateLabel(f.created_at,en)}</small></article>)}{!filteredFamilies.length&&<div className="admin-empty-cell">{t('لا توجد أسر مطابقة','No matching families')}</div>}</div><div className="admin-list-foot">{t('إجمالي الأسر','Total families')}: <b>{number(k?.families_total||0)}</b> · {t('المعروض في هذه النسخة: آخر 8 سجلات','Showing latest 8 records in this release')}</div></section>}
 
-          {page==='team' && <><section className="admin-kpi-grid three"><MetricCard label={t('موظفون نشطون','Active employees')} value={k?.staff_total||0} detail={t('على قوة العمل حالياً','Currently on workforce')} icon={Users} tone="teal"/><MetricCard label={t('قيد التجهيز','Planned / invited')} value={k?.staff_planned||0} detail={t('سجلات فريق قيد الإعداد','Team records being prepared')} icon={Clock3} tone="blue"/><MetricCard label={t('سعة المرحلة الأولى','Phase 1 capacity')} value={50} detail={t('هدف أول 6 شهور','First 6-month target')} icon={TrendingUp} tone="coral"/></section><section className="admin-panel"><div className="panel-heading"><div><h3>{t('هيكل فريق العمل','Workforce directory')}</h3><p>{t('الهيكل مهيأ للتوسع حسب الإدارات والأدوار','Structured to scale across departments and roles')}</p></div></div>{snapshot?.staff_directory?.length?<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('الموظف','Employee')}</th><th>{t('الإدارة','Department')}</th><th>{t('المسمى الوظيفي','Job title')}</th><th>{t('الحالة','Status')}</th></tr></thead><tbody>{snapshot.staff_directory.map(s=><tr key={s.id}><td><b>{s.name}</b><small className="table-sub">{s.employee_code}</small></td><td>{deptLabel(s.department,en)}</td><td>{s.title||'—'}</td><td><span className={'status-pill '+s.status}>{s.status}</span></td></tr>)}</tbody></table></div>:<div className="team-empty"><div className="team-empty-icon"><UserRoundCog size={28}/></div><h3>{t('مساحة فريقك جاهزة للنمو','Your workforce space is ready to grow')}</h3><p>{t('لم تتم إضافة سجلات موظفين بعد. تم تجهيز قاعدة الفريق لاستيعاب الإدارات، المديرين، حالات التوظيف، وربط الحسابات عند تفعيل الدعوات البريدية.','No employee records yet. The workforce foundation is ready for departments, managers, employment status and account linking when email invitations are enabled.')}</p><div className="team-targets"><span><b>50</b>{t('موظفاً · أول 6 شهور','employees · first 6 months')}</span><span><b>150</b>{t('موظفاً · خلال 12 شهراً','employees · by month 12')}</span></div></div>}</section></>}
+          {page==='team' && <><section className="admin-kpi-grid three"><MetricCard label={t('موظفون نشطون','Active employees')} value={k?.staff_total||0} detail={t('على قوة العمل حالياً','Currently on workforce')} icon={Users} tone="teal"/><MetricCard label={t('قيد التجهيز','Planned / invited')} value={k?.staff_planned||0} detail={t('سجلات فريق قيد الإعداد','Team records being prepared')} icon={Clock3} tone="blue"/><MetricCard label={t('سعة المرحلة الأولى','Phase 1 capacity')} value={50} detail={t('هدف أول 6 شهور','First 6-month target')} icon={TrendingUp} tone="coral"/></section><section className="admin-panel"><div className="panel-heading"><div><h3>{t('هيكل فريق العمل','Workforce directory')}</h3><p>{t('إدارة الموظفين حسب الإدارات، حالات التوظيف، وخطة التوسع','Manage employees by department, employment status and scale plan')}</p></div><button className="admin-add-btn" onClick={()=>openStaffModal()}><Users size={15}/>{t('إضافة موظف','Add employee')}</button></div>{snapshot?.staff_directory?.length?<div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('الموظف','Employee')}</th><th>{t('البريد','Email')}</th><th>{t('الإدارة','Department')}</th><th>{t('المسمى الوظيفي','Job title')}</th><th>{t('الحالة','Status')}</th><th>{t('المرحلة','Cohort')}</th><th>{t('إجراء','Action')}</th></tr></thead><tbody>{snapshot.staff_directory.map(s=><tr key={s.id}><td><b>{s.name}</b><small className="table-sub">{s.employee_code}</small></td><td>{s.email}</td><td>{deptLabel(s.department,en)}</td><td>{s.title||'—'}</td><td><span className={'status-pill '+s.status}>{s.status}</span></td><td>{s.cohort==='first_50'?t('أول 50','First 50'):t('حتى 150','Next 150')}</td><td><button className="admin-edit-btn" onClick={()=>openStaffModal(s)}>{t('تعديل','Edit')}</button></td></tr>)}</tbody></table></div>:<div className="team-empty"><div className="team-empty-icon"><UserRoundCog size={28}/></div><h3>{t('مساحة فريقك جاهزة للنمو','Your workforce space is ready to grow')}</h3><p>{t('ابدأ بإضافة أعضاء الفريق وتحديد الإدارة والمسمى الوظيفي وحالة التوظيف. يمكن ربط حساب الدخول لاحقاً عند تفعيل دعوات البريد.','Add team members and assign departments, job titles and employment status. Login accounts can be linked later when email invitations are enabled.')}</p><button className="admin-add-btn centered" onClick={()=>openStaffModal()}><Users size={15}/>{t('إضافة أول موظف','Add first employee')}</button><div className="team-targets"><span><b>50</b>{t('موظفاً · أول 6 شهور','employees · first 6 months')}</span><span><b>150</b>{t('موظفاً · خلال 12 شهراً','employees · by month 12')}</span></div></div>}</section></>}
 
           {page==='content' && <section className="admin-panel"><div className="panel-heading"><div><h3>{t('المحتوى والخدمات','Content & services')}</h3><p>{t('حالة المحتوى التجاري والتفاعلي المسجل في قاعدة البيانات','Status of commercial and interactive content in database')}</p></div></div><div className="admin-kpi-grid embedded"><MetricCard label={t('عناصر كتالوج نشطة','Active catalog items')} value={k?.catalog_active||0} detail={t('منتجات وخدمات منشورة','Published products and services')} icon={Package} tone="teal"/><MetricCard label={t('سجلات حياة الأطفال','Child life records')} value={k?.child_records_total||0} detail={t('محتوى أنشأته الأسر','Family-created records')} icon={ClipboardList} tone="blue"/></div><div className="admin-info-note"><CircleHelp size={18}/><span>{t('إدارة المحتوى التفصيلية (إنشاء، مراجعة، نشر، وجدولة) ستكون ضمن المرحلة التالية بعد إغلاق لوحة المؤشرات الأساسية. لا توجد أزرار شكلية أو عمليات غير موصولة حالياً.','Full content workflows (create, review, publish and schedule) are the next delivery phase after the core control dashboard. No decorative or disconnected controls are shown.')}</span></div></section>}
 
@@ -265,6 +303,7 @@ export default function AdminPortal() {
           <footer className="admin-footer"><span>© 2026 NEKBAAR · {t('مساحة تجمعنا.. وبحبهم نكبر','A space that brings us together, where love helps us grow')}</span><span><span className="admin-online-dot"/> {t('بيانات الإنتاج','Production data')}</span></footer>
         </main>
       </div>
+      {staffModal&&<div className="admin-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setStaffModal(false);}}><form className="admin-staff-modal" onSubmit={saveStaff}><div className="admin-modal-head"><div><span className="admin-modal-kicker">{t('إدارة الفريق','WORKFORCE')}</span><h2>{editingStaffId?t('تعديل بيانات الموظف','Edit employee'):t('إضافة موظف جديد','Add a new employee')}</h2><p>{t('سجّل بيانات الموظف الأساسية وحدد مكانه في الهيكل.','Enter employee details and assign their place in the organization.')}</p></div><button type="button" className="admin-icon-btn" onClick={()=>setStaffModal(false)}><X size={17}/></button></div><div className="admin-staff-form-grid"><label>{t('الاسم بالكامل','Full name')}<input required value={staffForm.fullName} onChange={e=>setStaffForm(v=>({...v,fullName:e.target.value}))}/></label><label>{t('البريد الإلكتروني','Email')}<input required type="email" value={staffForm.email} onChange={e=>setStaffForm(v=>({...v,email:e.target.value}))}/></label><label>{t('رقم الهاتف','Phone')}<input value={staffForm.phone} onChange={e=>setStaffForm(v=>({...v,phone:e.target.value}))}/></label><label>{t('الإدارة','Department')}<select value={staffForm.department} onChange={e=>setStaffForm(v=>({...v,department:e.target.value}))}>{['executive','operations','sales','marketing','customer_success','content','product','engineering','finance','hr'].map(d=><option key={d} value={d}>{deptLabel(d,en)}</option>)}</select></label><label>{t('المسمى الوظيفي','Job title')}<input value={staffForm.jobTitle} onChange={e=>setStaffForm(v=>({...v,jobTitle:e.target.value}))}/></label><label>{t('خطة التوسع','Growth cohort')}<select value={staffForm.cohort} onChange={e=>setStaffForm(v=>({...v,cohort:e.target.value}))}><option value="first_50">{t('أول 50 موظف','First 50 employees')}</option><option value="next_150">{t('التوسع حتى 150','Scale to 150')}</option></select></label><label>{t('حالة التوظيف','Employment status')}<select value={staffForm.status} onChange={e=>setStaffForm(v=>({...v,status:e.target.value}))}><option value="planned">{t('مخطط','Planned')}</option><option value="invited">{t('تمت دعوته','Invited')}</option><option value="active">{t('نشط','Active')}</option><option value="on_leave">{t('إجازة','On leave')}</option><option value="inactive">{t('غير نشط','Inactive')}</option><option value="terminated">{t('انتهى التعاقد','Terminated')}</option></select></label></div><div className="admin-modal-actions"><button type="button" className="admin-cancel-btn" onClick={()=>setStaffModal(false)}>{t('إلغاء','Cancel')}</button><button className="admin-primary-btn" type="submit" disabled={savingStaff}>{savingStaff?t('جارٍ الحفظ…','Saving…'):t('حفظ بيانات الموظف','Save employee')}</button></div></form></div>}
       {toast&&<div className="admin-toast"><CheckCircle2 size={17}/>{toast}</div>}
     </div>
   );
