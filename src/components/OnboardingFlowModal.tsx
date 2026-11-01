@@ -539,8 +539,16 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   const [coParentName, setCoParentName] = useState<string>(
     cachedDraft?.coParentName || (parentRole === 'dad' ? 'مريم' : 'أحمد')
   );
-  const [coParentEmail, setCoParentEmail] = useState<string>(cachedDraft?.coParentEmail || '');
-  const [coParentPhone, setCoParentPhone] = useState<string>(cachedDraft?.coParentPhone || '');
+  const [coParentEmail, setCoParentEmail] = useState<string>(
+    cachedDraft?.coParentEmail && !cachedDraft.coParentEmail.endsWith('@nekbaar.app')
+      ? cachedDraft.coParentEmail
+      : ''
+  );
+  const [coParentPhone, setCoParentPhone] = useState<string>(
+    cachedDraft?.coParentPhone && cachedDraft.coParentPhone !== '559876543'
+      ? cachedDraft.coParentPhone
+      : ''
+  );
   const [familyInvitationAccepted, setFamilyInvitationAccepted] = useState<boolean>(false);
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
