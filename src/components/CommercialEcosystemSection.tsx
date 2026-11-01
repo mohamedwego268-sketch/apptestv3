@@ -772,7 +772,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     })
     .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
-  const checkoutTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, paymentMethod);
+  const checkoutTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, paymentMethod, activeCatalogSource);
   const cartTotalCount = cart.reduce((acc, c) => acc + c.quantity, 0);
   const cartTotalAmount = checkoutTotals.subtotal;
   const deliveryFee = cart.length > 0 ? checkoutTotals.deliveryFee : 0;
