@@ -1793,6 +1793,7 @@ export interface OnboardingAuthStepResult {
   family?: Family | null;
   sharedChildren: Child[];
   syncedToDb: boolean;
+  coParentInvitationAccepted?: boolean;
   error: string | null;
 }
 
@@ -3468,6 +3469,78 @@ export async function acceptFamilyInvitation(
       accepted: false,
       familyId: null,
       error: err instanceof Error ? err.message : 'تعذر قبول دعوة الأسرة.',
+    };
+  }
+}
+
+/**
+ * Accepts a single pending co-parent invitation addressed to the current user's
+ * exact confirmed email. The database reuses the hardened invitation acceptance
+ * function, so role, expiry, family and existing-data checks remain authoritative.
+ */
+export async function acceptPendingFamilyInvitationForCurrentUser(
+  customClient?: SupabaseClient | null
+): Promise<{
+  accepted: boolean;
+  familyId: string | null;
+  restoredAccount: RestoredAuthenticatedAccount | null;
+  error: string | null;
+}> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  if (!activeClient) {
+    return { accepted: false, familyId: null, restoredAccount: null, error: 'Supabase client is not initialized.' };
+  }
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (!verifiedCtx.authenticated || !verifiedCtx.userId) {
+      return {
+        accepted: false,
+        familyId: null,
+        restoredAccount: null,
+        error: verifiedCtx.error || 'يجب تسجيل الدخول وتأكيد البريد الإلكتروني لقبول دعوة الأسرة.',
+      };
+    }
+
+    const { data, error } = await withSupabaseTimeout(
+      activeClient.rpc('accept_pending_family_invitation_for_current_user'),
+      6500
+    );
+    if (error) throw new Error(error.message);
+
+    const response = data && typeof data === 'object'
+      ? data as Record<string, unknown>
+      : {};
+    if (response.accepted !== true) {
+      return { accepted: false, familyId: null, restoredAccount: null, error: null };
+    }
+
+    const familyId = typeof response.family_id === 'string' && isValidUuid(response.family_id)
+      ? response.family_id
+      : null;
+    if (!familyId) {
+      throw new Error('تم قبول الدعوة لكن لم يتم إرجاع معرّف الأسرة الصحيح.');
+    }
+
+    const restoredAccount = await restoreAuthenticatedAccountFromSupabase(activeClient);
+    if (
+      !restoredAccount.restored ||
+      !restoredAccount.verifiedFamilyId ||
+      restoredAccount.verifiedFamilyId !== familyId
+    ) {
+      throw new Error(
+        restoredAccount.error ||
+        'تم قبول الدعوة، لكن تعذرت استعادة بيانات مساحة الأسرة. أعد تسجيل الدخول للمحاولة مرة أخرى.'
+      );
+    }
+
+    return { accepted: true, familyId, restoredAccount, error: null };
+  } catch (err) {
+    return {
+      accepted: false,
+      familyId: null,
+      restoredAccount: null,
+      error: err instanceof Error ? err.message : 'تعذر قبول دعوة الأسرة حالياً.',
     };
   }
 }
