@@ -773,7 +773,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   }, [state.verifiedFamilyId, state.kids]);
 
   const saveDashboardChildLog = async (
-    recordType: 'sleep_log' | 'nutrition' | 'emotional_social' | 'other',
+    recordType: 'sleep_log' | 'nutrition' | 'sports' | 'emotional_social' | 'other',
     title: string,
     details: Record<string, unknown> = {}
   ): Promise<boolean> => {
