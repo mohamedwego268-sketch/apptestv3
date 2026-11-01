@@ -288,6 +288,14 @@ export default function App() {
   const [settingsCity, setSettingsCity] = useState<string>(() =>
     resolveCityRegionId(state.country, state.city)
   );
+
+  // Keep account settings inputs synchronized after Auth/profile hydration and onboarding.
+  useEffect(() => {
+    setSettingsParentName(state.parentName || '');
+    setSettingsRole(state.role);
+    setSettingsCountry(state.country);
+    setSettingsCity(resolveCityRegionId(state.country, state.city));
+  }, [state.parentName, state.role, state.country, state.city]);
   const [settingsLanguage, setSettingsLanguage] = useState<LanguageCode>(state.language);
   const [settingsCurrency, setSettingsCurrency] = useState<CurrencyCode>(state.currency);
   const [settingsCalendarMode, setSettingsCalendarMode] = useState<CalendarDisplayMode>(
