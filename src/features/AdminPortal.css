@@ -215,3 +215,28 @@
 .b2b-order-line{display:grid;grid-template-columns:minmax(0,1fr) 110px 34px;gap:8px}
 .b2b-order-line select,.b2b-order-line input{min-width:0;height:38px;border:1px solid var(--admin-border);border-radius:9px;background:var(--admin-surface);color:var(--admin-text);padding:0 10px;font:600 11px var(--font-ui)}
 @media(max-width:560px){.b2b-order-lines{grid-column:auto}.b2b-order-line{grid-template-columns:minmax(0,1fr) 78px 32px}}
+
+
+/* Role-based access control workspace */
+.rbac-layout{display:grid;gap:16px}
+.rbac-role-picker{display:grid;grid-template-columns:minmax(220px,320px) 1fr;gap:14px;align-items:end;margin-bottom:16px}
+.rbac-role-picker label,.rbac-override-form label{display:grid;gap:6px;font-size:11px;font-weight:800;color:var(--admin-muted)}
+.rbac-role-picker select,.rbac-role-select,.rbac-override-form select{height:38px;border:1px solid var(--admin-border);border-radius:10px;background:var(--admin-surface-2);color:var(--admin-text);padding:0 10px;font:700 11px var(--font-ui);min-width:0}
+.rbac-role-picker p{font-size:11px;color:var(--admin-muted);margin:0 0 7px;line-height:1.7}
+.rbac-permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.rbac-permission-item{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--admin-border);border-radius:11px;padding:10px;background:var(--admin-surface-2);min-width:0;cursor:pointer}
+.rbac-permission-item input{margin-top:3px;accent-color:var(--admin-teal);width:15px;height:15px;flex:0 0 auto}
+.rbac-permission-item span{display:grid;gap:3px;min-width:0;flex:1}
+.rbac-permission-item b{font-size:10px;overflow-wrap:anywhere}
+.rbac-permission-item small{font-size:9px;color:var(--admin-muted);line-height:1.6}
+.rbac-permission-item caption{font-size:8px;color:var(--admin-muted);background:var(--admin-surface);border-radius:6px;padding:3px 5px;align-self:flex-start}
+.rbac-selected-count{font-size:11px;color:var(--admin-muted);font-weight:800}
+.rbac-role-select{min-width:150px;height:32px}
+.rbac-override-form{display:grid;grid-template-columns:1.1fr 1.2fr .8fr auto;gap:10px;align-items:end}
+.rbac-override-form .admin-primary-btn{height:38px;white-space:nowrap}
+.rbac-override-list{display:grid;gap:7px;margin-top:16px}
+.rbac-override-list>div{display:flex;align-items:center;gap:12px;padding:9px 11px;border:1px solid var(--admin-border);border-radius:10px}
+.rbac-override-list>div b{font-size:10px}
+.rbac-override-list>div span{font-size:10px;color:var(--admin-muted);flex:1}
+.rbac-override-list badge{font-size:9px}
+@media(max-width:760px){.rbac-role-picker,.rbac-permission-grid,.rbac-override-form{grid-template-columns:1fr}.rbac-override-list>div{flex-wrap:wrap}}
