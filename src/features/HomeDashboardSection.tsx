@@ -1287,7 +1287,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           <div className="min-w-0 flex-1">
             <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
             <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
-            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Videos are uploaded, reviewed and played inside Nekbaar. No external video links.' : 'كل فيديوهات نكبر هتترفع على المنصة وتُراجع قبل النشر، وتتفرجوا عليها من مشغّل داخلي من غير روابط خارجية.'}</p>
+            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
