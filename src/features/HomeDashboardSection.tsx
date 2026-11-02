@@ -5,7 +5,6 @@ import {
   CommercialItem,
   FamilySpaceState,
   LanguageCode,
-  VoiceVaultMoment,
   calculateChildAge,
   getDefaultCityForCountry,
   locText,
@@ -16,7 +15,6 @@ import {
   MasterPatternCard,
   SoftFilledIcon,
 } from '../components/DesignSystem';
-import { ThreeDIconId } from '../components/ThreeDVisuals';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { useMaster } from '../services/MasterAppController';
 import { ParentingSupportCenter } from '../components/ParentingSupportCenter';
@@ -32,13 +30,8 @@ export interface HomeDashboardSectionProps {
   parentProfileSpec: HeaderBarProfileSpec;
   cartItemCount: number;
   completedTasksCount: number;
-  nearestEvent?: CalendarEvent | null;
   todayFormattedCombined: string;
-  userCoords?: { lat: number; lng: number } | null;
-  geoStatus: 'idle' | 'loading' | 'success' | 'error' | 'active' | 'locating';
   navigateTo: (pageId: PageId) => void;
-  onSelectPreciseCity: (val: string) => void;
-  onUseCurrentLocation: () => void;
   onAddToCart: (item: CommercialItem, variant?: string) => void;
   onInspectCommercialItem: (item: CommercialItem) => void;
   onAddProductToWishes: (item: CommercialItem) => void;
@@ -48,8 +41,6 @@ export interface HomeDashboardSectionProps {
   onToggleBedtimeMode?: () => void;
   onOpenStoreCategory?: (catId: string) => void;
   onReplaySplash?: () => void;
-  onAddVoiceMoment?: (kidId: number, moment: VoiceVaultMoment) => void;
-  onToggleTaskDone?: (taskId: number) => void;
 }
 
 interface DailyAudioBriefEpisode {
@@ -427,7 +418,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   parentProfileSpec,
   cartItemCount,
   completedTasksCount,
-  nearestEvent,
   todayFormattedCombined,
   navigateTo,
   onAddToCart,
