@@ -794,44 +794,44 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
       role="status"
       aria-live="polite"
       aria-busy={!fadingOut}
-      className={`fixed inset-0 z-[80] w-screen h-screen pointer-events-none flex flex-col items-center justify-center p-6 sm:p-12 transition-all duration-200 ease-out overflow-hidden ${
-        fadingOut ? 'opacity-0 scale-98' : 'opacity-100 scale-100'
-      }`}
+      className={`fixed inset-0 z-[80] flex min-h-dvh w-full items-center justify-center overflow-hidden px-6 py-10 transition-all duration-300 ease-out ${fadingOut ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
       style={{
-        background:
-          'radial-gradient(circle at 50% 30%, rgba(13, 148, 136, 0.32) 0%, rgba(255, 140, 97, 0.2) 42%, rgba(11, 19, 26, 0.96) 88%), #0B131A',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'linear-gradient(145deg, #F8FAFC 0%, #ECFDF5 52%, #EFF6FF 100%)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
       }}
     >
-      <GeometricBackdropPattern idPrefix="nav-loader" darkMode={true} />
+      <GeometricBackdropPattern idPrefix="nav-loader" darkMode={false} />
+      <div aria-hidden="true" className="pointer-events-none absolute -top-28 -end-24 h-80 w-80 rounded-full bg-teal-300/25 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -start-24 h-80 w-80 rounded-full bg-sky-300/25 blur-3xl" />
 
-      <div className="relative z-10 flex flex-col items-center justify-center gap-6 text-center max-w-lg w-full px-4">
-        <div className="relative flex items-center justify-center">
-          <span
-            aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-40 h-40 sm:w-44 sm:h-44 rounded-full bg-gradient-to-tr from-[#2DD4BF]/35 via-[#FF8C61]/30 to-[#FBBF24]/35"
-          />
-          <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-b from-teal-900/60 to-slate-900/80 border-2 border-[#2DD4BF]/45 flex items-center justify-center shadow-2xl">
-            <PlayfulChildLoaderSvg size={108} />
-          </div>
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-[2rem] border border-white/80 bg-white/85 px-7 py-9 text-center shadow-[0_24px_80px_-28px_rgba(15,118,110,0.28)] backdrop-blur-xl">
+        <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-sky-50 shadow-inner">
+          <span aria-hidden="true" className="absolute inset-1 rounded-[1.7rem] border border-teal-200/70 animate-pulse" />
+          <PlayfulChildLoaderSvg size={68} />
         </div>
 
-        <div className="space-y-3 w-full">
-          <div className="text-xl sm:text-2xl font-black text-[#F8FAFC] tracking-tight">
-            {displayLabel}
-          </div>
+        <div className="mb-2 text-[11px] font-extrabold tracking-[0.22em] text-teal-700/75">
+          NEKBAAR · نكبر
+        </div>
+        <div className="text-lg font-black leading-relaxed tracking-tight text-slate-900 sm:text-xl">
+          {displayLabel}
+        </div>
+        <p className="mt-2 max-w-[270px] text-xs font-semibold leading-6 text-slate-500">
+          {isEn ? 'A little moment while we prepare your family space' : 'لحظات بسيطة ونجهّز لك مساحة الأسرة'}
+        </p>
 
-          {/* Enlarged Glowing Progress Indicator */}
-          <div className="w-64 sm:w-80 mx-auto h-3 rounded-full bg-slate-800/90 border border-teal-500/30 overflow-hidden shadow-inner">
-            <div className="animate-nav-progress h-full w-full rounded-full bg-gradient-to-r from-[#0d9488] via-[#2DD4BF] to-[#FF8C61]" />
-          </div>
+        <div className="mt-7 h-1.5 w-full overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
+          <div className="h-full w-2/5 rounded-full bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 animate-nav-progress" />
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-slate-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
+          {isEn ? 'Getting things ready' : 'بنرتّب كل حاجة ليك'}
         </div>
       </div>
     </div>
   );
 };
-
 export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
   section,
   language,
@@ -2584,7 +2584,6 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
   onSkipOrFinish,
 }) => {
   const isEn = language === 'en';
-
   if (!visible) return null;
 
   return (
@@ -2594,72 +2593,57 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       dir={isEn ? 'ltr' : 'rtl'}
       role="dialog"
       aria-modal="true"
-      aria-label={isEn ? 'Nekbaar Splash Screen' : 'شاشة ترحيب نكبر'}
-      onClick={onSkipOrFinish}
-      className={`fixed inset-0 z-[130] w-screen h-screen flex flex-col items-center justify-between p-6 overflow-hidden select-none cursor-pointer transition-opacity duration-700 ${
-        fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
+      aria-label={isEn ? 'Nekbaar welcome screen' : 'مقدمة تطبيق نكبر'}
+      className={`fixed inset-0 z-[130] flex min-h-dvh w-full flex-col items-center justify-between overflow-hidden px-6 pb-safe pt-safe transition-opacity duration-500 ${fadingOut ? 'pointer-events-none opacity-0' : 'opacity-100'}`}
       style={{
         background: darkMode
-          ? 'radial-gradient(circle at 50% 36%, rgba(13, 148, 136, 0.34) 0%, rgba(255, 140, 97, 0.18) 45%, rgba(11, 19, 26, 0.98) 88%), #0B131A'
-          : 'radial-gradient(circle at 50% 36%, rgba(254, 243, 199, 0.92) 0%, rgba(204, 251, 241, 0.78) 48%, rgba(248, 250, 252, 0.99) 88%), #F8FAFC',
+          ? 'linear-gradient(160deg, #0B131A 0%, #102B32 52%, #102238 100%)'
+          : 'linear-gradient(160deg, #F8FAFC 0%, #E8F8F5 48%, #EFF6FF 100%)',
       }}
     >
-      {/* Subtle Geometric Background Pattern Overlay */}
       <GeometricBackdropPattern idPrefix="splash-screen" darkMode={darkMode} />
+      <div aria-hidden="true" className="pointer-events-none absolute -top-28 -end-28 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -start-28 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl" />
 
-      {/* Ambient Floating Decorative Glow Blobs */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -start-24 w-80 h-80 rounded-full bg-teal-400/25 dark:bg-teal-500/20 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-24 -end-24 w-96 h-96 rounded-full bg-orange-400/25 dark:bg-orange-500/20 blur-3xl"
-      />
+      <div className="relative z-10 flex w-full max-w-md flex-1 flex-col items-center justify-center py-8 text-center">
+        <div className="mb-7 flex items-center gap-2 rounded-full border border-teal-600/15 bg-white/65 px-4 py-2 shadow-sm backdrop-blur dark:border-teal-300/15 dark:bg-white/5">
+          <span className="h-2 w-2 rounded-full bg-teal-500" />
+          <span className="text-[10px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">A FAMILY SPACE</span>
+        </div>
 
-      {/* Top Spacer to Balance Upper-Middle Positioning */}
-      <div aria-hidden="true" className="h-4 sm:h-6 shrink-0" />
-
-      {/* Upper-Middle Central Stack: Boy/Girl Illustration + Bilingual App Name & Bilingual Slogan Directly Underneath */}
-      <div className="relative z-10 flex flex-col items-center justify-center gap-5 sm:gap-6 my-auto -mt-6 sm:-mt-10 text-center max-w-lg mx-auto">
-        <div className="relative flex items-center justify-center">
-          <span
-            aria-hidden="true"
-            className="animate-nav-loader-pulse-ring absolute w-56 h-56 sm:w-68 sm:h-68 rounded-full bg-gradient-to-tr from-[#0d9488]/30 via-[#FF8C61]/28 to-[#FBBF24]/35"
-          />
-          <div className="relative w-48 h-48 sm:w-60 sm:h-60 rounded-full bg-white/92 dark:bg-[#142430]/92 border-4 border-teal-500/35 dark:border-[#2DD4BF]/40 flex items-center justify-center shadow-2xl backdrop-blur-md">
-            <PlayfulBoyAndGirlSplashSvg size={208} />
+        <div className="relative mb-8 flex h-52 w-52 items-center justify-center sm:h-60 sm:w-60">
+          <span aria-hidden="true" className="absolute inset-0 rounded-full border border-teal-500/20" />
+          <span aria-hidden="true" className="absolute inset-3 rounded-full border border-dashed border-sky-500/25 animate-[spin_32s_linear_infinite]" />
+          <div className="relative flex h-44 w-44 items-center justify-center rounded-[2.7rem] border border-white/80 bg-white/90 shadow-[0_28px_70px_-25px_rgba(13,148,136,0.35)] dark:border-white/10 dark:bg-[#142430] sm:h-52 sm:w-52">
+            <PlayfulBoyAndGirlSplashSvg size={176} />
           </div>
         </div>
 
-        {/* Bilingual App Name ("نكبر / Nekbaar") & Official Slogan Directly Underneath */}
-        <div className="space-y-2 px-4 font-['Cairo',_'Tajawal',_sans-serif]">
-          <h1
-            data-testid="splash-brand-title"
-            className="text-3xl sm:text-5xl font-black tracking-tight text-[#0B131A] dark:text-[#F8FAFC] leading-tight flex flex-wrap items-center justify-center gap-2.5"
-          >
+        <div className="space-y-3">
+          <h1 data-testid="splash-brand-title" className="flex flex-wrap items-center justify-center gap-x-3 text-4xl font-black tracking-tight text-slate-950 dark:text-white sm:text-5xl">
             <span>نكبر</span>
-            <span className="text-teal-500/50 font-light">/</span>
-            <span className="text-2xl sm:text-4xl font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-              Nekbaar
-            </span>
+            <span className="text-teal-600 dark:text-teal-300">Nekbaar</span>
           </h1>
-          <p
-            data-testid="splash-brand-slogan"
-            className="text-sm sm:text-base font-extrabold text-slate-700 dark:text-slate-200 tracking-wide"
-          >
+          <p data-testid="splash-brand-slogan" className="text-base font-extrabold leading-8 text-slate-700 dark:text-slate-200 sm:text-lg">
             مساحة تجمعنا.. وبحبهم نكبر
           </p>
+          <p className="mx-auto max-w-xs text-xs font-semibold leading-6 text-slate-500 dark:text-slate-400">
+            {isEn ? 'Growing together, with love at every step.' : 'كل تفاصيل العيلة وذكرياتهم في مساحة واحدة'}
+          </p>
         </div>
+
+        <button
+          type="button"
+          onClick={onSkipOrFinish}
+          className="mt-10 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 px-8 text-sm font-extrabold text-white shadow-lg shadow-teal-700/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500"
+        >
+          {isEn ? 'Enter your family space' : 'ادخل مساحة أسرتك'}
+          <span aria-hidden="true">{isEn ? '→' : '←'}</span>
+        </button>
       </div>
 
-      {/* Strictly Bottom Copyright Ownership Details */}
-      <footer
-        data-testid="splash-bottom-copyright"
-        className="relative z-10 w-full pt-3 border-t border-teal-500/15 dark:border-[#1E3646] text-center text-[11px] sm:text-xs font-extrabold text-slate-600 dark:text-slate-400 shrink-0"
-      >
-        نكبر (Nekbaar) © 2026 — جميع حقوق الملكية محفوظة · All Rights Reserved
+      <footer data-testid="splash-bottom-copyright" className="relative z-10 w-full border-t border-teal-700/10 py-4 text-center text-[10px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
+        نكبر (Nekbaar) © 2026 — جميع حقوق الملكية محفوظة
       </footer>
     </div>
   );
