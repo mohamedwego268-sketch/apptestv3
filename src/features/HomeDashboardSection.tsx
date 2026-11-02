@@ -98,7 +98,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     slotLabelEn: '🌤️ Afternoon Support Audio',
     titleAr: 'بعد الحضانة أو المدرسة: استمع أولاً، ثم اسأل',
     titleEn: 'After School: Listen First, Then Ask',
-    hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
+    hostsAr: 'رسالة هادئة لدعم الوالدين',
     hostsEn: 'A supportive moment for parents',
     durationSec: 30,
     durationLabel: '00:30',
@@ -118,7 +118,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     titleAr: 'قبل النوم: اختتموا اليوم بهدوء وروتين ثابت',
     titleEn: 'End the Day with a Calm, Familiar Routine',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
-    hostsEn: 'Warm Audio Support for Ahmad & Maryam',
+    hostsEn: 'A calm supportive moment for parents',
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
@@ -228,7 +228,7 @@ const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
     captionAr:
       'اتفقوا مين مسؤول عن الوجبة، ومين عن تجهيز النوم، ومين يتابع المواعيد. الاتفاق الواضح يقلل اللخبطة والضغط.',
     captionEn:
-      'Take turns gently: while one reads bedtime stories to Laila and Youssef, the other enjoys a quiet 15-minute recharge.',
+      'Share the evening routine in a way that works for your household, and make room for each caregiver to rest.',
     expertNameAr: 'خطوة عملية لتنظيم مسؤوليات البيت',
     expertNameEn: 'Nekbaar Family Tips',
     likesCount: 0,
@@ -708,7 +708,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     galleryScrollRef.current.scrollBy({ left: isEn ? delta : -delta, behavior: 'smooth' });
   };
 
-  // Heroes, Passions & Life Arena (Strictly grounded in Hamza 6m, Laila 4y, Youssef 8y)
+  // Child interests and activities are grounded in each child's own profile.
   const [cheeredHeroIds, setCheeredHeroIds] = useState<Record<string, number>>({});
 
   // Streamlined One-Handed Quick Log State per Child (Checklist #2)
@@ -798,18 +798,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
     return true;
   };
-  const activeKidStageLabel = activeKidAge?.label || (isEn ? '6 Months' : '٦ شهور');
+  const activeKidStageLabel = activeKidAge?.label || (isEn ? 'Age not set' : 'العمر غير محدد');
 
-  // Standardized Child Color Helper (Hamza = Sky, Laila = Rose, Youssef = Amber)
+  // Give each child a consistent accent without depending on names or sample IDs.
   const getChildColorClasses = (kidName: string, idx: number) => {
-    if (kidName.includes('ليلى') || kidName.toLowerCase().includes('laila') || idx === 1) {
+    if (idx % 3 === 1) {
       return {
         pillActive: 'bg-rose-600 text-white border-rose-600 shadow-2xs',
         pillInactive: 'border-rose-500/35 text-rose-700 dark:text-rose-300 bg-rose-50/60 dark:bg-[#142430]',
         accentText: 'text-rose-600 dark:text-rose-300',
       };
     }
-    if (kidName.includes('يوسف') || kidName.toLowerCase().includes('youssef') || idx === 2) {
+    if (idx % 3 === 2) {
       return {
         pillActive: 'bg-amber-600 text-white border-amber-600 shadow-2xs',
         pillInactive: 'border-amber-500/35 text-amber-800 dark:text-amber-300 bg-amber-50/60 dark:bg-[#142430]',
@@ -975,7 +975,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           badgeEn: '🥣 School Brain & Focus Breakfast',
           titleAr: `بيض أومليت بالخضار + توست حبوب كاملة وحليب لـ ${activeKidName}`,
           titleEn: `Veggie Omelet + Whole-Grain Toast & Milk for ${activeKidName}`,
-          descAr: 'بروتين عالي وكربوهيدرات معقدة تمنح يوسف تركيزاً ذهنياً طوال الحصص الدراسية.',
+          descAr: 'فكرة وجبة متنوعة؛ اختاروا الكمية والمكونات حسب شهية الطفل واحتياجاته الغذائية.',
           descEn: 'Sustained protein and complex carbs fueling school focus and logic.',
           time: '06:45 ص',
           calories: '420 kcal',
@@ -985,7 +985,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           badgeEn: '🍱 School Champion Lunchbox',
           titleAr: `ساندويتش دجاج مشوي + خيار وجزر + تفاح ومكسرات لـ ${activeKidName}`,
           titleEn: `Grilled Chicken Wrap + Veggie Sticks, Apple & Nuts for ${activeKidName}`,
-          descAr: 'وجبة متوازنة يشارك يوسف في تحضيرها بنفسه لتعزيز الاستقلالية والمسؤولية.',
+          descAr: 'يمكن إشراك الطفل في تجهيز الوجبة بخطوات آمنة تناسب عمره وقدرته.',
           descEn: 'Balanced school lunchbox encouraging self-prep and afternoon energy.',
           time: '11:30 ص',
           calories: '490 kcal',
@@ -1009,7 +1009,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         badgeEn: '🥣 Joyful Nursery Breakfast',
         titleAr: `بان كيك الشوفان والموز بأشكال مرحة مع الحليب لـ ${activeKidName}`,
         titleEn: `Playful Banana Oat Pancakes & Warm Milk for ${activeKidName}`,
-        descAr: 'فطور ملون يشجع ليلى على الأكل بنفسها وبداية يوم الحضانة بابتسامة.',
+        descAr: 'قدّموا الوجبة بطريقة بسيطة ومريحة، واحترموا شهية الطفل دون ضغط.',
         descEn: 'Fun finger-food breakfast boosting happy nursery transitions.',
         time: '07:45 ص',
         calories: '310 kcal',
@@ -1029,7 +1029,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         badgeEn: '🍎 Post-Nursery Creative Snack',
         titleAr: `شرائح التفاح بزبدة الفول السوداني الطبيعية والزبادي لـ ${activeKidName}`,
         titleEn: `Apple Slices with Natural Peanut Butter & Yogurt for ${activeKidName}`,
-        descAr: 'يمنح ليلى طاقة هادئة ومستقرة قبل جلسة التلوين وبطاقات تسمية المشاعر.',
+        descAr: 'اختاروا وجبة خفيفة تناسب شهية الطفل وحساسيته المسجلة.',
         descEn: 'Steadies afternoon mood before creative play and emotion-naming cards.',
         time: '03:45 م',
         calories: '210 kcal',
@@ -1095,7 +1095,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           badgeEn: '🌙 Soothing Infant Massage & Stretch',
           titleAr: `١٠ دقائق تدليك دافئ وحركة الدراجة اللطيفة للساقين لـ ${activeKidName}`,
           titleEn: `10-Min Warm Oil Massage & Gentle Bicycle Legs for ${activeKidName}`,
-          descAr: 'يريح الجهاز الهضمي من الغازات ويهيئ حمزة لنوم ليلي عميق ومستقر.',
+          descAr: 'نشاط لطيف اختياري؛ أوقفوه إذا ظهر انزعاج، ولا يُستخدم لعلاج المغص أو اضطرابات النوم.',
           descEn: 'Relieves tummy gas and cues deep, restorative nighttime sleep.',
           time: '07:15 م',
         },
@@ -1125,10 +1125,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         cardio: {
           badgeAr: '🚴‍♂️ سباق اللياقة العائلي السريع',
           badgeEn: '🚴‍♂️ Family Fitness & Bike Sprint',
-          titleAr: `٢٥ دقيقة ركوب دراجة أو تحدي قفز الحبل مع بابا أحمد لـ ${activeKidName}`,
-          titleEn: `25-Min Bike Ride or Jump-Rope Challenge with Dad Ahmed for ${activeKidName}`,
-          descAr: 'نشاط مشترك يقوّي علاقة الأب بالابن الأكبر ويضمن نوماً صحياً مبكراً.',
-          descEn: 'Active father-son bonding that guarantees restful sleep.',
+          titleAr: `٢٥ دقيقة حركة بالدراجة أو القفز بالحبل مع أحد الوالدين لـ ${activeKidName}`,
+          titleEn: `25-Min Bike Ride or Jump-Rope Challenge with a Parent for ${activeKidName}`,
+          descAr: 'نشاط عائلي ممتع يدعم المشاركة والحركة، مع مراعاة قدرة الطفل وإشراف شخص بالغ.',
+          descEn: 'A shared activity that encourages connection and movement; it does not guarantee a sleep outcome.',
           time: '05:30 م',
         },
       };
@@ -1140,7 +1140,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         badgeEn: '🎨 Active Creative Play',
         titleAr: `٢٠ دقيقة مسار توازن الألوان والقفز المرح في البيت مع ${activeKidName}`,
         titleEn: `20-Min Color Hopscotch & Creative Movement with ${activeKidName}`,
-        descAr: 'يدمج الحركة بتسمية الألوان والمشاعر لتفريغ طاقة ليلى بعد الحضانة بمرح.',
+        descAr: 'ادمجوا الحركة مع تسمية الألوان أو المشاعر إذا كان الطفل مهتمًا بذلك.',
         descEn: 'Combines gross motor hopping with color and emotion naming after nursery.',
         time: '04:30 م',
       },
@@ -1149,17 +1149,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         badgeEn: '🧘‍♀️ Kids Yoga & Emotion Breathing',
         titleAr: `١٥ دقيقة تمارين تنفس الفراشة وتوازن الشجرة مع بطاقات المشاعر لـ ${activeKidName}`,
         titleEn: `15-Min Butterfly Breathing & Tree Pose with Emotion Cards for ${activeKidName}`,
-        descAr: 'تدرّب ليلى على تهدئة النفس عند الإحباط والتعبير بالكلمات بدلاً من البكاء.',
+        descAr: 'جرّبوا التنفس الهادئ والتعبير عن المشاعر دون مطالبة الطفل بإيقاف البكاء أو كبت إحساسه.',
         descEn: 'Teaches self-regulation and calm emotional expression without tantrums.',
         time: '05:15 م',
       },
       cardio: {
         badgeAr: '💃 رقص وحركة إيقاعية مبهجة',
         badgeEn: '💃 Musical Freeze Dance & Agility',
-        titleAr: `١٥ دقيقة لعبة الحركة والتوقف الموسيقية مع ماما مريم لـ ${activeKidName}`,
-        titleEn: `15-Min Musical Freeze Dance with Mom Maryam for ${activeKidName}`,
+        titleAr: `١٥ دقيقة لعبة الحركة والتوقف الموسيقية مع أحد الوالدين لـ ${activeKidName}`,
+        titleEn: `15-Min Musical Freeze Dance with a Parent for ${activeKidName}`,
         descAr: 'تقوّي التحكم في الاندفاع والانتباه السمعي وتملأ البيت بالضحك.',
-        descEn: 'Boosts impulse control, listening skills, and joyful mother-daughter bonding.',
+        descEn: 'A playful way to practice listening and shared enjoyment without expecting a specific behavioral outcome.',
         time: '06:00 م',
       },
     };
@@ -2203,7 +2203,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <>
                   <span>👶 {activeKidName} · {activeKidStageLabel}</span>
                   <span aria-hidden="true">·</span>
-                  <span>🔥 {currentNutrition.calories}</span>
+                  
                 </>
               }
               bodyContent={
@@ -2540,38 +2540,46 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          {[
-            {
-              id: 'game-hamza-sensory',
-              badgeAr: '👶🏻 حمزة · ٦ شهور',
-              badgeEn: '👶🏻 Hamza · 6m',
-              titleAr: 'أصوات الطبيعة والخشخيشة الحسية',
-              titleEn: 'Sensory Sounds & Gentle Rattle Play',
-              descAr: 'تحفيز سمعي وبصري هادئ بألوان مريحة لعيون الرضيع.',
-              descEn: 'Calm auditory and visual stimulation safe for infants.',
-              borderTone: 'border-sky-500/40',
-            },
-            {
-              id: 'game-laila-colors',
-              badgeAr: '🎨 ليلى · ٤ سنوات',
-              badgeEn: '🎨 Laila · 4y',
-              titleAr: 'تطابق الألوان والحيوانات وتسمية المشاعر',
-              titleEn: 'Color & Animal Memory Match + Emotions',
-              descAr: 'تنمّي الذاكرة البصرية والتركيز والخيال في مرحلة الحضانة.',
-              descEn: 'Builds visual memory, focus, and joyful nursery readiness.',
-              borderTone: 'border-rose-500/40',
-            },
-            {
-              id: 'game-youssef-logic',
-              badgeAr: '🏆 يوسف · ٨ سنوات',
-              badgeEn: '🏆 Youssef · 8y',
-              titleAr: 'تحدي أبطال الحساب السريع والمنطق',
-              titleEn: 'Champion Math Sprint & Logic Quest',
-              descAr: 'سباق ذكاء سريع ينشط التفكير المنطقي والسرعة الذهنية.',
-              descEn: 'Fast-paced brain challenge sharpening logic and math.',
-              borderTone: 'border-amber-500/40',
-            },
-          ].map((gCard) => (
+          {state.kids.map((kid, index) => {
+            const age = calculateChildAge(kid.birth, lang);
+            const tone = ['border-sky-500/40', 'border-rose-500/40', 'border-amber-500/40'][index % 3];
+            const activity = age.months < 24
+              ? {
+                  badgeAr: '👶🏻 استكشاف حسي مناسب للعمر',
+                  badgeEn: '👶🏻 Age-aware sensory play',
+                  titleAr: 'أصوات هادئة وتتبع بصري ولعب آمن تحت إشرافك',
+                  titleEn: 'Gentle sounds, visual tracking and supervised safe play',
+                  descAr: 'اختاروا نشاطًا بسيطًا يناسب مرحلة الحركة الحالية، مع مراقبة الطفل طوال الوقت.',
+                  descEn: 'Choose a simple activity that fits the child’s current movement stage and supervise throughout.',
+                }
+              : age.years < 5
+              ? {
+                  badgeAr: '🎨 لعب واكتشاف',
+                  badgeEn: '🎨 Play & discovery',
+                  titleAr: 'تطابق الألوان والحكايات وتسمية المشاعر',
+                  titleEn: 'Color matching, stories and naming feelings',
+                  descAr: 'نشاط اختياري يجمع اللعب واللغة والتعبير عن المشاعر دون ضغط.',
+                  descEn: 'An optional activity combining play, language and emotional expression without pressure.',
+                }
+              : {
+                  badgeAr: '🧩 تفكير ومهارات',
+                  badgeEn: '🧩 Thinking & skills',
+                  titleAr: 'لغز بسيط أو تحدي حساب حسب اهتمام الطفل',
+                  titleEn: 'A simple puzzle or number challenge based on the child’s interests',
+                  descAr: 'اختاروا تحديًا قصيرًا يناسب مستوى الطفل واهتماماته، واحتفلوا بالمحاولة.',
+                  descEn: 'Choose a short challenge that fits the child’s level and interests, and celebrate the effort.',
+                };
+            return {
+              id: `game-child-${kid.id}`,
+              badgeAr: `${locText(kid.name, 'ar')} · ${age.label}`,
+              badgeEn: `${locText(kid.name, 'en')} · ${age.label}`,
+              titleAr: activity.titleAr,
+              titleEn: activity.titleEn,
+              descAr: activity.descAr,
+              descEn: activity.descEn,
+              borderTone: tone,
+            };
+          }).map((gCard) => (
             <div
               key={gCard.id}
               onClick={() => navigateTo('games')}
