@@ -1072,11 +1072,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           onOpenSection={openHomeSection}
         />
 
-        <HomeExpertContentNetwork
-          language={lang}
-          onNavigate={navigateTo}
-          onOpenSection={openHomeSection}
-        />
+        <HomeExpertContentNetwork language={lang} />
 
         {/* =====================================================================
             DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
