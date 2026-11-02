@@ -59,7 +59,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           : 'bg-[var(--color-surface)]/95 dark:bg-[#101D26]/95 border-b border-gray-200/60 dark:border-[#1E3646]'
       }`}
     >
-      <div className="w-full max-w-[430px] mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 min-h-[62px]">
+      <div className="nekbaar-header-inner w-full max-w-[430px] mx-auto grid grid-cols-[minmax(0,1fr)_96px] items-center gap-2 px-3 py-2 min-h-[62px]">
         {/* Start: Brand Logo + Official Slogan */}
         <button
           id="brand-home-btn"
@@ -102,7 +102,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </button>
 
         {/* End: Compact Notifications Bell + Slidebar Drawer Button */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="nekbaar-header-actions flex w-24 shrink-0 items-center justify-end gap-2">
           {/* 1. Notifications Bell */}
           <button
             id="header-notifications-btn"
@@ -128,9 +128,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             {unreadNotifCount > 0 && (
               <span
                 data-testid="header-notifications-badge"
-                className="absolute -top-1 -end-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#FF8C61] text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums shadow-2xs"
+                className="absolute -top-1 -end-1 z-10 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF8C61] text-white text-[9px] font-extrabold flex items-center justify-center tabular-nums shadow-2xs"
               >
-                {unreadNotifCount}
+                {unreadNotifCount > 99 ? '99+' : unreadNotifCount}
               </span>
             )}
           </button>
@@ -142,7 +142,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             type="button"
             onClick={onOpenProfileDrawer}
             aria-label={isEn ? 'Open navigation menu' : 'فتح القائمة الجانبية'}
-            className="min-h-[44px] h-[44px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+            className="nekbaar-header-menu-btn relative inline-flex h-11 min-h-[44px] w-11 min-w-[44px] shrink-0 items-center justify-center rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] shadow-2xs transition-all hover:border-[#0d9488] active:scale-95 dark:border-[#1E3646] dark:bg-[#142430] dark:text-[#F8FAFC]"
           >
             <span className="flex flex-col items-center justify-center gap-[3px] w-3.5" aria-hidden="true">
               <span
@@ -161,9 +161,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 }`}
               />
             </span>
-            <span className="text-[11px] font-extrabold leading-tight whitespace-nowrap">
-              {isEn ? 'Menu' : 'القائمة'}
-            </span>
+            <span className="sr-only">{isEn ? 'Menu' : 'القائمة'}</span>
           </button>
         </div>
       </div>
