@@ -118,125 +118,6 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   },
 ];
 
-interface InstagramReelTipItem {
-  id: string;
-  durationSec: number;
-  durationLabel: string;
-  stageBadgeAr: string;
-  stageBadgeEn: string;
-  childFocusAr: string;
-  childFocusEn: string;
-  titleAr: string;
-  titleEn: string;
-  captionAr: string;
-  captionEn: string;
-  expertNameAr: string;
-  expertNameEn: string;
-  likesCount: number;
-  imageUrl: string;
-  accentGradient: string;
-  melodyHz: number[];
-}
-
-const HOME_INSTAGRAM_REELS: InstagramReelTipItem[] = [
-  {
-    id: 'reel-hamza-sensory',
-    durationSec: 45,
-    durationLabel: '00:45',
-    stageBadgeAr: '👶🏻 من ٠ إلى ١٢ شهر',
-    stageBadgeEn: '👶🏻 0–12 Months',
-    childFocusAr: 'اللعب والتواصل في السنة الأولى',
-    childFocusEn: 'Infant Sensory & Motor Milestones',
-    titleAr: 'وقت الاستلقاء على البطن: دقائق قصيرة مع مراقبتك',
-    titleEn: 'Simple Tummy-Time Ideas to Support Early Movement',
-    captionAr:
-      'اختار وقت يكون فيه الطفل صاحي وهادي، وحطه على بطنه على سطح ثابت وآمن مع مراقبتك طول الوقت. لو اتضايق، وقف وجرب وقت تاني.',
-    captionEn:
-      "Place a safe toy within your baby's easy reach and stay close, talking or singing gently while supervising.",
-    expertNameAr: 'معلومة إرشادية · راجع طبيب الأطفال عند القلق',
-    expertNameEn: 'Nekbaar Parenting Tips',
-    likesCount: 0,
-    imageUrl: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=900&q=80',
-    accentGradient: 'from-sky-900/90 via-sky-950/45 to-slate-950/95',
-    melodyHz: [392.0, 493.88, 587.33],
-  },
-  {
-    id: 'reel-laila-emotions',
-    durationSec: 52,
-    durationLabel: '00:52',
-    stageBadgeAr: '🎨 من ٣ إلى ٥ سنوات',
-    stageBadgeEn: '🎨 Ages 3–5',
-    childFocusAr: 'التعبير عن المشاعر',
-    childFocusEn: 'Emotion Naming & Creative Expression',
-    titleAr: 'ساعد طفلك يسمي إحساسه بدل ما تطلب منه يبطل عياط',
-    titleEn: 'Turn Big Feelings into a Simple Drawing Activity',
-    captionAr:
-      'ممكن تقول: «واضح إنك متضايق.. تحب تحكيلي حصل إيه؟» اسمع من غير تقليل من إحساسه، ومش لازم يهدأ فورًا.',
-    captionEn:
-      'Instead of saying "stop crying", ask your child: "If that feeling had a color, which one would it be?"',
-    expertNameAr: 'نشاط مقترح · مش بديل عن دعم متخصص',
-    expertNameEn: 'Nekbaar Parenting Tips',
-    likesCount: 0,
-    imageUrl: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=80',
-    accentGradient: 'from-rose-900/90 via-rose-950/45 to-slate-950/95',
-    melodyHz: [440.0, 554.37, 659.25],
-  },
-  {
-    id: 'reel-youssef-champions',
-    durationSec: 55,
-    durationLabel: '00:55',
-    stageBadgeAr: '🎒 من ٦ إلى ٨ سنوات',
-    stageBadgeEn: '🎒 Ages 6–8',
-    childFocusAr: 'تنظيم المذاكرة والحركة',
-    childFocusEn: 'School Focus & Athletic Confidence',
-    titleAr: 'قسّم وقت المذاكرة لفترات قصيرة وبينها حركة',
-    titleEn: 'Try Short Study Sessions with Movement Breaks',
-    captionAr:
-      'ابدأوا بفترة تركيز مناسبة لطفلكم، وبعدها استراحة حركة أو شرب مية. عدّلوا المدة حسب سنه وقدرته، ومفيش رقم واحد يناسب كل الأطفال.',
-    captionEn:
-      'Pairing a short study session with a movement break can help your child reset and return to the task.',
-    expertNameAr: 'فكرة لتنظيم اليوم · عدّلها حسب طفلك',
-    expertNameEn: 'Nekbaar Parenting Tips',
-    likesCount: 0,
-    imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80',
-    accentGradient: 'from-amber-900/90 via-teal-950/50 to-slate-950/95',
-    melodyHz: [523.25, 659.25, 783.99],
-  },
-  {
-    id: 'reel-parents-harmony',
-    durationSec: 48,
-    durationLabel: '00:48',
-    stageBadgeAr: '🤝 للأب والأم ومقدمي الرعاية',
-    stageBadgeEn: '🤝 Parents & Caregivers',
-    childFocusAr: 'تقاسم المهام وتجديد طاقة البيت',
-    childFocusEn: 'Shared Care & Evening Reset',
-    titleAr: 'اتفقوا على تقسيم المسؤوليات بدل ما كل حاجة تبقى على شخص واحد',
-    titleEn: 'A Simple Evening Handover for Shared Parenting',
-    captionAr:
-      'اتفقوا مين مسؤول عن الوجبة، ومين عن تجهيز النوم، ومين يتابع المواعيد. الاتفاق الواضح يقلل اللخبطة والضغط.',
-    captionEn:
-      'Share the evening routine in a way that works for your household, and make room for each caregiver to rest.',
-    expertNameAr: 'خطوة عملية لتنظيم مسؤوليات البيت',
-    expertNameEn: 'Nekbaar Family Tips',
-    likesCount: 0,
-    imageUrl: 'https://images.unsplash.com/photo-1542037104857-ffbb0b9155fb?auto=format&fit=crop&w=900&q=80',
-    accentGradient: 'from-teal-900/90 via-slate-900/50 to-slate-950/95',
-    melodyHz: [349.23, 440.0, 523.25],
-  },
-];
-
-interface WisdomGalleryCardItem {
-  id: string;
-  tagAr: string;
-  tagEn: string;
-  titleAr: string;
-  titleEn: string;
-  wisdomAr: string;
-  wisdomEn: string;
-  imageUrl: string;
-  borderTone: string;
-}
-
 const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
   {
     id: 'gal-1',
@@ -307,8 +188,7 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
 
 /**
  * Universal Home Accordion Card Wrapper (Checklist #3)
- * Wraps every section on the Home page (except the Instagram Reels player)
- * with a clean header, badge, optional header action, and an open/close arrow.
+ * Wraps every Home accordion section with a clean header, badge, optional action, and an open/close arrow.
  */
 interface HomeAccordionCardProps {
   id: string;
@@ -436,7 +316,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
   }, [selectedKidIdx, state.kids.length]);
 
-  // Universal Accordion States for every Home section (EXCEPT the Instagram Reels player which stays always open)
+  // Shared open/close state for all Home accordion sections.
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     welcomeAudio: false,
     quickTrack: true,
@@ -494,7 +374,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [activeBriefIdx, setActiveBriefIdx] = useState<number>(defaultBriefIdx);
   const [isPlayingBrief, setIsPlayingBrief] = useState<boolean>(false);
   const [briefElapsedSec, setBriefElapsedSec] = useState<number>(0);
-  const audioCtxRef = useRef<AudioContext | null>(null);
 
   const currentBrief = DAILY_AUDIO_BRIEFS_30S[activeBriefIdx] || DAILY_AUDIO_BRIEFS_30S[0];
 
@@ -564,45 +443,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     if (speakDailyBrief(currentBrief)) {
       onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
     }
-  };
-
-  // ============================================================================
-  // CHECKLIST #8: Instagram-Style Reel Video Player (< 60s, ALWAYS OPEN)
-  // ============================================================================
-  const [activeReelIdx, setActiveReelIdx] = useState<number>(0);
-  const [isReelPlaying, setIsReelPlaying] = useState<boolean>(false);
-  const [reelElapsedSec, setReelElapsedSec] = useState<number>(12);
-  const [reelLikesById, setReelLikesById] = useState<Record<string, boolean>>({});
-
-  const currentReel = HOME_INSTAGRAM_REELS[activeReelIdx] || HOME_INSTAGRAM_REELS[0];
-
-  useEffect(() => {
-    if (!isReelPlaying) return;
-    const timer = window.setInterval(() => {
-      setReelElapsedSec((prev) => {
-        if (prev >= currentReel.durationSec) {
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [isReelPlaying, currentReel.durationSec]);
-
-  const handlePrevReel = () => {
-    const prevIdx = (activeReelIdx - 1 + HOME_INSTAGRAM_REELS.length) % HOME_INSTAGRAM_REELS.length;
-    setActiveReelIdx(prevIdx);
-    setReelElapsedSec(0);
-    setIsReelPlaying(true);
-    playGentleAudioSynthesizer(HOME_INSTAGRAM_REELS[prevIdx].melodyHz);
-  };
-
-  const handleNextReel = () => {
-    const nextIdx = (activeReelIdx + 1) % HOME_INSTAGRAM_REELS.length;
-    setActiveReelIdx(nextIdx);
-    setReelElapsedSec(0);
-    setIsReelPlaying(true);
-    playGentleAudioSynthesizer(HOME_INSTAGRAM_REELS[nextIdx].melodyHz);
   };
 
   // ============================================================================
