@@ -519,3 +519,154 @@ main input, main select, main textarea {
   .admin-metric-card { padding: 13px; border-radius: 15px; }
   .admin-panel { padding: 14px; border-radius: 16px; }
 }
+
+
+/* Welcome screen: compact editorial feature tiles and a readable 9-second introduction. */
+#nekbaar-interactive-splash-screen {
+  padding-inline: max(18px, env(safe-area-inset-left));
+  padding-right: max(18px, env(safe-area-inset-right));
+  background-image:
+    radial-gradient(ellipse at 50% 28%, rgba(255,255,255,.62), transparent 45%),
+    linear-gradient(155deg, #f8fbfa 0%, #e9f7f4 52%, #eff6ff 100%);
+}
+#nekbaar-interactive-splash-screen .nk-splash-content {
+  max-width: 390px;
+}
+.nk-splash-feature-grid {
+  gap: 8px;
+}
+.nk-splash-feature {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 58px;
+  padding: 9px 10px;
+  border: 1px solid rgba(13,148,136,.13);
+  border-radius: 15px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 9px 22px -19px rgba(10,74,78,.42), inset 0 1px 0 rgba(255,255,255,.85);
+  backdrop-filter: blur(12px);
+}
+.nk-splash-feature-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 31px;
+  width: 31px;
+  height: 31px;
+  border-radius: 11px;
+  background: linear-gradient(145deg, rgba(20,184,166,.14), rgba(56,189,248,.12));
+  font-size: 16px;
+}
+.nk-splash-feature > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.nk-splash-feature b {
+  color: #164e4a;
+  font-size: 10.5px;
+  line-height: 1.3;
+  font-weight: 900;
+}
+.nk-splash-feature small {
+  color: #64748b;
+  font-size: 8.5px;
+  line-height: 1.45;
+  font-weight: 650;
+}
+.dark #nekbaar-interactive-splash-screen .nk-splash-feature,
+#nekbaar-interactive-splash-screen:has(.dark) .nk-splash-feature {
+  background: rgba(20,36,48,.76);
+  border-color: rgba(94,234,212,.13);
+}
+@media (max-height: 740px) {
+  #nekbaar-interactive-splash-screen { padding-top: max(7px, env(safe-area-inset-top)); padding-bottom: max(7px, env(safe-area-inset-bottom)); }
+  #nekbaar-interactive-splash-screen .nk-splash-content { padding-block: 2px; }
+  #nekbaar-interactive-splash-screen .nk-splash-feature { min-height: 51px; padding-block: 7px; }
+  #nekbaar-interactive-splash-screen footer { padding-block: 8px; }
+}
+@media (max-width: 360px) {
+  .nk-splash-feature { gap: 6px; padding-inline: 7px; }
+  .nk-splash-feature-icon { flex-basis: 27px; width: 27px; height: 27px; font-size: 14px; }
+  .nk-splash-feature b { font-size: 9.5px; }
+  .nk-splash-feature small { font-size: 8px; }
+}
+
+/* Typography scale: quieter labels, compact data, clear hierarchy. Keep body copy readable. */
+.mobile-app-shell {
+  font-size: 13px;
+}
+.mobile-app-shell :where(h1) { font-size: 21px !important; line-height: 1.25 !important; }
+.mobile-app-shell :where(h2) { font-size: 17px !important; line-height: 1.3 !important; }
+.mobile-app-shell :where(h3, h4) { font-size: 14px !important; line-height: 1.35 !important; }
+.mobile-app-shell :where(p, li, label) { font-size: 12px; line-height: 1.65; }
+.mobile-app-shell :where(.text-xs) { font-size: 10px !important; }
+.mobile-app-shell :where(.text-sm) { font-size: 12px !important; }
+.mobile-app-shell :where(.text-base) { font-size: 13px !important; }
+.mobile-app-shell :where(.text-lg) { font-size: 15px !important; }
+.mobile-app-shell :where(.text-xl) { font-size: 17px !important; }
+.mobile-app-shell :where(.text-2xl, .text-3xl, .text-4xl, .text-5xl) { font-size: 21px !important; }
+
+/* Card art direction: layered surfaces, editorial headers and calmer density. */
+.mobile-app-shell [data-master-card] {
+  position: relative;
+  border-radius: 19px;
+  border-color: color-mix(in srgb, var(--color-border) 74%, #9bd8cf);
+  background: linear-gradient(155deg, color-mix(in srgb, var(--color-surface) 97%, #e7f7f3), var(--color-surface) 72%);
+  box-shadow: 0 13px 30px -26px rgba(5,64,70,.48), inset 0 1px 0 rgba(255,255,255,.72);
+}
+.mobile-app-shell [data-master-card] :where(h1,h2,h3,h4) {
+  font-size: 13px !important;
+  line-height: 1.4 !important;
+  font-weight: 850;
+}
+.mobile-app-shell [data-master-card] :where(p,small,label,span) {
+  line-height: 1.5;
+}
+.mobile-app-shell [data-master-card] :where(p) {
+  font-size: 11px !important;
+}
+.mobile-app-shell [data-master-card] :where(small) {
+  font-size: 9.5px !important;
+}
+.mobile-app-shell [data-master-card] [data-image-card] {
+  border-radius: 15px;
+}
+.mobile-app-shell [data-master-card] button {
+  min-height: 36px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.mobile-app-shell [data-image-card] {
+  border-radius: 17px;
+  box-shadow: 0 12px 28px -23px rgba(5,48,58,.55);
+}
+.mobile-app-shell [data-testid^="store-category-row-"] {
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(20,184,166,.055), transparent 42%),
+    var(--color-surface);
+}
+.mobile-app-shell [data-testid^="store-category-row-"] h2,
+.mobile-app-shell [data-testid^="store-category-row-"] h3 {
+  font-size: 14px !important;
+}
+.mobile-app-shell [data-testid^="store-category-row-"] p {
+  font-size: 10.5px !important;
+}
+.mobile-app-shell [data-testid="community-stories-carousel"] button {
+  font-size: 10px;
+}
+.mobile-app-shell [data-testid="mobile-bottom-navigation-bar"] button {
+  font-size: 9px !important;
+}
+.mobile-app-shell [data-testid="mobile-bottom-navigation-bar"] svg {
+  width: 19px;
+  height: 19px;
+}
+@media (max-width: 380px) {
+  .mobile-app-shell { font-size: 12.5px; }
+  .mobile-app-shell [data-master-card] { border-radius: 16px; }
+  .mobile-app-shell [data-master-card] :where(h1,h2,h3,h4) { font-size: 12.5px !important; }
+}
