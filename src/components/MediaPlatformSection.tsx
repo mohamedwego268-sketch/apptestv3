@@ -16,7 +16,7 @@ import {
   SwipeableBannerCarousel,
 } from './DesignSystem';
 import { REEL_TOPIC_FILTERS } from '../services/frontendProductAdapter';
-import { InternalVideoPlayer } from './InternalVideoPlayer';
+import { InternalVideoFeed } from './InternalVideoFeed';
 
 interface MediaPlatformSectionProps {
   catalog?: MediaContentItem[];
@@ -277,13 +277,6 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const [audioVolume] = useState(0.75);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Interactive Video Player State
-  const videoItems = useMemo(() => catalog.filter((c) => c.type === 'video' && c.videoConfig), [catalog]);
-  const [selectedVideoId, setSelectedVideoId] = useState<number>(videoItems[0]?.id || 101);
-  const activeVideoItem = useMemo(
-    () => videoItems.find((v) => v.id === selectedVideoId) || videoItems[0],
-    [videoItems, selectedVideoId]
-  );
 
   // 1-Minute Audio Briefs Mini Player State (ملخص صوتي في دقيقة للمكتبة التربوية)
   const [briefItemId, setBriefItemId] = useState<number>(catalog[0]?.id || 101);
@@ -403,6 +396,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return catalog.filter((item) => {
+      if (item.type === 'video') return false;
       if (selectedType === 'saved' && !savedMediaIds.includes(item.id)) return false;
       if (selectedType !== 'all' && selectedType !== 'saved' && item.type !== selectedType) return false;
       if (selectedTopic !== 'all' && item.topic !== selectedTopic) return false;
@@ -1053,41 +1047,13 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             </div>
           )}
 
-          {activeVideoItem && activeVideoItem.videoConfig && (
-            <section data-media-player="video" className="grid grid-cols-1 items-start gap-4 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-sm dark:border-[#1E3646] dark:bg-[#101D26] lg:grid-cols-[1.2fr_0.8fr] lg:p-4">
-              <div className="min-w-0">
-                <InternalVideoPlayer
-                  storagePath={activeVideoItem.videoConfig.storagePath}
-                  posterPath={activeVideoItem.videoConfig.posterPath}
-                  title={isEn ? activeVideoItem.titleEn : activeVideoItem.title}
-                  language={isEn ? 'en' : 'ar'}
-                />
-              </div>
-              <div className="min-w-0 space-y-3">
-                <div>
-                  <span className="text-[10px] font-black tracking-wide text-indigo-600 dark:text-teal-300">{isEn ? 'NEKBAAR VIDEO LIBRARY' : 'مكتبة فيديوهات نكبر'}</span>
-                  <h3 className="mt-1 break-words text-base font-black leading-7 text-[var(--color-text)]">{isEn ? activeVideoItem.titleEn : activeVideoItem.title}</h3>
-                  <p className="mt-2 break-words text-xs font-semibold leading-6 text-[var(--color-muted)]">{isEn ? activeVideoItem.summaryEn : activeVideoItem.summary}</p>
-                </div>
-                <label className="block text-xs font-extrabold text-[var(--color-text)]">
-                  {isEn ? 'Choose a video' : 'اختيار فيديو'}
-                  <select
-                    value={selectedVideoId}
-                    onChange={(e) => setSelectedVideoId(Number(e.target.value))}
-                    aria-label={isEn ? 'Select educational video' : 'اختيار الفيديو التربوي'}
-                    className="mt-2 min-h-[46px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm font-bold text-[var(--color-text)]"
-                  >
-                    {videoItems.map((v) => (
-                      <option key={v.id} value={v.id}>{isEn ? v.titleEn : v.title}</option>
-                    ))}
-                  </select>
-                </label>
-                <p className="rounded-xl bg-teal-50 px-3 py-2 text-[10px] leading-5 text-teal-900 dark:bg-[#142430] dark:text-teal-100">
-                  {isEn ? 'Only approved files uploaded to Nekbaar storage can play here.' : 'المشغّل يقبل الملفات المرفوعة داخل تخزين نكبر والمعتمدة فقط.'}
-                </p>
-              </div>
-            </section>
-          )}
+          <div className="mb-5 rounded-2xl bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-3 text-white">
+            <div className="mb-3">
+              <h3 className="text-sm font-black">{isEn ? 'Approved Nekbaar videos' : 'فيديوهات نكبر المعتمدة'}</h3>
+              <p className="mt-1 text-[10px] leading-5 text-white/70">{isEn ? 'Only videos stored and approved inside the platform appear here.' : 'المعروض هنا ملفات فيديو داخلية تم رفعها واعتمادها من الإدارة.'}</p>
+            </div>
+            <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={6}/>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredItems.map((item) => {
