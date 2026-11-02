@@ -140,7 +140,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           ? `✨ Generated and saved a new bedtime story for ${childName}!`
           : `✨ تم تأليف وحفظ حدوتة جديدة لـ ${childName}!`
       );
-    } catch (error) {
+    } catch {
       onShowToast?.(isEn ? 'Could not save the story. Please try again.' : 'تعذر حفظ الحدوتة. حاول مرة تانية.');
     } finally {
       setIsGenerating(false);
@@ -340,6 +340,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
           {kids.length === 0 ? (
             <div className="lg:col-span-3 rounded-xl bg-[var(--color-control-muted)]/40 dark:bg-[#142430] p-4 text-center text-xs font-semibold text-[var(--color-muted)]">{isEn ? 'Add a child profile to start a personalized story library.' : 'أضف ملف طفل لبدء مكتبة حواديت مخصصة.'}</div>
+          ) : visibleStories.length === 0 ? (
+            <div className="lg:col-span-3 rounded-xl border border-dashed border-amber-500/35 bg-amber-50/40 dark:bg-[#142430] p-4 text-center text-xs font-semibold text-[var(--color-muted)]">{isEn ? 'No saved stories for this family yet. Create the first story above.' : 'لسه مفيش حواديت محفوظة للأسرة. ابدأوا بأول حدوتة من الجزء اللي فوق.'}</div>
           ) : visibleStories.map((story) => {
             const isSelected = featuredStory?.id === story.id;
             return (
