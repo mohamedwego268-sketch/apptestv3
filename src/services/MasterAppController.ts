@@ -124,6 +124,7 @@ export interface BedtimeStoryRecord {
 export interface GenerateBedtimeStoryRequest {
   childId: number;
   childName: string;
+  childNameEn?: string;
   childBirth: string;
   childRemoteId?: string | number;
   themePrompt?: string;
@@ -903,6 +904,7 @@ export class MasterBackendService implements MasterControllerAPI {
     req: GenerateBedtimeStoryRequest
   ): Promise<BedtimeStoryRecord> {
     const childName = req.childName.trim();
+    const childNameEn = req.childNameEn?.trim() || childName;
     const childBirth = req.childBirth.trim();
     if (!childName || !childBirth || !Number.isFinite(req.childId) || req.childId < 0) {
       throw new Error('A valid saved child profile is required to create a personalized story.');
@@ -926,9 +928,9 @@ export class MasterBackendService implements MasterControllerAPI {
       childName,
       ageStage: ageInfo.stageCode,
       titleAr: `حدوتة ${childName}: رحلة ${themeAr}`,
-      titleEn: `${childName}’s Bedtime Tale: Journey of ${themeEn}`,
+      titleEn: `${childNameEn}’s Bedtime Tale: Journey of ${themeEn}`,
       storyBodyAr: req.storyBodyAr?.trim() || `في مساء هادئ مع أسرته، بدأ ${childName} مغامرة لطيفة حول «${themeAr}». وخلال الرحلة اكتشف معنى «${moralAr}»، ثم اختار طريقة بسيطة يشارك بها ما تعلمه مع أسرته قبل نهاية اليوم.`,
-      storyBodyEn: req.storyBodyEn?.trim() || `On a calm evening with their family, ${childName} began a gentle adventure about "${themeEn}". Along the way, ${childName} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
+      storyBodyEn: req.storyBodyEn?.trim() || `On a calm evening with their family, ${childNameEn} began a gentle adventure about "${themeEn}". Along the way, ${childNameEn} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
       moralTagAr: moralAr,
       moralTagEn: moralEn,
       calmingTempoBpm: ageInfo.months < 24 ? 58 : 60,
