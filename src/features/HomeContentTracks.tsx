@@ -11,7 +11,7 @@ import {
 import type { PageId } from '../context/FamilyAppContext';
 import type { LanguageCode } from '../domain/familySpaceCore';
 
-type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack';
+type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack';
 
 interface HomeContentTracksProps {
   language: LanguageCode;
@@ -56,7 +56,7 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Movement & sports',
     descriptionAr: 'أنشطة تناسب اهتمام طفلك',
     descriptionEn: 'Activities shaped around their interests',
-    destination: { kind: 'section', section: 'heroesArena' },
+    destination: { kind: 'section', section: 'sportsTrack' },
   },
   {
     id: 'wellbeing',
@@ -107,6 +107,9 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
           <h2 id="home-content-tracks-heading" className="text-sm font-black text-[var(--color-text)] dark:text-white">
             {isEn ? 'Your family’s six growth tracks' : 'مسارات نكبر الستة'}
           </h2>
+          <p className="mt-1 text-[10px] font-extrabold tracking-wide text-teal-700 dark:text-teal-300">
+            {isEn ? 'Understand → Log → Follow → Understand better → Take action' : 'اعرف ← سجّل ← تابع ← افهم ← اتصرف'}
+          </p>
           <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
             {isEn
               ? `One connected journey, starting with what ${childName} needs today.`
