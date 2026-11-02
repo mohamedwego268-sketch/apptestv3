@@ -3635,6 +3635,10 @@ describe('Homepage child emotional check-in linkage', () => {
     }
     assert.ok(parentingSrc.includes('initialKidId?: number | null'));
     assert.ok(parentingSrc.includes('setActiveKidId(initialKidId)'));
+    assert.ok(parentingSrc.includes('onActiveKidChange?: (kidId: number) => void'));
+    assert.ok(parentingSrc.includes('onActiveKidChange?.(kid.id)'));
+    assert.ok(homeSrc.includes('onActiveKidChange={(kidId) =>'));
+    assert.ok(homeSrc.includes("idea.id === 'children' ? openChildMoodCheckin()"));
     assert.ok(homeSrc.includes("recordType: 'emotional_social'"));
     assert.ok(homeSrc.includes('moodKey: mood.id'));
   });
