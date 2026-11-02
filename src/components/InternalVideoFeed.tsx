@@ -39,7 +39,7 @@ export const InternalVideoFeed: React.FC<InternalVideoFeedProps> = ({ language =
         .order('created_at', { ascending: false })
         .limit(limit);
       if (!active) return;
-      if (queryError) setError(queryError.message);
+      if (queryError) setError(en ? 'Videos could not be loaded right now. Please try again later.' : 'مش قادرين نحمّل الفيديوهات دلوقتي. حاولوا مرة تانية بعد شوية.');
       else { setItems((data || []) as FeedAsset[]); setError(''); }
       setLoading(false);
     };
