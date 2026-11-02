@@ -444,7 +444,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Universal Accordion States for every Home section (EXCEPT the Instagram Reels player which stays always open)
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    welcomeAudio: true,
+    welcomeAudio: false,
     quickTrack: true,
     dailyWisdom: false,
     heroesArena: false,
@@ -1317,8 +1317,33 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`
                 : isEn
                 ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
-                : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`}
+                : `ابدأ من احتياجك دلوقتي: تابع يوم طفلك، رتّب المواعيد، أو افتح السجل الصحي والتسوق من مكان واحد.`}
             </p>
+          </div>
+        </div>
+
+        <div data-testid="home-family-shortcuts" className="rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-50 via-white to-sky-50 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What would you like to do now?' : 'تحتاج تتابع إيه دلوقتي؟'}</h2>
+              <p className="mt-0.5 text-[11px] font-semibold text-[var(--color-muted)]">{isEn ? 'Your family’s most-used actions, one tap away.' : 'أهم المهام اليومية للأسرة في متناول إيدك.'}</p>
+            </div>
+            <span className="rounded-xl bg-white/80 dark:bg-[#0B131A] px-2.5 py-1.5 text-[10px] font-black text-teal-700 dark:text-teal-300">{isEn ? 'QUICK ACCESS' : 'وصول سريع'}</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {[
+              { id: 'routine' as const, icon: '✓', titleAr: 'روتين اليوم', titleEn: 'Today’s routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'teal' },
+              { id: 'calendar' as const, icon: '▦', titleAr: 'المواعيد والتقويم', titleEn: 'Calendar & events', detailAr: 'مواعيد الأسرة والتذكيرات', detailEn: 'Family events & reminders', tone: 'sky' },
+              { id: 'children' as const, icon: '♡', titleAr: 'ملفات الأطفال', titleEn: 'Children profiles', detailAr: 'النمو والاهتمامات والذكريات', detailEn: 'Growth, interests & memories', tone: 'rose' },
+              { id: 'medical' as const, icon: '+', titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
+              { id: 'services' as const, icon: '⌑', titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
+            ].map((action) => (
+              <button key={action.id} type="button" onClick={() => navigateTo(action.id)} className="min-h-[88px] rounded-xl border border-white/90 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] p-3 text-start shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-400 active:scale-[.98]">
+                <span className={`mb-2 grid h-8 w-8 place-items-center rounded-xl text-base font-black ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}>{action.icon}</span>
+                <span className="block text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? action.titleEn : action.titleAr}</span>
+                <span className="mt-1 block text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? action.detailEn : action.detailAr}</span>
+              </button>
+            ))}
           </div>
         </div>
 
