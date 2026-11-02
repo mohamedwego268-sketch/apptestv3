@@ -148,7 +148,8 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
 - [ ] Full Home information architecture and visual QA still need completion; keep the existing useful sections and reduce accordion fatigue without removing child records or navigation.
 - [ ] Review persistence/loading/error behavior across every Home quick action; do not mark unsaved local state as saved.
-- [ ] Automated CI for the latest main commit is running; update this status only after the final run completes.
+- [x] Latest main commit `7f06f8f` passed CI: 35/35 unit and security tests, TypeScript verification and production build.
+- [ ] Supabase Preview remains blocked by the existing remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No database migrations or production data changes were made.
 
 ## Execution order
 
