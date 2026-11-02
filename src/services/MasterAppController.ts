@@ -410,7 +410,7 @@ export class MasterBackendService implements MasterControllerAPI {
   public resetSessionState(): void {
     this.latestChildren = [];
     this.batterySummary = buildBatteryDiagnosticsFromState([]);
-    this.allStories = createInitialStoriesLibrary();
+    this.allStories = [];
     this.pendingOutbox = [];
     this.retryTelemetry = {
       attempt: 0,
