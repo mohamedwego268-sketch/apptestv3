@@ -1831,7 +1831,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               );
             })()}
           </div>
-
+          </>
+          )}
         </div>
       </HomeAccordionCard>
 
