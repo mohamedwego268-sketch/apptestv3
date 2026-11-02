@@ -103,10 +103,10 @@ Never attach a family-level reflection to a child's private record. Never use on
 
 ### Stage 2 — Home information architecture
 - [ ] Arrange the Home around the family journey, not a long collection of unrelated accordions.
-- [ ] Make the six content tracks discoverable without duplicating global navigation.
+- [x] Make the six content tracks discoverable without duplicating global navigation.
 - [ ] Give each section one clear primary action and a useful secondary action only when needed.
-- [ ] Add the missing religious and ethical values track with respectful, age-aware content.
-- [ ] Keep parent support distinct from child emotional wellbeing and routine reminders.
+- [x] Add the missing religious and ethical values track with respectful, age-aware content.
+- [x] Keep parent support distinct from child emotional wellbeing and routine reminders.
 
 ### Stage 3 — Content and interaction completion
 - [ ] Connect educational, sports, health, emotional, values and daily-life content to real profile context.
@@ -126,6 +126,16 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [ ] Run TypeScript checks and production build.
 - [ ] Review the final diff and confirm all edits are on `main`.
 - [ ] Report completed items and any blocked items clearly.
+
+## Stage 2 implementation log
+
+- [x] Added a six-track Home navigator for health, learning, movement, emotional wellbeing, values and daily life.
+- [x] Replaced the duplicated 12-item Home quick-access grid; all existing destinations remain in the app-wide navigation and mobile bottom navigation.
+- [x] Added age-aware values activities for 0–2, 2–5 and 5–8 years, with actions that can be added to the family routine.
+- [x] Kept spiritual and religious habits explicitly family-selected and non-prescriptive.
+- [x] Connected track cards to existing pages or the correct in-page accordion sections.
+- [x] Automated Checks on commit `1d9e285`: unit/security contract tests, TypeScript verification and production build all passed.
+- [ ] Supabase Preview check is currently blocked by the repository's remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No migrations or production database changes were made in this stage.
 
 ## Execution order
 
