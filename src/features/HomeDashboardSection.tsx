@@ -1749,8 +1749,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       >
         <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
           <section
-            data-testid="premium-illustrated-stories-coming-soon"
-            aria-label={isEn ? 'Premium illustrated stories coming soon' : 'القصص المصوّرة مع Premium قريبًا'}
+            data-testid="illustrated-stories-coming-soon"
+            aria-label={isEn ? 'Illustrated stories coming soon' : 'القصص المصوّرة قريبًا'}
             dir={isEn ? 'ltr' : 'rtl'}
             className="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-50 via-white to-amber-50 p-4 dark:from-[#211B35] dark:via-[#101D26] dark:to-[#30251D]"
           >
@@ -1762,7 +1762,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     {isEn ? 'Stories where your child becomes the hero' : 'حواديت مصوّرة طفلك بطلها'}
                   </h3>
                   <span className="rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white">
-                    {isEn ? 'Coming soon with Premium' : 'قريبًا مع Premium'}
+                    {isEn ? 'Coming soon' : 'قريبًا'}
                   </span>
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
