@@ -24,6 +24,7 @@ import { BatteryDiagnosticsView } from '../components/BatteryDiagnosticsView';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
+import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
 
 export interface HomeDashboardSectionProps {
@@ -1600,7 +1601,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
 
       <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
             <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
@@ -1608,29 +1609,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
           <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
         </div>
-        <div className="mt-4 rounded-2xl border border-white/15 bg-[#0B2530]/70 p-3">
-          <div className="mb-3 flex items-center gap-2 text-xs font-extrabold text-teal-100">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10">▶</span>
-            <span>{isEn ? 'Recently approved videos' : 'أحدث الفيديوهات المعتمدة'}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              { ar: 'نمو وتطور الطفل', en: 'Child development' },
-              { ar: 'الصحة والتغذية', en: 'Health & nutrition' },
-              { ar: 'اللعب والتعلّم', en: 'Play & learning' },
-              { ar: 'دعم الأب والأم', en: 'Parent support' },
-            ].map((topic) => (
-              <div key={topic.ar} className="rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-3 text-center">
-                <span className="block text-[10px] font-bold leading-5 text-white/90">{isEn ? topic.en : topic.ar}</span>
-                <span className="mt-1 block text-[9px] text-teal-100/65">{isEn ? 'Internal library' : 'مكتبة نكبر'}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-white/[0.04] px-3 py-4 text-center">
-            <p className="text-xs font-extrabold text-white">{isEn ? 'No approved videos yet' : 'مفيش فيديوهات معتمدة للعرض حاليًا'}</p>
-            <p className="mt-1 text-[10px] leading-5 text-white/65">{isEn ? 'Approved internal uploads will appear here automatically.' : 'أول ما يتم رفع الفيديوهات واعتمادها من الإدارة، هتظهر هنا تلقائيًا.'}</p>
-          </div>
-        </div>
+        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
       </section>
 
       <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
