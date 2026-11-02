@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Baby, CalendarDays, HeartPulse, ListChecks, ShoppingBag } from 'lucide-react';
 import {
   CalendarEvent,
   CommercialItem,
@@ -1332,14 +1333,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { id: 'routine' as const, icon: '✓', titleAr: 'روتين اليوم', titleEn: 'Today’s routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'teal' },
-              { id: 'calendar' as const, icon: '▦', titleAr: 'المواعيد والتقويم', titleEn: 'Calendar & events', detailAr: 'مواعيد الأسرة والتذكيرات', detailEn: 'Family events & reminders', tone: 'sky' },
-              { id: 'children' as const, icon: '♡', titleAr: 'ملفات الأطفال', titleEn: 'Children profiles', detailAr: 'النمو والاهتمامات والذكريات', detailEn: 'Growth, interests & memories', tone: 'rose' },
-              { id: 'medical' as const, icon: '+', titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
-              { id: 'services' as const, icon: '⌑', titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
+              { id: 'routine' as const, icon: ListChecks, titleAr: 'روتين اليوم', titleEn: 'Today’s routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'teal' },
+              { id: 'calendar' as const, icon: CalendarDays, titleAr: 'المواعيد والتقويم', titleEn: 'Calendar & events', detailAr: 'مواعيد الأسرة والتذكيرات', detailEn: 'Family events & reminders', tone: 'sky' },
+              { id: 'children' as const, icon: Baby, titleAr: 'ملفات الأطفال', titleEn: 'Children profiles', detailAr: 'النمو والاهتمامات والذكريات', detailEn: 'Growth, interests & memories', tone: 'rose' },
+              { id: 'medical' as const, icon: HeartPulse, titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
+              { id: 'services' as const, icon: ShoppingBag, titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
             ].map((action) => (
               <button key={action.id} type="button" onClick={() => navigateTo(action.id)} className="min-h-[88px] rounded-xl border border-white/90 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] p-3 text-start shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-400 active:scale-[.98]">
-                <span className={`mb-2 grid h-8 w-8 place-items-center rounded-xl text-base font-black ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}>{action.icon}</span>
+                <span className={`mb-2 grid h-9 w-9 place-items-center rounded-xl ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}><action.icon size={18} strokeWidth={2.2} /></span>
                 <span className="block text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? action.titleEn : action.titleAr}</span>
                 <span className="mt-1 block text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? action.detailEn : action.detailAr}</span>
               </button>
