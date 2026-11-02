@@ -3509,6 +3509,8 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
         mother: {
           ...DEFAULT_SEED.parentAccounts.mother,
           fullName: 'مريم',
+          phoneCode: '+966',
+          phoneNumber: '0551234567',
           notificationPrefs: {
             ...DEFAULT_SEED.parentAccounts.mother.notificationPrefs,
             enabled: false,
@@ -3540,6 +3542,10 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
     assert.equal(fatherNotifications.some((item) => item.slot === 'morning' || item.slot === 'midday' || item.slot === 'evening'), false);
     assert.ok(motherNotifications.some((item) => item.slot === 'security'));
     assert.ok(fatherNotifications.some((item) => item.slot === 'security'));
+    const motherSecurity = motherNotifications.find((item) => item.slot === 'security');
+    assert.ok(motherSecurity);
+    assert.equal(motherSecurity.bodyAr.includes('0551234567'), false);
+    assert.ok(motherSecurity.bodyAr.includes('••••••••67'));
 
     for (const notification of [...motherNotifications, ...fatherNotifications]) {
       assert.equal(notification.childName, undefined);
