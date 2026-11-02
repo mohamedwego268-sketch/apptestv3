@@ -2061,8 +2061,8 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
           >
             <p className="text-[10px] leading-5 font-bold text-slate-500 dark:text-slate-400">
               {isEn
-                ? 'Nekbaar © 2026 — All rights reserved'
-                : 'نكبر © 2026 — جميع حقوق الملكية محفوظة'}
+                ? 'Nekbaar © 2027 — All rights reserved'
+                : 'نكبر © 2027 — جميع حقوق الملكية محفوظة'}
             </p>
             <p className="text-[9px] leading-4 font-semibold text-slate-400 dark:text-slate-500">
               {isEn ? 'A family space, growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
