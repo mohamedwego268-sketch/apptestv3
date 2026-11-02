@@ -805,26 +805,26 @@ export const FullScreenNavigationLoader: React.FC<FullScreenNavigationLoaderProp
       <div aria-hidden="true" className="pointer-events-none absolute -top-28 -end-24 h-80 w-80 rounded-full bg-teal-300/25 blur-3xl" />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-28 -start-24 h-80 w-80 rounded-full bg-sky-300/25 blur-3xl" />
 
-      <div className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-[2rem] border border-white/80 bg-white/85 px-7 py-9 text-center shadow-[0_24px_80px_-28px_rgba(15,118,110,0.28)] backdrop-blur-xl">
-        <div className="relative mb-6 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-sky-50 shadow-inner">
+      <div className="relative z-10 flex w-full max-w-sm flex-col items-center rounded-[2rem] border border-white/80 bg-white/85 px-6 py-7 text-center shadow-[0_24px_80px_-28px_rgba(15,118,110,0.28)] backdrop-blur-xl sm:px-7 sm:py-8">
+        <div className="relative mb-5 flex h-24 w-24 items-center justify-center rounded-[2rem] border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-sky-50 shadow-inner">
           <span aria-hidden="true" className="absolute inset-1 rounded-[1.7rem] border border-teal-200/70 animate-pulse" />
           <PlayfulChildLoaderSvg size={68} />
         </div>
 
-        <div className="mb-2 text-[11px] font-extrabold tracking-[0.22em] text-teal-700/75">
+        <div className="mb-1.5 text-[11px] font-extrabold tracking-[0.22em] text-teal-700/75">
           NEKBAAR · نكبر
         </div>
         <div className="text-lg font-black leading-relaxed tracking-tight text-slate-900 sm:text-xl">
           {displayLabel}
         </div>
-        <p className="mt-2 max-w-[270px] text-xs font-semibold leading-6 text-slate-500">
+        <p className="mt-1.5 max-w-[270px] text-xs font-semibold leading-5 text-slate-500">
           {isEn ? 'A little moment while we prepare your family space' : 'لحظات بسيطة ونجهّز لك مساحة الأسرة'}
         </p>
 
-        <div className="mt-7 h-1.5 w-full overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
+        <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-slate-100" aria-hidden="true">
           <div className="h-full w-2/5 rounded-full bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 animate-nav-progress" />
         </div>
-        <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-slate-400">
+        <div className="mt-2.5 flex items-center gap-2 text-[10px] font-bold text-slate-400">
           <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
           {isEn ? 'Getting things ready' : 'بنرتّب كل حاجة ليك'}
         </div>
