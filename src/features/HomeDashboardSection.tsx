@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Baby, House } from 'lucide-react';
+import { Baby } from 'lucide-react';
 import {
   CommercialItem,
   FamilySpaceState,
