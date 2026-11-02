@@ -86,8 +86,8 @@ const PARENTING_SCENARIOS = [
     titleEn: 'Bedtime resistance',
     stepsAr: ['راجعوا الجوع أو العطش أو الانزعاج أو تغير الروتين قبل افتراض العناد.', 'ثبتوا تسلسلًا قصيرًا ومريحًا قبل النوم.', 'قدموا اختيارين صغيرين داخل موعد النوم المتفق عليه.'],
     stepsEn: ['Check for hunger, thirst, discomfort or routine changes before assuming defiance.', 'Keep a short, calming and predictable bedtime sequence.', 'Offer two small choices within the agreed bedtime.'],
-    phraseAr: '«تحب نقرأ قصة قصيرة ولا نسمع دعاء النوم الأول؟»',
-    phraseEn: '“Would you like a short story or your bedtime prayer first?”',
+    phraseAr: '«تحب نقرأ قصة قصيرة ولا نختار نشاط هادي تحبه قبل النوم؟»',
+    phraseEn: '“Would you like a short story or a quiet activity you enjoy before bed?”',
     avoidAr: 'تجنبوا تحويل النوم لمعركة أو تهديد الطفل بالعقاب.',
     avoidEn: 'Avoid turning bedtime into a battle or threatening punishment.',
     seekAr: 'استشيروا طبيب الأطفال إذا كانت هناك صعوبات نوم مستمرة أو شخير شديد أو تأثير ملحوظ على نشاط الطفل.',
@@ -127,6 +127,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   const [selectedMoodByKid, setSelectedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savedMoodByKid, setSavedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savingMood, setSavingMood] = useState(false);
+  const [moodSaveError, setMoodSaveError] = useState<string | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<(typeof PARENTING_SCENARIOS)[number]['id']>('big-feelings');
   const [householdEnergy, setHouseholdEnergy] = useState<HouseholdEnergy>('steady');
   const [householdCoordination, setHouseholdCoordination] = useState<HouseholdCoordination>('shared');
@@ -167,9 +168,20 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   const handleSaveMood = async () => {
     if (!activeKid || !activeMood || savingMood) return;
     setSavingMood(true);
+    setMoodSaveError(null);
     try {
       const saved = await onSaveChildMood(activeKid.id, activeMood);
-      if (saved) setSavedMoodByKid((previous) => ({ ...previous, [activeKid.id]: activeMood.id }));
+      if (saved) {
+        setSavedMoodByKid((previous) => ({ ...previous, [activeKid.id]: activeMood.id }));
+      } else {
+        setMoodSaveError(isEn
+          ? 'This check-in was not saved. Please make sure the child profile is saved to the family account, then try again.'
+          : 'لم يتم حفظ المتابعة. تأكدوا من حفظ ملف الطفل في حساب الأسرة ثم حاولوا مرة أخرى.');
+      }
+    } catch {
+      setMoodSaveError(isEn
+        ? 'A connection issue prevented saving. Your check-in is still available here; please try again.'
+        : 'حصلت مشكلة في الاتصال ومنقدرناش نحفظ المتابعة. الحالة لم تُحفظ، جرّبوا مرة تانية.');
     } finally {
       setSavingMood(false);
     }
@@ -246,7 +258,10 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {CHILD_MOODS.map((mood) => (
-                    <button key={mood.id} type="button" aria-pressed={selectedMoodByKid[activeKid.id] === mood.id} onClick={() => setSelectedMoodByKid((previous) => ({ ...previous, [activeKid.id]: mood.id }))} className={`min-h-[64px] rounded-xl border px-2 py-2 text-center transition-colors ${selectedMoodByKid[activeKid.id] === mood.id ? 'border-sky-600 bg-sky-500/15 text-sky-900 dark:text-sky-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+                    <button key={mood.id} type="button" aria-pressed={selectedMoodByKid[activeKid.id] === mood.id} onClick={() => {
+                        setSelectedMoodByKid((previous) => ({ ...previous, [activeKid.id]: mood.id }));
+                        setMoodSaveError(null);
+                      }} className={`min-h-[64px] rounded-xl border px-2 py-2 text-center transition-colors ${selectedMoodByKid[activeKid.id] === mood.id ? 'border-sky-600 bg-sky-500/15 text-sky-900 dark:text-sky-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
                       <span className="block text-xl">{mood.emoji}</span><span className="text-[11px] font-extrabold">{isEn ? mood.labelEn : mood.labelAr}</span>
                     </button>
                   ))}
@@ -258,6 +273,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                       {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظ في ملف الطفل')}
                     </button>
                     {savedMood?.id === activeMood.id && <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">✓ {isEn ? 'Saved to the child record.' : 'تم حفظ الحالة في سجل الطفل.'}</p>}
+                    {moodSaveError && <p role="alert" className="text-[11px] font-bold leading-relaxed text-rose-700 dark:text-rose-300">{moodSaveError}</p>}
                   </div>
                 )}
               </>
