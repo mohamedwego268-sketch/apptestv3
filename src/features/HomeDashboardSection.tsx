@@ -459,6 +459,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       }
     >
   >({});
+  const [savingDashboardActions, setSavingDashboardActions] = useState<Record<string, boolean>>({});
+  const savingDashboardActionKeysRef = useRef(new Set<string>());
 
   // Daily Essentials Interactive State
   const [selectedMealSlot, setSelectedMealSlot] = useState<'breakfast' | 'lunchbox' | 'snack'>('lunchbox');
@@ -534,6 +536,30 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
     return true;
   };
+  const runDashboardSave = async (
+    actionKey: string,
+    recordType: 'sleep_log' | 'nutrition' | 'sports' | 'emotional_social' | 'other',
+    title: string,
+    details: Record<string, unknown>,
+    onSaved: () => void
+  ): Promise<boolean> => {
+    if (savingDashboardActionKeysRef.current.has(actionKey)) return false;
+    savingDashboardActionKeysRef.current.add(actionKey);
+    setSavingDashboardActions((previous) => ({ ...previous, [actionKey]: true }));
+    try {
+      const saved = await saveDashboardChildLog(recordType, title, details);
+      if (saved) onSaved();
+      return saved;
+    } finally {
+      savingDashboardActionKeysRef.current.delete(actionKey);
+      setSavingDashboardActions((previous) => {
+        const next = { ...previous };
+        delete next[actionKey];
+        return next;
+      });
+    }
+  };
+
   const activeKidStageLabel = activeKidAge?.label || (isEn ? 'Age not set' : 'العمر غير محدد');
 
   // Give each child a consistent accent without depending on names or sample IDs.
@@ -761,13 +787,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     const current = waterCupsByKid[activeKidId] ?? 0;
     const next = Math.max(0, Math.min(10, current + delta));
     if (next === current || !activeKid) return;
-    const saved = await saveDashboardChildLog(
+    await runDashboardSave(
+      `${activeKidId}:hydration`,
       'nutrition',
       delta > 0 ? 'تسجيل شرب الماء' : 'تصحيح تسجيل شرب الماء',
-      { dashboardKind: 'hydration', cups: delta }
+      { dashboardKind: 'hydration', cups: delta },
+      () => setWaterCupsByKid((prev) => ({ ...prev, [activeKidId]: next }))
     );
-    if (!saved) return;
-    setWaterCupsByKid((prev) => ({ ...prev, [activeKidId]: next }));
   };
 
   const sportActivities = useMemo(() => {
@@ -892,6 +918,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const currentSport = sportActivities[selectedSportSlot];
   const isSportDoneToday = Boolean(completedSportByKid[activeKidId]);
+  const sportActionKey = `${activeKidId}:sports`;
+  const isSportSaving = Boolean(savingDashboardActions[sportActionKey]);
 
   // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
   const isMotherActive =
@@ -1366,6 +1394,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 moodEmoji: '😊',
                 careLogged: false,
               };
+              const sleepActionKey = `${activeKidId}:sleep`;
+              const mealActionKey = `${activeKidId}:meal`;
+              const careActionKey = `${activeKidId}:care`;
+              const isSleepSaving = Boolean(savingDashboardActions[sleepActionKey]);
+              const isMealSaving = Boolean(savingDashboardActions[mealActionKey]);
+              const isCareSaving = Boolean(savingDashboardActions[careActionKey]);
               const loggedCount = Number(pulse.sleepLogged) + Number(pulse.mealLogged) + Number(pulse.careLogged);
               const progressPercent = Math.round((loggedCount / 3) * 100);
               return (
@@ -1386,18 +1420,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   <button
                     type="button"
                     data-testid="quick-pulse-sleep-btn"
+                    disabled={pulse.sleepLogged || isSleepSaving}
                     onClick={() => {
-                      if (pulse.sleepLogged) return;
-                      void saveDashboardChildLog('sleep_log', 'تسجيل النوم أو القيلولة').then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, sleepLogged: true },
-                        }));
+                      void runDashboardSave(sleepActionKey, 'sleep_log', 'تسجيل النوم أو القيلولة', {}, () => {
+                        setQuickPulseByKid((prev) => {
+                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
+                          return { ...prev, [activeKidId]: { ...current, sleepLogged: true } };
+                        });
                         onShowToast?.(isEn ? `🌙 ${activeKidName}: sleep logged and saved ✓` : `🌙 تم حفظ سجل نوم ${activeKidName} بنجاح ✓`);
                       });
                     }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
+                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
                       pulse.sleepLogged
                         ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-900 dark:text-indigo-200'
                         : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
@@ -1407,24 +1440,23 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <span>🌙</span>
                       <span>{isEn ? 'Sleep / Nap' : 'نوم / قيلولة'}</span>
                     </span>
-                    <span className="text-[11px] font-black">{pulse.sleepLogged ? '✓' : '+'}</span>
+                    <span className="text-[11px] font-black">{isSleepSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.sleepLogged ? '✓' : '+'}</span>
                   </button>
 
                   <button
                     type="button"
                     data-testid="quick-pulse-meal-btn"
+                    disabled={pulse.mealLogged || isMealSaving}
                     onClick={() => {
-                      if (pulse.mealLogged) return;
-                      void saveDashboardChildLog('nutrition', 'تسجيل وجبة أو رضعة', { dashboardKind: 'meal' }).then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, mealLogged: true },
-                        }));
+                      void runDashboardSave(mealActionKey, 'nutrition', 'تسجيل وجبة أو رضعة', { dashboardKind: 'meal' }, () => {
+                        setQuickPulseByKid((prev) => {
+                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
+                          return { ...prev, [activeKidId]: { ...current, mealLogged: true } };
+                        });
                         onShowToast?.(isEn ? `🥣 ${activeKidName}: meal saved ✓` : `🥣 تم حفظ سجل وجبة ${activeKidName} بنجاح ✓`);
                       });
                     }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
+                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
                       pulse.mealLogged
                         ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:text-emerald-200'
                         : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
@@ -1434,7 +1466,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <span>🥣</span>
                       <span>{isEn ? 'Meal / Feed' : 'وجبة / رضعة'}</span>
                     </span>
-                    <span className="text-[11px] font-black">{pulse.mealLogged ? '✓' : '+'}</span>
+                    <span className="text-[11px] font-black">{isMealSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.mealLogged ? '✓' : '+'}</span>
                   </button>
 
                   <button
@@ -1453,18 +1485,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   <button
                     type="button"
                     data-testid="quick-pulse-care-btn"
+                    disabled={pulse.careLogged || isCareSaving}
                     onClick={() => {
-                      if (pulse.careLogged) return;
-                      void saveDashboardChildLog('other', 'تسجيل الرعاية اليومية', { dashboardKind: 'care' }).then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, careLogged: true },
-                        }));
+                      void runDashboardSave(careActionKey, 'other', 'تسجيل الرعاية اليومية', { dashboardKind: 'care' }, () => {
+                        setQuickPulseByKid((prev) => {
+                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
+                          return { ...prev, [activeKidId]: { ...current, careLogged: true } };
+                        });
                         onShowToast?.(isEn ? `🩺 ${activeKidName}: daily care saved ✓` : `🩺 تم حفظ سجل الرعاية اليومية لـ ${activeKidName} ✓`);
                       });
                     }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
+                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
                       pulse.careLogged
                         ? 'border-teal-500/40 bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
                         : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
@@ -1474,7 +1505,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <span>🩺</span>
                       <span>{isEn ? 'Daily care' : 'رعاية يومية'}</span>
                     </span>
-                    <span className="text-[11px] font-black">{pulse.careLogged ? '✓' : '+'}</span>
+                    <span className="text-[11px] font-black">{isCareSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.careLogged ? '✓' : '+'}</span>
                   </button>
                 </>
               );
@@ -1887,6 +1918,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
+                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
                       onClick={() => handleAdjustWater(-1)}
                       aria-label={isEn ? 'Decrease water log' : 'إنقاص تسجيل الماء'}
                       className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
@@ -1896,10 +1928,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     <button
                       type="button"
                       data-testid="home-hydration-add-cup-btn"
+                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
                       onClick={() => handleAdjustWater(1)}
                       className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
                     >
-                      + {isEn ? 'Log water' : 'تسجيل ماء 💧'}
+                      + {savingDashboardActions[`${activeKidId}:hydration`] ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Log water' : 'تسجيل ماء 💧')}
                     </button>
                   </div>
                 }
@@ -1978,13 +2011,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <button
                   type="button"
                   data-testid="home-sports-complete-btn"
+                  disabled={isSportDoneToday || isSportSaving}
                   onClick={() => {
-                    if (isSportDoneToday) return;
-                    void saveDashboardChildLog('sports', isEn ? currentSport.titleEn : currentSport.titleAr, {
+                    void runDashboardSave(sportActionKey, 'sports', isEn ? currentSport.titleEn : currentSport.titleAr, {
                       dashboardKind: 'sports',
                       activityId: selectedSportSlot,
-                    }).then((saved) => {
-                      if (!saved) return;
+                    }, () => {
                       setCompletedSportByKid((prev) => ({ ...prev, [activeKidId]: true }));
                       onShowToast?.(
                         isEn
@@ -1993,13 +2025,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       );
                     });
                   }}
-                  className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer ${
+                  className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
                     isSportDoneToday
                       ? 'bg-emerald-600 text-white shadow-2xs'
                       : 'bg-[#FF8C61] hover:bg-[#e86a3d] text-white'
                   }`}
                 >
-                  {isSportDoneToday
+                  {isSportSaving
+                    ? isEn
+                      ? 'Saving…'
+                      : 'جارٍ الحفظ…'
+                    : isSportDoneToday
                     ? isEn
                       ? '✓ Completed'
                       : '✓ تم التمرين'
