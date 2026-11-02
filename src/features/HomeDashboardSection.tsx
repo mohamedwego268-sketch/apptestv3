@@ -55,7 +55,6 @@ interface DailyAudioBriefEpisode {
   summaryEn: string;
   takeawayAr: string;
   takeawayEn: string;
-  melodyHz: number[];
 }
 
 const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
@@ -76,7 +75,6 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
       'A calm greeting and a warm moment of connection can help a child feel seen before the day begins.',
     takeawayAr: '💡 جرّب النهارده: قول لطفلك خطوتين أو تلاتة من خطة اليوم.',
     takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
-    melodyHz: [392.0, 440.0, 493.88, 523.25],
   },
   {
     id: 'brief-afternoon-30s',
@@ -95,7 +93,6 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
       'When your child returns, allow time to settle, offer water or a suitable snack, then ask a gentle question about the day.',
     takeawayAr: '💡 جرّب النهارده: عشر دقايق لعب أو كلام من غير موبايل.',
     takeawayEn: '💡 Try a short moment of undivided attention, without pressure to make it perfect.',
-    melodyHz: [440.0, 523.25, 587.33, 659.25],
   },
   {
     id: 'brief-evening-30s',
@@ -114,9 +111,20 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
       'You made it through another day. Choose a calm closing ritual that fits your family, and remember that rest is part of caring.',
     takeawayAr: '💡 جرّبوا: نفس الترتيب كل ليلة، مع مرونة لو اليوم اتأخر.',
     takeawayEn: '💡 A calm, caring goodbye to the day can help everyone transition toward rest.',
-    melodyHz: [329.63, 392.0, 440.0, 523.25],
   },
 ];
+
+interface WisdomGalleryCardItem {
+  id: string;
+  tagAr: string;
+  tagEn: string;
+  titleAr: string;
+  titleEn: string;
+  wisdomAr: string;
+  wisdomEn: string;
+  imageUrl: string;
+  borderTone: string;
+}
 
 const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
   {
@@ -376,36 +384,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [briefElapsedSec, setBriefElapsedSec] = useState<number>(0);
 
   const currentBrief = DAILY_AUDIO_BRIEFS_30S[activeBriefIdx] || DAILY_AUDIO_BRIEFS_30S[0];
-
-  const playGentleAudioSynthesizer = (notesHz: number[] = [392.0, 440.0, 523.25]) => {
-    try {
-      const Ctx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctx) return;
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new Ctx();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
-      }
-      notesHz.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.25);
-        gain.gain.setValueAtTime(0.06, ctx.currentTime + idx * 0.25);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + idx * 0.25 + 0.22);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.25);
-        osc.stop(ctx.currentTime + idx * 0.25 + 0.23);
-      });
-    } catch {
-      // Safe fallback in headless/restricted audio environments
-    }
-  };
 
   // Read the daily tip aloud with the device's speech engine; never autoplay audio.
   const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief): boolean => {
