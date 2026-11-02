@@ -735,7 +735,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Active child for Quick Tracking & Daily Essentials
   const activeKid = state.kids[selectedKidIdx] || state.kids[0];
-  const activeKidId = activeKid?.id ?? 1;
+  const activeKidId = activeKid?.id ?? -1;
   const activeKidAge = activeKid ? calculateChildAge(activeKid.birth, lang) : null;
   const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'your child' : 'طفلك';
 
@@ -1316,9 +1316,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               { id: 'children' as const, icon: Baby, titleAr: 'ملفات الأطفال', titleEn: 'Child profiles', detailAr: 'ملف مستقل لكل طفل', detailEn: 'A separate space for each child', tone: 'rose' },
               { id: 'medical' as const, icon: HeartPulse, titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
               { id: 'services' as const, icon: ShoppingBag, titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
+              { id: 'notifications' as const, icon: '🔔', titleAr: 'الإشعارات والدعم', titleEn: 'Notifications & support', detailAr: 'رسائل مساندة وتنبيهات الأسرة', detailEn: 'Parent support & family alerts', tone: 'rose' },
+              { id: 'community' as const, icon: '👥', titleAr: 'مجتمع الآباء والأمهات', titleEn: 'Parent community', detailAr: 'تجارب ونقاشات الأسرة', detailEn: 'Family experiences & discussions', tone: 'teal' },
+              { id: 'media' as const, icon: '🎬', titleAr: 'مكتبة الوسائط', titleEn: 'Media library', detailAr: 'فيديوهات ومحتوى مرئي', detailEn: 'Videos & visual content', tone: 'sky' },
+              { id: 'chat' as const, icon: '💬', titleAr: 'المحادثات', titleEn: 'Messages', detailAr: 'تواصل الأسرة والخدمات', detailEn: 'Family & service conversations', tone: 'violet' },
+              { id: 'assistant' as const, icon: '✨', titleAr: 'المساعد الذكي', titleEn: 'AI assistant', detailAr: 'مساعدة في تنظيم شؤون الأسرة', detailEn: 'Help with family planning', tone: 'amber' },
+              { id: 'wishes' as const, icon: '🎁', titleAr: 'أمنيات الأطفال', titleEn: 'Children’s wishes', detailAr: 'أفكار وأهداف محفوظة', detailEn: 'Saved ideas & goals', tone: 'rose' },
             ].map((action) => (
               <button key={action.id} type="button" onClick={() => navigateTo(action.id)} className="min-h-[88px] rounded-xl border border-white/90 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] p-3 text-start shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-400 active:scale-[.98]">
-                <span className={`mb-2 grid h-9 w-9 place-items-center rounded-xl ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}><action.icon size={18} strokeWidth={2.2} /></span>
+                <span className={`mb-2 grid h-9 w-9 place-items-center rounded-xl ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}>{typeof action.icon === 'string' ? <span aria-hidden="true" className="text-lg">{action.icon}</span> : <action.icon size={18} strokeWidth={2.2} />}</span>
                 <span className="block text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? action.titleEn : action.titleAr}</span>
                 <span className="mt-1 block text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? action.detailEn : action.detailAr}</span>
               </button>
@@ -1584,7 +1590,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
             <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Videos are uploaded, reviewed and played inside Nekbaar. No external video links.' : 'كل فيديوهات نكبر هتترفع على المنصة وتُراجع قبل النشر، وتتفرجوا عليها من مشغّل داخلي من غير روابط خارجية.'}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
+            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
+          </div>
         </div>
         <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
       </section>
@@ -1637,6 +1646,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isOpen={Boolean(openAccordions.quickTrack)}
         onToggle={() => toggleAccordion('quickTrack')}
         isEn={isEn}
+        headerExtraAction={<button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-black text-white">{isEn ? 'Open child profile' : 'فتح ملف الطفل'}</button>}
       >
         <div className="space-y-3">
           {/* Clean Child Selector Strip */}
@@ -1926,7 +1936,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isEn={isEn}
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {heroesPassionsFeed.map((hero) => {
+          {heroesPassionsFeed.length === 0 ? (
+            <div className="lg:col-span-3 rounded-2xl border border-dashed border-amber-500/35 bg-amber-50/40 dark:bg-[#142430] p-4 text-center space-y-3">
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to see interests and activities grounded in your family’s real information.' : 'أضيفوا ملف طفل علشان تظهر الاهتمامات والأنشطة المرتبطة ببيانات أسرتكم الفعلية.'}</p>
+              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
+            </div>
+          ) : heroesPassionsFeed.map((hero) => {
             const cheerCount = cheeredHeroIds[hero.id] ?? 0;
             return (
               <div
@@ -2160,6 +2175,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
           <StoriesLibraryView
             lang={lang}
+            kids={state.kids}
+            onOpenChildren={() => navigateTo('children')}
             onShowToast={onShowToast}
             onScheduleStoryTask={onAddSuggestedRoutineTask}
           />
