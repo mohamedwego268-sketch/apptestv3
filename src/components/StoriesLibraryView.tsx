@@ -117,6 +117,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
       const created = await master.stories.generate({
         childId: childMeta.id,
         childName,
+        childBirth: childMeta.birth,
+        childRemoteId: childMeta.remoteId,
         themePrompt: themePrompt.trim() || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة'),
         moralFocus: isEn ? moralObj.en : moralObj.ar,
       });
@@ -149,7 +151,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
             <span className="text-sm">🌙</span>
             <span className="text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300">
               {isEn
-                ? 'AI Bedtime Stories Library'
+                ? 'Bedtime Stories Library'
                 : 'مكتبة حواديت قبل النوم'}
             </span>
           </div>
@@ -277,7 +279,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 : kids.length === 0
                 ? isEn ? 'Add a child profile first' : 'أضف ملف طفل أولاً'
                 : isEn
-                ? '✨ Generate AI Bedtime Story'
+                ? '✨ Create Bedtime Story'
                 : '✨ تأليف حدوتة جديدة بالذكاء الاصطناعي'}
             </button>
           </div>
