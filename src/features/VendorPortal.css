@@ -10,3 +10,20 @@
 .vp-tabs{box-shadow:0 8px 22px -20px rgba(17,61,75,.35)}.vp-tabs button{min-height:42px;padding:0 17px;border-radius:11px;color:#647a82;font-size:12px;font-weight:900}.vp-tabs button.active{background:#087f78;color:white}
 @media(max-width:640px){.vp-shell{padding:14px 12px 28px}.vp-login,.vp-noaccess{margin:3vh auto;border-radius:22px}.vp-tabs{overflow-x:auto}.vp-tabs button{white-space:nowrap;flex:0 0 auto}}
 @media(prefers-reduced-motion:reduce){.vp-shell *{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Partner workspace: prevent long Arabic/English labels from colliding */
+.vp-shell { width: 100%; min-width: 0; overflow-x: clip; }
+.vp-shell :where(h1,h2,h3,p,small,b,strong,dt,dd,label,button) { min-width: 0; overflow-wrap: anywhere; word-break: normal; }
+.vp-shell header, .vp-brand, .vp-brand > div { min-width: 0; }
+.vp-brand b, .vp-brand small { display: block; white-space: normal; line-height: 1.55; }
+.vp-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; }
+.vp-tabs button { min-width: 0; min-height: 44px; padding: 9px 7px; white-space: normal; line-height: 1.45; overflow-wrap: anywhere; }
+.vp-panel, .vp-row, .vp-welcome { min-width: 0; }
+.vp-row > * { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .vp-shell header { align-items: flex-start; }
+  .vp-welcome { padding: 19px; }
+  .vp-welcome h1 { font-size: clamp(21px, 6vw, 29px); line-height: 1.45; }
+  .vp-tabs { gap: 5px; padding: 6px; }
+  .vp-tabs button { font-size: 10px; padding-inline: 4px; }
+}
