@@ -146,7 +146,7 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
                 childId
               )}
               disabled={!onAddRoutineTask}
-              className="mt-3 min-h-[40px] rounded-xl bg-amber-700 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-3 min-h-[44px] rounded-xl bg-amber-700 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isEn ? 'Add to family routine' : 'أضفها لروتين الأسرة'}
             </button>
