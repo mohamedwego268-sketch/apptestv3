@@ -3724,7 +3724,7 @@ describe('Homepage child-log save safety', () => {
     assert.ok(homeSrc.includes('savingDashboardActionKeysRef.current.delete(actionKey)'));
     assert.ok(homeSrc.includes('finally {'));
     for (const action of ['sleep', 'meal', 'care', 'sports', 'hydration']) {
-      assert.ok(homeSrc.includes(`${activeKidId}:${action}`), `Missing per-child save key for ${action}`);
+      assert.ok(homeSrc.includes('${activeKidId}:' + action), `Missing per-child save key for ${action}`);
     }
     assert.ok(homeSrc.includes('disabled={pulse.sleepLogged || isSleepSaving}'));
     assert.ok(homeSrc.includes('disabled={pulse.mealLogged || isMealSaving}'));
