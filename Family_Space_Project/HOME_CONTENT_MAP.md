@@ -186,6 +186,8 @@ The expert network is an editorial layer across the six existing tracks, not a s
 ## Home content work — latest implementation checkpoint
 
 - [x] Added explicit next-step cues to each of the six Home tracks: health record, age-fit learning activity, movement activity, child emotional check-in, values habit and daily routine.
+- [x] Prioritized three practical family actions ahead of passive video browsing, with direct actions for bedtime routine, child emotional check-in and health records.
+- [x] Clarified the video-library label as content available inside Nekbaar (not an admin-only area) and corrected CTA arrow direction in Arabic and English.
 - [x] Clarified the specialist-review panel heading so it does not imply that a verified expert catalogue or reviewed content is already live.
 - [x] Kept each cue attached to its existing verified destination; no new duplicate routes or data flows were introduced.
 
