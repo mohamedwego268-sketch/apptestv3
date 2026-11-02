@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { calculateChildAge, ChildProfile, LanguageCode, locText } from '../domain/familySpaceCore';
 
 type ChildMoodId = 'happy' | 'calm' | 'sad' | 'angry' | 'worried' | 'tired' | 'overwhelmed';
@@ -114,6 +114,7 @@ interface ParentingSupportCenterProps {
   language: LanguageCode;
   onSaveChildMood: (kidId: number, mood: (typeof CHILD_MOODS)[number]) => Promise<boolean>;
   onAddRoutineTask?: (taskName: string, time: string, kidId: number | null) => void;
+  initialKidId?: number | null;
 }
 
 export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
@@ -121,9 +122,18 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   language,
   onSaveChildMood,
   onAddRoutineTask,
+  initialKidId,
 }) => {
   const isEn = language === 'en';
-  const [activeKidId, setActiveKidId] = useState<number | null>(kids[0]?.id ?? null);
+  const [activeKidId, setActiveKidId] = useState<number | null>(initialKidId ?? kids[0]?.id ?? null);
+
+  useEffect(() => {
+    if (initialKidId != null && kids.some((kid) => kid.id === initialKidId)) {
+      setActiveKidId(initialKidId);
+    } else if (!kids.some((kid) => kid.id === activeKidId)) {
+      setActiveKidId(kids[0]?.id ?? null);
+    }
+  }, [initialKidId, kids, activeKidId]);
   const [selectedMoodByKid, setSelectedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savedMoodByKid, setSavedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savingMood, setSavingMood] = useState(false);
