@@ -19,6 +19,8 @@ import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { InternalVideoFeed } from '../components/InternalVideoFeed';
+import { HomeContentTracks } from './HomeContentTracks';
+import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
 
 export interface HomeDashboardSectionProps {
@@ -333,6 +335,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     bedtimeStories: false,
     dailyEssentials: false,
     parentingSupport: false,
+    valuesTrack: false,
     kidsGames: false,
     wisdomGallery: false,
     storeShowcase: false,
@@ -351,10 +354,24 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       bedtimeStories: openState,
       dailyEssentials: openState,
       parentingSupport: openState,
+      valuesTrack: openState,
       kidsGames: openState,
       wisdomGallery: openState,
       storeShowcase: openState,
     });
+  };
+
+  const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials') => {
+    const sectionIds: Record<typeof key, string> = {
+      heroesArena: 'home-heroes-passions-arena',
+      parentingSupport: 'home-parenting-support-center',
+      valuesTrack: 'home-values-track-card',
+      dailyEssentials: 'home-daily-essentials-hub',
+    };
+    setOpenAccordions((previous) => ({ ...previous, [key]: true }));
+    window.setTimeout(() => {
+      document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   };
 
   // Determine current time bucket (Morning: 5–11, Afternoon: 12–16, Evening: 17–4)
@@ -1058,6 +1075,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             ))}
           </div>
         </div>
+
+        <HomeContentTracks
+          language={lang}
+          childName={activeKidName}
+          onNavigate={navigateTo}
+          onOpenSection={openHomeSection}
+        />
 
         {/* =====================================================================
             CHECKLIST #1 & #7: BUG-FREE HORIZONTAL RTL VOICE MESSAGE CARD (30S)
@@ -2146,6 +2170,30 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             );
             return true;
           }}
+          onAddRoutineTask={onAddSuggestedRoutineTask}
+        />
+      </HomeAccordionCard>
+
+      {/* =====================================================================
+          9. ACCORDION: FAMILY VALUES & AGE-AWARE DAILY HABITS
+          ===================================================================== */}
+      <HomeAccordionCard
+        id="home-values-track-card"
+        testId="home-values-track-card"
+        iconEmoji="✨"
+        iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
+        title={isEn ? 'Family Values & Everyday Character' : 'القيم والعادات في حياة الأسرة'}
+        subtitle={isEn ? 'Age-aware kindness, respect, gratitude and responsibility' : 'الرحمة والاحترام والامتنان والمسؤولية بما يناسب عمر الطفل'}
+        badgeText={isEn ? 'Family + Child' : 'الأسرة + الطفل'}
+        isOpen={Boolean(openAccordions.valuesTrack)}
+        onToggle={() => toggleAccordion('valuesTrack')}
+        isEn={isEn}
+      >
+        <HomeValuesTrackSection
+          language={lang}
+          childName={activeKidName}
+          ageStage={activeKidAge?.stageCode || 'all'}
+          childId={activeKid?.id ?? null}
           onAddRoutineTask={onAddSuggestedRoutineTask}
         />
       </HomeAccordionCard>
