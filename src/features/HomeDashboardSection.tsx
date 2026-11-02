@@ -2366,7 +2366,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             ? 'Montessori toys, books, apparel, and family service listings'
             : 'ألعاب مونتيسوري، قصص تربوية، ملابس قطنية، وخدمات أسرية'
         }
-        badgeText={isEn ? 'Ages 0–8' : '٠–٨ سنوات'}
+        badgeText={isEn ? 'Family supplies & services' : 'مستلزمات وخدمات الأسرة'}
+        headerExtraAction={<button type="button" onClick={() => navigateTo('services')} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-black text-white">{isEn ? 'Open full store' : 'فتح المتجر بالكامل'}</button>}
         isOpen={Boolean(openAccordions.storeShowcase)}
         onToggle={() => toggleAccordion('storeShowcase')}
         isEn={isEn}
