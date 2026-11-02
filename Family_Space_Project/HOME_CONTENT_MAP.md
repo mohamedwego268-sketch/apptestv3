@@ -159,3 +159,55 @@ Never attach a family-level reflection to a child's private record. Never use on
 ## Execution order
 
 Finish the Home content map and experience before switching to unrelated store or backend work. Only make backend changes when required for a completed Home interaction and only within the approved existing data contract. No production migrations or RLS changes without explicit approval.
+
+
+## Expert content network — product and publishing rules
+
+The expert network is an editorial layer across the six existing tracks, not a seventh track and not a duplicate navigation system.
+
+- Home exposes six expertise areas that route into existing health, learning, movement/daily care, emotional support and values destinations.
+- The discovery section is explicitly marked as being prepared. It does not invent expert names, credentials, ratings, articles, videos, consultations or appointment availability.
+- A contributor profile may show a verified-expert badge only after an administrator has reviewed identity, current credentials, professional scope and evidence. Unverified contributors must be labelled accurately.
+- Every published item carries: stable content ID, title, summary, author/contributor ID, specialty, track, child age band, audience (parent/family/child), format, free/Premium entitlement, publication/review state, reviewer, review date, source references, safety note, related content IDs and next action.
+- Supported formats: articles, short videos, real audio, Q&A, practical family activities and visual guides. Never simulate media playback or imply an expert recorded audio where none exists.
+- Health, psychological, developmental and safety content requires editorial/specialist review before publication. General education is not diagnosis or a substitute for professional or emergency care.
+- Family data and child records are never shared with experts by default. Any future referral or question workflow requires explicit, specific guardian consent and a minimal-data handoff.
+- The Home discovery cards route to existing tracks until a real, reviewed expert catalogue exists. The new section does not create fake experts or a non-functional booking flow.
+
+## Subscription plans — product definition (pricing not decided)
+
+Initial plan model:
+
+| Capability | Free | Premium |
+|---|---|---|
+| Six core family content tracks | Included | Included |
+| Family and child records already available in the product | Included | Included |
+| Open expert/editorial content | Included | Included |
+| Premium specialist library and exclusive content | Not included | Included when published |
+| Personalized illustrated stories using a child photo | Not included | Planned; **coming soon**, not launch-ready |
+
+Commercial rules:
+- Do not publish prices, trials, billing intervals, limits or payment-provider claims until they are explicitly selected.
+- Support country-specific currency and price configuration when commercial setup begins; do not hardcode one regional price.
+- Premium illustrated stories are a future entitlement only. They are not available, must not be sold as an active feature, and must not request a child photo before launch.
+- Future photo-story acceptance requires guardian consent, private photo storage, no public sharing, no use for training/marketing without separate consent, age-appropriate themes, deletion controls for source photo and generated stories, and a clear retention policy.
+- A future entitlement system must enforce access on trusted backend paths, not only hide UI controls.
+
+Subscription administration scope for a later dedicated phase:
+1. Plans and country/currency price configuration.
+2. Subscriber status, plan, start/end dates, renewal, cancellation and plan changes.
+3. Entitlements for content and services, enforced server-side.
+4. Payment transactions, invoices, refunds and failed-payment states only after a provider is integrated.
+5. Configurable trials, coupons and offers; no implied availability before implementation.
+6. Conversion, active subscribers, renewal, churn and revenue reporting.
+7. Role-based administration and an audit trail.
+
+## Home content work — latest implementation checkpoint
+
+- [x] Added an expert-network discovery layer across the existing six tracks without adding a seventh track or inventing verified experts.
+- [x] Added a transparent Premium teaser for personalized illustrated stories using a child photo; it is marked coming soon, requests no photo and does not enable generation.
+- [x] Kept the existing text-based bedtime story library separate from the future photo-based illustrated story feature.
+- [ ] Complete the next pass on Home information hierarchy and connected editorial content cards.
+- [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
+- [ ] Verify the updated main branch with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
+- [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review when a preview deployment is available.
