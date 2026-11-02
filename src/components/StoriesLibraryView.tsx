@@ -394,13 +394,15 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           ) : visibleStories.map((story) => {
             const storyChild = kids.find((kid) => kid.id === story.childId);
             const storyChildName = storyChild ? locText(storyChild.name, lang) : story.childName;
+            const storyChildAge = storyChild ? calculateChildAge(storyChild.birth, lang).label : story.ageStage === 'unknown' ? (isEn ? 'Age not set' : 'العمر غير محدد') : story.ageStage;
             const isSelected = featuredStory?.id === story.id;
             return (
-              <div
+              <button
+                type="button"
                 key={story.id}
                 data-testid={`story-library-card-${story.sequenceCode}`}
                 onClick={() => setActiveStoryId(story.id)}
-                className={`rounded-2xl border p-4 flex flex-col justify-between gap-3 transition-all cursor-pointer ${
+                className={`w-full text-start rounded-2xl border p-4 flex flex-col justify-between gap-3 transition-all cursor-pointer ${
                   isSelected
                     ? 'border-[#0d9488] bg-teal-500/5 dark:bg-[#142430] shadow-xs'
                     : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/35 dark:bg-[#142430]/60 hover:border-amber-500/40'
@@ -412,7 +414,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                       {story.sequenceCode}
                     </span>
                     <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      👶 {storyChildName} · {story.ageStage}
+                      👶 {storyChildName} · {storyChildAge}
                     </span>
                   </div>
 
@@ -433,7 +435,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                     ⏱️ {story.durationMinutes}m · {story.calmingTempoBpm} BPM
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
