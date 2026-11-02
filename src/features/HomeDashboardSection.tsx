@@ -692,13 +692,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       await master.generateBedtimeStoryForChild({
         childId: activeKid.id,
         childName: childNameAr,
+        childNameEn,
         childBirth: activeKid.birth,
         childRemoteId: activeKid.remoteId,
         themePrompt: sanitizeUserText(storyCustomTopic, 120),
         moralFocusAr: selectedHomeStoryMoral.ar,
         moralFocusEn: selectedHomeStoryMoral.en,
-        storyBodyAr: linesAr.join('\\n'),
-        storyBodyEn: linesEn.join('\\n'),
+        storyBodyAr: linesAr.join('\n'),
+        storyBodyEn: linesEn.join('\n'),
       });
       setGeneratedStoryLines(isEn ? linesEn : linesAr);
       playGentleAudioSynthesizer([392.0, 440.0, 523.25]);
