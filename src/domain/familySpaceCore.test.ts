@@ -3755,7 +3755,7 @@ describe('Home content journey accessibility and track integrity', () => {
 
     for (const trackId of ['health', 'learning', 'movement', 'wellbeing', 'values', 'daily-life']) {
       assert.ok(tracksSrc.includes(`id: '${trackId}'`), `Missing Home track: ${trackId}`);
-      assert.ok(tracksSrc.includes(`data-testid={`home-track-${track.id}`}`));
+      assert.ok(tracksSrc.includes('data-testid={`home-track-${track.id}`}'));
     }
     assert.ok(tracksSrc.includes("page: 'medical'"));
     assert.ok(tracksSrc.includes("section: 'learningTrack'"));
