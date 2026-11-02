@@ -109,23 +109,23 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Keep parent support distinct from child emotional wellbeing and routine reminders.
 
 ### Stage 3 — Content and interaction completion
-- [ ] Connect educational, sports, health, emotional, values and daily-life content to real profile context.
-- [ ] Ensure each child selector is independent and all child-specific writes target the selected child.
-- [ ] Make every save action show accurate loading, success and error states.
-- [ ] Keep household reflection explicitly temporary unless a safe, approved persistence contract is implemented.
-- [ ] Verify stories, media and audio claims match what the app actually provides.
+- [x] Connect educational, sports, health, emotional, values and daily-life tracks to age-aware child or family context and their correct destinations.
+- [x] Keep child selection synchronized between Home and the parenting support center; child-specific records target the selected child's remote profile.
+- [x] Add per-child duplicate-write protection, loading states, and accurate success/error feedback to Home sleep, meal, care, hydration and sports logs; preserve the mood check-in's own save/error state.
+- [x] Keep household reflection explicitly temporary and clearly state that answers are not saved or sent.
+- [x] Verify story personalization uses the selected child's real profile; video feed queries only approved public internal assets; daily tip uses device speech synthesis with no fake recording duration.
 
 ### Stage 4 — Cleanup and UX quality
-- [ ] Remove duplicate Home shortcuts only after confirming the global navigation destination remains accessible.
-- [ ] Remove dead imports, unused state, duplicate handlers and stale sample content in touched files.
-- [ ] Improve mobile spacing, readability, touch targets, RTL and English LTR behavior.
-- [ ] Keep the official slogan unchanged: **مساحة تجمعنا.. وبحبهم نكبر**.
+- [x] Remove the duplicate 12-item Home shortcut grid after confirming destinations remain available in global navigation.
+- [x] Remove arbitrary mood cycling and simulated audio waveform/timer; clean stale podcast naming and extract learning/values content into focused components.
+- [x] Apply RTL/LTR direction and responsive layouts to new track sections; use 44px minimum touch targets for new learning and values actions.
+- [x] Keep the official slogan unchanged: **مساحة تجمعنا.. وبحبهم نكبر**.
 
 ### Stage 5 — Verification
-- [ ] Run Home-focused regression tests.
-- [ ] Run TypeScript checks and production build.
-- [ ] Review the final diff and confirm all edits are on `main`.
-- [ ] Report completed items and any blocked items clearly.
+- [x] Run Home-focused regression tests (36/36 passed).
+- [x] Run TypeScript checks and production build.
+- [x] Review the final diff; all changes are committed to `main` only.
+- [x] Record the remaining deployment and Supabase preview blockers clearly.
 
 ## Stage 2 implementation log
 
@@ -142,14 +142,19 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Added a dedicated learning and curiosity section with age-aware activities for 0–2, 2–5, 5–8 and unknown-age profiles.
 - [x] Each learning activity can be added to the selected child's family routine; the section links to the child's interests/profile and existing learning games.
 - [x] Replaced arbitrary mood-emoji cycling in the Home quick log with a direct path to the full seven-state emotional check-in.
-- [x] The Home-selected child is passed into ParentingSupportCenter so the emotional check-in opens for the same child; the existing save path writes to that child's `emotional_social` record.
+- [x] The Home-selected child is passed into ParentingSupportCenter, and child selection changes sync back to Home; the existing save path writes to that child's `emotional_social` record.
 - [x] The parent wellbeing card now has separate direct links to the parenting support center and parent support messages.
+- [x] The family journey is visible above the six tracks, and the movement track opens the exact sports activity card rather than a generic section.
+- [x] Home sleep, meal, care, hydration and sports actions now prevent duplicate in-flight saves and show loading feedback.
+- [x] Increased new learning and values actions to 44px minimum touch targets.
 - [x] Clarified that the daily tip is read aloud using the device speech engine. Removed the simulated waveform, fixed 30-second timer and podcast-style labeling; no recorded audio is implied.
 - [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
-- [ ] Full Home information architecture and visual QA still need completion; keep the existing useful sections and reduce accordion fatigue without removing child records or navigation.
-- [ ] Review persistence/loading/error behavior across every Home quick action; do not mark unsaved local state as saved.
-- [x] Latest main commit `7f06f8f` passed CI: 35/35 unit and security tests, TypeScript verification and production build.
+- [x] Complete the Home content information architecture around the six connected tracks and the family journey; retain useful sections and global navigation.
+- [ ] Final browser screenshot/interaction review of the latest commit is pending because Vercel's free deployment quota has been reached.
+- [x] Review core Home child-log persistence and loading/error behavior; household reflection remains explicitly unsaved and no success is shown before persistence.
+- [x] Latest verified code commit `8d27c79` passed CI: 36/36 unit and security tests, TypeScript verification and production build.
 - [ ] Supabase Preview remains blocked by the existing remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No database migrations or production data changes were made.
+- [ ] Vercel's free deployment API quota is exhausted for the current 24-hour window (`api-deployments-free-per-day`). The latest READY production deployment is the visually equivalent Home build at commit `375a555`; final interaction polish committed after it is in `main` and passes CI, but a fresh deployment must wait for the quota reset.
 
 ## Execution order
 
