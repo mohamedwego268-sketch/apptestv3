@@ -39,7 +39,7 @@
 .vp-section-head p{margin-top:5px;color:#81949a;font-size:11px;line-height:1.7}
 .vp-search{min-width:min(100%,280px);height:42px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #e1eaeb;border-radius:12px;background:#f9fbfb;color:#8ba0a4}
 .vp-search:focus-within{border-color:#16877e;box-shadow:0 0 0 3px rgba(22,135,126,.09)}
-.vp-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#29434c;font:600 11px inherit}
+.vp-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#29434c;font-size:11px;font-weight:600;font-family:inherit}
 .vp-sales-panel{background:linear-gradient(145deg,#fff,#f8fcfb)}
 .vp-sales-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:12px;background:#e8f5f3;color:#087f78}
 .vp-sales-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:15px}
