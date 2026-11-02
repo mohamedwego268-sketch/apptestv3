@@ -356,15 +356,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     });
   };
 
-  const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack') => {
+  const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack') => {
     const sectionIds: Record<typeof key, string> = {
       heroesArena: 'home-heroes-passions-arena',
       parentingSupport: 'home-parenting-support-center',
       valuesTrack: 'home-values-track-card',
       dailyEssentials: 'home-daily-essentials-hub',
       learningTrack: 'home-learning-track-card',
+      sportsTrack: 'home-essential-sports-card',
     };
-    setOpenAccordions((previous) => ({ ...previous, [key]: true }));
+    const accordionKey = key === 'sportsTrack' ? 'dailyEssentials' : key;
+    setOpenAccordions((previous) => ({ ...previous, [accordionKey]: true }));
     window.setTimeout(() => {
       document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
