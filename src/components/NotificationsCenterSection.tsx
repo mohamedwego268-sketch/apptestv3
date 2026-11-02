@@ -149,7 +149,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
               {notifications.map((notif, idx) => {
                 const slotTone =
                   notif.slot === 'support'
-                    ? 'violet'
+                    ? 'rose'
                     : notif.slot === 'morning'
                     ? 'amber'
                     : notif.slot === 'midday'
