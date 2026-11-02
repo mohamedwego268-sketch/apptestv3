@@ -2605,41 +2605,63 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       <div aria-hidden="true" className="pointer-events-none absolute -top-28 -end-28 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl" />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -start-28 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl" />
 
-      <div className="relative z-10 flex w-full max-w-md flex-1 flex-col items-center justify-center py-8 text-center">
-        <div className="mb-7 flex items-center gap-2 rounded-full border border-teal-600/15 bg-white/65 px-4 py-2 shadow-sm backdrop-blur dark:border-teal-300/15 dark:bg-white/5">
-          <span className="h-2 w-2 rounded-full bg-teal-500" />
-          <span className="text-[10px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">A FAMILY SPACE</span>
+      <div className="relative z-10 flex w-full max-w-md flex-1 flex-col items-center justify-center py-3 text-center nk-splash-content">
+        <div className="mb-2 flex items-center gap-2 rounded-full border border-teal-600/15 bg-white/65 px-3.5 py-1.5 shadow-sm backdrop-blur dark:border-teal-300/15 dark:bg-white/5">
+          <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+          <span className="text-[9px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">A FAMILY SPACE</span>
         </div>
 
-        <div className="relative mb-8 flex h-52 w-52 items-center justify-center sm:h-60 sm:w-60">
+        <div className="relative mb-2 flex h-32 w-32 items-center justify-center sm:h-36 sm:w-36">
           <span aria-hidden="true" className="absolute inset-0 rounded-full border border-teal-500/20" />
-          <span aria-hidden="true" className="absolute inset-3 rounded-full border border-dashed border-sky-500/25 animate-[spin_32s_linear_infinite]" />
-          <div className="relative flex h-44 w-44 items-center justify-center rounded-[2.7rem] border border-white/80 bg-white/90 shadow-[0_28px_70px_-25px_rgba(13,148,136,0.35)] dark:border-white/10 dark:bg-[#142430] sm:h-52 sm:w-52">
-            <PlayfulBoyAndGirlSplashSvg size={176} />
+          <span aria-hidden="true" className="absolute inset-2 rounded-full border border-dashed border-sky-500/25 animate-[spin_32s_linear_infinite]" />
+          <div className="relative flex h-28 w-28 items-center justify-center rounded-[2rem] border border-white/80 bg-white/90 shadow-[0_20px_50px_-22px_rgba(13,148,136,0.35)] dark:border-white/10 dark:bg-[#142430] sm:h-32 sm:w-32">
+            <PlayfulBoyAndGirlSplashSvg size={116} />
           </div>
         </div>
 
-        <div className="space-y-3">
-          <h1 data-testid="splash-brand-title" className="flex flex-wrap items-center justify-center gap-x-3 text-4xl font-black tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+        <div className="space-y-1.5">
+          <h1 data-testid="splash-brand-title" className="flex flex-wrap items-center justify-center gap-x-2 text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
             <span>نكبر</span>
             <span className="text-teal-600 dark:text-teal-300">Nekbaar</span>
           </h1>
-          <p data-testid="splash-brand-slogan" className="text-base font-extrabold leading-8 text-slate-700 dark:text-slate-200 sm:text-lg">
+          <p data-testid="splash-brand-slogan" className="text-sm font-extrabold leading-6 text-slate-700 dark:text-slate-200">
             مساحة تجمعنا.. وبحبهم نكبر
           </p>
-          <p className="mx-auto max-w-xs text-xs font-semibold leading-6 text-slate-500 dark:text-slate-400">
-            {isEn ? 'Growing together, with love at every step.' : 'كل تفاصيل العيلة وذكرياتهم في مساحة واحدة'}
+          <p className="mx-auto max-w-xs text-[11px] font-semibold leading-5 text-slate-500 dark:text-slate-400">
+            {isEn ? 'Everything your family needs to grow, connect and thrive.' : 'مساحة واحدة تتابع فيها رحلة طفلك وتجمع تفاصيل حياة أسرتك'}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onSkipOrFinish}
-          className="mt-10 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 px-8 text-sm font-extrabold text-white shadow-lg shadow-teal-700/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500"
-        >
-          {isEn ? 'Enter your family space' : 'ادخل مساحة أسرتك'}
-          <span aria-hidden="true">{isEn ? '→' : '←'}</span>
-        </button>
+        <div className="nk-splash-feature-grid mt-4 grid w-full grid-cols-2 gap-2 text-start" dir={isEn ? 'ltr' : 'rtl'}>
+          <div className="nk-splash-feature">
+            <span className="nk-splash-feature-icon">🌱</span>
+            <span><b>{isEn ? 'Child journey' : 'رحلة طفلك'}</b><small>{isEn ? 'Growth, health & daily memories' : 'النمو والصحة والذكريات اليومية'}</small></span>
+          </div>
+          <div className="nk-splash-feature">
+            <span className="nk-splash-feature-icon">✨</span>
+            <span><b>{isEn ? 'Smart guidance' : 'مساعد ذكي'}</b><small>{isEn ? 'Ideas, answers & family routines' : 'أفكار وإجابات وروتين الأسرة'}</small></span>
+          </div>
+          <div className="nk-splash-feature">
+            <span className="nk-splash-feature-icon">🤝</span>
+            <span><b>{isEn ? 'Family community' : 'مجتمع الأسرة'}</b><small>{isEn ? 'Share moments and experiences' : 'شارك اللحظات والخبرات'}</small></span>
+          </div>
+          <div className="nk-splash-feature">
+            <span className="nk-splash-feature-icon">🛍️</span>
+            <span><b>{isEn ? 'Family store' : 'متجر العائلة'}</b><small>{isEn ? 'Useful products & services' : 'منتجات وخدمات مختارة'}</small></span>
+          </div>
+        </div>
+
+        <div className="mt-4 w-full max-w-[250px]">
+          <button
+            type="button"
+            onClick={onSkipOrFinish}
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-600 to-cyan-600 px-7 text-[13px] font-extrabold text-white shadow-lg shadow-teal-700/20 transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500"
+          >
+            {isEn ? 'Explore Nekbaar' : 'ابدأ اكتشاف نكبر'}
+            <span aria-hidden="true">{isEn ? '→' : '←'}</span>
+          </button>
+          <p className="mt-1.5 text-[9px] font-semibold text-slate-400">{isEn ? 'Take a quick look around' : 'اكتشف مساحة أسرتك في ثوانٍ'}</p>
+        </div>
       </div>
 
       <footer data-testid="splash-bottom-copyright" className="relative z-10 w-full border-t border-teal-700/10 py-4 text-center text-[10px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
