@@ -1049,18 +1049,41 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   };
 
   const sportActivities = useMemo(() => {
-    const stageCode = activeKidAge?.stageCode || '0-2';
+    const stageCode = activeKid?.birth ? activeKidAge?.stageCode : 'unknown';
+    if (stageCode === 'unknown') {
+      const generalActivity = {
+        badgeAr: '🌿 نشاط عائلي بسيط',
+        badgeEn: '🌿 Simple family activity',
+        titleAr: `اختاروا حركة أو لعبة يحبها ${activeKidName}`,
+        titleEn: `Choose a movement game ${activeKidName} enjoys`,
+        descAr: 'أضيفوا تاريخ الميلاد لتظهر أنشطة مناسبة للعمر. اختاروا الآن نشاطًا آمنًا وتحت إشرافكم.',
+        descEn: 'Add the birth date for age-aware suggestions. For now, choose a safe activity with adult supervision.',
+        time: '05:00 م',
+      };
+      return { outdoor: generalActivity, balance: generalActivity, cardio: generalActivity };
+    }
     if (stageCode === '0-2') {
+      const isUnderSixMonths = (activeKidAge?.months ?? 0) < 6;
       return {
-        outdoor: {
-          badgeAr: '👶🏻 تمرين وقت البطن الحسي',
-          badgeEn: '👶🏻 Guided Tummy Time & Reach',
-          titleAr: `١٥ دقيقة تمرين وقت البطن على سجادة اللعب الحسية لـ ${activeKidName}`,
-          titleEn: `15-Min Sensory Mat Tummy Time & Toy Reach for ${activeKidName}`,
-          descAr: 'يقوّي عضلات الرقبة والأكتاف والظهر ويمهّد لمرحلة الجلوس والحبي بأمان.',
-          descEn: 'Strengthens neck, shoulder, and core muscles preparing for sitting & crawling.',
-          time: '01:30 م',
-        },
+        outdoor: isUnderSixMonths
+          ? {
+              badgeAr: '👶🏻 وقت البطن تحت إشرافك',
+              badgeEn: '👶🏻 Supervised tummy time',
+              titleAr: `فترات قصيرة من وقت البطن أثناء اليقظة لـ ${activeKidName}`,
+              titleEn: `Short, supervised tummy-time sessions for ${activeKidName}`,
+              descAr: 'يكون الطفل مستيقظًا وتحت مراقبة مباشرة على سطح ثابت وآمن. أوقفوا النشاط عند الانزعاج، ولا يُستخدم وقت البطن للنوم.',
+              descEn: 'Only while awake, on a firm safe surface with direct supervision. Stop if uncomfortable; tummy time is not for sleep.',
+              time: '01:30 م',
+            }
+          : {
+              badgeAr: '🧸 حركة ولعب أرضي آمن',
+              badgeEn: '🧸 Safe floor play',
+              titleAr: `لعب أرضي وتتبع لعبة وحركة حسب قدرة ${activeKidName}`,
+              titleEn: `Floor play, toy tracking and movement at ${activeKidName}’s pace`,
+              descAr: 'وفروا مساحة آمنة للحركة والاستكشاف، واسمحوا للطفل يكرر المحاولة دون استعجال.',
+              descEn: 'Offer a safe space to explore and move, allowing the child to repeat attempts without rushing.',
+              time: '01:30 م',
+            },
         balance: {
           badgeAr: '🧸 تتبع بصري ومهارات القبض باليد',
           badgeEn: '🧸 Visual Tracking & Grasp Play',
@@ -1076,7 +1099,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           titleAr: `١٠ دقائق تدليك دافئ وحركة الدراجة اللطيفة للساقين لـ ${activeKidName}`,
           titleEn: `10-Min Warm Oil Massage & Gentle Bicycle Legs for ${activeKidName}`,
           descAr: 'نشاط لطيف اختياري؛ أوقفوه إذا ظهر انزعاج، ولا يُستخدم لعلاج المغص أو اضطرابات النوم.',
-          descEn: 'Relieves tummy gas and cues deep, restorative nighttime sleep.',
+          descEn: 'A calm, optional interaction. Stop if the child shows discomfort; it is not a treatment for colic or sleep problems.',
           time: '07:15 م',
         },
       };
@@ -1161,6 +1184,31 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeParentNameEn = activeParentNameAr ? locText(activeParentNameAr, 'en') : isMotherActive ? 'Mother' : 'Parent';
   const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
   const partnerParentNameEn = partnerParentNameAr ? locText(partnerParentNameAr, 'en') : '';
+  const parentWellbeingMessage = useMemo(() => {
+    if (effectiveTimeBucket === 'morning') {
+      return {
+        titleAr: 'ابدأ يومك برفق مع نفسك',
+        titleEn: 'Begin the day gently with yourself',
+        bodyAr: 'مش مطلوب منك تبدأ اليوم بكل الإجابات. اختار أولوية واحدة، واطلب المساعدة لو محتاج. رعايتك لنفسك جزء من رعاية الأسرة.',
+        bodyEn: 'You do not need every answer to begin the day. Choose one priority and ask for help when you need it. Caring for yourself is part of caring for your family.',
+      };
+    }
+    if (effectiveTimeBucket === 'afternoon') {
+      return {
+        titleAr: 'خد مساحة صغيرة لنفسك',
+        titleEn: 'Make a little space for yourself',
+        bodyAr: 'لو تقدر، خُد استراحة قصيرة وشارك اللي شاغلك مع شخص تثق فيه. مش لازم تشيل كل المسؤوليات وحدك.',
+        bodyEn: 'If you can, take a short break and share what is on your mind with someone you trust. You do not have to carry every responsibility alone.',
+      };
+    }
+    return {
+      titleAr: 'اليوم الصعب مش معناه إنك قصّرت',
+      titleEn: 'A difficult day does not mean you failed',
+      bodyAr: 'افتكر لحظة واحدة كنت فيها حاضرًا مع أسرتك، حتى لو كانت بسيطة. اسمح لنفسك ترتاح؛ مفيش يوم لازم يكون مثالي.',
+      bodyEn: 'Remember one small moment when you were present for your family. Allow yourself to rest; no day has to be perfect.',
+    };
+  }, [effectiveTimeBucket]);
+
 
   return (
     <section
@@ -1249,6 +1297,21 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
                 : `ابدأ من احتياجك دلوقتي: تابع يوم طفلك، رتّب المواعيد، أو افتح السجل الصحي والتسوق من مكان واحد.`}
             </p>
+          </div>
+        </div>
+
+        <div data-testid="home-parent-wellbeing-card" className="rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-gradient-to-br from-rose-50/90 via-white to-teal-50/70 dark:from-[#211B25] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 flex items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200 text-xl">💚</span>
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'A moment for you, too' : 'رسالة ليك كمان يا أب أو أم'}</h2>
+              <span className="rounded-full bg-rose-100/80 dark:bg-rose-500/15 px-2 py-0.5 text-[9px] font-extrabold text-rose-700 dark:text-rose-200">{isEn ? 'Parent wellbeing' : 'دعم نفسي للوالدين'}</span>
+            </div>
+            <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? parentWellbeingMessage.titleEn : parentWellbeingMessage.titleAr}</h3>
+            <p className="text-xs leading-relaxed font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? parentWellbeingMessage.bodyEn : parentWellbeingMessage.bodyAr}</p>
+            <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[36px] pt-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline">
+              {isEn ? 'Open parent support messages →' : 'افتح رسائل الدعم والمساندة ←'}
+            </button>
           </div>
         </div>
 
