@@ -117,6 +117,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
       const created = await master.stories.generate({
         childId: childMeta.id,
         childName,
+        childNameEn: locText(childMeta.name, 'en'),
         childBirth: childMeta.birth,
         childRemoteId: childMeta.remoteId,
         themePrompt: themePrompt.trim() || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة'),
