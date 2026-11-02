@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Baby, CalendarDays, HeartPulse, ListChecks, ShoppingBag } from 'lucide-react';
+import { Baby, CalendarDays, HeartPulse, House, ListChecks, ShoppingBag } from 'lucide-react';
 import {
   CalendarEvent,
   CommercialItem,
@@ -616,66 +616,73 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [storyCustomTopic, setStoryCustomTopic] = useState<string>(
     'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت'
   );
-  const [storySelectedMoral, setStorySelectedMoral] = useState<string>('التعاون والمحبة بين الإخوة');
+  const [storySelectedMoral, setStorySelectedMoral] = useState<string>('اللطف والتعاون');
   const [generatedStoryLines, setGeneratedStoryLines] = useState<string[]>(() =>
     buildFifteenLineStory(
       'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت',
-      'التعاون والمحبة بين الإخوة',
-      isEn
+      'اللطف والتعاون',
+      isEn,
+      state.kids[0] ? locText(state.kids[0].name, lang) : (isEn ? 'your child' : 'طفلك')
     )
   );
 
-  function buildFifteenLineStory(topic: string, moral: string, english: boolean): string[] {
+  function buildFifteenLineStory(
+    topic: string,
+    moral: string,
+    english: boolean,
+    childName: string
+  ): string[] {
     const cleanTopic =
       sanitizeUserText(topic, 120) ||
-      (english ? 'The Glowing Star Adventure' : 'مغامرة نجمة المساء المضيئة');
+      (english ? 'A Small Adventure Together' : 'مغامرة صغيرة معًا');
     const cleanMoral =
       sanitizeUserText(moral, 80) ||
-      (english ? 'Sibling kindness & teamwork' : 'التعاون والمحبة بين الإخوة');
+      (english ? 'Kindness and cooperation' : 'اللطف والتعاون');
+    const safeChildName = sanitizeUserText(childName, 60) || (english ? 'your child' : 'طفلك');
 
     if (english) {
       return [
-        `1. As the golden evening quiet settled over the house, Dad Ahmad and Mom Maryam dimmed the warm bedroom lights.`,
-        `2. Eight-year-old Youssef closed his school notebook with a proud smile after finishing his sports and homework.`,
-        `3. Four-year-old Laila hugged her colorful drawing pad, still excited from her creative day at nursery.`,
-        `4. In his cozy crib nearby, six-month-old baby Hamza giggled softly, waving his tiny hands at his brother and sister.`,
-        `5. Tonight, a gentle magical breeze whispered the beginning of a special adventure: "${cleanTopic}".`,
-        `6. Youssef wore his brave captain badge and said, "Laila, Hamza, follow me—we will solve this quest together!"`,
-        `7. Laila used her magic paintbrush to draw a glowing bridge of pastel stars across the quiet night sky.`,
-        `8. Baby Hamza cooed happily, and every time he smiled, a little silver firefly lit the path ahead of them.`,
-        `9. Along the way, they met a sleepy little owl who needed help finding her way back to the olive tree.`,
-        `10. Youssef thought carefully with his champion focus, while Laila comforted the owl with a gentle nursery song.`,
-        `11. Together, they guided the little owl home, proving that "${cleanMoral}" makes every challenge easy.`,
-        `12. The wise owl thanked Youssef, Laila, and baby Hamza by sprinkling soft moonlight dust over their pillows.`,
-        `13. Back in their warm room, Mom Maryam tucked the soft cotton blankets around her three little heroes.`,
-        `14. Dad Ahmad whispered, "We are so proud of you—tomorrow brings brand new adventures and happy discoveries."`,
-        `15. Hamza closed his eyes first, followed by Laila and Youssef, drifting into a deep, peaceful, dream-filled sleep.`,
+        `1. As the day became quieter, ${safeChildName} noticed a tiny light near the window.`,
+        `2. It seemed to be inviting ${safeChildName} to begin a gentle adventure: "${cleanTopic}".`,
+        `3. ${safeChildName} paused, looked around, and decided to explore with curiosity.`,
+        `4. Along the way, a little bird appeared to be looking for a safe place to rest.`,
+        `5. ${safeChildName} wondered how to help without frightening the bird.`,
+        `6. A soft voice suggested moving slowly and giving the little visitor space.`,
+        `7. ${safeChildName} followed the quiet path and noticed a tree with a cozy branch.`,
+        `8. The bird hopped closer when everything around it felt calm.`,
+        `9. A gentle breeze moved the leaves like a friendly wave.`,
+        `10. ${safeChildName} discovered that listening and observing can be just as important as acting.`,
+        `11. With patience, the bird found a comfortable place to rest.`,
+        `12. The little light glowed again, as if celebrating the thoughtful choice.`,
+        `13. The adventure was full of small discoveries and one meaningful lesson: ${cleanMoral}.`,
+        `14. Back at home, ${safeChildName} shared the favorite moment of the journey.`,
+        `15. The day ended with a calm smile and the promise of another story to discover.`,
       ];
     }
 
     return [
-      `١. حين هدأت أضواء البيت في المساء، خفّف بابا أحمد وماما مريم الإضاءة لتبدأ لحظة الدفء العائلي.`,
-      `٢. أغلق البطل يوسف (٨ سنوات) حقيبته المدرسية بفخر بعد يوم مليء بالتركيز والنشاط الرياضي الجميل.`,
-      `٣. وجلست ليلى المبدعة (٤ سنوات) بجانبه وهي تحتضن كراسة التلوين التي رسمت فيها نجوماً مبهجة في الحضانة.`,
-      `٤. وفي سريره الصغير الدافئ، ابتسم الرضيع حمزة (٦ شهور) وبدأ يناغي بفرح حين رأى أخاه وأخته يقتربان منه.`,
-      `٥. همست نسمة المساء اللطيفة لتبدأ فصول حدوتة الليلة الخاصة: «${cleanTopic}».`,
-      `٦. ارتدى يوسف شارة القائد الشجاع وقال بحنان: «هيا يا ليلى وأنت يا صغيرنا حمزة، سنكتشف السر معاً!».`,
-      `٧. أمسكت ليلى فرشاتها السحرية ورسمت في الخيال جسراً ملوناً من الغيوم الناعمة يربط بين غرفهم والنجوم.`,
-      `٨. وكلما ضحك الصغير حمزة وحرّك يديه الصغيرتين، أضاءت فراشة ذهبية الطريق أمام يوسف وليلى.`,
-      `٩. وفي منتصف الرحلة، وجدوا عصفوراً صغيراً يبحث عن عشه الدافئ قبل حلول الليل.`,
-      `١٠. فكّر يوسف بذكاء الأبطال ليعرف اتجاه الشجرة، بينما غنّت ليلى للعصفور أغنية هادئة تعلمتها في الحضانة.`,
-      `١١. وبفضل «${cleanMoral}»، وصل العصفور إلى عشه بسلام وعمّت السعادة قلوب الإخوة الثلاثة.`,
-      `١٢. أهدت نجمة المساء ليوسف وليلى وحمزة ضوءاً هادئاً يملأ الغرفة بالسكينة والطمأنينة.`,
-      `١٣. عاد الأبطال الثلاثة إلى أسرّتهم الدافئة، وغطّتهم ماما مريم بالبطانية القطنية الناعمة بحب كبير.`,
-      `١٤. مسح بابا أحمد على رؤوسهم مبتسماً وقال: «فخورون بكم جداً.. غداً يوم جديد مليء بالنجاح واللعب».`,
-      `١٥. أغمض حمزة عينيه أولاً في نوم عميق، وتبعته ليلى ثم يوسف، في ليلة هادئة تحرسها المحبة.`,
+      `١. حين هدأ اليوم، لاحظ ${safeChildName} ضوءًا صغيرًا يلمع قرب النافذة.`,
+      `٢. بدا الضوء كأنه يدعو ${safeChildName} إلى مغامرة لطيفة عنوانها: «${cleanTopic}».`,
+      `٣. توقف ${safeChildName} قليلًا، وتأمل المكان بفضول قبل أن يبدأ الرحلة.`,
+      `٤. في الطريق، ظهر عصفور صغير يبحث عن مكان آمن ليستريح فيه.`,
+      `٥. فكر ${safeChildName} كيف يمكن المساعدة من غير إخافة العصفور.`,
+      `٦. وتذكر أن الهدوء وترك مساحة للآخرين قد يكونان أفضل بداية.`,
+      `٧. سار ${safeChildName} في الطريق حتى وجد شجرة لها غصن مريح.`,
+      `٨. اقترب العصفور بهدوء عندما شعر أن المكان آمن.`,
+      `٩. حرك النسيم أوراق الشجرة كأنها تحيي الزائر الصغير.`,
+      `١٠. اكتشف ${safeChildName} أن الاستماع والملاحظة مهمان مثل المبادرة والمساعدة.`,
+      `١١. وبعد لحظات، وجد العصفور مكانًا مناسبًا ليستريح فيه.`,
+      `١٢. أضاء النور الصغير مرة أخرى، وكأنه يحتفل بالتصرف اللطيف.`,
+      `١٣. حملت المغامرة اكتشافات جميلة ومعنى بسيطًا: ${cleanMoral}.`,
+      `١٤. عاد ${safeChildName} إلى البيت وحكى أجمل لحظة في الرحلة.`,
+      `١٥. انتهى اليوم بابتسامة هادئة ووعد بمغامرة جديدة في حكاية قادمة.`,
     ];
   }
 
   const master = useMaster();
 
   const handleGenerateCustomStory = () => {
-    const lines = buildFifteenLineStory(storyCustomTopic, storySelectedMoral, isEn);
+    const lines = buildFifteenLineStory(storyCustomTopic, storySelectedMoral, isEn, activeKidName);
     setGeneratedStoryLines(lines);
     void master.generateBedtimeStoryForChild({
       childId: activeKidId,
@@ -884,7 +891,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           .filter(Boolean);
         const uniqueInterests = Array.from(new Set(profileInterests)).slice(0, 4);
         const childName = locText(kid.name, lang);
-        const ageLabel = calculateChildAge(kid.birth, lang).label;
         const hasInterests = uniqueInterests.length > 0;
         const tones = [
           { border: 'border-sky-500/45', bg: 'bg-sky-500/12 text-sky-700 dark:text-sky-300', progress: 'from-sky-500 to-teal-500' },
@@ -1276,9 +1282,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
-              { id: 'routine' as const, icon: ListChecks, titleAr: 'روتين اليوم', titleEn: 'Today’s routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'teal' },
+              { id: 'family' as const, icon: House, titleAr: 'إدارة البيت والأسرة', titleEn: 'Household management', detailAr: 'المهام والمسؤوليات المشتركة', detailEn: 'Shared tasks & responsibilities', tone: 'teal' },
+              { id: 'routine' as const, icon: ListChecks, titleAr: 'روتين الأسرة', titleEn: 'Family routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'sky' },
               { id: 'calendar' as const, icon: CalendarDays, titleAr: 'المواعيد والتقويم', titleEn: 'Calendar & events', detailAr: 'مواعيد الأسرة والتذكيرات', detailEn: 'Family events & reminders', tone: 'sky' },
-              { id: 'children' as const, icon: Baby, titleAr: 'ملفات الأطفال', titleEn: 'Children profiles', detailAr: 'النمو والاهتمامات والذكريات', detailEn: 'Growth, interests & memories', tone: 'rose' },
+              { id: 'children' as const, icon: Baby, titleAr: 'ملفات الأطفال', titleEn: 'Child profiles', detailAr: 'ملف مستقل لكل طفل', detailEn: 'A separate space for each child', tone: 'rose' },
               { id: 'medical' as const, icon: HeartPulse, titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
               { id: 'services' as const, icon: ShoppingBag, titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
             ].map((action) => (
