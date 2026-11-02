@@ -2416,10 +2416,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               borderTone: tone,
             };
           }).map((gCard) => (
-            <div
+            <button
+              type="button"
               key={gCard.id}
               onClick={() => navigateTo('games')}
-              className={`rounded-2xl border-2 ${gCard.borderTone} bg-[var(--color-control-muted)]/35 dark:bg-[#142430] p-4 flex flex-col justify-between gap-2.5 hover:shadow-md transition-all cursor-pointer`}
+              className={`w-full text-start rounded-2xl border-2 ${gCard.borderTone} bg-[var(--color-control-muted)]/35 dark:bg-[#142430] p-4 flex flex-col justify-between gap-2.5 hover:shadow-md transition-all cursor-pointer`}
             >
               <div className="space-y-1.5">
                 <span className="text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
@@ -2436,7 +2437,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <span>▶</span>
                 <span>{isEn ? 'Play Now' : 'العب الآن'}</span>
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </HomeAccordionCard>
