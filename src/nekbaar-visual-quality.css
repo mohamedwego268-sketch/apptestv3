@@ -670,3 +670,19 @@ main input, main select, main textarea {
   .mobile-app-shell [data-master-card] { border-radius: 16px; }
   .mobile-app-shell [data-master-card] :where(h1,h2,h3,h4) { font-size: 12.5px !important; }
 }
+
+
+/* Retail art direction: visual-first marketplace inspired by leading commerce apps. */
+.mobile-app-shell [data-testid="store-categorized-rows"] { gap: 1.1rem; }
+.mobile-app-shell [data-testid^="store-category-row-"] { padding: 13px; border-radius: 25px; background: linear-gradient(155deg, color-mix(in srgb, var(--color-surface) 96%, #d9f4ef), var(--color-surface) 72%); }
+.mobile-app-shell [data-testid^="store-category-row-"] > div:first-child { border-bottom: 0; padding-bottom: 8px; }
+.mobile-app-shell [data-testid^="store-horizontal-carousel-"] { display: flex; gap: 11px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; padding: 3px 1px 10px; scrollbar-width: none; }
+.mobile-app-shell [data-testid^="store-horizontal-carousel-"]::-webkit-scrollbar { display: none; }
+.mobile-app-shell [data-store-product-card] { scroll-snap-align: start; border-radius: 20px; background: var(--color-surface); box-shadow: 0 10px 28px -20px rgba(9,55,61,.35); }
+.mobile-app-shell [data-store-product-card] [data-image-card] { border-radius: 17px; isolation: isolate; }
+.mobile-app-shell [data-store-product-card] [data-image-card] img { transition: transform .55s cubic-bezier(.2,.7,.2,1); }
+.mobile-app-shell [data-store-product-card]:hover [data-image-card] img { transform: scale(1.055); }
+.mobile-app-shell [data-store-product-card] [data-card-layer="2-action-footer"] { padding-top: 9px; }
+.mobile-app-shell [data-testid="store-category-grid"] { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 11px; }
+@media (max-width: 360px) { .mobile-app-shell [data-testid="store-category-grid"] { gap: 8px; } .mobile-app-shell [data-store-product-card] { padding: 8px; } }
+#nekbaar-interactive-splash-screen [data-testid="splash-language-toggle"] { z-index: 3; }
