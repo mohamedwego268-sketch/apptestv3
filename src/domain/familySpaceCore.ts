@@ -882,6 +882,9 @@ export interface MediaContentItem {
     captionsEn: string[];
     chaptersAr: string[];
     chaptersEn: string[];
+    /** Relative path inside the private nekbaar-media Storage bucket. Never an external URL. */
+    storagePath?: string | null;
+    posterPath?: string | null;
   };
   gallerySlides?: {
     titleAr: string;
