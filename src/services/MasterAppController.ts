@@ -1077,8 +1077,16 @@ export class MasterBackendService implements MasterControllerAPI {
           .eq('marketplace_visible', true)
           .limit(50);
 
-        if (error || !Array.isArray(data) || data.length === 0) {
-          return fallbackSequenced;
+        if (error) {
+          throw error;
+        }
+        if (!Array.isArray(data)) {
+          throw new Error('Catalog response is not a valid list.');
+        }
+        // An empty, successful production query means there are no published listings.
+        // Do not silently replace the admin-managed catalog with demo seed products.
+        if (data.length === 0) {
+          return [];
         }
 
         const now = Date.now();
@@ -1098,7 +1106,10 @@ export class MasterBackendService implements MasterControllerAPI {
               id: numericId,
               sequenceCode: rawSeq,
               familyId: this.familyId,
-              name: typeof row.name === 'string' ? row.name : 'منتج عائلي مميز',
+              name:
+                (typeof row.title === 'string' && row.title.trim()) ||
+                (typeof row.name === 'string' && row.name.trim()) ||
+                'منتج عائلي مميز',
               nameEn: typeof row.name_en === 'string' ? row.name_en : 'Featured Family Item',
               kind:
                 row.item_type === 'service' || row.kind === 'service'
@@ -1130,8 +1141,7 @@ export class MasterBackendService implements MasterControllerAPI {
           }
         );
 
-        if (remoteSequenced.length > 0) return remoteSequenced;
-        return fallbackSequenced;
+        return remoteSequenced;
       },
       fallbackSequenced,
       3
