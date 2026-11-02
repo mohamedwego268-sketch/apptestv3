@@ -3650,7 +3650,7 @@ describe('Homepage read-aloud and parent support transparency', () => {
     );
 
     assert.ok(homeSrc.includes('window.speechSynthesis.speak(utterance)'));
-    assert.ok(homeSrc.includes('audio-brief-read-aloud-status'));
+    assert.ok(homeSrc.includes('daily-tip-read-aloud-status'));
     assert.ok(homeSrc.includes('تُقرأ النصيحة بصوت الجهاز'));
     assert.equal(homeSrc.includes('audio-brief-waveforms'), false);
     assert.equal(homeSrc.includes('durationLabel'), false);
