@@ -475,7 +475,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const tone = PASTEL_CARD_TONES[toneKey];
     const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
     const categoryPhotos = CATEGORY_UNSPLASH_POOLS[item.category] || [];
-    const productImageGallery = [stockImageUrl, ...categoryPhotos.filter((url) => url !== stockImageUrl)].slice(0, 4);
+    const productImageGallery = [stockImageUrl, ...categoryPhotos.filter((url) => url !== stockImageUrl)].slice(0, 3);
     const activeImageIndex = Math.min(activeProductImageById[item.id] || 0, productImageGallery.length - 1);
     const activeProductImageUrl = productImageGallery[activeImageIndex] || stockImageUrl;
     const itemBgSpec = getCardBackgroundSpec(item.category, darkMode, activeProductImageUrl);
@@ -565,7 +565,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     onClick={() => setActiveProductImageById((prev) => ({ ...prev, [item.id]: imageIndex }))}
                     aria-label={isEn ? `Show product photo ${imageIndex + 1}` : `عرض الصورة ${imageIndex + 1}`}
                     aria-pressed={activeImageIndex === imageIndex}
-                    className={`h-8 w-8 overflow-hidden rounded-lg border-2 transition-all ${activeImageIndex === imageIndex ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-[var(--color-border)] dark:border-[#1E3646]'}`}
+                    className={`h-11 w-11 overflow-hidden rounded-xl border-2 transition-all ${activeImageIndex === imageIndex ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-[var(--color-border)] dark:border-[#1E3646]'}`}
                   >
                     <img src={imageUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   </button>
