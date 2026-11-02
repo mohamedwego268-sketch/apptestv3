@@ -606,3 +606,20 @@
 @media(prefers-reduced-motion:reduce){
   .b2b-tabs>button,.b2b-document-card,.admin-table-wrap .admin-table tbody tr{transition:none}
 }
+
+
+/* Admin header and page headings: robust wrapping on narrow screens */
+.admin-app { min-width: 0; overflow-x: clip; }
+.admin-topbar, .admin-topbar > *, .admin-page-heading, .admin-page-heading > *, .admin-heading-actions { min-width: 0; }
+.admin-page-heading h1, .admin-page-heading p, .admin-panel h3, .panel-heading p {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.admin-heading-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.admin-panel, .admin-table-wrap, .admin-table td, .admin-table th { min-width: 0; }
+@media (max-width: 560px) {
+  .admin-topbar { flex-wrap: wrap; min-height: 58px; gap: 8px; }
+  .admin-page-heading h1 { line-height: 1.4; overflow-wrap: anywhere; }
+  .admin-heading-actions { width: 100%; }
+}
