@@ -1408,7 +1408,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? activeKidName + '’s daily log' : 'ملخص يوم ' + activeKidName}</p>
-                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Sleep, meals and care — saved to the child profile.' : 'النوم والوجبات والرعاية.. محفوظة في ملف الطفل.'}</p>
+                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Saved sleep, meal and care entries appear in the child profile.' : 'أي تسجيل نوم أو وجبة أو رعاية محفوظ هتلاقوه في ملف الطفل.'}</p>
                       </div>
                       <span className="shrink-0 rounded-xl bg-white/80 dark:bg-[#0B131A] px-3 py-2 text-xs font-black tabular-nums text-teal-800 dark:text-teal-200">{loggedCount}/3</span>
                     </div>
