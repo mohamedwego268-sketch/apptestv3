@@ -83,10 +83,12 @@ using (
   bucket_id = 'nekbaar-product-images'
   and (
     (
-      name ~ '^platform/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[^/]+\.(jpg|jpeg|png|webp|avif)
+      name ~ '^platform/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[^/]+\\.(jpg|jpeg|png|webp|avif)$'
+      and private.admin_has_permission((select auth.uid()), 'store.products.manage')
+    )
     or
     (
-      name ~ '^partners/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[^/]+\.(jpg|jpeg|png|webp|avif)$'
+      name ~ '^partners/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[0-9a-fA-F-]{36}/[^/]+\\.(jpg|jpeg|png|webp|avif)$'
       and split_part(name, '/', 3) = (select auth.uid())::text
       and private.b2b_partner_can_manage_product_images(split_part(name, '/', 2))
     )
