@@ -153,6 +153,7 @@ export interface MasterControllerSnapshot {
   storiesByChild: Record<number, BedtimeStoryRecord[]>;
   allStories: BedtimeStoryRecord[];
   sequencedCatalog: SequencedCatalogItem[];
+  catalogSource: 'demo' | 'remote' | 'empty' | 'offline';
   pendingOutboxCount: number;
 }
 
@@ -189,6 +190,7 @@ interface PersistedMasterCache {
   batterySummary: FamilyBatterySummary;
   allStories: BedtimeStoryRecord[];
   sequencedCatalog: SequencedCatalogItem[];
+  catalogSource?: 'demo' | 'remote' | 'empty' | 'offline';
   sequenceCounter: number;
   pendingOutbox: Array<{
     id: string;
@@ -409,6 +411,7 @@ export class MasterBackendService implements MasterControllerAPI {
   private latestChildren: ChildProfile[] = DEFAULT_SEED.kids;
   private allStories: BedtimeStoryRecord[];
   private sequencedCatalog: SequencedCatalogItem[];
+  private catalogSource: 'demo' | 'remote' | 'empty' | 'offline' = 'demo';
   private sequenceCounter: number = 1050;
   private pendingOutbox: PersistedMasterCache['pendingOutbox'] = [];
   private listeners: Set<(snapshot: MasterControllerSnapshot) => void> = new Set();
@@ -422,6 +425,7 @@ export class MasterBackendService implements MasterControllerAPI {
       cached?.allStories && cached.allStories.length > 0
         ? cached.allStories
         : createInitialStoriesLibrary();
+    this.catalogSource = cached?.catalogSource ?? 'demo';
     this.sequencedCatalog =
       cached?.sequencedCatalog && cached.sequencedCatalog.length > 0
         ? cached.sequencedCatalog
@@ -451,6 +455,7 @@ export class MasterBackendService implements MasterControllerAPI {
         batterySummary: this.batterySummary,
         allStories: this.allStories,
         sequencedCatalog: this.sequencedCatalog,
+        catalogSource: this.catalogSource,
         sequenceCounter: this.sequenceCounter,
         pendingOutbox: this.pendingOutbox,
         lastSyncedAt: this.retryTelemetry.lastSyncedAt,
@@ -616,6 +621,7 @@ export class MasterBackendService implements MasterControllerAPI {
       storiesByChild,
       allStories: [...this.allStories],
       sequencedCatalog: [...this.sequencedCatalog],
+      catalogSource: this.catalogSource,
       pendingOutboxCount: this.pendingOutbox.length,
     };
   }
@@ -1067,7 +1073,7 @@ export class MasterBackendService implements MasterControllerAPI {
   public async refreshCatalogWithSequences(): Promise<SequencedCatalogItem[]> {
     const fallbackSequenced = buildSequencedCatalog(COMMERCIAL_CATALOG);
 
-    const { value } = await this.executeWithExponentialBackoff(
+    const { value, synced } = await this.executeWithExponentialBackoff(
       async () => {
         if (!supabaseClient) return fallbackSequenced;
         const { data, error } = await supabaseClient
@@ -1147,6 +1153,7 @@ export class MasterBackendService implements MasterControllerAPI {
       3
     );
 
+    this.catalogSource = synced ? (value.length > 0 ? 'remote' : 'empty') : 'offline';
     this.sequencedCatalog = value;
     this.persistLocalCache();
     this.notifyListeners();
