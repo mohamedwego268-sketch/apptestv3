@@ -611,6 +611,30 @@ export const LegalAndContactSection: React.FC<LegalAndContactSectionProps> = ({
             </div>
           </div>
 
+          {/* Official Nekbaar Website */}
+          <div className="rounded-[22px] border border-emerald-200/85 dark:border-[#1E3646] bg-emerald-50/75 dark:bg-[#101D26] p-4 sm:p-5 shadow-2xs">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A7F3D0] text-[10px] font-extrabold">
+                  {isEn ? 'OFFICIAL WEBSITE' : 'الموقع الرسمي'}
+                </span>
+                <p className="mt-1 text-xs font-bold text-[var(--color-text)]">
+                  {isEn ? 'Visit the official Nekbaar platform' : 'زوروا الموقع الرسمي لمنصة نكبر'}
+                </p>
+              </div>
+              <a
+                href="https://www.nekbaar.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                dir="ltr"
+                className="inline-flex min-h-[42px] items-center justify-center rounded-xl border border-emerald-300 dark:border-[#1E3646] bg-white dark:bg-[#142430] px-4 py-2 text-xs font-extrabold text-emerald-800 dark:text-[#A7F3D0] hover:bg-emerald-100 dark:hover:bg-[#1B3440] transition-colors"
+                aria-label={isEn ? 'Open official Nekbaar website in a new tab' : 'فتح الموقع الرسمي لنكبر في نافذة جديدة'}
+              >
+                www.nekbaar.com ↗
+              </a>
+            </div>
+          </div>
+
           {/* 2. Social Media Icons & Official Digital Channels Grid */}
           <div className="rounded-[22px] border border-purple-200/85 dark:border-[#1E3646] bg-purple-50/75 dark:bg-[#101D26] p-4 sm:p-5 space-y-3 shadow-2xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
