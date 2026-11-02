@@ -2667,7 +2667,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       </div>
 
       <footer data-testid="splash-bottom-copyright" className="relative z-10 w-full border-t border-teal-700/10 py-4 text-center text-[10px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
-        {isEn ? "Nekbaar © 2026 — All rights reserved" : "نكبر © ٢٠٢٦ — جميع حقوق الملكية محفوظة"}
+        {isEn ? "Nekbaar © 2027 — All rights reserved" : "نكبر © ٢٠٢٧ — جميع حقوق الملكية محفوظة"}
       </footer>
     </div>
   );
