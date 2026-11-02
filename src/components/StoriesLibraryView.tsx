@@ -197,7 +197,6 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 data-testid={`story-gen-select-child-${c.id}`}
                 onClick={() => {
                   setGeneratorChildId(c.id);
-                  setSelectedMoralIdx(c.id - 1);
                 }}
                 className={`min-h-[48px] p-2.5 rounded-xl border text-start transition-all flex items-center justify-between gap-2 cursor-pointer ${
                   active
