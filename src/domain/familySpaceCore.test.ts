@@ -3684,7 +3684,7 @@ describe('Homepage learning and values track coverage', () => {
     assert.ok(learningSrc.includes("onAddRoutineTask?.("));
     assert.ok(learningSrc.includes("onNavigate('children')"));
     assert.ok(learningSrc.includes("onNavigate('games')"));
-    assert.ok(learningSrc.includes('follow the child’s pace and interests'));
+    assert.ok(learningSrc.includes('Follow the child’s pace and interests'));
     assert.ok(homeSrc.includes('<HomeLearningTrackSection'));
     assert.ok(homeSrc.includes("learningTrack: 'home-learning-track-card'"));
     assert.ok(tracksSrc.includes("destination: { kind: 'section', section: 'learningTrack' }"));
