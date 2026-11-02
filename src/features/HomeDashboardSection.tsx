@@ -1063,10 +1063,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? parentWellbeingMessage.titleEn : parentWellbeingMessage.titleAr}</h3>
             <p className="text-xs leading-relaxed font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? parentWellbeingMessage.bodyEn : parentWellbeingMessage.bodyAr}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-              <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[36px] text-xs font-black text-rose-700 dark:text-rose-200 hover:underline">
+              <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[44px] px-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg">
                 {isEn ? 'Open wellbeing & parenting center →' : 'افتح مركز الدعم النفسي والتربوي ←'}
               </button>
-              <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[36px] text-xs font-black text-teal-800 dark:text-teal-200 hover:underline">
+              <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[44px] px-1 text-xs font-black text-teal-800 dark:text-teal-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-lg">
                 {isEn ? 'Parent support messages' : 'رسائل دعم الأب والأم'}
               </button>
             </div>
