@@ -478,9 +478,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         data-store-product-card={item.id}
         className={`${
           layoutMode === 'carousel'
-            ? 'w-[236px] sm:w-[256px] shrink-0'
+            ? 'w-[184px] sm:w-[208px] shrink-0'
             : 'w-full'
-        } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-4 sm:p-5 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-md hover:scale-[1.005] active:scale-[0.99] transition-all group`}
+        } rounded-2xl sm:rounded-3xl border ${tone.card} bg-[var(--color-surface)] dark:bg-[#101D26] dark:border-[#1E3646] p-2.5 sm:p-3 flex flex-col justify-between gap-2 soft-card-surface shadow-sm hover:shadow-lg hover:-translate-y-1 active:scale-[0.985] transition-all group`}
       >
         <div className="space-y-1.5">
           {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
@@ -496,7 +496,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             }}
             data-image-card="true"
             style={{ backgroundImage: itemBgSpec.backgroundImageCss }}
-            className="image-bg-card relative overflow-hidden rounded-xl p-2.5 min-h-[82px] sm:min-h-[90px] cursor-pointer flex flex-col justify-between gap-1 shadow-2xs"
+            className="image-bg-card relative overflow-hidden rounded-[18px] p-2 min-h-[168px] sm:min-h-[184px] cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs"
           >
             <img
               src={stockImageUrl}
@@ -536,7 +536,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
 
             <div className="relative z-10 image-card-glass-panel rounded-lg px-2 py-1 flex items-end justify-between gap-1">
-              <h4 className="image-card-title text-[11.5px] sm:text-xs font-extrabold leading-tight line-clamp-1">
+              <h4 className="image-card-title text-[11px] sm:text-xs font-extrabold leading-snug line-clamp-2">
                 {displayTitle}
               </h4>
             </div>
@@ -590,7 +590,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   {formatCurrency(origVal, currency, language)}
                 </span>
               )}
-              <strong className="text-xs font-extrabold text-[var(--color-text)] whitespace-nowrap">
+              <strong className="text-sm font-black text-[var(--color-text)] whitespace-nowrap">
                 {formatCurrency(priceVal, currency, language)}
               </strong>
             </div>
@@ -2510,7 +2510,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     onClick={() => openCategoryFullPage(sec.id)}
                     className="flex items-center gap-2.5 text-start group cursor-pointer min-w-0"
                   >
-                    <span className="relative w-10 h-10 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] overflow-hidden flex items-center justify-center text-base shrink-0 group-hover:border-[#FF8C61] shadow-2xs transition-all">
+                    <span className="relative w-12 h-12 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] overflow-hidden flex items-center justify-center text-base shrink-0 group-hover:border-[#FF8C61] shadow-2xs transition-all">
                       <img
                         src={sec.imageUrl}
                         alt={isEn ? sec.titleEn : sec.titleAr}
