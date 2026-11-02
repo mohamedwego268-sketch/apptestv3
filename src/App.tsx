@@ -202,14 +202,14 @@ export default function App() {
     setSplashScreen({ visible: true, fadingOut: false });
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 1400);
+    }, 9000);
   }, [handleDismissSplashScreen]);
 
   useEffect(() => {
     if (!splashScreen.visible) return;
     splashFadeTimerRef.current = window.setTimeout(() => {
       handleDismissSplashScreen();
-    }, 1200);
+    }, 9000);
     return () => {
       if (splashFadeTimerRef.current) window.clearTimeout(splashFadeTimerRef.current);
       if (splashHideTimerRef.current) window.clearTimeout(splashHideTimerRef.current);
