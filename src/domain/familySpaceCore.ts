@@ -4989,6 +4989,10 @@ export function generateThreeDailyNotifications(
   const isMother = parentId === 'mother';
   const parentTitleAr = isMother ? 'لأمّنا الغالية' : 'لأبينا الغالي';
   const parentTitleEn = isMother ? 'For Mom' : 'For Dad';
+  const phoneDigits = String(parentProfile.phoneNumber || '').replace(/\D/g, '');
+  const maskedPhone = phoneDigits
+    ? `${'•'.repeat(Math.max(4, phoneDigits.length - 2))}${phoneDigits.slice(-2)}`
+    : '—';
 
   const items: DailyParentingNotification[] = [];
 
@@ -5139,8 +5143,8 @@ export function generateThreeDailyNotifications(
     categoryLabelEn: 'Account & Family Safety Alert (Always Active)',
     titleAr: 'حماية الحساب وصلاحيات الأطفال مفعّلة',
     titleEn: 'Account Security & Child Access Controls Active',
-    bodyAr: `هاتف الحساب (${parentProfile.phoneCode} ${parentProfile.phoneNumber}) ${parentProfile.phoneVerified ? 'موثّق ✅' : 'بانتظار التحقق'}. تظل إشعارات الأمان وتغييرات الصلاحيات نشطة حتى أثناء ساعات الهدوء (${prefs.quietHoursStart} – ${prefs.quietHoursEnd}).`,
-    bodyEn: `Account phone (${parentProfile.phoneCode} ${parentProfile.phoneNumber}) is ${parentProfile.phoneVerified ? 'verified ✅' : 'pending verification'}. Security and permission alerts stay active even during Quiet Hours (${prefs.quietHoursStart} – ${prefs.quietHoursEnd}).`,
+    bodyAr: `هاتف الحساب (${parentProfile.phoneCode} ${maskedPhone}) ${parentProfile.phoneVerified ? 'موثّق ✅' : 'بانتظار التحقق'}. تظل إشعارات الأمان وتغييرات الصلاحيات نشطة حتى أثناء ساعات الهدوء (${prefs.quietHoursStart} – ${prefs.quietHoursEnd}).`,
+    bodyEn: `Account phone (${parentProfile.phoneCode} ${maskedPhone}) is ${parentProfile.phoneVerified ? 'verified ✅' : 'pending verification'}. Security and permission alerts stay active even during Quiet Hours (${prefs.quietHoursStart} – ${prefs.quietHoursEnd}).`,
     read: state.readNotificationIds.includes(`notif-${parentId}-security`),
   });
 
