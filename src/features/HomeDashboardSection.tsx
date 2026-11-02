@@ -12,7 +12,6 @@ import {
 import { PageId } from '../context/FamilyAppContext';
 import {
   MasterPatternCard,
-  SoftFilledIcon,
 } from '../components/DesignSystem';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { useMaster } from '../services/MasterAppController';
@@ -1824,7 +1823,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <span>🩺</span>
-                      <span>{isEn ? 'Care / Vitamin' : 'رعاية / فيتامين'}</span>
+                      <span>{isEn ? 'Daily care' : 'رعاية يومية'}</span>
                     </span>
                     <span className="text-[11px] font-black">{pulse.careLogged ? '✓' : '+'}</span>
                   </button>
@@ -2056,7 +2055,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onToggle={() => toggleAccordion('aiStoryteller')}
         isEn={isEn}
         headerExtraAction={
-          onToggleBedtimeMode ? (
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-black text-amber-800 dark:text-amber-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button>
+          {onToggleBedtimeMode ? (
             <button
               type="button"
               data-testid="home-bedtime-filter-btn"
@@ -2069,7 +2070,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             >
               🌙 {bedtimeMode ? (isEn ? 'Evening Light: ON' : 'إضاءة المساء: مفعّلة') : isEn ? 'Warm Light' : 'إضاءة المساء'}
             </button>
-          ) : undefined
+          ) : undefined}
+          </div>
         }
       >
         <div
@@ -2195,8 +2197,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         subtitle={
           isEn
-            ? 'Interactive nutrition & lunchbox, daily water intake goal, and physical activity'
-            : 'التغذية واللانش بوكس، هدف شرب المياه، والنشاط البدني والرياضي اليومي'
+            ? 'Nutrition, age-appropriate water logging, and physical activity'
+            : 'التغذية، وتسجيل الماء عند ملاءمة العمر، والنشاط البدني والرياضي اليومي'
         }
         badgeText={`${currentWaterCups} 💧`}
         badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
@@ -2577,8 +2579,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </div>
           ) : state.kids.map((kid, index) => {
             const age = calculateChildAge(kid.birth, lang);
+            const hasKnownAge = Boolean(kid.birth);
             const tone = ['border-sky-500/40', 'border-rose-500/40', 'border-amber-500/40'][index % 3];
-            const activity = age.months < 24
+            const activity = !hasKnownAge
+              ? {
+                  badgeAr: '🌿 نشاط عام تحت إشراف الأسرة',
+                  badgeEn: '🌿 General supervised activity',
+                  titleAr: 'اختاروا نشاطًا بسيطًا حسب قدرة الطفل واهتمامه',
+                  titleEn: 'Choose a simple activity based on the child’s ability and interests',
+                  descAr: 'أضيفوا تاريخ الميلاد لعرض اقتراحات أدق حسب المرحلة العمرية.',
+                  descEn: 'Add the birth date to show more relevant age-stage suggestions.',
+                }
+              : age.months < 24
               ? {
                   badgeAr: '👶🏻 استكشاف حسي مناسب للعمر',
                   badgeEn: '👶🏻 Age-aware sensory play',
