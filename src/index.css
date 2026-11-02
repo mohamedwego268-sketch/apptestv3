@@ -2060,3 +2060,21 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Responsive text and header collision guard */
+:where(h1,h2,h3,h4,p,dt,dd,label,small,th,td) {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+:where(button,a) { min-width: 0; }
+#main-sticky-header { isolation: isolate; }
+#main-sticky-header #brand-home-btn { max-width: 100%; }
+#main-sticky-header #brand-home-btn > div:last-child { min-width: 0; flex: 1 1 auto; }
+#main-sticky-header button { touch-action: manipulation; }
+@media (max-width: 360px) {
+  #main-sticky-header > div { gap: 6px; padding-inline: 10px; }
+  #main-sticky-header #header-slidebar-menu-btn { padding-inline: 9px; }
+  #main-sticky-header #brand-home-btn > div:last-child span:last-child { font-size: 8px; }
+}
