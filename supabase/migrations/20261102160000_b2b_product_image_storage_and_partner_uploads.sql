@@ -1,6 +1,14 @@
 -- Public product imagery with authenticated, tenant-scoped upload and delete controls.
 -- This migration is committed for review only; it is not applied to the connected production project.
 
+do $migration_guard$
+begin
+  if pg_catalog.to_regclass('private.platform_b2b_partner_members') is null then
+    raise exception 'B2B_PARTNER_MEMBERSHIP_MIGRATION_REQUIRED';
+  end if;
+end;
+$migration_guard$;
+
 alter table private.platform_b2b_products
   add column if not exists image_path text;
 
