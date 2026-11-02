@@ -53,3 +53,80 @@
   [data-master-card] { transition: none; }
   [data-master-card]:hover { transform: none; }
 }
+
+/* Layout integrity: side rails, text wrapping and narrow mobile viewports. */
+#root, #root > *, main, [data-app-shell], [data-page-content] {
+  min-width: 0;
+  max-width: 100%;
+}
+main {
+  overflow-wrap: anywhere;
+}
+main h1, main h2, main h3, main h4,
+main p, main label, main a, main button, main li {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+main h1, main h2, main h3, main h4 {
+  text-wrap: pretty;
+}
+main img, main video, main iframe, main canvas, main svg {
+  max-width: 100%;
+}
+main [class*="grid"] > *,
+main [class*="flex"] > * {
+  min-width: 0;
+}
+main [class*="truncate"] {
+  min-width: 0;
+}
+[role="complementary"], aside, [data-sidebar], [data-testid*="sidebar"] {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior: contain;
+}
+[role="complementary"] nav, aside nav, [data-sidebar] nav,
+[data-testid*="sidebar"] nav {
+  min-width: 0;
+  max-width: 100%;
+}
+[role="complementary"] a, [role="complementary"] button,
+aside a, aside button, [data-sidebar] a, [data-sidebar] button,
+[data-testid*="sidebar"] a, [data-testid*="sidebar"] button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+main table, main pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+main pre, main code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+main input, main select, main textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 430px) {
+  main section, main article, main [data-master-card] {
+    max-width: 100%;
+  }
+  main .grid {
+    min-width: 0;
+  }
+  main button, main a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+@media (max-width: 320px) {
+  main {
+    font-size: 0.9375rem;
+  }
+  main [class*="px-"] {
+    scroll-margin-inline: 0.5rem;
+  }
+}
