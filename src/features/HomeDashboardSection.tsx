@@ -529,10 +529,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   };
 
   // Read the daily tip aloud with the device's speech engine; never autoplay audio.
-  const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief) => {
+  const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief): boolean => {
     if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      setIsPlayingBrief(false);
       onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'خاصية القراءة الصوتية مش متاحة على الجهاز ده.');
-      return;
+      return false;
     }
     window.speechSynthesis.cancel();
     const spokenText = [isEn ? brief.titleEn : brief.titleAr, isEn ? brief.summaryEn : brief.summaryAr, isEn ? brief.takeawayEn : brief.takeawayAr].join('. ');
@@ -548,6 +549,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     setBriefElapsedSec(0);
     setIsPlayingBrief(true);
     window.speechSynthesis.speak(utterance);
+    return true;
   };
 
   useEffect(() => {
@@ -559,8 +561,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
   const handleReplayAudioBrief = () => {
-    speakDailyBrief(currentBrief);
-    onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
+    if (speakDailyBrief(currentBrief)) {
+      onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
+    }
   };
 
   // ============================================================================
@@ -1071,6 +1074,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const motherShortAr = (state.parentAccounts.mother?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
 
   const activeParentNameAr = isMotherActive ? motherShortAr : fatherShortAr;
+  const activeParentDisplayNameAr = activeParentNameAr || (isMotherActive ? 'ماما' : 'ولي الأمر');
   const activeParentNameEn = activeParentNameAr ? locText(activeParentNameAr, 'en') : isMotherActive ? 'Mother' : 'Parent';
   const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
   const partnerParentNameEn = partnerParentNameAr ? locText(partnerParentNameAr, 'en') : '';
@@ -1176,7 +1180,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             >
               {isEn
                 ? `Welcome back, ${activeParentNameEn} 👋 Let's make today's family routine easier.`
-                : `أهلاً يا ${activeParentNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
+                : `أهلاً يا ${activeParentDisplayNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
             </h1>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
               {isMotherActive
@@ -1366,7 +1370,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     const nextIdx = (activeBriefIdx + 1) % DAILY_AUDIO_BRIEFS_30S.length;
                     setActiveBriefIdx(nextIdx);
                     setBriefElapsedSec(0);
-                    setIsPlayingBrief(true);
                     speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
                   }}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
