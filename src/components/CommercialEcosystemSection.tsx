@@ -169,6 +169,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     'all' | 'bestseller' | 'new' | 'deal' | 'recommended'
   >('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [catalogDisplayMode, setCatalogDisplayMode] = useState<'categories' | 'grid'>('categories');
   const [cityScopeFilter, setCityScopeFilter] = useState<'all' | 'local'>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
   const [searchQuery, setSearchQuery] = useState('');
@@ -2442,6 +2443,18 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           1) DEDICATED FULL-PAGE CATEGORY VIEW (Multi-Column Grid) when a category title/button is clicked
           2) CATEGORIZED HORIZONTAL ROWS (Swipeable Carousels per Category) by default
           ===================================================================== */}
+      {!activeCategorySpec && filtered.length > 0 && (
+        <div data-testid="store-view-mode-switch" className="flex items-center justify-between gap-2 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-2.5">
+          <div>
+            <p className="text-xs font-black text-[var(--color-text)]">{isEn ? 'How would you like to browse?' : 'طريقة عرض المنتجات'}</p>
+            <p className="mt-0.5 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Switch between category discovery and a full catalog.' : 'اختار بين التصفح حسب الأقسام أو مشاهدة الكتالوج بالكامل.'}</p>
+          </div>
+          <div className="flex shrink-0 gap-1 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-1">
+            <button type="button" onClick={() => setCatalogDisplayMode('categories')} aria-pressed={catalogDisplayMode === 'categories'} className={`min-h-10 rounded-lg px-3 text-[10px] font-extrabold ${catalogDisplayMode === 'categories' ? 'bg-teal-700 text-white shadow-sm' : 'text-[var(--color-muted)]'}`}>{isEn ? 'Categories' : 'الأقسام'}</button>
+            <button type="button" onClick={() => setCatalogDisplayMode('grid')} aria-pressed={catalogDisplayMode === 'grid'} className={`min-h-10 rounded-lg px-3 text-[10px] font-extrabold ${catalogDisplayMode === 'grid' ? 'bg-teal-700 text-white shadow-sm' : 'text-[var(--color-muted)]'}`}>{isEn ? 'All items' : 'كل المنتجات'}</button>
+          </div>
+        </div>
+      )}
       {filtered.length === 0 ? (
         <FriendlyEmptyState
           id="empty-store-filter-state"
@@ -2524,6 +2537,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               )
               .map((item) => renderCompactProductCard(item, 'grid'))}
           </div>
+        </div>
+      ) : catalogDisplayMode === 'grid' ? (
+        <div data-testid="store-all-products-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 animate-page-enter">
+          {filtered.map((item) => renderCompactProductCard(item, 'grid'))}
         </div>
       ) : (
         /* -------------------------------------------------------------------
