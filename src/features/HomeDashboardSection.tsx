@@ -801,7 +801,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidStageLabel = activeKidAge?.label || (isEn ? 'Age not set' : 'العمر غير محدد');
 
   // Give each child a consistent accent without depending on names or sample IDs.
-  const getChildColorClasses = (kidName: string, idx: number) => {
+  const getChildColorClasses = (idx: number) => {
     if (idx % 3 === 1) {
       return {
         pillActive: 'bg-rose-600 text-white border-rose-600 shadow-2xs',
@@ -1019,14 +1019,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const currentNutrition = nutritionPlans[selectedMealSlot];
 
-  const targetWaterCups =
-    activeKidAge && activeKidAge.months < 12
-      ? 2
-      : activeKidAge && activeKidAge.years < 5
-      ? 5
-      : 7;
   const currentWaterCups = waterCupsByKid[activeKidId] ?? 0;
-  const waterProgressPct = Math.min(100, Math.round((currentWaterCups / targetWaterCups) * 100));
 
   const handleAdjustWater = async (delta: number) => {
     const current = waterCupsByKid[activeKidId] ?? 0;
@@ -1039,13 +1032,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     );
     if (!saved) return;
     setWaterCupsByKid((prev) => ({ ...prev, [activeKidId]: next }));
-    if (delta > 0 && next >= targetWaterCups) {
-      onShowToast?.(
-        isEn
-          ? `🎉 Bravo! ${activeKidName} reached today's hydration goal (${targetWaterCups} cups)!`
-          : `🎉 برافو! وصل ${activeKidName} لهدف شرب المياه اليومي (${targetWaterCups} أكواب)!`
-      );
-    }
   };
 
   const sportActivities = useMemo(() => {
@@ -1662,7 +1648,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <div className="inline-flex flex-wrap items-center gap-1.5">
               {state.kids.map((kid, idx) => {
                 const isActive = idx === selectedKidIdx;
-                const cTone = getChildColorClasses(kid.name, idx);
+                const cTone = getChildColorClasses(idx);
                 return (
                   <button
                     key={kid.id}
@@ -2199,7 +2185,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             ? 'Interactive nutrition & lunchbox, daily water intake goal, and physical activity'
             : 'التغذية واللانش بوكس، هدف شرب المياه، والنشاط البدني والرياضي اليومي'
         }
-        badgeText={`${currentWaterCups}/${targetWaterCups} 💧`}
+        badgeText={`${currentWaterCups} 💧`}
         badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
         isOpen={Boolean(openAccordions.dailyEssentials)}
         onToggle={() => toggleAccordion('dailyEssentials')}
@@ -2303,96 +2289,53 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               }
             />
 
-            {/* ESSENTIAL CARD 2: HYDRATION / WATER GOAL TRACKER */}
-            <MasterPatternCard
-              id="home-essential-hydration-card"
-              testId="home-essential-hydration-card"
-              tone="sky"
-              categoryKey="medical"
-              itemIdOrIndex={2}
-              darkMode={Boolean(state.darkMode)}
-              topLeftBadge={
-                <span>💧 {isEn ? 'Hydration & Water Goal' : 'شرب المياه والترطيب'}</span>
-              }
-              topRightBadge={
-                <span>
-                  {currentWaterCups}/{targetWaterCups} {isEn ? 'Cups' : 'أكواب'}
-                </span>
-              }
-              title={
-                isEn
-                  ? `${activeKidName}'s Daily Water Intake · ${waterProgressPct}%`
-                  : `معدل شرب المياه اليومي لـ ${activeKidName} · ${waterProgressPct}٪`
-              }
-              metaLeft={
-                <>
-                  <span>📍 {localizedCity}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>
-                    {isEn
-                      ? `Target: ${targetWaterCups} cups/day`
-                      : `الهدف اليومي: ${targetWaterCups} أكواب`}
-                  </span>
-                </>
-              }
-              bodyContent={
-                <div className="space-y-2.5 pt-1">
+            {/* Water logging is hidden for infants under 6 months and when age is unknown. */}
+            {activeKid?.birth && activeKidAge && activeKidAge.months >= 6 && (
+              <MasterPatternCard
+                id="home-essential-hydration-card"
+                testId="home-essential-hydration-card"
+                tone="sky"
+                categoryKey="medical"
+                itemIdOrIndex={2}
+                darkMode={Boolean(state.darkMode)}
+                topLeftBadge={<span>💧 {isEn ? 'Water log' : 'تسجيل شرب الماء'}</span>}
+                topRightBadge={<span>{currentWaterCups} {isEn ? 'logged' : 'حصص مسجلة'}</span>}
+                title={isEn ? `Water servings logged for ${activeKidName}` : `حصص الماء المسجلة لـ ${activeKidName}`}
+                metaLeft={<span>{isEn ? 'A record, not a daily target' : 'سجل متابعة وليس هدفًا يوميًا ثابتًا'}</span>}
+                bodyContent={
                   <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                    {currentWaterCups >= targetWaterCups
-                      ? isEn
-                        ? `Awesome! ${activeKidName} reached today's full hydration goal.`
-                        : `ممتاز! أكمل ${activeKidName} هدف شرب المياه بالكامل اليوم.`
-                      : isEn
-                      ? `${targetWaterCups - currentWaterCups} more cup(s) recommended to keep ${activeKidName} hydrated and energized.`
-                      : `متبقي ${targetWaterCups - currentWaterCups} أكواب مياه للحفاظ على تركيز ونشاط ${activeKidName} اليوم.`}
+                    {isEn
+                      ? 'Record water servings offered during the day. Needs vary with age, food, weather and health; follow your child’s clinician for individual guidance.'
+                      : 'سجلوا حصص الماء المقدمة خلال اليوم. الاحتياج يختلف حسب العمر والطعام والطقس والحالة الصحية؛ اتبعوا إرشادات الطبيب عند الحاجة.'}
                   </p>
-
-                  <div className="space-y-1.5">
-                    <div className="w-full h-2.5 rounded-full bg-sky-100 dark:bg-[#142430] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-sky-500 to-[#0d9488] transition-all duration-300"
-                        style={{ width: `${waterProgressPct}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between gap-1 text-[11px] font-extrabold text-sky-700 dark:text-sky-300">
-                      <span>
-                        {Array.from({ length: targetWaterCups })
-                          .map((_, i) => (i < currentWaterCups ? '💧' : '⚪'))
-                          .join(' ')}
-                      </span>
-                      <span dir="ltr" className="tabular-nums">
-                        {currentWaterCups * 200} ml
-                      </span>
-                    </div>
+                }
+                footerLeft={
+                  <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {currentWaterCups} {isEn ? 'servings today' : 'حصص اليوم'}
+                  </span>
+                }
+                footerRight={
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleAdjustWater(-1)}
+                      aria-label={isEn ? 'Decrease water log' : 'إنقاص تسجيل الماء'}
+                      className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="home-hydration-add-cup-btn"
+                      onClick={() => handleAdjustWater(1)}
+                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
+                    >
+                      + {isEn ? 'Log water' : 'تسجيل ماء 💧'}
+                    </button>
                   </div>
-                </div>
-              }
-              footerLeft={
-                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {currentWaterCups} / {targetWaterCups} {isEn ? 'Cups Today' : 'أكواب اليوم'}
-                </span>
-              }
-              footerRight={
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => handleAdjustWater(-1)}
-                    aria-label={isEn ? 'Decrease water cup' : 'إنقاص كوب ماء'}
-                    className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
-                  >
-                    −
-                  </button>
-                  <button
-                    type="button"
-                    data-testid="home-hydration-add-cup-btn"
-                    onClick={() => handleAdjustWater(1)}
-                    className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
-                  >
-                    + {isEn ? '1 Cup 💧' : 'كوب ماء 💧'}
-                  </button>
-                </div>
-              }
-            />
+                }
+              />
+            )}
 
             {/* ESSENTIAL CARD 3: PHYSICAL SPORTS & ACTIVITY */}
             <MasterPatternCard
