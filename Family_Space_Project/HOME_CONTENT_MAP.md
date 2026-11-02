@@ -34,10 +34,13 @@ The Home quick-access grid covers the primary destinations: household management
 - [x] Connect care essentials to the health record.
 - [x] Connect parenting support to parent notifications and child profiles.
 - [x] Connect the visual gallery to the daily parenting compass.
+- [x] Remove unsupported synthetic wellness percentages from the child log card.
+- [x] Keep age-based game suggestions generic until a real birth date exists.
+- [x] Make story and game cards keyboard-accessible.
 - [x] Replace the bedtime story library's hard-coded sample child selector with the real `state.kids` profiles.
 - [ ] Validate every Home interaction on mobile RTL and English LTR.
-- [ ] Correct the remaining story-generation service so generated story age metadata and child identity are derived from the selected real child rather than seeded sample profiles.
-- [ ] Remove duplicate or misleading story-generation UI and ensure success is shown only after the save operation succeeds.
+- [x] Correct the story-generation service so child identity and age metadata come from the selected real profile; unknown birth dates remain explicitly unknown.
+- [x] Consolidate story creation into one library flow, remove the duplicate Home generator, and show save success only after the save promise resolves.
 - [ ] Run the final Home-focused regression, TypeScript, and production build checks.
 
 ## Work order — keep scope disciplined
