@@ -86,7 +86,7 @@ Each item should include a stable ID, title, summary, contributor ID, specialty,
 
 ## Future feature release and communication boundary
 
-- Do not present the product as divided into paid/free areas or describe upcoming features as subscription-based.
+- Do not frame upcoming features around commercial access or pricing.
 - Do not publish pricing, trials, billing intervals, usage limits or payment-provider claims.
 - Public teasers for features that are not ready use only a neutral “قريبًا” / “Coming soon” message.
 - Do not request or collect a child's photo before the feature, privacy controls, guardian-consent flow and deletion controls are implemented and reviewed.
