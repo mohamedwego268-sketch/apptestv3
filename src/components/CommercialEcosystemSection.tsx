@@ -21,6 +21,7 @@ import { ThreeDIcon } from './ThreeDVisuals';
 import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   CARD_STOCK_PHOTO_URLS,
+  CATEGORY_UNSPLASH_POOLS,
   getCardBackgroundSpec,
   getProductUnsplashImageUrl,
 } from '../domain/cardBackgrounds';
@@ -208,6 +209,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [confirmedOrderSnapshot, setConfirmedOrderSnapshot] = useState<DemoOrder | null>(null);
   const [showLiveTracking, setShowLiveTracking] = useState(initialCategoryId === 'live_tracking');
   const [expandedProductMetaIds, setExpandedProductMetaIds] = useState<number[]>([]);
+  const [activeProductImageById, setActiveProductImageById] = useState<Record<number, number>>({});
   const [trackingStageIdx, setTrackingStageIdx] = useState<DeliveryStageIndex>(2);
   const [isAutoSimulatingDelivery, setIsAutoSimulatingDelivery] = useState<boolean>(false);
   const [driverInstructionNote, setDriverInstructionNote] = useState(
@@ -471,7 +473,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
     const tone = PASTEL_CARD_TONES[toneKey];
     const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
-    const itemBgSpec = getCardBackgroundSpec(item.category, darkMode, stockImageUrl);
+    const categoryPhotos = CATEGORY_UNSPLASH_POOLS[item.category] || [];
+    const productImageGallery = [stockImageUrl, ...categoryPhotos.filter((url) => url !== stockImageUrl)].slice(0, 4);
+    const activeImageIndex = Math.min(activeProductImageById[item.id] || 0, productImageGallery.length - 1);
+    const activeProductImageUrl = productImageGallery[activeImageIndex] || stockImageUrl;
+    const itemBgSpec = getCardBackgroundSpec(item.category, darkMode, activeProductImageUrl);
 
     return (
       <div
@@ -500,7 +506,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             className="image-bg-card relative overflow-hidden rounded-[18px] p-2 min-h-[168px] sm:min-h-[184px] cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs"
           >
             <img
-              src={stockImageUrl}
+              src={activeProductImageUrl}
               alt={displayTitle}
               loading="lazy"
               decoding="async"
@@ -547,6 +553,25 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </h4>
             </div>
           </div>
+          {productImageGallery.length > 1 && item.kind !== 'service' && (
+            <div className="flex items-center justify-between gap-2 px-0.5" aria-label={isEn ? 'Product image gallery' : 'معرض صور المنتج'}>
+              <span className="text-[9px] font-bold text-[var(--color-muted)]">{isEn ? 'More category photos' : 'صور إضافية من الفئة'}</span>
+              <div className="flex items-center gap-1">
+                {productImageGallery.map((imageUrl, imageIndex) => (
+                  <button
+                    key={`${item.id}-photo-${imageIndex}`}
+                    type="button"
+                    onClick={() => setActiveProductImageById((prev) => ({ ...prev, [item.id]: imageIndex }))}
+                    aria-label={isEn ? `Show product photo ${imageIndex + 1}` : `عرض الصورة ${imageIndex + 1}`}
+                    aria-pressed={activeImageIndex === imageIndex}
+                    className={`h-8 w-8 overflow-hidden rounded-lg border-2 transition-all ${activeImageIndex === imageIndex ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-[var(--color-border)] dark:border-[#1E3646]'}`}
+                  >
+                    <img src={imageUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {item.kind === 'service' && <div className="flex flex-wrap items-center gap-1.5 px-0.5 text-[9.5px] font-extrabold text-[var(--color-muted)]"><span className="rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] px-1.5 py-0.5">⏱ {item.serviceDurationMinutes ? `${item.serviceDurationMinutes} ${isEn ? 'min' : 'دقيقة'}` : (isEn ? 'Duration on request' : 'المدة حسب الاتفاق')}</span>{item.bookingRequired && <span className="rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5">📅 {isEn ? 'Booking required' : 'يتطلب حجزاً'}</span>}{item.providerName && <span className="truncate">{item.providerName}</span>}</div>}
 
           {/* Layer 3 (Metadata & Tags Carousel): Hidden by default, revealed only on explicit user trigger */}
