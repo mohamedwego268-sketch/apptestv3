@@ -1478,6 +1478,10 @@ export default function App() {
   const handleCompleteDemoCheckout = (
     paymentMethod: CheckoutPaymentMethodType = 'electronic_card'
   ) => {
+    if (!isPreviewMode) {
+      showToast(lang === 'en' ? 'Demo checkout is available only in preview mode.' : 'إتمام الطلب التجريبي متاح في وضع المعاينة فقط.');
+      return;
+    }
     const sourceCart =
       state.cart.length > 0
         ? state.cart
@@ -2606,6 +2610,7 @@ export default function App() {
                   orders={state.orders}
                   initialCategoryId={storeInitialCategoryId}
                   initialOpenCheckout={storeInitialOpenCheckout}
+                  allowDemoData={isPreviewMode}
                   onAddProductToWishes={(item) =>
                     handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                   }
