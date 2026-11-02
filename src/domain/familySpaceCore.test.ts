@@ -3705,3 +3705,28 @@ describe('Homepage learning and values track coverage', () => {
     assert.ok(valuesSrc.includes('onAddRoutineTask?.('));
   });
 });
+
+describe('Homepage child-log save safety', () => {
+  it('prevents duplicate in-flight writes and shows loading states for child-specific logs', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+
+    assert.ok(homeSrc.includes('savingDashboardActionKeysRef.current.has(actionKey)'));
+    assert.ok(homeSrc.includes('savingDashboardActionKeysRef.current.add(actionKey)'));
+    assert.ok(homeSrc.includes('savingDashboardActionKeysRef.current.delete(actionKey)'));
+    assert.ok(homeSrc.includes('finally {'));
+    for (const action of ['sleep', 'meal', 'care', 'sports', 'hydration']) {
+      assert.ok(homeSrc.includes(`${activeKidId}:${action}`), `Missing per-child save key for ${action}`);
+    }
+    assert.ok(homeSrc.includes('disabled={pulse.sleepLogged || isSleepSaving}'));
+    assert.ok(homeSrc.includes('disabled={pulse.mealLogged || isMealSaving}'));
+    assert.ok(homeSrc.includes('disabled={pulse.careLogged || isCareSaving}'));
+    assert.ok(homeSrc.includes('disabled={isSportDoneToday || isSportSaving}'));
+    assert.ok(homeSrc.includes('جارٍ الحفظ…'));
+    assert.ok(homeSrc.includes('Saved sleep, meal and care entries appear in the child profile.'));
+  });
+});
