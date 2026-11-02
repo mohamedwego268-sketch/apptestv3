@@ -2583,7 +2583,8 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
   darkMode = false,
   onSkipOrFinish,
 }) => {
-  const isEn = language === 'en';
+  const [splashLanguage, setSplashLanguage] = useState<LanguageCode>('ar');
+  const isEn = splashLanguage === 'en';
   if (!visible) return null;
 
   return (
@@ -2606,9 +2607,10 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 -start-28 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl" />
 
       <div className="relative z-10 flex w-full max-w-md flex-1 flex-col items-center justify-center py-3 text-center nk-splash-content">
+        <button type="button" data-testid="splash-language-toggle" onClick={() => setSplashLanguage((current) => current === 'ar' ? 'en' : 'ar')} className="absolute top-2 end-0 min-h-9 rounded-full border border-teal-700/20 bg-white/75 px-4 text-[11px] font-extrabold text-teal-800 shadow-sm backdrop-blur dark:bg-white/10 dark:text-teal-200">{isEn ? 'العربية' : 'English'}</button>
         <div className="mb-2 flex items-center gap-2 rounded-full border border-teal-600/15 bg-white/65 px-3.5 py-1.5 shadow-sm backdrop-blur dark:border-teal-300/15 dark:bg-white/5">
           <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-          <span className="text-[9px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">A FAMILY SPACE</span>
+          <span className="text-[9px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">مساحة الأسرة</span>
         </div>
 
         <div className="relative mb-2 flex h-32 w-32 items-center justify-center sm:h-36 sm:w-36">
@@ -2622,7 +2624,6 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         <div className="space-y-1.5">
           <h1 data-testid="splash-brand-title" className="flex flex-wrap items-center justify-center gap-x-2 text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
             <span>نكبر</span>
-            <span className="text-teal-600 dark:text-teal-300">Nekbaar</span>
           </h1>
           <p data-testid="splash-brand-slogan" className="text-sm font-extrabold leading-6 text-slate-700 dark:text-slate-200">
             مساحة تجمعنا.. وبحبهم نكبر
@@ -2665,7 +2666,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       </div>
 
       <footer data-testid="splash-bottom-copyright" className="relative z-10 w-full border-t border-teal-700/10 py-4 text-center text-[10px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
-        نكبر (Nekbaar) © 2026 — جميع حقوق الملكية محفوظة
+        نكبر © ٢٠٢٦ — جميع حقوق الملكية محفوظة
       </footer>
     </div>
   );
