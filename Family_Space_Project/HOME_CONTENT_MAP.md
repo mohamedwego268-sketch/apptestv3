@@ -176,7 +176,7 @@ The expert network is an editorial layer across the six existing tracks, not a s
 
 ## Feature release and public communication boundaries
 
-- Do not describe future features as paid, subscription-based, or divided into paid/free access.
+- Do not frame future features around commercial access or pricing.
 - Do not publish pricing, billing, trial, or payment-provider claims.
 - A feature that is not ready must be labelled neutrally as **“قريبًا”** / **“Coming soon”**, without suggesting a commercial condition.
 - Do not collect photos or other sensitive child information for a feature before its launch and consent flow are ready.
@@ -197,6 +197,6 @@ The expert network is an editorial layer across the six existing tracks, not a s
 ### Public messaging boundary — illustrated stories
 
 - The public Home teaser must use only the neutral label **“قريبًا”** / **“Coming soon”**.
-- Do not mention Premium, paid access, subscriptions, future pricing or payment in the illustrated-stories teaser or any other public-facing copy for this feature.
+- Do not include commercial-access or pricing language in the illustrated-stories teaser or any other public-facing copy for this feature.
 - Do not imply the feature is available today and do not request a child photo before launch.
 - Commercial entitlement planning, if retained in internal product documentation, must never leak into customer-facing copy until an explicit product decision is made.
