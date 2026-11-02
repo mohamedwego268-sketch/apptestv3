@@ -165,7 +165,7 @@ Finish the Home content map and experience before switching to unrelated store o
 
 The expert network is an editorial layer across the six existing tracks, not a seventh track and not a duplicate navigation system.
 
-- Home exposes six expertise areas that route into existing health, learning, movement/daily care, emotional support and values destinations.
+- The six-track Home navigator routes into existing health, learning, movement/daily care, emotional support and values destinations. The specialist-review panel is informational only and does not duplicate navigation.
 - The discovery section is explicitly marked as being prepared. It does not invent expert names, credentials, ratings, articles, videos, consultations or appointment availability.
 - A contributor profile may show a verified-expert badge only after an administrator has reviewed identity, current credentials, professional scope and evidence. Unverified contributors must be labelled accurately.
 - Every published item carries: stable content ID, title, summary, author/contributor ID, specialty, track, child age band, audience (parent/family/child), format, publication availability state, publication/review state, reviewer, review date, source references, safety note, related content IDs and next action.
@@ -186,6 +186,7 @@ The expert network is an editorial layer across the six existing tracks, not a s
 ## Home content work — latest implementation checkpoint
 
 - [x] Added explicit next-step cues to each of the six Home tracks: health record, age-fit learning activity, movement activity, child emotional check-in, values habit and daily routine.
+- [x] Clarified the specialist-review panel heading so it does not imply that a verified expert catalogue or reviewed content is already live.
 - [x] Kept each cue attached to its existing verified destination; no new duplicate routes or data flows were introduced.
 
 - [x] Added an expert-network discovery layer across the existing six tracks without adding a seventh track or inventing verified experts.
