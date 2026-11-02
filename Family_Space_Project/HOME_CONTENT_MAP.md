@@ -118,7 +118,7 @@ Never attach a family-level reflection to a child's private record. Never use on
 ### Stage 4 — Cleanup and UX quality
 - [x] Remove the duplicate 12-item Home shortcut grid after confirming destinations remain available in global navigation.
 - [x] Remove arbitrary mood cycling and simulated audio waveform/timer; clean stale podcast naming and extract learning/values content into focused components.
-- [x] Apply RTL/LTR direction and responsive layouts to new track sections; use 44px minimum touch targets for new learning and values actions.
+- [x] Apply RTL/LTR direction and responsive layouts to new track sections; use 44px minimum touch targets for new learning, values and parent-support actions, with visible keyboard focus.
 - [x] Keep the official slogan unchanged: **مساحة تجمعنا.. وبحبهم نكبر**.
 
 ### Stage 5 — Verification
@@ -150,9 +150,9 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Clarified that the daily tip is read aloud using the device speech engine. Removed the simulated waveform, fixed 30-second timer and podcast-style labeling; no recorded audio is implied.
 - [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
 - [x] Complete the Home content information architecture around the six connected tracks and the family journey; retain useful sections and global navigation.
-- [ ] Final browser screenshot/interaction review of the latest commit is pending because Vercel's free deployment quota has been reached.
+- [ ] Final browser screenshot/interaction review of the latest commit is pending because Vercel's free deployment quota has been reached. The current latest commit is `46b254b`.
 - [x] Review core Home child-log persistence and loading/error behavior; household reflection remains explicitly unsaved and no success is shown before persistence.
-- [x] Latest verified code commit `8d27c79` passed CI: 36/36 unit and security tests, TypeScript verification and production build.
+- [x] Latest verified code commit `46b254b` passed CI: 37/37 unit and security tests, TypeScript verification and production build; production build retains a non-blocking large JavaScript chunk warning.
 - [ ] Supabase Preview remains blocked by the existing remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No database migrations or production data changes were made.
 - [ ] Vercel's free deployment API quota is exhausted for the current 24-hour window (`api-deployments-free-per-day`). The latest READY production deployment is the visually equivalent Home build at commit `375a555`; final interaction polish committed after it is in `main` and passes CI, but a fresh deployment must wait for the quota reset.
 
