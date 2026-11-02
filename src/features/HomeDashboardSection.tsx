@@ -20,6 +20,7 @@ import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { HomeContentTracks } from './HomeContentTracks';
+import { HomeExpertContentNetwork } from './HomeExpertContentNetwork';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
@@ -1080,6 +1081,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           onOpenSection={openHomeSection}
         />
 
+        <HomeExpertContentNetwork
+          language={lang}
+          onNavigate={navigateTo}
+          onOpenSection={openHomeSection}
+        />
+
         {/* =====================================================================
             DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
             Full-width stacked layout prevents any vertical letter-by-letter wrapping!
@@ -1758,6 +1765,36 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
       >
         <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
+          <section
+            data-testid="premium-illustrated-stories-coming-soon"
+            aria-label={isEn ? 'Premium illustrated stories coming soon' : 'القصص المصوّرة مع Premium قريبًا'}
+            dir={isEn ? 'ltr' : 'rtl'}
+            className="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-50 via-white to-amber-50 p-4 dark:from-[#211B35] dark:via-[#101D26] dark:to-[#30251D]"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-2xl">🎨</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+                    {isEn ? 'Stories where your child becomes the hero' : 'حواديت مصوّرة طفلك بطلها'}
+                  </h3>
+                  <span className="rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white">
+                    {isEn ? 'Coming soon with Premium' : 'قريبًا مع Premium'}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                  {isEn
+                    ? 'With a parent-approved photo, your child will become a private illustrated character in an age-aware story. This feature is not available yet.'
+                    : 'بموافقة ولي الأمر واختيار صورة الطفل، هيتحوّل لشخصية كرتونية داخل حكاية تناسب عمره واهتماماته. الميزة لسه مش متاحة، ومش بنطلب صورة دلوقتي.'}
+                </p>
+                <p className="mt-2 text-[10px] font-bold text-violet-800 dark:text-violet-200">
+                  {isEn
+                    ? 'Private by design: no public profile or sharing of the child photo.'
+                    : 'خصوصية الطفل أساسية: الصورة والقصص هتكون خاصة بالأسرة، من غير نشر عام.'}
+                </p>
+              </div>
+            </div>
+          </section>
           <StoriesLibraryView
             lang={lang}
             kids={state.kids}
