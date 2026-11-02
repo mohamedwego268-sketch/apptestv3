@@ -1282,21 +1282,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </SectionToolsDrawer>
 
 
-      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
-            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
-            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
-            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
-          </div>
-        </div>
-        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
-      </section>
-
       <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
         <div className="flex items-end justify-between gap-3">
           <div>
@@ -1327,6 +1312,21 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </section>
 
+
+      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
+            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
+            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
+            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
+          </div>
+        </div>
+        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
+      </section>
       {/* =====================================================================
           3. DAILY CHILD LOG — KEEP THE USEFUL TRACKING ACTIONS
           ===================================================================== */}
