@@ -29,6 +29,7 @@ import {
   validatePhoneForCountry,
 } from './familySpaceCore';
 import { formatCountryCurrencySummary } from '../utils/familyFormatters';
+import { MasterBackendService } from '../services/MasterAppController';
 import {
   createEmptyFamilySpaceState,
   getFamilySpaceStorageKey,
@@ -3569,3 +3570,42 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
 
 
 
+
+
+describe('Homepage bedtime story content linkage', () => {
+  it('uses the selected real child identity, age and localized story body', async () => {
+    const controller = new MasterBackendService();
+    const story = await controller.generateBedtimeStoryForChild({
+      childId: 42,
+      childName: 'سلمى',
+      childNameEn: 'Salma',
+      childBirth: '2024-06-01',
+      childRemoteId: '550e8400-e29b-41d4-a716-446655440000',
+      moralFocusAr: 'اللطف والتعاون',
+      moralFocusEn: 'Kindness and cooperation',
+      storyBodyAr: 'السطر الأول\nالسطر الثاني',
+      storyBodyEn: 'First line\nSecond line',
+    });
+
+    assert.equal(story.childId, 42);
+    assert.equal(story.childRemoteId, '550e8400-e29b-41d4-a716-446655440000');
+    assert.equal(story.childName, 'سلمى');
+    assert.equal(story.titleEn.startsWith('Salma'), true);
+    assert.equal(story.ageStage, '2-5');
+    assert.equal(story.storyBodyAr, 'السطر الأول\nالسطر الثاني');
+    assert.equal(story.storyBodyEn, 'First line\nSecond line');
+    assert.equal(story.storyBodyAr.includes('أحمد'), false);
+    assert.equal(story.storyBodyEn.includes('Ahmad'), false);
+  });
+
+  it('keeps age metadata unknown instead of assigning a seeded age when birth date is missing', async () => {
+    const controller = new MasterBackendService();
+    const story = await controller.generateBedtimeStoryForChild({
+      childId: 77,
+      childName: 'آدم',
+    });
+
+    assert.equal(story.ageStage, 'unknown');
+    assert.equal(story.tags.includes('age-not-set'), true);
+  });
+});
