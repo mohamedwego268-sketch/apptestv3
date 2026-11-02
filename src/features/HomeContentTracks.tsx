@@ -11,7 +11,7 @@ import {
 import type { PageId } from '../context/FamilyAppContext';
 import type { LanguageCode } from '../domain/familySpaceCore';
 
-type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials';
+type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack';
 
 interface HomeContentTracksProps {
   language: LanguageCode;
@@ -46,8 +46,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleAr: 'التعلم والنمو',
     titleEn: 'Learning & development',
     descriptionAr: 'اكتشف مهارات طفلك واهتماماته',
-    descriptionEn: 'Explore your child’s skills and interests',
-    destination: { kind: 'page', page: 'children' },
+    descriptionEn: 'Age-aware ideas that build curiosity and skills',
+    destination: { kind: 'section', section: 'learningTrack' },
   },
   {
     id: 'movement',
