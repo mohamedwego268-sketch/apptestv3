@@ -5000,16 +5000,12 @@ export function generateThreeDailyNotifications(
       scheduledTime: prefs.morningTime || '08:30',
       categoryLabelAr: 'إشعار الصباح (١/٣) · همسة اليوم وتنظيم الروتين',
       categoryLabelEn: 'Morning Notification (1/3) · Daily Tip & Routine',
-      titleAr: `${parentTitleAr}: بداية يوم هادئة مع ${primaryKid ? primaryKid.name : 'أطفالك'}`,
-      titleEn: `${parentTitleEn}: Calm Morning Start with ${primaryKid ? primaryKid.name : 'Your Kids'}`,
-      bodyAr: isMother
-        ? `صباح الخير يا ${parentProfile.fullName.split(' ')[0]} 🌸 تذكير لطيف: مشاركة الطفل في اختيار فاكهة الإفطار ترفع حماسه لبداية اليوم وتقلل عناد الصباح.`
-        : `صباح النشاط يا ${parentProfile.fullName.split(' ')[0]} ☀️ دقيقة واحدة من التشجيع الصباحي والابتسامة قبل الخروج تمنح ${primaryKid ? primaryKid.name : 'طفلك'} ثقة طوال اليوم.`,
-      bodyEn: isMother
-        ? `Good morning! Let ${primaryKid ? primaryKid.name : 'your child'} pick a morning fruit to boost independence and reduce morning resistance.`
-        : `Good morning! One minute of warm encouragement before heading out gives ${primaryKid ? primaryKid.name : 'your child'} lasting confidence today.`,
+      titleAr: `${parentTitleAr}: بداية يوم هادئة${primaryKid ? ` مع ${primaryKid.name}` : ''}`,
+      titleEn: `${parentTitleEn}: A Calm Start to the Day${primaryKid ? ` with ${primaryKid.name}` : ''}`,
+      bodyAr: `صباح الخير يا ${parentProfile.fullName.split(' ')[0]} 🌿 اختاروا خطوة بسيطة وواضحة لبداية اليوم، واسألوا طفلكم إيه اللي يساعده يستعد. مش لازم كل حاجة تمشي بشكل مثالي.`,
+      bodyEn: `Good morning, ${parentProfile.fullName.split(' ')[0]}. Choose one simple step for the morning and ask your child what would help them get ready. The day does not have to go perfectly.`,
       childName: primaryKid?.name,
-      ageStage: primaryAge?.stageCode || '2-5',
+      ageStage: primaryAge?.stageCode,
       read: state.readNotificationIds.includes(`notif-${parentId}-morning`),
     });
   }
@@ -5022,12 +5018,14 @@ export function generateThreeDailyNotifications(
       scheduledTime: prefs.middayTime || '14:00',
       categoryLabelAr: 'إشعار منتصف اليوم (٢/٣) · النمو والتغذية والنشاط',
       categoryLabelEn: 'Midday Notification (2/3) · Growth, Nutrition & Play',
-      titleAr: `نشاط الظهيرة وتطوير مهارات ${secondaryKid ? secondaryKid.name : 'الطفل'} (${secondaryAge?.label || '2–5 سنوات'})`,
-      titleEn: `Midday Skill & Nutrition Boost for ${secondaryKid ? secondaryKid.name : 'Your Child'}`,
-      bodyAr: `في مرحلة (${secondaryAge?.stageCode || '2-5'} سنوات): تقديم كوب ماء وفواكه ملونة بعد العودة من الحضانة مع 10 دقائق من لعبة الذاكرة ثلاثية الأبعاد يجدد طاقة الدماغ بدون شاشات سلبية.`,
-      bodyEn: `For stage (${secondaryAge?.stageCode || '2-5'} yrs): Hydration, colorful fruit snacks, and 10 minutes of 3D Memory Match refresh focus without passive screen time.`,
+      titleAr: secondaryKid
+        ? `استراحة الظهيرة ووقت تواصل مع ${secondaryKid.name}${secondaryAge?.label ? ` (${secondaryAge.label})` : ''}`
+        : 'استراحة الظهيرة ووقت تواصل للأسرة',
+      titleEn: secondaryKid ? `A Midday Reset with ${secondaryKid.name}` : 'A Midday Reset for the Family',
+      bodyAr: 'لو الوقت مناسب، اعملوا استراحة قصيرة تناسب سن طفلكم واهتمامه: حركة خفيفة، لعب مشترك، قراءة، أو حديث بسيط عن يومه. اختاروا نشاطًا واحدًا من غير ضغط.',
+      bodyEn: 'If the timing works, offer a short break that fits your child’s age and interests: gentle movement, shared play, reading, or a relaxed chat about the day. One simple option is enough.',
       childName: secondaryKid?.name,
-      ageStage: secondaryAge?.stageCode || '2-5',
+      ageStage: secondaryAge?.stageCode,
       read: state.readNotificationIds.includes(`notif-${parentId}-midday`),
     });
   }
@@ -5042,14 +5040,10 @@ export function generateThreeDailyNotifications(
       categoryLabelEn: 'Evening Notification (3/3) · Bedtime & Emotional Check-in',
       titleAr: `${parentTitleAr}: طقس الهدوء المسائي وقصة قبل النوم`,
       titleEn: `${parentTitleEn}: Evening Wind-Down & Bedtime Story`,
-      bodyAr: isMother
-        ? `خفض الإضاءة الآن وتشغيل تهويدة «رحلة القمر الصغير» الصوتية يساعد على تهدئة الجهاز العصبي للطفل؛ وتذكري أنكِ قدمتِ يومًا رائعًا لأسرتك 💛.`
-        : `وقت رائع لمهمة الأب المسائية: قراءة قصة قصيرة أو سؤال ${primaryKid ? primaryKid.name : 'طفلك'} «إيه أكتر حاجة فرحتك النهاردة؟» قبل النوم المريح 🌙.`,
-      bodyEn: isMother
-        ? `Dimming lights and playing the 'Little Moon Journey' audio lullaby calms your child's nervous system. You did a wonderful job today!`
-        : `Great time for Dad's evening ritual: Read a short story or ask ${primaryKid ? primaryKid.name : 'your child'} 'What made you smile most today?' before sleep.`,
+      bodyAr: `قبل النوم، جرّبوا روتينًا هادئًا يناسب طفلكم: قصة قصيرة، حديث بسيط، أو نشاط مريح بعيدًا عن الشاشات. اسألوه عن شيء أحبّه في يومه، من غير ضغط لو مش حابب يتكلم 🌙.`,
+      bodyEn: 'Try a calm bedtime routine that suits your child: a short story, a gentle chat, or a relaxing screen-free activity. You can ask what they enjoyed today, without pressure if they do not feel like talking. 🌙',
       childName: primaryKid?.name,
-      ageStage: primaryAge?.stageCode || '2-5',
+      ageStage: primaryAge?.stageCode,
       read: state.readNotificationIds.includes(`notif-${parentId}-evening`),
     });
   }
