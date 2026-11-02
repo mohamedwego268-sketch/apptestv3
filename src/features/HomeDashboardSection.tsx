@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Baby, CalendarDays, HeartPulse, House, ListChecks, ShoppingBag } from 'lucide-react';
 import {
-  CalendarEvent,
   CommercialItem,
   FamilySpaceState,
   LanguageCode,
