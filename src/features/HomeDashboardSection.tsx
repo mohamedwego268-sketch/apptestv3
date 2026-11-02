@@ -430,18 +430,24 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const isEn = lang === 'en';
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
 
+  useEffect(() => {
+    if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
+      setSelectedKidIdx(Math.max(0, state.kids.length - 1));
+    }
+  }, [selectedKidIdx, state.kids.length]);
+
   // Universal Accordion States for every Home section (EXCEPT the Instagram Reels player which stays always open)
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     welcomeAudio: false,
     quickTrack: true,
     dailyWisdom: false,
     heroesArena: false,
-    aiStoryteller: false,
+    bedtimeStories: false,
     dailyEssentials: false,
-    batteryDiagnostic: false,
+    parentingSupport: false,
     kidsGames: false,
     wisdomGallery: false,
-    platformGateways: false,
+    storeShowcase: false,
   });
 
   const toggleAccordion = (key: string) => {
@@ -450,16 +456,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const setAllAccordions = (openState: boolean) => {
     setOpenAccordions({
-      welcomeAudio: true,
+      welcomeAudio: openState,
       quickTrack: openState,
       dailyWisdom: openState,
       heroesArena: openState,
-      aiStoryteller: openState,
+      bedtimeStories: openState,
       dailyEssentials: openState,
-      batteryDiagnostic: openState,
+      parentingSupport: openState,
       kidsGames: openState,
       wisdomGallery: openState,
-      platformGateways: openState,
+      storeShowcase: openState,
     });
   };
 
@@ -1937,8 +1943,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         badgeText={isEn ? '15 Lines' : '١٥ سطراً'}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
         borderClass="border-amber-500/35 dark:border-[#1E3646]"
-        isOpen={Boolean(openAccordions.aiStoryteller)}
-        onToggle={() => toggleAccordion('aiStoryteller')}
+        isOpen={Boolean(openAccordions.bedtimeStories)}
+        onToggle={() => toggleAccordion('bedtimeStories')}
         isEn={isEn}
         headerExtraAction={
           <div className="flex flex-wrap gap-2">
@@ -2266,8 +2272,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         badgeText={isEn ? 'Parents + Each Child' : 'البيت + كل طفل'}
         headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Parent support messages' : 'رسائل دعم الوالدين'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
-        isOpen={Boolean(openAccordions.batteryDiagnostic)}
-        onToggle={() => toggleAccordion('batteryDiagnostic')}
+        isOpen={Boolean(openAccordions.parentingSupport)}
+        onToggle={() => toggleAccordion('parentingSupport')}
         isEn={isEn}
       >
         <ParentingSupportCenter
@@ -2540,8 +2546,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             : 'ألعاب مونتيسوري، قصص تربوية، ملابس قطنية، وخدمات أسرية'
         }
         badgeText={isEn ? 'Ages 0–8' : '٠–٨ سنوات'}
-        isOpen={Boolean(openAccordions.platformGateways)}
-        onToggle={() => toggleAccordion('platformGateways')}
+        isOpen={Boolean(openAccordions.storeShowcase)}
+        onToggle={() => toggleAccordion('storeShowcase')}
         isEn={isEn}
       >
         <div className="space-y-4">
