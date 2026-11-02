@@ -40,6 +40,8 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
   const notifications = isDismissedAll
     ? rawNotifications.filter((notification) => notification.slot === 'support')
     : rawNotifications;
+  const supportNotifications = notifications.filter((notification) => notification.slot === 'support');
+  const routineNotifications = notifications.filter((notification) => notification.slot !== 'support');
   const unreadCount = notifications.filter((n) => !n.read).length;
   const emptyNotifCopy = getEmptyStateCopy('notifications', language);
 
@@ -70,6 +72,61 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
           </h2>
         </div>
       </div>
+
+      {supportNotifications.length > 0 && (
+        <section
+          aria-labelledby="parent-support-notifications-heading"
+          className="rounded-[24px] border border-rose-200/80 dark:border-rose-900/50 bg-gradient-to-br from-rose-50/80 via-white to-teal-50/70 dark:from-[#241D28] dark:via-[#101D26] dark:to-[#142B2A] p-4 sm:p-5 space-y-3"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 id="parent-support-notifications-heading" className="text-sm sm:text-base font-extrabold text-[var(--color-text)]">
+                💚 {isEn ? 'A little support for you, Mom & Dad' : 'رسائل دعم نفسي للأب والأم'}
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
+                {isEn
+                  ? 'Always here for you, even when daily reminders are cleared or paused.'
+                  : 'موجودة دائمًا، حتى عند مسح التذكيرات اليومية أو إيقافها.'}
+              </p>
+            </div>
+            <span className="rounded-full bg-rose-100 dark:bg-rose-950/60 px-3 py-1 text-[11px] font-bold text-rose-700 dark:text-rose-200">
+              {supportNotifications.length} {isEn ? 'messages' : 'رسائل'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {supportNotifications.map((notif) => (
+              <article
+                key={notif.id}
+                className="rounded-2xl border border-rose-100 dark:border-rose-900/40 bg-white/90 dark:bg-[#17232D] p-3.5 space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-200">
+                    {isEn ? notif.categoryLabelEn : notif.categoryLabelAr}
+                  </span>
+                  <span className="text-[10px] text-[var(--color-muted)]">
+                    {isEn ? 'Daily support' : notif.scheduledTime}
+                  </span>
+                </div>
+                <h4 className="text-sm font-extrabold leading-snug text-[var(--color-text)]">
+                  {isEn ? notif.titleEn : notif.titleAr}
+                </h4>
+                <p className="text-xs leading-relaxed text-[var(--color-muted)]">
+                  {isEn ? notif.bodyEn : notif.bodyAr}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onToggleReadNotification(notif.id)}
+                  className="min-h-[40px] w-full rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/70 dark:bg-rose-950/30 px-3 py-2 text-xs font-bold text-rose-800 dark:text-rose-100 hover:bg-rose-100 dark:hover:bg-rose-950/50 transition-colors"
+                >
+                  {notif.read
+                    ? isEn ? 'Mark as unread' : 'تحديد كغير مقروءة'
+                    : isEn ? 'Mark as read' : 'تم الاطلاع'}
+                </button>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Notifications Feed (2 columns) */}
@@ -127,7 +184,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             </div>
           </div>
 
-          {notifications.length === 0 ? (
+          {routineNotifications.length === 0 ? (
             <FriendlyEmptyState
               id="empty-notifications-state"
               iconId="notifications"
@@ -146,7 +203,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {notifications.map((notif, idx) => {
+              {routineNotifications.map((notif, idx) => {
                 const slotTone =
                   notif.slot === 'support'
                     ? 'rose'
