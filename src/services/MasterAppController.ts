@@ -432,7 +432,7 @@ export class MasterBackendService implements MasterControllerAPI {
   }
 
   private attachAutonomousEnvironmentWatchers(): void {
-    if (typeof window === 'undefined' || this.initializedListeners) return;
+    if (typeof window === 'undefined' || typeof window.addEventListener !== 'function' || this.initializedListeners) return;
     this.initializedListeners = true;
 
     window.addEventListener('online', () => {
