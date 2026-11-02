@@ -16,6 +16,7 @@ import {
   SwipeableBannerCarousel,
 } from './DesignSystem';
 import { REEL_TOPIC_FILTERS } from '../services/frontendProductAdapter';
+import { InternalVideoPlayer } from './InternalVideoPlayer';
 
 interface MediaPlatformSectionProps {
   catalog?: MediaContentItem[];
@@ -283,10 +284,6 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
     () => videoItems.find((v) => v.id === selectedVideoId) || videoItems[0],
     [videoItems, selectedVideoId]
   );
-  const [videoPlaying, setVideoPlaying] = useState(false);
-  const [videoProgressSec, setVideoProgressSec] = useState(0);
-  const [videoCaptionsOn, setVideoCaptionsOn] = useState(true);
-  const [videoSpeed, setVideoSpeed] = useState<1 | 1.25 | 1.5>(1);
 
   // 1-Minute Audio Briefs Mini Player State (ملخص صوتي في دقيقة للمكتبة التربوية)
   const [briefItemId, setBriefItemId] = useState<number>(catalog[0]?.id || 101);
@@ -402,21 +399,6 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
     }, Math.round(1000 / audioSpeed));
     return () => window.clearInterval(timer);
   }, [audioPlaying, activeAudioItem, audioSpeed, audioVolume]);
-
-  useEffect(() => {
-    if (!videoPlaying || !activeVideoItem?.videoConfig) return;
-    const total = activeVideoItem.videoConfig.durationSeconds;
-    const timer = window.setInterval(() => {
-      setVideoProgressSec((prev) => {
-        if (prev + 1 >= total) {
-          setVideoPlaying(false);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, Math.round(1000 / videoSpeed));
-    return () => window.clearInterval(timer);
-  }, [videoPlaying, activeVideoItem, videoSpeed]);
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -1072,125 +1054,39 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           )}
 
           {activeVideoItem && activeVideoItem.videoConfig && (
-            <div data-media-player="video" className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/60 p-4 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-center shadow-2xs">
-              <div
-                className="rounded-2xl p-4 text-white flex flex-col justify-between min-h-[210px]"
-                style={{
-                  background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #4c1d95 100%)',
-                }}
-              >
-                <div className="flex items-center justify-between gap-2 text-xs">
-                  <span className="font-bold text-indigo-200">
-                    🎥 {isEn ? 'Educational Video' : 'فيديو تربوي تفاعلي'}
-                  </span>
-                  <span dir="ltr" className="tabular-nums font-mono">
-                    {formatSec(videoProgressSec)} / {formatSec(activeVideoItem.videoConfig.durationSeconds)}
-                  </span>
-                </div>
-
-                <div className="my-auto py-3 text-center space-y-2">
-                  <div className="text-sm sm:text-base font-extrabold">
-                    {isEn ? activeVideoItem.titleEn : activeVideoItem.title}
-                  </div>
-                  {videoCaptionsOn && (
-                    <div className="mx-auto max-w-md rounded-xl bg-black/55 px-3 py-1.5 text-xs text-white leading-relaxed">
-                      {
-                        (isEn
-                          ? activeVideoItem.videoConfig.captionsEn
-                          : activeVideoItem.videoConfig.captionsAr)[
-                          Math.min(
-                            2,
-                            Math.floor(
-                              (videoProgressSec /
-                                Math.max(1, activeVideoItem.videoConfig.durationSeconds)) *
-                                3
-                            )
-                          )
-                        ]
-                      }
-                    </div>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min={0}
-                    max={activeVideoItem.videoConfig.durationSeconds}
-                    value={videoProgressSec}
-                    onChange={(e) => setVideoProgressSec(Number(e.target.value))}
-                    aria-label={isEn ? 'Seek video timeline' : 'تقديم أو تأخير الفيديو'}
-                    className="w-full accent-indigo-400 cursor-pointer"
-                  />
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setVideoPlaying((p) => !p)}
-                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-white text-indigo-950 cursor-pointer"
-                    >
-                      {videoPlaying ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : isEn ? '▶ Play Video' : '▶ تشغيل الفيديو'}
-                    </button>
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setVideoCaptionsOn((c) => !c)}
-                        className={`min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer ${
-                          videoCaptionsOn ? 'bg-indigo-500 text-white' : 'bg-white/15 text-white'
-                        }`}
-                      >
-                        CC
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setVideoSpeed((s) => (s === 1 ? 1.25 : s === 1.25 ? 1.5 : 1))
-                        }
-                        className="min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-bold bg-white/15 text-white tabular-nums cursor-pointer"
-                      >
-                        <span dir="ltr">{videoSpeed}x</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleShareMedia(
-                            `video-${activeVideoItem.id}`,
-                            isEn ? activeVideoItem.titleEn : activeVideoItem.title
-                          )
-                        }
-                        className="min-h-[44px] px-3 py-1 rounded-lg text-xs font-bold bg-white/15 text-white cursor-pointer"
-                      >
-                        📤 {isEn ? 'Share' : 'مشاركة'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            <section data-media-player="video" className="grid grid-cols-1 items-start gap-4 rounded-[22px] border border-[var(--color-border)] bg-[var(--color-surface)] p-3 shadow-sm dark:border-[#1E3646] dark:bg-[#101D26] lg:grid-cols-[1.2fr_0.8fr] lg:p-4">
+              <div className="min-w-0">
+                <InternalVideoPlayer
+                  storagePath={activeVideoItem.videoConfig.storagePath}
+                  posterPath={activeVideoItem.videoConfig.posterPath}
+                  title={isEn ? activeVideoItem.titleEn : activeVideoItem.title}
+                  language={isEn ? 'en' : 'ar'}
+                />
               </div>
-
-              <div className="space-y-2.5">
-                <div className="text-xs font-extrabold text-indigo-900">
-                  🎬 {isEn ? 'Select Educational Video' : 'اختر الفيديو التربوي'}
+              <div className="min-w-0 space-y-3">
+                <div>
+                  <span className="text-[10px] font-black tracking-wide text-indigo-600 dark:text-teal-300">{isEn ? 'NEKBAAR VIDEO LIBRARY' : 'مكتبة فيديوهات نكبر'}</span>
+                  <h3 className="mt-1 break-words text-base font-black leading-7 text-[var(--color-text)]">{isEn ? activeVideoItem.titleEn : activeVideoItem.title}</h3>
+                  <p className="mt-2 break-words text-xs font-semibold leading-6 text-[var(--color-muted)]">{isEn ? activeVideoItem.summaryEn : activeVideoItem.summary}</p>
                 </div>
-                <select
-                  value={selectedVideoId}
-                  onChange={(e) => {
-                    setSelectedVideoId(Number(e.target.value));
-                    setVideoProgressSec(0);
-                    setVideoPlaying(false);
-                  }}
-                  aria-label={isEn ? 'Select educational video' : 'اختيار الفيديو التربوي'}
-                  className="w-full min-h-[44px] rounded-xl border border-[var(--color-border)] bg-white px-3 py-2 text-xs font-extrabold text-[var(--color-text)]"
-                >
-                  {videoItems.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {isEn ? v.titleEn : v.title}
-                    </option>
-                  ))}
-                </select>
-                <div className="text-xs sm:text-sm font-semibold text-[var(--color-muted)] leading-relaxed">
-                  {isEn ? activeVideoItem.summaryEn : activeVideoItem.summary}
-                </div>
+                <label className="block text-xs font-extrabold text-[var(--color-text)]">
+                  {isEn ? 'Choose a video' : 'اختيار فيديو'}
+                  <select
+                    value={selectedVideoId}
+                    onChange={(e) => setSelectedVideoId(Number(e.target.value))}
+                    aria-label={isEn ? 'Select educational video' : 'اختيار الفيديو التربوي'}
+                    className="mt-2 min-h-[46px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm font-bold text-[var(--color-text)]"
+                  >
+                    {videoItems.map((v) => (
+                      <option key={v.id} value={v.id}>{isEn ? v.titleEn : v.title}</option>
+                    ))}
+                  </select>
+                </label>
+                <p className="rounded-xl bg-teal-50 px-3 py-2 text-[10px] leading-5 text-teal-900 dark:bg-[#142430] dark:text-teal-100">
+                  {isEn ? 'Only approved files uploaded to Nekbaar storage can play here.' : 'المشغّل يقبل الملفات المرفوعة داخل تخزين نكبر والمعتمدة فقط.'}
+                </p>
               </div>
-            </div>
+            </section>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
