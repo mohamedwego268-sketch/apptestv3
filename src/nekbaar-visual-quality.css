@@ -785,3 +785,37 @@ main input, main select, main textarea {
 }
 :root[data-color-mode="dark"] #nekbaar-interactive-splash-screen .nk-splash-feature b { color: #ccfbf1; }
 :root[data-color-mode="dark"] #nekbaar-interactive-splash-screen .nk-splash-feature small { color: #b6cbd4; }
+
+/* Product experience pass — app chrome, thumb navigation and family home hierarchy. */
+#main-sticky-header{min-height:58px;background:color-mix(in srgb,var(--color-surface) 94%,transparent);backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%)}
+#main-sticky-header>div{min-height:56px;padding-inline:13px;gap:10px}
+#brand-home-btn{gap:9px;flex:1 1 auto;min-width:0}
+#brand-home-btn>div:first-child{width:32px;height:32px;border-radius:11px;box-shadow:0 5px 13px -7px rgba(13,148,136,.7)}
+#brand-home-btn>div:first-child svg{width:18px;height:18px}
+#brand-home-btn>div:last-child{min-width:0}
+#brand-home-btn>div:last-child>span:first-child{font-size:14px;line-height:1.2}
+#brand-home-btn>div:last-child>span:last-child{max-width:100%;font-size:9.5px;line-height:1.5;letter-spacing:-.01em;white-space:nowrap}
+#header-notifications-btn,#header-slidebar-menu-btn{min-width:40px;min-height:40px;width:40px;height:40px;border-radius:13px}
+#header-notifications-btn svg{width:18px;height:18px}
+#header-slidebar-menu-btn{padding-inline:10px}
+nav[data-testid="mobile-bottom-navigation-bar"]{min-height:68px;padding:7px 8px max(7px,env(safe-area-inset-bottom));align-items:center;gap:4px;background:color-mix(in srgb,var(--color-surface) 91%,transparent);border-color:color-mix(in srgb,var(--color-border) 78%,transparent);box-shadow:0 -10px 30px -22px rgba(15,45,55,.32);backdrop-filter:blur(22px) saturate(165%);-webkit-backdrop-filter:blur(22px) saturate(165%)}
+nav[data-testid="mobile-bottom-navigation-bar"]>button{min-width:0;min-height:52px;padding:5px 2px 4px;gap:4px;border-radius:15px;font-size:10px;line-height:1.25;letter-spacing:0;transition:background-color .18s ease,color .18s ease,transform .18s ease}
+nav[data-testid="mobile-bottom-navigation-bar"]>button svg{width:20px;height:20px;stroke-width:1.9}
+nav[data-testid="mobile-bottom-navigation-bar"]>button[aria-current="page"]{background:color-mix(in srgb,var(--color-accent) 10%,transparent);color:var(--color-accent)}
+nav[data-testid="mobile-bottom-navigation-bar"]>button[aria-current="page"]>span:last-child{font-weight:900}
+#home-core-value-hero{position:relative;overflow:hidden;border-radius:23px;padding:17px;border-color:color-mix(in srgb,var(--color-accent) 20%,var(--color-border));box-shadow:0 14px 34px -28px rgba(13,95,91,.42),0 2px 8px -6px rgba(15,45,55,.12)}
+#home-core-value-hero:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#0f766e,#2dd4bf 48%,#fb923c);opacity:.9}
+#home-personalized-welcome-banner{gap:11px}
+#home-main-greeting-heading{font-size:clamp(20px,5.3vw,25px);line-height:1.4;letter-spacing:-.035em;text-wrap:balance}
+#home-audio-brief-podcast-player{border-radius:19px;padding:14px;box-shadow:0 8px 22px -20px rgba(13,95,91,.34)}
+#home-instagram-reels-player{border-radius:23px;padding:17px;box-shadow:0 12px 30px -26px rgba(15,45,55,.34)}
+#home-daily-parenting-wisdom,#home-heroes-passions-arena,#home-ai-storyteller-accordion,#home-daily-essentials-hub,#home-battery-diagnostic-accordion{border-radius:20px;border-color:color-mix(in srgb,var(--color-border) 82%,var(--color-accent));box-shadow:0 9px 26px -24px rgba(15,45,55,.3)}
+#home-daily-essentials-hub{scroll-margin-top:76px}
+#home-one-handed-quick-pulse{border-radius:20px}
+#home-children-games-showcase,#home-horizontal-wisdom-gallery,#home-minimalist-gateways,#home-promotional-showcase{border-radius:22px;overflow:hidden}
+.mobile-app-shell main.animate-page-enter{padding-inline:1px}
+.mobile-app-shell main.animate-page-enter>*{scroll-margin-top:76px}
+.mobile-app-shell :where(button,a,input,select,textarea):focus-visible{outline:3px solid color-mix(in srgb,var(--color-accent) 72%,white);outline-offset:3px}
+@media(max-width:370px){#main-sticky-header>div{padding-inline:10px;gap:7px}#brand-home-btn{gap:7px}#brand-home-btn>div:last-child>span:last-child{font-size:8.5px}#header-notifications-btn,#header-slidebar-menu-btn{min-width:37px;width:37px}nav[data-testid="mobile-bottom-navigation-bar"]>button{font-size:9px}}
+@media(min-width:431px){.mobile-app-shell{box-shadow:0 0 55px -34px rgba(10,55,65,.28)}}
+@media(prefers-reduced-motion:reduce){#main-sticky-header *,nav[data-testid="mobile-bottom-navigation-bar"] *{transition-duration:.01ms!important;animation-duration:.01ms!important}}
