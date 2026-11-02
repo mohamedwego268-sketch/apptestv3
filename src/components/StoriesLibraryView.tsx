@@ -343,6 +343,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           ) : visibleStories.length === 0 ? (
             <div className="lg:col-span-3 rounded-xl border border-dashed border-amber-500/35 bg-amber-50/40 dark:bg-[#142430] p-4 text-center text-xs font-semibold text-[var(--color-muted)]">{isEn ? 'No saved stories for this family yet. Create the first story above.' : 'لسه مفيش حواديت محفوظة للأسرة. ابدأوا بأول حدوتة من الجزء اللي فوق.'}</div>
           ) : visibleStories.map((story) => {
+            const storyChild = kids.find((kid) => kid.id === story.childId);
+            const storyChildName = storyChild ? locText(storyChild.name, lang) : story.childName;
             const isSelected = featuredStory?.id === story.id;
             return (
               <div
@@ -361,7 +363,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                       {story.sequenceCode}
                     </span>
                     <span className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      👶 {story.childName} · {story.ageStage}
+                      👶 {storyChildName} · {story.ageStage}
                     </span>
                   </div>
 
