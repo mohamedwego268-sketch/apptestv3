@@ -86,7 +86,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     summaryAr:
       'قبل ما تبدأوا مشاوير اليوم، خُدوا دقيقة تسمعوا طفلكم وتقولوا له إيه اللي هيحصل النهارده. الروتين الواضح بيساعده يستعد.',
     summaryEn:
-      'A calm smile and a warm hug before Youssef heads to school and Laila to nursery anchors their emotional safety all day.',
+      'A calm greeting and a warm moment of connection can help a child feel seen before the day begins.',
     takeawayAr: '💡 جرّب النهارده: قول لطفلك خطوتين أو تلاتة من خطة اليوم.',
     takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
     melodyHz: [392.0, 440.0, 493.88, 523.25],
@@ -99,15 +99,15 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     titleAr: 'بعد الحضانة أو المدرسة: استمع أولاً، ثم اسأل',
     titleEn: 'After School: Listen First, Then Ask',
     hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
-    hostsEn: 'Warm Audio Support for Ahmad & Maryam',
+    hostsEn: 'A supportive moment for parents',
     durationSec: 30,
     durationLabel: '00:30',
     summaryAr:
       'سيب لطفلك فرصة يهدأ بعد الرجوع. اعرض عليه مية أو وجبة مناسبة لعمره، وبعدها اسأله سؤال بسيط عن يومه من غير تحقيق.',
     summaryEn:
-      'When Laila and Youssef return, offer a light snack and water first alongside gentle tummy time for baby Hamza before homework talk.',
+      'When your child returns, allow time to settle, offer water or a suitable snack, then ask a gentle question about the day.',
     takeawayAr: '💡 جرّب النهارده: عشر دقايق لعب أو كلام من غير موبايل.',
-    takeawayEn: '💡 Afternoon cue: 15 minutes of undivided presence refills their love tank.',
+    takeawayEn: '💡 Try a short moment of undivided attention, without pressure to make it perfect.',
     melodyHz: [440.0, 523.25, 587.33, 659.25],
   },
   {
@@ -124,9 +124,9 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     summaryAr:
       'اختاروا نشاط هادي قبل النوم يناسب سن طفلكم: قصة قصيرة، حضن، أو كلام عن أحلى حاجة حصلت النهارده.',
     summaryEn:
-      'You both did a wonderful job today, Ahmad & Maryam. Dim the lights now and close the night with a warm story for Youssef, Laila, and Hamza.',
+      'You made it through another day. Choose a calm closing ritual that fits your family, and remember that rest is part of caring.',
     takeawayAr: '💡 جرّبوا: نفس الترتيب كل ليلة، مع مرونة لو اليوم اتأخر.',
-    takeawayEn: '💡 Evening cue: The last feeling before sleep stays in a child’s heart tomorrow.',
+    takeawayEn: '💡 A calm, caring goodbye to the day can help everyone transition toward rest.',
     melodyHz: [329.63, 392.0, 440.0, 523.25],
   },
 ];
@@ -679,7 +679,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     setGeneratedStoryLines(lines);
     void master.generateBedtimeStoryForChild({
       childId: activeKidId,
-      childName: activeKid?.name || 'حمزة',
+      childName: activeKid?.name || (isEn ? 'your child' : 'طفلك'),
       themePrompt: storyCustomTopic,
       moralFocus: storySelectedMoral,
     });
@@ -870,107 +870,58 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     };
   }, [effectiveTimeBucket, activeKidName]);
 
-  // Live Children Names & Ages from Supabase `children` table via `state.kids`
-  const liveKidHamza = state.kids.find((k) => k.id === 1) || state.kids[0];
-  const liveKidLaila = state.kids.find((k) => k.id === 2) || state.kids[1] || state.kids[0];
-  const liveKidYoussef = state.kids.find((k) => k.id === 3) || state.kids[2] || state.kids[0];
-
-  const liveHamzaNameAr = liveKidHamza ? locText(liveKidHamza.name, 'ar') : 'حمزة';
-  const liveHamzaNameEn = liveKidHamza ? locText(liveKidHamza.name, 'en') : 'Hamza';
-  const liveHamzaAgeAr = liveKidHamza ? calculateChildAge(liveKidHamza.birth, 'ar').label : '٦ شهور';
-  const liveHamzaAgeEn = liveKidHamza ? calculateChildAge(liveKidHamza.birth, 'en').label : '6 Months';
-
-  const liveLailaNameAr = liveKidLaila ? locText(liveKidLaila.name, 'ar') : 'ليلى';
-  const liveLailaNameEn = liveKidLaila ? locText(liveKidLaila.name, 'en') : 'Laila';
-  const liveLailaAgeAr = liveKidLaila ? calculateChildAge(liveKidLaila.birth, 'ar').label : '٤ سنوات';
-  const liveLailaAgeEn = liveKidLaila ? calculateChildAge(liveKidLaila.birth, 'en').label : '4 Years';
-
-  const liveYoussefNameAr = liveKidYoussef ? locText(liveKidYoussef.name, 'ar') : 'يوسف';
-  const liveYoussefNameEn = liveKidYoussef ? locText(liveKidYoussef.name, 'en') : 'Youssef';
-  const liveYoussefAgeAr = liveKidYoussef ? calculateChildAge(liveKidYoussef.birth, 'ar').label : '٨ سنوات';
-  const liveYoussefAgeEn = liveKidYoussef ? calculateChildAge(liveKidYoussef.birth, 'en').label : '8 Years';
-
-  // Heroes, Passions & Life Arena (Dynamically bound to live Supabase `children` rows)
+  // Child interests are sourced only from each saved profile; never infer a child's hobbies from their position or ID.
   const heroesPassionsFeed = useMemo(
-    () => [
-      {
-        id: 'hero-hamza',
-        kidId: liveKidHamza?.id ?? 1,
-        nameAr: `${liveHamzaNameAr} · ${liveHamzaAgeAr}`,
-        nameEn: `${liveHamzaNameEn} · ${liveHamzaAgeEn}`,
-        arenaBadgeAr: '👶🏻 عالم الرضيع الحسي والحركي',
-        arenaBadgeEn: '👶🏻 Infant Sensory & Motor World',
-        accentBorder: 'border-sky-500/45',
-        accentBg: 'bg-sky-500/12 text-sky-700 dark:text-sky-300',
-        progressBarClass: 'from-sky-500 to-teal-500',
-        titleAr: 'محطة الأسبوع: مهارات الحركة والاستكشاف وتجربة أطعمة جديدة',
-        titleEn: 'This Week: Movement, Exploration and New Food Experiences',
-        passionTagsAr: ['وقت البطن', 'الألعاب الخشبية الحسية', 'المناغاة والابتسامة'],
-        passionTagsEn: ['Tummy Time', 'Sensory Wooden Rattle', 'Joyful Babbling'],
-        nextGoalAr: '🎯 الهدف القادم: الجلوس المستقل لمدة ٣٠ ثانية + فحص تطعيم الـ ٦ شهور',
-        nextGoalEn: '🎯 Next Goal: 30s Independent Sitting + 6-Month Pediatric Checkup',
-        routineTaskAr: `١٥ دقيقة تمرين وقت البطن وتتبع بصري لـ ${liveHamzaNameAr}`,
-        routineTaskEn: `15-Min Tummy Time & Visual Tracking with ${liveHamzaNameEn}`,
-        routineTime: '01:30 م',
-      },
-      {
-        id: 'hero-laila',
-        kidId: liveKidLaila?.id ?? 2,
-        nameAr: `${liveLailaNameAr} · ${liveLailaAgeAr}`,
-        nameEn: `${liveLailaNameEn} · ${liveLailaAgeEn}`,
-        arenaBadgeAr: '🎨 عالم الإبداع والحضانة والخيال',
-        arenaBadgeEn: '🎨 Nursery, Art & Creative World',
-        accentBorder: 'border-rose-500/45',
-        accentBg: 'bg-rose-500/12 text-rose-700 dark:text-rose-300',
-        progressBarClass: 'from-rose-500 to-pink-500',
-        titleAr: 'لحظة إبداع: الرسم والتعبير عن المشاعر',
-        titleEn: 'Creative Moment: Art and Naming Feelings',
-        passionTagsAr: ['التلوين المائي والصلصال', 'أناشيد الحضانة', 'القصص المصورة'],
-        passionTagsEn: ['Watercolors & Clay', 'Nursery Rhymes', 'Picture Stories'],
-        nextGoalAr: '🎯 الهدف القادم: ترتيب ركن الألوان بنفسها + مشاركة أصدقائها في الحضانة',
-        nextGoalEn: '🎯 Next Goal: Tidying Art Corner Independently + Sharing at Nursery',
-        routineTaskAr: `جلسة تلوين وبطاقات تسمية المشاعر مع ${liveLailaNameAr}`,
-        routineTaskEn: `Watercolor Art & Emotion Cards Session with ${liveLailaNameEn}`,
-        routineTime: '04:30 م',
-      },
-      {
-        id: 'hero-youssef',
-        kidId: liveKidYoussef?.id ?? 3,
-        nameAr: `${liveYoussefNameAr} · ${liveYoussefAgeAr}`,
-        nameEn: `${liveYoussefNameEn} · ${liveYoussefAgeEn}`,
-        arenaBadgeAr: '🏆 عالم الأبطال والمدرسة والرياضة',
-        arenaBadgeEn: '🏆 School, Sports & Champions Arena',
-        accentBorder: 'border-amber-500/45',
-        accentBg: 'bg-amber-500/12 text-amber-800 dark:text-amber-300',
-        progressBarClass: 'from-amber-500 to-teal-600',
-        titleAr: 'إنجاز الأسبوع: تجربة علمية ونشاط رياضي',
-        titleEn: 'This Week’s Wins: A Science Project and Active Play',
-        passionTagsAr: ['السباحة وكرة القدم', 'ألغاز الذكاء والمنطق', 'تجارب العلوم والفضاء'],
-        passionTagsEn: ['Swimming & Football', 'Logic & Chess Puzzles', 'Space & Science'],
-        nextGoalAr: '🎯 الهدف القادم: شارة القراءة الأسبوعية + تحدي اللياقة العائلي يوم الجمعة',
-        nextGoalEn: '🎯 Next Goal: Weekly Reading Badge + Friday Family Fitness Challenge',
-        routineTaskAr: `٤٠ دقيقة تمرين رياضي وتفريغ طاقة لـ ${liveYoussefNameAr}`,
-        routineTaskEn: `40-Min Sports Practice & Energy Session for ${liveYoussefNameEn}`,
-        routineTime: '05:00 م',
-      },
-    ],
-    [
-      liveKidHamza?.id,
-      liveHamzaNameAr,
-      liveHamzaNameEn,
-      liveHamzaAgeAr,
-      liveHamzaAgeEn,
-      liveKidLaila?.id,
-      liveLailaNameAr,
-      liveLailaNameEn,
-      liveLailaAgeAr,
-      liveLailaAgeEn,
-      liveKidYoussef?.id,
-      liveYoussefNameAr,
-      liveYoussefNameEn,
-      liveYoussefAgeAr,
-      liveYoussefAgeEn,
-    ]
+    () =>
+      state.kids.map((kid, index) => {
+        const profileInterests = [
+          ...(kid.profileDetails?.interests || []),
+          ...(kid.profileDetails?.hobbies || []),
+          ...(kid.profileDetails?.sports || []),
+          ...(kid.interests ? [kid.interests] : []),
+        ]
+          .map((item) => sanitizeUserText(item, 70))
+          .filter(Boolean);
+        const uniqueInterests = Array.from(new Set(profileInterests)).slice(0, 4);
+        const childName = locText(kid.name, lang);
+        const ageLabel = calculateChildAge(kid.birth, lang).label;
+        const hasInterests = uniqueInterests.length > 0;
+        const tones = [
+          { border: 'border-sky-500/45', bg: 'bg-sky-500/12 text-sky-700 dark:text-sky-300', progress: 'from-sky-500 to-teal-500' },
+          { border: 'border-rose-500/45', bg: 'bg-rose-500/12 text-rose-700 dark:text-rose-300', progress: 'from-rose-500 to-pink-500' },
+          { border: 'border-amber-500/45', bg: 'bg-amber-500/12 text-amber-800 dark:text-amber-300', progress: 'from-amber-500 to-teal-600' },
+        ];
+        const tone = tones[index % tones.length];
+        return {
+          id: `child-profile-${kid.id}`,
+          kidId: kid.id,
+          nameAr: `${locText(kid.name, 'ar')} · ${calculateChildAge(kid.birth, 'ar').label}`,
+          nameEn: `${locText(kid.name, 'en')} · ${calculateChildAge(kid.birth, 'en').label}`,
+          arenaBadgeAr: hasInterests ? '🌱 اهتمامات مسجلة' : '🌱 اكتشاف الاهتمامات',
+          arenaBadgeEn: hasInterests ? '🌱 Saved interests' : '🌱 Discover interests',
+          accentBorder: tone.border,
+          accentBg: tone.bg,
+          progressBarClass: tone.progress,
+          titleAr: hasInterests ? `مساحة اهتمامات ${childName}` : `اكتشفوا مع ${childName} الحاجات اللي بيحبها`,
+          titleEn: hasInterests ? `${childName}’s Interests` : `Discover what ${childName} enjoys`,
+          passionTagsAr: uniqueInterests,
+          passionTagsEn: uniqueInterests,
+          nextGoalAr: hasInterests
+            ? 'الاهتمامات دي مأخوذة من ملف الطفل. حدّثوها كلما اكتشفتوا حاجة جديدة.'
+            : 'لسه مفيش اهتمامات مسجلة. أضيفوا الهوايات والرياضات والحاجات اللي بتلفت انتباهه.',
+          nextGoalEn: hasInterests
+            ? 'These interests come from the child profile. Update them as you discover new favorites.'
+            : 'No interests have been added yet. Record hobbies, sports, and things that catch their attention.',
+          routineTaskAr: hasInterests
+            ? `وقت مشترك لاكتشاف أو ممارسة ${uniqueInterests[0]} مع ${childName}`
+            : `١٠ دقائق لعب وملاحظة الحاجات اللي بتجذب ${childName}`,
+          routineTaskEn: hasInterests
+            ? `Spend time exploring ${uniqueInterests[0]} with ${childName}`
+            : `Spend 10 minutes playing and noticing what interests ${childName}`,
+          routineTime: '05:00 م',
+        };
+      }),
+    [state.kids, lang]
   );
 
   // Stage-Tailored Nutrition & Lunchbox Data
@@ -1930,10 +1881,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         subtitle={
           isEn
-            ? 'Infant sensory milestones, nursery creativity, and school & sports passions'
-            : 'متابعة حية لإنجازات أطفالكم الحسية والإبداعية والرياضية'
+            ? 'Each child’s interests and activities, based on their own profile'
+            : 'اهتمامات وأنشطة كل طفل بناءً على بيانات ملفه الفعلية'
         }
-        badgeText={isEn ? '3 Heroes' : '٣ أبطال'}
+        badgeText={isEn ? `${state.kids.length} Child Profiles` : `${state.kids.length} ملفات أطفال`}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
         isOpen={Boolean(openAccordions.heroesArena)}
         onToggle={() => toggleAccordion('heroesArena')}
@@ -1975,19 +1926,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     {isEn ? hero.nextGoalEn : hero.nextGoalAr}
                   </p>
 
-                  <div className="space-y-1 pt-1">
-                    <div className="flex items-center justify-between text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                      <span>{isEn ? 'Weekly Stage Rhythm' : 'مؤشر التقدم الأسبوعي'}</span>
-                      <span className="tabular-nums">
-                        {Math.min(100, 72 + (cheerCount % 25))}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 rounded-full bg-teal-950/10 dark:bg-[#0B131A] overflow-hidden">
-                      <div
-                        className={`h-full rounded-full bg-gradient-to-r ${hero.progressBarClass} transition-all duration-300`}
-                        style={{ width: `${Math.min(100, 72 + (cheerCount % 25))}%` }}
-                      />
-                    </div>
+                  <div className="rounded-xl bg-[var(--color-surface)]/80 dark:bg-[#0B131A]/60 border border-[var(--color-border)]/70 px-3 py-2">
+                    <p className="text-[10px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
+                      {isEn ? 'Profile-based information' : 'معلومات من ملف الطفل'}
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                      {hero.passionTagsAr.length > 0
+                        ? (isEn ? 'Interests are saved in this profile.' : 'الاهتمامات المعروضة مسجلة في الملف.')
+                        : (isEn ? 'Add interests to personalize activities.' : 'أضيفوا الاهتمامات لتخصيص الأنشطة.')}
+                    </p>
                   </div>
                 </div>
 
