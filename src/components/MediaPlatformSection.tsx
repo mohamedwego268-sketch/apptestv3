@@ -992,6 +992,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
             <div
               id="audio-briefs-mini-player"
               data-testid="audio-briefs-mini-player"
+              data-media-player="audio-brief"
               className="rounded-2xl border border-teal-300/90 dark:border-teal-500/40 bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 text-white p-3.5 sm:p-4 shadow-md space-y-2.5"
             >
               <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -1071,7 +1072,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
           )}
 
           {activeVideoItem && activeVideoItem.videoConfig && (
-            <div className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/60 p-4 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-center shadow-2xs">
+            <div data-media-player="video" className="rounded-[22px] border border-indigo-200/80 bg-indigo-50/60 p-4 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-4 items-center shadow-2xs">
               <div
                 className="rounded-2xl p-4 text-white flex flex-col justify-between min-h-[210px]"
                 style={{
@@ -1298,7 +1299,7 @@ export const MediaPlatformSection: React.FC<MediaPlatformSectionProps> = ({
 
       {/* MODE 3: CLEAN MODERN PODCAST & BEDTIME AUDIO PLAYER */}
       {mediaViewMode === 'audio' && activeAudioItem && activeAudioItem.audioConfig && (
-        <div className="rounded-[24px] border border-purple-200/90 bg-gradient-to-br from-purple-50/90 via-white to-indigo-50/80 p-4 sm:p-5 space-y-4 shadow-2xs">
+        <div data-media-player="audio" className="rounded-[24px] border border-purple-200/90 bg-gradient-to-br from-purple-50/90 via-white to-indigo-50/80 p-4 sm:p-5 space-y-4 shadow-2xs">
           {/* Episode Selector Strip */}
           {audioItems.length > 1 && (
             <div className="flex flex-wrap items-center gap-1.5">
