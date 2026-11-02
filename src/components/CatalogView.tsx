@@ -27,6 +27,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [visibleCount, setVisibleCount] = useState<number>(6);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -133,7 +134,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
                 key={cat}
                 type="button"
                 data-testid={`catalog-filter-${cat}`}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => { setSelectedCategory(cat); setVisibleCount(6); }}
                 className={`min-h-[48px] shrink-0 whitespace-nowrap px-3.5 py-2 rounded-xl text-xs font-extrabold border active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
                   active
                     ? 'bg-[#0d9488] text-white border-[#0d9488]'
@@ -150,7 +151,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           type="search"
           data-testid="catalog-search-input"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); setVisibleCount(6); }}
           placeholder={
             isEn
               ? 'Search products or brands...'
@@ -160,9 +161,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         />
       </div>
 
+      <div className="flex items-center justify-between gap-2 px-1 text-[11px] font-bold text-gray-500 dark:text-[#94A3B8]" aria-live="polite">
+        <span>{isEn ? `${filteredItems.length} matching items` : `${filteredItems.length.toLocaleString('ar-SA')} منتج وخدمة`}</span>
+        {(searchQuery || selectedCategory !== 'all') && <button type="button" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setVisibleCount(6); }} className="min-h-[36px] px-3 rounded-lg text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488]/10">{isEn ? 'Clear filters' : 'مسح التصفية'}</button>}
+      </div>
+
       {/* Sequenced Catalog Items Grid */}
       <div className="grid grid-cols-1 gap-3.5">
-        {filteredItems.slice(0, 6).map((item) => (
+        {filteredItems.slice(0, visibleCount).map((item) => (
           <div
             key={item.id}
             data-testid={`catalog-item-card-${item.sequenceCode}`}
@@ -246,6 +252,16 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           </div>
         ))}
       </div>
+      {filteredItems.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-[#36505E] bg-slate-50/70 dark:bg-[#142430]/60 px-5 py-8 text-center" role="status">
+          <span className="text-3xl" aria-hidden="true">{items.length === 0 ? '🛍️' : '🔎'}</span>
+          <h4 className="mt-3 text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">{items.length === 0 ? (isEn ? 'The store is being prepared' : 'المتجر قيد التجهيز') : (isEn ? 'No matching products' : 'لا توجد منتجات مطابقة')}</h4>
+          <p className="mt-1 text-xs leading-6 text-gray-500 dark:text-[#94A3B8]">{items.length === 0 ? (isEn ? 'Approved products and services will appear here.' : 'ستظهر المنتجات والخدمات المعتمدة هنا عند توفرها.') : (isEn ? 'Try another keyword or category.' : 'جرّب كلمة بحث أو تصنيفًا مختلفًا.')}</p>
+          {(searchQuery || selectedCategory !== 'all') && <button type="button" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setVisibleCount(6); }} className="mt-4 min-h-[44px] rounded-xl bg-[#0d9488] px-4 text-xs font-black text-white">{isEn ? 'Show all products' : 'عرض كل المنتجات'}</button>}
+        </div>
+      ) : filteredItems.length > visibleCount ? (
+        <button type="button" onClick={() => setVisibleCount(count => count + 6)} className="w-full min-h-[48px] rounded-xl border border-[#0d9488]/30 bg-[#0d9488]/5 text-xs font-black text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488]/10">{isEn ? `Show ${Math.min(6, filteredItems.length - visibleCount)} more` : `عرض ${Math.min(6, filteredItems.length - visibleCount)} منتجات إضافية`}</button>
+      ) : null}
     </div>
   );
 };
