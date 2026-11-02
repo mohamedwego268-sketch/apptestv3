@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AlertCircle, Building2, CheckCircle2, ClipboardList, Clock3, LoaderCircle, LogOut, Package, RefreshCw, ShieldCheck, Store } from 'lucide-react';
 import { supabaseClient } from '../services/supabaseService';
+import { MediaUploadPanel } from '../components/MediaUploadPanel';
 import './VendorPortal.css';
 
 type Snapshot = {
-  partner?: { partner_code?: string; display_name?: string; legal_name?: string; partner_type?: string; country?: string; city?: string; currency?: string };
+  partner?: { id?: string; partner_code?: string; display_name?: string; legal_name?: string; partner_type?: string; country?: string; city?: string; currency?: string };
   member_role?: string;
   metrics?: { products_total?: number; products_active?: number; orders_total?: number; orders_open?: number };
   products?: Array<{ id: string; sku?: string; name_ar?: string; name_en?: string; category?: string; stock_qty?: number; available_stock?: number; wholesale_price?: number; currency?: string; status?: string }>;
@@ -16,7 +17,7 @@ const statusLabel=(s?:string)=>({inquiry:'استفسار جديد',quote_sent:'�
 
 export default function VendorPortal(){
  const [session,setSession]=useState<Session|null>(null),[ready,setReady]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState('');
- const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[tab,setTab]=useState<'overview'|'products'|'orders'>('overview'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const [snapshot,setSnapshot]=useState<Snapshot|null>(null),[tab,setTab]=useState<'overview'|'products'|'orders'|'media'>('overview'),[loading,setLoading]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const load=useCallback(async()=>{if(!supabaseClient){setError('خدمة الدخول غير متاحة حاليًا.');return}setLoading(true);setError('');try{const {data,error:rpcError}=await supabaseClient.rpc('vendor_get_b2b_portal_snapshot');if(rpcError)throw rpcError;setSnapshot((data||{}) as Snapshot)}catch(e){setSnapshot(null);setError(e instanceof Error?e.message:'تعذر تحميل بيانات الشريك.')}finally{setLoading(false)}},[]);
  useEffect(()=>{if(!supabaseClient){setReady(true);return}let active=true;supabaseClient.auth.getSession().then(({data})=>{if(active){setSession(data.session);setReady(true)}}).catch(()=>{if(active)setReady(true)});const {data:listener}=supabaseClient.auth.onAuthStateChange((_event,next)=>{setSession(next);setSnapshot(null);setError('')});return()=>{active=false;listener.subscription.unsubscribe()}},[]);
  useEffect(()=>{if(session)void load()},[session,load]);
@@ -35,5 +36,7 @@ export default function VendorPortal(){
  {tab==='overview'&&<section className="mt-5 grid gap-4 lg:grid-cols-2"><article className="vp-panel"><h2>بيانات المنشأة</h2><dl className="mt-4 grid grid-cols-2 gap-4 text-sm"><div><dt>اسم المنشأة</dt><dd>{partner?.legal_name||partner?.display_name||'—'}</dd></div><div><dt>المدينة</dt><dd>{[partner?.city,partner?.country].filter(Boolean).join('، ')||'—'}</dd></div><div><dt>العملة</dt><dd>{partner?.currency||'SAR'}</dd></div><div><dt>دور العضوية</dt><dd>{snapshot?.member_role||'عضو'}</dd></div></dl></article><article className="vp-panel"><div className="flex justify-between"><h2>آخر الطلبات</h2><button className="text-xs font-bold text-teal-700" onClick={()=>setTab('orders')}>عرض الكل</button></div>{orders.slice(0,4).length?orders.slice(0,4).map(o=><div key={o.id} className="vp-row"><b>{o.order_no||o.id.slice(0,7)}</b><span>{money(o.vendor_total||0,o.currency||partner?.currency||'SAR')}</span></div>):<p className="vp-empty">لا توجد طلبات مسجلة حتى الآن.</p>}</article></section>}
  {tab==='products'&&<section className="vp-panel mt-5"><h2>{service?'الخدمات المنشورة':'كتالوج المنتجات'}</h2>{products.length?<div className="mt-4 overflow-x-auto"><table className="w-full min-w-[580px] text-right text-sm"><thead><tr><th>العنصر</th><th>التصنيف</th><th>المخزون</th><th>السعر</th><th>الحالة</th></tr></thead><tbody>{products.map(p=><tr key={p.id}><td><b>{p.name_ar||p.name_en||'—'}</b><small>{p.sku||''}</small></td><td>{p.category||'—'}</td><td>{p.available_stock??p.stock_qty??'—'}</td><td>{money(p.wholesale_price||0,p.currency||partner?.currency||'SAR')}</td><td>{statusLabel(p.status)}</td></tr>)}</tbody></table></div>:<p className="vp-empty">لا توجد عناصر بعد. ستظهر العناصر المعتمدة هنا بعد إضافتها.</p>}</section>}
  {tab==='orders'&&<section className="vp-panel mt-5"><h2>طلبات منشأتك</h2>{orders.length?orders.map(o=><article key={o.id} className="vp-row"><div><b>{o.order_no||o.id.slice(0,7)}</b><small>{o.buyer_name||'عميل'} · {o.created_at?new Date(o.created_at).toLocaleDateString('ar-SA'):'—'}</small></div><div><b>{money(o.vendor_total||0,o.currency||partner?.currency||'SAR')}</b><small>{statusLabel(o.status)}</small></div></article>):<p className="vp-empty">لا توجد طلبات حتى الآن.</p>}</section>}
+ {tab==='media'&&<MediaUploadPanel ownerType="partner" partnerId={partner?.id} language="ar" allowUpload={Boolean(partner?.id)} allowModeration={false}/>}
+
  <footer className="flex justify-between gap-2 py-7 text-[11px] text-slate-400"><span>نكبر للأعمال · مساحة الشريك</span><span className="inline-flex items-center gap-1"><ShieldCheck size={13}/> وصول مخصص لمنشأتك</span></footer></div></main>;
 }
