@@ -12,7 +12,7 @@ import {
 import type { PageId } from '../context/FamilyAppContext';
 import type { LanguageCode } from '../domain/familySpaceCore';
 
-type HomeExpertSection = 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack';
+type HomeExpertSection = 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack';
 
 interface HomeExpertContentNetworkProps {
   language: LanguageCode;
@@ -74,7 +74,7 @@ const EXPERTISE_AREAS: ExpertiseArea[] = [
     titleEn: 'Movement & activity',
     descriptionAr: 'اللعب واللياقة والأنشطة المناسبة للعمر',
     descriptionEn: 'Play, fitness and age-appropriate activity',
-    action: { kind: 'section', section: 'dailyEssentials' },
+    action: { kind: 'section', section: 'sportsTrack' },
   },
   {
     id: 'values',
