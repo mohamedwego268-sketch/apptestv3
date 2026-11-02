@@ -3739,3 +3739,32 @@ describe('Homepage child-log save safety', () => {
     assert.ok(homeSrc.includes('Saved sleep, meal and care entries appear in the child profile.'));
   });
 });
+
+describe('Home content journey accessibility and track integrity', () => {
+  it('keeps all six family content tracks discoverable and connected to their real destinations', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const tracksSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeContentTracks.tsx'),
+      'utf8'
+    );
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+
+    for (const trackId of ['health', 'learning', 'movement', 'wellbeing', 'values', 'daily-life']) {
+      assert.ok(tracksSrc.includes(`id: '${trackId}'`), `Missing Home track: ${trackId}`);
+      assert.ok(tracksSrc.includes(`data-testid={`home-track-${track.id}`}`));
+    }
+    assert.ok(tracksSrc.includes("page: 'medical'"));
+    assert.ok(tracksSrc.includes("section: 'learningTrack'"));
+    assert.ok(tracksSrc.includes("section: 'sportsTrack'"));
+    assert.ok(tracksSrc.includes("section: 'parentingSupport'"));
+    assert.ok(tracksSrc.includes("section: 'valuesTrack'"));
+    assert.ok(tracksSrc.includes("section: 'dailyEssentials'"));
+    assert.ok(tracksSrc.includes('focus-visible:ring-2'));
+    assert.ok(homeSrc.includes('min-h-[44px] px-1 text-xs font-black text-rose-700'));
+    assert.ok(homeSrc.includes('min-h-[44px] px-1 text-xs font-black text-teal-800'));
+  });
+});
