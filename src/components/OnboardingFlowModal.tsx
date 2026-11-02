@@ -2054,6 +2054,20 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
               </div>
             </div>
           )}
+
+          <footer
+            data-testid="onboarding-registration-copyright"
+            className="mt-3 border-t border-slate-100 dark:border-[#1E3646] pt-2.5 pb-0.5 text-center"
+          >
+            <p className="text-[10px] leading-5 font-bold text-slate-500 dark:text-slate-400">
+              {isEn
+                ? 'Nekbaar © 2026 — All rights reserved'
+                : 'نكبر © 2026 — جميع حقوق الملكية محفوظة'}
+            </p>
+            <p className="text-[9px] leading-4 font-semibold text-slate-400 dark:text-slate-500">
+              {isEn ? 'A family space, growing with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
+            </p>
+          </footer>
         </div>
       </div>
     </div>
