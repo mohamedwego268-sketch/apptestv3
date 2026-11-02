@@ -239,6 +239,13 @@ interface WisdomGalleryCardItem {
   borderTone: string;
 }
 
+const HOME_STORY_MORAL_OPTIONS = [
+  { ar: 'اللطف والتعاون', en: 'Kindness and cooperation' },
+  { ar: 'الصدق والشجاعة الهادئة', en: 'Honesty and quiet courage' },
+  { ar: 'حب الاستكشاف', en: 'Curiosity and discovery' },
+  { ar: 'التعاون بين الإخوة', en: 'Sibling cooperation' },
+] as const;
+
 const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
   {
     id: 'gal-1',
@@ -605,6 +612,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت'
   );
   const [storySelectedMoral, setStorySelectedMoral] = useState<string>('اللطف والتعاون');
+  const [isGeneratingHomeStory, setIsGeneratingHomeStory] = useState<boolean>(false);
   const [generatedStoryLines, setGeneratedStoryLines] = useState<string[]>(() =>
     buildFifteenLineStory(
       'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت',
@@ -668,22 +676,39 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   }
 
   const master = useMaster();
+  const selectedHomeStoryMoral = HOME_STORY_MORAL_OPTIONS.find((option) => option.ar === storySelectedMoral) || HOME_STORY_MORAL_OPTIONS[0];
 
-  const handleGenerateCustomStory = () => {
-    const lines = buildFifteenLineStory(storyCustomTopic, storySelectedMoral, isEn, activeKidName);
-    setGeneratedStoryLines(lines);
-    void master.generateBedtimeStoryForChild({
-      childId: activeKidId,
-      childName: activeKid?.name || (isEn ? 'your child' : 'طفلك'),
-      themePrompt: storyCustomTopic,
-      moralFocus: storySelectedMoral,
-    });
-    playGentleAudioSynthesizer([392.0, 440.0, 523.25]);
-    onShowToast?.(
-      isEn
-        ? '✨ Generated & saved custom 15-line bedtime story in library!'
-        : '✨ تم تأليف وحفظ الحدوتة المخصصة (١٥ سطراً) في مكتبة حواديت الطفل!'
-    );
+  const handleGenerateCustomStory = async () => {
+    if (!activeKid) {
+      onShowToast?.(isEn ? 'Add a child profile before creating a personalized story.' : 'أضف ملف طفل أولاً قبل تأليف حدوتة مخصصة.');
+      return;
+    }
+    setIsGeneratingHomeStory(true);
+    const childNameAr = locText(activeKid.name, 'ar');
+    const childNameEn = locText(activeKid.name, 'en');
+    const linesAr = buildFifteenLineStory(storyCustomTopic, selectedHomeStoryMoral.ar, false, childNameAr);
+    const linesEn = buildFifteenLineStory(storyCustomTopic, selectedHomeStoryMoral.en, true, childNameEn);
+    try {
+      await master.generateBedtimeStoryForChild({
+        childId: activeKid.id,
+        childName: childNameAr,
+        childBirth: activeKid.birth,
+        childRemoteId: activeKid.remoteId,
+        themePrompt: sanitizeUserText(storyCustomTopic, 120),
+        moralFocusAr: selectedHomeStoryMoral.ar,
+        moralFocusEn: selectedHomeStoryMoral.en,
+        storyBodyAr: linesAr.join('\\n'),
+        storyBodyEn: linesEn.join('\\n'),
+      });
+      setGeneratedStoryLines(isEn ? linesEn : linesAr);
+      playGentleAudioSynthesizer([392.0, 440.0, 523.25]);
+      onShowToast?.(isEn ? `✨ Story saved to ${childNameEn}’s library.` : `✨ تم حفظ الحدوتة في مكتبة ${childNameAr}.`);
+    } catch {
+      setGeneratedStoryLines(isEn ? linesEn : linesAr);
+      onShowToast?.(isEn ? 'The story preview is ready, but it could not be saved.' : 'المعاينة جاهزة، لكن تعذر حفظ الحدوتة في المكتبة.');
+    } finally {
+      setIsGeneratingHomeStory(false);
+    }
   };
 
   // ============================================================================
@@ -2040,15 +2065,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
         title={
           isEn
-            ? 'AI Bedtime Storyteller'
-            : 'صانع الحواديت بالذكاء الاصطناعي'
+            ? 'Bedtime Story Creator'
+            : 'صانع حواديت قبل النوم'
         }
         subtitle={
           isEn
             ? 'Create a warm bedtime story starring your children'
             : 'ألف حدوتة مسائية دافئة بأسماء أطفالكم'
         }
-        badgeText={isEn ? '15 Lines · AI' : '١٥ سطراً · بأسماء أطفالكم'}
+        badgeText={isEn ? '15 Lines' : '١٥ سطراً'}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
         borderClass="border-amber-500/35 dark:border-[#1E3646]"
         isOpen={Boolean(openAccordions.aiStoryteller)}
@@ -2106,22 +2131,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 {isEn ? 'Educational Value:' : 'القيمة التربوية للحدوتة:'}
               </label>
               <div className="flex flex-wrap items-center gap-1.5">
-                {[
-                  'التعاون والمحبة بين الإخوة',
-                  'الصدق والشجاعة الهادئة',
-                  'حب الاستكشاف وترتيب الغرفة',
-                ].map((moralItem) => (
+                {HOME_STORY_MORAL_OPTIONS.map((moralItem) => (
                   <button
-                    key={moralItem}
+                    key={moralItem.ar}
                     type="button"
-                    onClick={() => setStorySelectedMoral(moralItem)}
+                    onClick={() => setStorySelectedMoral(moralItem.ar)}
                     className={`min-h-[38px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer ${
-                      storySelectedMoral === moralItem
+                      storySelectedMoral === moralItem.ar
                         ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
                         : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
                     }`}
                   >
-                    {moralItem}
+                    {isEn ? moralItem.en : moralItem.ar}
                   </button>
                 ))}
               </div>
@@ -2133,9 +2154,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 id="ai-story-generate-btn"
                 data-testid="ai-story-generate-btn"
                 onClick={handleGenerateCustomStory}
-                className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black shadow-xs transition-all cursor-pointer"
+                disabled={!activeKid || isGeneratingHomeStory}
+                className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] disabled:opacity-50 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
               >
-                ✨ {isEn ? 'Create Story' : 'تأليف الحدوتة'}
+                ✨ {isGeneratingHomeStory ? (isEn ? 'Saving...' : 'جاري الحفظ...') : !activeKid ? (isEn ? 'Add a child profile first' : 'أضف ملف طفل أولاً') : isEn ? 'Create Story' : 'تأليف الحدوتة'}
               </button>
             </div>
           </div>
