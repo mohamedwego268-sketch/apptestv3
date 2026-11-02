@@ -3639,3 +3639,24 @@ describe('Homepage child emotional check-in linkage', () => {
     assert.ok(parentingSrc.includes('moodKey: mood.id'));
   });
 });
+
+describe('Homepage read-aloud and parent support transparency', () => {
+  it('does not present device speech synthesis as a recorded podcast or fixed-duration audio asset', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+
+    assert.ok(homeSrc.includes('window.speechSynthesis.speak(utterance)'));
+    assert.ok(homeSrc.includes('audio-brief-read-aloud-status'));
+    assert.ok(homeSrc.includes('تُقرأ النصيحة بصوت الجهاز'));
+    assert.equal(homeSrc.includes('audio-brief-waveforms'), false);
+    assert.equal(homeSrc.includes('durationLabel'), false);
+    assert.equal(homeSrc.includes('briefElapsedSec'), false);
+    assert.equal(homeSrc.includes('home-audio-brief-podcast-player'), false);
+    assert.ok(homeSrc.includes("openHomeSection('parentingSupport')"));
+    assert.ok(homeSrc.includes("navigateTo('notifications')"));
+  });
+});
