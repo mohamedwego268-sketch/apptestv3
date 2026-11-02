@@ -160,7 +160,7 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
                   '05:00 م',
                   childId
                 )}
-                className="mt-3 min-h-[40px] rounded-xl bg-sky-700 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-3 min-h-[44px] rounded-xl bg-sky-700 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-sky-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isEn ? 'Add to routine' : 'أضفها للروتين'}
               </button>
@@ -170,10 +170,10 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => onNavigate('children')} className="min-h-[42px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-extrabold text-sky-900 dark:text-sky-200">
+        <button type="button" onClick={() => onNavigate('children')} className="min-h-[44px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-extrabold text-sky-900 dark:text-sky-200">
           {isEn ? 'Explore child interests' : 'اكتشف اهتمامات الطفل'}
         </button>
-        <button type="button" onClick={() => onNavigate('games')} className="min-h-[42px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-white">
+        <button type="button" onClick={() => onNavigate('games')} className="min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-white">
           {isEn ? 'Open learning games' : 'افتح ألعاب التعلم'}
         </button>
       </div>
