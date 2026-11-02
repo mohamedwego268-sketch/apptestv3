@@ -374,6 +374,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }, 80);
   };
 
+  const openChildMoodCheckin = () => {
+    setOpenAccordions((previous) => ({ ...previous, parentingSupport: true }));
+    window.setTimeout(() => {
+      document.getElementById('child-emotional-checkin')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  };
+
   // Determine current time bucket (Morning: 5–11, Afternoon: 12–16, Evening: 17–4)
   const currentTimeBucket = useMemo<'morning' | 'afternoon' | 'evening'>(() => {
     const hr = new Date().getHours();
@@ -1357,8 +1364,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={isEn ? 'Your child’s day at a glance' : 'سجل يوم طفلك'}
         subtitle={
           isEn
-            ? `Log sleep, meal, mood & care for ${activeKidName} in one tap`
-            : `سجّل النوم، الوجبة، المزاج، والرعاية الصحية لـ ${activeKidName} بلمسة واحدة`
+            ? `Log sleep, meals & care for ${activeKidName}; open a full emotional check-in`
+            : `سجّل النوم والوجبات والرعاية لـ ${activeKidName}، وافتح متابعة المشاعر بالتفصيل`
         }
         badgeText={`${activeKidName} · ${activeKidStageLabel}`}
         isOpen={Boolean(openAccordions.quickTrack)}
@@ -1409,100 +1416,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 moodEmoji: '😊',
                 careLogged: false,
               };
-              const moodCycle = ['😊', '🥰', '😴', '🎨', '🏆'];
-              const loggedCount = Number(pulse.sleepLogged) + Number(pulse.mealLogged) + Number(pulse.careLogged);
-              const progressPercent = Math.round((loggedCount / 3) * 100);
-              return (
-                <>
-                  <div className="col-span-2 sm:col-span-4 rounded-2xl border border-teal-500/20 bg-gradient-to-r from-teal-50 to-sky-50 dark:from-[#142B35] dark:to-[#142430] p-3.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? activeKidName + '’s daily log' : 'ملخص يوم ' + activeKidName}</p>
-                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Sleep, meals and care — saved to the child profile.' : 'النوم والوجبات والرعاية.. محفوظة في ملف الطفل.'}</p>
-                      </div>
-                      <span className="shrink-0 rounded-xl bg-white/80 dark:bg-[#0B131A] px-3 py-2 text-xs font-black tabular-nums text-teal-800 dark:text-teal-200">{loggedCount}/3</span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-[#0B131A]">
-                      <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-sky-500 transition-all duration-500" style={{ width: progressPercent + '%' }} />
-                    </div>
-                    <p className="mt-1.5 text-[9px] font-bold text-[var(--color-muted)]">{progressPercent === 100 ? (isEn ? 'Daily essentials completed' : 'اكتملت أساسيات تسجيل اليوم') : (isEn ? 'Complete the three essentials when they happen.' : 'سجّل الأساسيات وقت حدوثها.. من غير ضغط أو التزام يومي.')}</p>
-                  </div>
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-sleep-btn"
-                    onClick={() => {
-                      if (pulse.sleepLogged) return;
-                      void saveDashboardChildLog('sleep_log', 'تسجيل النوم أو القيلولة').then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, sleepLogged: true },
-                        }));
-                        onShowToast?.(isEn ? `🌙 ${activeKidName}: sleep logged and saved ✓` : `🌙 تم حفظ سجل نوم ${activeKidName} بنجاح ✓`);
-                      });
-                    }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
-                      pulse.sleepLogged
-                        ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-900 dark:text-indigo-200'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>🌙</span>
-                      <span>{isEn ? 'Sleep / Nap' : 'نوم / قيلولة'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">{pulse.sleepLogged ? '✓' : '+'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-meal-btn"
-                    onClick={() => {
-                      if (pulse.mealLogged) return;
-                      void saveDashboardChildLog('nutrition', 'تسجيل وجبة أو رضعة', { dashboardKind: 'meal' }).then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, mealLogged: true },
-                        }));
-                        onShowToast?.(isEn ? `🥣 ${activeKidName}: meal saved ✓` : `🥣 تم حفظ سجل وجبة ${activeKidName} بنجاح ✓`);
-                      });
-                    }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer ${
-                      pulse.mealLogged
-                        ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:text-emerald-200'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>🥣</span>
-                      <span>{isEn ? 'Meal / Feed' : 'وجبة / رضعة'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">{pulse.mealLogged ? '✓' : '+'}</span>
-                  </button>
-
                   <button
                     type="button"
                     data-testid="quick-pulse-mood-btn"
-                    onClick={() => {
-                      const nextEmoji =
-                        moodCycle[(moodCycle.indexOf(pulse.moodEmoji) + 1) % moodCycle.length];
-                      void saveDashboardChildLog('emotional_social', 'تسجيل الحالة المزاجية', { moodEmoji: nextEmoji }).then((saved) => {
-                        if (!saved) return;
-                        setQuickPulseByKid((prev) => ({
-                          ...prev,
-                          [activeKidId]: { ...pulse, moodEmoji: nextEmoji },
-                        }));
-                        onShowToast?.(isEn ? `💛 ${activeKidName}’s mood saved as ${nextEmoji}` : `💛 تم حفظ مزاج ${activeKidName} اليوم: ${nextEmoji}`);
-                      });
-                    }}
+                    onClick={() => openChildMoodCheckin()}
                     className="min-h-[48px] px-3.5 py-2.5 rounded-2xl border border-amber-500/40 bg-amber-500/12 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <span>{pulse.moodEmoji}</span>
-                      <span>{isEn ? 'Mood' : 'مزاج الطفل'}</span>
+                      <span>{isEn ? 'Emotional check-in' : 'متابعة المشاعر'}</span>
                     </span>
-                    <span className="text-[11px] font-black">↻</span>
+                    <span className="text-[11px] font-black">↗</span>
                   </button>
 
                   <button
@@ -2091,6 +2015,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       >
         <ParentingSupportCenter
           kids={state.kids}
+          initialKidId={activeKid?.id ?? null}
           language={lang}
           onSaveChildMood={async (kidId, mood) => {
             const targetKid = state.kids.find((kid) => kid.id === kidId);
