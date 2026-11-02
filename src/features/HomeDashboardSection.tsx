@@ -1649,6 +1649,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         headerExtraAction={<button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-black text-white">{isEn ? 'Open child profile' : 'فتح ملف الطفل'}</button>}
       >
         <div className="space-y-3">
+          {state.kids.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-teal-500/35 bg-teal-50/50 dark:bg-[#142430] p-4 text-center space-y-3">
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Your child’s daily log will appear here after adding a child profile.' : 'سجل يوم الطفل هيظهر هنا بعد إضافة ملفه للأسرة.'}</p>
+              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
+            </div>
+          ) : (
+          <>
           {/* Clean Child Selector Strip */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
@@ -1834,6 +1841,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </div>
             );
           })()}
+          </>
+          )}
         </div>
       </HomeAccordionCard>
 
@@ -1934,6 +1943,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isOpen={Boolean(openAccordions.heroesArena)}
         onToggle={() => toggleAccordion('heroesArena')}
         isEn={isEn}
+        headerExtraAction={<button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-3 py-2 text-xs font-black text-white">{isEn ? 'Manage profiles' : 'إدارة ملفات الأطفال'}</button>}
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {heroesPassionsFeed.length === 0 ? (
@@ -2571,7 +2581,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          {state.kids.map((kid, index) => {
+          {state.kids.length === 0 ? (
+            <div className="sm:col-span-3 rounded-2xl border border-dashed border-emerald-500/35 bg-emerald-50/40 dark:bg-[#142430] p-4 text-center space-y-3">
+              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to get age-aware learning and play suggestions.' : 'أضيفوا ملف طفل علشان تظهر اقتراحات اللعب والتعلم المناسبة لعمره.'}</p>
+              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
+            </div>
+          ) : state.kids.map((kid, index) => {
             const age = calculateChildAge(kid.birth, lang);
             const tone = ['border-sky-500/40', 'border-rose-500/40', 'border-amber-500/40'][index % 3];
             const activity = age.months < 24
