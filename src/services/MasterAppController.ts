@@ -128,6 +128,10 @@ export interface GenerateBedtimeStoryRequest {
   childRemoteId?: string | number;
   themePrompt?: string;
   moralFocus?: string;
+  moralFocusAr?: string;
+  moralFocusEn?: string;
+  storyBodyAr?: string;
+  storyBodyEn?: string;
 }
 
 /**
@@ -911,8 +915,8 @@ export class MasterBackendService implements MasterControllerAPI {
 
     const themeAr = req.themePrompt?.trim() || 'النجوم الهادئة والامتنان المسائي';
     const themeEn = req.themePrompt?.trim() || 'Calm Stars & Evening Gratitude';
-    const moralAr = req.moralFocus?.trim() || 'اللطف والتعاون والطمأنينة';
-    const moralEn = req.moralFocus?.trim() || 'Kindness, cooperation and reassurance';
+    const moralAr = req.moralFocusAr?.trim() || req.moralFocus?.trim() || 'اللطف والتعاون والطمأنينة';
+    const moralEn = req.moralFocusEn?.trim() || req.moralFocus?.trim() || 'Kindness, cooperation and reassurance';
 
     const newStory: BedtimeStoryRecord = {
       id: `story-${req.childId}-${Date.now()}`,
@@ -923,8 +927,8 @@ export class MasterBackendService implements MasterControllerAPI {
       ageStage: ageInfo.stageCode,
       titleAr: `حدوتة ${childName}: رحلة ${themeAr}`,
       titleEn: `${childName}’s Bedtime Tale: Journey of ${themeEn}`,
-      storyBodyAr: `في مساء هادئ مع أسرته، بدأ ${childName} مغامرة لطيفة حول «${themeAr}». وخلال الرحلة اكتشف معنى «${moralAr}»، ثم اختار طريقة بسيطة يشارك بها ما تعلمه مع أسرته قبل نهاية اليوم.`,
-      storyBodyEn: `On a calm evening with their family, ${childName} began a gentle adventure about "${themeEn}". Along the way, ${childName} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
+      storyBodyAr: req.storyBodyAr?.trim() || `في مساء هادئ مع أسرته، بدأ ${childName} مغامرة لطيفة حول «${themeAr}». وخلال الرحلة اكتشف معنى «${moralAr}»، ثم اختار طريقة بسيطة يشارك بها ما تعلمه مع أسرته قبل نهاية اليوم.`,
+      storyBodyEn: req.storyBodyEn?.trim() || `On a calm evening with their family, ${childName} began a gentle adventure about "${themeEn}". Along the way, ${childName} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
       moralTagAr: moralAr,
       moralTagEn: moralEn,
       calmingTempoBpm: ageInfo.months < 24 ? 58 : 60,
