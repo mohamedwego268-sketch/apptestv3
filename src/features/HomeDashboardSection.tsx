@@ -117,7 +117,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     slotLabelEn: '🌙 Evening Wind-Down Audio',
     titleAr: 'قبل النوم: اختتموا اليوم بهدوء وروتين ثابت',
     titleEn: 'End the Day with a Calm, Familiar Routine',
-    hostsAr: 'دعم صوتي دافئ لأحمد ومريم',
+    hostsAr: 'رسالة هادئة لدعم الوالدين',
     hostsEn: 'A calm supportive moment for parents',
     durationSec: 30,
     durationLabel: '00:30',
@@ -930,112 +930,92 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     [state.kids, lang]
   );
 
-  // Stage-Tailored Nutrition & Lunchbox Data
+  // Meal ideas are prompts for family planning, not prescribed diets or calorie targets.
   const nutritionPlans = useMemo(() => {
-    const stageCode = activeKidAge?.stageCode || '0-2';
-    if (stageCode === '0-2') {
+    const hasKnownAge = Boolean(activeKid?.birth);
+    const ageMonths = activeKidAge?.months ?? 0;
+    const isUnderSixMonths = hasKnownAge && ageMonths < 6;
+    const isUnderTwoYears = hasKnownAge && ageMonths < 24;
+
+    if (isUnderTwoYears) {
+      const milkGuidance = isUnderSixMonths;
+      const base = milkGuidance
+        ? {
+            titleAr: `الرضاعة حسب احتياج ${activeKidName}`,
+            titleEn: `Feeding ${activeKidName} responsively`,
+            descAr: 'في هذه المرحلة تكون الرضاعة الطبيعية أو الصناعية هي مصدر التغذية الأساسي. لا تبدأوا الأطعمة أو الماء أو المكملات دون إرشاد طبي مناسب.',
+            descEn: 'At this stage, breast milk or infant formula is the primary source of nutrition. Do not introduce solids, water or supplements without appropriate professional guidance.',
+          }
+        : {
+            titleAr: `وجبة تكميلية مناسبة لمرحلة ${activeKidName}`,
+            titleEn: `An age-appropriate complementary meal for ${activeKidName}`,
+            descAr: 'اختاروا قوامًا مناسبًا لقدرة الطفل وعلامات استعداده، وقدموا الأطعمة الجديدة تدريجيًا مع مراعاة الحساسية وإرشادات طبيب الأطفال.',
+            descEn: 'Choose textures that match the child’s readiness and abilities. Introduce foods thoughtfully and account for allergies and pediatric guidance.',
+          };
       return {
-        breakfast: {
-          badgeAr: '🍼 رضاعة صباحية + فيتامين D للرضيع',
-          badgeEn: '🍼 Morning Feed & Infant Vitamin D',
-          titleAr: `رضعة الصباح الدافئة + نقط فيتامين د لـ ${activeKidName}`,
-          titleEn: `Warm Morning Milk Feed + Vitamin D Drops for ${activeKidName}`,
-          descAr: 'تغذية أساسية متكاملة لعمر ٦ شهور لدعم المناعة ونمو العظام الصحي.',
-          descEn: 'Essential 6-month infant nutrition supporting immunity and bone growth.',
-          time: '08:00 ص',
-          calories: '180 kcal',
-        },
-        lunchbox: {
-          badgeAr: '🥕 أول وجبة خضار مهروس طازج',
-          badgeEn: '🥕 First Veggie Puree Meal',
-          titleAr: `مهروس الجزر والبطاطا الحلوة والكوسة بالبخار لـ ${activeKidName}`,
-          titleEn: `Steamed Carrot, Sweet Potato & Zucchini Puree for ${activeKidName}`,
-          descAr: 'قوام كريمي ناعم غني بفيتامين A والبيتا كاروتين بدون ملح أو سكر مضاف.',
-          descEn: 'Silky steamed puree rich in beta-carotene with zero added salt or sugar.',
-          time: '12:30 م',
-          calories: '140 kcal',
-        },
-        snack: {
-          badgeAr: '🍎 مهروس الفواكه المسائي الهادئ',
-          badgeEn: '🍎 Gentle Evening Fruit Puree',
-          titleAr: `مهروس التفاح المطهو على البخار مع الكمثرى لـ ${activeKidName}`,
-          titleEn: `Steamed Apple & Pear Smooth Puree for ${activeKidName}`,
-          descAr: 'مريح للمعدة قبل روتين المساء ويساعد على نوم ليلي هادئ بدون مغص.',
-          descEn: 'Soothing on the tummy before bedtime to support peaceful infant sleep.',
-          time: '04:30 م',
-          calories: '110 kcal',
-        },
+        breakfast: { badgeAr: '🍼 متابعة التغذية', badgeEn: '🍼 Feeding routine', ...base, time: '08:00 ص' },
+        lunchbox: { badgeAr: '🥣 وجبة مناسبة للعمر', badgeEn: '🥣 Age-aware meal', ...base, time: '12:30 م' },
+        snack: { badgeAr: '🍎 متابعة الرضاعة والوجبات', badgeEn: '🍎 Feeding check-in', ...base, time: '04:30 م' },
       };
     }
 
-    if (stageCode === '5-8') {
+    if (!hasKnownAge) {
+      const general = {
+        titleAr: 'سجلوا الوجبة التي تناسب طفلكم',
+        titleEn: 'Record a meal that suits your child',
+        descAr: 'أضيفوا تاريخ الميلاد والحساسيات أو القيود الغذائية لتظهر اقتراحات أكثر ملاءمة. راعوا دائمًا تفضيلات الطفل وإرشادات المختص.',
+        descEn: 'Add the birth date and any allergies or dietary restrictions to improve relevance. Always consider the child’s preferences and professional guidance.',
+      };
+      return {
+        breakfast: { badgeAr: '🥣 فطور الأسرة', badgeEn: '🥣 Family breakfast', ...general, time: '08:00 ص' },
+        lunchbox: { badgeAr: '🍱 وجبة اليوم', badgeEn: '🍱 Today’s meal', ...general, time: '12:30 م' },
+        snack: { badgeAr: '🍎 وجبة خفيفة', badgeEn: '🍎 Snack', ...general, time: '04:30 م' },
+      };
+    }
+
+    if (activeKidAge?.stageCode === '5-8') {
       return {
         breakfast: {
-          badgeAr: '🥣 فطور التركيز والاستقلالية للمدرسة',
-          badgeEn: '🥣 School Brain & Focus Breakfast',
-          titleAr: `بيض أومليت بالخضار + توست حبوب كاملة وحليب لـ ${activeKidName}`,
-          titleEn: `Veggie Omelet + Whole-Grain Toast & Milk for ${activeKidName}`,
-          descAr: 'فكرة وجبة متنوعة؛ اختاروا الكمية والمكونات حسب شهية الطفل واحتياجاته الغذائية.',
-          descEn: 'Sustained protein and complex carbs fueling school focus and logic.',
+          badgeAr: '🥣 فكرة فطور متوازن',
+          badgeEn: '🥣 Balanced breakfast idea',
+          titleAr: `بيض بالخضار وخبز حبوب كاملة لـ ${activeKidName}`,
+          titleEn: `Vegetable eggs and whole-grain toast for ${activeKidName}`,
+          descAr: 'فكرة قابلة للتعديل حسب شهية الطفل والحساسية المسجلة وما يتناوله عادة.',
+          descEn: 'An adaptable idea based on appetite, recorded allergies and the child’s usual diet.',
           time: '06:45 ص',
-          calories: '420 kcal',
         },
         lunchbox: {
-          badgeAr: '🍱 لانش بوكس الأبطال للمدرسة',
-          badgeEn: '🍱 School Champion Lunchbox',
-          titleAr: `ساندويتش دجاج مشوي + خيار وجزر + تفاح ومكسرات لـ ${activeKidName}`,
-          titleEn: `Grilled Chicken Wrap + Veggie Sticks, Apple & Nuts for ${activeKidName}`,
-          descAr: 'يمكن إشراك الطفل في تجهيز الوجبة بخطوات آمنة تناسب عمره وقدرته.',
-          descEn: 'Balanced school lunchbox encouraging self-prep and afternoon energy.',
+          badgeAr: '🍱 وجبة مدرسية',
+          badgeEn: '🍱 School meal idea',
+          titleAr: `وجبة متنوعة يشارك ${activeKidName} في اختيارها`,
+          titleEn: `A varied lunch chosen together with ${activeKidName}`,
+          descAr: 'وازنوا بين المكونات المناسبة، وراعوا أي حساسية أو قيود غذائية مسجلة.',
+          descEn: 'Balance suitable food groups and account for any recorded allergies or dietary restrictions.',
           time: '11:30 ص',
-          calories: '490 kcal',
         },
         snack: {
-          badgeAr: '🍌 سناك الطاقة قبل التمرين والمذاكرة',
-          badgeEn: '🍌 Pre-Sport & Homework Boost Snack',
-          titleAr: `زبادي يوناني بالعسل والموز والشوفان لـ ${activeKidName}`,
-          titleEn: `Greek Yogurt with Honey, Banana & Oats for ${activeKidName}`,
-          descAr: 'يجدد نشاط الدماغ بعد المدرسة مباشرة قبل بدء وقت الواجبات أو تمرين السباحة.',
-          descEn: 'Recharges brain focus after school right before homework or swimming.',
+          badgeAr: '🍌 وجبة خفيفة',
+          badgeEn: '🍌 Snack idea',
+          titleAr: `وجبة خفيفة مفضلة لدى ${activeKidName}`,
+          titleEn: `A snack ${activeKidName} enjoys`,
+          descAr: 'استخدموا الأطعمة المفضلة المسجلة في ملف الطفل إذا كانت مناسبة ولا تتعارض مع أي قيود.',
+          descEn: 'Use foods recorded as favorites when they are suitable and do not conflict with dietary restrictions.',
           time: '04:00 م',
-          calories: '280 kcal',
         },
       };
     }
 
+    const preschool = activeKidAge?.stageCode === '2-5';
+    const generalTitleAr = preschool ? 'وجبة بسيطة يشارك الطفل في تجهيزها' : 'وجبة متنوعة تناسب روتين الطفل';
+    const generalTitleEn = preschool ? 'A simple meal the child can help prepare' : 'A varied meal for the child’s routine';
+    const generalDescAr = 'اختاروا مكونات مألوفة ومناسبة، وشجعوا الطفل على المشاركة دون ضغط أو إجبار على إنهاء الطبق.';
+    const generalDescEn = 'Choose familiar, suitable ingredients and invite the child to participate without pressure to finish the plate.';
     return {
-      breakfast: {
-        badgeAr: '🥣 فطور الطاقة المبهج للحضانة',
-        badgeEn: '🥣 Joyful Nursery Breakfast',
-        titleAr: `بان كيك الشوفان والموز بأشكال مرحة مع الحليب لـ ${activeKidName}`,
-        titleEn: `Playful Banana Oat Pancakes & Warm Milk for ${activeKidName}`,
-        descAr: 'قدّموا الوجبة بطريقة بسيطة ومريحة، واحترموا شهية الطفل دون ضغط.',
-        descEn: 'Fun finger-food breakfast boosting happy nursery transitions.',
-        time: '07:45 ص',
-        calories: '310 kcal',
-      },
-      lunchbox: {
-        badgeAr: '🍱 لانش بوكس الحضانة الملون',
-        badgeEn: '🍱 Colorful Nursery Lunchbox',
-        titleAr: `رول التورتيلا بالجبن الكريمي + خيار على شكل نجوم وفراولة لـ ${activeKidName}`,
-        titleEn: `Cream Cheese Pinwheels + Star Cucumbers & Berries for ${activeKidName}`,
-        descAr: 'مقسم بألوان مبهجة تفتح الشهية في الحضانة بدون سكريات مصنعة.',
-        descEn: 'Bite-sized colorful sections easy for 4-year-old hands at nursery.',
-        time: '11:30 ص',
-        calories: '360 kcal',
-      },
-      snack: {
-        badgeAr: '🍎 سناك الإبداع والهدوء بعد الحضانة',
-        badgeEn: '🍎 Post-Nursery Creative Snack',
-        titleAr: `شرائح التفاح بزبدة الفول السوداني الطبيعية والزبادي لـ ${activeKidName}`,
-        titleEn: `Apple Slices with Natural Peanut Butter & Yogurt for ${activeKidName}`,
-        descAr: 'اختاروا وجبة خفيفة تناسب شهية الطفل وحساسيته المسجلة.',
-        descEn: 'Steadies afternoon mood before creative play and emotion-naming cards.',
-        time: '03:45 م',
-        calories: '210 kcal',
-      },
+      breakfast: { badgeAr: '🥣 فكرة فطور', badgeEn: '🥣 Breakfast idea', titleAr: generalTitleAr, titleEn: generalTitleEn, descAr: generalDescAr, descEn: generalDescEn, time: '07:45 ص' },
+      lunchbox: { badgeAr: '🍱 وجبة اليوم', badgeEn: '🍱 Meal idea', titleAr: generalTitleAr, titleEn: generalTitleEn, descAr: generalDescAr, descEn: generalDescEn, time: '11:30 ص' },
+      snack: { badgeAr: '🍎 وجبة خفيفة', badgeEn: '🍎 Snack idea', titleAr: generalTitleAr, titleEn: generalTitleEn, descAr: generalDescAr, descEn: generalDescEn, time: '03:45 م' },
     };
-  }, [activeKidAge?.stageCode, activeKidName]);
+  }, [activeKid?.birth, activeKidAge?.months, activeKidAge?.stageCode, activeKidName]);
 
   const currentNutrition = nutritionPlans[selectedMealSlot];
 
@@ -2202,8 +2182,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               metaLeft={
                 <>
                   <span>👶 {activeKidName} · {activeKidStageLabel}</span>
-                  <span aria-hidden="true">·</span>
-                  
                 </>
               }
               bodyContent={
