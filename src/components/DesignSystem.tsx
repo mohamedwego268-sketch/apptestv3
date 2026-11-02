@@ -2610,7 +2610,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
         <button type="button" data-testid="splash-language-toggle" onClick={() => setSplashLanguage((current) => current === 'ar' ? 'en' : 'ar')} className="absolute top-2 end-0 min-h-9 rounded-full border border-teal-700/20 bg-white/75 px-4 text-[11px] font-extrabold text-teal-800 shadow-sm backdrop-blur dark:bg-white/10 dark:text-teal-200">{isEn ? 'العربية' : 'English'}</button>
         <div className="mb-2 flex items-center gap-2 rounded-full border border-teal-600/15 bg-white/65 px-3.5 py-1.5 shadow-sm backdrop-blur dark:border-teal-300/15 dark:bg-white/5">
           <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
-          <span className="text-[9px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">مساحة الأسرة</span>
+          <span className="text-[9px] font-extrabold tracking-[0.18em] text-teal-800 dark:text-teal-200">{isEn ? "A SPACE FOR FAMILIES" : "مساحة الأسرة"}</span>
         </div>
 
         <div className="relative mb-2 flex h-32 w-32 items-center justify-center sm:h-36 sm:w-36">
@@ -2628,6 +2628,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
           <p data-testid="splash-brand-slogan" className="text-sm font-extrabold leading-6 text-slate-700 dark:text-slate-200">
             مساحة تجمعنا.. وبحبهم نكبر
           </p>
+          {isEn && <p className="text-[11px] font-semibold leading-5 text-slate-500 dark:text-slate-400">A space that brings us together — we grow with their love.</p>}
           <p className="mx-auto max-w-xs text-[11px] font-semibold leading-5 text-slate-500 dark:text-slate-400">
             {isEn ? 'Everything your family needs to grow, connect and thrive.' : 'مساحة واحدة تتابع فيها رحلة طفلك وتجمع تفاصيل حياة أسرتك'}
           </p>
@@ -2666,7 +2667,7 @@ export const InteractiveSplashScreen: React.FC<InteractiveSplashScreenProps> = (
       </div>
 
       <footer data-testid="splash-bottom-copyright" className="relative z-10 w-full border-t border-teal-700/10 py-4 text-center text-[10px] font-bold text-slate-500 dark:border-white/10 dark:text-slate-400">
-        نكبر © ٢٠٢٦ — جميع حقوق الملكية محفوظة
+        {isEn ? "Nekbaar © 2026 — All rights reserved" : "نكبر © ٢٠٢٦ — جميع حقوق الملكية محفوظة"}
       </footer>
     </div>
   );
