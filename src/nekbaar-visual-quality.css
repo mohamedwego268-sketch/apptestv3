@@ -60,6 +60,9 @@
   max-width: 100%;
 }
 main {
+  overflow-wrap: normal;
+}
+main :where(code, pre, [data-long-token], .break-all) {
   overflow-wrap: anywhere;
 }
 main h1, main h2, main h3, main h4,
