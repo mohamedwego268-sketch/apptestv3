@@ -51,8 +51,6 @@ interface DailyAudioBriefEpisode {
   titleEn: string;
   hostsAr: string;
   hostsEn: string;
-  durationSec: number;
-  durationLabel: string;
   summaryAr: string;
   summaryEn: string;
   takeawayAr: string;
@@ -63,14 +61,12 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-morning-30s',
     timeBucket: 'morning',
-    slotLabelAr: '☀️ رسالة الصباح الصوتية',
-    slotLabelEn: '☀️ Morning Support Audio',
+    slotLabelAr: '☀️ قراءة نصيحة الصباح',
+    slotLabelEn: '☀️ Morning tip read-aloud',
     titleAr: 'ابدأ يومكم بلحظة تواصل بسيطة',
     titleEn: 'Begin the Day with a Small Moment Together',
-    hostsAr: 'دقيقة عملية لكل أب وأم',
-    hostsEn: 'A practical minute for every parent',
-    durationSec: 30,
-    durationLabel: '00:30',
+    hostsAr: 'قراءة بصوت الجهاز',
+    hostsEn: 'Read aloud with your device voice',
     summaryAr:
       'قبل ما تبدأوا مشاوير اليوم، خُدوا دقيقة تسمعوا طفلكم وتقولوا له إيه اللي هيحصل النهارده. الروتين الواضح بيساعده يستعد.',
     summaryEn:
@@ -81,14 +77,12 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-afternoon-30s',
     timeBucket: 'afternoon',
-    slotLabelAr: '🌤️ رسالة الظهيرة الصوتية',
-    slotLabelEn: '🌤️ Afternoon Support Audio',
+    slotLabelAr: '🌤️ قراءة نصيحة الظهيرة',
+    slotLabelEn: '🌤️ Afternoon tip read-aloud',
     titleAr: 'بعد الحضانة أو المدرسة: استمع أولاً، ثم اسأل',
     titleEn: 'After School: Listen First, Then Ask',
-    hostsAr: 'رسالة هادئة لدعم الوالدين',
-    hostsEn: 'A supportive moment for parents',
-    durationSec: 30,
-    durationLabel: '00:30',
+    hostsAr: 'قراءة بصوت الجهاز',
+    hostsEn: 'Read aloud with your device voice',
     summaryAr:
       'سيب لطفلك فرصة يهدأ بعد الرجوع. اعرض عليه مية أو وجبة مناسبة لعمره، وبعدها اسأله سؤال بسيط عن يومه من غير تحقيق.',
     summaryEn:
@@ -99,14 +93,12 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
   {
     id: 'brief-evening-30s',
     timeBucket: 'evening',
-    slotLabelAr: '🌙 رسالة المساء الصوتية',
-    slotLabelEn: '🌙 Evening Wind-Down Audio',
+    slotLabelAr: '🌙 قراءة نصيحة المساء',
+    slotLabelEn: '🌙 Evening tip read-aloud',
     titleAr: 'قبل النوم: اختتموا اليوم بهدوء وروتين ثابت',
     titleEn: 'End the Day with a Calm, Familiar Routine',
-    hostsAr: 'رسالة هادئة لدعم الوالدين',
+    hostsAr: 'قراءة بصوت الجهاز',
     hostsEn: 'A calm supportive moment for parents',
-    durationSec: 30,
-    durationLabel: '00:30',
     summaryAr:
       'اختاروا نشاط هادي قبل النوم يناسب سن طفلكم: قصة قصيرة، حضن، أو كلام عن أحلى حاجة حصلت النهارده.',
     summaryEn:
@@ -396,7 +388,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     wisdomTimeOverride === 'auto' ? currentTimeBucket : wisdomTimeOverride;
 
   // ============================================================================
-  // CHECKLIST #1 & #7: 30-Second Auto-Playing Time-Aware Audio Brief + Replay
+  // Time-aware daily tip read-aloud using the device speech engine; never autoplay.
   // ============================================================================
   const defaultBriefIdx = useMemo(() => {
     const idx = DAILY_AUDIO_BRIEFS_30S.findIndex((b) => b.timeBucket === currentTimeBucket);
@@ -405,7 +397,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const [activeBriefIdx, setActiveBriefIdx] = useState<number>(defaultBriefIdx);
   const [isPlayingBrief, setIsPlayingBrief] = useState<boolean>(false);
-  const [briefElapsedSec, setBriefElapsedSec] = useState<number>(0);
 
   const currentBrief = DAILY_AUDIO_BRIEFS_30S[activeBriefIdx] || DAILY_AUDIO_BRIEFS_30S[0];
 
@@ -424,20 +415,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     utterance.onstart = () => setIsPlayingBrief(true);
     utterance.onend = () => {
       setIsPlayingBrief(false);
-      setBriefElapsedSec(30);
     };
     utterance.onerror = () => setIsPlayingBrief(false);
-    setBriefElapsedSec(0);
     setIsPlayingBrief(true);
     window.speechSynthesis.speak(utterance);
     return true;
   };
-
-  useEffect(() => {
-    if (!isPlayingBrief) return;
-    const interval = window.setInterval(() => setBriefElapsedSec((prev) => Math.min(30, prev + 1)), 1000);
-    return () => window.clearInterval(interval);
-  }, [isPlayingBrief]);
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
@@ -953,7 +936,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       aria-label={isEn ? 'Nekbaar Family Home Dashboard' : 'لوحة العائلة الرئيسية — نكبر'}
     >
       {/* =====================================================================
-          1. ACCORDION: PERSONALIZED WELCOME & 30S VOICE MESSAGE CARD (BUG FIXED)
+          1. ACCORDION: PERSONALIZED WELCOME & DAILY TIP READ-ALOUD CARD
           ===================================================================== */}
       <div
         id="home-core-value-hero"
@@ -1045,9 +1028,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </div>
             <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? parentWellbeingMessage.titleEn : parentWellbeingMessage.titleAr}</h3>
             <p className="text-xs leading-relaxed font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? parentWellbeingMessage.bodyEn : parentWellbeingMessage.bodyAr}</p>
-            <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[36px] pt-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline">
-              {isEn ? 'Open parent support messages →' : 'افتح رسائل الدعم والمساندة ←'}
-            </button>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
+              <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[36px] text-xs font-black text-rose-700 dark:text-rose-200 hover:underline">
+                {isEn ? 'Open wellbeing & parenting center →' : 'افتح مركز الدعم النفسي والتربوي ←'}
+              </button>
+              <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[36px] text-xs font-black text-teal-800 dark:text-teal-200 hover:underline">
+                {isEn ? 'Parent support messages' : 'رسائل دعم الأب والأم'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1059,13 +1047,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         />
 
         {/* =====================================================================
-            CHECKLIST #1 & #7: BUG-FREE HORIZONTAL RTL VOICE MESSAGE CARD (30S)
+            DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
             Full-width stacked layout prevents any vertical letter-by-letter wrapping!
             ===================================================================== */}
         {openAccordions.welcomeAudio && (
           <div
-            id="home-audio-brief-podcast-player"
-            data-testid="home-audio-brief-podcast-player"
+            id="home-daily-tip-read-aloud"
+            data-testid="home-daily-tip-read-aloud"
             dir={isEn ? 'ltr' : 'rtl'}
             className="w-full rounded-2xl sm:rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-50/90 via-white to-orange-50/60 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xs"
           >
@@ -1119,55 +1107,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </div>
             </div>
 
-            {/* Row 2: Full-Width Progress Bar */}
-            <div className="w-full h-2 rounded-full bg-teal-950/10 dark:bg-[#0B131A] overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-[#0d9488] to-[#FF8C61] transition-all duration-300"
-                style={{ width: `${Math.min(100, Math.round((briefElapsedSec / 30) * 100))}%` }}
-              />
+            {/* Playback uses the device speech engine; no recorded-audio duration is implied. */}
+            <div data-testid="audio-brief-read-aloud-status" className="flex items-center gap-2 rounded-xl border border-teal-500/15 bg-teal-500/5 px-3 py-2 text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              <span aria-hidden="true">🔊</span>
+              <span>{isEn ? 'Read aloud using your device voice' : 'تُقرأ النصيحة بصوت الجهاز'}</span>
             </div>
 
-            {/* Row 3: Unobstructed Controls Bar (Waveform + 30s Timer + Replay Button + Next Period Button) */}
+            {/* Playback controls and navigation between the three daily tips. */}
             <div className="flex flex-wrap items-center justify-between gap-2.5 w-full">
-              <div className="flex items-center gap-2">
-                <div
-                  data-testid="audio-brief-waveforms"
-                  aria-hidden="true"
-                  className="flex items-center gap-1 h-7 px-2.5 rounded-2xl bg-teal-500/8 dark:bg-[#0B131A]/60 border border-teal-500/15"
-                >
-                  {[10, 18, 13, 22, 15, 24, 12, 19, 14, 21, 11, 16].map((barH, idx) => {
-                    const activeBar = Math.floor((briefElapsedSec / 30) * 12);
-                    const isPassed = idx <= activeBar;
-                    return (
-                      <span
-                        key={idx}
-                        style={{
-                          height: isPlayingBrief
-                            ? `${Math.max(6, ((barH + ((briefElapsedSec + idx * 3) % 9)) % 22) + 4)}px`
-                            : `${Math.round(barH * 0.72)}px`,
-                        }}
-                        className={`w-1 rounded-full transition-all duration-300 ${
-                          isPlayingBrief
-                            ? idx % 2 === 0
-                              ? 'bg-[#0d9488] dark:bg-[#2DD4BF]'
-                              : 'bg-[#FF8C61]'
-                            : isPassed
-                            ? 'bg-[#0d9488]/80 dark:bg-[#2DD4BF]/80'
-                            : 'bg-teal-900/20 dark:bg-teal-100/20'
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
-
-                <span
-                  dir="ltr"
-                  className="text-xs font-black tabular-nums text-[#0d9488] dark:text-[#2DD4BF] px-2.5 py-1 rounded-xl bg-teal-500/10"
-                >
-                  00:{String(briefElapsedSec).padStart(2, '0')} / {currentBrief.durationLabel}
-                </span>
-              </div>
-
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
@@ -1177,7 +1124,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[#0d9488]/40 bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <span>🔄</span>
-                  <span>{isEn ? 'Listen again' : 'اسمع تاني'}</span>
+                  <span>{isEn ? 'Read again' : 'اقرأها تاني'}</span>
                 </button>
 
                 <button
@@ -1186,8 +1133,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   onClick={() => {
                     const nextIdx = (activeBriefIdx + 1) % DAILY_AUDIO_BRIEFS_30S.length;
                     setActiveBriefIdx(nextIdx);
-                    setBriefElapsedSec(0);
-                    speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
+                                    speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
                   }}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                 >
