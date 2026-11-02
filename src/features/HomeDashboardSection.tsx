@@ -253,53 +253,53 @@ interface WisdomGalleryCardItem {
 const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
   {
     id: 'gal-1',
-    tagAr: '👶🏻 حمزة · ٦ شهور',
-    tagEn: '👶🏻 Hamza · 6m',
+    tagAr: '👶🏻 التواصل المبكر',
+    tagEn: '👶🏻 Early Connection',
     titleAr: 'ردّ على طفلك لما يحاول يتواصل',
-    titleEn: 'Emotional Safety Starts with Eye Contact',
+    titleEn: 'Respond When Your Child Reaches Out',
     wisdomAr:
       'لما طفلك يبص لك أو يصدر صوت، رد عليه بابتسامة أو كلام بسيط. التفاعل المتبادل فرصة يومية للتواصل والتعلم.',
     wisdomEn:
-      'Your warm response to Hamza’s coos and smiles builds millions of neural pathways for lifelong trust.',
+      'When your child looks at you, babbles or gestures, respond warmly. These small back-and-forth moments support early communication.',
     imageUrl: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=700&q=80',
     borderTone: 'border-sky-500/40',
   },
   {
     id: 'gal-2',
-    tagAr: '🎨 ليلى · ٤ سنوات',
-    tagEn: '🎨 Laila · 4y',
+    tagAr: '🎨 الخيال واللعب',
+    tagEn: '🎨 Imagination & Play',
     titleAr: 'خليه يكمل حكايته للآخر',
-    titleEn: 'Imagination Fuels Emotional Intelligence',
+    titleEn: 'Give Their Story Room to Grow',
     wisdomAr:
       'اسأل طفلك: «وبعدين حصل إيه؟» وسيبه يكمل الحكاية بطريقته. مش لازم تصحح كل تفصيلة.',
     wisdomEn:
-      'When Laila shares an imaginative tale after nursery, listen with wonder—pretend play trains problem-solving.',
+      'Ask “What happened next?” and let your child lead the story. You do not need to correct every detail.',
     imageUrl: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80',
     borderTone: 'border-rose-500/40',
   },
   {
     id: 'gal-3',
-    tagAr: '🏆 يوسف · ٨ سنوات',
-    tagEn: '🏆 Youssef · 8y',
+    tagAr: '🏆 الثقة بالمحاولة',
+    tagEn: '🏆 Confidence Through Effort',
     titleAr: 'امدح المحاولة والمجهود',
-    titleEn: 'Praise Effort, Not Just the Trophy',
+    titleEn: 'Praise the Effort, Not Only the Result',
     wisdomAr:
       'امدح المجهود المحدد: «عجبني إنك حاولت تاني». ده أوضح وأفيد من المدح العام.',
     wisdomEn:
-      'Telling Youssef "I love how focused you stayed in practice today" builds resilient self-confidence.',
+      'Notice a specific effort: “I liked how you tried again.” Specific encouragement shows children what they can repeat.',
     imageUrl: 'https://images.unsplash.com/photo-1484820540004-14229fe36ca4?auto=format&fit=crop&w=700&q=80',
     borderTone: 'border-amber-500/40',
   },
   {
     id: 'gal-4',
-    tagAr: '💚 أحمد ومريم · الأسرة',
-    tagEn: '💚 Ahmad & Maryam · Family',
+    tagAr: '💚 تعاون الأسرة',
+    tagEn: '💚 Family Teamwork',
     titleAr: 'اتفقوا على تقسيم مسؤوليات البيت',
-    titleEn: 'Calm Parents Are the Home’s Compass',
+    titleEn: 'Make Family Responsibilities Clear',
     wisdomAr:
-      'قسّموا المهام واتفقوا على طريقة واحدة للتعامل مع الروتين. مش لازم كل واحد يعمل كل حاجة.',
+      'قسّموا المهام واتفقوا على طريقة واضحة للتعامل مع الروتين. مش لازم شخص واحد يشيل كل التفاصيل.',
     wisdomEn:
-      'Children don’t need perfection—they thrive on the warmth they feel when Dad Ahmad and Mom Maryam team up.',
+      'Agree who handles each part of the routine. Clear handovers reduce confusion and make care more consistent.',
     imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=700&q=80',
     borderTone: 'border-teal-500/40',
   },
@@ -307,12 +307,12 @@ const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
     id: 'gal-5',
     tagAr: '🌙 روتين المساء',
     tagEn: '🌙 Bedtime Rhythm',
-    titleAr: 'روتين هادي قبل النوم',
-    titleEn: '30 Screen-Free Minutes Before Sleep',
+    titleAr: 'خلّوا آخر اليوم أهدى',
+    titleEn: 'Create a Calmer End to the Day',
     wisdomAr:
-      'اعملوا روتين هادي قبل النوم، وقللوا الشاشات حسب عمر الطفل وإرشادات طبيبه.',
+      'اختاروا خطوات بسيطة ومتكررة قبل النوم: نشاط هادي، قصة أو حديث قصير، ثم إضاءة أخف. عدّلوا الروتين حسب احتياج طفلكم.',
     wisdomEn:
-      'Replacing screens with warm lighting and a shared story doubles children’s deep sleep quality.',
+      'Choose a few predictable steps before bed: a calm activity, a short story or chat, then softer lighting. Adapt the routine to your child.',
     imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80',
     borderTone: 'border-indigo-500/40',
   },
@@ -702,11 +702,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   };
 
   // Heroes, Passions & Life Arena (Strictly grounded in Hamza 6m, Laila 4y, Youssef 8y)
-  const [cheeredHeroIds, setCheeredHeroIds] = useState<Record<string, number>>({
-    'hero-hamza': 14,
-    'hero-laila': 19,
-    'hero-youssef': 23,
-  });
+  const [cheeredHeroIds, setCheeredHeroIds] = useState<Record<string, number>>({});
 
   // Streamlined One-Handed Quick Log State per Child (Checklist #2)
   const [quickPulseByKid, setQuickPulseByKid] = useState<
@@ -822,62 +818,57 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Time-of-Day Dynamic Parenting Wisdom
   const dailyCompassWisdom = useMemo(() => {
+    const childLabel = activeKidName;
     if (effectiveTimeBucket === 'morning') {
       return {
-        badgeAr: '☀️ بداية اليوم · لحظة هادئة مع طفلك',
-        badgeEn: '☀️ Morning Moment · A Calm Start Together',
-        titleAr: 'ابدأوا اليوم بخمس دقائق من التواصل والابتسامة',
-        titleEn: 'Start the Day with Five Minutes of Connection and Warm Smiles',
-        bodyAr:
-          'ابدأوا صباحكم بلمسة حانية لحمزة، وتشجيع ليلى على اختيار ألوان يومها في الحضانة، وتذكير يوسف بأنه بطل مسؤول في مدرسته.',
-        bodyEn:
-          'Start the morning with gentle cuddles for baby Hamza, let Laila pick her nursery creative goal, and empower Youssef with confidence for school.',
-        quoteAr: '«الأطفال لا يحتاجون صباحاً مثالياً، بل يحتاجون صباحاً دافئاً يشعرون فيه أنهم محبوبون.»',
-        quoteEn: '“Children don’t need a perfect morning; they need a warm morning where they feel deeply loved.”',
-        actionLabelAr: 'تطبيق عادة الصباح الدافئ',
-        actionLabelEn: 'Apply Warm Morning Habit',
-        actionTaskAr: 'حضن الصباح الدافئ وتأكيد الثقة لحمزة وليلى ويوسف',
-        actionTaskEn: 'Warm Morning Hug & Confidence Boost for Hamza, Laila & Youssef',
+        badgeAr: '☀️ بداية اليوم · تواصل قبل الانشغال',
+        badgeEn: '☀️ Morning · Connect Before the Rush',
+        titleAr: 'ابدأوا اليوم بسؤال بسيط وخطة واضحة',
+        titleEn: 'Start with One Warm Check-in and a Clear Plan',
+        bodyAr: `خدوا دقيقة مع ${childLabel}: اسألوه عن حاجة متحمس لها النهارده، وشاركوه خطوة واحدة من خطة اليوم. لو لسه صغير، خلي البداية بابتسامة وكلام هادي وتواصل مناسب لعمره.`,
+        bodyEn: `Take a minute with ${childLabel}: ask what they are looking forward to and share one simple part of the day’s plan. For younger children, start with a warm smile and calm interaction.`,
+        quoteAr: '«مش مطلوب يوم مثالي؛ المهم بداية فيها اهتمام ووضوح.»',
+        quoteEn: '“The goal is not a perfect day; it is a start built on attention and clarity.”',
+        actionLabelAr: 'إضافة لحظة تواصل للروتين',
+        actionLabelEn: 'Add a Connection Moment',
+        actionTaskAr: `خمس دقائق تواصل هادي مع ${childLabel} قبل بداية اليوم`,
+        actionTaskEn: `Five calm minutes of connection with ${childLabel}`,
         actionTime: '07:30 ص',
       };
     }
     if (effectiveTimeBucket === 'afternoon') {
       return {
-        badgeAr: '🌤️ وقت العودة · مساحة للحكي والاستماع',
-        badgeEn: '🌤️ After School · Reconnect and Listen',
-        titleAr: 'امنح طفلك وقتاً للحكي قبل السؤال عن الواجبات',
-        titleEn: 'Warm Reconnection After School & Nursery Matters More Than Immediate Homework Questions',
-        bodyAr:
-          'عند عودة يوسف من المدرسة وليلى من الحضانة، امنحوهم ١٥ دقيقة استرخاء ووجبة خفيفة صحية مع وقت البطن الحسي لحمزة قبل بدء المذاكرة أو التمرين.',
-        bodyEn:
-          'When Youssef returns from school and Laila from nursery, give them 15 minutes of calm snack time alongside sensory tummy time with baby Hamza before homework.',
-        quoteAr: '«الاتصال العاطفي قبل التوجيه التربوي يفتح قلوب الأطفال للتعاون بدون عناد.»',
-        quoteEn: '“Connection before correction opens children’s hearts to joyful cooperation.”',
-        actionLabelAr: 'جدولة جلسة ونس الظهيرة',
-        actionLabelEn: 'Schedule Afternoon Connection',
-        actionTaskAr: '١٥ دقيقة سناك وونس عائلي بعد المدرسة والحضانة بدون شاشات',
-        actionTaskEn: '15-Min Screen-Free Family Snack & Reconnection',
+        badgeAr: '🌤️ وقت الرجوع · اسمع قبل ما توجّه',
+        badgeEn: '🌤️ Afternoon · Listen Before You Guide',
+        titleAr: 'ادي طفلك فرصة يفصل ويحكي عن يومه',
+        titleEn: 'Give Your Child Space to Unwind and Share',
+        bodyAr: `بعد الرجوع، ابدأوا بوقت هادي ومياه أو وجبة مناسبة، وبعدها اسألوا ${childLabel} عن حاجة حلوة وحاجة كانت صعبة في يومه. سيبوا له مساحة يرد على قد سنه ومزاجه.`,
+        bodyEn: `After the day, allow some quiet time and offer water or an age-appropriate snack. Then ask ${childLabel} about one good moment and one difficult moment, without rushing the answer.`,
+        quoteAr: '«الاستماع الهادي أحياناً أهم من النصيحة السريعة.»',
+        quoteEn: '“A calm listener can matter more than a quick solution.”',
+        actionLabelAr: 'جدولة وقت حكي وونس',
+        actionLabelEn: 'Schedule a Check-in',
+        actionTaskAr: `١٠ دقائق حكي وونس مع ${childLabel} من غير شاشات`,
+        actionTaskEn: `10 screen-free minutes to reconnect with ${childLabel}`,
         actionTime: '03:30 م',
       };
     }
     return {
       badgeAr: '🌙 نهاية اليوم · هدوء واستعداد للنوم',
-      badgeEn: '🌙 Evening Reset · A Calmer Bedtime',
-      titleAr: 'خفّفوا الإضاءة قبل النوم، وابدؤوا روتيناً هادئاً',
-      titleEn: 'Dim the Lights and Begin a Calm Bedtime Routine',
-      bodyAr:
-        'في المساء، يتعاون أحمد ومريم لتهدئة إيقاع البيت: تدليك لطيف لحمزة، وحدوتة خيالية قصيرة لليلى، وحوار امتنان هادئ مع يوسف عن أجمل لحظة في يومه.',
-      bodyEn:
-        'In the evening, Ahmad and Maryam slow the home rhythm: a soothing massage for Hamza, an imaginative story for Laila, and a gratitude chat with Youssef.',
-      quoteAr: '«آخر شعور ينام عليه الطفل في المساء هو أول شعور يستيقظ به في الصباح.»',
-      quoteEn: '“The last feeling a child falls asleep with is the first feeling they wake up with tomorrow.”',
-      actionLabelAr: 'تفعيل طقس المساء الهادئ',
-      actionLabelEn: 'Schedule Calm Evening Ritual',
-      actionTaskAr: 'ساعة هدوء المساء وحدوتة قبل النوم لحمزة وليلى ويوسف',
-      actionTaskEn: 'Calm Evening Hour & Bedtime Story for Hamza, Laila & Youssef',
+      badgeEn: '🌙 Evening · Slow Down Together',
+      titleAr: 'اختتموا اليوم بروتين بسيط ومتكرر',
+      titleEn: 'Close the Day with a Simple, Familiar Routine',
+      bodyAr: `اختاروا مع ${childLabel} نشاطاً هادئاً يناسب عمره: قصة قصيرة، ترتيب لعبة، أو حديث عن أحلى لحظة في اليوم. خفّفوا الإضاءة وخلّوا الترتيب مرناً حسب احتياج الطفل.`,
+      bodyEn: `Choose a calm, age-appropriate activity with ${childLabel}: a short story, putting a toy away, or sharing a favorite moment from the day. Soften the lights and keep the routine flexible.`,
+      quoteAr: '«الروتين المألوف يسهّل الانتقال للراحة، من غير ما يتحول لضغط.»',
+      quoteEn: '“A familiar routine can make winding down easier without turning it into pressure.”',
+      actionLabelAr: 'إضافة طقس هدوء للمساء',
+      actionLabelEn: 'Add an Evening Wind-down',
+      actionTaskAr: `وقت هادي وقصة قصيرة مع ${childLabel} قبل النوم`,
+      actionTaskEn: `A calm moment and short story with ${childLabel} before bed`,
       actionTime: '08:00 م',
     };
-  }, [effectiveTimeBucket]);
+  }, [effectiveTimeBucket, activeKidName]);
 
   // Live Children Names & Ages from Supabase `children` table via `state.kids`
   const liveKidHamza = state.kids.find((k) => k.id === 1) || state.kids[0];
@@ -1226,15 +1217,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     state.role === 'mom' ||
     parentProfileSpec.role === 'mom';
 
-  const fatherShortAr =
-    (state.parentAccounts.father?.fullName || 'أحمد').replace(/\s*\(.*?\)\s*/g, '').trim() || 'أحمد';
-  const motherShortAr =
-    (state.parentAccounts.mother?.fullName || 'مريم').replace(/\s*\(.*?\)\s*/g, '').trim() || 'مريم';
+  const fatherShortAr = (state.parentAccounts.father?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
+  const motherShortAr = (state.parentAccounts.mother?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
 
   const activeParentNameAr = isMotherActive ? motherShortAr : fatherShortAr;
-  const activeParentNameEn = isMotherActive ? locText(motherShortAr, 'en') : locText(fatherShortAr, 'en');
+  const activeParentNameEn = activeParentNameAr ? locText(activeParentNameAr, 'en') : isMotherActive ? 'Mother' : 'Parent';
   const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
-  const partnerParentNameEn = isMotherActive ? locText(fatherShortAr, 'en') : locText(motherShortAr, 'en');
+  const partnerParentNameEn = partnerParentNameAr ? locText(partnerParentNameAr, 'en') : '';
 
   return (
     <section
@@ -1272,16 +1261,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               >
                 {isMotherActive
                   ? isEn
-                    ? `👩🏻‍🍼 Active Profile: Mom ${activeParentNameEn}`
-                    : `👩🏻‍🍼 الحساب النشط: ماما ${activeParentNameAr}`
+                    ? `👩🏻‍🍼 Active Profile: Mom${motherShortAr ? ` ${activeParentNameEn}` : ''}`
+                    : `👩🏻‍🍼 الحساب النشط: الأم${motherShortAr ? ` · ${activeParentNameAr}` : ''}`
                   : isEn
-                  ? `👨🏻‍🍼 Active Profile: Dad ${activeParentNameEn}`
-                  : `👨🏻‍🍼 الحساب النشط: بابا ${activeParentNameAr}`}
+                  ? `👨🏻‍🍼 Active Profile: Parent${fatherShortAr ? ` ${activeParentNameEn}` : ''}`
+                  : `👨🏻‍🍼 الحساب النشط: ولي الأمر${fatherShortAr ? ` · ${activeParentNameAr}` : ''}`}
               </span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
-              <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                · {isEn ? `Synced with ${partnerParentNameEn}` : `متصل مع ${partnerParentNameAr}`}
-              </span>
+              {partnerParentNameAr && (
+                <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
+                  · {isEn ? `Family link: ${partnerParentNameEn}` : `مرتبط بحساب الأسرة: ${partnerParentNameAr}`}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
@@ -1950,7 +1941,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {heroesPassionsFeed.map((hero) => {
-            const cheerCount = cheeredHeroIds[hero.id] ?? 10;
+            const cheerCount = cheeredHeroIds[hero.id] ?? 0;
             return (
               <div
                 key={hero.id}
@@ -2007,7 +1998,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     onClick={() => {
                       setCheeredHeroIds((prev) => ({
                         ...prev,
-                        [hero.id]: (prev[hero.id] ?? 10) + 1,
+                        [hero.id]: (prev[hero.id] ?? 0) + 1,
                       }));
                       onShowToast?.(
                         isEn
