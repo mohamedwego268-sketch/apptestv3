@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { LanguageCode } from '../domain/familySpaceCore';
+import { calculateChildAge, ChildProfile, LanguageCode, locText } from '../domain/familySpaceCore';
 import {
   BedtimeStoryRecord,
   useMasterController,
@@ -9,49 +9,9 @@ export interface StoriesLibraryViewProps {
   lang?: LanguageCode;
   onShowToast?: (msg: string) => void;
   onScheduleStoryTask?: (taskName: string, timeStr: string, kidId: number | null) => void;
+  onOpenChildren?: () => void;
+  kids: ChildProfile[];
 }
-
-const CHILD_STORY_PROFILES: Array<{
-  id: 1 | 2 | 3;
-  nameAr: string;
-  nameEn: string;
-  stageAr: string;
-  stageEn: string;
-  emoji: string;
-  defaultMoralAr: string;
-  defaultMoralEn: string;
-}> = [
-  {
-    id: 1,
-    nameAr: 'حمزة',
-    nameEn: 'Hamza',
-    stageAr: '٦ شهور · تهدئة حسية وإيقاع 60 BPM',
-    stageEn: '6 Months · Sensory Lullaby & 60 BPM Calm',
-    emoji: '👶🏻',
-    defaultMoralAr: 'الأمان العاطفي والهدوء الحسي',
-    defaultMoralEn: 'Emotional Security & Sensory Calm',
-  },
-  {
-    id: 2,
-    nameAr: 'ليلى',
-    nameEn: 'Laila',
-    stageAr: '٤ سنوات · خيال الحضانة والألوان',
-    stageEn: '4 Years · Nursery Wonder & Colors',
-    emoji: '🎨',
-    defaultMoralAr: 'المشاركة اللطيفة والخيال الإبداعي',
-    defaultMoralEn: 'Kind Sharing & Creative Imagination',
-  },
-  {
-    id: 3,
-    nameAr: 'يوسف',
-    nameEn: 'Youssef',
-    stageAr: '٨ سنوات · مغامرات الأبطال والعلوم',
-    stageEn: '8 Years · Champions, Science & Courage',
-    emoji: '🏆',
-    defaultMoralAr: 'المسؤولية والثقة بالنفس والامتنان المسائي',
-    defaultMoralEn: 'Responsibility, Confidence & Evening Gratitude',
-  },
-];
 
 const MORAL_OPTIONS: Array<{ ar: string; en: string }> = [
   {
@@ -76,12 +36,14 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
   lang = 'ar',
   onShowToast,
   onScheduleStoryTask,
+  onOpenChildren,
+  kids,
 }) => {
   const isEn = lang === 'en';
   const master = useMasterController();
 
-  const [selectedChildFilter, setSelectedChildFilter] = useState<'all' | 1 | 2 | 3>('all');
-  const [generatorChildId, setGeneratorChildId] = useState<1 | 2 | 3>(2);
+  const [selectedChildFilter, setSelectedChildFilter] = useState<'all' | number>('all');
+  const [generatorChildId, setGeneratorChildId] = useState<number>(() => kids[0]?.id ?? 0);
   const [themePrompt, setThemePrompt] = useState<string>('');
   const [selectedMoralIdx, setSelectedMoralIdx] = useState<number>(1);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -93,6 +55,16 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     };
   }, []);
+
+  useEffect(() => {
+    if (kids.length === 0) {
+      setGeneratorChildId(0);
+      setSelectedChildFilter('all');
+      return;
+    }
+    if (!kids.some((kid) => kid.id === generatorChildId)) setGeneratorChildId(kids[0].id);
+    if (selectedChildFilter !== 'all' && !kids.some((kid) => kid.id === selectedChildFilter)) setSelectedChildFilter('all');
+  }, [kids, generatorChildId, selectedChildFilter]);
 
   const handleReadStory = () => {
     if (!featuredStory || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
@@ -134,30 +106,29 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
   const handleGenerateStory = async () => {
     setIsGenerating(true);
     try {
-      const childMeta =
-        CHILD_STORY_PROFILES.find((c) => c.id === generatorChildId) ||
-        CHILD_STORY_PROFILES[0];
+      const childMeta = kids.find((kid) => kid.id === generatorChildId);
+      if (!childMeta) {
+        onShowToast?.(isEn ? 'Add a child profile before creating a personalized story.' : 'أضف ملف طفل أولاً قبل تأليف حدوتة مخصصة.');
+        return;
+      }
+      const childName = locText(childMeta.name, lang);
       const moralObj = MORAL_OPTIONS[selectedMoralIdx] || MORAL_OPTIONS[0];
 
       const created = await master.stories.generate({
-        childId: generatorChildId,
-        childName: childMeta.nameAr,
-        themePrompt:
-          themePrompt.trim() ||
-          (isEn
-            ? 'The glowing lantern in Ahmad & Maryam’s warm garden'
-            : 'الفانوس المضيء في حديقة بيت أحمد ومريم الدافئة'),
+        childId: childMeta.id,
+        childName,
+        themePrompt: themePrompt.trim() || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة'),
         moralFocus: isEn ? moralObj.en : moralObj.ar,
       });
 
       setActiveStoryId(created.id);
-      setSelectedChildFilter(generatorChildId);
+      setSelectedChildFilter(childMeta.id);
       setThemePrompt('');
 
       onShowToast?.(
         isEn
-          ? `✨ Generated new bedtime story for ${childMeta.nameEn}!`
-          : `✨ تم تأليف وحفظ حدوتة جديدة لـ ${childMeta.nameAr}!`
+          ? `✨ Generated and saved a new bedtime story for ${childName}!`
+          : `✨ تم تأليف وحفظ حدوتة جديدة لـ ${childName}!`
       );
     } finally {
       setIsGenerating(false);
@@ -208,8 +179,16 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
         </div>
 
         {/* Select Target Child for Generation */}
+        {kids.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-amber-500/40 bg-amber-50/50 dark:bg-[#142430] p-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to personalize stories and link each story to the right child.' : 'أضف ملف طفل علشان نخصص الحواديت ونربط كل حدوتة بملف الطفل الصحيح.'}</p>
+            {onOpenChildren && <button type="button" onClick={onOpenChildren} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Open child profiles' : 'فتح ملفات الأطفال'}</button>}
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {CHILD_STORY_PROFILES.map((c) => {
+          {kids.map((c) => {
+            const childName = locText(c.name, lang);
+            const childAge = calculateChildAge(c.birth, lang).label;
             const active = generatorChildId === c.id;
             return (
               <button
@@ -229,15 +208,13 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-lg shrink-0">{c.emoji}</span>
                   <div className="min-w-0">
-                    <div className="text-xs font-black truncate">
-                      {isEn ? c.nameEn : c.nameAr}
-                    </div>
+                    <div className="text-xs font-black truncate">{childName}</div>
                     <div
                       className={`text-[10px] font-bold truncate ${
                         active ? 'text-teal-100' : 'text-[var(--color-muted)] dark:text-[#94A3B8]'
                       }`}
                     >
-                      {isEn ? c.stageEn : c.stageAr}
+                      {childAge}
                     </div>
                   </div>
                 </div>
@@ -246,6 +223,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
             );
           })}
         </div>
+        )}
 
         {/* Theme Input & Moral Selector */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
@@ -289,7 +267,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
             <button
               type="button"
               data-testid="stories-library-generate-btn"
-              disabled={isGenerating}
+              disabled={isGenerating || kids.length === 0}
               onClick={handleGenerateStory}
               className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] disabled:opacity-60 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
             >
@@ -297,6 +275,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 ? isEn
                   ? 'Generating...'
                   : 'جاري التأليف...'
+                : kids.length === 0
+                ? isEn ? 'Add a child profile first' : 'أضف ملف طفل أولاً'
                 : isEn
                 ? '✨ Generate AI Bedtime Story'
                 : '✨ تأليف حدوتة جديدة بالذكاء الاصطناعي'}
@@ -324,7 +304,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 : `كل الأطفال (${master.stories.all.length})`}
             </button>
 
-            {CHILD_STORY_PROFILES.map((c) => {
+            {kids.map((c) => {
               const count = master.stories.getForChild(c.id).length;
               const active = selectedChildFilter === c.id;
               return (
@@ -339,7 +319,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                       : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
                   }`}
                 >
-                  {c.emoji} {isEn ? c.nameEn : c.nameAr} ({count})
+                  {c.emoji} {locText(c.name, lang)} ({count})
                 </button>
               );
             })}
@@ -347,7 +327,9 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
-          {visibleStories.map((story) => {
+          {kids.length === 0 ? (
+            <div className="lg:col-span-3 rounded-xl bg-[var(--color-control-muted)]/40 dark:bg-[#142430] p-4 text-center text-xs font-semibold text-[var(--color-muted)]">{isEn ? 'Add a child profile to start a personalized story library.' : 'أضف ملف طفل لبدء مكتبة حواديت مخصصة.'}</div>
+          ) : visibleStories.map((story) => {
             const isSelected = featuredStory?.id === story.id;
             return (
               <div
