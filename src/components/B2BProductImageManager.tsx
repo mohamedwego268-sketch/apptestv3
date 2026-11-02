@@ -18,6 +18,7 @@ type B2BProductImageManagerProps = {
   partnerId?: string | null;
   language?: 'ar' | 'en';
   canManage?: boolean;
+  compact?: boolean;
   onChanged?: (imagePath: string | null) => void;
 };
 
@@ -28,6 +29,7 @@ export function B2BProductImageManager({
   partnerId,
   language = 'ar',
   canManage = true,
+  compact = false,
   onChanged,
 }: B2BProductImageManagerProps) {
   const en = language === 'en';
@@ -130,21 +132,21 @@ export function B2BProductImageManager({
   };
 
   return (
-    <section className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40" dir={en ? 'ltr' : 'rtl'}>
+    <section className={compact ? "rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900/40" : "mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40"} dir={en ? 'ltr' : 'rtl'}>
       <div className="flex items-center gap-3">
-        <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+        <div className={compact ? "grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800" : "grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800"}>
           {imageUrl
             ? <img src={imageUrl} alt={en ? 'Product image' : 'صورة المنتج'} className="h-full w-full object-cover" />
             : <ImagePlus size={25} className="text-slate-400" />}
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100">{en ? 'Product image' : 'صورة المنتج'}</h4>
-          <p className="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+          {!compact && <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100">{en ? 'Product image' : 'صورة المنتج'}</h4>}
+          <p className={compact ? "hidden" : "mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400"}>
             {en ? 'JPG, PNG, WebP or AVIF · maximum 5 MB' : 'JPG أو PNG أو WebP أو AVIF · بحد أقصى 5 ميجابايت'}
           </p>
           {canManage && (
             <div className="mt-2 flex flex-wrap gap-2">
-              <label className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white">
+              <label className={compact ? "inline-flex min-h-[34px] cursor-pointer items-center gap-1 rounded-lg bg-teal-700 px-2 text-[10px] font-bold text-white" : "inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-lg bg-teal-700 px-3 text-xs font-bold text-white"}>
                 {busy ? <LoaderCircle size={14} className="animate-spin" /> : <ImagePlus size={14} />}
                 {currentPath ? (en ? 'Change image' : 'تغيير الصورة') : (en ? 'Upload image' : 'رفع صورة')}
                 <input
@@ -160,7 +162,7 @@ export function B2BProductImageManager({
                 />
               </label>
               {currentPath && (
-                <button type="button" disabled={busy} onClick={() => void clearImage()} className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-rose-200 px-3 text-xs font-bold text-rose-700 disabled:opacity-50 dark:border-rose-900 dark:text-rose-300">
+                <button type="button" disabled={busy} onClick={() => void clearImage()} className={compact ? "inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-rose-200 px-2 text-[10px] font-bold text-rose-700 disabled:opacity-50 dark:border-rose-900 dark:text-rose-300" : "inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-rose-200 px-3 text-xs font-bold text-rose-700 disabled:opacity-50 dark:border-rose-900 dark:text-rose-300"}>
                   <Trash2 size={14} />{en ? 'Remove' : 'حذف'}
                 </button>
               )}
