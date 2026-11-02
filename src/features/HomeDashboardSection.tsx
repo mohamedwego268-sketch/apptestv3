@@ -1833,31 +1833,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             })()}
           </div>
 
-          {/* Autonomous Battery Diagnostics Engine Live Bar for Active Child */}
-          {(() => {
-            const childDiag = master.batterySummary.childrenDiagnostics[activeKidId];
-            if (!childDiag) return null;
-            return (
-              <div
-                data-testid="child-battery-diagnostic-strip"
-                className="rounded-2xl border border-teal-500/30 bg-teal-50/55 dark:bg-[#142430] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs"
-              >
-                <div className="flex items-center gap-2 font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  <span>🔋</span>
-                  <span>
-                    {isEn
-                      ? `${activeKidName} Wellness Battery: ${childDiag.overallScore}%`
-                      : `مؤشر طاقة وعافية ${activeKidName}: ${childDiag.overallScore}%`}
-                  </span>
-                </div>
-                <span className="text-[11px] font-semibold text-[#0d9488] dark:text-[#2DD4BF]">
-                  {isEn ? childDiag.recommendationEn : childDiag.recommendationAr}
-                </span>
-              </div>
-            );
-          })()}
-          </>
-          )}
         </div>
       </HomeAccordionCard>
 
