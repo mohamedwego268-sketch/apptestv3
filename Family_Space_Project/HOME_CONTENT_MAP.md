@@ -137,6 +137,19 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Automated Checks on commit `1d9e285`: unit/security contract tests, TypeScript verification and production build all passed.
 - [ ] Supabase Preview check is currently blocked by the repository's remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No migrations or production database changes were made in this stage.
 
+## Stage 2–3 implementation progress
+
+- [x] Added a dedicated learning and curiosity section with age-aware activities for 0–2, 2–5, 5–8 and unknown-age profiles.
+- [x] Each learning activity can be added to the selected child's family routine; the section links to the child's interests/profile and existing learning games.
+- [x] Replaced arbitrary mood-emoji cycling in the Home quick log with a direct path to the full seven-state emotional check-in.
+- [x] The Home-selected child is passed into ParentingSupportCenter so the emotional check-in opens for the same child; the existing save path writes to that child's `emotional_social` record.
+- [x] The parent wellbeing card now has separate direct links to the parenting support center and parent support messages.
+- [x] Clarified that the daily tip is read aloud using the device speech engine. Removed the simulated waveform, fixed 30-second timer and podcast-style labeling; no recorded audio is implied.
+- [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
+- [ ] Full Home information architecture and visual QA still need completion; keep the existing useful sections and reduce accordion fatigue without removing child records or navigation.
+- [ ] Review persistence/loading/error behavior across every Home quick action; do not mark unsaved local state as saved.
+- [ ] Automated CI for the latest main commit is running; update this status only after the final run completes.
+
 ## Execution order
 
 Finish the Home content map and experience before switching to unrelated store or backend work. Only make backend changes when required for a completed Home interaction and only within the approved existing data contract. No production migrations or RLS changes without explicit approval.
