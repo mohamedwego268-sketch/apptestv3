@@ -60,3 +60,36 @@ Every content item should identify:
 Discover → Learn → Practice → Record → Reflect → Get support.
 
 The goal is not to maximize notifications or screen time. It is to give parents a useful next step and help them understand patterns over time.
+
+
+## Verified expert publishing network
+
+The expert network is an editorial layer across the six product tracks, not a separate seventh track.
+
+### Contributor lifecycle
+1. Contributor submits identity, professional credentials, specialty, scope of practice, biography and evidence.
+2. Editorial administration reviews identity and credentials before any professional verification claim is displayed.
+3. Contributor profile remains accurately labelled as pending/unverified until approval; no placeholder experts, invented qualifications, fabricated ratings or implied endorsements.
+4. Submitted material enters editorial review. Medical, psychological, developmental and safety material requires an appropriately qualified reviewer.
+5. Approved content is tagged with its audience, age range, specialty, track, format, access tier, sources, review date, safety note and related next steps.
+6. Content can be corrected, unpublished or withdrawn, with reviewer and change history retained.
+
+### Family discovery experience
+- Families discover content by topic, specialty, child age and format.
+- Every article, video, real audio item, visual guide, activity or Q&A response has one useful next action and links to related content.
+- Expert profile pages may show approved contributions and a follow/favourite action only when those product interactions are implemented.
+- No booking, direct consultation or clinical relationship is implied unless a real service and provider workflow exist.
+- Sponsored content is visibly disclosed and kept distinct from independent professional guidance.
+
+### Data contract
+Each item should include a stable ID, title, summary, contributor ID, specialty, track, age band, audience, format, free/Premium entitlement, editorial status, reviewer ID, review date, source references, safety note, related item IDs and next action. This contract should be implemented against the existing architecture before introducing a new database model.
+
+## Subscription and Premium boundary
+
+Initial product tiers are Free and Premium. Both retain the six core family content tracks and the family's existing records. Free includes open editorial content; Premium may include exclusive specialist content and a premium library when published.
+
+Personalized illustrated stories that transform a guardian-selected child photo into a private illustrated character are a future Premium feature only. They are not available at launch and must be labelled “قريبًا مع Premium”. Do not collect a photo or charge for this capability before launch.
+
+Before photo-story launch, require explicit guardian consent, private storage and access, no public sharing by default, separate consent for any training/marketing reuse, age-appropriate story controls, deletion of source photos and generated stories, and a documented retention policy.
+
+No subscription price, trial, billing interval, usage limit, currency price or payment provider is approved yet. Future subscription administration must support country/currency price configuration, plan lifecycle, subscriber status, dates, renewals/cancellations, server-enforced entitlements, payment/refund records only after provider integration, offers, analytics and audit logs.
