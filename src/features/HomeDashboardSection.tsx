@@ -1366,7 +1366,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 moodEmoji: '😊',
                 careLogged: false,
               };
-              const moodCycle = ['😊', '🥰', '😴', '🎨', '🏆'];
               const loggedCount = Number(pulse.sleepLogged) + Number(pulse.mealLogged) + Number(pulse.careLogged);
               const progressPercent = Math.round((loggedCount / 3) * 100);
               return (
