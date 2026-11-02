@@ -185,6 +185,9 @@ The expert network is an editorial layer across the six existing tracks, not a s
 
 ## Home content work — latest implementation checkpoint
 
+- [x] Added explicit next-step cues to each of the six Home tracks: health record, age-fit learning activity, movement activity, child emotional check-in, values habit and daily routine.
+- [x] Kept each cue attached to its existing verified destination; no new duplicate routes or data flows were introduced.
+
 - [x] Added an expert-network discovery layer across the existing six tracks without adding a seventh track or inventing verified experts.
 - [x] Added a neutral “قريبًا” teaser for future illustrated stories; it requests no photo and does not enable generation.
 - [x] Kept the existing text-based bedtime story library separate from the future photo-based illustrated story feature.
