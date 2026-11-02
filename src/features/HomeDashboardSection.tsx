@@ -13,14 +13,13 @@ import {
 } from '../domain/familySpaceCore';
 import { PageId } from '../context/FamilyAppContext';
 import {
-  FamilyMoodBarometer,
   MasterPatternCard,
   SoftFilledIcon,
 } from '../components/DesignSystem';
 import { ThreeDIconId } from '../components/ThreeDVisuals';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { useMaster } from '../services/MasterAppController';
-import { BatteryDiagnosticsView } from '../components/BatteryDiagnosticsView';
+import { ParentingSupportCenter } from '../components/ParentingSupportCenter';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
@@ -2445,45 +2444,76 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          8. ACCORDION: DAILY BATTERY DIAGNOSTIC (QUESTIONS FIRST, RESULT BELOW — CHECKLIST #3 & #9)
+          8. ACCORDION: FAMILY WELLBEING & POSITIVE PARENTING SUPPORT
+          Household support is separate from each child's emotional record.
           ===================================================================== */}
       <HomeAccordionCard
-        id="home-battery-diagnostic-accordion"
-        testId="home-battery-diagnostic-accordion"
-        iconEmoji="🔋"
-        iconBgClass="bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]"
-        title={isEn ? 'Daily Home Battery & Rescue Plan' : 'مؤشر طاقة البيت وخطة الإنقاذ'}
+        id="home-parenting-support-center"
+        testId="home-parenting-support-center"
+        iconEmoji="💚"
+        iconBgClass="bg-rose-500/15 text-rose-700 dark:text-rose-300"
+        title={isEn ? 'Family Wellbeing & Parenting Support' : 'الدعم النفسي والتربوي للأسرة'}
         subtitle={
           isEn
-            ? 'Check in on family energy and view tailored daily recommendations'
-            : 'قيّم طاقة البيت والأطفال واحصل على توصيات فورية لروتين اليوم'
+            ? 'Practical support for parents, individual child check-ins and everyday situations'
+            : 'مساندة للأب والأم، ومتابعة مشاعر كل طفل، وخطوات عملية للمواقف اليومية'
         }
-        badgeText={isEn ? 'Smart Check-In' : 'تشخيص ذكي'}
+        badgeText={isEn ? 'Parents + Each Child' : 'البيت + كل طفل'}
         isOpen={Boolean(openAccordions.batteryDiagnostic)}
         onToggle={() => toggleAccordion('batteryDiagnostic')}
         isEn={isEn}
       >
-        <div className="space-y-4">
-          <BatteryDiagnosticsView
-            lang={lang}
-            onShowToast={onShowToast}
-            onAddRescueTask={onAddSuggestedRoutineTask}
-          />
-
-          <FamilyMoodBarometer
-            language={lang}
-            darkMode={Boolean(state.darkMode)}
-            onSelectMood={(_, msg) => onShowToast?.(msg)}
-            onAddRescueTask={(taskName, timeStr, kidId) => {
-              onAddSuggestedRoutineTask?.(taskName, timeStr, kidId);
+        <ParentingSupportCenter
+          kids={state.kids}
+          language={lang}
+          onSaveChildMood={async (kidId, mood) => {
+            const targetKid = state.kids.find((kid) => kid.id === kidId);
+            if (!targetKid?.remoteId) {
               onShowToast?.(
                 isEn
-                  ? `🛟 Added Rescue Plan task to Daily Routine: "${taskName}"`
-                  : `🛟 تمت إضافة مهمة خطة الإنقاذ إلى الروتين اليومي: «${taskName}»`
+                  ? 'Save this child profile to the family account before recording feelings.'
+                  : 'احفظ ملف الطفل في حساب الأسرة أولًا قبل تسجيل حالته الشعورية.'
               );
-            }}
-          />
-        </div>
+              return false;
+            }
+            const result = await createChildLifeRecord({
+              childRemoteId: targetKid.remoteId,
+              recordType: 'emotional_social',
+              title: 'متابعة الحالة الشعورية للطفل',
+              details: {
+                moodKey: mood.id,
+                moodEmoji: mood.emoji,
+                moodLabelAr: mood.labelAr,
+                moodLabelEn: mood.labelEn,
+                source: 'parenting_support_center',
+              },
+            });
+            if (result.error || !result.record) {
+              onShowToast?.(
+                isEn
+                  ? `Could not save the child check-in: ${result.error || 'Unknown error'}`
+                  : `تعذر حفظ متابعة الطفل: ${result.error || 'خطأ غير معروف'}`
+              );
+              return false;
+            }
+            setQuickPulseByKid((previous) => {
+              const current = previous[kidId] || {
+                sleepLogged: false,
+                mealLogged: false,
+                moodEmoji: '😊',
+                careLogged: false,
+              };
+              return { ...previous, [kidId]: { ...current, moodEmoji: mood.emoji } };
+            });
+            onShowToast?.(
+              isEn
+                ? `💛 Saved ${mood.labelEn.toLowerCase()} check-in to ${locText(targetKid.name, 'en')}’s child record.`
+                : `💛 تم حفظ حالة «${mood.labelAr}» في ملف ${locText(targetKid.name, 'ar')}.`
+            );
+            return true;
+          }}
+          onAddRoutineTask={onAddSuggestedRoutineTask}
+        />
       </HomeAccordionCard>
 
       {/* =====================================================================
