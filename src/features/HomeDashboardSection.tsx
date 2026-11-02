@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Baby, CalendarDays, HeartPulse, House, ListChecks, ShoppingBag } from 'lucide-react';
+import { Baby, House } from 'lucide-react';
 import {
   CommercialItem,
   FamilySpaceState,
@@ -338,23 +338,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const toggleAccordion = (key: string) => {
     setOpenAccordions((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const setAllAccordions = (openState: boolean) => {
-    setOpenAccordions({
-      welcomeAudio: openState,
-      quickTrack: openState,
-      dailyWisdom: openState,
-      heroesArena: openState,
-      bedtimeStories: openState,
-      dailyEssentials: openState,
-      parentingSupport: openState,
-      learningTrack: openState,
-      valuesTrack: openState,
-      kidsGames: openState,
-      wisdomGallery: openState,
-      storeShowcase: openState,
-    });
   };
 
   const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack') => {
