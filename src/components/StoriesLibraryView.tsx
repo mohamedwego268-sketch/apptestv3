@@ -120,7 +120,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
         childBirth: childMeta.birth,
         childRemoteId: childMeta.remoteId,
         themePrompt: themePrompt.trim() || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة'),
-        moralFocus: isEn ? moralObj.en : moralObj.ar,
+        moralFocusAr: moralObj.ar,
+        moralFocusEn: moralObj.en,
       });
 
       setActiveStoryId(created.id);
