@@ -758,7 +758,7 @@ export function isTaskVisibleForParentSession(
 
 export interface DailyParentingNotification {
   id: string;
-  slot: 'morning' | 'midday' | 'evening' | 'security';
+  slot: 'morning' | 'midday' | 'evening' | 'support' | 'security';
   parentTarget: 'mother' | 'father' | 'both';
   scheduledTime: string;
   titleAr: string;
@@ -5053,6 +5053,87 @@ export function generateThreeDailyNotifications(
       read: state.readNotificationIds.includes(`notif-${parentId}-evening`),
     });
   }
+
+  // Parent wellbeing messages are always available in the center, independently of routine reminder preferences.
+  const parentSupportMessages = isMother
+    ? [
+        {
+          id: `notif-${parentId}-support-morning`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · الصباح',
+          categoryLabelAr: 'دعم نفسي للأم',
+          categoryLabelEn: 'Emotional Support for Mom',
+          titleAr: 'صباحك مش لازم يبدأ بالكمال 💚',
+          titleEn: 'Your Morning Does Not Have to Be Perfect 💚',
+          bodyAr: 'خدي نفسًا وابدئي بالأهم فقط. مش مطلوب منك تخلصي كل حاجة النهارده، وطلب المساعدة أو تأجيل مهمة مش تقصير. وجودك واهتمامك لهما قيمة.',
+          bodyEn: 'Take a breath and start with what matters most. You do not have to finish everything today. Asking for help or postponing a task is not failure; your care matters.',
+        },
+        {
+          id: `notif-${parentId}-support-midday`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · منتصف اليوم',
+          categoryLabelAr: 'توازن الأم واحتياجاتها',
+          categoryLabelEn: 'Mom’s Wellbeing',
+          titleAr: 'احتياجاتك جزء من رعاية الأسرة',
+          titleEn: 'Your Needs Are Part of Caring for Your Family',
+          bodyAr: 'لو تقدري، خدي استراحة قصيرة واشربي مية وكلمي شخصًا ترتاحي له. الاهتمام بنفسك مش أنانية، ومش لازم تستني لحد ما تنهكي.',
+          bodyEn: 'If you can, take a short break, drink some water, and connect with someone you trust. Caring for yourself is not selfish, and you do not have to wait until you are exhausted.',
+        },
+        {
+          id: `notif-${parentId}-support-evening`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · المساء',
+          categoryLabelAr: 'تقدير ومساندة الأم',
+          categoryLabelEn: 'Encouragement for Mom',
+          titleAr: 'مش كل يوم لازم يكون مثاليًا',
+          titleEn: 'Not Every Day Has to Be Perfect',
+          bodyAr: 'افتكري موقفًا صغيرًا كنتِ حاضرة فيه مع أسرتك اليوم. ولو اليوم كان مرهقًا، ده لا يقلل من قيمتك ولا من حبك. بكرة فرصة جديدة، ومسموح لك ترتاحي.',
+          bodyEn: 'Remember one small moment when you were present for your family today. If the day was hard, it does not reduce your worth or your love. Tomorrow is another chance, and you are allowed to rest.',
+        },
+      ]
+    : [
+        {
+          id: `notif-${parentId}-support-morning`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · الصباح',
+          categoryLabelAr: 'دعم نفسي للأب',
+          categoryLabelEn: 'Emotional Support for Dad',
+          titleAr: 'ابدأ يومك بخطوة واحدة كفاية',
+          titleEn: 'One Good Step Is Enough to Begin',
+          bodyAr: 'مش مطلوب منك تحل كل التحديات مرة واحدة. اختار أولوية واحدة، وافتكر إن الحضور والاستماع والمشاركة في المسؤولية أشكال مهمة من الرعاية.',
+          bodyEn: 'You do not have to solve every challenge at once. Choose one priority, and remember that being present, listening, and sharing responsibility are meaningful forms of care.',
+        },
+        {
+          id: `notif-${parentId}-support-midday`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · منتصف اليوم',
+          categoryLabelAr: 'توازن الأب واحتياجاته',
+          categoryLabelEn: 'Dad’s Wellbeing',
+          titleAr: 'من حقك تطلب المساندة',
+          titleEn: 'You Are Allowed to Ask for Support',
+          bodyAr: 'لو الضغوط زادت، شارك اللي حاسس به مع شخص تثق فيه، واتفق مع شريكك على توزيع أوضح للمسؤوليات. مش لازم تشيل كل شيء وحدك.',
+          bodyEn: 'If pressure builds, talk with someone you trust and agree with your partner on a clearer sharing of responsibilities. You do not have to carry everything alone.',
+        },
+        {
+          id: `notif-${parentId}-support-evening`,
+          slot: 'support' as const,
+          scheduledTime: 'رسالة دعم · المساء',
+          categoryLabelAr: 'تقدير ومساندة الأب',
+          categoryLabelEn: 'Encouragement for Dad',
+          titleAr: 'تواجدك الهادئ له معنى',
+          titleEn: 'Your Calm Presence Matters',
+          bodyAr: 'حتى اللحظات الصغيرة من اللعب أو الاستماع أو مساعدة الأسرة بتفرق. قيّم يومك برفق، ومش لازم تكون مثاليًا عشان تكون أبًا حاضرًا ومحبًا.',
+          bodyEn: 'Small moments of play, listening, or helping your family matter. Be gentle with yourself; you do not have to be perfect to be a present and caring dad.',
+        },
+      ];
+
+  items.push(
+    ...parentSupportMessages.map((message) => ({
+      ...message,
+      parentTarget: parentId,
+      read: state.readNotificationIds.includes(message.id),
+    }))
+  );
 
   // Mandatory account/safety notification (always active even if optional parenting notifications are paused)
   items.push({
