@@ -1597,258 +1597,35 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </SectionToolsDrawer>
 
-      {/* =====================================================================
-          2. INSTAGRAM-STYLE REEL VIDEO PLAYER (< 60s) — PERMANENTLY VISIBLE (CHECKLIST #3 & #8)
-          ===================================================================== */}
-      <div
-        id="home-instagram-reels-player"
-        data-testid="home-instagram-reels-player"
-        dir={isEn ? 'ltr' : 'rtl'}
-        className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-5 sm:p-6 space-y-4 shadow-sm"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="space-y-0.5">
-            <div className="inline-flex items-center gap-2">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500 to-amber-500 text-white flex items-center justify-center text-base shadow-2xs">
-                🎬
-              </span>
-              <h2 className="text-base sm:text-lg font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn
-                  ? 'Short Videos & Practical Tips'
-                  : 'فيديوهات قصيرة ونصايح عملية'}
-              </h2>
-            </div>
-            <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              {isEn
-                ? 'Short, useful content for everyday parenting moments'
-                : 'كبسولات فيديو سريعة مخصصة لكل مرحلة عمرية'}
-            </p>
+      <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-black tracking-wide text-teal-700 dark:text-teal-300">{isEn ? 'SMALL STEPS, REAL VALUE' : 'خطوات صغيرة.. فايدة حقيقية'}</span>
+            <h2 className="mt-1 text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Practical ideas for your family today' : 'أفكار عملية تقدروا تطبقوها النهارده'}</h2>
+            <p className="mt-1 text-xs leading-5 text-[var(--color-muted)]">{isEn ? 'Short, useful actions — not another feed to scroll.' : 'اقتراحات بسيطة قابلة للتنفيذ، مش محتوى لمجرد التصفح.'}</p>
           </div>
+          <span className="shrink-0 rounded-xl bg-teal-50 dark:bg-[#142430] px-2.5 py-1.5 text-[10px] font-black text-teal-800 dark:text-teal-300">{isEn ? '3 ideas' : '٣ أفكار'}</span>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-          {/* Vertical 9:16 Instagram Reel Frame with Left & Right Navigation Arrows */}
-          <div className="lg:col-span-5 flex items-center justify-center relative">
-            <button
-              type="button"
-              id="home-reel-prev-arrow"
-              data-testid="home-reel-prev-arrow"
-              onClick={handlePrevReel}
-              aria-label={isEn ? 'Previous Reel Video' : 'الفيديو السابق'}
-              className="z-20 w-11 h-11 rounded-full bg-[var(--color-surface)] dark:bg-[#142430] border-2 border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] shadow-md flex items-center justify-center text-lg font-black transition-all active:scale-90 cursor-pointer shrink-0 me-2 sm:me-3"
-            >
-              {isEn ? '◀' : '▶'}
-            </button>
-
-            <div className="relative w-full max-w-[310px] aspect-[9/16] max-h-[480px] rounded-[28px] overflow-hidden border-2 border-white/20 dark:border-[#1E3646] bg-[#0B131A] text-white shadow-xl flex flex-col justify-between select-none">
-              <img
-                src={currentReel.imageUrl}
-                alt={isEn ? currentReel.titleEn : currentReel.titleAr}
-                className="absolute inset-0 w-full h-full object-cover opacity-70 transition-all duration-500"
-              />
-              <div
-                aria-hidden="true"
-                className={`absolute inset-0 bg-gradient-to-b ${currentReel.accentGradient} opacity-85`}
-              />
-
-              {/* Top Reel Segmented Progress Bars & Duration Pill */}
-              <div className="relative z-10 p-3.5 space-y-2">
-                <div className="flex items-center gap-1">
-                  {HOME_INSTAGRAM_REELS.map((rItem, rIdx) => (
-                    <div
-                      key={rItem.id}
-                      className="flex-1 h-1 rounded-full bg-white/25 overflow-hidden"
-                    >
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${
-                          rIdx < activeReelIdx
-                            ? 'w-full bg-white'
-                            : rIdx === activeReelIdx
-                            ? 'bg-[#2DD4BF]'
-                            : 'w-0'
-                        }`}
-                        style={
-                          rIdx === activeReelIdx
-                            ? {
-                                width: `${Math.min(
-                                  100,
-                                  Math.round((reelElapsedSec / currentReel.durationSec) * 100)
-                                )}%`,
-                              }
-                            : undefined
-                        }
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-xs border border-white/20 text-[11px] font-black">
-                    {isEn ? currentReel.stageBadgeEn : currentReel.stageBadgeAr}
-                  </span>
-                  <span
-                    dir="ltr"
-                    className="px-2 py-0.5 rounded-full bg-rose-600/90 text-white text-[10.5px] font-black tabular-nums"
-                  >
-                    ⏱ {currentReel.durationLabel}
-                  </span>
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { id: 'routine' as const, image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80', titleAr: 'جهّزوا للنوم من بدري', titleEn: 'Make bedtime easier', bodyAr: 'اختاروا ٣ خطوات ثابتة قبل النوم: تهدئة، قصة قصيرة، ثم إضاءة هادية.', bodyEn: 'Keep three predictable steps: wind down, share a short story, then dim the lights.', ctaAr: 'افتح الروتين', ctaEn: 'Open routine' },
+            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح ملف الطفل', ctaEn: 'Open child profile' },
+            { id: 'medical' as const, image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80', titleAr: 'خلّي المعلومات المهمة جاهزة', titleEn: 'Keep key care details ready', bodyAr: 'راجعوا الحساسية والأدوية وبيانات طبيب الأطفال، وحدّثوها عند أي تغيير.', bodyEn: 'Review allergies, medications and pediatrician details; update them whenever something changes.', ctaAr: 'افتح المتابعة الصحية', ctaEn: 'Open health records' },
+          ].map((idea) => (
+            <article key={idea.id} className="overflow-hidden rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430]">
+              <div className="relative h-28 sm:h-32 overflow-hidden">
+                <img src={idea.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
               </div>
-
-              {/* Center Play/Pause Overlay Button */}
-              <div className="relative z-10 my-auto flex flex-col items-center justify-center px-4 text-center space-y-3">
-                <button
-                  type="button"
-                  data-testid="home-reel-play-toggle"
-                  onClick={() => {
-                    const next = !isReelPlaying;
-                    setIsReelPlaying(next);
-                    if (next) {
-                      playGentleAudioSynthesizer(currentReel.melodyHz);
-                    }
-                  }}
-                  aria-label={isReelPlaying ? (isEn ? 'Pause Reel' : 'إيقاف الريل') : isEn ? 'Play Reel' : 'تشغيل الريل'}
-                  className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/40 text-white flex items-center justify-center text-xl font-black shadow-lg transition-transform active:scale-90 cursor-pointer"
-                >
-                  {isReelPlaying ? '⏸' : '▶'}
-                </button>
-                <span className="px-2.5 py-0.5 rounded-full bg-black/45 text-[10.5px] font-bold text-teal-200">
-                  {isReelPlaying
-                    ? isEn
-                      ? `Playing · 00:${String(reelElapsedSec).padStart(2, '0')} / ${currentReel.durationLabel}`
-                      : `جاري العرض · 00:${String(reelElapsedSec).padStart(2, '0')} / ${currentReel.durationLabel}`
-                    : isEn
-                    ? 'Tap to play'
-                    : 'اضغط للتشغيل'}
-                </span>
+              <div className="space-y-2 p-3">
+                <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
+                <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
+                <button type="button" onClick={() => navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} ←</button>
               </div>
-
-              {/* Bottom Instagram Reel Caption, Expert Badge & Side Like Action */}
-              <div className="relative z-10 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent space-y-2">
-                <div className="flex items-end justify-between gap-2">
-                  <div className="space-y-1 min-w-0 flex-1 text-start">
-                    <div className="text-[11px] font-extrabold text-[#2DD4BF]">
-                      ✓ {isEn ? currentReel.expertNameEn : currentReel.expertNameAr}
-                    </div>
-                    <h3 className="text-xs sm:text-sm font-black leading-snug whitespace-normal">
-                      {isEn ? currentReel.titleEn : currentReel.titleAr}
-                    </h3>
-                    <p className="text-[11px] font-medium text-slate-200 leading-relaxed line-clamp-3">
-                      {isEn ? currentReel.captionEn : currentReel.captionAr}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReelLikesById((prev) => ({
-                          ...prev,
-                          [currentReel.id]: !prev[currentReel.id],
-                        }));
-                      }}
-                      className="w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex flex-col items-center justify-center text-xs font-black cursor-pointer"
-                    >
-                      <span>{reelLikesById[currentReel.id] ? '❤️' : '🤍'}</span>
-                      <span className="text-[9px] tabular-nums">
-                        {currentReel.likesCount + (reelLikesById[currentReel.id] ? 1 : 0)}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              id="home-reel-next-arrow"
-              data-testid="home-reel-next-arrow"
-              onClick={handleNextReel}
-              aria-label={isEn ? 'Next Reel Video' : 'الفيديو التالي'}
-              className="z-20 w-11 h-11 rounded-full bg-[var(--color-surface)] dark:bg-[#142430] border-2 border-[var(--color-border)] dark:border-[#1E3646] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] shadow-md flex items-center justify-center text-lg font-black transition-all active:scale-90 cursor-pointer shrink-0 ms-2 sm:ms-3"
-            >
-              {isEn ? '▶' : '◀'}
-            </button>
-          </div>
-
-          {/* Right/Side Playlist Cards for Quick Selection */}
-          <div className="lg:col-span-7 space-y-2.5">
-            <div className="text-xs font-black text-[var(--color-muted)] dark:text-[#94A3B8] pb-1">
-              {isEn
-                ? `Selected Reel ${activeReelIdx + 1} of ${HOME_INSTAGRAM_REELS.length}:`
-                : `الريلز المختارة · ${activeReelIdx + 1} من ${HOME_INSTAGRAM_REELS.length}:`}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {HOME_INSTAGRAM_REELS.map((reel, idx) => {
-                const isSelected = idx === activeReelIdx;
-                return (
-                  <button
-                    key={reel.id}
-                    type="button"
-                    data-testid={`home-reel-select-${reel.id}`}
-                    onClick={() => {
-                      setActiveReelIdx(idx);
-                      setReelElapsedSec(0);
-                      setIsReelPlaying(true);
-                      playGentleAudioSynthesizer(reel.melodyHz);
-                    }}
-                    className={`rounded-2xl border-2 p-3.5 text-start transition-all flex flex-col justify-between gap-2 cursor-pointer ${
-                      isSelected
-                        ? 'border-[#0d9488] bg-teal-50/70 dark:bg-[#142430] shadow-xs'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/30 dark:bg-[#0B131A]/70 hover:border-[#0d9488]/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 w-full">
-                      <span className="text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
-                        {isEn ? reel.stageBadgeEn : reel.stageBadgeAr}
-                      </span>
-                      <span
-                        dir="ltr"
-                        className="px-2 py-0.5 rounded-full bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF] text-[10px] font-black tabular-nums"
-                      >
-                        {reel.durationLabel}
-                      </span>
-                    </div>
-                    <div className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug line-clamp-2">
-                      {isEn ? reel.titleEn : reel.titleAr}
-                    </div>
-                    <div className="text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                      {isEn ? reel.expertNameEn : reel.expertNameAr}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+            </article>
+          ))}
         </div>
-      </div>
-
-      {/* Helper Bar to Expand or Collapse All Home Accordion Sections */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-        <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-          {isEn
-            ? '👇 Tap any section below to expand or collapse:'
-            : '👇 اضغط على أي قسم بالأسفل لفتحه أو طيّه بسهولة:'}
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            data-testid="home-expand-all-accordions-btn"
-            onClick={() => setAllAccordions(true)}
-            className="min-h-[34px] px-3 py-1 rounded-xl border border-teal-500/30 bg-teal-500/10 text-[#0d9488] dark:text-[#2DD4BF] text-[11px] font-extrabold cursor-pointer"
-          >
-            {isEn ? 'Expand All Sections' : 'فتح كل الأقسام'}
-          </button>
-          <button
-            type="button"
-            data-testid="home-collapse-all-accordions-btn"
-            onClick={() => setAllAccordions(false)}
-            className="min-h-[34px] px-3 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-muted)] dark:text-[#94A3B8] text-[11px] font-extrabold cursor-pointer"
-          >
-            {isEn ? 'Collapse All' : 'طي الأقسام'}
-          </button>
-        </div>
-      </div>
+      </section>
 
       {/* =====================================================================
           3. ACCORDION: STREAMLINED ONE-HANDED QUICK TRACKING (CHECKLIST #2 & #3)
