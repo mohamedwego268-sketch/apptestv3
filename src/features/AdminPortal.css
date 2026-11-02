@@ -370,3 +370,108 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Premium admin experience — depth, rhythm and restrained motion. */
+.admin-app {
+  background:
+    radial-gradient(ellipse at 8% 0%, color-mix(in srgb, var(--admin-teal) 5%, transparent), transparent 34%),
+    var(--admin-bg);
+  letter-spacing: -.012em;
+}
+.admin-sidebar {
+  background: color-mix(in srgb, var(--admin-surface) 94%, var(--admin-teal) 6%);
+  box-shadow: 8px 0 32px -30px rgba(8, 48, 54, .42);
+}
+.admin-sidebar-brand { padding-bottom: 25px; }
+.admin-brand-mark {
+  border-radius: 16px;
+  box-shadow: 0 12px 24px -12px #0d948877, inset 0 1px 0 #ffffff55;
+}
+.admin-nav-group { margin-bottom: 21px; }
+.admin-nav-item {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  position: relative;
+}
+.admin-nav-item.active {
+  border-color: color-mix(in srgb, var(--admin-teal) 17%, transparent);
+  box-shadow: inset 3px 0 var(--admin-teal), 0 5px 16px -14px var(--admin-teal);
+}
+.admin-topbar {
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--admin-surface) 90%, transparent);
+  box-shadow: 0 8px 24px -24px rgba(7, 37, 43, .4);
+}
+.admin-content { padding-top: 32px; }
+.admin-page-heading { margin-bottom: 25px; }
+.admin-page-heading h1 { letter-spacing: -.8px; }
+.admin-welcome-banner {
+  border: 1px solid color-mix(in srgb, var(--admin-teal) 12%, transparent);
+  border-radius: 22px;
+  box-shadow: 0 18px 42px -34px rgba(10, 92, 90, .38);
+}
+.welcome-orb {
+  box-shadow: 0 22px 42px -18px #087f7777, inset 0 1px 0 #ffffff70;
+}
+.admin-metric-card, .admin-panel, .family-admin-card {
+  border-radius: 18px;
+  box-shadow: 0 10px 28px -25px rgba(9, 43, 49, .42);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.admin-metric-card { padding: 17px; }
+.admin-panel { padding: 20px; }
+.metric-icon, .pulse-icon, .family-symbol, .person-avatar {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5);
+}
+.admin-table th {
+  text-transform: uppercase;
+  letter-spacing: .055em;
+}
+.admin-table tbody tr {
+  transition: background-color 150ms ease;
+}
+.admin-table tbody tr:hover {
+  background: color-mix(in srgb, var(--admin-teal) 4%, transparent);
+}
+.admin-app :where(button, a, input, select, textarea) {
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.admin-app :where(button:active) { transform: scale(.985); }
+.admin-app :where(button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible) {
+  outline: 2px solid var(--admin-teal);
+  outline-offset: 3px;
+}
+.admin-icon-btn, .admin-menu-btn, .admin-export-btn, .admin-period-select {
+  border-radius: 12px;
+}
+.admin-toast {
+  box-shadow: 0 18px 42px -18px rgba(0, 28, 36, .62);
+  backdrop-filter: blur(16px);
+}
+.admin-login-card {
+  border-radius: 26px;
+  box-shadow: 0 30px 90px -42px rgba(12, 70, 75, .32);
+}
+@media (hover: hover) and (pointer: fine) {
+  .admin-metric-card:hover, .admin-panel:hover, .family-admin-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--admin-teal) 23%, var(--admin-border));
+    box-shadow: 0 18px 38px -28px rgba(9, 76, 79, .45);
+  }
+  .admin-nav-item:hover { transform: translateX(-2px); }
+}
+@media (max-width: 850px) {
+  .admin-content { padding: 20px 16px 16px; }
+  .admin-topbar { padding-inline: 16px; }
+}
+@media (max-width: 520px) {
+  .admin-page-heading { align-items: flex-start; flex-direction: column; }
+  .admin-heading-actions { width: 100%; flex-wrap: wrap; }
+  .admin-welcome-banner { padding: 19px; }
+  .welcome-art { width: 112px; opacity: .82; }
+  .admin-panel { padding: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-app *, .admin-app *::before, .admin-app *::after { transition-duration: .01ms !important; }
+}
