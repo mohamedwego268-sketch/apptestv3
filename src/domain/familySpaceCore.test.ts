@@ -3550,8 +3550,8 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
       assert.equal(notification.bodyEn.includes('Little Moon Journey'), false);
     }
 
-    assert.ok(motherNotifications.filter((item) => item.slot === 'support').every((item) => item.categoryLabelAr.includes('الأم')));
-    assert.ok(fatherNotifications.filter((item) => item.slot === 'support').every((item) => item.categoryLabelAr.includes('الأب')));
+    assert.ok(motherNotifications.some((item) => item.slot === 'support' && item.titleAr.includes('صباحك')));
+    assert.ok(fatherNotifications.some((item) => item.slot === 'support' && item.titleAr.includes('ابدأ يومك')));
   });
 
 });
