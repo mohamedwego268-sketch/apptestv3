@@ -1044,38 +1044,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
 
-        <div data-testid="home-family-shortcuts" className="rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-50 via-white to-sky-50 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What would you like to do now?' : 'تحتاج تتابع إيه دلوقتي؟'}</h2>
-              <p className="mt-0.5 text-[11px] font-semibold text-[var(--color-muted)]">{isEn ? 'Your family’s most-used actions, one tap away.' : 'أهم المهام اليومية للأسرة في متناول إيدك.'}</p>
-            </div>
-            <span className="rounded-xl bg-white/80 dark:bg-[#0B131A] px-2.5 py-1.5 text-[10px] font-black text-teal-700 dark:text-teal-300">{isEn ? 'QUICK ACCESS' : 'وصول سريع'}</span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {[
-              { id: 'family' as const, icon: House, titleAr: 'إدارة البيت والأسرة', titleEn: 'Household management', detailAr: 'المهام والمسؤوليات المشتركة', detailEn: 'Shared tasks & responsibilities', tone: 'teal' },
-              { id: 'routine' as const, icon: ListChecks, titleAr: 'روتين الأسرة', titleEn: 'Family routine', detailAr: `${completedTasksCount} مهام منجزة`, detailEn: `${completedTasksCount} tasks completed`, tone: 'sky' },
-              { id: 'calendar' as const, icon: CalendarDays, titleAr: 'المواعيد والتقويم', titleEn: 'Calendar & events', detailAr: 'مواعيد الأسرة والتذكيرات', detailEn: 'Family events & reminders', tone: 'sky' },
-              { id: 'children' as const, icon: Baby, titleAr: 'ملفات الأطفال', titleEn: 'Child profiles', detailAr: 'ملف مستقل لكل طفل', detailEn: 'A separate space for each child', tone: 'rose' },
-              { id: 'medical' as const, icon: HeartPulse, titleAr: 'الصحة والمتابعة', titleEn: 'Health & care', detailAr: 'السجل الصحي والتنبيهات', detailEn: 'Health records & alerts', tone: 'amber' },
-              { id: 'services' as const, icon: ShoppingBag, titleAr: 'المتجر والخدمات', titleEn: 'Store & services', detailAr: cartItemCount > 0 ? `${cartItemCount} منتجات في السلة` : 'منتجات وخدمات الأسرة', detailEn: cartItemCount > 0 ? `${cartItemCount} items in cart` : 'Family products & services', tone: 'violet' },
-              { id: 'notifications' as const, icon: '🔔', titleAr: 'الإشعارات والدعم', titleEn: 'Notifications & support', detailAr: 'رسائل مساندة وتنبيهات الأسرة', detailEn: 'Parent support & family alerts', tone: 'rose' },
-              { id: 'community' as const, icon: '👥', titleAr: 'مجتمع الآباء والأمهات', titleEn: 'Parent community', detailAr: 'تجارب ونقاشات الأسرة', detailEn: 'Family experiences & discussions', tone: 'teal' },
-              { id: 'media' as const, icon: '🎬', titleAr: 'مكتبة الوسائط', titleEn: 'Media library', detailAr: 'فيديوهات ومحتوى مرئي', detailEn: 'Videos & visual content', tone: 'sky' },
-              { id: 'chat' as const, icon: '💬', titleAr: 'المحادثات', titleEn: 'Messages', detailAr: 'تواصل الأسرة والخدمات', detailEn: 'Family & service conversations', tone: 'violet' },
-              { id: 'assistant' as const, icon: '✨', titleAr: 'المساعد الذكي', titleEn: 'AI assistant', detailAr: 'مساعدة في تنظيم شؤون الأسرة', detailEn: 'Help with family planning', tone: 'amber' },
-              { id: 'wishes' as const, icon: '🎁', titleAr: 'أمنيات الأطفال', titleEn: 'Children’s wishes', detailAr: 'أفكار وأهداف محفوظة', detailEn: 'Saved ideas & goals', tone: 'rose' },
-            ].map((action) => (
-              <button key={action.id} type="button" onClick={() => navigateTo(action.id)} className="min-h-[88px] rounded-xl border border-white/90 dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] p-3 text-start shadow-sm transition-all hover:-translate-y-0.5 hover:border-teal-400 active:scale-[.98]">
-                <span className={`mb-2 grid h-9 w-9 place-items-center rounded-xl ${action.tone === 'teal' ? 'bg-teal-100 text-teal-800' : action.tone === 'sky' ? 'bg-sky-100 text-sky-800' : action.tone === 'rose' ? 'bg-rose-100 text-rose-800' : action.tone === 'amber' ? 'bg-amber-100 text-amber-800' : 'bg-violet-100 text-violet-800'}`}>{typeof action.icon === 'string' ? <span aria-hidden="true" className="text-lg">{action.icon}</span> : <action.icon size={18} strokeWidth={2.2} />}</span>
-                <span className="block text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? action.titleEn : action.titleAr}</span>
-                <span className="mt-1 block text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? action.detailEn : action.detailAr}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
         <HomeContentTracks
           language={lang}
           childName={activeKidName}
