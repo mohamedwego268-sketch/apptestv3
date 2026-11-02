@@ -11,6 +11,7 @@ import {
   convertCatalogPrice,
   findNearestCityByCoords,
   formatCurrency,
+  generateThreeDailyNotifications,
   getCitiesForCountry,
   getCityCoordinates,
   getCountryDialCode,
@@ -3497,6 +3498,62 @@ describe('Phase 1 Stabilization — Onboarding Payloads & Non-Destructive Local 
       'Slidebar menu must hide shopping cart shortcut when activePage is community or settings/account'
     );
   });
+
+  it('25. Parent support notifications remain available when routine reminders are paused and never invent child ages or assets', () => {
+    const state = normalizeAppData({
+      ...DEFAULT_SEED,
+      kids: [],
+      readNotificationIds: [],
+      parentAccounts: {
+        ...DEFAULT_SEED.parentAccounts,
+        mother: {
+          ...DEFAULT_SEED.parentAccounts.mother,
+          fullName: 'مريم',
+          notificationPrefs: {
+            ...DEFAULT_SEED.parentAccounts.mother.notificationPrefs,
+            enabled: false,
+            morningEnabled: false,
+            middayEnabled: false,
+            eveningEnabled: false,
+          },
+        },
+        father: {
+          ...DEFAULT_SEED.parentAccounts.father,
+          fullName: 'أحمد',
+          notificationPrefs: {
+            ...DEFAULT_SEED.parentAccounts.father.notificationPrefs,
+            enabled: false,
+            morningEnabled: false,
+            middayEnabled: false,
+            eveningEnabled: false,
+          },
+        },
+      },
+    });
+
+    const motherNotifications = generateThreeDailyNotifications(state, 'mother');
+    const fatherNotifications = generateThreeDailyNotifications(state, 'father');
+
+    assert.equal(motherNotifications.filter((item) => item.slot === 'support').length, 3);
+    assert.equal(fatherNotifications.filter((item) => item.slot === 'support').length, 3);
+    assert.equal(motherNotifications.some((item) => item.slot === 'morning' || item.slot === 'midday' || item.slot === 'evening'), false);
+    assert.equal(fatherNotifications.some((item) => item.slot === 'morning' || item.slot === 'midday' || item.slot === 'evening'), false);
+    assert.ok(motherNotifications.some((item) => item.slot === 'security'));
+    assert.ok(fatherNotifications.some((item) => item.slot === 'security'));
+
+    for (const notification of [...motherNotifications, ...fatherNotifications]) {
+      assert.equal(notification.childName, undefined);
+      assert.equal(notification.ageStage, undefined);
+      assert.equal(notification.bodyAr.includes('2-5'), false);
+      assert.equal(notification.bodyEn.includes('2-5'), false);
+      assert.equal(notification.bodyAr.includes('رحلة القمر الصغير'), false);
+      assert.equal(notification.bodyEn.includes('Little Moon Journey'), false);
+    }
+
+    assert.ok(motherNotifications.filter((item) => item.slot === 'support').every((item) => item.categoryLabelAr.includes('الأم')));
+    assert.ok(fatherNotifications.filter((item) => item.slot === 'support').every((item) => item.categoryLabelAr.includes('الأب')));
+  });
+
 });
 
 
