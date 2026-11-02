@@ -2078,3 +2078,69 @@ body {
   #main-sticky-header #header-slidebar-menu-btn { padding-inline: 9px; }
   #main-sticky-header #brand-home-btn > div:last-child span:last-child { font-size: 8px; }
 }
+
+
+/* Header controls are a fixed, non-overlapping cluster on every phone width. */
+.mobile-app-shell #main-sticky-header .nekbaar-header-inner {
+  grid-template-columns: minmax(0, 1fr) 96px !important;
+  column-gap: 8px !important;
+}
+.mobile-app-shell #main-sticky-header .nekbaar-header-actions {
+  width: 96px !important;
+  min-width: 96px !important;
+  display: flex !important;
+  flex: 0 0 96px !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+.mobile-app-shell #main-sticky-header #header-notifications-btn,
+.mobile-app-shell #main-sticky-header #header-slidebar-menu-btn {
+  position: relative;
+  display: inline-flex !important;
+  flex: 0 0 44px !important;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
+}
+.mobile-app-shell #main-sticky-header #header-slidebar-menu-btn > span:not(.sr-only) {
+  flex: 0 0 16px;
+}
+.mobile-app-shell #main-sticky-header #header-notifications-badge {
+  z-index: 12;
+  inset-block-start: -4px;
+  inset-inline-end: -4px;
+  max-width: 34px;
+  white-space: nowrap;
+}
+.mobile-app-shell #main-sticky-header #brand-home-btn {
+  overflow: hidden;
+}
+.mobile-app-shell #main-sticky-header #brand-home-btn > div:last-child span:last-child {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 340px) {
+  .mobile-app-shell #main-sticky-header .nekbaar-header-inner {
+    grid-template-columns: minmax(0, 1fr) 92px !important;
+    column-gap: 6px !important;
+    padding-inline: 9px !important;
+  }
+  .mobile-app-shell #main-sticky-header .nekbaar-header-actions {
+    width: 92px !important;
+    min-width: 92px !important;
+    flex-basis: 92px !important;
+    gap: 4px !important;
+  }
+  .mobile-app-shell #main-sticky-header #header-notifications-btn,
+  .mobile-app-shell #main-sticky-header #header-slidebar-menu-btn {
+    flex-basis: 44px !important;
+  }
+}
