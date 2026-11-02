@@ -1903,7 +1903,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          5. ACCORDION: HEROES, PASSIONS & MILESTONES ARENA (حمزة وليلى ويوسف — CHECKLIST #3 & #4)
+          5. ACCORDION: CHILD PROFILES, INTERESTS & ACTIVITIES
           ===================================================================== */}
       <HomeAccordionCard
         id="home-heroes-passions-arena"
@@ -2199,7 +2199,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <div className="inline-flex flex-wrap items-center gap-1.5">
               {state.kids.map((kid, idx) => {
                 const isSelected = idx === selectedKidIdx;
-                const cTone = getChildColorClasses(kid.name, idx);
+                const cTone = getChildColorClasses(idx);
                 return (
                   <button
                     key={kid.id}
