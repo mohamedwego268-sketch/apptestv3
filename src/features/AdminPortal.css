@@ -646,3 +646,48 @@
  .b2b-store-panel .admin-table{min-width:820px}
 }
 @media(prefers-reduced-motion:reduce){.b2b-tabs{scroll-behavior:auto}}
+
+
+/* B2B operational overview — data-first cards and task-oriented hierarchy. */
+.b2b-overview{display:grid;gap:18px;padding-top:4px}
+.b2b-overview-intro{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 22px;border:1px solid rgba(13,148,136,.14);border-radius:17px;background:radial-gradient(circle at 92% 10%,rgba(13,148,136,.09),transparent 30%),linear-gradient(120deg,var(--admin-surface,#fff),var(--admin-surface-soft,#f6f9f9))}
+.b2b-overview-eyebrow{display:block;margin-bottom:6px;color:#0d9488;font-size:9px;font-weight:900;letter-spacing:1.15px}
+.b2b-overview-intro h3{margin:0;color:var(--admin-text);font-size:18px;font-weight:900}
+.b2b-overview-intro p{margin-top:6px;color:var(--admin-muted);font-size:11px;line-height:1.8}
+.b2b-overview-intro .admin-edit-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 12px;white-space:nowrap}
+.b2b-overview-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.b2b-overview-stats>div{min-width:0;padding:15px;border:1px solid var(--admin-border);border-radius:14px;background:var(--admin-surface);box-shadow:0 8px 22px -24px rgba(15,45,55,.45)}
+.b2b-overview-stats>div>span{display:block;color:var(--admin-muted);font-size:10px;font-weight:800}
+.b2b-overview-stats strong{display:block;margin-top:9px;color:var(--admin-text);font-size:25px;font-weight:950;font-variant-numeric:tabular-nums;line-height:1.2}
+.b2b-overview-stats strong small{color:var(--admin-muted);font-size:13px;font-weight:700}
+.b2b-overview-stats em{display:block;margin-top:6px;color:var(--admin-muted);font-size:9px;font-style:normal}
+.b2b-overview-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.b2b-overview-card{min-width:0;padding:17px;border:1px solid var(--admin-border);border-radius:16px;background:var(--admin-surface)}
+.b2b-overview-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid var(--admin-border)}
+.b2b-overview-card-head h4,.b2b-overview-actions h4{margin:0;color:var(--admin-text);font-size:14px;font-weight:900}
+.b2b-overview-card-head p{margin-top:4px;color:var(--admin-muted);font-size:10px;line-height:1.7}
+.b2b-overview-card-head .admin-text-action{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.b2b-overview-list{display:grid}
+.b2b-overview-list>div{display:flex;align-items:center;gap:10px;min-width:0;padding:11px 0;border-bottom:1px solid var(--admin-border)}
+.b2b-overview-list>div:last-child{border-bottom:0}
+.b2b-overview-product-icon,.b2b-overview-order-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:11px;background:rgba(13,148,136,.09);color:#0d9488}
+.b2b-overview-order-icon{background:rgba(2,132,199,.09);color:#0284c7}
+.b2b-overview-item-copy{display:grid;gap:3px;min-width:0;flex:1}
+.b2b-overview-item-copy b{overflow:hidden;color:var(--admin-text);font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.b2b-overview-item-copy small{overflow:hidden;color:var(--admin-muted);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.b2b-stock-count{color:#b45309;font-size:12px;font-weight:900;white-space:nowrap}
+.b2b-stock-count small{font-size:9px}
+.b2b-overview-list .status-pill{font-size:9px}
+.b2b-overview-empty{display:grid;justify-items:center;gap:7px;padding:26px 12px;text-align:center;color:var(--admin-muted)}
+.b2b-overview-empty svg{color:#0d9488}
+.b2b-overview-empty b{color:var(--admin-text);font-size:11px}
+.b2b-overview-empty span{font-size:9px;line-height:1.7}
+.b2b-overview-actions{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border:1px solid var(--admin-border);border-radius:15px;background:var(--admin-surface-soft,#f6f9f9)}
+.b2b-overview-actions>div:last-child{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.b2b-overview-actions button{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid var(--admin-border);border-radius:10px;background:var(--admin-surface);color:var(--admin-text);font-size:10px;font-weight:850;transition:border-color .16s,transform .16s}
+.b2b-overview-actions button:hover{border-color:rgba(13,148,136,.4);transform:translateY(-1px)}
+.b2b-overview-actions button svg{color:#0d9488}
+@media(max-width:980px){.b2b-overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.b2b-overview-actions{align-items:flex-start;flex-direction:column}.b2b-overview-actions>div:last-child{justify-content:flex-start}}
+@media(max-width:680px){.b2b-overview{gap:12px}.b2b-overview-intro{align-items:flex-start;flex-direction:column;padding:16px}.b2b-overview-intro h3{font-size:16px}.b2b-overview-stats{gap:8px}.b2b-overview-stats>div{padding:12px}.b2b-overview-stats strong{font-size:21px}.b2b-overview-grid{grid-template-columns:1fr;gap:10px}.b2b-overview-card{padding:14px}.b2b-overview-actions{padding:14px}.b2b-overview-actions>div:last-child{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.b2b-overview-actions button{justify-content:center;padding:0 8px;font-size:9px}}
+@media(max-width:380px){.b2b-overview-stats strong{font-size:18px}.b2b-overview-card-head{align-items:flex-start}.b2b-overview-card-head .admin-text-action{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.b2b-overview-actions button{transition:none}}
