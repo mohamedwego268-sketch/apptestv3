@@ -623,3 +623,26 @@
   .admin-page-heading h1 { line-height: 1.4; overflow-wrap: anywhere; }
   .admin-heading-actions { width: 100%; }
 }
+
+
+/* B2B store: consistent operational workspace on desktop and mobile. */
+.b2b-store-panel>.panel-heading{padding-bottom:16px;margin-bottom:15px;border-bottom:1px solid var(--admin-border)}
+.b2b-store-panel .panel-heading h3{font-size:16px;letter-spacing:-.2px}
+.b2b-store-panel .panel-heading p{max-width:680px;line-height:1.8}
+.b2b-tabs{position:sticky;top:8px;z-index:12;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 8px 22px -20px rgba(15,45,55,.45)}
+.b2b-tabs>button{min-width:max-content}
+.b2b-store-panel .admin-table-wrap{box-shadow:0 8px 22px -24px rgba(15,45,55,.4)}
+.b2b-store-panel .admin-table td{padding-block:13px}
+.b2b-store-panel .admin-table tbody tr:last-child td{border-bottom:0}
+.b2b-product-thumb{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--admin-border);border-radius:12px;background:var(--admin-surface-2);color:var(--admin-muted)}
+.b2b-product-thumb img{width:100%;height:100%;object-fit:cover}
+.b2b-store-panel .admin-table td .table-sub{display:block;margin-top:4px;color:var(--admin-muted);font-size:9px}
+.b2b-store-panel .catalog-actions{flex-wrap:wrap}
+.b2b-store-panel .status-pill{white-space:nowrap}
+@media(max-width:760px){
+ .b2b-tabs{top:5px;max-width:100%;padding:6px}
+ .b2b-tabs>button{min-width:max-content;flex:0 0 auto}
+ .b2b-store-panel .admin-table-wrap{border-radius:12px}
+ .b2b-store-panel .admin-table{min-width:820px}
+}
+@media(prefers-reduced-motion:reduce){.b2b-tabs{scroll-behavior:auto}}
