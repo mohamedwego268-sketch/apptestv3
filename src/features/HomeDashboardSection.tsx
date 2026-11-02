@@ -14,7 +14,6 @@ import {
   MasterPatternCard,
 } from '../components/DesignSystem';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
-import { useMaster } from '../services/MasterAppController';
 import { ParentingSupportCenter } from '../components/ParentingSupportCenter';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
@@ -237,13 +236,6 @@ interface WisdomGalleryCardItem {
   imageUrl: string;
   borderTone: string;
 }
-
-const HOME_STORY_MORAL_OPTIONS = [
-  { ar: 'اللطف والتعاون', en: 'Kindness and cooperation' },
-  { ar: 'الصدق والشجاعة الهادئة', en: 'Honesty and quiet courage' },
-  { ar: 'حب الاستكشاف', en: 'Curiosity and discovery' },
-  { ar: 'التعاون بين الإخوة', en: 'Sibling cooperation' },
-] as const;
 
 const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
   {
@@ -602,113 +594,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     setReelElapsedSec(0);
     setIsReelPlaying(true);
     playGentleAudioSynthesizer(HOME_INSTAGRAM_REELS[nextIdx].melodyHz);
-  };
-
-  // ============================================================================
-  // CHECKLIST #10: AI Storyteller Accordion (صانع الحواديت بالذكاء الاصطناعي — ~15 lines)
-  // ============================================================================
-  const [storyCustomTopic, setStoryCustomTopic] = useState<string>(
-    'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت'
-  );
-  const [storySelectedMoral, setStorySelectedMoral] = useState<string>('اللطف والتعاون');
-  const [isGeneratingHomeStory, setIsGeneratingHomeStory] = useState<boolean>(false);
-  const [generatedStoryLines, setGeneratedStoryLines] = useState<string[]>(() =>
-    buildFifteenLineStory(
-      'مغامرة البحث عن نجمة النوم المضيئة في حديقة البيت',
-      'اللطف والتعاون',
-      isEn,
-      state.kids[0] ? locText(state.kids[0].name, lang) : (isEn ? 'your child' : 'طفلك')
-    )
-  );
-
-  function buildFifteenLineStory(
-    topic: string,
-    moral: string,
-    english: boolean,
-    childName: string
-  ): string[] {
-    const cleanTopic =
-      sanitizeUserText(topic, 120) ||
-      (english ? 'A Small Adventure Together' : 'مغامرة صغيرة معًا');
-    const cleanMoral =
-      sanitizeUserText(moral, 80) ||
-      (english ? 'Kindness and cooperation' : 'اللطف والتعاون');
-    const safeChildName = sanitizeUserText(childName, 60) || (english ? 'your child' : 'طفلك');
-
-    if (english) {
-      return [
-        `1. As the day became quieter, ${safeChildName} noticed a tiny light near the window.`,
-        `2. It seemed to be inviting ${safeChildName} to begin a gentle adventure: "${cleanTopic}".`,
-        `3. ${safeChildName} paused, looked around, and decided to explore with curiosity.`,
-        `4. Along the way, a little bird appeared to be looking for a safe place to rest.`,
-        `5. ${safeChildName} wondered how to help without frightening the bird.`,
-        `6. A soft voice suggested moving slowly and giving the little visitor space.`,
-        `7. ${safeChildName} followed the quiet path and noticed a tree with a cozy branch.`,
-        `8. The bird hopped closer when everything around it felt calm.`,
-        `9. A gentle breeze moved the leaves like a friendly wave.`,
-        `10. ${safeChildName} discovered that listening and observing can be just as important as acting.`,
-        `11. With patience, the bird found a comfortable place to rest.`,
-        `12. The little light glowed again, as if celebrating the thoughtful choice.`,
-        `13. The adventure was full of small discoveries and one meaningful lesson: ${cleanMoral}.`,
-        `14. Back at home, ${safeChildName} shared the favorite moment of the journey.`,
-        `15. The day ended with a calm smile and the promise of another story to discover.`,
-      ];
-    }
-
-    return [
-      `١. حين هدأ اليوم، لاحظ ${safeChildName} ضوءًا صغيرًا يلمع قرب النافذة.`,
-      `٢. بدا الضوء كأنه يدعو ${safeChildName} إلى مغامرة لطيفة عنوانها: «${cleanTopic}».`,
-      `٣. توقف ${safeChildName} قليلًا، وتأمل المكان بفضول قبل أن يبدأ الرحلة.`,
-      `٤. في الطريق، ظهر عصفور صغير يبحث عن مكان آمن ليستريح فيه.`,
-      `٥. فكر ${safeChildName} كيف يمكن المساعدة من غير إخافة العصفور.`,
-      `٦. وتذكر أن الهدوء وترك مساحة للآخرين قد يكونان أفضل بداية.`,
-      `٧. سار ${safeChildName} في الطريق حتى وجد شجرة لها غصن مريح.`,
-      `٨. اقترب العصفور بهدوء عندما شعر أن المكان آمن.`,
-      `٩. حرك النسيم أوراق الشجرة كأنها تحيي الزائر الصغير.`,
-      `١٠. اكتشف ${safeChildName} أن الاستماع والملاحظة مهمان مثل المبادرة والمساعدة.`,
-      `١١. وبعد لحظات، وجد العصفور مكانًا مناسبًا ليستريح فيه.`,
-      `١٢. أضاء النور الصغير مرة أخرى، وكأنه يحتفل بالتصرف اللطيف.`,
-      `١٣. حملت المغامرة اكتشافات جميلة ومعنى بسيطًا: ${cleanMoral}.`,
-      `١٤. عاد ${safeChildName} إلى البيت وحكى أجمل لحظة في الرحلة.`,
-      `١٥. انتهى اليوم بابتسامة هادئة ووعد بمغامرة جديدة في حكاية قادمة.`,
-    ];
-  }
-
-  const master = useMaster();
-  const selectedHomeStoryMoral = HOME_STORY_MORAL_OPTIONS.find((option) => option.ar === storySelectedMoral) || HOME_STORY_MORAL_OPTIONS[0];
-
-  const handleGenerateCustomStory = async () => {
-    if (!activeKid) {
-      onShowToast?.(isEn ? 'Add a child profile before creating a personalized story.' : 'أضف ملف طفل أولاً قبل تأليف حدوتة مخصصة.');
-      return;
-    }
-    setIsGeneratingHomeStory(true);
-    const childNameAr = locText(activeKid.name, 'ar');
-    const childNameEn = locText(activeKid.name, 'en');
-    const linesAr = buildFifteenLineStory(storyCustomTopic, selectedHomeStoryMoral.ar, false, childNameAr);
-    const linesEn = buildFifteenLineStory(storyCustomTopic, selectedHomeStoryMoral.en, true, childNameEn);
-    try {
-      await master.generateBedtimeStoryForChild({
-        childId: activeKid.id,
-        childName: childNameAr,
-        childNameEn,
-        childBirth: activeKid.birth,
-        childRemoteId: activeKid.remoteId,
-        themePrompt: sanitizeUserText(storyCustomTopic, 120),
-        moralFocusAr: selectedHomeStoryMoral.ar,
-        moralFocusEn: selectedHomeStoryMoral.en,
-        storyBodyAr: linesAr.join('\n'),
-        storyBodyEn: linesEn.join('\n'),
-      });
-      setGeneratedStoryLines(isEn ? linesEn : linesAr);
-      playGentleAudioSynthesizer([392.0, 440.0, 523.25]);
-      onShowToast?.(isEn ? `✨ Story saved to ${childNameEn}’s library.` : `✨ تم حفظ الحدوتة في مكتبة ${childNameAr}.`);
-    } catch {
-      setGeneratedStoryLines(isEn ? linesEn : linesAr);
-      onShowToast?.(isEn ? 'The story preview is ready, but it could not be saved.' : 'المعاينة جاهزة، لكن تعذر حفظ الحدوتة في المكتبة.');
-    } finally {
-      setIsGeneratingHomeStory(false);
-    }
   };
 
   // ============================================================================
@@ -2075,104 +1960,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         }
       >
-        <div
-          id="ai-storyteller-accordion-panel"
-          data-testid="ai-storyteller-accordion-panel"
-          className="space-y-4"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <div className="lg:col-span-6 space-y-1">
-              <label
-                htmlFor="ai-story-custom-input"
-                className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
-              >
-                {isEn
-                  ? 'Story Idea or Theme:'
-                  : 'فكرة الحدوتة:'}
-              </label>
-              <input
-                id="ai-story-custom-input"
-                data-testid="ai-story-custom-input"
-                type="text"
-                value={storyCustomTopic}
-                onChange={(e) => setStoryCustomTopic(e.target.value)}
-                placeholder={
-                  isEn
-                    ? 'Searching for the glowing star in our garden...'
-                    : 'رحلة البحث عن نجمة المساء المضيئة في حديقة البيت...'
-                }
-                className="w-full min-h-[42px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3.5 py-2 text-xs font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]"
-              />
-            </div>
-
-            <div className="lg:col-span-4 space-y-1">
-              <label className="block text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Educational Value:' : 'القيمة التربوية للحدوتة:'}
-              </label>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {HOME_STORY_MORAL_OPTIONS.map((moralItem) => (
-                  <button
-                    key={moralItem.ar}
-                    type="button"
-                    onClick={() => setStorySelectedMoral(moralItem.ar)}
-                    className={`min-h-[38px] px-2.5 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer ${
-                      storySelectedMoral === moralItem.ar
-                        ? 'bg-[#FF8C61] text-white border-[#FF8C61]'
-                        : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                    }`}
-                  >
-                    {isEn ? moralItem.en : moralItem.ar}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="lg:col-span-2 flex items-end">
-              <button
-                type="button"
-                id="ai-story-generate-btn"
-                data-testid="ai-story-generate-btn"
-                onClick={handleGenerateCustomStory}
-                disabled={!activeKid || isGeneratingHomeStory}
-                className="w-full min-h-[42px] px-4 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] disabled:opacity-50 text-white text-xs font-black shadow-xs transition-all cursor-pointer"
-              >
-                ✨ {isGeneratingHomeStory ? (isEn ? 'Saving...' : 'جاري الحفظ...') : !activeKid ? (isEn ? 'Add a child profile first' : 'أضف ملف طفل أولاً') : isEn ? 'Create Story' : 'تأليف الحدوتة'}
-              </button>
-            </div>
-          </div>
-
-          <div
-            data-testid="ai-story-fifteen-lines-output"
-            className="rounded-2xl border border-amber-500/35 bg-amber-50/55 dark:bg-[#142430] p-4 space-y-2"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
-              <span className="text-xs font-black text-amber-900 dark:text-amber-300">
-                🌟 {isEn ? 'Tonight’s Custom Story:' : 'حدوتة الليلة المخصصة:'}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  onAddSuggestedRoutineTask?.(
-                    isEn ? `Bedtime Story: ${storyCustomTopic}` : `حدوتة المساء: ${storyCustomTopic}`,
-                    '08:15 م',
-                    null
-                  )
-                }
-                className="min-h-[34px] px-3 py-1 rounded-xl bg-[#FF8C61] hover:bg-[#e86a3d] text-white text-[11px] font-extrabold cursor-pointer"
-              >
-                + {isEn ? 'Schedule Tonight 8:15 PM' : 'جدولة الليلة 8:15 م'}
-              </button>
-            </div>
-
-            <div className="space-y-1.5 text-xs sm:text-[13px] font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed">
-              {generatedStoryLines.map((line, idx) => (
-                <p key={idx} className="py-0.5">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
-
+        <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
           <StoriesLibraryView
             lang={lang}
             kids={state.kids}
