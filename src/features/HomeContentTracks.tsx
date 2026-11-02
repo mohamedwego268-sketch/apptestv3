@@ -136,7 +136,7 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
                   onOpenSection(track.destination.section);
                 }
               }}
-              className="flex min-h-[104px] flex-col items-start rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)]/45 p-3 text-start transition-all hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-teal-50/70 active:scale-[.98] dark:border-[#1E3646] dark:bg-[#142430] dark:hover:bg-teal-500/10"
+              className="flex min-h-[104px] flex-col items-start rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)]/45 p-3 text-start transition-all hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-teal-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#1E3646] dark:bg-[#142430] dark:hover:bg-teal-500/10"
             >
               <span className="mb-2 grid h-9 w-9 place-items-center rounded-xl bg-teal-500/12 text-teal-800 dark:text-teal-200">
                 <Icon size={18} strokeWidth={2.1} aria-hidden="true" />
