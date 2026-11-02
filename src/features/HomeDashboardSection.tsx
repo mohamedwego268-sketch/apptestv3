@@ -1266,11 +1266,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             >
               {openAccordions.welcomeAudio
                 ? isEn
-                  ? '🔊 Hide Audio Tip'
-                  : '🔊 إخفاء الرسالة الصوتية'
+                  ? '🔊 Hide read-aloud tip'
+                  : '🔊 إخفاء قراءة النصيحة'
                 : isEn
-                ? '🔊 Show Audio Tip'
-                : '🔊 إظهار الرسالة الصوتية'}
+                ? '🔊 Show read-aloud tip'
+                : '🔊 إظهار قراءة النصيحة'}
             </button>
             {onReplaySplash && (
               <button
@@ -1313,7 +1313,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { id: 'routine' as const, image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80', titleAr: 'جهّزوا للنوم من بدري', titleEn: 'Make bedtime easier', bodyAr: 'اختاروا ٣ خطوات ثابتة قبل النوم: تهدئة، قصة قصيرة، ثم إضاءة هادية.', bodyEn: 'Keep three predictable steps: wind down, share a short story, then dim the lights.', ctaAr: 'افتح الروتين', ctaEn: 'Open routine' },
-            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح ملف الطفل', ctaEn: 'Open child profile' },
+            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح متابعة المشاعر', ctaEn: 'Open emotional check-in' },
             { id: 'medical' as const, image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80', titleAr: 'خلّي المعلومات المهمة جاهزة', titleEn: 'Keep key care details ready', bodyAr: 'راجعوا الحساسية والأدوية وبيانات طبيب الأطفال، وحدّثوها عند أي تغيير.', bodyEn: 'Review allergies, medications and pediatrician details; update them whenever something changes.', ctaAr: 'افتح المتابعة الصحية', ctaEn: 'Open health records' },
           ].map((idea) => (
             <article key={idea.id} className="overflow-hidden rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430]">
@@ -1324,7 +1324,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="space-y-2 p-3">
                 <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
                 <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
-                <button type="button" onClick={() => navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} ←</button>
+                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} ←</button>
               </div>
             </article>
           ))}
@@ -2073,6 +2073,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         <ParentingSupportCenter
           kids={state.kids}
           initialKidId={activeKid?.id ?? null}
+          onActiveKidChange={(kidId) => {
+            const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
+            if (selectedIndex >= 0) setSelectedKidIdx(selectedIndex);
+          }}
           language={lang}
           onSaveChildMood={async (kidId, mood) => {
             const targetKid = state.kids.find((kid) => kid.id === kidId);
