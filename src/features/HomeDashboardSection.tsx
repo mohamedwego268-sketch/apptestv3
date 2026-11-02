@@ -1305,7 +1305,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="space-y-2 p-3">
                 <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
                 <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
-                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} ←</button>
+                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} {isEn ? '→' : '←'}</button>
               </div>
             </article>
           ))}
@@ -1321,7 +1321,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
+            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'Inside Nekbaar' : 'داخل نكبر'}</span>
             <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
           </div>
         </div>
