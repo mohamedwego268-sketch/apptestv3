@@ -115,6 +115,7 @@ interface ParentingSupportCenterProps {
   onSaveChildMood: (kidId: number, mood: (typeof CHILD_MOODS)[number]) => Promise<boolean>;
   onAddRoutineTask?: (taskName: string, time: string, kidId: number | null) => void;
   initialKidId?: number | null;
+  onActiveKidChange?: (kidId: number) => void;
 }
 
 export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
@@ -123,6 +124,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   onSaveChildMood,
   onAddRoutineTask,
   initialKidId,
+  onActiveKidChange,
 }) => {
   const isEn = language === 'en';
   const [activeKidId, setActiveKidId] = useState<number | null>(initialKidId ?? kids[0]?.id ?? null);
@@ -255,7 +257,10 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           <>
             <div className="flex flex-wrap gap-2">
               {kids.map((kid) => (
-                <button key={kid.id} type="button" aria-pressed={activeKid?.id === kid.id} onClick={() => setActiveKidId(kid.id)} className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-extrabold ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+                <button key={kid.id} type="button" aria-pressed={activeKid?.id === kid.id} onClick={() => {
+                    setActiveKidId(kid.id);
+                    onActiveKidChange?.(kid.id);
+                  }} className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-extrabold ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
                   {kid.emoji} {locText(kid.name, language)}
                 </button>
               ))}
