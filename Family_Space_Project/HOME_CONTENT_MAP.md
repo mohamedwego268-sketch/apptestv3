@@ -1,52 +1,132 @@
-# Nekbaar Home Dashboard — Content & Navigation Map
+# Nekbaar Home Dashboard — Product Content Map
 
-## Goal
-The Home dashboard is the family's launchpad. Every actionable content block must lead to the next useful step, use the correct existing page route, and use real family/child data. This work is UI/content integration only; it does not authorize schema, RLS, production-data, or authentication changes.
+## Product journey
 
-## Home content map
+The Home dashboard is the family's starting point. It should help a parent move through one clear journey:
 
-| Home area | Purpose / source | Next action or destination | Completion rule |
+**اعرف ← سجّل ← تابع ← افهم ← اتصرف**
+
+Every card must answer three questions:
+1. What does this help the family understand?
+2. Which real family or child data does it use?
+3. What is the next useful action, and where does that action lead?
+
+This is a content and experience plan. It does not authorize database schema changes, RLS changes, production-data edits, or authentication changes.
+
+## Six connected content tracks
+
+| Track | Main purpose | Correct context | Existing destination / action | Current status |
+|---|---|---|---|---|
+| Medical & health | Health history, growth, allergies, vaccinations, appointments and care follow-up | Individual child | `medical`, `children`, child life record | Existing foundation; connect to age and child profile |
+| Educational development | Age-aware learning, language, curiosity, school readiness, learning frustration and interests | Individual child | Child profile, learning content, stories and games | Existing content is spread across Home, stories and games; needs one clear learning path |
+| Sports & physical activity | Movement, play, coordination, interests and age-appropriate activities | Individual child | Home activities, games and add-to-routine action | Existing activity suggestions; connect to child's real interests and saved routine |
+| Psychological & emotional wellbeing | Parent support, child feelings, emotional history and practical parenting guidance | Parents at family level; feelings and history per child | Parenting support center, notifications, child life record | Strong foundation exists; household check-in currently isn't saved |
+| Religious & ethical values | Everyday values, kindness, honesty, gratitude, respect, responsibility and age-appropriate spiritual habits | Family guidance with age-aware child examples | New editorial Home content track; optional routine action | Missing as a distinct, coherent track; add without assuming a family's beliefs or imposing one practice |
+| Daily life & healthy habits | Sleep, food, hydration, hygiene, routines, family coordination and everyday records | Family routines plus individual child records | `routine`, `calendar`, `children`, child life record | Existing foundation; unify actions and avoid duplicate quick logs |
+
+## Family level vs. individual child level
+
+### Family-level information
+- Parent wellbeing and support for mother and father.
+- Household energy and shared responsibility coordination.
+- Family routines, calendar, reminders and shared tasks.
+- Shared values, family rituals and general guidance.
+
+### Individual child information
+- Age and developmental stage.
+- Emotional check-ins and the child's own emotional history.
+- Health and growth records.
+- Learning, interests, hobbies, sports and activities.
+- Sleep, food, hydration and daily-life records.
+
+Never attach a family-level reflection to a child's private record. Never use one child's age, mood, interests or history to generate another child's recommendation. A child-specific action must identify the selected child before it can save.
+
+## Existing Home areas and their intended role
+
+| Home area | Role in the journey | Next action / destination | Review rule |
 |---|---|---|---|
-| Personalized welcome | Active parent profile, city, current date | Family management, child profiles, routine, calendar, health, store | No invented parent or child identity |
-| Parent wellbeing message | Time-aware supportive copy | Notifications center | Support messages remain separate from routine alerts |
-| Family quick access | Main family workflows | `family`, `routine`, `calendar`, `children`, `medical`, `services`, `notifications`, `community`, `media`, `chat`, `assistant`, `wishes` | All routes must exist in PageId |
-| Daily audio brief | Time-aware parenting guidance | Play / pause / replay / next tip in place | No autoplay; audio controls remain accessible |
-| Section tools | Routine, calendar, child profiles, bedtime, cart | Existing page routes and callbacks | No duplicate or dead navigation |
-| Family video preview | Internal reviewed video feed | `media` | Clear path to the complete media library |
-| Practical family ideas | Three actionable editorial cards | `routine`, `children`, `medical` | Card CTA must match the advice |
-| Child daily log | Sleep, meal, mood, care | Save to selected child's life record; open `children` | No fallback child IDs or false saved states |
-| Daily parenting compass | Time-aware advice | Add a suggested task to `routine` | Child name comes from the selected real profile or generic copy |
-| Child interests & activities | Interests, hobbies and sports from each profile | `children` and add activity to `routine` | Empty state routes to add/manage child profiles |
-| Bedtime stories | Story generation and saved library | Real child profile, saved story, `routine` | No sample children, sample names, or false AI/save claims |
-| Daily care essentials | Food, hydration log and sport | Save to child record, `medical`, or `routine` | Age-sensitive guidance; no invented targets |
-| Parenting support center | Parent support, child emotion check-ins and situation guide | `notifications`, `children`, child record, `routine` | Non-diagnostic language and explicit save feedback |
-| Learning games | Age-aware game entry cards | `games` | Empty state routes to child profiles |
-| Visual parenting gallery | Five short educational cards | Daily parenting compass | Editorial cards remain clearly distinct from clinical advice |
-| Store showcase | Catalog and six category shortcuts | `services` with the selected category | Category IDs must match catalog categories |
+| Personalized welcome | Establish active parent, family location and the day's context | Family management, child profiles, routine, calendar or health | Use real account data; never invent a parent or child |
+| Parent wellbeing message | A short, non-clinical supportive moment | Dedicated parent support / notifications | Keep separate from task reminders |
+| Family quick access | Entry to primary family workflows | `family`, `routine`, `calendar`, `children`, `medical`, `services`, `notifications`, `community`, `media`, `chat`, `assistant`, `wishes` | Avoid duplicating the app's primary navigation |
+| Daily audio brief | Short time-aware guidance | Play, pause, replay and next tip in place | This uses device speech synthesis; do not imply a recorded presenter or uploaded audio |
+| Section tools | Fast access to routine, calendar, children, bedtime and store | Existing page routes and callbacks | Keep one source of navigation |
+| Family video preview | A preview of the real internal video feed | `media` | Only show available/reviewed media; no fake playback |
+| Practical family ideas | Small actions that can be tried today | Matching health, child profile or routine destination | CTA must match the advice |
+| Child daily log | Sleep, meal, mood and care check-ins | Save against selected child; open child profile | Never show success unless persistence succeeds |
+| Daily parenting compass | Contextual guidance for today | Add a relevant task to `routine` | Use the active child's actual profile or generic copy |
+| Child interests & activities | Discover and nurture real interests | `children` and add activity to `routine` | Empty state should help create or complete a child profile |
+| Bedtime stories | Age- and interest-aware stories | Selected real child, story library and routine | No sample identities or false AI/save claims |
+| Daily care essentials | Meals, hydration, movement and daily care | Save to child record, `medical` or `routine` as appropriate | No invented health targets; age-aware guidance |
+| Parenting support center | Parent wellbeing, child emotional check-in and six parenting situations | Parent support, child record and family routine | Preserve seven emotional states and all six scenarios |
+| Learning games | Age-aware play and learning | `games` | Do not infer age when birth date is unknown |
+| Visual parenting gallery | Short editorial guidance | Daily parenting compass or relevant content | Clearly distinguish general guidance from clinical advice |
+| Store showcase | Family products and services | `services` with selected category | Category IDs must match the catalog |
 
-## Core route coverage
-The Home quick-access grid covers the primary destinations: household management, routine, calendar, child profiles, health, store, notifications, community, media, chat, assistant, and wishes. The games destination remains available in the dedicated games section. Legal and account settings remain in the app-wide navigation rather than being duplicated as Home content.
+## Psychological and parenting support requirements
 
-## Current implementation checkpoints
-- [x] Connect the Home quick-access grid to all primary family destinations.
-- [x] Connect the Home video preview to the full media page.
-- [x] Connect child daily log, child-interest and games empty states to child profiles.
-- [x] Connect care essentials to the health record.
-- [x] Connect parenting support to parent notifications and child profiles.
-- [x] Connect the visual gallery to the daily parenting compass.
-- [x] Remove unsupported synthetic wellness percentages from the child log card.
-- [x] Remove the unused sample reel player and keep the real internal video feed as the Home media preview.
-- [x] Keep age-based game suggestions generic until a real birth date exists.
-- [x] Make story and game cards keyboard-accessible.
-- [x] Replace the bedtime story library's hard-coded sample child selector with the real `state.kids` profiles.
-- [ ] Validate every Home interaction on mobile RTL and English LTR.
-- [x] Correct the story-generation service so child identity and age metadata come from the selected real profile; unknown birth dates remain explicitly unknown.
-- [x] Consolidate story creation into one library flow, remove the duplicate Home generator, and show save success only after the save promise resolves.
-- [ ] Run the final Home-focused regression, TypeScript, and production build checks.
+- Preserve the existing three daily support messages for mothers and three for fathers.
+- Keep parent support messages independent from routine notifications and reminder preferences.
+- Parent wellbeing should cover pressure, exhaustion, rest, asking for help, responsibility sharing and family coordination.
+- Keep the household wellbeing reflection separate from every child's emotional record.
+- Preserve all seven existing child mood IDs, labels, responses and their current child-specific save behavior.
+- Preserve all six existing parenting scenarios: anger/outbursts, screen-time transitions, nursery/school anxiety, sibling conflict, bedtime resistance and learning frustration.
+- Each scenario must retain practical steps, suggested dialogue, things to avoid and when to seek professional support.
+- Use supportive, non-diagnostic language. Do not present the app as a replacement for clinical or emergency care.
 
-## Work order — keep scope disciplined
-1. Finish Home navigation and content-to-action wiring.
-2. Verify empty states, no-child behavior, loading/error/success feedback, mobile layout, RTL and LTR.
-3. Clean only the touched Home/story code: unused props/imports/state, duplicate handlers, stale sample content, and misleading copy. Preserve existing features.
-4. Run tests, TypeScript, production build, and review the final diff.
-5. Only after Home is complete, begin the separate backend roadmap: story persistence contract first, then child-life record consistency, then media/catalog integrations. No production migrations or RLS changes without explicit approval.
+## Verified findings from the current main branch
+
+- `HomeDashboardSection.tsx` is a large, single component (about 2,487 lines) containing navigation, content data, state and many interactions. Improve it incrementally; do not rewrite it wholesale.
+- The current Home quick-access grid contains 12 destinations. It is useful, but must be checked against the global navigation so the same choices are not repeated without a clear reason.
+- `ParentingSupportCenter.tsx` already contains seven child emotional states and six parenting scenarios.
+- Household energy and responsibility-sharing choices are currently component-local state. The UI explicitly says these choices are not saved or sent. Do not silently claim they are recorded.
+- A child emotional check-in is saved through `createChildLifeRecord` against that child's remote ID. It correctly refuses to claim success when the child profile is not linked to the family database or the save fails.
+- `NotificationsCenterSection.tsx` renders parent support messages separately from routine notifications.
+- `generateThreeDailyNotifications` contains three support messages for mother and three for father, in addition to routine reminders.
+- The Home daily audio brief uses the device speech engine; it is not a real uploaded audio episode.
+- The official website is already present in the canonical metadata and contact page as `https://www.nekbaar.com/`. Keep it consistent; do not add competing domains.
+
+## Scope decisions
+
+- Keep existing valuable features and integrations, but do not preserve duplicate, misleading, dead or out-of-scope UI just because it exists.
+- Do not introduce a new route when an existing page or a clear in-page content section is sufficient.
+- The religious and ethical values track should be editorial and age-aware, culturally respectful and non-prescriptive. Do not assume a family's religion or beliefs.
+- Keep mock/demo content clearly identified and out of personalized recommendations. Never use fake family data to fill a real user's dashboard.
+- No production schema, RLS, authentication, or data migrations in this content phase.
+
+## Staged delivery and acceptance
+
+### Stage 1 — Content map and audit
+- [x] Inspect current Home dashboard, parenting support, notifications, child profile shape and child-life save path.
+- [x] Separate existing functionality from missing tracks and unsaved UI state.
+- [x] Define the family-vs-child data boundary.
+- [x] Record the current content/navigation map here.
+
+### Stage 2 — Home information architecture
+- [ ] Arrange the Home around the family journey, not a long collection of unrelated accordions.
+- [ ] Make the six content tracks discoverable without duplicating global navigation.
+- [ ] Give each section one clear primary action and a useful secondary action only when needed.
+- [ ] Add the missing religious and ethical values track with respectful, age-aware content.
+- [ ] Keep parent support distinct from child emotional wellbeing and routine reminders.
+
+### Stage 3 — Content and interaction completion
+- [ ] Connect educational, sports, health, emotional, values and daily-life content to real profile context.
+- [ ] Ensure each child selector is independent and all child-specific writes target the selected child.
+- [ ] Make every save action show accurate loading, success and error states.
+- [ ] Keep household reflection explicitly temporary unless a safe, approved persistence contract is implemented.
+- [ ] Verify stories, media and audio claims match what the app actually provides.
+
+### Stage 4 — Cleanup and UX quality
+- [ ] Remove duplicate Home shortcuts only after confirming the global navigation destination remains accessible.
+- [ ] Remove dead imports, unused state, duplicate handlers and stale sample content in touched files.
+- [ ] Improve mobile spacing, readability, touch targets, RTL and English LTR behavior.
+- [ ] Keep the official slogan unchanged: **مساحة تجمعنا.. وبحبهم نكبر**.
+
+### Stage 5 — Verification
+- [ ] Run Home-focused regression tests.
+- [ ] Run TypeScript checks and production build.
+- [ ] Review the final diff and confirm all edits are on `main`.
+- [ ] Report completed items and any blocked items clearly.
+
+## Execution order
+
+Finish the Home content map and experience before switching to unrelated store or backend work. Only make backend changes when required for a completed Home interaction and only within the approved existing data contract. No production migrations or RLS changes without explicit approval.
