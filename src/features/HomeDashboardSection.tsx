@@ -21,6 +21,7 @@ import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { HomeContentTracks } from './HomeContentTracks';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
+import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
 
 export interface HomeDashboardSectionProps {
@@ -327,6 +328,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     bedtimeStories: false,
     dailyEssentials: false,
     parentingSupport: false,
+    learningTrack: false,
     valuesTrack: false,
     kidsGames: false,
     wisdomGallery: false,
@@ -346,6 +348,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       bedtimeStories: openState,
       dailyEssentials: openState,
       parentingSupport: openState,
+      learningTrack: openState,
       valuesTrack: openState,
       kidsGames: openState,
       wisdomGallery: openState,
@@ -353,12 +356,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     });
   };
 
-  const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials') => {
+  const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack') => {
     const sectionIds: Record<typeof key, string> = {
       heroesArena: 'home-heroes-passions-arena',
       parentingSupport: 'home-parenting-support-center',
       valuesTrack: 'home-values-track-card',
       dailyEssentials: 'home-daily-essentials-hub',
+      learningTrack: 'home-learning-track-card',
     };
     setOpenAccordions((previous) => ({ ...previous, [key]: true }));
     window.setTimeout(() => {
@@ -2009,6 +2013,31 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             );
             return true;
           }}
+          onAddRoutineTask={onAddSuggestedRoutineTask}
+        />
+      </HomeAccordionCard>
+
+      {/* =====================================================================
+          9. ACCORDION: AGE-AWARE LEARNING & CURIOSITY
+          ===================================================================== */}
+      <HomeAccordionCard
+        id="home-learning-track-card"
+        testId="home-learning-track-card"
+        iconEmoji="📚"
+        iconBgClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
+        title={isEn ? 'Learning, Curiosity & Development' : 'التعلم والفضول وتنمية المهارات'}
+        subtitle={isEn ? 'Simple shared activities shaped around the child’s age' : 'أنشطة بسيطة مشتركة تناسب عمر الطفل واهتماماته'}
+        badgeText={activeKidAge?.label || (isEn ? 'Age not recorded' : 'العمر غير مسجل')}
+        isOpen={Boolean(openAccordions.learningTrack)}
+        onToggle={() => toggleAccordion('learningTrack')}
+        isEn={isEn}
+      >
+        <HomeLearningTrackSection
+          language={lang}
+          childName={activeKidName}
+          ageStage={activeKidAge?.stageCode || 'all'}
+          childId={activeKid?.id ?? null}
+          onNavigate={navigateTo}
           onAddRoutineTask={onAddSuggestedRoutineTask}
         />
       </HomeAccordionCard>
