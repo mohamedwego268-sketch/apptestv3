@@ -108,6 +108,7 @@ export interface BedtimeStoryRecord {
   sequenceCode: string;
   familyId: number;
   childId: number;
+  childRemoteId?: string | number;
   childName: string;
   ageStage: string;
   titleAr: string;
@@ -931,7 +932,7 @@ export class MasterBackendService implements MasterControllerAPI {
       childId: req.childId,
       childRemoteId: req.childRemoteId ?? matchingKid?.remoteId,
       childName,
-      ageStage: ageInfo.stageCode,
+      ageStage: ageInfo?.stageCode || 'unknown',
       titleAr: `حدوتة ${childName}: رحلة ${themeAr}`,
       titleEn: `${childNameEn}’s Bedtime Tale: Journey of ${themeEn}`,
       storyBodyAr: req.storyBodyAr?.trim() || `في مساء هادئ مع أسرته، بدأ ${childName} مغامرة لطيفة حول «${themeAr}». وخلال الرحلة اكتشف معنى «${moralAr}»، ثم اختار طريقة بسيطة يشارك بها ما تعلمه مع أسرته قبل نهاية اليوم.`,
