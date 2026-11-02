@@ -55,6 +55,7 @@ interface CommercialEcosystemSectionProps {
   darkMode?: boolean;
   initialCategoryId?: string | null;
   initialOpenCheckout?: boolean;
+  allowDemoData?: boolean;
 }
 
 const CATEGORY_TONE_MAP: Record<string, PastelTone> = {
@@ -158,6 +159,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   darkMode,
   initialCategoryId = null,
   initialOpenCheckout = false,
+  allowDemoData = false,
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
@@ -708,9 +710,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   const master = useMaster();
   const activeCatalogSource =
-    master.sequencedCatalog && master.sequencedCatalog.length > 0
+    master.catalogSource === 'remote'
       ? master.sequencedCatalog
-      : COMMERCIAL_CATALOG;
+      : allowDemoData
+        ? COMMERCIAL_CATALOG
+        : [];
 
   const filtered = activeCatalogSource.filter((item) => {
     if (segment !== 'all' && item.kind !== segment) return false;
@@ -801,6 +805,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   };
 
   const handleProcessTestPayment = (overrideMethod?: CheckoutPaymentMethodType) => {
+    if (!allowDemoData) {
+      onShowToast(isEn ? 'Checkout is not available yet. No payment has been taken.' : 'إتمام الطلب غير متاح حالياً، ولم يتم تحصيل أي مبلغ.');
+      return;
+    }
     const chosenMethod = overrideMethod || paymentMethod;
     if (overrideMethod) {
       setPaymentMethod(overrideMethod);
@@ -910,7 +918,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   return (
     <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
       {/* 1. Auto-Play Hero Carousel at the VERY TOP of the Store page */}
-      {storeFlowStep === 'catalog' && !activeCategorySpec && (
+      {storeFlowStep === 'catalog' && !activeCategorySpec && (allowDemoData ? (
         <SwipeableBannerCarousel
           slides={storeBanners}
           language={language}
@@ -918,7 +926,17 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           autoPlayMs={4500}
           ariaLabel={isEn ? 'Store Offers Carousel' : 'لافتات عروض المتجر المتحركة'}
         />
-      )}
+      ) : (
+        <div className="relative overflow-hidden rounded-[28px] border border-teal-700/10 bg-gradient-to-br from-white via-teal-50/70 to-sky-50/80 p-5 shadow-sm dark:border-white/10 dark:from-[#101d26] dark:via-[#123238] dark:to-[#102b3b] sm:p-7">
+          <div className="pointer-events-none absolute -end-12 -top-16 h-48 w-48 rounded-full bg-teal-300/15 blur-3xl" />
+          <div className="relative max-w-2xl space-y-2">
+            <span className="text-[10px] font-black tracking-[0.2em] text-teal-700 dark:text-teal-300">NEKBAAR MARKETPLACE</span>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white">{isEn ? 'A trusted marketplace for growing families' : 'سوق نكبر… اختيارات موثوقة لكل أسرة'}</h2>
+            <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">{isEn ? 'Products and family services approved for the marketplace will appear here.' : 'ستظهر هنا المنتجات والخدمات المعتمدة بمجرد إتاحتها في سوق نكبر.'}</p>
+            {master.catalogSource === 'offline' && <p className="text-xs font-bold text-amber-700 dark:text-amber-300">{isEn ? 'Catalog is temporarily unavailable. Please try again.' : 'تعذر الاتصال بالمتجر مؤقتاً. حاول التحديث مرة أخرى.'}</p>}
+          </div>
+        </div>
+      ))}
 
       <SectionToolsDrawer
         language={language}
@@ -945,33 +963,35 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             active: showFilterPanel || activeFiltersCount > 0,
             onClick: () => setShowFilterPanel((prev) => !prev),
           },
-          {
-            id: 'compare-panel',
-            icon: '⇄',
-            labelAr: 'المقارنة',
-            labelEn: 'Compare',
-            badge: `${comparedItems.length}/3`,
-            active: showComparePanel,
-            closeOnSelect: true,
-            onClick: () => {
-              setStoreFlowStep('catalog');
-              setShowCartPanel(false);
-              setShowComparePanel((prev) => !prev);
+          ...(allowDemoData ? [
+            {
+              id: 'compare-panel',
+              icon: '⇄',
+              labelAr: 'المقارنة',
+              labelEn: 'Compare',
+              badge: `${comparedItems.length}/3`,
+              active: showComparePanel,
+              closeOnSelect: true,
+              onClick: () => {
+                setStoreFlowStep('catalog');
+                setShowCartPanel(false);
+                setShowComparePanel((prev) => !prev);
+              },
             },
-          },
-          {
-            id: 'live-tracking',
-            icon: '🛵',
-            labelAr: 'تتبع الطلب',
-            labelEn: 'Tracking',
-            active: showLiveTracking,
-            closeOnSelect: true,
-            onClick: () => {
-              setStoreFlowStep('catalog');
-              setShowCartPanel(false);
-              setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
+            {
+              id: 'live-tracking',
+              icon: '🛵',
+              labelAr: 'تتبع الطلب',
+              labelEn: 'Tracking',
+              active: showLiveTracking,
+              closeOnSelect: true,
+              onClick: () => {
+                setStoreFlowStep('catalog');
+                setShowCartPanel(false);
+                setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
+              },
             },
-          },
+          ] : []),
         ]}
       >
         <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-2.5 space-y-3">
@@ -1529,7 +1549,15 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           COMPLETE MOCK CHECKOUT & PAYMENT FLOW (إتمام الطلب ومحاكاة الدفع)
           + PAYMENT SUCCESSFUL / ORDER CONFIRMED SCREEN
           ===================================================================== */}
-      {(showCartPanel || storeFlowStep === 'checkout' || storeFlowStep === 'confirmed') && (
+      {!allowDemoData && (showCartPanel || storeFlowStep === 'checkout' || storeFlowStep === 'confirmed') && (
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50/80 p-5 dark:border-amber-900/60 dark:bg-amber-950/20">
+          <p className="text-xs font-black tracking-wide text-amber-800 dark:text-amber-300">{isEn ? 'CHECKOUT PREVIEW' : 'معاينة إتمام الطلب'}</p>
+          <h3 className="mt-2 text-base font-black text-slate-900 dark:text-white">{isEn ? 'Live ordering is being prepared' : 'الطلب والدفع الفعلي قيد التجهيز'}</h3>
+          <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{isEn ? 'This marketplace currently has no published products. No payment will be collected and no order will be confirmed.' : 'لا توجد منتجات منشورة حالياً في المتجر. لن يتم تحصيل أي مبلغ أو تأكيد طلب قبل تفعيل نظام الطلبات الفعلي.'}</p>
+          <button type="button" onClick={() => { setShowCartPanel(false); setStoreFlowStep('catalog'); }} className="mt-4 min-h-11 rounded-xl bg-teal-700 px-4 text-sm font-bold text-white">{isEn ? 'Continue browsing' : 'متابعة التصفح'}</button>
+        </div>
+      )}
+      {allowDemoData && (showCartPanel || storeFlowStep === 'checkout' || storeFlowStep === 'confirmed') && (
         <div
           id="shopping-cart-panel"
           data-testid="store-checkout-flow-container"
