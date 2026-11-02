@@ -57,6 +57,7 @@ export interface ChildBatteryDiagnostic {
   id: string;
   familyId: number;
   childId: number;
+  childRemoteId?: string | number;
   childName: string;
   ageStage: string;
   overallScore: number; // 0 - 100
@@ -925,6 +926,7 @@ export class MasterBackendService implements MasterControllerAPI {
       sequenceCode,
       familyId: this.familyId,
       childId: req.childId,
+      childRemoteId: req.childRemoteId ?? matchingKid?.remoteId,
       childName,
       ageStage: ageInfo.stageCode,
       titleAr: `حدوتة ${childName}: رحلة ${themeAr}`,
