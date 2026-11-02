@@ -2043,7 +2043,7 @@ export default function App() {
             />
 
             {/* Main Mobile Workspace Container */}
-            <div className="w-full max-w-[430px] mx-auto px-3 pt-2.5 pb-6 flex-1">
+            <div className="w-full max-w-[430px] mx-auto px-3 pt-2.5 pb-28 flex-1">
               {/* Main Viewport */}
               <main key={activePage} className="min-w-0 space-y-4 animate-page-enter transition-all duration-300 ease-in-out">
             {/* Unified Top App Bar with Functional Back Button for Sub-Pages Only (not Main Dock Sections) */}
@@ -2915,184 +2915,193 @@ export default function App() {
               />
             )}
 
-            {/* MINIMALIST OFFICIAL BRAND ICONS & LEGAL FOOTER */}
+            {/* OFFICIAL BRAND, WEBSITE, SOCIAL & LEGAL FOOTER */}
             <footer
               data-testid="minimalist-footer"
-              className="pt-4 pb-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-normal text-[var(--color-muted)]"
-              aria-label={lang === 'en' ? 'Social Media, Policies & Support Footer' : 'تذييل التواصل الاجتماعي والسياسات'}
+              className="mt-2 pt-4 pb-8 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex flex-col items-center gap-3 text-xs font-normal text-[var(--color-muted)]"
+              aria-label={lang === 'en' ? 'Nekbaar website, social channels and legal links' : 'الموقع الرسمي وقنوات التواصل والسياسات'}
             >
-              {/* Official Social Media Brand SVG Icons (Compact Single Row in Theme Colors) */}
-              <div
-                data-testid="social-media-footer-links"
-                className="flex flex-nowrap items-center justify-center gap-1.5 overflow-x-auto no-scrollbar max-w-full py-0.5"
-              >
-                {[
-                  {
-                    id: 'facebook',
-                    name: 'Facebook',
-                    labelAr: 'فيسبوك',
-                    href: '#social-facebook',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H7.7v3h2.5V21h3.3z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'instagram',
-                    name: 'Instagram',
-                    labelAr: 'إنستجرام',
-                    href: '#social-instagram',
-                    svg: (
-                      <svg className="w-4 h-4 fill-none stroke-current stroke-[2]" viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="3" y="3" width="18" height="18" rx="5" />
-                        <circle cx="12" cy="12" r="4" />
-                        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'twitter-x',
-                    name: 'Twitter / X',
-                    labelAr: 'إكس (تويتر)',
-                    href: '#social-x',
-                    svg: (
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'tiktok',
-                    name: 'TikTok',
-                    labelAr: 'تيك توك',
-                    href: '#social-tiktok',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'youtube',
-                    name: 'YouTube',
-                    labelAr: 'يوتيوب',
-                    href: '#social-youtube',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M21.58 7.19a2.75 2.75 0 00-1.94-1.95C17.92 4.8 12 4.8 12 4.8s-5.92 0-7.64.44a2.75 2.75 0 00-1.94 1.95C2 8.9 2 12 2 12s0 3.1.42 4.81a2.75 2.75 0 001.94 1.95c1.72.44 7.64.44 7.64.44s5.92 0 7.64-.44a2.75 2.75 0 001.94-1.95C22 15.1 22 12 22 12s0-3.1-.42-4.81zM10 15.15V8.85L15.5 12 10 15.15z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'whatsapp',
-                    name: 'WhatsApp',
-                    labelAr: 'واتساب',
-                    href: '#social-whatsapp',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12.04 2a9.9 9.9 0 00-8.53 14.9L2 22l5.25-1.38a9.9 9.9 0 104.79-18.62zm5.47 14.12c-.23.65-1.34 1.24-1.88 1.32-.5.07-1.13.1-1.83-.12a16.8 16.8 0 01-6.24-4.23c-1.57-1.82-2.4-3.5-2.4-4.78 0-1.26.67-1.9 1.02-2.25.25-.25.55-.32.73-.32h.54c.18 0 .42-.06.65.5.24.58.8 1.96.87 2.1.07.14.12.31.02.5-.1.2-.15.32-.3.5-.14.16-.3.36-.43.49-.14.14-.3.3-.13.59.17.3.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.36 1.46.3.14.47.12.64-.07.18-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.28.1 1.76.83 2.06.98.3.15.5.22.58.35.07.12.07.72-.16 1.37z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'linkedin',
-                    name: 'LinkedIn',
-                    labelAr: 'لينكد إن',
-                    href: '#social-linkedin',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'snapchat',
-                    name: 'Snapchat',
-                    labelAr: 'سناب شات',
-                    href: '#social-snapchat',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 2.5c-3.1 0-5.4 2.2-5.4 5.4v2.3c-.4.2-.9.3-1.4.3-.6 0-1.1.4-1.1.9 0 .6.6 1 1.4 1.2.1.4-.4 1.6-2 2.6-.4.2-.6.6-.5 1 .1.4.6.7 1.3.8.5.1.9.3 1.1.8.2.5.6.7 1.3.7.7 0 1.4-.2 2.3-.2.9 0 1.8.5 3 .5s2.1-.5 3-.5c.9 0 1.6.2 2.3.2.7 0 1.1-.2 1.3-.7.2-.5.6-.7 1.1-.8.7-.1 1.2-.4 1.3-.8.1-.4-.1-.8-.5-1-1.6-1-2.1-2.2-2-2.6.8-.2 1.4-.6 1.4-1.2 0-.5-.5-.9-1.1-.9-.5 0-1-.1-1.4-.3V7.9c0-3.2-2.3-5.4-5.4-5.4z" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    id: 'telegram',
-                    name: 'Telegram',
-                    labelAr: 'تيليجرام',
-                    href: '#social-telegram',
-                    svg: (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M21.4 3.4L2.7 10.6c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 11.1-7c.5-.3 1-.1.6.2l-9 8.1-.3 4.6c.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8L22.6 4.6c.3-1.2-.5-1.7-1.2-1.2z" />
-                      </svg>
-                    ),
-                  },
-                ].map((social) => (
-                  <a
-                    key={social.id}
-                    href={social.href}
-                    data-social-platform={social.id}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      showToast(
-                        lang === 'en'
-                          ? `Nekbaar official ${social.name} channel — ready for link customization`
-                          : `قناة نكبر الرسمية على ${social.labelAr} (${social.name})`
-                      );
-                    }}
-                    title={lang === 'en' ? social.name : social.labelAr}
-                    aria-label={lang === 'en' ? social.name : social.labelAr}
-                    className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl border border-teal-500/25 dark:border-[#1E3646] bg-teal-50/60 dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] dark:hover:text-white flex items-center justify-center shadow-2xs transition-all active:scale-90"
-                  >
-                    {social.svg}
-                  </a>
-                ))}
+                            <div
+                              data-testid="social-media-footer-links"
+                              className="flex flex-wrap items-center justify-center gap-2 max-w-full py-1"
+                            >
+                              {[
+                                {
+                                  id: 'facebook',
+                                  name: 'Facebook',
+                                  labelAr: 'فيسبوك',
+                                  href: '#social-facebook',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v2.1H7.7v3h2.5V21h3.3z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'instagram',
+                                  name: 'Instagram',
+                                  labelAr: 'إنستجرام',
+                                  href: '#social-instagram',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-none stroke-current stroke-[2]" viewBox="0 0 24 24" aria-hidden="true">
+                                      <rect x="3" y="3" width="18" height="18" rx="5" />
+                                      <circle cx="12" cy="12" r="4" />
+                                      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'twitter-x',
+                                  name: 'Twitter / X',
+                                  labelAr: 'إكس (تويتر)',
+                                  href: '#social-x',
+                                  svg: (
+                                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'tiktok',
+                                  name: 'TikTok',
+                                  labelAr: 'تيك توك',
+                                  href: '#social-tiktok',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'youtube',
+                                  name: 'YouTube',
+                                  labelAr: 'يوتيوب',
+                                  href: '#social-youtube',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M21.58 7.19a2.75 2.75 0 00-1.94-1.95C17.92 4.8 12 4.8 12 4.8s-5.92 0-7.64.44a2.75 2.75 0 00-1.94 1.95C2 8.9 2 12 2 12s0 3.1.42 4.81a2.75 2.75 0 001.94 1.95c1.72.44 7.64.44 7.64.44s5.92 0 7.64-.44a2.75 2.75 0 001.94-1.95C22 15.1 22 12 22 12s0-3.1-.42-4.81zM10 15.15V8.85L15.5 12 10 15.15z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'whatsapp',
+                                  name: 'WhatsApp',
+                                  labelAr: 'واتساب',
+                                  href: '#social-whatsapp',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M12.04 2a9.9 9.9 0 00-8.53 14.9L2 22l5.25-1.38a9.9 9.9 0 104.79-18.62zm5.47 14.12c-.23.65-1.34 1.24-1.88 1.32-.5.07-1.13.1-1.83-.12a16.8 16.8 0 01-6.24-4.23c-1.57-1.82-2.4-3.5-2.4-4.78 0-1.26.67-1.9 1.02-2.25.25-.25.55-.32.73-.32h.54c.18 0 .42-.06.65.5.24.58.8 1.96.87 2.1.07.14.12.31.02.5-.1.2-.15.32-.3.5-.14.16-.3.36-.43.49-.14.14-.3.3-.13.59.17.3.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.36 1.46.3.14.47.12.64-.07.18-.2.75-.87.95-1.17.2-.3.4-.25.67-.15.28.1 1.76.83 2.06.98.3.15.5.22.58.35.07.12.07.72-.16 1.37z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'linkedin',
+                                  name: 'LinkedIn',
+                                  labelAr: 'لينكد إن',
+                                  href: '#social-linkedin',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M6.94 5a2 2 0 11-4-.002 2 2 0 014 .002zM7 8.48H3V21h4V8.48zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91l.04-1.68z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'snapchat',
+                                  name: 'Snapchat',
+                                  labelAr: 'سناب شات',
+                                  href: '#social-snapchat',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M12 2.5c-3.1 0-5.4 2.2-5.4 5.4v2.3c-.4.2-.9.3-1.4.3-.6 0-1.1.4-1.1.9 0 .6.6 1 1.4 1.2.1.4-.4 1.6-2 2.6-.4.2-.6.6-.5 1 .1.4.6.7 1.3.8.5.1.9.3 1.1.8.2.5.6.7 1.3.7.7 0 1.4-.2 2.3-.2.9 0 1.8.5 3 .5s2.1-.5 3-.5c.9 0 1.6.2 2.3.2.7 0 1.1-.2 1.3-.7.2-.5.6-.7 1.1-.8.7-.1 1.2-.4 1.3-.8.1-.4-.1-.8-.5-1-1.6-1-2.1-2.2-2-2.6.8-.2 1.4-.6 1.4-1.2 0-.5-.5-.9-1.1-.9-.5 0-1-.1-1.4-.3V7.9c0-3.2-2.3-5.4-5.4-5.4z" />
+                                    </svg>
+                                  ),
+                                },
+                                {
+                                  id: 'telegram',
+                                  name: 'Telegram',
+                                  labelAr: 'تيليجرام',
+                                  href: '#social-telegram',
+                                  svg: (
+                                    <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                      <path d="M21.4 3.4L2.7 10.6c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 11.1-7c.5-.3 1-.1.6.2l-9 8.1-.3 4.6c.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8L22.6 4.6c.3-1.2-.5-1.7-1.2-1.2z" />
+                                    </svg>
+                                  ),
+                                },
+                              ].map((social) => (
+                                <a
+                                  key={social.id}
+                                  href={social.href}
+                                  data-social-platform={social.id}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    showToast(
+                                      lang === 'en'
+                                        ? `Nekbaar official ${social.name} channel — ready for link customization`
+                                        : `قناة نكبر الرسمية على ${social.labelAr} (${social.name})`
+                                    );
+                                  }}
+                                  title={lang === 'en' ? social.name : social.labelAr}
+                                  aria-label={lang === 'en' ? social.name : social.labelAr}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-xl border border-teal-500/25 dark:border-[#1E3646] bg-teal-50/60 dark:bg-[#101D26] text-[#0d9488] dark:text-[#2DD4BF] hover:bg-[#0d9488] hover:text-white dark:hover:bg-[#0d9488] dark:hover:text-white flex items-center justify-center shadow-2xs transition-all active:scale-90"
+                                >
+                                  {social.svg}
+                                </a>
+                              ))}
+                            </div>
+
+              <div className="w-full flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center">
+                <span
+                  data-testid="footer-brand-copyright"
+                  className="font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
+                >
+                  نكبر (Nekbaar) © 2027
+                </span>
+                <span aria-hidden="true" className="opacity-40">·</span>
+                <a
+                  href="https://www.nekbaar.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  dir="ltr"
+                  data-testid="footer-official-website"
+                  className="font-extrabold text-teal-700 dark:text-teal-300 hover:underline underline-offset-4"
+                  aria-label={lang === 'en' ? 'Visit the official Nekbaar website' : 'زيارة الموقع الرسمي لنكبر'}
+                >
+                  www.nekbaar.com
+                </a>
               </div>
 
-              {/* Copyright & Legal Links Row */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
-                <div
-                  data-testid="footer-brand-copyright"
-                  className="inline-flex items-center gap-1.5 font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]"
-                >
-                  <span>
-                    {lang === 'en'
-                      ? 'نكبر (Nekbaar) © 2026'
-                      : 'نكبر (Nekbaar) © 2026'}
-                  </span>
-                </div>
-                <span aria-hidden="true" className="opacity-50">·</span>
+              <div className="w-full flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                 <button
                   type="button"
                   onClick={() => navigateTo('privacy')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
-                    activePage === 'privacy' ? 'text-[var(--color-text)] underline font-medium' : ''
+                  className={`hover:text-[var(--color-text)] hover:underline underline-offset-4 transition-colors cursor-pointer ${
+                    activePage === 'privacy' ? 'text-[var(--color-text)] underline font-extrabold' : ''
                   }`}
                 >
                   {lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية'}
                 </button>
-                <span aria-hidden="true" className="opacity-50">·</span>
                 <button
                   type="button"
                   onClick={() => navigateTo('terms')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
-                    activePage === 'terms' ? 'text-[var(--color-text)] underline font-medium' : ''
+                  className={`hover:text-[var(--color-text)] hover:underline underline-offset-4 transition-colors cursor-pointer ${
+                    activePage === 'terms' ? 'text-[var(--color-text)] underline font-extrabold' : ''
                   }`}
                 >
                   {lang === 'en' ? 'Terms & IP Rights' : 'الشروط وحقوق الملكية'}
                 </button>
-                <span aria-hidden="true" className="opacity-50">·</span>
-                <button
-                  type="button"
-                  onClick={() => navigateTo('contact')}
-                  className={`hover:text-[var(--color-text)] hover:underline transition-colors cursor-pointer ${
-                    activePage === 'contact' ? 'text-[var(--color-text)] underline font-medium' : ''
-                  }`}
-                >
-                  {lang === 'en' ? 'Contact Us' : 'تواصل معنا'}
-                </button>
               </div>
+
+              <button
+                type="button"
+                data-testid="footer-contact-cta"
+                onClick={() => navigateTo('contact')}
+                className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-teal-600/30 bg-teal-50 px-5 py-2 font-extrabold text-teal-800 shadow-sm transition-colors hover:bg-teal-100 dark:border-teal-500/30 dark:bg-[#102b30] dark:text-teal-200 dark:hover:bg-[#153b40] ${
+                  activePage === 'contact' ? 'ring-2 ring-teal-500/30' : ''
+                }`}
+              >
+                <span aria-hidden="true">✉️</span>
+                <span>{lang === 'en' ? 'Contact Us' : 'تواصل معنا'}</span>
+              </button>
             </footer>
           </main>
         </div>
