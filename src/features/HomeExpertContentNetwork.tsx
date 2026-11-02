@@ -32,7 +32,7 @@ export const HomeExpertContentNetwork: React.FC<HomeExpertContentNetworkProps> =
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h2 id="home-expert-content-network-title" className="text-sm font-black text-[var(--color-text)] dark:text-white">
-              {isEn ? 'Specialist-reviewed family content' : 'محتوى أسري بمراجعة متخصصة'}
+              {isEn ? 'Specialist review for family content' : 'إعداد المحتوى بمراجعة متخصصة'}
             </h2>
             <span className="rounded-full bg-sky-500/10 px-2.5 py-1 text-[10px] font-extrabold text-sky-800 dark:text-sky-200">
               {isEn ? 'In preparation' : 'قيد التجهيز'}
