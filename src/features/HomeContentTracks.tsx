@@ -27,6 +27,8 @@ interface ContentTrack {
   titleEn: string;
   descriptionAr: string;
   descriptionEn: string;
+  nextStepAr: string;
+  nextStepEn: string;
   destination: { kind: 'page'; page: PageId } | { kind: 'section'; section: HomeSectionKey };
 }
 
@@ -38,6 +40,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Health & care',
     descriptionAr: 'السجل الصحي والنمو والمتابعة',
     descriptionEn: 'Health, growth and care records',
+    nextStepAr: 'افتح السجل الصحي',
+    nextStepEn: 'Open health record',
     destination: { kind: 'page', page: 'medical' },
   },
   {
@@ -47,6 +51,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Learning & development',
     descriptionAr: 'اكتشف مهارات طفلك واهتماماته',
     descriptionEn: 'Age-aware ideas that build curiosity and skills',
+    nextStepAr: 'جرّب نشاطًا مناسبًا',
+    nextStepEn: 'Try an age-fit activity',
     destination: { kind: 'section', section: 'learningTrack' },
   },
   {
@@ -56,6 +62,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Movement & sports',
     descriptionAr: 'أنشطة تناسب اهتمام طفلك',
     descriptionEn: 'Activities shaped around their interests',
+    nextStepAr: 'اختر نشاطًا حركيًا',
+    nextStepEn: 'Choose an activity',
     destination: { kind: 'section', section: 'sportsTrack' },
   },
   {
@@ -65,6 +73,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Emotional wellbeing',
     descriptionAr: 'مساندة الوالدين ومشاعر كل طفل',
     descriptionEn: 'Parent support and each child’s feelings',
+    nextStepAr: 'تابع مشاعر طفلك',
+    nextStepEn: 'Check in on feelings',
     destination: { kind: 'section', section: 'parentingSupport' },
   },
   {
@@ -74,6 +84,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Values & character',
     descriptionAr: 'خطوات يومية للرحمة والاحترام والمسؤولية',
     descriptionEn: 'Everyday kindness, respect and responsibility',
+    nextStepAr: 'اختر عادة نبنيها',
+    nextStepEn: 'Choose a habit to build',
     destination: { kind: 'section', section: 'valuesTrack' },
   },
   {
@@ -83,6 +95,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     titleEn: 'Everyday life',
     descriptionAr: 'النوم والتغذية والعادات والروتين',
     descriptionEn: 'Sleep, nutrition, habits and routines',
+    nextStepAr: 'راجع روتين اليوم',
+    nextStepEn: 'Review today’s routine',
     destination: { kind: 'section', section: 'dailyEssentials' },
   },
 ];
@@ -136,7 +150,7 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
                   onOpenSection(track.destination.section);
                 }
               }}
-              className="flex min-h-[104px] flex-col items-start rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)]/45 p-3 text-start transition-all hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-teal-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#1E3646] dark:bg-[#142430] dark:hover:bg-teal-500/10"
+              className="flex min-h-[128px] flex-col items-start rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)]/45 p-3 text-start transition-all hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-teal-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#1E3646] dark:bg-[#142430] dark:hover:bg-teal-500/10"
             >
               <span className="mb-2 grid h-9 w-9 place-items-center rounded-xl bg-teal-500/12 text-teal-800 dark:text-teal-200">
                 <Icon size={18} strokeWidth={2.1} aria-hidden="true" />
@@ -146,6 +160,9 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
               </span>
               <span className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
                 {isEn ? track.descriptionEn : track.descriptionAr}
+              </span>
+              <span className="mt-auto pt-2 text-[10px] font-black text-teal-800 dark:text-teal-200">
+                {isEn ? track.nextStepEn : track.nextStepAr} <span aria-hidden="true">{isEn ? '→' : '←'}</span>
               </span>
             </button>
           );
