@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FamilySpaceState,
   ChildProfile,
@@ -16,6 +16,7 @@ import {
   locText,
 } from '../../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../../domain/assetManifest3D';
+import { CATEGORY_UNSPLASH_POOLS, getProductUnsplashImageUrl } from '../../domain/cardBackgrounds';
 import { SoftFilledIcon, UnifiedBadge } from '../DesignSystem';
 import { PageId } from '../../context/FamilyAppContext';
 import { ThreeDIcon, ThreeDIconId } from '../ThreeDVisuals';
@@ -167,10 +168,20 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const [expandedAccordionId, setExpandedAccordionId] = useState<string>('home');
   const [quickControlsAccordionOpen, setQuickControlsAccordionOpen] = useState<boolean>(false);
   const [navigationSearch, setNavigationSearch] = useState<string>('');
+  const [activeCommercialPhotoIndex, setActiveCommercialPhotoIndex] = useState(0);
+  useEffect(() => {
+    setActiveCommercialPhotoIndex(0);
+  }, [activeCommercialModal?.id]);
   const activeParentProfile = state.parentAccounts[state.activeParentAccount];
   const drawerCountry = activeParentProfile?.country || state.country;
   const drawerCity = activeParentProfile?.city || state.city || getDefaultCityForCountry(drawerCountry);
   const drawerCountryMeta = getCountryMetadata(drawerCountry);
+  const commercialPhotos = activeCommercialModal
+    ? [activeCommercialModal.imageUrl || getProductUnsplashImageUrl(activeCommercialModal.category, activeCommercialModal.id), ...(activeCommercialModal.kind === 'service' ? [] : (CATEGORY_UNSPLASH_POOLS[activeCommercialModal.category] || []))]
+        .filter((url, index, all) => Boolean(url) && all.indexOf(url) === index)
+        .slice(0, 5)
+    : [];
+  const activeCommercialPhoto = commercialPhotos[Math.min(activeCommercialPhotoIndex, Math.max(0, commercialPhotos.length - 1))];
 
   return (
     <>
@@ -2169,22 +2180,30 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             aria-labelledby="commercialModalTitle"
             className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[20px] bg-[var(--color-surface)] dark:bg-[#101D26] p-6 space-y-4 border border-[var(--color-border)] dark:border-[#1E3646]"
           >
-            {activeCommercialModal.imageUrl && (
-              <div className="relative h-44 w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-[#142430]">
-                <img
-                  src={activeCommercialModal.imageUrl}
-                  alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">
-                    {activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#FBBF24] border border-[#1E3646] tabular-nums">
-                    ⭐ {activeCommercialModal.rating} ({activeCommercialModal.reviewCount || 142})
-                  </span>
+            {activeCommercialPhoto && (
+              <div className="space-y-2.5">
+                <div className="relative h-56 sm:h-64 w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-[#F4F7F7]">
+                  <img src={activeCommercialPhoto} alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
+                  <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
+                    <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">{activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}</span>
+                    {Number(activeCommercialModal.rating) > 0 && (
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#FBBF24] border border-[#1E3646] tabular-nums">
+                        ⭐ {activeCommercialModal.rating}{typeof activeCommercialModal.reviewCount === 'number' && activeCommercialModal.reviewCount > 0 ? ' (' + activeCommercialModal.reviewCount + ')' : ''}
+                      </span>
+                    )}
+                  </div>
+                  {commercialPhotos.length > 1 && <span className="absolute bottom-3 end-3 rounded-full bg-[#0B131A]/80 px-2.5 py-1 text-[10px] font-bold text-white">{activeCommercialPhotoIndex + 1} / {commercialPhotos.length}</span>}
                 </div>
+                {commercialPhotos.length > 1 && (
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1" aria-label={isEn ? 'Product photos' : 'صور المنتج'}>
+                    {commercialPhotos.map((photo, index) => (
+                      <button key={photo} type="button" onClick={() => setActiveCommercialPhotoIndex(index)} aria-label={isEn ? 'Show photo ' + (index + 1) : 'عرض الصورة ' + (index + 1)} aria-pressed={activeCommercialPhotoIndex === index} className={'h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all ' + (activeCommercialPhotoIndex === index ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-[var(--color-border)] dark:border-[#1E3646]')}>
+                        <img src={photo} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Additional category images are illustrative until the seller uploads exact product photos.' : 'الصور الإضافية توضيحية من نفس الفئة لحين رفع التاجر صور القطعة الفعلية.'}</p>
               </div>
             )}
 
