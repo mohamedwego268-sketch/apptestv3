@@ -126,7 +126,7 @@ export interface GenerateBedtimeStoryRequest {
   childId: number;
   childName: string;
   childNameEn?: string;
-  childBirth: string;
+  childBirth?: string;
   childRemoteId?: string | number;
   themePrompt?: string;
   moralFocus?: string;
@@ -281,7 +281,7 @@ function buildBatteryDiagnosticsFromState(
       familyId: SHARED_FAMILY_ID,
       childId: kid.id,
       childName: kid.name,
-      ageStage: ageInfo.stageCode,
+      ageStage: ageInfo?.stageCode || 'unknown',
       overallScore,
       sleepScore,
       nutritionScore,
@@ -906,12 +906,15 @@ export class MasterBackendService implements MasterControllerAPI {
   ): Promise<BedtimeStoryRecord> {
     const childName = req.childName.trim();
     const childNameEn = req.childNameEn?.trim() || childName;
-    const childBirth = req.childBirth.trim();
-    if (!childName || !childBirth || !Number.isFinite(req.childId) || req.childId < 0) {
+    const childBirth = req.childBirth?.trim() || '';
+    if (!childName || !Number.isFinite(req.childId) || req.childId < 0) {
       throw new Error('A valid saved child profile is required to create a personalized story.');
     }
-    const ageInfo = calculateChildAge(childBirth, 'ar');
-    const matchingKid = this.latestChildren.find((kid) => kid.id === req.childId && kid.birth === childBirth);
+    const parsedBirth = childBirth ? new Date(`${childBirth}T12:00:00`) : null;
+    const ageInfo = parsedBirth && !Number.isNaN(parsedBirth.getTime()) && parsedBirth <= new Date()
+      ? calculateChildAge(childBirth, 'ar')
+      : null;
+    const matchingKid = this.latestChildren.find((kid) => kid.id === req.childId && (!childBirth || kid.birth === childBirth));
     const storySeqNumber = 1000 + this.allStories.length + 1;
     const sequenceCode = `STR-${storySeqNumber}`;
     const nowIso = new Date().toISOString();
@@ -935,9 +938,9 @@ export class MasterBackendService implements MasterControllerAPI {
       storyBodyEn: req.storyBodyEn?.trim() || `On a calm evening with their family, ${childNameEn} began a gentle adventure about "${themeEn}". Along the way, ${childNameEn} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
       moralTagAr: moralAr,
       moralTagEn: moralEn,
-      calmingTempoBpm: ageInfo.months < 24 ? 58 : 60,
-      durationMinutes: ageInfo.months < 24 ? 3 : ageInfo.months < 60 ? 5 : 6,
-      tags: [ageInfo.stageCode, childName, moralAr],
+      calmingTempoBpm: ageInfo && ageInfo.months < 24 ? 58 : 60,
+      durationMinutes: ageInfo ? (ageInfo.months < 24 ? 3 : ageInfo.months < 60 ? 5 : 6) : 4,
+      tags: [ageInfo?.stageCode || 'age-not-set', childName, moralAr],
       createdAt: nowIso,
     };
 
