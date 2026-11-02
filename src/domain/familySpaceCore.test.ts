@@ -3609,3 +3609,33 @@ describe('Homepage bedtime story content linkage', () => {
     assert.equal(story.tags.includes('age-not-set'), true);
   });
 });
+
+describe('Homepage child emotional check-in linkage', () => {
+  it('routes the quick mood action to the seven-state check-in for the selected child', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+    const parentingSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/components/ParentingSupportCenter.tsx'),
+      'utf8'
+    );
+
+    assert.ok(homeSrc.includes('data-testid="quick-pulse-mood-btn"'));
+    assert.ok(homeSrc.includes('onClick={() => openChildMoodCheckin()}'));
+    assert.ok(homeSrc.includes("document.getElementById('child-emotional-checkin')"));
+    assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
+    assert.equal(homeSrc.includes('const moodCycle ='), false);
+    assert.equal(homeSrc.includes("moodCycle[(moodCycle.indexOf"), false);
+
+    for (const moodId of ['happy', 'calm', 'sad', 'angry', 'worried', 'tired', 'overwhelmed']) {
+      assert.ok(parentingSrc.includes(`id: '${moodId}'`), `Missing child mood state: ${moodId}`);
+    }
+    assert.ok(parentingSrc.includes('initialKidId?: number | null'));
+    assert.ok(parentingSrc.includes('setActiveKidId(initialKidId)'));
+    assert.ok(parentingSrc.includes("recordType: 'emotional_social'"));
+    assert.ok(parentingSrc.includes('moodKey: mood.id'));
+  });
+});
