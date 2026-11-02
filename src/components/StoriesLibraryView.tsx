@@ -13,6 +13,48 @@ export interface StoriesLibraryViewProps {
   kids: ChildProfile[];
 }
 
+function buildFifteenLineStory(topic: string, moral: string, english: boolean, childName: string): string[] {
+  const safeTopic = topic.trim().slice(0, 120) || (english ? 'A Small Family Adventure' : 'مغامرة عائلية صغيرة');
+  const safeMoral = moral.trim().slice(0, 80);
+  const safeName = childName.trim().slice(0, 60) || (english ? 'your child' : 'طفلك');
+  if (english) {
+    return [
+      `1. As the day became quieter, ${safeName} noticed a tiny light near the window.`,
+      `2. It seemed to invite ${safeName} to begin a gentle adventure: "${safeTopic}".`,
+      `3. ${safeName} paused, looked around, and decided to explore with curiosity.`,
+      '4. Along the way, a little bird appeared to be looking for a safe place to rest.',
+      '5. ${safeName} wondered how to help without frightening the bird.',
+      '6. A soft voice suggested moving slowly and giving the little visitor space.',
+      '7. The quiet path led to a tree with a comfortable branch.',
+      '8. The bird came closer when everything around it felt calm.',
+      '9. A gentle breeze moved the leaves like a friendly wave.',
+      '10. ${safeName} discovered that listening can be as important as acting.',
+      '11. With patience, the bird found a comfortable place to rest.',
+      '12. The little light glowed again, celebrating the thoughtful choice.',
+      `13. The adventure carried one meaningful lesson: ${safeMoral}.`,
+      '14. Back at home, ${safeName} shared a favorite moment from the journey.',
+      '15. The day ended with a calm smile and a promise of another story.',
+    ].map((line) => line.replaceAll('\\${safeName}', safeName));
+  }
+  return [
+    `١. حين هدأ اليوم، لاحظ ${safeName} ضوءًا صغيرًا يلمع قرب النافذة.`,
+    `٢. بدا الضوء كأنه يدعو ${safeName} إلى مغامرة لطيفة عنوانها: «${safeTopic}».`,
+    `٣. توقف ${safeName} قليلًا، وتأمل المكان بفضول قبل أن يبدأ الرحلة.`,
+    '٤. في الطريق، ظهر عصفور صغير يبحث عن مكان آمن ليستريح فيه.',
+    `٥. فكر ${safeName} كيف يمكن المساعدة من غير إخافة العصفور.`,
+    '٦. وتذكر أن الهدوء وترك مساحة للآخرين قد يكونان أفضل بداية.',
+    `٧. سار ${safeName} في الطريق حتى وجد شجرة لها غصن مريح.`,
+    '٨. اقترب العصفور بهدوء عندما شعر أن المكان آمن.',
+    '٩. حرك النسيم أوراق الشجرة كأنها تحيي الزائر الصغير.',
+    `١٠. اكتشف ${safeName} أن الاستماع والملاحظة مهمان مثل المبادرة والمساعدة.`,
+    '١١. وبعد لحظات، وجد العصفور مكانًا مناسبًا ليستريح فيه.',
+    '١٢. أضاء النور الصغير مرة أخرى، وكأنه يحتفل بالتصرف اللطيف.',
+    `١٣. حملت المغامرة معنى بسيطًا: ${safeMoral}.`,
+    `١٤. عاد ${safeName} إلى البيت وحكى أجمل لحظة في الرحلة.`,
+    '١٥. انتهى اليوم بابتسامة هادئة ووعد بمغامرة جديدة.',
+  ];
+}
+
 const MORAL_OPTIONS: Array<{ ar: string; en: string }> = [
   {
     ar: 'الأمان العاطفي والهدوء الحسي',
@@ -118,17 +160,24 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
         return;
       }
       const childName = locText(childMeta.name, lang);
+      const childNameAr = locText(childMeta.name, 'ar');
+      const childNameEn = locText(childMeta.name, 'en');
       const moralObj = MORAL_OPTIONS[selectedMoralIdx] || MORAL_OPTIONS[0];
+      const storyTheme = themePrompt.trim().slice(0, 120) || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة');
+      const storyBodyAr = buildFifteenLineStory(storyTheme, moralObj.ar, false, childNameAr).join('\\n');
+      const storyBodyEn = buildFifteenLineStory(storyTheme, moralObj.en, true, childNameEn).join('\\n');
 
       const created = await master.stories.generate({
         childId: childMeta.id,
-        childName,
-        childNameEn: locText(childMeta.name, 'en'),
+        childName: childNameAr,
+        childNameEn,
         childBirth: childMeta.birth,
         childRemoteId: childMeta.remoteId,
-        themePrompt: themePrompt.trim() || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة'),
+        themePrompt: storyTheme,
         moralFocusAr: moralObj.ar,
         moralFocusEn: moralObj.en,
+        storyBodyAr,
+        storyBodyEn,
       });
 
       setActiveStoryId(created.id);
