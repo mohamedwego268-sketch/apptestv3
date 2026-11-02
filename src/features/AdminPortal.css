@@ -240,3 +240,133 @@
 .rbac-override-list>div span{font-size:10px;color:var(--admin-muted);flex:1}
 .rbac-override-list badge{font-size:9px}
 @media(max-width:760px){.rbac-role-picker,.rbac-permission-grid,.rbac-override-form{grid-template-columns:1fr}.rbac-override-list>div{flex-wrap:wrap}}
+
+/* Shared app/dashboard layout contract: preserve brand tokens, prevent rail and content overflow. */
+.admin-app,
+.admin-app * {
+  box-sizing: border-box;
+}
+.admin-app {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+.admin-sidebar {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.admin-sidebar-brand,
+.admin-workspace-pill,
+.admin-nav-item,
+.admin-profile,
+.admin-main,
+.admin-topbar,
+.admin-content,
+.admin-page-heading,
+.admin-panel,
+.admin-table-wrap {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-sidebar-brand > div,
+.admin-nav-item span,
+.admin-profile > div,
+.admin-page-heading > div {
+  min-width: 0;
+}
+.admin-sidebar-brand strong,
+.admin-sidebar-brand small,
+.admin-workspace-pill b,
+.admin-workspace-pill small,
+.admin-nav-item span,
+.admin-profile b,
+.admin-profile small,
+.admin-breadcrumb,
+.admin-page-heading h1,
+.admin-page-heading p,
+.admin-panel p,
+.admin-panel h3 {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.admin-main {
+  flex: 1 1 0%;
+  width: 0;
+  min-width: 0;
+}
+.admin-content {
+  width: 100%;
+  overflow-x: clip;
+}
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.admin-table {
+  max-width: 100%;
+}
+.admin-search,
+.admin-search input,
+.admin-heading-actions,
+.admin-topbar-actions {
+  min-width: 0;
+}
+.admin-modal-backdrop {
+  overflow-y: auto;
+}
+.admin-staff-modal {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-app button,
+.admin-app a,
+.admin-app input,
+.admin-app select,
+.admin-app textarea {
+  max-width: 100%;
+}
+.admin-app :focus-visible {
+  outline: 2px solid var(--admin-teal);
+  outline-offset: 2px;
+}
+@media (max-width: 850px) {
+  .admin-sidebar {
+    width: min(275px, 85vw);
+    max-width: 85vw;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+  .admin-main {
+    width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  .admin-content {
+    padding-inline: 10px;
+  }
+  .admin-kpi-grid,
+  .admin-kpi-grid.three {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .admin-metric-card,
+  .admin-panel {
+    min-width: 0;
+  }
+  .admin-metric-card > strong {
+    font-size: clamp(18px, 6vw, 23px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-app *,
+  .admin-app *::before,
+  .admin-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
