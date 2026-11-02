@@ -1050,6 +1050,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[44px] px-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg">
                 {isEn ? 'Open wellbeing & parenting center →' : 'افتح مركز الدعم النفسي والتربوي ←'}
               </button>
+              <button
+                type="button"
+                data-testid="home-child-emotional-checkin-link"
+                onClick={openChildMoodCheckin}
+                className="min-h-[44px] px-1 text-xs font-black text-violet-700 dark:text-violet-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 rounded-lg"
+              >
+                {isEn ? 'Check in with your child’s feelings' : 'تابع مشاعر طفلك'}
+              </button>
               <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[44px] px-1 text-xs font-black text-teal-800 dark:text-teal-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-lg">
                 {isEn ? 'Parent support messages' : 'رسائل دعم الأب والأم'}
               </button>
