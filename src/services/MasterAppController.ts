@@ -123,7 +123,9 @@ export interface BedtimeStoryRecord {
 
 export interface GenerateBedtimeStoryRequest {
   childId: number;
-  childName?: string;
+  childName: string;
+  childBirth: string;
+  childRemoteId?: string | number;
   themePrompt?: string;
   moralFocus?: string;
 }
@@ -213,71 +215,7 @@ export function formatProductSequenceCode(indexOrId: number): string {
 /**
  * Builds initial canonical bedtime stories library for Hamza (6m), Laila (4y), and Youssef (8y).
  */
-function createInitialStoriesLibrary(): BedtimeStoryRecord[] {
-  const nowIso = new Date().toISOString();
-  return [
-    {
-      id: 'story-hamza-1',
-      sequenceCode: 'STR-1001',
-      familyId: SHARED_FAMILY_ID,
-      childId: 1,
-      childName: 'حمزة',
-      ageStage: '0-2',
-      titleAr: 'حمزة والغيمة الفضية الناعمة',
-      titleEn: 'Baby Hamza and the Soft Silver Cloud',
-      storyBodyAr:
-        'في سماء المساء الهادئة، هبطت غيمة قطنية ناعمة تغني لحمزة نغمة دافئة. ابتسم حمزة وأغمض عينيه الصغيرتين وهو يشعر بحضن ماما مريم وبابا أحمد الآمن.',
-      storyBodyEn:
-        'In the calm evening sky, a soft cotton cloud floated down humming a gentle lullaby for baby Hamza. Hamza smiled and closed his eyes in the warm embrace of Mom Maryam and Dad Ahmad.',
-      moralTagAr: 'الأمان العاطفي والهدوء الحسي للرضيع',
-      moralTagEn: 'Emotional Safety & Infant Sensory Calm',
-      calmingTempoBpm: 58,
-      durationMinutes: 3,
-      tags: ['infant', 'sensory-calm', 'lullaby', 'hamza'],
-      createdAt: nowIso,
-    },
-    {
-      id: 'story-laila-1',
-      sequenceCode: 'STR-1002',
-      familyId: SHARED_FAMILY_ID,
-      childId: 2,
-      childName: 'ليلى',
-      ageStage: '3-5',
-      titleAr: 'فرشاة ليلى السحرية وحديقة الألوان الهادئة',
-      titleEn: 'Laila’s Magic Brush and the Calm Garden of Colors',
-      storyBodyAr:
-        'رسمت ليلى بفرشاتها المائية فراشة وردية تطير فوق أزهار المساء. شكرت الفراشة ليلى لأنها شاركت ألوانها بحب في الحضانة، ثم نامت الأزهار تحت ضوء القمر.',
-      storyBodyEn:
-        'With her watercolor brush, Laila painted a rose butterfly gliding over evening flowers. The butterfly thanked Laila for sharing her colors kindly at nursery as the garden fell asleep under the moonlight.',
-      moralTagAr: 'المشاركة اللطيفة وتسمية المشاعر الإيجابية',
-      moralTagEn: 'Kind Sharing & Positive Emotion Naming',
-      calmingTempoBpm: 62,
-      durationMinutes: 5,
-      tags: ['nursery', 'creativity', 'empathy', 'laila'],
-      createdAt: nowIso,
-    },
-    {
-      id: 'story-youssef-1',
-      sequenceCode: 'STR-1003',
-      familyId: SHARED_FAMILY_ID,
-      childId: 3,
-      childName: 'يوسف',
-      ageStage: '5-8',
-      titleAr: 'الكابتن يوسف وبوصلة النجوم المضيئة',
-      titleEn: 'Captain Youssef and the Glowing Star Compass',
-      storyBodyAr:
-        'بعد يوم مليء بالعلوم والسباحة، نظر الكابتن يوسف إلى السماء فرأى كوكبة النجوم ترسم له وسام الشجاعة والالتزام. استرخى يوسف بفخر استعداداً لمغامرة الغد.',
-      storyBodyEn:
-        'After a day of science and swimming practice, Captain Youssef looked up at the night sky where the stars formed a badge of courage and responsibility. He rested proudly, ready for tomorrow’s adventure.',
-      moralTagAr: 'المسؤولية والثقة بالنفس والامتنان المسائي',
-      moralTagEn: 'Responsibility, Confidence & Evening Gratitude',
-      calmingTempoBpm: 60,
-      durationMinutes: 6,
-      tags: ['school', 'champions', 'science', 'youssef'],
-      createdAt: nowIso,
-    },
-  ];
-}
+const DEMO_STORY_IDS = new Set(['story-hamza-1', 'story-laila-1', 'story-youssef-1']);
 
 /**
  * Computes initial canonical battery diagnostics for Hamza (6m), Laila (4y), and Youssef (8y).
@@ -421,10 +359,7 @@ export class MasterBackendService implements MasterControllerAPI {
     const cached = this.loadLocalCache();
     this.batterySummary =
       cached?.batterySummary || buildBatteryDiagnosticsFromState(DEFAULT_SEED.kids);
-    this.allStories =
-      cached?.allStories && cached.allStories.length > 0
-        ? cached.allStories
-        : createInitialStoriesLibrary();
+    this.allStories = (cached?.allStories || []).filter((story) => !DEMO_STORY_IDS.has(story.id));
     this.catalogSource = cached?.catalogSource ?? 'demo';
     this.sequencedCatalog =
       cached?.sequencedCatalog && cached.sequencedCatalog.length > 0
@@ -957,37 +892,27 @@ export class MasterBackendService implements MasterControllerAPI {
   }
 
   /**
-   * Pillar 2B — AI Bedtime Stories Engine:
-   * Generates a tailored bedtime story for Hamza, Laila, or Youssef, tags it with metadata,
-   * and persists it in the historical library per child.
+   * Creates a bedtime story linked to the selected real child profile.
+   * Child identity and age are supplied by the caller; seeded demo profiles are never used.
    */
   public async generateBedtimeStoryForChild(
     req: GenerateBedtimeStoryRequest
   ): Promise<BedtimeStoryRecord> {
-    const targetKid =
-      DEFAULT_SEED.kids.find((k) => k.id === req.childId) || DEFAULT_SEED.kids[0];
-    const childName = req.childName?.trim() || targetKid.name;
-    const ageInfo = calculateChildAge(targetKid.birth, 'ar');
+    const childName = req.childName.trim();
+    const childBirth = req.childBirth.trim();
+    if (!childName || !childBirth || !Number.isFinite(req.childId) || req.childId < 0) {
+      throw new Error('A valid saved child profile is required to create a personalized story.');
+    }
+    const ageInfo = calculateChildAge(childBirth, 'ar');
+    const matchingKid = this.latestChildren.find((kid) => kid.id === req.childId && kid.birth === childBirth);
     const storySeqNumber = 1000 + this.allStories.length + 1;
     const sequenceCode = `STR-${storySeqNumber}`;
     const nowIso = new Date().toISOString();
 
     const themeAr = req.themePrompt?.trim() || 'النجوم الهادئة والامتنان المسائي';
     const themeEn = req.themePrompt?.trim() || 'Calm Stars & Evening Gratitude';
-    const moralAr =
-      req.moralFocus?.trim() ||
-      (req.childId === 1
-        ? 'الأمان العاطفي والهدوء الحسي'
-        : req.childId === 2
-        ? 'المشاركة اللطيفة والخيال الإبداعي'
-        : 'الثقة بالنفس والمسؤولية');
-    const moralEn =
-      req.moralFocus?.trim() ||
-      (req.childId === 1
-        ? 'Emotional Security & Sensory Calm'
-        : req.childId === 2
-        ? 'Kind Sharing & Creative Imagination'
-        : 'Self-Confidence & Responsibility');
+    const moralAr = req.moralFocus?.trim() || 'اللطف والتعاون والطمأنينة';
+    const moralEn = req.moralFocus?.trim() || 'Kindness, cooperation and reassurance';
 
     const newStory: BedtimeStoryRecord = {
       id: `story-${req.childId}-${Date.now()}`,
@@ -998,12 +923,12 @@ export class MasterBackendService implements MasterControllerAPI {
       ageStage: ageInfo.stageCode,
       titleAr: `حدوتة ${childName}: رحلة ${themeAr}`,
       titleEn: `${childName}’s Bedtime Tale: Journey of ${themeEn}`,
-      storyBodyAr: `في مساء دافئ داخل بيت أحمد ومريم، استعد ${childName} لرحلة خيالية هادئة حول «${themeAr}». تعلّم ${childName} في هذه الليلة قيمة «${moralAr}»، ثم أغمض عينيه بابتسامة مطمئنة استعداداً ليوم جديد جميل.`,
-      storyBodyEn: `On a warm evening in Ahmad and Maryam’s home, ${childName} embarked on a peaceful bedtime journey about "${themeEn}". Embracing the lesson of "${moralEn}", ${childName} drifted into deep, restful sleep with a calm smile.`,
+      storyBodyAr: `في مساء هادئ مع أسرته، بدأ ${childName} مغامرة لطيفة حول «${themeAr}». وخلال الرحلة اكتشف معنى «${moralAr}»، ثم اختار طريقة بسيطة يشارك بها ما تعلمه مع أسرته قبل نهاية اليوم.`,
+      storyBodyEn: `On a calm evening with their family, ${childName} began a gentle adventure about "${themeEn}". Along the way, ${childName} discovered "${moralEn}" and found a simple way to share that lesson with the family before the day ended.`,
       moralTagAr: moralAr,
       moralTagEn: moralEn,
-      calmingTempoBpm: req.childId === 1 ? 58 : 60,
-      durationMinutes: req.childId === 1 ? 3 : req.childId === 2 ? 5 : 6,
+      calmingTempoBpm: ageInfo.months < 24 ? 58 : 60,
+      durationMinutes: ageInfo.months < 24 ? 3 : ageInfo.months < 60 ? 5 : 6,
       tags: [ageInfo.stageCode, childName, moralAr],
       createdAt: nowIso,
     };
@@ -1021,9 +946,8 @@ export class MasterBackendService implements MasterControllerAPI {
         }
         const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
         await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
-        const remoteChildUuid = isValidUuid((targetKid as { remoteId?: string }).remoteId)
-          ? (targetKid as { remoteId?: string }).remoteId
-          : null;
+        const remoteId = req.childRemoteId ?? matchingKid?.remoteId;
+        const remoteChildUuid = isValidUuid(String(remoteId ?? '')) ? String(remoteId) : null;
         const storyPayload: Record<string, unknown> = {
           sequence_code: newStory.sequenceCode,
           family_id: verifiedFamilyUuid,
