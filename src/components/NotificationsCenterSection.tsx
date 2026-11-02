@@ -135,8 +135,8 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <div className="flex items-center gap-2">
               <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                 {isEn
-                  ? `Family alerts & parent support (${notifications.length})`
-                  : `تنبيهات الأسرة ورسائل دعم الوالدين (${notifications.length})`}
+                  ? `Family alerts (${routineNotifications.length})`
+                  : `تنبيهات الأسرة (${routineNotifications.length})`}
               </h3>
               <span className="px-2 py-0.5 rounded-md bg-teal-500/10 text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                 {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
