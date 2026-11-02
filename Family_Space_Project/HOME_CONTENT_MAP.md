@@ -35,6 +35,7 @@ The Home quick-access grid covers the primary destinations: household management
 - [x] Connect parenting support to parent notifications and child profiles.
 - [x] Connect the visual gallery to the daily parenting compass.
 - [x] Remove unsupported synthetic wellness percentages from the child log card.
+- [x] Remove the unused sample reel player and keep the real internal video feed as the Home media preview.
 - [x] Keep age-based game suggestions generic until a real birth date exists.
 - [x] Make story and game cards keyboard-accessible.
 - [x] Replace the bedtime story library's hard-coded sample child selector with the real `state.kids` profiles.
