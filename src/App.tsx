@@ -2311,13 +2311,8 @@ export default function App() {
                 parentProfileSpec={parentProfileSpec}
                 cartItemCount={cartItemCount}
                 completedTasksCount={completedTasksCount}
-                nearestEvent={nearestEvent}
                 todayFormattedCombined={todayFormatted.combined}
-                userCoords={userCoords}
-                geoStatus={geoStatus}
                 navigateTo={navigateTo}
-                onSelectPreciseCity={handleSelectPreciseCity}
-                onUseCurrentLocation={handleUseCurrentLocation}
                 onAddToCart={handleAddToCart}
                 onInspectCommercialItem={(item) => {
                   setSelectedModalVariant(item.variants?.[0] || '');
@@ -2358,13 +2353,6 @@ export default function App() {
                   navigateTo('services');
                 }}
                 onReplaySplash={handleReplaySplashScreen}
-                onAddVoiceMoment={handleAddVoiceMomentToChild}
-                onToggleTaskDone={(taskId) => {
-                  const target = state.tasks.find((tItem) => tItem.id === taskId);
-                  if (target) {
-                    handleToggleTask(taskId, !target.done);
-                  }
-                }}
               />
             )}
 
