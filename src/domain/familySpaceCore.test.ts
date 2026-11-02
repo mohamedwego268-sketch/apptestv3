@@ -3660,3 +3660,48 @@ describe('Homepage read-aloud and parent support transparency', () => {
     assert.ok(homeSrc.includes("navigateTo('notifications')"));
   });
 });
+
+describe('Homepage learning and values track coverage', () => {
+  it('provides age-aware learning activities and connects them to the child profile and family routine', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const learningSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeLearningTrackSection.tsx'),
+      'utf8'
+    );
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+    const tracksSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeContentTracks.tsx'),
+      'utf8'
+    );
+
+    for (const ageStage of ["'0-2'", "'2-5'", "'5-8'", 'all']) {
+      assert.ok(learningSrc.includes(`${ageStage}:`), `Missing learning content for age stage ${ageStage}`);
+    }
+    assert.ok(learningSrc.includes("onAddRoutineTask?.("));
+    assert.ok(learningSrc.includes("onNavigate('children')"));
+    assert.ok(learningSrc.includes("onNavigate('games')"));
+    assert.ok(learningSrc.includes('follow the child’s pace and interests'));
+    assert.ok(homeSrc.includes('<HomeLearningTrackSection'));
+    assert.ok(homeSrc.includes("learningTrack: 'home-learning-track-card'"));
+    assert.ok(tracksSrc.includes("destination: { kind: 'section', section: 'learningTrack' }"));
+  });
+
+  it('keeps family values age-aware and family-selected without imposing religious practices', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const valuesSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeValuesTrackSection.tsx'),
+      'utf8'
+    );
+
+    for (const ageStage of ["'0-2'", "'2-5'", "'5-8'", 'all']) {
+      assert.ok(valuesSrc.includes(`${ageStage}:`), `Missing values content for age stage ${ageStage}`);
+    }
+    assert.ok(valuesSrc.includes('Spiritual and religious practices are a family choice'));
+    assert.ok(valuesSrc.includes('onAddRoutineTask?.('));
+  });
+});
