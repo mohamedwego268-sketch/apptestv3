@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { CheckCircle2, Clock3, Film, LoaderCircle, ShieldCheck, UploadCloud, XCircle } from 'lucide-react';
+import { CheckCircle2, Film, LoaderCircle, ShieldCheck, UploadCloud, XCircle } from 'lucide-react';
 import { supabaseClient } from '../services/supabaseService';
 import { InternalVideoPlayer } from './InternalVideoPlayer';
 
@@ -133,6 +133,7 @@ export const MediaUploadPanel: React.FC<MediaUploadPanelProps> = ({
       await loadAssets();
     } catch (error) {
       if (assetId && supabaseClient) {
+        if (storagePath) await supabaseClient.storage.from('nekbaar-media').remove([storagePath]);
         await supabaseClient.from('media_assets').delete().eq('id', assetId);
       }
       setMessage(error instanceof Error ? error.message : (en ? 'Upload failed.' : 'فشل رفع الفيديو.'));
