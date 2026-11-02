@@ -2213,6 +2213,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         badgeText={`${currentWaterCups} 💧`}
         badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
+        headerExtraAction={<button type="button" onClick={() => navigateTo('medical')} className="min-h-[40px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-800 dark:text-sky-200">{isEn ? 'Open health record' : 'فتح السجل الصحي'}</button>}
         isOpen={Boolean(openAccordions.dailyEssentials)}
         onToggle={() => toggleAccordion('dailyEssentials')}
         isEn={isEn}
@@ -2486,6 +2487,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             : 'مساندة للأب والأم، ومتابعة مشاعر كل طفل، وخطوات عملية للمواقف اليومية'
         }
         badgeText={isEn ? 'Parents + Each Child' : 'البيت + كل طفل'}
+        headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Parent support messages' : 'رسائل دعم الوالدين'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
         isOpen={Boolean(openAccordions.batteryDiagnostic)}
         onToggle={() => toggleAccordion('batteryDiagnostic')}
         isEn={isEn}
@@ -2671,6 +2673,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         badgeText={isEn ? '5 Cards' : '٥ بطاقات مصورة'}
         badgeClass="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
+        headerExtraAction={<button type="button" onClick={() => { setOpenAccordions((previous) => ({ ...previous, dailyWisdom: true })); document.getElementById('home-daily-parenting-wisdom')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="min-h-[40px] rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-2 text-xs font-black text-indigo-800 dark:text-indigo-200">{isEn ? 'Open daily parenting compass' : 'افتح بوصلة التربية اليومية'}</button>}
         isOpen={Boolean(openAccordions.wisdomGallery)}
         onToggle={() => toggleAccordion('wisdomGallery')}
         isEn={isEn}
