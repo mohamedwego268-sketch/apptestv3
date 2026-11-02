@@ -36,7 +36,10 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
   const parentProfile = state.parentAccounts[activeParent];
   const prefs = parentProfile.notificationPrefs;
   const rawNotifications = generateThreeDailyNotifications(state, activeParent);
-  const notifications = isDismissedAll ? [] : rawNotifications;
+  // Clearing routine alerts must never remove the parent's always-available wellbeing support messages.
+  const notifications = isDismissedAll
+    ? rawNotifications.filter((notification) => notification.slot === 'support')
+    : rawNotifications;
   const unreadCount = notifications.filter((n) => !n.read).length;
   const emptyNotifCopy = getEmptyStateCopy('notifications', language);
 
@@ -52,7 +55,7 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1.5 shrink-0">
               <SoftFilledIcon id="notifications" size={16} />
               <span>
-                {isEn ? 'Daily Family Reminders' : 'تذكيرات الأسرة اليومية'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
+                {isEn ? 'Family reminders & parent support' : 'تذكيرات الأسرة ودعم الأب والأم'} · {prefs.quietHoursStart}–{prefs.quietHoursEnd}
               </span>
             </span>
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold inline-flex items-center gap-1 shrink-0">
@@ -75,8 +78,8 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <div className="flex items-center gap-2">
               <h3 className="text-xs sm:text-sm font-extrabold text-[var(--color-text)]">
                 {isEn
-                  ? `Daily Smart Alerts (${notifications.length})`
-                  : `تنبيهات اليوم الذكية (${notifications.length})`}
+                  ? `Family alerts & parent support (${notifications.length})`
+                  : `تنبيهات الأسرة ورسائل دعم الوالدين (${notifications.length})`}
               </h3>
               <span className="px-2 py-0.5 rounded-md bg-teal-500/10 text-[10.5px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                 {isEn ? `Unread: ${unreadCount}` : `غير مقروءة: ${unreadCount}`}
@@ -145,7 +148,9 @@ export const NotificationsCenterSection: React.FC<NotificationsCenterSectionProp
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {notifications.map((notif, idx) => {
                 const slotTone =
-                  notif.slot === 'morning'
+                  notif.slot === 'support'
+                    ? 'violet'
+                    : notif.slot === 'morning'
                     ? 'amber'
                     : notif.slot === 'midday'
                     ? 'sky'
