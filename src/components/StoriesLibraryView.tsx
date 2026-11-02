@@ -88,20 +88,26 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
     window.speechSynthesis.speak(utterance);
   };
 
-  const visibleStories = useMemo<BedtimeStoryRecord[]>(() => {
-    if (selectedChildFilter === 'all') {
-      return master.stories.all;
-    }
-    return master.stories.getForChild(selectedChildFilter);
-  }, [master.stories, selectedChildFilter]);
+  const familyStories = useMemo<BedtimeStoryRecord[]>(() => master.stories.all.filter((story) => {
+    const child = kids.find((kid) => kid.id === story.childId);
+    if (!child) return false;
+    if (story.childRemoteId && child.remoteId) return String(story.childRemoteId) === String(child.remoteId);
+    return story.childName === locText(child.name, 'ar') || story.childName === locText(child.name, 'en');
+  }), [master.stories.all, kids]);
+
+  const visibleStories = useMemo<BedtimeStoryRecord[]>(() =>
+    selectedChildFilter === 'all'
+      ? familyStories
+      : familyStories.filter((story) => story.childId === selectedChildFilter),
+  [familyStories, selectedChildFilter]);
 
   const featuredStory = useMemo<BedtimeStoryRecord | null>(() => {
     if (activeStoryId) {
-      const match = master.stories.all.find((s) => s.id === activeStoryId);
+      const match = visibleStories.find((s) => s.id === activeStoryId);
       if (match) return match;
     }
-    return visibleStories[0] || master.stories.all[0] || null;
-  }, [activeStoryId, visibleStories, master.stories.all]);
+    return visibleStories[0] || null;
+  }, [activeStoryId, visibleStories]);
 
   const handleGenerateStory = async () => {
     setIsGenerating(true);
@@ -134,6 +140,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           ? `✨ Generated and saved a new bedtime story for ${childName}!`
           : `✨ تم تأليف وحفظ حدوتة جديدة لـ ${childName}!`
       );
+    } catch (error) {
+      onShowToast?.(isEn ? 'Could not save the story. Please try again.' : 'تعذر حفظ الحدوتة. حاول مرة تانية.');
     } finally {
       setIsGenerating(false);
     }
@@ -166,7 +174,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
 
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-2xl bg-amber-500/15 text-amber-800 dark:text-amber-300 text-xs font-black">
-            📚 {master.stories.all.length} {isEn ? 'Saved Stories' : 'حواديت محفوظة'}
+            📚 {familyStories.length} {isEn ? 'Saved Stories' : 'حواديت محفوظة'}
           </span>
         </div>
       </div>
@@ -303,12 +311,12 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
               }`}
             >
               {isEn
-                ? `All Children (${master.stories.all.length})`
-                : `كل الأطفال (${master.stories.all.length})`}
+                ? `All Children (${familyStories.length})`
+                : `كل الأطفال (${familyStories.length})`}
             </button>
 
             {kids.map((c) => {
-              const count = master.stories.getForChild(c.id).length;
+              const count = familyStories.filter((story) => story.childId === c.id).length;
               const active = selectedChildFilter === c.id;
               return (
                 <button
