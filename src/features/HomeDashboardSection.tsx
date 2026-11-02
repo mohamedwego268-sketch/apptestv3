@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Baby, CalendarDays, HeartPulse, ListChecks, PlayCircle, ShoppingBag } from 'lucide-react';
+import { Baby, CalendarDays, HeartPulse, ListChecks, ShoppingBag } from 'lucide-react';
 import {
   CalendarEvent,
   CommercialItem,
@@ -1599,37 +1599,38 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </SectionToolsDrawer>
 
 
-      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 sm:p-5 text-white shadow-lg">
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-black tracking-widest text-teal-200">WATCH • LEARN • GROW</span>
-            <h2 className="mt-1 text-base font-black">{isEn ? 'Short videos for parents' : 'فيديوهات قصيرة تهم كل أب وأم'}</h2>
-            <p className="mt-1 text-[11px] leading-5 text-white/70">{isEn ? 'Expert-backed videos from trusted family resources.' : 'محتوى مرئي مختار من مصادر موثوقة.. نصيحة تقدر تطبقها في يومك.'}</p>
+      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
+            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
+            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Videos are uploaded, reviewed and played inside Nekbaar. No external video links.' : 'كل فيديوهات نكبر هتترفع على المنصة وتُراجع قبل النشر، وتتفرجوا عليها من مشغّل داخلي من غير روابط خارجية.'}</p>
           </div>
-          <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">UNICEF PICKS</span>
+          <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'INTERNAL ONLY' : 'محتوى داخلي'}</span>
         </div>
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 no-scrollbar">
-          {[
-            { titleAr: 'اللعب بيبني عقل طفلك', titleEn: 'Play builds young brains', tagAr: 'نمو وتعلّم', tagEn: 'Growth & learning', image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=900&q=85', url: 'https://www.unicef.org/parenting/ar/%D8%AF%D8%B1%D8%B3-%D8%A8%D8%B4%D8%A3%D9%86-%D8%A8%D9%86%D8%A7%D8%A1-%D8%A3%D8%AF%D9%85%D8%BA%D8%A9-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-%D8%B9%D9%86-%D8%B7%D8%B1%D9%8A%D9%82-%D8%A7%D9%84%D9%84%D8%B9%D8%A8/%D9%86%D9%85%D8%A7%D8%A1-%D8%A7%D9%84%D8%B7%D9%81%D9%84' },
-            { titleAr: 'الكلام مع طفلك بيفرق', titleEn: 'Talking helps your child grow', tagAr: 'تواصل ولغة', tagEn: 'Communication', image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=85', url: 'https://www.unicef.org/parenting/ar/%D8%AF%D8%B1%D8%B3-%D8%A7%D9%84%D9%8A%D9%88%D9%86%D9%8A%D8%B3%D9%81-%D8%A7%D9%84%D9%85%D8%B5%D8%BA%D8%B1-%D9%84%D8%AA%D9%86%D8%B4%D8%A6%D8%A9-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-%D8%A8%D8%B4%D8%A3%D9%86-%D8%A7%D9%84%D9%83%D9%84%D8%A7%D9%85-%D8%A7%D9%84%D8%B7%D9%81%D9%88%D9%84%D9%8A' },
-            { titleAr: 'أسئلة كل أب وأم جديدة', titleEn: 'Answers for new parents', tagAr: 'رعاية الرضيع', tagEn: 'Baby care', image: 'https://images.unsplash.com/photo-1492725764893-90b379c2b6e7?auto=format&fit=crop&w=900&q=85', url: 'https://www.unicef.org/parenting/ar/%D8%AF%D8%B1%D8%B3-%D8%A7%D9%84%D9%8A%D9%88%D9%86%D9%8A%D8%B3%D9%81-%D8%A7%D9%84%D9%85%D8%B5%D8%BA%D8%B1-%D9%84%D8%AA%D9%86%D8%B4%D8%A6%D8%A9-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-%D9%85%D8%B9-%D8%A7%D9%84%D8%A8%D8%B1%D9%88%D9%81%D9%8A%D8%B3%D9%88%D8%B1-%D9%81%D8%B1%D8%A7%D9%86%D9%83-%D8%A3%D9%88%D8%A8%D9%8A%D8%B1%D9%83%D9%84%D9%8A%D8%AF' },
-            { titleAr: 'الصحة النفسية لطفلك', titleEn: 'Your child’s mental wellbeing', tagAr: 'صحة نفسية', tagEn: 'Mental wellbeing', image: 'https://images.unsplash.com/photo-1476703993599-0035a21b17a9?auto=format&fit=crop&w=900&q=85', url: 'https://www.unicef.org/parenting/ar/%D8%AF%D8%B1%D8%B3-%D8%A7%D9%84%D9%8A%D9%88%D9%86%D9%8A%D8%B3%D9%81-%D8%A7%D9%84%D9%85%D8%B5%D8%BA%D8%B1-%D9%84%D8%AA%D9%86%D8%B4%D8%A6%D8%A9-%D8%A7%D9%84%D8%A3%D8%B7%D9%81%D8%A7%D9%84-%D8%A8%D8%B4%D8%A3%D9%86-%D8%A8%D9%86%D8%A7%D8%A1-%D8%B5%D8%AD%D8%A9-%D8%B7%D9%81%D9%84%D9%83-%D8%A7%D9%84%D8%B9%D9%82%D9%84%D9%8A%D8%A9/%D8%A7%D9%84%D8%B5%D8%AD%D8%A9' },
-          ].map((video) => (
-            <a key={video.url} href={video.url} target="_blank" rel="noreferrer" className="group relative min-w-[230px] max-w-[270px] flex-1 snap-start overflow-hidden rounded-2xl border border-white/15 bg-[#0B2530] text-start shadow-md transition-transform hover:-translate-y-1">
-              <div className="relative h-36 overflow-hidden">
-                <img src={video.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#071923]/90 via-[#071923]/10 to-transparent" />
-                <span className="absolute inset-0 grid place-items-center"><span className="grid h-12 w-12 place-items-center rounded-full border border-white/50 bg-white/20 text-white shadow-xl backdrop-blur-sm"><PlayCircle size={29} fill="currentColor" strokeWidth={1.5} /></span></span>
-                <span className="absolute bottom-2 start-3 rounded-full bg-black/55 px-2 py-1 text-[9px] font-black text-white">{isEn ? video.tagEn : video.tagAr}</span>
+        <div className="mt-4 rounded-2xl border border-white/15 bg-[#0B2530]/70 p-3">
+          <div className="mb-3 flex items-center gap-2 text-xs font-extrabold text-teal-100">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/10">▶</span>
+            <span>{isEn ? 'Recently approved videos' : 'أحدث الفيديوهات المعتمدة'}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[
+              { ar: 'نمو وتطور الطفل', en: 'Child development' },
+              { ar: 'الصحة والتغذية', en: 'Health & nutrition' },
+              { ar: 'اللعب والتعلّم', en: 'Play & learning' },
+              { ar: 'دعم الأب والأم', en: 'Parent support' },
+            ].map((topic) => (
+              <div key={topic.ar} className="rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-3 text-center">
+                <span className="block text-[10px] font-bold leading-5 text-white/90">{isEn ? topic.en : topic.ar}</span>
+                <span className="mt-1 block text-[9px] text-teal-100/65">{isEn ? 'Internal library' : 'مكتبة نكبر'}</span>
               </div>
-              <div className="p-3">
-                <h3 className="text-sm font-black leading-6 text-white">{isEn ? video.titleEn : video.titleAr}</h3>
-                <p className="mt-1 text-[10px] font-semibold text-teal-100/75">{isEn ? 'Watch on UNICEF Parenting' : 'شاهد الفيديو من مكتبة اليونيسف'} ↗</p>
-              </div>
-            </a>
-          ))}
+            ))}
+          </div>
+          <div className="mt-3 rounded-xl border border-dashed border-white/20 bg-white/[0.04] px-3 py-4 text-center">
+            <p className="text-xs font-extrabold text-white">{isEn ? 'No approved videos yet' : 'مفيش فيديوهات معتمدة للعرض حاليًا'}</p>
+            <p className="mt-1 text-[10px] leading-5 text-white/65">{isEn ? 'Approved internal uploads will appear here automatically.' : 'أول ما يتم رفع الفيديوهات واعتمادها من الإدارة، هتظهر هنا تلقائيًا.'}</p>
+          </div>
         </div>
-        <p className="mt-1 text-[9px] leading-4 text-white/55">{isEn ? 'Videos open at their original publisher. Sponsored partner videos appear here only after approval.' : 'الفيديو يفتح من مصدره الأصلي. فيديوهات الشركاء والإعلانات ستظهر هنا بعد اعتمادها فقط.'}</p>
       </section>
 
       <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
