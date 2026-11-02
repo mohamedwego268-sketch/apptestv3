@@ -430,10 +430,10 @@ export const OnboardingFlowModal: React.FC<OnboardingFlowModalProps> = ({
   onPreviewRequest,
   onCompleteOnboarding,
 }) => {
-  const [internalLanguage, setInternalLanguage] = useState<LanguageCode>(language);
+  const [internalLanguage, setInternalLanguage] = useState<LanguageCode>('ar');
   useEffect(() => {
-    setInternalLanguage(language);
-  }, [language]);
+    if (isOpen) setInternalLanguage('ar');
+  }, [isOpen]);
   const effectiveLanguage: LanguageCode = internalLanguage;
   const isEn = effectiveLanguage === 'en';
 
