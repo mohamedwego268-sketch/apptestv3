@@ -23,18 +23,18 @@ function buildFifteenLineStory(topic: string, moral: string, english: boolean, c
       `2. It seemed to invite ${safeName} to begin a gentle adventure: "${safeTopic}".`,
       `3. ${safeName} paused, looked around, and decided to explore with curiosity.`,
       '4. Along the way, a little bird appeared to be looking for a safe place to rest.',
-      '5. ${safeName} wondered how to help without frightening the bird.',
+      `5. ${safeName} wondered how to help without frightening the bird.`,
       '6. A soft voice suggested moving slowly and giving the little visitor space.',
       '7. The quiet path led to a tree with a comfortable branch.',
       '8. The bird came closer when everything around it felt calm.',
       '9. A gentle breeze moved the leaves like a friendly wave.',
-      '10. ${safeName} discovered that listening can be as important as acting.',
+      `10. ${safeName} discovered that listening can be as important as acting.`,
       '11. With patience, the bird found a comfortable place to rest.',
       '12. The little light glowed again, celebrating the thoughtful choice.',
       `13. The adventure carried one meaningful lesson: ${safeMoral}.`,
-      '14. Back at home, ${safeName} shared a favorite moment from the journey.',
+      `14. Back at home, ${safeName} shared a favorite moment from the journey.`,
       '15. The day ended with a calm smile and a promise of another story.',
-    ].map((line) => line.replaceAll('\\${safeName}', safeName));
+    ];
   }
   return [
     `١. حين هدأ اليوم، لاحظ ${safeName} ضوءًا صغيرًا يلمع قرب النافذة.`,
@@ -164,7 +164,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
       const childNameEn = locText(childMeta.name, 'en');
       const moralObj = MORAL_OPTIONS[selectedMoralIdx] || MORAL_OPTIONS[0];
       const storyTheme = themePrompt.trim().slice(0, 120) || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة');
-      const storyBodyAr = buildFifteenLineStory(storyTheme, moralObj.ar, false, childNameAr).join('\\n');
+      const storyBodyAr = buildFifteenLineStory(storyTheme, moralObj.ar, false, childNameAr).join('\n');
       const storyBodyEn = buildFifteenLineStory(storyTheme, moralObj.en, true, childNameEn).join('\\n');
 
       const created = await master.stories.generate({
