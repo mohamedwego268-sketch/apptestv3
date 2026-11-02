@@ -211,3 +211,11 @@ Subscription administration scope for a later dedicated phase:
 - [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
 - [ ] Verify the updated main branch with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
 - [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review when a preview deployment is available.
+
+
+### Public messaging boundary — illustrated stories
+
+- The public Home teaser must use only the neutral label **“قريبًا”** / **“Coming soon”**.
+- Do not mention Premium, paid access, subscriptions, future pricing or payment in the illustrated-stories teaser or any other public-facing copy for this feature.
+- Do not imply the feature is available today and do not request a child photo before launch.
+- Commercial entitlement planning, if retained in internal product documentation, must never leak into customer-facing copy until an explicit product decision is made.
