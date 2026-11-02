@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Film, LoaderCircle } from 'lucide-react';
+import { Film } from 'lucide-react';
 import { supabaseClient } from '../services/supabaseService';
 import { InternalVideoPlayer } from './InternalVideoPlayer';
 
