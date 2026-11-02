@@ -537,3 +537,72 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-app *, .admin-app *::before, .admin-app *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Marketplace operations workspace — distinct work areas with a consistent action hierarchy. */
+.b2b-tabs{
+  display:flex;align-items:stretch;gap:7px;padding:7px;margin:0 0 20px;
+  overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;
+  border:1px solid var(--admin-border,#e5ecee);border-radius:17px;
+  background:var(--admin-surface-soft,#f6f9f9);
+}
+.b2b-tabs>button{
+  min-height:44px;flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;padding:0 13px;border:1px solid transparent;border-radius:12px;
+  color:var(--admin-muted,#71858b);background:transparent;font-size:11px;font-weight:800;
+  white-space:nowrap;transition:background .18s,color .18s,border-color .18s,box-shadow .18s;
+}
+.b2b-tabs>button svg{width:16px;height:16px;flex:0 0 16px}
+.b2b-tabs>button b{
+  min-width:21px;height:21px;padding:0 6px;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:999px;background:rgba(100,116,139,.11);color:inherit;font-size:10px;font-variant-numeric:tabular-nums;
+}
+.b2b-tabs>button.active{
+  color:#087f78;background:var(--admin-surface,#fff);border-color:rgba(13,148,136,.18);
+  box-shadow:0 5px 14px -11px rgba(8,90,86,.5),0 1px 3px rgba(15,45,55,.07);
+}
+.b2b-tabs>button.active b{background:rgba(13,148,136,.12);color:#087f78}
+.catalog-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.catalog-heading-actions .admin-search{min-width:min(260px,100%);flex:1 1 220px}
+.catalog-heading-actions .admin-add-btn{min-height:42px;white-space:nowrap}
+.admin-table-wrap{
+  width:100%;overflow-x:auto;overscroll-behavior-inline:contain;
+  border:1px solid var(--admin-border,#e5ecee);border-radius:15px;
+  background:var(--admin-surface,#fff);scrollbar-width:thin;
+}
+.admin-table-wrap>.admin-table{min-width:680px;border:0;border-radius:0}
+.admin-table-wrap .admin-table thead th{position:sticky;top:0;z-index:1;background:var(--admin-surface-soft,#f6f9f9)}
+.admin-table-wrap .admin-table tbody tr{transition:background .15s ease}
+.admin-table-wrap .admin-table tbody tr:hover{background:rgba(13,148,136,.035)}
+.admin-table-wrap .admin-table td{vertical-align:middle}
+.catalog-item-name{min-width:170px}
+.catalog-item-name b{display:block;color:var(--admin-text,#18333d);font-size:12px;line-height:1.55}
+.catalog-item-name small{display:block;margin-top:3px;color:var(--admin-muted,#71858b);font-size:10px}
+.catalog-price{font-variant-numeric:tabular-nums;font-weight:900;white-space:nowrap}
+.catalog-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;white-space:nowrap}
+.catalog-actions button{min-width:34px;min-height:34px;border-radius:10px}
+.stock-warning{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#fff6e8;color:#a45a13;font-size:10px;font-weight:900;white-space:nowrap}
+.b2b-document-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.b2b-document-card{
+  min-width:0;padding:17px;border:1px solid var(--admin-border,#e5ecee);border-radius:17px;
+  background:var(--admin-surface,#fff);box-shadow:0 8px 22px -20px rgba(15,45,55,.3);
+  transition:transform .18s,border-color .18s,box-shadow .18s;
+}
+.b2b-document-card:hover{transform:translateY(-1px);border-color:rgba(13,148,136,.25);box-shadow:0 12px 26px -22px rgba(15,45,55,.4)}
+.b2b-document-card .panel-heading{margin-bottom:12px}
+.b2b-document-card .b2b-order-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px}
+.b2b-order-summary>div{min-width:0;padding:10px;border-radius:11px;background:var(--admin-surface-soft,#f6f9f9)}
+.b2b-order-summary small{display:block;color:var(--admin-muted,#71858b);font-size:10px}
+.b2b-order-summary b{display:block;margin-top:4px;color:var(--admin-text,#18333d);font-size:13px;font-weight:900;overflow-wrap:anywhere}
+.b2b-order-status-select{min-height:36px;max-width:150px;padding:0 9px;border:1px solid var(--admin-border,#e5ecee);border-radius:10px;background:var(--admin-surface,#fff);font-size:11px;font-weight:800}
+@media(max-width:760px){
+  .b2b-tabs{margin-inline:-2px;scroll-snap-type:x proximity}
+  .b2b-tabs>button{scroll-snap-align:start;min-height:43px;padding-inline:11px}
+  .catalog-heading-actions{width:100%;justify-content:stretch}
+  .catalog-heading-actions .admin-search{flex-basis:100%;min-width:100%}
+  .catalog-heading-actions .admin-add-btn{flex:1 1 100%;justify-content:center}
+  .b2b-document-grid{grid-template-columns:1fr;gap:11px}
+  .b2b-document-card{padding:14px;border-radius:15px}
+}
+@media(prefers-reduced-motion:reduce){
+  .b2b-tabs>button,.b2b-document-card,.admin-table-wrap .admin-table tbody tr{transition:none}
+}
