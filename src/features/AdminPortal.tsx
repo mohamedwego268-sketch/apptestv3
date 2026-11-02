@@ -556,6 +556,17 @@ export default function AdminPortal() {
     if (authorized && page === 'security') void loadAudit();
   }, [authorized, page, loadAudit]);
 
+  // Keep every hook above the loading/auth early returns.
+  useEffect(() => {
+    if (!authorized || !currentAccess) return;
+    const allowed = (pageKey: PageKey) =>
+      Boolean(currentAccess.is_super_admin || currentAccess.permissions.includes(PAGE_PERMISSION[pageKey]));
+    if (!allowed(page)) {
+      const next = NAV.find(item => allowed(item.id));
+      if (next) setPage(next.id);
+    }
+  }, [authorized, currentAccess, page]);
+
   const heading = NAV.find(item => item.id === page);
   const subtitle = page === 'overview'
     ? t('صورة موحدة لصحة المنصة ونموها وتشغيلها.','A unified view of platform health, growth and operations.')
@@ -583,8 +594,6 @@ export default function AdminPortal() {
 
   const can = (permission:string) => Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.includes(permission));
   const canOpenPage = (pageKey:PageKey) => Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.includes(PAGE_PERMISSION[pageKey]));
-
-  useEffect(()=>{if(!authorized||!currentAccess)return;if(!canOpenPage(page)){const next=NAV.find(item=>canOpenPage(item.id));if(next)setPage(next.id);}},[authorized,currentAccess,page]);
 
   const Sidebar = () => (
     <aside className={'admin-sidebar ' + (mobileNav ? 'is-open' : '')}>
