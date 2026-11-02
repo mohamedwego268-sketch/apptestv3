@@ -59,16 +59,16 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           : 'bg-[var(--color-surface)]/95 dark:bg-[#101D26]/95 border-b border-gray-200/60 dark:border-[#1E3646]'
       }`}
     >
-      <div className="w-full max-w-[430px] mx-auto px-3 py-1.5 min-h-[46px] flex items-center justify-between gap-2">
+      <div className="w-full max-w-[430px] mx-auto grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 min-h-[62px]">
         {/* Start: Brand Logo + Official Slogan */}
         <button
           id="brand-home-btn"
           type="button"
           onClick={() => onNavigate('home')}
           aria-label={isEn ? 'Nekbaar — Home' : 'نكبر — الرئيسية'}
-          className="flex items-center gap-2 text-start group focus:outline-none min-w-0 shrink cursor-pointer"
+          className="flex min-w-0 w-full items-center gap-2 text-start group focus:outline-none cursor-pointer"
         >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform shrink-0">
             <svg
               width="16"
               height="16"
@@ -91,18 +91,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               />
             </svg>
           </div>
-          <div className="leading-tight min-w-0">
-            <span className="block font-extrabold text-sm tracking-tight text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
+          <div className="min-w-0 flex-1 leading-[1.25]">
+            <span className="block font-extrabold text-[13px] tracking-tight text-[var(--color-text)] dark:text-[#F8FAFC] truncate">
               {isEn ? 'Nekbaar' : 'نكبر'}
             </span>
-            <span className="block text-[9.5px] font-bold text-[#0d9488] dark:text-[#2DD4BF] truncate">
+            <span className="mt-0.5 block max-w-full whitespace-normal break-words text-[9px] font-bold leading-[1.35] text-[#0d9488] dark:text-[#2DD4BF]">
               {isEn ? 'Growing together with love' : 'مساحة تجمعنا.. وبحبهم نكبر'}
             </span>
           </div>
         </button>
 
         {/* End: Compact Notifications Bell + Slidebar Drawer Button */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* 1. Notifications Bell */}
           <button
             id="header-notifications-btn"
@@ -118,7 +118,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 ? 'Notifications'
                 : 'الإشعارات'
             }
-            className={`relative min-w-[34px] min-h-[34px] w-[34px] h-[34px] rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
+            className={`relative min-w-[44px] min-h-[44px] w-[44px] h-[44px] rounded-xl border flex items-center justify-center transition-all active:scale-95 cursor-pointer ${
               activePage === 'notifications'
                 ? 'border-[#0d9488] bg-[#0d9488]/12'
                 : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488]'
@@ -142,7 +142,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             type="button"
             onClick={onOpenProfileDrawer}
             aria-label={isEn ? 'Open navigation menu' : 'فتح القائمة الجانبية'}
-            className="min-h-[34px] h-[34px] px-2.5 py-1 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
+            className="min-h-[44px] h-[44px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] hover:border-[#0d9488] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 transition-all cursor-pointer"
           >
             <span className="flex flex-col items-center justify-center gap-[3px] w-3.5" aria-hidden="true">
               <span
@@ -161,7 +161,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 }`}
               />
             </span>
-            <span className="text-[11px] font-extrabold leading-none">
+            <span className="text-[11px] font-extrabold leading-tight whitespace-nowrap">
               {isEn ? 'Menu' : 'القائمة'}
             </span>
           </button>
