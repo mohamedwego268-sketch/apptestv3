@@ -43,7 +43,7 @@ export interface HomeDashboardSectionProps {
   onReplaySplash?: () => void;
 }
 
-interface DailyAudioBriefEpisode {
+interface DailyReadAloudTip {
   id: string;
   timeBucket: 'morning' | 'afternoon' | 'evening';
   slotLabelAr: string;
@@ -58,9 +58,9 @@ interface DailyAudioBriefEpisode {
   takeawayEn: string;
 }
 
-const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
+const DAILY_READ_ALOUD_TIPS: DailyReadAloudTip[] = [
   {
-    id: 'brief-morning-30s',
+    id: 'tip-morning',
     timeBucket: 'morning',
     slotLabelAr: '☀️ قراءة نصيحة الصباح',
     slotLabelEn: '☀️ Morning tip read-aloud',
@@ -76,7 +76,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
   },
   {
-    id: 'brief-afternoon-30s',
+    id: 'tip-afternoon',
     timeBucket: 'afternoon',
     slotLabelAr: '🌤️ قراءة نصيحة الظهيرة',
     slotLabelEn: '🌤️ Afternoon tip read-aloud',
@@ -92,7 +92,7 @@ const DAILY_AUDIO_BRIEFS_30S: DailyAudioBriefEpisode[] = [
     takeawayEn: '💡 Try a short moment of undivided attention, without pressure to make it perfect.',
   },
   {
-    id: 'brief-evening-30s',
+    id: 'tip-evening',
     timeBucket: 'evening',
     slotLabelAr: '🌙 قراءة نصيحة المساء',
     slotLabelEn: '🌙 Evening tip read-aloud',
@@ -394,18 +394,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   // ============================================================================
   // Time-aware daily tip read-aloud using the device speech engine; never autoplay.
   // ============================================================================
-  const defaultBriefIdx = useMemo(() => {
-    const idx = DAILY_AUDIO_BRIEFS_30S.findIndex((b) => b.timeBucket === currentTimeBucket);
+  const defaultTipIdx = useMemo(() => {
+    const idx = DAILY_READ_ALOUD_TIPS.findIndex((b) => b.timeBucket === currentTimeBucket);
     return idx >= 0 ? idx : 0;
   }, [currentTimeBucket]);
 
-  const [activeBriefIdx, setActiveBriefIdx] = useState<number>(defaultBriefIdx);
-  const [isPlayingBrief, setIsPlayingBrief] = useState<boolean>(false);
+  const [activeTipIdx, setActiveBriefIdx] = useState<number>(defaultTipIdx);
+  const [isReadingTip, setIsPlayingBrief] = useState<boolean>(false);
 
-  const currentBrief = DAILY_AUDIO_BRIEFS_30S[activeBriefIdx] || DAILY_AUDIO_BRIEFS_30S[0];
+  const currentTip = DAILY_READ_ALOUD_TIPS[activeTipIdx] || DAILY_READ_ALOUD_TIPS[0];
 
   // Read the daily tip aloud with the device's speech engine; never autoplay audio.
-  const speakDailyBrief = (brief: DailyAudioBriefEpisode = currentBrief): boolean => {
+  const readDailyTipAloud = (brief: DailyReadAloudTip = currentTip): boolean => {
     if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
       setIsPlayingBrief(false);
       onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'خاصية القراءة الصوتية مش متاحة على الجهاز ده.');
@@ -428,8 +428,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
-  const handleReplayAudioBrief = () => {
-    if (speakDailyBrief(currentBrief)) {
+  const handleReplayDailyTip = () => {
+    if (readDailyTipAloud(currentTip)) {
       onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
     }
   };
@@ -1065,54 +1065,54 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <div className="flex items-start gap-3.5 w-full">
               <button
                 type="button"
-                data-testid="audio-brief-play-toggle"
+                data-testid="daily-tip-read-aloud-toggle"
                 onClick={() => {
-                  if (isPlayingBrief) {
+                  if (isReadingTip) {
                     window.speechSynthesis?.pause();
                     setIsPlayingBrief(false);
                   } else if (window.speechSynthesis?.paused) {
                     window.speechSynthesis.resume();
                     setIsPlayingBrief(true);
                   } else {
-                    speakDailyBrief(currentBrief);
+                    readDailyTipAloud(currentTip);
                   }
                 }}
                 aria-label={
-                  isPlayingBrief
+                  isReadingTip
                     ? isEn
-                      ? 'Pause audio brief'
-                      : 'إيقاف الرسالة الصوتية'
+                      ? 'Pause reading'
+                      : 'إيقاف القراءة الصوتية'
                     : isEn
-                    ? 'Play audio brief'
-                    : 'تشغيل الرسالة الصوتية'
+                    ? 'Read tip aloud'
+                    : 'قراءة النصيحة بصوت مسموع'
                 }
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center text-base font-black shrink-0 transition-all cursor-pointer shadow-xs ${
-                  isPlayingBrief
+                  isReadingTip
                     ? 'bg-[#FF8C61] text-white scale-105'
                     : 'bg-[#0d9488] hover:bg-[#0f766e] text-white'
                 }`}
               >
-                {isPlayingBrief ? '⏸' : '▶'}
+                {isReadingTip ? '⏸' : '▶'}
               </button>
 
               <div className="flex-1 min-w-0 w-full space-y-1 text-start">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
                   <span className="inline-block whitespace-normal">
-                    🔊 {isEn ? currentBrief.slotLabelEn : currentBrief.slotLabelAr}
+                    🔊 {isEn ? currentTip.slotLabelEn : currentTip.slotLabelAr}
                   </span>
                   <span aria-hidden="true">·</span>
                   <span className="text-[var(--color-muted)] dark:text-[#94A3B8] whitespace-normal">
-                    {isEn ? currentBrief.hostsEn : currentBrief.hostsAr}
+                    {isEn ? currentTip.hostsEn : currentTip.hostsAr}
                   </span>
                 </div>
                 <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed whitespace-normal">
-                  {isEn ? currentBrief.titleEn : currentBrief.titleAr}
+                  {isEn ? currentTip.titleEn : currentTip.titleAr}
                 </h2>
               </div>
             </div>
 
             {/* Playback uses the device speech engine; no recorded-audio duration is implied. */}
-            <div data-testid="audio-brief-read-aloud-status" className="flex items-center gap-2 rounded-xl border border-teal-500/15 bg-teal-500/5 px-3 py-2 text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+            <div data-testid="daily-tip-read-aloud-status" className="flex items-center gap-2 rounded-xl border border-teal-500/15 bg-teal-500/5 px-3 py-2 text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
               <span aria-hidden="true">🔊</span>
               <span>{isEn ? 'Read aloud using your device voice' : 'تُقرأ النصيحة بصوت الجهاز'}</span>
             </div>
@@ -1122,9 +1122,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  id="audio-brief-replay-btn"
-                  data-testid="audio-brief-replay-btn"
-                  onClick={handleReplayAudioBrief}
+                  id="daily-tip-read-aloud-replay"
+                  data-testid="daily-tip-read-aloud-replay"
+                  onClick={handleReplayDailyTip}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[#0d9488]/40 bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer inline-flex items-center gap-1.5"
                 >
                   <span>🔄</span>
@@ -1133,11 +1133,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
                 <button
                   type="button"
-                  data-testid="audio-brief-next-btn"
+                  data-testid="daily-tip-read-aloud-next"
                   onClick={() => {
-                    const nextIdx = (activeBriefIdx + 1) % DAILY_AUDIO_BRIEFS_30S.length;
+                    const nextIdx = (activeTipIdx + 1) % DAILY_READ_ALOUD_TIPS.length;
                     setActiveBriefIdx(nextIdx);
-                                    speakDailyBrief(DAILY_AUDIO_BRIEFS_30S[nextIdx]);
+                                    readDailyTipAloud(DAILY_READ_ALOUD_TIPS[nextIdx]);
                   }}
                   className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
                 >
@@ -1148,9 +1148,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
             {/* Row 4: Full-Width Horizontal Summary & Takeaway */}
             <p className="w-full text-xs sm:text-[13px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed text-start whitespace-normal">
-              {isEn ? currentBrief.summaryEn : currentBrief.summaryAr}{' '}
+              {isEn ? currentTip.summaryEn : currentTip.summaryAr}{' '}
               <strong className="text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? currentBrief.takeawayEn : currentBrief.takeawayAr}
+                {isEn ? currentTip.takeawayEn : currentTip.takeawayAr}
               </strong>
             </p>
           </div>
