@@ -374,6 +374,41 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
     return true;
   };
+  const completeParentChildActivity = async (activity: {
+    id: string;
+    title: string;
+    topic: string;
+    durationMinutes: number;
+  }): Promise<boolean> => {
+    if (!activeKid?.remoteId) {
+      onShowToast?.(isEn
+        ? 'Save this child profile to the family first, then record your shared activity.'
+        : 'احفظ ملف الطفل في حساب الأسرة أولاً، وبعدها نقدر نسجل التجربة المشتركة.');
+      return false;
+    }
+    const saved = await saveDashboardChildLog('other', activity.title, {
+      dashboardKind: 'shared_activity',
+      activityId: activity.id,
+      topic: activity.topic,
+      durationMinutes: activity.durationMinutes,
+      parentParticipated: true,
+      childParticipated: true,
+      completedTogether: true,
+    });
+    if (!saved) return false;
+    const refreshed = await fetchRecentChildLifeRecords([String(activeKid.remoteId)], 14);
+    if (refreshed.records) {
+      setRecentRecordsByKid((previous) => ({
+        ...previous,
+        [activeKid.id]: refreshed.records,
+      }));
+    }
+    onShowToast?.(isEn
+      ? 'Shared moment saved to your child’s timeline ✓'
+      : 'اتسجلت اللحظة المشتركة في سجل طفلك ✓');
+    return true;
+  };
+
   const runDashboardSave = async (
     actionKey: string,
     recordType: 'sleep_log' | 'nutrition' | 'sports' | 'emotional_social' | 'other',
@@ -1287,6 +1322,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             signals={activeKidSignals}
             onNavigate={navigateTo}
             onOpenSection={openHomeSection}
+            onCompleteActivity={completeParentChildActivity}
           />
         </div>
       )}
