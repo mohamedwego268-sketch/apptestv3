@@ -356,7 +356,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     parentingSupport: false,
     learningTrack: false,
     valuesTrack: false,
-    kidsGames: false,
     wisdomGallery: false,
     storeShowcase: false,
   });
@@ -2235,126 +2234,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          9. ACCORDION: INTERACTIVE CHILDREN'S GAMES SHOWCASE
-          ===================================================================== */}
-      <HomeAccordionCard
-        id="home-children-games-showcase"
-        testId="home-children-games-showcase"
-        iconEmoji="🎮"
-        iconBgClass="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-        title={
-          isEn
-            ? 'Interactive Children’s Learning Games'
-            : 'ركن ألعاب أطفالنا التفاعلية'
-        }
-        subtitle={
-          isEn
-            ? 'Brain puzzles, memory cards, emotion matching & sensory sounds'
-            : 'ألغاز ذكاء، تطابق الذاكرة، الألوان والمشاعر، والأصوات الحسية'
-        }
-        badgeText={isEn ? '3 Stages' : '٣ مراحل'}
-        badgeClass="bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-        borderClass="border-emerald-500/35 dark:border-[#1E3646]"
-        isOpen={Boolean(openAccordions.kidsGames)}
-        onToggle={() => toggleAccordion('kidsGames')}
-        isEn={isEn}
-        headerExtraAction={
-          <button
-            type="button"
-            id="home-open-games-page-btn"
-            data-testid="home-open-games-page-btn"
-            onClick={() => navigateTo('games')}
-            className="min-h-[40px] px-4 py-2 rounded-2xl bg-gradient-to-r from-[#0d9488] to-emerald-600 hover:from-[#0f766e] hover:to-emerald-700 text-white text-xs font-black shadow-sm active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1.5"
-          >
-            <span>🚀</span>
-            <span>{isEn ? 'Open Games Page →' : 'افتح صفحة الألعاب ←'}</span>
-          </button>
-        }
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          {state.kids.length === 0 ? (
-            <div className="sm:col-span-3 rounded-2xl border border-dashed border-emerald-500/35 bg-emerald-50/40 dark:bg-[#142430] p-4 text-center space-y-3">
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to get age-aware learning and play suggestions.' : 'أضيفوا ملف طفل علشان تظهر اقتراحات اللعب والتعلم المناسبة لعمره.'}</p>
-              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
-            </div>
-          ) : state.kids.map((kid, index) => {
-            const age = calculateChildAge(kid.birth, lang);
-            const hasKnownAge = Boolean(kid.birth);
-            const tone = ['border-sky-500/40', 'border-rose-500/40', 'border-amber-500/40'][index % 3];
-            const activity = !hasKnownAge
-              ? {
-                  badgeAr: '🌿 نشاط عام تحت إشراف الأسرة',
-                  badgeEn: '🌿 General supervised activity',
-                  titleAr: 'اختاروا نشاطًا بسيطًا حسب قدرة الطفل واهتمامه',
-                  titleEn: 'Choose a simple activity based on the child’s ability and interests',
-                  descAr: 'أضيفوا تاريخ الميلاد لعرض اقتراحات أدق حسب المرحلة العمرية.',
-                  descEn: 'Add the birth date to show more relevant age-stage suggestions.',
-                }
-              : age.months < 24
-              ? {
-                  badgeAr: '👶🏻 استكشاف حسي مناسب للعمر',
-                  badgeEn: '👶🏻 Age-aware sensory play',
-                  titleAr: 'أصوات هادئة وتتبع بصري ولعب آمن تحت إشرافك',
-                  titleEn: 'Gentle sounds, visual tracking and supervised safe play',
-                  descAr: 'اختاروا نشاطًا بسيطًا يناسب مرحلة الحركة الحالية، مع مراقبة الطفل طوال الوقت.',
-                  descEn: 'Choose a simple activity that fits the child’s current movement stage and supervise throughout.',
-                }
-              : age.years < 5
-              ? {
-                  badgeAr: '🎨 لعب واكتشاف',
-                  badgeEn: '🎨 Play & discovery',
-                  titleAr: 'تطابق الألوان والحكايات وتسمية المشاعر',
-                  titleEn: 'Color matching, stories and naming feelings',
-                  descAr: 'نشاط اختياري يجمع اللعب واللغة والتعبير عن المشاعر دون ضغط.',
-                  descEn: 'An optional activity combining play, language and emotional expression without pressure.',
-                }
-              : {
-                  badgeAr: '🧩 تفكير ومهارات',
-                  badgeEn: '🧩 Thinking & skills',
-                  titleAr: 'لغز بسيط أو تحدي حساب حسب اهتمام الطفل',
-                  titleEn: 'A simple puzzle or number challenge based on the child’s interests',
-                  descAr: 'اختاروا تحديًا قصيرًا يناسب مستوى الطفل واهتماماته، واحتفلوا بالمحاولة.',
-                  descEn: 'Choose a short challenge that fits the child’s level and interests, and celebrate the effort.',
-                };
-            return {
-              id: `game-child-${kid.id}`,
-              badgeAr: `${locText(kid.name, 'ar')} · ${age.label}`,
-              badgeEn: `${locText(kid.name, 'en')} · ${age.label}`,
-              titleAr: activity.titleAr,
-              titleEn: activity.titleEn,
-              descAr: activity.descAr,
-              descEn: activity.descEn,
-              borderTone: tone,
-            };
-          }).map((gCard) => (
-            <button
-              type="button"
-              key={gCard.id}
-              onClick={() => navigateTo('games')}
-              className={`w-full text-start rounded-2xl border-2 ${gCard.borderTone} bg-[var(--color-control-muted)]/35 dark:bg-[#142430] p-4 flex flex-col justify-between gap-2.5 hover:shadow-md transition-all cursor-pointer`}
-            >
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-black text-[#0d9488] dark:text-[#2DD4BF]">
-                  {isEn ? gCard.badgeEn : gCard.badgeAr}
-                </span>
-                <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? gCard.titleEn : gCard.titleAr}
-                </h3>
-                <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                  {isEn ? gCard.descEn : gCard.descAr}
-                </p>
-              </div>
-              <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 pt-1 inline-flex items-center gap-1">
-                <span>▶</span>
-                <span>{isEn ? 'Play Now' : 'العب الآن'}</span>
-              </span>
-            </button>
-          ))}
-        </div>
-      </HomeAccordionCard>
-
-      {/* =====================================================================
-          10. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
+          9. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
       <HomeContentGroupHeading
         id="home-content-group-inspiration"
@@ -2443,7 +2323,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          11. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
+          10. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
           ===================================================================== */}
       <HomeAccordionCard
         id="home-minimalist-gateways"
