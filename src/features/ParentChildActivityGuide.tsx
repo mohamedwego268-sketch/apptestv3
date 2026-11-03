@@ -8,6 +8,7 @@ export interface GuidedActivity {
   durationMinutes: number;
   reflectionNote?: string;
   chosenChallenge?: string;
+  childResponse?: 'loved' | 'okay' | 'not_interested' | 'repeat';
 }
 
 interface ParentChildActivityGuideProps {
@@ -142,6 +143,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
   const [reflectionNote, setReflectionNote] = useState('');
   const [chosenChallenge, setChosenChallenge] = useState('');
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [childResponse, setChildResponse] = useState<GuidedActivity['childResponse']>();
 
   const playCue = () => {
     if (!soundEnabled || typeof window === 'undefined' || !('AudioContext' in window)) return;
@@ -171,6 +173,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
     setElapsed(0);
     setReflectionNote('');
     setChosenChallenge('');
+    setChildResponse(undefined);
     setSaved(false);
   }, [activity.id]);
 
@@ -182,7 +185,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
 
   const finish = async () => {
     setSaving(true);
-    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined, chosenChallenge: chosenChallenge || undefined });
+    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined, chosenChallenge: chosenChallenge || undefined, childResponse });
     setSaving(false);
     if (ok) setSaved(true);
   };
@@ -241,6 +244,21 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
                 </div>
                 {chosenChallenge && <p aria-live="polite" className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-[11px] font-black text-violet-900 dark:bg-white/10 dark:text-violet-100">{isEn ? 'Your mission:' : 'مهمتكم:'} {chosenChallenge} ✨</p>}
               </section>
+            )}
+            {step === plan.steps.length - 1 && (
+              <fieldset className="mt-3 rounded-2xl border border-teal-200 bg-teal-50/70 p-3 dark:border-teal-300/15 dark:bg-teal-400/10">
+                <legend className="px-1 text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How did your child respond?' : 'طفلك استقبل التجربة إزاي؟'}</legend>
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  {([
+                    ['loved', isEn ? 'Loved it 😍' : 'انبسط جدًا 😍'],
+                    ['okay', isEn ? 'Enjoyed it 🙂' : 'انبسط 🙂'],
+                    ['not_interested', isEn ? 'Not interested 😶' : 'مش مهتم دلوقتي 😶'],
+                    ['repeat', isEn ? 'Wants it again 🔁' : 'عايز يكررها 🔁'],
+                  ] as const).map(([value, label]) => (
+                    <button key={value} type="button" aria-pressed={childResponse === value} onClick={() => setChildResponse(value)} className={`min-h-11 rounded-xl border px-2 py-2 text-[11px] font-black transition ${childResponse === value ? 'border-teal-600 bg-teal-100 text-teal-950 dark:bg-teal-300/20 dark:text-white' : 'border-teal-200 bg-white/80 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100'}`}>{label}</button>
+                  ))}
+                </div>
+              </fieldset>
             )}
             {step === plan.steps.length - 1 && (
               <label className="mt-3 block">
