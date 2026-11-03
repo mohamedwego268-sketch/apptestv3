@@ -168,19 +168,17 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
     }
   };
   const baseChallenges = PLAY_CHALLENGES[activity.id] ?? PLAY_CHALLENGES['family-connection'];
-  const ageChallenges = ageMonths !== null && ageMonths < 18
+  const ageChallenges = activity.id === 'sensory-play' && ageMonths !== null && ageMonths < 18
     ? {
-        ar: ['راقبوا معًا لونًا أو شكلًا واضحًا', 'قلّدوا صوتًا لطيفًا بالتبادل', 'اتبعوا لعبة نظر بسيطة بإيقاع بطيء'],
-        en: ['Notice one clear color or shape together', 'Take turns copying a gentle sound', 'Follow a simple, slow visual game'],
+        ar: ['لاحظوا لونًا أو شكلًا واضحًا معًا', 'المسوا قماشًا كبيرًا مثبتًا وسمّوا ملمسه', 'قلّدوا صوتًا لطيفًا بالتبادل'],
+        en: ['Notice one clear color or shape together', 'Touch a large, securely held fabric and name its texture', 'Take turns copying a gentle sound'],
       }
-    : ageMonths !== null && ageMonths < 36
+    : activity.id === 'sensory-play' && ageMonths !== null && ageMonths < 36
       ? {
-          ar: ['اختاروا بين لونين أو صورتين كبيرتين', 'قلّدوا حركة بسيطة مع ولي الأمر', 'سمّوا شيئًا مألوفًا وشجّعوا الطفل يكرره'],
-          en: ['Choose between two large colors or pictures', 'Copy one simple movement with the parent', 'Name a familiar object and invite your child to repeat'],
+          ar: ['اختاروا بين لونين واضحين', 'المسوا خامة كبيرة ومتينة معًا', 'سمّوا ملمسًا واحدًا وكرروه في لعبة'],
+          en: ['Choose between two clear colors', 'Explore one large, sturdy texture together', 'Name one texture and turn it into a simple game'],
         }
-      : ageMonths !== null && ageMonths < 72
-        ? baseChallenges
-        : baseChallenges;
+      : baseChallenges;
   const challenges = ageChallenges;
   const ageGuidance = ageMonths === null
     ? (isEn ? 'Choose materials and movements that match your child’s abilities. Stay nearby and adapt whenever needed.' : 'اختاروا الخامات والحركات حسب قدرة طفلك، وكونوا قريبين منه وعدّلوا النشاط وقت الحاجة.')
