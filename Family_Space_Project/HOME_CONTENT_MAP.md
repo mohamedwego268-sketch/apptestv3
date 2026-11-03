@@ -200,6 +200,9 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Removed the separate Home games teaser: its age-labelled cards all opened the same Games page and duplicated the Games link already available inside the age-aware Learning track. The dedicated Games page and its global navigation remain unchanged.
 - [x] Complete the next Home information-hierarchy pass: organize the page into family-journey groups and remove the empty specialist-discovery placeholder from the public Home.
 - [x] Removed the duplicate Home daily-tip content/card and its obsolete accordion state; preserved read-aloud functionality inside the Daily Parenting Compass.
+- [x] Moved practical family ideas and the approved video preview under the “Ideas and family resources” group so the three Home journey groups match the actual content order.
+- [x] Replaced the in-memory-only child “cheer” counter (which reset on refresh and was not shared or saved) with a real child-profile action to update interests; retained the routine action for activities.
+- [x] Renamed the interests section to describe what it actually contains; it no longer implies a developmental-milestone tracker.
 - [x] Removed the now-empty audio toggle from the welcome header and simplified the tools drawer after consolidation.
 - [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
 - [ ] Verify the latest Home consolidation commits with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
@@ -221,3 +224,8 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Removed obsolete audio-card state, data and welcome-header toggle; the tools drawer no longer reserves an empty grid for the removed control.
 - [ ] Run and verify CI for the consolidation commits.
 - [ ] Complete browser-level RTL/LTR, mobile and keyboard review after a preview deployment is available.
+
+
+- [x] Grouped practical family ideas and the available video preview beneath the final Home journey heading; the three section headings now follow the content they introduce.
+- [x] Removed the temporary, local-only cheer counter from child interest cards and replaced it with a direct profile update action.
+- [x] Clarified the child interests section title to avoid implying that milestones are being tracked.
