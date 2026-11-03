@@ -1102,54 +1102,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </SectionToolsDrawer>
 
 
-      <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-black tracking-wide text-teal-700 dark:text-teal-300">{isEn ? 'SMALL STEPS, REAL VALUE' : 'خطوات صغيرة.. فايدة حقيقية'}</span>
-            <h2 className="mt-1 text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Practical ideas for your family today' : 'أفكار عملية تقدروا تطبقوها النهارده'}</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--color-muted)]">{isEn ? 'Short, useful actions — not another feed to scroll.' : 'اقتراحات بسيطة قابلة للتنفيذ، مش محتوى لمجرد التصفح.'}</p>
-          </div>
-          <span className="shrink-0 rounded-xl bg-teal-50 dark:bg-[#142430] px-2.5 py-1.5 text-[10px] font-black text-teal-800 dark:text-teal-300">{isEn ? '3 ideas' : '٣ أفكار'}</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { id: 'routine' as const, image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80', titleAr: 'جهّزوا للنوم من بدري', titleEn: 'Make bedtime easier', bodyAr: 'اختاروا ٣ خطوات ثابتة قبل النوم: تهدئة، قصة قصيرة، ثم إضاءة هادية.', bodyEn: 'Keep three predictable steps: wind down, share a short story, then dim the lights.', ctaAr: 'افتح الروتين', ctaEn: 'Open routine' },
-            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح متابعة المشاعر', ctaEn: 'Open emotional check-in' },
-            { id: 'medical' as const, image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80', titleAr: 'خلّي المعلومات المهمة جاهزة', titleEn: 'Keep key care details ready', bodyAr: 'راجعوا الحساسية والأدوية وبيانات طبيب الأطفال، وحدّثوها عند أي تغيير.', bodyEn: 'Review allergies, medications and pediatrician details; update them whenever something changes.', ctaAr: 'افتح المتابعة الصحية', ctaEn: 'Open health records' },
-          ].map((idea) => (
-            <article key={idea.id} className="overflow-hidden rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430]">
-              <div className="relative h-28 sm:h-32 overflow-hidden">
-                <img src={idea.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
-              </div>
-              <div className="space-y-2 p-3">
-                <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
-                <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
-                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} {isEn ? '→' : '←'}</button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-
-      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
-            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
-            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'Inside Nekbaar' : 'داخل نكبر'}</span>
-            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
-          </div>
-        </div>
-        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
-      </section>
-      {/* =====================================================================
-          3. DAILY CHILD LOG — KEEP THE USEFUL TRACKING ACTIONS
-          ===================================================================== */}
       <HomeContentGroupHeading
         id="home-content-group-daily"
         step="١"
@@ -2048,6 +2000,54 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={isEn ? 'Ideas and family resources' : 'أفكار وموارد للأسرة'}
         description={isEn ? 'Practical inspiration and useful family supplies in one place.' : 'أفكار سهلة التطبيق، ومستلزمات وخدمات تساعد الأسرة.'}
       />
+      <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-black tracking-wide text-teal-700 dark:text-teal-300">{isEn ? 'SMALL STEPS, REAL VALUE' : 'خطوات صغيرة.. فايدة حقيقية'}</span>
+            <h2 className="mt-1 text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Practical ideas for your family today' : 'أفكار عملية تقدروا تطبقوها النهارده'}</h2>
+            <p className="mt-1 text-xs leading-5 text-[var(--color-muted)]">{isEn ? 'Short, useful actions — not another feed to scroll.' : 'اقتراحات بسيطة قابلة للتنفيذ، مش محتوى لمجرد التصفح.'}</p>
+          </div>
+          <span className="shrink-0 rounded-xl bg-teal-50 dark:bg-[#142430] px-2.5 py-1.5 text-[10px] font-black text-teal-800 dark:text-teal-300">{isEn ? '3 ideas' : '٣ أفكار'}</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { id: 'routine' as const, image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80', titleAr: 'جهّزوا للنوم من بدري', titleEn: 'Make bedtime easier', bodyAr: 'اختاروا ٣ خطوات ثابتة قبل النوم: تهدئة، قصة قصيرة، ثم إضاءة هادية.', bodyEn: 'Keep three predictable steps: wind down, share a short story, then dim the lights.', ctaAr: 'افتح الروتين', ctaEn: 'Open routine' },
+            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح متابعة المشاعر', ctaEn: 'Open emotional check-in' },
+            { id: 'medical' as const, image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80', titleAr: 'خلّي المعلومات المهمة جاهزة', titleEn: 'Keep key care details ready', bodyAr: 'راجعوا الحساسية والأدوية وبيانات طبيب الأطفال، وحدّثوها عند أي تغيير.', bodyEn: 'Review allergies, medications and pediatrician details; update them whenever something changes.', ctaAr: 'افتح المتابعة الصحية', ctaEn: 'Open health records' },
+          ].map((idea) => (
+            <article key={idea.id} className="overflow-hidden rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430]">
+              <div className="relative h-28 sm:h-32 overflow-hidden">
+                <img src={idea.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
+              </div>
+              <div className="space-y-2 p-3">
+                <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
+                <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
+                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} {isEn ? '→' : '←'}</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+
+      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
+            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
+            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'Inside Nekbaar' : 'داخل نكبر'}</span>
+            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
+          </div>
+        </div>
+        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
+      </section>
+      {/* =====================================================================
+          3. DAILY CHILD LOG — KEEP THE USEFUL TRACKING ACTIONS
+          ===================================================================== */}
       <HomeAccordionCard
         id="home-horizontal-wisdom-gallery"
         testId="home-horizontal-wisdom-gallery"
