@@ -1752,8 +1752,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         }
         subtitle={
           isEn
-            ? 'Create a warm bedtime story starring your children'
-            : 'ألف حدوتة مسائية دافئة بأسماء أطفالكم'
+            ? 'Create a gentle story with your child’s name and a theme you choose'
+            : 'ألف حدوتة لطيفة باسم طفلك وفكرة تختاروها'
         }
         badgeText={isEn ? '15 Lines' : '١٥ سطراً'}
         badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
