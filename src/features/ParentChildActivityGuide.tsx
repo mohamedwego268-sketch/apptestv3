@@ -136,7 +136,40 @@ const PLAY_CHALLENGES: Record<string, { ar: string[]; en: string[] }> = {
 
 export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> = ({ activity, language, ageMonths, onClose, onComplete }) => {
   const isEn = language === 'en';
-  const plan = (isEn ? ENGLISH_PLANS[activity.id] : PLANS[activity.id]) ?? PLANS['family-connection'];
+  const basePlan = (isEn ? ENGLISH_PLANS[activity.id] : PLANS[activity.id]) ?? PLANS['family-connection'];
+  const plan = activity.id === 'sensory-play' && ageMonths !== null && ageMonths < 18
+    ? {
+        ...basePlan,
+        materials: isEn ? ['A large, securely held soft fabric', 'Direct adult supervision'] : ['قماش كبير وناعم يمسكه ولي الأمر بإحكام', 'إشراف مباشر طوال الوقت'],
+        steps: isEn
+          ? [
+              { title: 'Connect face to face', prompt: 'Hold your baby comfortably and let them notice your face, voice and the soft fabric held securely by you.' },
+              { title: 'Explore one sensation', prompt: 'Briefly describe the fabric as soft or smooth while keeping it in your hand. Do not leave any material with the baby.' },
+              { title: 'Follow their cues', prompt: 'Pause when your baby looks away, becomes unsettled or needs a break. A smile or calm moment is enough.' },
+            ]
+          : [
+              { title: 'ابدأوا بالتواصل', prompt: 'احملوا طفلكم براحة وخلوه يلاحظ وشّكم وصوتكم والقماش الناعم اللي ماسكينه بإحكام.' },
+              { title: 'اكتشفوا إحساسًا واحدًا', prompt: 'اوصفوا القماش بكلمة زي ناعم أو أملس وهو في إيد ولي الأمر فقط، وما تسيبوش أي خامة مع الرضيع.' },
+              { title: 'اتبعوا إشاراته', prompt: 'وقفوا لو بص بعيد أو اتضايق أو احتاج راحة. ابتسامة أو لحظة هدوء كفاية.' },
+            ],
+      }
+    : activity.id === 'sensory-play' && ageMonths !== null && ageMonths < 36
+      ? {
+          ...basePlan,
+          materials: isEn ? ['One large, sturdy texture with no detachable parts', 'Direct adult supervision'] : ['خامة واحدة كبيرة ومتينة من غير أجزاء قابلة للفصل', 'إشراف مباشر وقريب'],
+          steps: isEn
+            ? [
+                { title: 'Choose one safe texture', prompt: 'Offer one large, sturdy material that cannot break into small pieces. Stay within arm’s reach.' },
+                { title: 'Explore together', prompt: 'Touch the material together and use simple words such as soft, smooth or rough.' },
+                { title: 'Let your child decide', prompt: 'Offer to continue or finish. Stop if your child loses interest or puts the material in their mouth.' },
+              ]
+            : [
+                { title: 'اختاروا خامة آمنة واحدة', prompt: 'استخدموا خامة كبيرة ومتينة لا تتفتت ولا تحتوي على أجزاء صغيرة، وابقوا في متناول إيد طفلكم.' },
+                { title: 'اكتشفوا سوا', prompt: 'المسوا الخامة معًا واستخدموا كلمات بسيطة زي ناعم أو أملس أو خشن.' },
+                { title: 'سيبوا له الاختيار', prompt: 'اعرضوا تكملوا أو تنهوا النشاط، ووقفوا لو فقد اهتمامه أو حاول يحط الخامة في فمه.' },
+              ],
+        }
+      : basePlan;
   const [step, setStep] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [saving, setSaving] = useState(false);
