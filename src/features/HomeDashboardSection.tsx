@@ -1380,8 +1380,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
         title={
           isEn
-            ? 'Heroes, Passions & Milestones'
-            : 'عالم الأبطال والشغف · محطات نمو أطفالنا'
+            ? 'Child Interests & Activities'
+            : 'اهتمامات أطفالنا وأنشطتهم'
         }
         subtitle={
           isEn
@@ -1947,7 +1947,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          9. ACCORDION: FAMILY VALUES & AGE-AWARE DAILY HABITS
+          10. ACCORDION: FAMILY VALUES & AGE-AWARE DAILY HABITS
           ===================================================================== */}
       <HomeAccordionCard
         id="home-values-track-card"
@@ -1971,7 +1971,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          9. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
+          11. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
       <HomeContentGroupHeading
         id="home-content-group-inspiration"
@@ -2108,7 +2108,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          10. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
+          12. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
           ===================================================================== */}
       <HomeAccordionCard
         id="home-minimalist-gateways"
