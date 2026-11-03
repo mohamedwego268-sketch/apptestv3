@@ -48,7 +48,7 @@ Never attach a family-level reflection to a child's private record. Never use on
 | Personalized welcome | Establish active parent, family location and the day's context | Family management, child profiles, routine, calendar or health | Use real account data; never invent a parent or child |
 | Parent wellbeing message | A short, non-clinical supportive moment | Dedicated parent support / notifications | Keep separate from task reminders |
 | Family quick access | Entry to primary family workflows | `family`, `routine`, `calendar`, `children`, `medical`, `services`, `notifications`, `community`, `media`, `chat`, `assistant`, `wishes` | Avoid duplicating the app's primary navigation |
-| Daily audio brief | Short time-aware guidance | Play, pause, replay and next tip in place | This uses device speech synthesis; do not imply a recorded presenter or uploaded audio |
+| Daily parenting compass | Time-aware guidance with a practical next step | Read the current guidance aloud or add its action to the family routine | Uses device speech synthesis; do not imply a recorded presenter or uploaded audio |
 | Section tools | Fast access to routine, calendar, children, bedtime and store | Existing page routes and callbacks | Keep one source of navigation |
 | Family video preview | A preview of the real internal video feed | `media` | Only show available/reviewed media; no fake playback |
 | Practical family ideas | Small actions that can be tried today | Matching health, child profile or routine destination | CTA must match the advice |
@@ -147,7 +147,7 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] The family journey is visible above the six tracks, and the movement track opens the exact sports activity card rather than a generic section.
 - [x] Home sleep, meal, care, hydration and sports actions now prevent duplicate in-flight saves and show loading feedback.
 - [x] Increased new learning and values actions to 44px minimum touch targets.
-- [x] Clarified that the daily tip is read aloud using the device speech engine. Removed the simulated waveform, fixed 30-second timer and podcast-style labeling; no recorded audio is implied.
+- [x] Consolidated the duplicate time-aware daily tip into the Daily Parenting Compass. The compass now owns the single read-aloud action and routine CTA; device speech synthesis remains, with no recorded-audio claim.
 - [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
 - [x] Complete the Home content information architecture around the six connected tracks and the family journey; retain useful sections and global navigation.
 - [ ] Final browser screenshot/interaction review of the latest commit is pending because Vercel's free deployment quota has been reached. The current latest commit is `46b254b`.
@@ -199,8 +199,10 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Corrected bedtime-story copy: the current story builder uses a deterministic template with the child’s name, chosen theme and value; it is not labelled as AI-generated. Removed the unrelated BPM display and corrected English story line breaks.
 - [x] Removed the separate Home games teaser: its age-labelled cards all opened the same Games page and duplicated the Games link already available inside the age-aware Learning track. The dedicated Games page and its global navigation remain unchanged.
 - [x] Complete the next Home information-hierarchy pass: organize the page into family-journey groups and remove the empty specialist-discovery placeholder from the public Home.
+- [x] Removed the duplicate Home daily-tip content/card and its obsolete accordion state; preserved read-aloud functionality inside the Daily Parenting Compass.
+- [x] Removed the now-empty audio toggle from the welcome header and simplified the tools drawer after consolidation.
 - [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
-- [ ] Verify the updated main branch with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
+- [ ] Verify the latest Home consolidation commits with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
 - [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review when a preview deployment is available.
 
 
@@ -210,3 +212,12 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - Do not include commercial-access or pricing language in the illustrated-stories teaser or any other public-facing copy for this feature.
 - Do not imply the feature is available today and do not request a child photo before launch.
 - Commercial entitlement planning, if retained in internal product documentation, must never leak into customer-facing copy until an explicit product decision is made.
+
+
+## Daily guidance consolidation — 2026-11-03
+
+- [x] Removed the separate morning/afternoon/evening read-aloud card because its guidance substantially repeated the Daily Parenting Compass.
+- [x] Kept the time-aware Compass as the single source of daily guidance, including its child-contextual advice, optional routine action and device read-aloud control.
+- [x] Removed obsolete audio-card state, data and welcome-header toggle; the tools drawer no longer reserves an empty grid for the removed control.
+- [ ] Run and verify CI for the consolidation commits.
+- [ ] Complete browser-level RTL/LTR, mobile and keyboard review after a preview deployment is available.
