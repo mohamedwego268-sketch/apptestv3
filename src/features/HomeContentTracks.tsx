@@ -114,9 +114,9 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
       data-testid="home-content-tracks"
       aria-labelledby="home-content-tracks-heading"
       dir={isEn ? 'ltr' : 'rtl'}
-      className="rounded-2xl border border-teal-500/20 bg-white/90 p-3.5 shadow-sm dark:border-[#1E3646] dark:bg-[#101D26] sm:p-4"
+      className="relative overflow-hidden rounded-3xl border border-teal-500/15 bg-gradient-to-br from-white via-white to-slate-50/80 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.28)] dark:border-[#1E3646] dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] sm:p-5"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id="home-content-tracks-heading" className="text-sm font-black text-[var(--color-text)] dark:text-white">
             {isEn ? 'Your family’s six growth tracks' : 'مسارات نكبر الستة'}
@@ -130,12 +130,12 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
               : `مسارات مترابطة تبدأ من احتياج ${childName} النهارده.`}
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-teal-50 px-2.5 py-1 text-[10px] font-extrabold text-teal-800 dark:bg-teal-500/10 dark:text-teal-200">
+        <span className="shrink-0 rounded-full border border-teal-500/15 bg-teal-500/10 px-3 py-1.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">
           {isEn ? 'Explore' : 'اكتشف'}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {CONTENT_TRACKS.map((track) => {
           const Icon = track.icon;
           return (
@@ -150,18 +150,18 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
                   onOpenSection(track.destination.section);
                 }
               }}
-              className="flex min-h-[128px] flex-col items-start rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)]/45 p-3 text-start transition-all hover:-translate-y-0.5 hover:border-teal-500/50 hover:bg-teal-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#1E3646] dark:bg-[#142430] dark:hover:bg-teal-500/10"
+              className="group flex min-h-[142px] min-w-0 flex-col items-start rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 p-3.5 text-start shadow-[0_5px_16px_-14px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-0.5 hover:border-teal-500/45 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#29404D] dark:from-[#142430] dark:to-[#101D26] dark:hover:border-teal-500/40"
             >
-              <span className="mb-2 grid h-9 w-9 place-items-center rounded-xl bg-teal-500/12 text-teal-800 dark:text-teal-200">
+              <span className="mb-3 grid h-11 w-11 place-items-center rounded-2xl border border-teal-500/15 bg-teal-500/10 text-teal-800 shadow-sm ring-1 ring-black/[0.02] dark:text-teal-200">
                 <Icon size={18} strokeWidth={2.1} aria-hidden="true" />
               </span>
-              <span className="text-xs font-black text-[var(--color-text)] dark:text-white">
+              <span className="text-xs font-black leading-snug text-[var(--color-text)] dark:text-white">
                 {isEn ? track.titleEn : track.titleAr}
               </span>
-              <span className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
+              <span className="mt-1.5 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
                 {isEn ? track.descriptionEn : track.descriptionAr}
               </span>
-              <span className="mt-auto pt-2 text-[10px] font-black text-teal-800 dark:text-teal-200">
+              <span className="mt-auto flex w-full items-center justify-between gap-1 border-t border-slate-100 pt-2.5 text-[10px] font-black text-teal-800 dark:border-[#29404D] dark:text-teal-200">
                 {isEn ? track.nextStepEn : track.nextStepAr} <span aria-hidden="true">{isEn ? '→' : '←'}</span>
               </span>
             </button>
