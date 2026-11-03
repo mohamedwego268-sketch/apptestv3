@@ -20,7 +20,6 @@ import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { HomeContentTracks } from './HomeContentTracks';
-import { HomeExpertContentNetwork } from './HomeExpertContentNetwork';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
@@ -1098,7 +1097,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           onOpenSection={openHomeSection}
         />
 
-        <HomeExpertContentNetwork language={lang} />
 
         {/* =====================================================================
             DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
