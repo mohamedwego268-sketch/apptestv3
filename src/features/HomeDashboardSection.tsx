@@ -1087,18 +1087,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-            
-            {onReplaySplash && (
+          {onReplaySplash && (
+            <div className="border-t border-[var(--color-border)] pt-2 dark:border-[#1E3646]">
               <button
                 type="button"
                 onClick={onReplaySplash}
-                className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
+                className="min-h-[40px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-[#F8FAFC] cursor-pointer"
               >
                 {isEn ? '✨ Replay Welcome' : '✨ شاشة الترحيب'}
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </SectionToolsDrawer>
 
