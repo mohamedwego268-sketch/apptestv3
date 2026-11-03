@@ -1012,11 +1012,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         />
 
 
-        {/* =====================================================================
-            DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
-            Full-width stacked layout prevents any vertical letter-by-letter wrapping!
-            ===================================================================== */}
-        )}
       </div>
 
       {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
