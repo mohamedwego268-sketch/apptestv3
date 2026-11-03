@@ -422,3 +422,130 @@ export function buildDailyWelcomePersonalization(
   };
 }
 
+
+
+export type DynamicContentSafetyLevel = 'general' | 'sensitive' | 'medical';
+
+export interface DynamicContentCatalogItem {
+  id: string;
+  content_key: string;
+  title_ar: string;
+  title_en: string;
+  summary_ar: string;
+  summary_en: string;
+  body_ar: string;
+  body_en: string;
+  content_type: string;
+  topic: string;
+  audience: 'child' | 'parent' | 'family';
+  language: 'ar' | 'en' | 'both';
+  age_min_months: number | null;
+  age_max_months: number | null;
+  tags: string[];
+  interest_tags: string[];
+  hobby_tags: string[];
+  sport_tags: string[];
+  safety_level: DynamicContentSafetyLevel;
+  review_status: string;
+  is_published: boolean;
+  is_featured: boolean;
+  sort_weight: number;
+  media_asset_id: string | null;
+  media_url?: string | null;
+  media_poster_url?: string | null;
+  media_type?: 'image' | 'video' | 'audio' | null;
+  source_name: string | null;
+  source_url: string | null;
+  cta_label_ar: string;
+  cta_label_en: string;
+  cta_target: string | null;
+  published_at: string | null;
+  expires_at: string | null;
+}
+
+export interface RankedDynamicContent {
+  item: DynamicContentCatalogItem;
+  score: number;
+}
+
+export interface DynamicContentRankingOptions {
+  limit?: number;
+  excludeIds?: string[];
+  now?: Date;
+}
+
+const normalizeSignal = (value: string): string =>
+  value.normalize('NFKC').trim().toLocaleLowerCase();
+
+const hasSignalOverlap = (candidateTags: string[], profileSignals: string[]): number => {
+  const normalizedProfile = profileSignals.map(normalizeSignal).filter(Boolean);
+  if (normalizedProfile.length === 0) return 0;
+  return candidateTags.reduce((score, tag) => {
+    const normalizedTag = normalizeSignal(tag);
+    return normalizedTag && normalizedProfile.some((signal) =>
+      signal === normalizedTag || signal.includes(normalizedTag) || normalizedTag.includes(signal)
+    ) ? score + 1 : score;
+  }, 0);
+};
+
+/**
+ * Hard-filters unsafe, unreviewed, expired, wrong-language and wrong-age items first.
+ * Personalization only ranks eligible content; it never overrides a safety or age filter.
+ */
+export function rankDynamicContent(
+  items: DynamicContentCatalogItem[],
+  profile: RecommendationProfile,
+  options: DynamicContentRankingOptions = {}
+): RankedDynamicContent[] {
+  const signals = extractProfileSignals(profile);
+  const now = options.now ?? profile.now ?? new Date();
+  const excluded = new Set(options.excludeIds ?? []);
+
+  return items
+    .filter((item) => {
+      if (!item.id || excluded.has(item.id)) return false;
+      if (!item.is_published || item.review_status !== 'approved') return false;
+      if (item.safety_level === 'medical') return false;
+      const foodTopics = ['nutrition', 'food', 'meal', 'meals', 'snack', 'snacks', 'diet'];
+      if ((signals.foodRestrictions.length > 0 || signals.dislikedFoods.length > 0) && foodTopics.includes(normalizeSignal(item.topic))) return false;
+      if (item.language !== 'both' && item.language !== profile.language) return false;
+      if (item.published_at && new Date(item.published_at).getTime() > now.getTime()) return false;
+      if (item.expires_at && new Date(item.expires_at).getTime() <= now.getTime()) return false;
+      if (signals.ageMonths === null) {
+        if (item.age_min_months !== null || item.age_max_months !== null) return false;
+      } else {
+        if (item.age_min_months !== null && signals.ageMonths < item.age_min_months) return false;
+        if (item.age_max_months !== null && signals.ageMonths > item.age_max_months) return false;
+      }
+      return true;
+    })
+    .map((item) => {
+      const interestMatches = hasSignalOverlap(item.interest_tags, signals.interests);
+      const hobbyMatches = hasSignalOverlap(item.hobby_tags, signals.hobbies);
+      const sportMatches = hasSignalOverlap(item.sport_tags, signals.sports);
+      const generalTagMatches = hasSignalOverlap(item.tags, [
+        ...signals.interests,
+        ...signals.hobbies,
+        ...signals.sports,
+      ]);
+      const topicMatch = signals.recentTopics.includes(normalizeSignal(item.topic));
+      const featuredBoost = item.is_featured ? 2 : 0;
+      const score =
+        1 +
+        interestMatches * 8 +
+        hobbyMatches * 6 +
+        sportMatches * 9 +
+        generalTagMatches * 3 +
+        (topicMatch ? 3 : 0) +
+        featuredBoost +
+        Math.max(-5, Math.min(5, item.sort_weight || 0));
+      return { item, score };
+    })
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const publishedA = a.item.published_at ? new Date(a.item.published_at).getTime() : 0;
+      const publishedB = b.item.published_at ? new Date(b.item.published_at).getTime() : 0;
+      return publishedB - publishedA;
+    })
+    .slice(0, Math.max(1, options.limit ?? 4));
+}

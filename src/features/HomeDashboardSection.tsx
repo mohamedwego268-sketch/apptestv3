@@ -20,6 +20,7 @@ import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { HomeVisualDiscovery } from './HomeVisualDiscovery';
 import { HomeContentTracks } from './HomeContentTracks';
+import { HomeDynamicContentSection } from './HomeDynamicContentSection';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
@@ -1261,6 +1262,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           onOpenSection={openHomeSection}
         />
       </div>
+
+      <HomeDynamicContentSection
+        child={activeKid}
+        language={lang}
+        recentRecords={activeKidRecentRecords}
+      />
 
       {/* =====================================================================
           4. ACCORDION: TIME-AWARE PARENTING COMPASS

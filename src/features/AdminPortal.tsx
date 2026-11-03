@@ -14,6 +14,7 @@ import {
 import { supabaseClient } from '../services/supabaseService';
 import { MediaUploadPanel } from '../components/MediaUploadPanel';
 import { B2BProductImageManager } from '../components/B2BProductImageManager';
+import { DynamicContentAdminPanel } from './DynamicContentAdminPanel';
 import './AdminPortal.css';
 
 type Snapshot = {
@@ -743,6 +744,11 @@ export default function AdminPortal() {
             language={en ? 'en' : 'ar'}
             allowUpload={Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.some((permission) => permission === 'content.create' || permission === 'content.edit'))}
             allowModeration={Boolean(currentAccess?.is_super_admin || currentAccess?.permissions.some((permission) => permission === 'content.moderate' || permission === 'content.publish'))}
+          />
+          <DynamicContentAdminPanel
+            language={en ? 'en' : 'ar'}
+            permissions={currentAccess?.permissions || []}
+            isSuperAdmin={Boolean(currentAccess?.is_super_admin)}
           />
           </>}
 

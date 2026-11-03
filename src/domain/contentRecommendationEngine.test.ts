@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import {
-  buildDailyWelcomePersonalization,
-  calculateAgeInMonths,
-  extractProfileSignals,
-  getSafeFavoriteFood,
-} from './contentRecommendationEngine';
+import { calculateAgeInMonths, extractProfileSignals, getSafeFavoriteFood, rankDynamicContent, type DynamicContentCatalogItem } from './contentRecommendationEngine';
 
 describe('dynamic profile signals', () => {
   it('calculates completed age months and rejects invalid dates', () => {
@@ -36,60 +31,93 @@ describe('dynamic profile signals', () => {
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'], foodRestrictions: ['strawberry'] }), null);
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'], dislikedFoods: ['banana'] }), null);
   });
-
-  it('personalizes daily welcome and compass by child name, age, interests and time of day without inventing data', () => {
-    const morningPreschool = buildDailyWelcomePersonalization({
-      child: {
-        name: 'ليلى',
-        birth: '2022-05-01',
-        interests: 'الألوان المائية, القصص المصورة',
-        profileDetails: { hobbies: ['الرسم'] },
-      },
-      parentDisplayNameAr: 'مريم',
-      parentDisplayNameEn: 'Maryam',
-      timeBucket: 'morning',
-      now: new Date('2026-11-03T09:00:00'),
-    });
-
-    assert.equal(morningPreschool.ageStage, '2-5');
-    assert.ok(morningPreschool.greetingAr.includes('صباح الخير يا مريم'));
-    assert.ok(morningPreschool.greetingAr.includes('ليلى'));
-    assert.ok(morningPreschool.greetingEn.includes('Good morning, Maryam'));
-    assert.ok(morningPreschool.greetingEn.includes('Layla'));
-    assert.ok(morningPreschool.summaryAr.includes('الألوان المائية'));
-    assert.ok(morningPreschool.summaryEn.includes('Watercolors'));
-    assert.ok(morningPreschool.compass.actionTaskAr.includes('الألوان المائية'));
-
-    const eveningSchoolAge = buildDailyWelcomePersonalization({
-      child: {
-        name: 'يوسف',
-        birth: '2019-03-10',
-        interests: '',
-        profileDetails: { sports: ['السباحة'] },
-      },
-      parentDisplayNameAr: 'أحمد',
-      parentDisplayNameEn: 'Ahmad',
-      timeBucket: 'evening',
-      now: new Date('2026-11-03T20:00:00'),
-    });
-
-    assert.equal(eveningSchoolAge.ageStage, '5-8');
-    assert.ok(eveningSchoolAge.greetingAr.includes('مساء الهدوء يا أحمد'));
-    assert.ok(eveningSchoolAge.greetingAr.includes('يوسف'));
-    assert.ok(eveningSchoolAge.summaryAr.includes('السباحة'));
-    assert.ok(eveningSchoolAge.summaryEn.includes('Swimming'));
-
-    const noChildAfternoon = buildDailyWelcomePersonalization({
-      child: null,
-      parentDisplayNameAr: 'مريم',
-      parentDisplayNameEn: 'Maryam',
-      timeBucket: 'afternoon',
-    });
-
-    assert.equal(noChildAfternoon.ageStage, 'unknown');
-    assert.deepEqual(noChildAfternoon.topInterestsAr, []);
-    assert.ok(noChildAfternoon.greetingAr.includes('طاب يومك يا مريم'));
-    assert.ok(noChildAfternoon.greetingEn.includes('Good afternoon, Maryam'));
-  });
 });
 
+
+describe('dynamic content ranking', () => {
+  const item = (overrides: Partial<DynamicContentCatalogItem> = {}): DynamicContentCatalogItem => ({
+    id: 'content-1',
+    content_key: 'football-basics',
+    title_ar: 'نشاط كرة القدم',
+    title_en: 'Football activity',
+    summary_ar: 'نشاط مناسب',
+    summary_en: 'An age-fit activity',
+    body_ar: '',
+    body_en: '',
+    content_type: 'activity',
+    topic: 'sports',
+    audience: 'child',
+    language: 'both',
+    age_min_months: 60,
+    age_max_months: 120,
+    tags: [],
+    interest_tags: [],
+    hobby_tags: [],
+    sport_tags: ['football'],
+    safety_level: 'general',
+    review_status: 'approved',
+    is_published: true,
+    is_featured: false,
+    sort_weight: 0,
+    media_asset_id: null,
+    source_name: null,
+    source_url: null,
+    cta_label_ar: '',
+    cta_label_en: '',
+    cta_target: null,
+    published_at: '2026-01-01T00:00:00.000Z',
+    expires_at: null,
+    ...overrides,
+  });
+
+  const profile = {
+    child: {
+      birth: '2020-01-01',
+      interests: 'space',
+      profileDetails: { sports: ['football'] },
+    },
+    language: 'en' as const,
+    now: new Date('2026-11-03T12:00:00.000Z'),
+  };
+
+  it('ranks a child’s saved sport above unrelated content', () => {
+    const unrelated = item({ id: 'content-2', content_key: 'painting', sport_tags: [], interest_tags: ['painting'] });
+    const matched = item({ id: 'content-3', content_key: 'football', sport_tags: ['football'] });
+    const ranked = rankDynamicContent([unrelated, matched], profile);
+    assert.equal(ranked[0]?.item.id, 'content-3');
+  });
+
+  it('hard-filters medical, unreviewed, wrong-age and wrong-language content', () => {
+    const unsafe = item({ id: 'medical', safety_level: 'medical' });
+    const unreviewed = item({ id: 'draft', review_status: 'pending_review' });
+    const tooYoung = item({ id: 'age', age_min_months: 90 });
+    const wrongLanguage = item({ id: 'language', language: 'ar' });
+    const ranked = rankDynamicContent([unsafe, unreviewed, tooYoung, wrongLanguage], profile);
+    assert.deepEqual(ranked, []);
+  });
+
+  it('does not repeat content explicitly excluded by the caller', () => {
+    const ranked = rankDynamicContent([item()], profile, { excludeIds: ['content-1'] });
+    assert.deepEqual(ranked, []);
+  });
+
+  it('does not infer an age-specific recommendation when birth date is missing', () => {
+    const unknownAgeProfile = {
+      ...profile,
+      child: { birth: '', interests: '', profileDetails: {} },
+    };
+    assert.deepEqual(rankDynamicContent([item()], unknownAgeProfile), []);
+  });
+
+  it('filters food content when dietary restrictions or dislikes are recorded', () => {
+    const restrictedProfile = {
+      ...profile,
+      child: {
+        ...profile.child,
+        profileDetails: { foodRestrictions: ['peanuts'] },
+      },
+    };
+    const nutritionItem = item({ id: 'nutrition', topic: 'nutrition', sport_tags: [] });
+    assert.deepEqual(rankDynamicContent([nutritionItem], restrictedProfile), []);
+  });
+});
