@@ -70,9 +70,57 @@ const PLANS: Record<string, ActivityPlan> = {
   ], reflection: 'إيه الجزء اللي قدر يعمله باستقلالية؟' },
 };
 
+const ENGLISH_PLANS: Record<string, ActivityPlan> = {
+  'sensory-play': { minutes: 7, materials: ['Three safe textures', 'A calm space'], steps: [
+    { title: 'Set up discovery', prompt: 'Place the textures nearby and let your child choose one.' },
+    { title: 'Explore together', prompt: 'Touch it together and describe how it feels: soft, rough, cool or squishy.' },
+    { title: 'Let your child lead', prompt: 'Ask which one they would like to explore next, and follow their choice.' },
+  ], reflection: 'Which texture caught their attention most?' },
+  'picture-story': { minutes: 8, materials: ['A picture book or one photo'], steps: [
+    { title: 'Choose a picture', prompt: 'Let your child pick the picture that interests them.' },
+    { title: 'Notice the details', prompt: 'Ask: What do you see? What caught your eye?' },
+    { title: 'Continue the story', prompt: 'Invite your child to imagine what happens next, then add an idea together.' },
+  ], reflection: 'What idea surprised you?' },
+  'creative-art': { minutes: 12, materials: ['Paper', 'Age-safe colors'], steps: [
+    { title: 'Make room for creativity', prompt: 'Offer two or three colors and let your child choose where to begin.' },
+    { title: 'Create without correcting', prompt: 'Draw alongside them and invite them to tell you about their choices.' },
+    { title: 'Celebrate the attempt', prompt: 'Display the creation somewhere they choose. No grading or comparisons.' },
+  ], reflection: 'What part did they enjoy most?' },
+  'active-play': { minutes: 10, materials: ['A safe, clear space', 'A soft ball if useful'], steps: [
+    { title: 'Choose a movement', prompt: 'Offer two simple movements and let your child choose one.' },
+    { title: 'Take turns', prompt: 'Copy each other or gently pass the ball in an age-appropriate way.' },
+    { title: 'Slow down together', prompt: 'Gradually slow the movement and take a calm breath before finishing.' },
+  ], reflection: 'Which movement did they want to repeat?' },
+  'food-rhythm': { minutes: 8, materials: ['Two foods already confirmed safe', 'A small plate'], steps: [
+    { title: 'Prepare two choices', prompt: 'Use only foods already confirmed suitable for the child’s allergies and dietary needs.' },
+    { title: 'Invite them to help', prompt: 'Let your child choose and help with one safe, age-appropriate preparation step.' },
+    { title: 'Respect their signals', prompt: 'Invite exploration without pressure or forcing them to eat.' },
+  ], reflection: 'Which option did they prefer? Did they enjoy helping?' },
+  'feelings-checkin': { minutes: 4, materials: ['A quiet moment without interruptions'], steps: [
+    { title: 'Start with connection', prompt: 'Come down to their eye level and offer to talk or simply sit together.' },
+    { title: 'Listen without rushing', prompt: 'Gently name the feeling without telling them what they should feel.' },
+    { title: 'Ask what would help', prompt: 'Ask whether they would like help, a hug, or a little space. Respect their signal.' },
+  ], reflection: 'What helped them feel safe or settled?' },
+  'calm-evening': { minutes: 8, materials: ['Soft lighting', 'A short story if wanted'], steps: [
+    { title: 'Signal the transition', prompt: 'Gently let your child know rest time is approaching and offer a final activity choice.' },
+    { title: 'Reduce stimulation', prompt: 'Lower noise, put screens away and soften the lights gradually.' },
+    { title: 'Create a familiar ritual', prompt: 'Choose a story, quiet song or comforting moment that suits your child.' },
+  ], reflection: 'Which step made the transition easier?' },
+  'family-connection': { minutes: 6, materials: ['Any family members who are available'], steps: [
+    { title: 'Make a small gathering', prompt: 'Put screens aside for a few minutes and let everyone join in their own way.' },
+    { title: 'Share one good thing', prompt: 'Each person can say or draw one small thing they enjoyed today.' },
+    { title: 'Choose a shared memory', prompt: 'Pick one simple thing you would enjoy doing together again.' },
+  ], reflection: 'Which moment would you like to remember?' },
+  independence: { minutes: 7, materials: ['A safe, age-appropriate household task'], steps: [
+    { title: 'Offer two choices', prompt: 'Choose two safe tasks that suit your child’s age and let them pick one.' },
+    { title: 'Do it side by side', prompt: 'Break the task into small steps and help only when needed.' },
+    { title: 'Value the effort', prompt: 'Thank them for joining in and trying, not for speed or perfection.' },
+  ], reflection: 'Which part could they do independently?' },
+};
+
 export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> = ({ activity, language, onClose, onComplete }) => {
   const isEn = language === 'en';
-  const plan = PLANS[activity.id] ?? PLANS['family-connection'];
+  const plan = (isEn ? ENGLISH_PLANS[activity.id] : PLANS[activity.id]) ?? PLANS['family-connection'];
   const [step, setStep] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [saving, setSaving] = useState(false);
