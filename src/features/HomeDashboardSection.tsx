@@ -1918,27 +1918,29 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
           <section
             data-testid="illustrated-stories-coming-soon"
-            aria-label={isEn ? 'Illustrated stories coming soon' : 'القصص المصوّرة قريبًا'}
+            aria-label={isEn ? 'Personalized bedtime story' : 'حدوتة مخصصة قبل النوم'}
             dir={isEn ? 'ltr' : 'rtl'}
-            className="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-50 via-white to-amber-50 p-4 dark:from-[#211B35] dark:via-[#101D26] dark:to-[#30251D]"
+            className="group relative isolate min-h-[190px] overflow-hidden rounded-3xl bg-[#211B35] text-white shadow-lg"
           >
-            <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-2xl">🎨</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
-                    {isEn ? 'Stories where your child becomes the hero' : 'حواديت مصوّرة طفلك بطلها'}
-                  </h3>
-                  <span className="rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white">
-                    {isEn ? 'Coming soon' : 'قريبًا'}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                  {isEn
-                    ? 'We are preparing a new illustrated storytelling experience for families. Details will be shared when it is ready.'
-                    : 'بنجهّز تجربة جديدة للحواديت المصوّرة للأسرة. هنشارك تفاصيلها لما تكون جاهزة.'}
-                </p>
-              </div>
+            <img
+              src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1200&q=85"
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#171329]/95 via-[#211B35]/75 to-[#211B35]/20" />
+            <div className="flex min-h-[190px] max-w-xl flex-col items-start justify-center gap-2.5 p-5">
+              <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-black text-violet-100">{isEn ? 'A STORY FOR TONIGHT' : 'حدوتة الليلة'}</span>
+              <h3 className="text-lg font-black leading-snug">{isEn ? 'Make your child the hero of a new bedtime story' : 'خلّي طفلك بطل حدوتة جديدة باسمه'}</h3>
+              <p className="text-xs leading-6 text-white/80">{isEn ? 'Choose a theme, create a family story and listen together.' : 'اختاروا الفكرة، ألّفوا حدوتة باسم طفلكم، واسمعوها سوا قبل النوم.'}</p>
+              <button
+                type="button"
+                onClick={() => document.getElementById('stories-library-view')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="mt-1 min-h-11 rounded-xl bg-violet-200 px-4 py-2 text-xs font-black text-violet-950 transition hover:bg-white"
+              >
+                {isEn ? 'Create tonight’s story' : 'ابدأوا حدوتة الليلة'} {isEn ? '→' : '←'}
+              </button>
             </div>
           </section>
           <StoriesLibraryView
