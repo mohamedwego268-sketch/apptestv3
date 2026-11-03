@@ -1278,6 +1278,19 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </HomeAccordionCard>
 
+      {activeKid && (
+        <div className="scroll-mt-24 pt-1">
+          <HomeVisualDiscovery
+            language={lang}
+            childName={activeKidName}
+            ageLabel={activeKidStageLabel}
+            signals={activeKidSignals}
+            onNavigate={navigateTo}
+            onOpenSection={openHomeSection}
+          />
+        </div>
+      )}
+
       <div className="scroll-mt-24">
         <HomeContentTracks
           language={lang}
@@ -1987,20 +2000,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           13. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
-      <HomeContentGroupHeading
-        id="home-content-group-inspiration"
-        step="٣"
-        title={isEn ? 'Discover, watch and listen' : 'اكتشفوا.. شاهدوا.. واسمعوا'}
-        description={isEn ? 'A visual family experience shaped around your child.' : 'تجربة بصرية وصوتية تتشكل حسب عمر طفلك واهتماماته.'}
-      />
-      <HomeVisualDiscovery
-        language={lang}
-        childName={activeKidName}
-        ageLabel={activeKidStageLabel}
-        signals={activeKidSignals}
-        onNavigate={navigateTo}
-        onOpenSection={openHomeSection}
-      />
+
 
       {/* =====================================================================
           14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
