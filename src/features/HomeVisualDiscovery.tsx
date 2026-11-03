@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowUpLeft, ArrowUpRight, Headphones, Pause, Play, Sparkles, Volume2 } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowUpLeft, ArrowUpRight, ChevronLeft, ChevronRight, Headphones, Pause, Play, Sparkles, Volume2 } from 'lucide-react';
 import type { PageId } from '../context/FamilyAppContext';
 import type { LanguageCode } from '../domain/familySpaceCore';
 import type { extractProfileSignals } from '../domain/contentRecommendationEngine';
@@ -145,6 +145,48 @@ const VISUAL_STORIES: VisualStory[] = [
     image: 'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1200&q=85',
     duration: '5–10 د', destination: { kind: 'section', section: 'valuesTrack' },
   },
+  {
+    id:'language-play',topic:'learning',minAge:12,maxAge:96,keywords:['لغة','كلام','حروف','language','speech'],
+    titleAr:'خلّوا الكلام لعبة بينكم',titleEn:'Turn everyday talk into a little game',
+    bodyAr:'سمّوا الأشياء اللي حواليكم، استنوا إجابة الطفل، ووسعوا كلمته من غير استعجال.',bodyEn:'Name things around you, leave room for your child to respond, and gently expand their words.',
+    activityAr:'اختاروا ٣ أشياء واسألوا: بنستخدم ده في إيه؟',activityEn:'Choose three nearby objects and ask what they are for.',
+    tagAr:'لغة وتواصل',tagEn:'Language & communication',image:'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=85',duration:'5–10 د',destination:{kind:'section',section:'learningTrack'},
+  },
+  {
+    id:'curiosity-lab',topic:'learning',minAge:36,maxAge:96,keywords:['علوم','تجربة','اكتشاف','science','experiment'],
+    titleAr:'مختبر فضول صغير في البيت',titleEn:'A tiny curiosity lab at home',
+    bodyAr:'خلّوا الطفل يتوقع ويلاحظ ويقارن؛ مش لازم نوصل لإجابة مثالية عشان نتعلم.',bodyEn:'Invite your child to predict, observe and compare. Discovery matters more than a perfect answer.',
+    activityAr:'راقبوا ظل لعبة مع تغيّر مكان الضوء واسألوا: إيه اللي اتغير؟',activityEn:'Watch how a toy’s shadow changes when the light moves.',
+    tagAr:'فضول واكتشاف',tagEn:'Curiosity & discovery',image:'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=85',duration:'10 د',destination:{kind:'section',section:'learningTrack'},
+  },
+  {
+    id:'friendship-skills',topic:'wellbeing',minAge:30,maxAge:96,keywords:['أصدقاء','مشاركة','تعاون','friends','sharing'],
+    titleAr:'نتعلم نلعب سوا',titleEn:'Learning to play together',
+    bodyAr:'المشاركة والتناوب مهارات بتكبر بالتدريب والقدوة، مش بالأوامر أو المقارنة.',bodyEn:'Sharing and taking turns grow through practice and modeling, not pressure.',
+    activityAr:'العبوا لعبة قصيرة لكل واحد فيها دور واضح.',activityEn:'Play a short turn-taking game and notice cooperation.',
+    tagAr:'مهارات اجتماعية',tagEn:'Social skills',image:'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?auto=format&fit=crop&w=1200&q=85',duration:'10 د',destination:{kind:'section',section:'parentingSupport'},
+  },
+  {
+    id:'child-led-sport',topic:'sports',minAge:36,maxAge:96,keywords:['سباحة','كرة','رياضة','swimming','football','sport'],
+    titleAr:'اكتشفوا الحركة اللي بيحبها',titleEn:'Find the movement your child loves',
+    bodyAr:'مش كل طفل لازم يحب نفس الرياضة. راقبوا المتعة والراحة قبل الأداء.',bodyEn:'Children do not need to enjoy the same sport. Notice comfort and joy before performance.',
+    activityAr:'اعرضوا اختيارين آمنين ومناسبين لعمره وسيبوه يختار.',activityEn:'Offer two safe, age-appropriate movement choices.',
+    tagAr:'رياضة باختيار الطفل',tagEn:'Child-led movement',image:'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=85',duration:'10–15 د',destination:{kind:'section',section:'sportsTrack'},
+  },
+  {
+    id:'confidence-moments',topic:'routine',minAge:24,maxAge:96,keywords:['ثقة','استقلال','محاولة','confidence','independence'],
+    titleAr:'لاحظوا المحاولة قبل النتيجة',titleEn:'Notice the effort before the outcome',
+    bodyAr:'وصف المحاولة بصدق يساعد الطفل يشوف تقدمه: حاول تاني أو طلب مساعدة.',bodyEn:'Naming real effort helps children notice their progress and growing independence.',
+    activityAr:'سمّوا خطوة واحدة نجح الطفل يعملها بنفسه النهارده.',activityEn:'Name one step your child managed independently today.',
+    tagAr:'الثقة والاستقلال',tagEn:'Confidence & independence',image:'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1200&q=85',duration:'3–5 د',destination:{kind:'section',section:'valuesTrack'},
+  },
+  {
+    id:'quiet-connection',topic:'sleep',minAge:0,maxAge:96,keywords:['نوم','هدوء','قرب','sleep','calm','bedtime'],
+    titleAr:'إشارة هدوء يعرفها طفلك',titleEn:'A calming cue your child can recognize',
+    bodyAr:'إشارة بسيطة قبل الراحة، زي حضن أو أغنية هادية أو قصة قصيرة، ممكن تساعد الانتقال للمساء.',bodyEn:'A familiar cue such as a cuddle, gentle song or short story can help mark the transition toward rest.',
+    activityAr:'اختاروا إشارة لطيفة وكرروها بهدوء قبل موعد الراحة.',activityEn:'Choose one gentle cue and repeat it calmly before rest time.',
+    tagAr:'روتين واحتواء',tagEn:'Rituals & connection',image:'https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1200&q=85',duration:'5 د',destination:{kind:'section',section:'dailyEssentials'},
+  },
 ];
 
 const normalize = (value: string) => value.toLocaleLowerCase().replace(/[ًٌٍَُِّْـ]/g, '').trim();
@@ -154,6 +196,8 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
 }) => {
   const isEn = language === 'en';
   const [isReading, setIsReading] = useState(false);
+  const [activeCardIndex,setActiveCardIndex]=useState(0);
+  const carouselRef=useRef<HTMLDivElement>(null);
 
   const recommendations = useMemo(() => {
     const ageMonths = signals?.ageMonths ?? null;
@@ -168,7 +212,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
     ].map(normalize);
     const recentTopics = signals?.recentTopics ?? [];
     const recentTitles = (signals?.recentTitles ?? []).map(normalize);
-    const hasFoodPreferences = Boolean(signals?.favoriteFoods.length || signals?.favoriteDrinks.length);
+    const hasFoodPreferences = Boolean((signals?.favoriteFoods.length || signals?.favoriteDrinks.length) && !signals?.foodRestrictions.length && !signals?.dislikedFoods.length);
     const dayRotation = Math.floor(Date.now() / 86400000) % VISUAL_STORIES.length;
     const ranked = VISUAL_STORIES
       .filter((story) => ageMonths === null || (ageMonths >= story.minAge && ageMonths <= story.maxAge))
@@ -176,12 +220,14 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
         const keywordMatches = story.keywords.filter((keyword) =>
           profileWords.some((word) => word.includes(normalize(keyword)) || normalize(keyword).includes(word))
         ).length;
-        const recentPenalty = recentTopics.includes(story.topic) ? 2 : 0;
+        const recentPenalty = recentTopics.filter((topic) => topic === story.topic).length * 1.5;
         const titlePenalty = recentTitles.some((title) =>
           story.keywords.some((keyword) => title.includes(normalize(keyword)))
         ) ? 2 : 0;
-        const foodPreferenceBoost = story.topic === 'nutrition' && hasFoodPreferences ? 5 : 0;
-        return { story, score: keywordMatches * 5 + foodPreferenceBoost + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty };
+        const sportsBoost = story.topic === 'sports' && Boolean(signals?.sports.length) ? 2 : 0;
+        const sleepBoost = story.topic === 'sleep' && Object.keys(signals?.sleepPreferences ?? {}).length > 0 ? 2 : 0;
+        const foodPreferenceBoost = story.topic === 'nutrition' && hasFoodPreferences ? 3 : 0;
+        return { story, score: keywordMatches * 5 + foodPreferenceBoost + sportsBoost + sleepBoost + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty };
       })
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
@@ -191,17 +237,19 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           ((bi - dayRotation + VISUAL_STORIES.length) % VISUAL_STORIES.length);
       })
       .map((entry) => entry.story);
-    return ranked.slice(0, 4);
+    return ranked.slice(0, 10);
   }, [signals]);
 
   const featured = recommendations[0] ?? VISUAL_STORIES[0];
-  const supporting = recommendations.slice(1, 4);
+  const supporting = recommendations.slice(1);
 
+  useEffect(() => { setActiveCardIndex(0); }, [recommendations]);
+  const moveCarousel=(direction:-1|1)=>{const next=Math.max(0,Math.min(supporting.length-1,activeCardIndex+direction));setActiveCardIndex(next);carouselRef.current?.querySelectorAll<HTMLElement>('[data-discovery-card]')[next]?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});};
   useEffect(() => () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
   }, []);
 
-  const toggleReadAloud = () => {
+  const toggleReadAloud = (story: VisualStory = featured) => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
     if (isReading) {
       window.speechSynthesis.cancel();
@@ -210,9 +258,9 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
     }
     window.speechSynthesis.cancel();
     const spoken = [
-      isEn ? featured.titleEn : featured.titleAr,
-      isEn ? featured.bodyEn : featured.bodyAr,
-      isEn ? featured.activityEn : featured.activityAr,
+      isEn ? story.titleEn : story.titleAr,
+      isEn ? story.bodyEn : story.bodyAr,
+      isEn ? story.activityEn : story.activityAr,
     ].join('. ');
     const utterance = new SpeechSynthesisUtterance(spoken);
     utterance.lang = isEn ? 'en-US' : 'ar-EG';
@@ -275,21 +323,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           </div>
           <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300">{isEn ? 'For you' : 'مخصص لكم'}</span>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {supporting.map((story) => (
-            <button key={story.id} type="button" onClick={() => openDestination(story)} className="group overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] text-start shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-[#29404D] dark:bg-[#101D26]">
-              <div className="relative h-40 overflow-hidden bg-slate-900">
-                <img src={story.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <span className="absolute bottom-3 start-3 rounded-full border border-white/20 bg-black/50 px-2.5 py-1 text-[10px] font-extrabold text-white backdrop-blur">{story.duration}</span>
-              </div>
-              <div className="space-y-2 p-3.5">
-                <span className="text-[10px] font-black text-teal-700 dark:text-teal-300">{isEn ? story.tagEn : story.tagAr}</span>
-                <h4 className="text-sm font-black leading-6 text-[var(--color-text)] dark:text-white">{isEn ? story.titleEn : story.titleAr}</h4>
-                <p className="line-clamp-3 text-[11px] leading-5 text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? story.bodyEn : story.bodyAr}</p>
-              </div>
-            </button>
-          ))}
-        </div>
+        <div className="flex items-center gap-2"><button type="button" onClick={()=>moveCarousel(-1)} disabled={activeCardIndex===0} aria-label={isEn?'Previous ideas':'الأفكار السابقة'} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] disabled:opacity-35"><ChevronLeft size={18}/></button><div ref={carouselRef} className="flex min-w-0 flex-1 snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-3" style={{scrollbarWidth:'thin'}}>{supporting.map(story=><article key={story.id} data-discovery-card="true" className="group min-w-[82%] max-w-[360px] snap-center overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm sm:min-w-[42%] dark:border-[#29404D] dark:bg-[#101D26]"><button type="button" onClick={()=>openDestination(story)} className="block w-full text-start"><div className="relative h-40 overflow-hidden bg-slate-900"><img src={story.image} alt={isEn?story.titleEn:story.titleAr} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"/><span className="absolute bottom-3 start-3 rounded-full bg-black/50 px-2.5 py-1 text-[10px] font-extrabold text-white">{story.duration}</span></div><div className="space-y-2 p-3.5"><span className="text-[10px] font-black text-teal-700 dark:text-teal-300">{isEn?story.tagEn:story.tagAr}</span><h4 className="text-sm font-black leading-6 text-[var(--color-text)] dark:text-white">{isEn?story.titleEn:story.titleAr}</h4><p className="line-clamp-3 text-[11px] leading-5 text-[var(--color-muted)]">{isEn?story.bodyEn:story.bodyAr}</p><p className="rounded-xl bg-teal-500/10 p-2 text-[10px] leading-5 text-teal-900 dark:text-teal-100">{isEn?story.activityEn:story.activityAr}</p></div></button><button type="button" onClick={()=>toggleReadAloud(story)} className="mx-3 mb-3 inline-flex min-h-10 items-center gap-2 rounded-xl border border-teal-500/25 px-3 text-[10px] font-black text-teal-800 dark:text-teal-200"><Volume2 size={14}/>{isEn?'Listen':'استمع'}</button></article>)}</div><button type="button" onClick={()=>moveCarousel(1)} disabled={activeCardIndex>=supporting.length-1} aria-label={isEn?'More ideas':'أفكار إضافية'} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-700 text-white disabled:opacity-35"><ChevronRight size={18}/></button></div><div className="flex items-center justify-center gap-1.5">{supporting.map((story,index)=><span key={story.id} className={'h-1.5 rounded-full '+(activeCardIndex===index?'w-5 bg-teal-600':'w-1.5 bg-teal-500/25')}/>)}</div>
       </div>
 
       <section className="overflow-hidden rounded-[1.75rem] border border-violet-500/20 bg-gradient-to-br from-[#201A39] via-[#2A2350] to-[#132F3C] p-4 text-white shadow-lg sm:p-5">
