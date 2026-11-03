@@ -4,6 +4,7 @@ import type { PageId } from '../context/FamilyAppContext';
 import type { LanguageCode } from '../domain/familySpaceCore';
 import type { extractProfileSignals } from '../domain/contentRecommendationEngine';
 import { InternalVideoFeed } from '../components/InternalVideoFeed';
+import { ParentChildActivityGuide, type GuidedActivity } from './ParentChildActivityGuide';
 
 type HomeVisualSignals = ReturnType<typeof extractProfileSignals>;
 type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack';
@@ -154,6 +155,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
 }) => {
   const isEn = language === 'en';
   const [isReading, setIsReading] = useState(false);
+  const [activeActivity, setActiveActivity] = useState<VisualStory | null>(null);
 
   const recommendations = useMemo(() => {
     const ageMonths = signals?.ageMonths ?? null;
@@ -225,8 +227,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
   };
 
   const openDestination = (story: VisualStory) => {
-    if (story.destination.kind === 'page') onNavigate(story.destination.page);
-    else onOpenSection(story.destination.section);
+    setActiveActivity(story);
   };
 
   return (
@@ -318,6 +319,19 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
         </div>
         <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4} onOpenLibrary={() => onNavigate('media')} />
       </section>
+      {activeActivity && (
+        <ParentChildActivityGuide
+          activity={{
+            id: activeActivity.id,
+            title: isEn ? activeActivity.titleEn : activeActivity.titleAr,
+            topic: activeActivity.topic,
+            durationMinutes: 1,
+          }}
+          language={isEn ? 'en' : 'ar'}
+          onClose={() => setActiveActivity(null)}
+          onComplete={onCompleteActivity}
+        />
+      )}
     </section>
   );
 };
