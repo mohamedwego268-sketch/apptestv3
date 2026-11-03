@@ -165,8 +165,8 @@ Finish the Home content map and experience before switching to unrelated store o
 
 The expert network is an editorial layer across the six existing tracks, not a seventh track and not a duplicate navigation system.
 
-- The six-track Home navigator routes into existing health, learning, movement/daily care, emotional support and values destinations. The specialist-review panel is informational only and does not duplicate navigation.
-- The discovery section is explicitly marked as being prepared. It does not invent expert names, credentials, ratings, articles, videos, consultations or appointment availability.
+- The six-track Home navigator routes into existing health, learning, movement/daily care, emotional support and values destinations. The former specialist-review panel was removed from the public Home because it contained only a preparation notice and repeated the same six track labels; keep specialist discovery hidden until real reviewed content is ready.
+- Specialist discovery is not currently rendered on Home. When real reviewed content is ready, publish it with verified contributor identity and credentials; never invent expert names, credentials, ratings, articles, videos, consultations or appointment availability.
 - A contributor profile may show a verified-expert badge only after an administrator has reviewed identity, current credentials, professional scope and evidence. Unverified contributors must be labelled accurately.
 - Every published item carries: stable content ID, title, summary, author/contributor ID, specialty, track, child age band, audience (parent/family/child), format, publication availability state, publication/review state, reviewer, review date, source references, safety note, related content IDs and next action.
 - Supported formats: articles, short videos, real audio, Q&A, practical family activities and visual guides. Never simulate media playback or imply an expert recorded audio where none exists.
@@ -194,7 +194,10 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Added an expert-network discovery layer across the existing six tracks without adding a seventh track or inventing verified experts.
 - [x] Added a neutral “قريبًا” teaser for future illustrated stories; it requests no photo and does not enable generation.
 - [x] Kept the existing text-based bedtime story library separate from the future photo-based illustrated story feature.
-- [ ] Complete the next pass on Home information hierarchy and connected editorial content cards.
+
+- [x] Removed the static specialist-review placeholder from the public Home while retaining the specialist publishing and safety requirements in this internal map.
+- [x] Corrected bedtime-story copy: the current story builder uses a deterministic template with the child’s name, chosen theme and value; it is not labelled as AI-generated. Removed the unrelated BPM display and corrected English story line breaks.
+- [x] Complete the next Home information-hierarchy pass: organize the page into family-journey groups and remove the empty specialist-discovery placeholder from the public Home.
 - [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
 - [ ] Verify the updated main branch with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
 - [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review when a preview deployment is available.
