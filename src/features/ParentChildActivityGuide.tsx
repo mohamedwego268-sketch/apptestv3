@@ -7,6 +7,7 @@ export interface GuidedActivity {
   topic: string;
   durationMinutes: number;
   reflectionNote?: string;
+  chosenChallenge?: string;
 }
 
 interface ParentChildActivityGuideProps {
@@ -119,6 +120,18 @@ const ENGLISH_PLANS: Record<string, ActivityPlan> = {
   ], reflection: 'Which part could they do independently?' },
 };
 
+const PLAY_CHALLENGES: Record<string, { ar: string[]; en: string[] }> = {
+  'sensory-play': { ar: ['اعملوا تخمين للخامة قبل لمسها', 'دوروا على خامة شبهها في البيت', 'غمّضوا العينين وخمّنوا الملمس'], en: ['Guess the texture before touching', 'Find a similar texture at home', 'Close your eyes and guess the feel'] },
+  'picture-story': { ar: ['اخترعوا صوتًا لشخصية في الصورة', 'تخيلوا نهاية مختلفة للحكاية', 'ابحثوا عن ٣ تفاصيل صغيرة'], en: ['Invent a voice for a character', 'Imagine a different ending', 'Find three tiny details'] },
+  'creative-art': { ar: ['ارسموا بنفس اللون وأنتم مغمضين', 'حوّلوا شكلًا عشوائيًا لشيء جديد', 'ارسموا لوحة بالتبادل'], en: ['Draw using one color with eyes closed', 'Turn a random shape into something new', 'Take turns adding to one picture'] },
+  'active-play': { ar: ['قلّدوا حركة حيوان', 'امشوا كأنكم روبوتات', 'ابتكروا حركة سرية للأسرة'], en: ['Copy an animal movement', 'Walk like friendly robots', 'Invent a secret family move'] },
+  'food-rhythm': { ar: ['اوصفوا اللون والرائحة معًا', 'رتّبوا الأطعمة حسب اللون', 'اختاروا اسمًا مضحكًا للطبق'], en: ['Describe the color and smell together', 'Sort foods by color', 'Give the plate a funny name'] },
+  'feelings-checkin': { ar: ['اختاروا لونًا يعبّر عن الإحساس', 'ارسموا الإحساس في شكل', 'اختاروا شيئًا يساعد على الهدوء'], en: ['Choose a color for the feeling', 'Draw the feeling as a shape', 'Choose something that helps you feel calm'] },
+  'calm-evening': { ar: ['اسمعوا صوتًا هادئًا وخمّنوه', 'اختاروا كلمة لطيفة لليوم', 'خذوا ٣ أنفاس بطيئة سوا'], en: ['Listen and guess a gentle sound', 'Choose a kind word for today', 'Take three slow breaths together'] },
+  'family-connection': { ar: ['مثّلوا ذكرى مضحكة', 'قولوا مجاملة لكل شخص', 'اخترعوا تحية أسرية جديدة'], en: ['Act out a funny memory', 'Give everyone a kind compliment', 'Invent a new family greeting'] },
+  independence: { ar: ['رتّبوا ٣ أشياء في مكانها', 'اختاروا مهمة صغيرة للغد', 'علّموا بعض خطوة جديدة'], en: ['Put three things in their place', 'Choose one small task for tomorrow', 'Teach each other one new step'] },
+};
+
 export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> = ({ activity, language, onClose, onComplete }) => {
   const isEn = language === 'en';
   const plan = (isEn ? ENGLISH_PLANS[activity.id] : PLANS[activity.id]) ?? PLANS['family-connection'];
@@ -127,6 +140,16 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [reflectionNote, setReflectionNote] = useState('');
+  const [chosenChallenge, setChosenChallenge] = useState('');
+  const challenges = PLAY_CHALLENGES[activity.id] ?? PLAY_CHALLENGES['family-connection'];
+
+  useEffect(() => {
+    setStep(0);
+    setElapsed(0);
+    setReflectionNote('');
+    setChosenChallenge('');
+    setSaved(false);
+  }, [activity.id]);
 
   useEffect(() => {
     if (saved) return;
@@ -136,7 +159,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
 
   const finish = async () => {
     setSaving(true);
-    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined });
+    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined, chosenChallenge: chosenChallenge || undefined });
     setSaving(false);
     if (ok) setSaved(true);
   };
@@ -176,6 +199,25 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <p className="mt-2 text-sm leading-7 text-white/85">{plan.steps[step].prompt}</p>
               <p className="mt-3 text-[10px] font-bold text-teal-100/75">{isEn ? 'Follow your child’s pace. Adapt or stop whenever they need.' : 'امشوا على إيقاع طفلك. غيّروا الخطوة أو وقفوا وقت ما يحتاج.'}</p>
             </div>
+            {step === 1 && (
+              <section className="mt-3 rounded-2xl border border-violet-200 bg-violet-50/80 p-3 dark:border-violet-300/15 dark:bg-violet-400/10" aria-label={isEn ? 'Choose a mini game' : 'اختاروا تحديًا صغيرًا'}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet-200 text-lg dark:bg-violet-300/15">🎲</span>
+                  <div>
+                    <p className="text-xs font-black text-violet-950 dark:text-violet-100">{isEn ? 'Pick a playful mini-challenge' : 'اختاروا تحدي صغير يخلّيها لعبة'}</p>
+                    <p className="text-[10px] text-violet-800/80 dark:text-violet-200/80">{isEn ? 'No right or wrong answers — just do it together.' : 'مفيش إجابة صح أو غلط.. اختاروا ونفّذوا سوا.'}</p>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  {(isEn ? challenges.en : challenges.ar).map((challenge, index) => (
+                    <button key={challenge} type="button" aria-pressed={chosenChallenge === challenge} onClick={() => setChosenChallenge(challenge)} className={`min-h-11 rounded-xl border px-3 py-2 text-start text-xs font-bold transition ${chosenChallenge === challenge ? 'border-violet-500 bg-violet-200 text-violet-950 dark:bg-violet-300/20 dark:text-white' : 'border-violet-200 bg-white/80 text-slate-700 hover:border-violet-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-100'}`}>
+                      <span className="me-2 inline-grid h-6 w-6 place-items-center rounded-lg bg-violet-100 text-[10px] font-black text-violet-800 dark:bg-white/10 dark:text-violet-100">{index + 1}</span>{challenge}
+                    </button>
+                  ))}
+                </div>
+                {chosenChallenge && <p className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-[11px] font-black text-violet-900 dark:bg-white/10 dark:text-violet-100">{isEn ? 'Your mission:' : 'مهمتكم:'} {chosenChallenge} ✨</p>}
+              </section>
+            )}
             {step === plan.steps.length - 1 && (
               <label className="mt-3 block">
                 <span className="mb-1.5 block text-[11px] font-black text-slate-700 dark:text-slate-200">{isEn ? 'A note about this moment (optional)' : 'احفظوا ملاحظة صغيرة عن اللحظة (اختياري)'}</span>
