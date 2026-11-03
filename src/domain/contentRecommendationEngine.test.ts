@@ -26,6 +26,21 @@ describe('dynamic profile signals', () => {
     assert.deepEqual(signals.recentTopics, ['sports']);
   });
 
+  it('extracts only this child’s shared activity feedback for progressive recommendations', () => {
+    const signals = extractProfileSignals({
+      child: { birth: '2022-01-01', interests: '', profileDetails: {} },
+      language: 'ar',
+      recentRecords: [
+        { record_type: 'other', title: 'قصة عائلية', details: { dashboardKind: 'shared_activity', activityId: 'picture-story', childResponse: 'repeat' }, occurred_at: '2026-11-03T10:00:00Z' },
+        { record_type: 'other', title: 'ملاحظة عادية', details: { dashboardKind: 'note', activityId: 'active-play', childResponse: 'loved' } },
+      ],
+      now: new Date('2026-11-03T12:00:00Z'),
+    });
+    assert.deepEqual(signals.recentSharedActivities, [
+      { activityId: 'picture-story', childResponse: 'repeat', occurredAt: '2026-11-03T10:00:00Z' },
+    ]);
+  });
+
   it('does not surface favorite foods when restrictions or dislikes are recorded', () => {
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'] }), 'banana');
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'], foodRestrictions: ['strawberry'] }), null);
