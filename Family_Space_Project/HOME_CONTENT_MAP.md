@@ -58,7 +58,7 @@ Never attach a family-level reflection to a child's private record. Never use on
 | Bedtime stories | Age- and interest-aware stories | Selected real child, story library and routine | No sample identities or false AI/save claims |
 | Daily care essentials | Meals, hydration, movement and daily care | Save to child record, `medical` or `routine` as appropriate | No invented health targets; age-aware guidance |
 | Parenting support center | Parent wellbeing, child emotional check-in and six parenting situations | Parent support, child record and family routine | Preserve seven emotional states and all six scenarios |
-| Learning games | Age-aware play and learning | `games` | Do not infer age when birth date is unknown |
+| Learning games | Age-aware play and learning | `games` via the Home learning track | Keep one clear entry point; do not add a second Home teaser that repeats the same destination |
 | Visual parenting gallery | Short editorial guidance | Daily parenting compass or relevant content | Clearly distinguish general guidance from clinical advice |
 | Store showcase | Family products and services | `services` with selected category | Category IDs must match the catalog |
 
@@ -197,6 +197,7 @@ The expert network is an editorial layer across the six existing tracks, not a s
 
 - [x] Removed the static specialist-review placeholder from the public Home while retaining the specialist publishing and safety requirements in this internal map.
 - [x] Corrected bedtime-story copy: the current story builder uses a deterministic template with the child’s name, chosen theme and value; it is not labelled as AI-generated. Removed the unrelated BPM display and corrected English story line breaks.
+- [x] Removed the separate Home games teaser: its age-labelled cards all opened the same Games page and duplicated the Games link already available inside the age-aware Learning track. The dedicated Games page and its global navigation remain unchanged.
 - [x] Complete the next Home information-hierarchy pass: organize the page into family-journey groups and remove the empty specialist-discovery placeholder from the public Home.
 - [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
 - [ ] Verify the updated main branch with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
