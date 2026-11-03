@@ -6,6 +6,7 @@ export interface GuidedActivity {
   title: string;
   topic: string;
   durationMinutes: number;
+  reflectionNote?: string;
 }
 
 interface ParentChildActivityGuideProps {
@@ -125,6 +126,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
   const [elapsed, setElapsed] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reflectionNote, setReflectionNote] = useState('');
 
   useEffect(() => {
     if (saved) return;
@@ -134,7 +136,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
 
   const finish = async () => {
     setSaving(true);
-    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)) });
+    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined });
     setSaving(false);
     if (ok) setSaved(true);
   };
@@ -174,6 +176,19 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <p className="mt-2 text-sm leading-7 text-white/85">{plan.steps[step].prompt}</p>
               <p className="mt-3 text-[10px] font-bold text-teal-100/75">{isEn ? 'Follow your child’s pace. Adapt or stop whenever they need.' : 'امشوا على إيقاع طفلك. غيّروا الخطوة أو وقفوا وقت ما يحتاج.'}</p>
             </div>
+            {step === plan.steps.length - 1 && (
+              <label className="mt-3 block">
+                <span className="mb-1.5 block text-[11px] font-black text-slate-700 dark:text-slate-200">{isEn ? 'A note about this moment (optional)' : 'احفظوا ملاحظة صغيرة عن اللحظة (اختياري)'}</span>
+                <textarea
+                  value={reflectionNote}
+                  onChange={(event) => setReflectionNote(event.target.value)}
+                  rows={2}
+                  maxLength={400}
+                  placeholder={isEn ? 'What did your child enjoy or discover?' : 'إيه اللي استمتع بيه طفلك أو اكتشفه؟'}
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-teal-500 focus:ring-2 focus:ring-teal-500/15 dark:border-white/10 dark:bg-white/5"
+                />
+              </label>
+            )}
             <div className="mt-4 flex gap-2">
               <button type="button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))} className="grid min-h-12 w-12 shrink-0 place-items-center rounded-xl border border-slate-200 disabled:opacity-30 dark:border-white/10">{isEn ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}</button>
               {step < plan.steps.length - 1 ? <button type="button" onClick={() => setStep((value) => Math.min(plan.steps.length - 1, value + 1))} className="min-h-12 flex-1 rounded-xl bg-teal-600 px-4 py-3 text-sm font-black text-white transition hover:bg-teal-500">{isEn ? 'Next step →' : 'خلصنا الخطوة.. نكمل ←'}</button> : <button type="button" disabled={saving} onClick={() => void finish()} className="min-h-12 flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-500 disabled:opacity-60">{saving ? (isEn ? 'Saving…' : 'جارٍ حفظ اللحظة…') : (isEn ? 'We did it — save our moment ✓' : 'خلصنا.. سجّلوا اللحظة دي ✓')}</button>}
