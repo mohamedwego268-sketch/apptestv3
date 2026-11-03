@@ -43,72 +43,6 @@ export interface HomeDashboardSectionProps {
   onReplaySplash?: () => void;
 }
 
-interface DailyReadAloudTip {
-  id: string;
-  timeBucket: 'morning' | 'afternoon' | 'evening';
-  slotLabelAr: string;
-  slotLabelEn: string;
-  titleAr: string;
-  titleEn: string;
-  hostsAr: string;
-  hostsEn: string;
-  summaryAr: string;
-  summaryEn: string;
-  takeawayAr: string;
-  takeawayEn: string;
-}
-
-const DAILY_READ_ALOUD_TIPS: DailyReadAloudTip[] = [
-  {
-    id: 'tip-morning',
-    timeBucket: 'morning',
-    slotLabelAr: '☀️ قراءة نصيحة الصباح',
-    slotLabelEn: '☀️ Morning tip read-aloud',
-    titleAr: 'ابدأ يومكم بلحظة تواصل بسيطة',
-    titleEn: 'Begin the Day with a Small Moment Together',
-    hostsAr: 'قراءة بصوت الجهاز',
-    hostsEn: 'Read aloud with your device voice',
-    summaryAr:
-      'قبل ما تبدأوا مشاوير اليوم، خُدوا دقيقة تسمعوا طفلكم وتقولوا له إيه اللي هيحصل النهارده. الروتين الواضح بيساعده يستعد.',
-    summaryEn:
-      'A calm greeting and a warm moment of connection can help a child feel seen before the day begins.',
-    takeawayAr: '💡 جرّب النهارده: قول لطفلك خطوتين أو تلاتة من خطة اليوم.',
-    takeawayEn: '💡 Morning cue: Calm begins with our voice tone in the first 10 minutes.',
-  },
-  {
-    id: 'tip-afternoon',
-    timeBucket: 'afternoon',
-    slotLabelAr: '🌤️ قراءة نصيحة الظهيرة',
-    slotLabelEn: '🌤️ Afternoon tip read-aloud',
-    titleAr: 'بعد الحضانة أو المدرسة: استمع أولاً، ثم اسأل',
-    titleEn: 'After School: Listen First, Then Ask',
-    hostsAr: 'قراءة بصوت الجهاز',
-    hostsEn: 'Read aloud with your device voice',
-    summaryAr:
-      'سيب لطفلك فرصة يهدأ بعد الرجوع. اعرض عليه مية أو وجبة مناسبة لعمره، وبعدها اسأله سؤال بسيط عن يومه من غير تحقيق.',
-    summaryEn:
-      'When your child returns, allow time to settle, offer water or a suitable snack, then ask a gentle question about the day.',
-    takeawayAr: '💡 جرّب النهارده: عشر دقايق لعب أو كلام من غير موبايل.',
-    takeawayEn: '💡 Try a short moment of undivided attention, without pressure to make it perfect.',
-  },
-  {
-    id: 'tip-evening',
-    timeBucket: 'evening',
-    slotLabelAr: '🌙 قراءة نصيحة المساء',
-    slotLabelEn: '🌙 Evening tip read-aloud',
-    titleAr: 'قبل النوم: اختتموا اليوم بهدوء وروتين ثابت',
-    titleEn: 'End the Day with a Calm, Familiar Routine',
-    hostsAr: 'قراءة بصوت الجهاز',
-    hostsEn: 'A calm supportive moment for parents',
-    summaryAr:
-      'اختاروا نشاط هادي قبل النوم يناسب سن طفلكم: قصة قصيرة، حضن، أو كلام عن أحلى حاجة حصلت النهارده.',
-    summaryEn:
-      'You made it through another day. Choose a calm closing ritual that fits your family, and remember that rest is part of caring.',
-    takeawayAr: '💡 جرّبوا: نفس الترتيب كل ليلة، مع مرونة لو اليوم اتأخر.',
-    takeawayEn: '💡 A calm, caring goodbye to the day can help everyone transition toward rest.',
-  },
-];
-
 interface WisdomGalleryCardItem {
   id: string;
   tagAr: string;
@@ -347,7 +281,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Shared open/close state for all Home accordion sections.
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    welcomeAudio: false,
     quickTrack: true,
     dailyWisdom: false,
     heroesArena: false,
@@ -400,49 +333,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   >('auto');
   const effectiveTimeBucket =
     wisdomTimeOverride === 'auto' ? currentTimeBucket : wisdomTimeOverride;
-
-  // ============================================================================
-  // Time-aware daily tip read-aloud using the device speech engine; never autoplay.
-  // ============================================================================
-  const defaultTipIdx = useMemo(() => {
-    const idx = DAILY_READ_ALOUD_TIPS.findIndex((b) => b.timeBucket === currentTimeBucket);
-    return idx >= 0 ? idx : 0;
-  }, [currentTimeBucket]);
-
-  const [activeTipIdx, setActiveBriefIdx] = useState<number>(defaultTipIdx);
-  const [isReadingTip, setIsPlayingBrief] = useState<boolean>(false);
-
-  const currentTip = DAILY_READ_ALOUD_TIPS[activeTipIdx] || DAILY_READ_ALOUD_TIPS[0];
-
-  // Read the daily tip aloud with the device's speech engine; never autoplay audio.
-  const readDailyTipAloud = (brief: DailyReadAloudTip = currentTip): boolean => {
-    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
-      setIsPlayingBrief(false);
-      onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'خاصية القراءة الصوتية مش متاحة على الجهاز ده.');
-      return false;
-    }
-    window.speechSynthesis.cancel();
-    const spokenText = [isEn ? brief.titleEn : brief.titleAr, isEn ? brief.summaryEn : brief.summaryAr, isEn ? brief.takeawayEn : brief.takeawayAr].join('. ');
-    const utterance = new SpeechSynthesisUtterance(spokenText);
-    utterance.lang = isEn ? 'en-US' : 'ar-EG';
-    utterance.rate = 0.95;
-    utterance.onstart = () => setIsPlayingBrief(true);
-    utterance.onend = () => {
-      setIsPlayingBrief(false);
-    };
-    utterance.onerror = () => setIsPlayingBrief(false);
-    setIsPlayingBrief(true);
-    window.speechSynthesis.speak(utterance);
-    return true;
-  };
-
-  useEffect(() => () => window.speechSynthesis?.cancel(), []);
-
-  const handleReplayDailyTip = () => {
-    if (readDailyTipAloud(currentTip)) {
-      onShowToast?.(isEn ? '🔊 Playing the daily tip aloud' : '🔊 جاري قراءة نصيحة اليوم بصوت مسموع');
-    }
-  };
+  const [isReadingCompass, setIsReadingCompass] = useState(false);
 
   // ============================================================================
   // CHECKLIST #12: Horizontal Image Gallery Scroll Controls
@@ -648,6 +539,41 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       actionTime: '08:00 م',
     };
   }, [effectiveTimeBucket, activeKidName]);
+
+  const toggleCompassReadAloud = () => {
+    if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
+      setIsReadingCompass(false);
+      onShowToast?.(isEn ? 'Audio reading is not available on this device.' : 'القراءة الصوتية مش متاحة على الجهاز ده.');
+      return;
+    }
+    if (isReadingCompass && !window.speechSynthesis.paused) {
+      window.speechSynthesis.pause();
+      setIsReadingCompass(false);
+      return;
+    }
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      setIsReadingCompass(true);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const spokenText = [
+      isEn ? dailyCompassWisdom.titleEn : dailyCompassWisdom.titleAr,
+      isEn ? dailyCompassWisdom.bodyEn : dailyCompassWisdom.bodyAr,
+      isEn ? dailyCompassWisdom.quoteEn : dailyCompassWisdom.quoteAr,
+      isEn ? dailyCompassWisdom.actionLabelEn : dailyCompassWisdom.actionLabelAr,
+    ].join('. ');
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = isEn ? 'en-US' : 'ar-EG';
+    utterance.rate = 0.95;
+    utterance.onstart = () => setIsReadingCompass(true);
+    utterance.onend = () => setIsReadingCompass(false);
+    utterance.onerror = () => setIsReadingCompass(false);
+    setIsReadingCompass(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  useEffect(() => () => window.speechSynthesis?.cancel(), []);
 
   // Child interests are sourced only from each saved profile; never infer a child's hobbies from their position or ID.
   const heroesPassionsFeed = useMemo(
@@ -978,7 +904,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       aria-label={isEn ? 'Nekbaar Family Home Dashboard' : 'لوحة العائلة الرئيسية — نكبر'}
     >
       {/* =====================================================================
-          1. ACCORDION: PERSONALIZED WELCOME & DAILY TIP READ-ALOUD CARD
+          1. PERSONALIZED WELCOME & PARENT WELLBEING
           ===================================================================== */}
       <div
         id="home-core-value-hero"
@@ -1025,18 +951,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
                 {todayFormattedCombined}
               </span>
-              <button
-                type="button"
-                data-testid="welcome-hero-accordion-arrow"
-                aria-expanded={openAccordions.welcomeAudio}
-                onClick={() => toggleAccordion('welcomeAudio')}
-                title={isEn ? 'Toggle Daily Tip Card' : 'طي / فتح بطاقة نصيحة اليوم'}
-                className={`min-w-[48px] min-h-[48px] rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black active:scale-95 transition-all duration-300 ease-in-out cursor-pointer ${
-                  openAccordions.welcomeAudio ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
-                }`}
-              >
-                ▼
-              </button>
+              
             </div>
           </div>
 
@@ -1101,106 +1016,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             DAILY TIP READ-ALOUD CARD — DEVICE SPEECH, NO FAKE RECORDING METRICS
             Full-width stacked layout prevents any vertical letter-by-letter wrapping!
             ===================================================================== */}
-        {openAccordions.welcomeAudio && (
-          <div
-            id="home-daily-tip-read-aloud"
-            data-testid="home-daily-tip-read-aloud"
-            dir={isEn ? 'ltr' : 'rtl'}
-            className="w-full rounded-2xl sm:rounded-3xl border border-teal-500/35 dark:border-[#1E3646] bg-gradient-to-r from-teal-50/90 via-white to-orange-50/60 dark:from-[#142430] dark:via-[#101D26] dark:to-[#142430] p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xs"
-          >
-            {/* Row 1: Play Button + Full-Width Natural Horizontal Arabic Title & Slot Badge */}
-            <div className="flex items-start gap-3.5 w-full">
-              <button
-                type="button"
-                data-testid="daily-tip-read-aloud-toggle"
-                onClick={() => {
-                  if (isReadingTip) {
-                    window.speechSynthesis?.pause();
-                    setIsPlayingBrief(false);
-                  } else if (window.speechSynthesis?.paused) {
-                    window.speechSynthesis.resume();
-                    setIsPlayingBrief(true);
-                  } else {
-                    readDailyTipAloud(currentTip);
-                  }
-                }}
-                aria-label={
-                  isReadingTip
-                    ? isEn
-                      ? 'Pause reading'
-                      : 'إيقاف القراءة الصوتية'
-                    : isEn
-                    ? 'Read tip aloud'
-                    : 'قراءة النصيحة بصوت مسموع'
-                }
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center text-base font-black shrink-0 transition-all cursor-pointer shadow-xs ${
-                  isReadingTip
-                    ? 'bg-[#FF8C61] text-white scale-105'
-                    : 'bg-[#0d9488] hover:bg-[#0f766e] text-white'
-                }`}
-              >
-                {isReadingTip ? '⏸' : '▶'}
-              </button>
-
-              <div className="flex-1 min-w-0 w-full space-y-1 text-start">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                  <span className="inline-block whitespace-normal">
-                    🔊 {isEn ? currentTip.slotLabelEn : currentTip.slotLabelAr}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span className="text-[var(--color-muted)] dark:text-[#94A3B8] whitespace-normal">
-                    {isEn ? currentTip.hostsEn : currentTip.hostsAr}
-                  </span>
-                </div>
-                <h2 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-relaxed whitespace-normal">
-                  {isEn ? currentTip.titleEn : currentTip.titleAr}
-                </h2>
-              </div>
-            </div>
-
-            {/* Playback uses the device speech engine; no recorded-audio duration is implied. */}
-            <div data-testid="daily-tip-read-aloud-status" className="flex items-center gap-2 rounded-xl border border-teal-500/15 bg-teal-500/5 px-3 py-2 text-[11px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-              <span aria-hidden="true">🔊</span>
-              <span>{isEn ? 'Read aloud using your device voice' : 'تُقرأ النصيحة بصوت الجهاز'}</span>
-            </div>
-
-            {/* Playback controls and navigation between the three daily tips. */}
-            <div className="flex flex-wrap items-center justify-between gap-2.5 w-full">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  id="daily-tip-read-aloud-replay"
-                  data-testid="daily-tip-read-aloud-replay"
-                  onClick={handleReplayDailyTip}
-                  className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[#0d9488]/40 bg-teal-500/12 hover:bg-[#0d9488] hover:text-white text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF] transition-all cursor-pointer inline-flex items-center gap-1.5"
-                >
-                  <span>🔄</span>
-                  <span>{isEn ? 'Read again' : 'اقرأها تاني'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  data-testid="daily-tip-read-aloud-next"
-                  onClick={() => {
-                    const nextIdx = (activeTipIdx + 1) % DAILY_READ_ALOUD_TIPS.length;
-                    setActiveBriefIdx(nextIdx);
-                                    readDailyTipAloud(DAILY_READ_ALOUD_TIPS[nextIdx]);
-                  }}
-                  className="min-h-[38px] px-3.5 py-1.5 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/90 dark:bg-[#101D26] hover:border-[#0d9488] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
-                >
-                  {isEn ? 'Next tip ⏭' : 'النصيحة التالية ⏭'}
-                </button>
-              </div>
-            </div>
-
-            {/* Row 4: Full-Width Horizontal Summary & Takeaway */}
-            <p className="w-full text-xs sm:text-[13px] font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed text-start whitespace-normal">
-              {isEn ? currentTip.summaryEn : currentTip.summaryAr}{' '}
-              <strong className="text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? currentTip.takeawayEn : currentTip.takeawayAr}
-              </strong>
-            </p>
-          </div>
         )}
       </div>
 
@@ -1278,19 +1093,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           )}
 
           <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[var(--color-border)] dark:border-[#1E3646]">
-            <button
-              type="button"
-              onClick={() => toggleAccordion('welcomeAudio')}
-              className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] cursor-pointer"
-            >
-              {openAccordions.welcomeAudio
-                ? isEn
-                  ? '🔊 Hide read-aloud tip'
-                  : '🔊 إخفاء قراءة النصيحة'
-                : isEn
-                ? '🔊 Show read-aloud tip'
-                : '🔊 إظهار قراءة النصيحة'}
-            </button>
+            
             {onReplaySplash && (
               <button
                 type="button"
@@ -1542,14 +1345,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          4. ACCORDION: DYNAMIC TIME-AWARE DAILY WISDOM (بوصلة اليوم — CHECKLIST #3)
+          4. ACCORDION: TIME-AWARE PARENTING COMPASS
           ===================================================================== */}
       <HomeAccordionCard
         id="home-daily-parenting-wisdom"
         testId="home-daily-parenting-wisdom"
         iconEmoji="🧭"
         iconBgClass="bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]"
-        title={isEn ? 'Daily Parenting Compass Wisdom' : 'حكمة وبوصلة اليوم التربوية'}
+        title={isEn ? 'Daily Parenting Compass' : 'بوصلة اليوم التربوية'}
         subtitle={isEn ? dailyCompassWisdom.titleEn : dailyCompassWisdom.titleAr}
         badgeText={isEn ? dailyCompassWisdom.badgeEn : dailyCompassWisdom.badgeAr}
         isOpen={Boolean(openAccordions.dailyWisdom)}
@@ -1597,6 +1400,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               ✨ {isEn ? dailyCompassWisdom.quoteEn : dailyCompassWisdom.quoteAr}
             </span>
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                data-testid="daily-compass-read-aloud-toggle"
+                aria-label={isReadingCompass ? (isEn ? 'Pause reading' : 'إيقاف القراءة') : (isEn ? 'Read today’s guidance aloud' : 'استمع لإرشاد اليوم')}
+                onClick={toggleCompassReadAloud}
+                className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-teal-500/35 bg-teal-500/10 text-xs font-extrabold text-teal-800 dark:text-teal-200"
+              >
+                {isReadingCompass ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : (isEn ? '🔊 Listen' : '🔊 استمع')}
+              </button>
               <button
                 type="button"
                 onClick={() => {
