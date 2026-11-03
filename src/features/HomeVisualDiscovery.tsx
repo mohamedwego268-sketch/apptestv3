@@ -7,7 +7,6 @@ import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { ParentChildActivityGuide, type GuidedActivity } from './ParentChildActivityGuide';
 
 type HomeVisualSignals = ReturnType<typeof extractProfileSignals>;
-type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack';
 
 interface HomeVisualDiscoveryProps {
   language: LanguageCode;
@@ -15,7 +14,6 @@ interface HomeVisualDiscoveryProps {
   ageLabel: string;
   signals: HomeVisualSignals | null;
   onNavigate: (page: PageId) => void;
-  onOpenSection: (section: HomeSectionKey) => void;
 }
 
 type VisualStory = {
@@ -151,7 +149,7 @@ const VISUAL_STORIES: VisualStory[] = [
 const normalize = (value: string) => value.toLocaleLowerCase().replace(/[ًٌٍَُِّْـ]/g, '').trim();
 
 export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
-  language, childName, ageLabel, signals, onNavigate, onOpenSection,
+  language, childName, ageLabel, signals, onNavigate,
 }) => {
   const isEn = language === 'en';
   const [isReading, setIsReading] = useState(false);
