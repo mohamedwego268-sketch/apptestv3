@@ -165,7 +165,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
       const moralObj = MORAL_OPTIONS[selectedMoralIdx] || MORAL_OPTIONS[0];
       const storyTheme = themePrompt.trim().slice(0, 120) || (isEn ? 'A gentle family adventure' : 'مغامرة عائلية لطيفة');
       const storyBodyAr = buildFifteenLineStory(storyTheme, moralObj.ar, false, childNameAr).join('\n');
-      const storyBodyEn = buildFifteenLineStory(storyTheme, moralObj.en, true, childNameEn).join('\\n');
+      const storyBodyEn = buildFifteenLineStory(storyTheme, moralObj.en, true, childNameEn).join('\n');
 
       const created = await master.stories.generate({
         childId: childMeta.id,
@@ -216,8 +216,8 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           </div>
           <h3 className="text-sm sm:text-base font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
             {isEn
-              ? 'Tailored Stories for Every Age Stage'
-              : 'قصص وحواديت مخصصة لكل مرحلة عمرية'}
+              ? 'A Story with Your Child’s Name and Your Chosen Theme'
+              : 'حدوتة باسم طفلك وفكرة من اختياركم'}
           </h3>
         </div>
 
@@ -339,7 +339,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                 ? isEn ? 'Add a child profile first' : 'أضف ملف طفل أولاً'
                 : isEn
                 ? '✨ Create Bedtime Story'
-                : '✨ تأليف حدوتة جديدة بالذكاء الاصطناعي'}
+                : '✨ تأليف حدوتة جديدة'}
             </button>
           </div>
         </div>
@@ -432,7 +432,7 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
                     🌱 {isEn ? story.moralTagEn : story.moralTagAr}
                   </span>
                   <span className="text-[var(--color-muted)] dark:text-[#94A3B8] tabular-nums">
-                    ⏱️ {story.durationMinutes}m · {story.calmingTempoBpm} BPM
+                    ⏱️ ≈ {story.durationMinutes} {isEn ? 'min read' : 'دقائق قراءة تقريبًا'}
                   </span>
                 </div>
               </button>
