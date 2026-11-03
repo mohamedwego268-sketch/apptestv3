@@ -1457,86 +1457,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          6. ACCORDION: BEDTIME STORY CREATOR
-          ===================================================================== */}
-      <HomeAccordionCard
-        id="home-ai-storyteller-accordion"
-        testId="home-ai-storyteller-accordion"
-        iconEmoji="📖"
-        iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
-        title={
-          isEn
-            ? 'Bedtime Story Creator'
-            : 'صانع حواديت قبل النوم'
-        }
-        subtitle={
-          isEn
-            ? 'Create a gentle story with your child’s name and a theme you choose'
-            : 'ألف حدوتة لطيفة باسم طفلك وفكرة تختاروها'
-        }
-        badgeText={isEn ? '15 Lines' : '١٥ سطراً'}
-        badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
-        borderClass="border-amber-500/35 dark:border-[#1E3646]"
-        isOpen={Boolean(openAccordions.bedtimeStories)}
-        onToggle={() => toggleAccordion('bedtimeStories')}
-        isEn={isEn}
-        headerExtraAction={
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-black text-amber-800 dark:text-amber-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button>
-          {onToggleBedtimeMode ? (
-            <button
-              type="button"
-              data-testid="home-bedtime-filter-btn"
-              onClick={onToggleBedtimeMode}
-              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                bedtimeMode
-                  ? 'bg-amber-500 text-slate-950 border-amber-500'
-                  : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/35'
-              }`}
-            >
-              🌙 {bedtimeMode ? (isEn ? 'Evening Light: ON' : 'إضاءة المساء: مفعّلة') : isEn ? 'Warm Light' : 'إضاءة المساء'}
-            </button>
-          ) : undefined}
-          </div>
-        }
-      >
-        <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
-          <section
-            data-testid="illustrated-stories-coming-soon"
-            aria-label={isEn ? 'Illustrated stories coming soon' : 'القصص المصوّرة قريبًا'}
-            dir={isEn ? 'ltr' : 'rtl'}
-            className="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-50 via-white to-amber-50 p-4 dark:from-[#211B35] dark:via-[#101D26] dark:to-[#30251D]"
-          >
-            <div className="flex items-start gap-3">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-2xl">🎨</span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
-                    {isEn ? 'Stories where your child becomes the hero' : 'حواديت مصوّرة طفلك بطلها'}
-                  </h3>
-                  <span className="rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white">
-                    {isEn ? 'Coming soon' : 'قريبًا'}
-                  </span>
-                </div>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                  {isEn
-                    ? 'We are preparing a new illustrated storytelling experience for families. Details will be shared when it is ready.'
-                    : 'بنجهّز تجربة جديدة للحواديت المصوّرة للأسرة. هنشارك تفاصيلها لما تكون جاهزة.'}
-                </p>
-              </div>
-            </div>
-          </section>
-          <StoriesLibraryView
-            lang={lang}
-            kids={state.kids}
-            onOpenChildren={() => navigateTo('children')}
-            onShowToast={onShowToast}
-            onScheduleStoryTask={onAddSuggestedRoutineTask}
-          />
-        </div>
-      </HomeAccordionCard>
-
-      {/* =====================================================================
           7. ACCORDION: DAILY CARE ESSENTIALS (NUTRITION, HYDRATION & SPORTS — CHECKLIST #3)
           ===================================================================== */}
       <HomeAccordionCard
@@ -1951,6 +1871,86 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           childId={activeKid?.id ?? null}
           onAddRoutineTask={onAddSuggestedRoutineTask}
         />
+      </HomeAccordionCard>
+
+      {/* =====================================================================
+          12. OPTIONAL ACCORDION: BEDTIME STORY CREATOR
+          ===================================================================== */}
+      <HomeAccordionCard
+        id="home-ai-storyteller-accordion"
+        testId="home-ai-storyteller-accordion"
+        iconEmoji="📖"
+        iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
+        title={
+          isEn
+            ? 'Bedtime Story Creator'
+            : 'صانع حواديت قبل النوم'
+        }
+        subtitle={
+          isEn
+            ? 'Create a gentle story with your child’s name and a theme you choose'
+            : 'ألف حدوتة لطيفة باسم طفلك وفكرة تختاروها'
+        }
+        badgeText={isEn ? '15 Lines' : '١٥ سطراً'}
+        badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
+        borderClass="border-amber-500/35 dark:border-[#1E3646]"
+        isOpen={Boolean(openAccordions.bedtimeStories)}
+        onToggle={() => toggleAccordion('bedtimeStories')}
+        isEn={isEn}
+        headerExtraAction={
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-black text-amber-800 dark:text-amber-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button>
+          {onToggleBedtimeMode ? (
+            <button
+              type="button"
+              data-testid="home-bedtime-filter-btn"
+              onClick={onToggleBedtimeMode}
+              className={`min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                bedtimeMode
+                  ? 'bg-amber-500 text-slate-950 border-amber-500'
+                  : 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/35'
+              }`}
+            >
+              🌙 {bedtimeMode ? (isEn ? 'Evening Light: ON' : 'إضاءة المساء: مفعّلة') : isEn ? 'Warm Light' : 'إضاءة المساء'}
+            </button>
+          ) : undefined}
+          </div>
+        }
+      >
+        <div id="ai-storyteller-accordion-panel" data-testid="ai-storyteller-accordion-panel" className="space-y-4">
+          <section
+            data-testid="illustrated-stories-coming-soon"
+            aria-label={isEn ? 'Illustrated stories coming soon' : 'القصص المصوّرة قريبًا'}
+            dir={isEn ? 'ltr' : 'rtl'}
+            className="relative overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-50 via-white to-amber-50 p-4 dark:from-[#211B35] dark:via-[#101D26] dark:to-[#30251D]"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-2xl">🎨</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+                    {isEn ? 'Stories where your child becomes the hero' : 'حواديت مصوّرة طفلك بطلها'}
+                  </h3>
+                  <span className="rounded-full bg-violet-600 px-2.5 py-1 text-[10px] font-black text-white">
+                    {isEn ? 'Coming soon' : 'قريبًا'}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                  {isEn
+                    ? 'We are preparing a new illustrated storytelling experience for families. Details will be shared when it is ready.'
+                    : 'بنجهّز تجربة جديدة للحواديت المصوّرة للأسرة. هنشارك تفاصيلها لما تكون جاهزة.'}
+                </p>
+              </div>
+            </div>
+          </section>
+          <StoriesLibraryView
+            lang={lang}
+            kids={state.kids}
+            onOpenChildren={() => navigateTo('children')}
+            onShowToast={onShowToast}
+            onScheduleStoryTask={onAddSuggestedRoutineTask}
+          />
+        </div>
       </HomeAccordionCard>
 
       {/* =====================================================================
