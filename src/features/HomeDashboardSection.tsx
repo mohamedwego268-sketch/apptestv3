@@ -166,7 +166,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
       data-testid={testId}
       data-collapsible-section="true"
       dir={isEn ? 'ltr' : 'rtl'}
-      className={`bg-white dark:bg-[#101D26] shadow-sm rounded-2xl p-4 border ${borderClass} space-y-4 transition-all duration-300 ease-in-out`}
+      className={`relative overflow-hidden bg-gradient-to-br from-white via-white to-slate-50/80 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] shadow-[0_8px_24px_-18px_rgba(15,23,42,0.28)] rounded-3xl p-4 sm:p-5 border ${borderClass} space-y-4 transition-all duration-300 ease-in-out hover:shadow-[0_14px_30px_-20px_rgba(13,148,136,0.34)] ${isOpen ? 'ring-1 ring-teal-500/15' : ''}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <button
@@ -174,11 +174,11 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
           data-testid={`${testId}-toggle-btn`}
           aria-expanded={isOpen}
           onClick={onToggle}
-          className="min-h-[48px] flex-1 min-w-[200px] flex items-center justify-between gap-3 text-start active:scale-95 transition-all duration-300 ease-in-out cursor-pointer group"
+          className="min-h-[52px] flex-1 min-w-0 flex items-center justify-between gap-3 rounded-2xl text-start active:scale-[0.99] transition-all duration-300 ease-in-out cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <span
-              className={`w-11 h-11 rounded-2xl ${iconBgClass} flex items-center justify-center text-lg shrink-0 shadow-2xs`}
+              className={`w-12 h-12 rounded-2xl ${iconBgClass} flex items-center justify-center text-xl shrink-0 shadow-sm ring-1 ring-black/[0.03] dark:ring-white/[0.06]`}
             >
               {iconEmoji}
             </span>
@@ -217,7 +217,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
       {isOpen && (
         <div
           data-testid={`${testId}-content`}
-          className="pt-3 border-t border-gray-100 dark:border-[#1E3646] space-y-4 animate-page-enter transition-all duration-300 ease-in-out"
+          className="pt-4 border-t border-slate-100/90 dark:border-[#1E3646] space-y-4 animate-page-enter transition-all duration-300 ease-in-out"
         >
           {children}
         </div>
@@ -240,7 +240,7 @@ const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
   description,
   step,
 }) => (
-  <div id={id} data-testid={id} className="flex items-center gap-3 px-1 pt-2">
+  <div id={id} data-testid={id} className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-teal-500/15 bg-gradient-to-r from-teal-50/90 via-white to-sky-50/70 px-3.5 py-3 shadow-sm dark:from-[#122A30] dark:via-[#101D26] dark:to-[#142430] dark:border-[#24505A]">
     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-teal-500/20 bg-teal-500/10 text-sm font-black text-teal-800 dark:text-teal-200">
       {step}
     </span>
@@ -897,7 +897,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   return (
     <section
       dir={isEn ? 'ltr' : 'rtl'}
-      className="space-y-4 sm:space-y-5"
+      className="space-y-5 sm:space-y-6 pb-3"
       aria-label={isEn ? 'Nekbaar Family Home Dashboard' : 'لوحة العائلة الرئيسية — نكبر'}
     >
       {/* =====================================================================
@@ -911,7 +911,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         style={{
           borderColor: isMotherActive ? 'rgba(225, 29, 72, 0.35)' : 'rgba(13, 148, 136, 0.38)',
         }}
-        className="bg-white dark:bg-[#101D26] shadow-sm rounded-2xl p-4 border border-gray-100 dark:border-[#1E3646] flex flex-col justify-between gap-4 transition-all duration-300 ease-in-out"
+        className="relative overflow-hidden bg-gradient-to-br from-white via-white to-teal-50/40 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] shadow-[0_12px_32px_-22px_rgba(15,23,42,0.35)] rounded-3xl p-4 sm:p-5 border border-slate-100 dark:border-[#1E3646] flex flex-col justify-between gap-4 transition-all duration-300 ease-in-out"
       >
         {/* Top Accordion Header for Personalized Welcome Banner */}
         <div
@@ -973,7 +973,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
 
-        <div data-testid="home-parent-wellbeing-card" className="rounded-2xl border border-rose-200/80 dark:border-rose-900/40 bg-gradient-to-br from-rose-50/90 via-white to-teal-50/70 dark:from-[#211B25] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 flex items-start gap-3">
+        <div data-testid="home-parent-wellbeing-card" className="rounded-2xl border border-rose-200/70 dark:border-rose-900/40 bg-gradient-to-br from-rose-50/90 via-white to-teal-50/70 dark:from-[#211B25] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 flex items-start gap-3 shadow-sm">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200 text-xl">💚</span>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
