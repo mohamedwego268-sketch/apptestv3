@@ -118,7 +118,7 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
       dir={isEn ? 'ltr' : 'rtl'}
       className="space-y-3"
     >
-      <div className="rounded-2xl border border-amber-300/40 bg-amber-50/55 p-3.5 dark:border-amber-900/40 dark:bg-[#211F1A]">
+      <div className="rounded-2xl border border-amber-300/35 bg-gradient-to-br from-amber-50/80 to-white p-4 shadow-sm dark:border-amber-900/40 dark:from-[#29251D] dark:to-[#211F1A]">
         <p className="text-xs font-black text-amber-900 dark:text-amber-100">
           {isEn ? `Small everyday values for ${childName}` : `قيم صغيرة نعيشها كل يوم مع ${childName}`}
         </p>
@@ -129,9 +129,9 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {activities.map((activity) => (
-          <article key={activity.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-3 dark:border-[#1E3646] dark:bg-[#142430]">
+          <article key={activity.id} className="flex flex-col rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 p-4 shadow-[0_5px_16px_-14px_rgba(15,23,42,0.35)] dark:border-[#29404D] dark:from-[#142430] dark:to-[#101D26]">
             <h4 className="text-xs font-black text-[var(--color-text)] dark:text-white">
               {isEn ? activity.titleEn : activity.titleAr}
             </h4>
@@ -146,7 +146,7 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
                 childId
               )}
               disabled={!onAddRoutineTask}
-              className="mt-3 min-h-[44px] rounded-xl bg-amber-700 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-amber-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 min-h-[46px] w-full rounded-xl bg-amber-700 px-3 py-2.5 text-[11px] font-extrabold text-white shadow-sm transition-all hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:scale-[.99] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isEn ? 'Add to family routine' : 'أضفها لروتين الأسرة'}
             </button>
@@ -154,7 +154,7 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
         ))}
       </div>
 
-      <div className="rounded-xl border border-teal-500/25 bg-teal-50/50 p-3 dark:bg-teal-500/5">
+      <div className="rounded-2xl border border-teal-500/20 bg-gradient-to-r from-teal-50/65 to-white p-3.5 shadow-sm dark:from-teal-500/10 dark:to-[#101D26]">
         <p className="text-[11px] leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">
           {isEn
             ? 'Spiritual and religious practices are a family choice. Keep the habits, examples and language aligned with your own beliefs and traditions.'
