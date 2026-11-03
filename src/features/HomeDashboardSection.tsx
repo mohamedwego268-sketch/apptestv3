@@ -962,14 +962,20 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 : `أهلاً يا ${activeParentDisplayNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
             </h1>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
-              {isMotherActive
-                ? isEn
-                  ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
-                  : `هتلاقي هنا مهام اليوم، والمواعيد الجاية، ونصايح مناسبة لسن طفلك، وتحديثات الأسرة في مكان واحد.`
-                : isEn
-                ? `See today's tasks, upcoming appointments, useful age-based tips, and family updates in one place.`
-                : `ابدأ من احتياجك دلوقتي: تابع يوم طفلك، رتّب المواعيد، أو افتح السجل الصحي والتسوق من مكان واحد.`}
+              {isEn
+                ? `Start with what your child needs today. Keep daily care, family support and useful activities connected in one place.`
+                : `ابدأ من احتياج طفلك النهارده؛ تابع يومه، واهتم براحة الأسرة، واختار الخطوة المناسبة من مكان واحد.`}
             </p>
+            <button
+              type="button"
+              data-testid="home-start-daily-checkin"
+              onClick={() => document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="mt-2 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-teal-700 px-4 py-3 text-xs font-black text-white shadow-sm transition-all hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98]"
+            >
+              <span aria-hidden="true">⚡</span>
+              {isEn ? "Start today's child check-in" : 'ابدأ بمتابعة يوم طفلك'}
+              <span aria-hidden="true">{isEn ? '→' : '←'}</span>
+            </button>
           </div>
         </div>
 
