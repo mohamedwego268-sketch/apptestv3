@@ -18,7 +18,7 @@ import { ParentingSupportCenter } from '../components/ParentingSupportCenter';
 import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
-import { InternalVideoFeed } from '../components/InternalVideoFeed';
+import { HomeVisualDiscovery } from './HomeVisualDiscovery';
 import { HomeContentTracks } from './HomeContentTracks';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
@@ -47,86 +47,6 @@ export interface HomeDashboardSectionProps {
   onOpenStoreCategory?: (catId: string) => void;
   onReplaySplash?: () => void;
 }
-
-interface WisdomGalleryCardItem {
-  id: string;
-  tagAr: string;
-  tagEn: string;
-  titleAr: string;
-  titleEn: string;
-  wisdomAr: string;
-  wisdomEn: string;
-  imageUrl: string;
-  borderTone: string;
-}
-
-const PUBLIC_PARENTING_GALLERY_CARDS: WisdomGalleryCardItem[] = [
-  {
-    id: 'gal-1',
-    tagAr: '👶🏻 التواصل المبكر',
-    tagEn: '👶🏻 Early Connection',
-    titleAr: 'ردّ على طفلك لما يحاول يتواصل',
-    titleEn: 'Respond When Your Child Reaches Out',
-    wisdomAr:
-      'لما طفلك يبص لك أو يصدر صوت، رد عليه بابتسامة أو كلام بسيط. التفاعل المتبادل فرصة يومية للتواصل والتعلم.',
-    wisdomEn:
-      'When your child looks at you, babbles or gestures, respond warmly. These small back-and-forth moments support early communication.',
-    imageUrl: 'https://images.unsplash.com/photo-1555252333-9f8e92e65df9?auto=format&fit=crop&w=700&q=80',
-    borderTone: 'border-sky-500/40',
-  },
-  {
-    id: 'gal-2',
-    tagAr: '🎨 الخيال واللعب',
-    tagEn: '🎨 Imagination & Play',
-    titleAr: 'خليه يكمل حكايته للآخر',
-    titleEn: 'Give Their Story Room to Grow',
-    wisdomAr:
-      'اسأل طفلك: «وبعدين حصل إيه؟» وسيبه يكمل الحكاية بطريقته. مش لازم تصحح كل تفصيلة.',
-    wisdomEn:
-      'Ask “What happened next?” and let your child lead the story. You do not need to correct every detail.',
-    imageUrl: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80',
-    borderTone: 'border-rose-500/40',
-  },
-  {
-    id: 'gal-3',
-    tagAr: '🏆 الثقة بالمحاولة',
-    tagEn: '🏆 Confidence Through Effort',
-    titleAr: 'امدح المحاولة والمجهود',
-    titleEn: 'Praise the Effort, Not Only the Result',
-    wisdomAr:
-      'امدح المجهود المحدد: «عجبني إنك حاولت تاني». ده أوضح وأفيد من المدح العام.',
-    wisdomEn:
-      'Notice a specific effort: “I liked how you tried again.” Specific encouragement shows children what they can repeat.',
-    imageUrl: 'https://images.unsplash.com/photo-1484820540004-14229fe36ca4?auto=format&fit=crop&w=700&q=80',
-    borderTone: 'border-amber-500/40',
-  },
-  {
-    id: 'gal-4',
-    tagAr: '💚 تعاون الأسرة',
-    tagEn: '💚 Family Teamwork',
-    titleAr: 'اتفقوا على تقسيم مسؤوليات البيت',
-    titleEn: 'Make Family Responsibilities Clear',
-    wisdomAr:
-      'قسّموا المهام واتفقوا على طريقة واضحة للتعامل مع الروتين. مش لازم شخص واحد يشيل كل التفاصيل.',
-    wisdomEn:
-      'Agree who handles each part of the routine. Clear handovers reduce confusion and make care more consistent.',
-    imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=700&q=80',
-    borderTone: 'border-teal-500/40',
-  },
-  {
-    id: 'gal-5',
-    tagAr: '🌙 روتين المساء',
-    tagEn: '🌙 Bedtime Rhythm',
-    titleAr: 'خلّوا آخر اليوم أهدى',
-    titleEn: 'Create a Calmer End to the Day',
-    wisdomAr:
-      'اختاروا خطوات بسيطة ومتكررة قبل النوم: نشاط هادي، قصة أو حديث قصير، ثم إضاءة أخف. عدّلوا الروتين حسب احتياج طفلكم.',
-    wisdomEn:
-      'Choose a few predictable steps before bed: a calm activity, a short story or chat, then softer lighting. Adapt the routine to your child.',
-    imageUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80',
-    borderTone: 'border-indigo-500/40',
-  },
-];
 
 /**
  * Universal Home Accordion Card Wrapper (Checklist #3)
@@ -340,16 +260,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     wisdomTimeOverride === 'auto' ? currentTimeBucket : wisdomTimeOverride;
   const [isReadingCompass, setIsReadingCompass] = useState(false);
 
-  // ============================================================================
-  // CHECKLIST #12: Horizontal Image Gallery Scroll Controls
-  // ============================================================================
-  const galleryScrollRef = useRef<HTMLDivElement | null>(null);
-  const handleScrollGallery = (dir: 'prev' | 'next') => {
-    if (!galleryScrollRef.current) return;
-    const delta = dir === 'next' ? 300 : -300;
-    galleryScrollRef.current.scrollBy({ left: isEn ? delta : -delta, behavior: 'smooth' });
-  };
-
   // Streamlined One-Handed Quick Log State per Child (Checklist #2)
   const [quickPulseByKid, setQuickPulseByKid] = useState<
     Record<
@@ -371,7 +281,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [waterCupsByKid, setWaterCupsByKid] = useState<Record<number, number>>({});
   const [selectedSportSlot, setSelectedSportSlot] = useState<'outdoor' | 'balance' | 'cardio'>('outdoor');
   const [completedSportByKid, setCompletedSportByKid] = useState<Record<number, boolean>>({});
-  const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(false);
+  const [showPromoShowcase, setShowPromoShowcase] = useState<boolean>(true);
 
   const activeCity = state.city || getDefaultCityForCountry(state.country);
   const localizedCity = locText(activeCity, lang);
@@ -2047,136 +1957,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-inspiration"
         step="٣"
-        title={isEn ? 'Ideas and family resources' : 'أفكار وموارد للأسرة'}
-        description={isEn ? 'Practical inspiration and useful family supplies in one place.' : 'أفكار سهلة التطبيق، ومستلزمات وخدمات تساعد الأسرة.'}
+        title={isEn ? 'Discover, watch and listen' : 'اكتشفوا.. شاهدوا.. واسمعوا'}
+        description={isEn ? 'A visual family experience shaped around your child.' : 'تجربة بصرية وصوتية تتشكل حسب عمر طفلك واهتماماته.'}
       />
-      <section data-testid="home-practical-family-ideas" className="rounded-3xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3.5">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <span className="text-[10px] font-black tracking-wide text-teal-700 dark:text-teal-300">{isEn ? 'SMALL STEPS, REAL VALUE' : 'خطوات صغيرة.. فايدة حقيقية'}</span>
-            <h2 className="mt-1 text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Practical ideas for your family today' : 'أفكار عملية تقدروا تطبقوها النهارده'}</h2>
-            <p className="mt-1 text-xs leading-5 text-[var(--color-muted)]">{isEn ? 'Short, useful actions — not another feed to scroll.' : 'اقتراحات بسيطة قابلة للتنفيذ، مش محتوى لمجرد التصفح.'}</p>
-          </div>
-          <span className="shrink-0 rounded-xl bg-teal-50 dark:bg-[#142430] px-2.5 py-1.5 text-[10px] font-black text-teal-800 dark:text-teal-300">{isEn ? '3 ideas' : '٣ أفكار'}</span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[
-            { id: 'routine' as const, image: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=700&q=80', titleAr: 'جهّزوا للنوم من بدري', titleEn: 'Make bedtime easier', bodyAr: 'اختاروا ٣ خطوات ثابتة قبل النوم: تهدئة، قصة قصيرة، ثم إضاءة هادية.', bodyEn: 'Keep three predictable steps: wind down, share a short story, then dim the lights.', ctaAr: 'افتح الروتين', ctaEn: 'Open routine' },
-            { id: 'children' as const, image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=700&q=80', titleAr: 'اسأل عن إحساسه', titleEn: 'Name the feeling', bodyAr: 'بدل «مالك؟»، جرّب «إيه أكتر حاجة فرّحتك أو ضايقتك النهارده؟» واسمع للآخر.', bodyEn: 'Try “What made you happy or upset today?” — then listen without rushing to fix it.', ctaAr: 'افتح متابعة المشاعر', ctaEn: 'Open emotional check-in' },
-            { id: 'medical' as const, image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=700&q=80', titleAr: 'خلّي المعلومات المهمة جاهزة', titleEn: 'Keep key care details ready', bodyAr: 'راجعوا الحساسية والأدوية وبيانات طبيب الأطفال، وحدّثوها عند أي تغيير.', bodyEn: 'Review allergies, medications and pediatrician details; update them whenever something changes.', ctaAr: 'افتح المتابعة الصحية', ctaEn: 'Open health records' },
-          ].map((idea) => (
-            <article key={idea.id} className="overflow-hidden rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/45 dark:bg-[#142430]">
-              <div className="relative h-28 sm:h-32 overflow-hidden">
-                <img src={idea.image} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
-              </div>
-              <div className="space-y-2 p-3">
-                <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? idea.titleEn : idea.titleAr}</h3>
-                <p className="min-h-[54px] text-[11px] leading-5 text-[var(--color-muted)]">{isEn ? idea.bodyEn : idea.bodyAr}</p>
-                <button type="button" onClick={() => idea.id === 'children' ? openChildMoodCheckin() : navigateTo(idea.id)} className="min-h-10 w-full rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-teal-800">{isEn ? idea.ctaEn : idea.ctaAr} {isEn ? '→' : '←'}</button>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-
-      <section data-testid="home-video-library" className="overflow-hidden rounded-3xl border border-[#1b5360]/20 bg-gradient-to-br from-[#102C38] via-[#123A46] to-[#1B5360] p-4 text-white shadow-lg sm:p-5">
-        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
-            <h2 className="mt-1 text-base font-black leading-relaxed">{isEn ? 'Family video library' : 'مكتبة الفيديوهات العائلية'}</h2>
-            <p className="mt-1 max-w-xl text-[11px] leading-6 text-white/75">{isEn ? 'Watch the approved videos currently available in Nekbaar.' : 'هنا هتلاقوا الفيديوهات المتاحة والمعتمدة للمشاهدة داخل نكبر.'}</p>
-          </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">{isEn ? 'Inside Nekbaar' : 'داخل نكبر'}</span>
-            <button type="button" onClick={() => navigateTo('media')} className="min-h-[40px] rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Open media library →' : 'افتح مكتبة الوسائط ←'}</button>
-          </div>
-        </div>
-        <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4}/>
-      </section>
-      {/* =====================================================================
-          3. DAILY CHILD LOG — KEEP THE USEFUL TRACKING ACTIONS
-          ===================================================================== */}
-      <HomeAccordionCard
-        id="home-horizontal-wisdom-gallery"
-        testId="home-horizontal-wisdom-gallery"
-        iconEmoji="🖼️"
-        iconBgClass="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
-        title={
-          isEn
-            ? 'Visual Parenting Wisdom Gallery'
-            : 'نصايح مصورة وسهلة التطبيق'
-        }
-        subtitle={
-          isEn
-            ? 'Swipe horizontally left or right to explore illustrated daily parenting tips'
-            : 'بطاقات سريعة فيها فكرة واحدة تقدر تطبقها مع طفلك'
-        }
-        badgeText={isEn ? '5 Cards' : '٥ بطاقات مصورة'}
-        badgeClass="bg-indigo-500/15 text-indigo-700 dark:text-indigo-300"
-        headerExtraAction={<button type="button" onClick={() => { setOpenAccordions((previous) => ({ ...previous, dailyWisdom: true })); document.getElementById('home-daily-parenting-wisdom')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="min-h-[40px] rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-2 text-xs font-black text-indigo-800 dark:text-indigo-200">{isEn ? 'Open daily parenting compass' : 'افتح بوصلة التربية اليومية'}</button>}
-        isOpen={Boolean(openAccordions.wisdomGallery)}
-        onToggle={() => toggleAccordion('wisdomGallery')}
-        isEn={isEn}
-      >
-        <div className="space-y-3">
-          <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
-              data-testid="wisdom-gallery-scroll-prev"
-              onClick={() => handleScrollGallery('prev')}
-              aria-label={isEn ? 'Scroll gallery left' : 'تمرير المعرض لليمين'}
-              className="w-9 h-9 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-sm font-black cursor-pointer"
-            >
-              {isEn ? '◀' : '▶'}
-            </button>
-            <button
-              type="button"
-              data-testid="wisdom-gallery-scroll-next"
-              onClick={() => handleScrollGallery('next')}
-              aria-label={isEn ? 'Scroll gallery right' : 'تمرير المعرض لليسار'}
-              className="w-9 h-9 rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-sm font-black cursor-pointer"
-            >
-              {isEn ? '▶' : '◀'}
-            </button>
-          </div>
-
-          <div
-            ref={galleryScrollRef}
-            className="flex items-stretch gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory"
-          >
-            {PUBLIC_PARENTING_GALLERY_CARDS.map((card) => (
-              <div
-                key={card.id}
-                data-testid={`wisdom-gallery-card-${card.id}`}
-                className={`min-w-[270px] max-w-[320px] shrink-0 snap-start overflow-hidden rounded-3xl border ${card.borderTone} bg-white shadow-[0_10px_28px_-20px_rgba(15,23,42,0.42)] transition-shadow hover:shadow-lg dark:bg-[#142430] sm:min-w-[310px]`}
-              >
-                <div className="relative h-44 w-full overflow-hidden bg-slate-900">
-                  <img
-                    src={card.imageUrl}
-                    alt={isEn ? card.titleEn : card.titleAr}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
-                  <span className="absolute top-3 start-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-xs text-white text-[11px] font-black border border-white/20">
-                    {isEn ? card.tagEn : card.tagAr}
-                  </span>
-                  <h3 className="absolute bottom-3 inset-x-3 text-xs sm:text-sm font-black text-white leading-snug">
-                    {isEn ? card.titleEn : card.titleAr}
-                  </h3>
-                </div>
-
-                <div className="flex flex-1 flex-col justify-between gap-2.5 bg-gradient-to-b from-white to-slate-50/70 p-4 dark:from-[#142430] dark:to-[#101D26]">
-                  <p className="text-xs font-semibold leading-relaxed text-[var(--color-text)] dark:text-[#CBD5E1]">
-                    {isEn ? card.wisdomEn : card.wisdomAr}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </HomeAccordionCard>
+      <HomeVisualDiscovery
+        language={lang}
+        childName={activeKidName}
+        ageLabel={activeKidStageLabel}
+        signals={activeKidSignals}
+        onNavigate={navigateTo}
+        onOpenSection={openHomeSection}
+      />
 
       {/* =====================================================================
           14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
@@ -2225,52 +2016,34 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div className="pt-3 border-t border-gray-100 dark:border-[#1E3646] grid grid-cols-2 gap-2.5 animate-page-enter">
                 {[
                   {
-                    catId: 'toys',
-                    emoji: '🧸',
-                    titleAr: 'ألعاب مونتيسوري',
-                    titleEn: 'Montessori Toys',
-                    ageAr: '٠–٨ سنوات',
-                    ageEn: 'Ages 0–8',
+                    catId: 'toys', emoji: '🧸', titleAr: 'ألعاب مونتيسوري', titleEn: 'Montessori Toys',
+                    ageAr: '٠–٨ سنوات', ageEn: 'Ages 0–8',
+                    image: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=700&q=80',
                   },
                   {
-                    catId: 'essentials',
-                    emoji: '🍼',
-                    titleAr: 'مستلزمات الرضع',
-                    titleEn: 'Baby Essentials',
-                    ageAr: '٠–٢ سنة',
-                    ageEn: 'Ages 0–2',
+                    catId: 'essentials', emoji: '🍼', titleAr: 'مستلزمات الرضع', titleEn: 'Baby Essentials',
+                    ageAr: '٠–٢ سنة', ageEn: 'Ages 0–2',
+                    image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=700&q=80',
                   },
                   {
-                    catId: 'clothing',
-                    emoji: '👟',
-                    titleAr: 'أزياء وأحذية قطنية',
-                    titleEn: 'Cotton Apparel',
-                    ageAr: '٠–٨ سنوات',
-                    ageEn: 'Ages 0–8',
+                    catId: 'clothing', emoji: '👟', titleAr: 'أزياء وأحذية قطنية', titleEn: 'Cotton Apparel',
+                    ageAr: '٠–٨ سنوات', ageEn: 'Ages 0–8',
+                    image: 'https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?auto=format&fit=crop&w=700&q=80',
                   },
                   {
-                    catId: 'nursery',
-                    emoji: '🏫',
-                    titleAr: 'حضانات ومدارس',
-                    titleEn: 'Nurseries & Schools',
-                    ageAr: '١–٨ سنوات',
-                    ageEn: 'Ages 1–8',
+                    catId: 'nursery', emoji: '🏫', titleAr: 'حضانات ومدارس', titleEn: 'Nurseries & Schools',
+                    ageAr: '١–٨ سنوات', ageEn: 'Ages 1–8',
+                    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=700&q=80',
                   },
                   {
-                    catId: 'courses',
-                    emoji: '🎨',
-                    titleAr: 'كورسات وأنشطة',
-                    titleEn: 'Skill Courses',
-                    ageAr: '٣–٨ سنوات',
-                    ageEn: 'Ages 3–8',
+                    catId: 'courses', emoji: '🎨', titleAr: 'كورسات وأنشطة', titleEn: 'Skill Courses',
+                    ageAr: '٣–٨ سنوات', ageEn: 'Ages 3–8',
+                    image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=700&q=80',
                   },
                   {
-                    catId: 'books',
-                    emoji: '💻',
-                    titleAr: 'منصات وقصص',
-                    titleEn: 'Online & Books',
-                    ageAr: '٢–٨ سنوات',
-                    ageEn: 'Ages 2–8',
+                    catId: 'books', emoji: '📚', titleAr: 'منصات وقصص', titleEn: 'Online & Books',
+                    ageAr: '٢–٨ سنوات', ageEn: 'Ages 2–8',
+                    image: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=700&q=80',
                   },
                 ].map((promo) => (
                   <button
@@ -2283,15 +2056,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         navigateTo('services');
                       }
                     }}
-                    className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#0B131A] hover:border-[#0d9488] p-3 text-start flex flex-col justify-between gap-1.5 transition-all cursor-pointer"
+                    className="group relative min-h-[150px] overflow-hidden rounded-2xl border border-white/15 bg-slate-950 p-3 text-start shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
                   >
-                    <span className="text-lg leading-none">{promo.emoji}</span>
-                    <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                      {isEn ? promo.titleEn : promo.titleAr}
-                    </div>
-                    <div className="text-[10px] font-bold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {isEn ? promo.ageEn : promo.ageAr}
-                    </div>
+                    <img src={promo.image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-75 transition-transform duration-500 group-hover:scale-105" />
+                    <span className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
+                    <span className="relative z-10 flex h-full min-h-[124px] flex-col items-start justify-end gap-1.5">
+                      <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/20 bg-black/25 text-xl backdrop-blur">{promo.emoji}</span>
+                      <span className="text-sm font-black leading-snug text-white">{isEn ? promo.titleEn : promo.titleAr}</span>
+                      <span className="text-[10px] font-bold text-teal-100">{isEn ? promo.ageEn : promo.ageAr}</span>
+                    </span>
                   </button>
                 ))}
               </div>
