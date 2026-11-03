@@ -101,9 +101,9 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Record the current content/navigation map here.
 
 ### Stage 2 — Home information architecture
-- [ ] Arrange the Home around the family journey, not a long collection of unrelated accordions.
+- [x] Arrange the Home around the family journey, not a long collection of unrelated accordions; the three journey groups now organize daily child follow-up, support/learning/growth, and family ideas/resources.
 - [x] Make the six content tracks discoverable without duplicating global navigation.
-- [ ] Give each section one clear primary action and a useful secondary action only when needed.
+- [x] Give each section one clear primary action and a useful secondary action only when needed; the six track cards and the consolidated sections now lead to existing, relevant actions.
 - [x] Add the missing religious and ethical values track with respectful, age-aware content.
 - [x] Keep parent support distinct from child emotional wellbeing and routine reminders.
 
@@ -149,7 +149,7 @@ Never attach a family-level reflection to a child's private record. Never use on
 - [x] Consolidated the duplicate time-aware daily tip into the Daily Parenting Compass. The compass now owns the single read-aloud action and routine CTA; device speech synthesis remains, with no recorded-audio claim.
 - [x] Added regression tests for learning age stages, values track, selected-child emotional check-in, and honest read-aloud behavior.
 - [x] Complete the Home content information architecture around the six connected tracks and the family journey; retain useful sections and global navigation.
-- [ ] Final browser screenshot/interaction review of the latest commit is pending because Vercel's free deployment quota has been reached. The current latest commit is `46b254b`.
+- [ ] Final browser screenshot/interaction review remains pending. The latest production deployment for `main` (`56850cd`) is READY; the connected browser is currently unavailable, so use the existing deployment for visual review when browser access is restored rather than creating another deployment.
 - [x] Review core Home child-log persistence and loading/error behavior; household reflection remains explicitly unsaved and no success is shown before persistence.
 - [x] Latest verified code commit `46b254b` passed CI: 37/37 unit and security tests, TypeScript verification and production build; production build retains a non-blocking large JavaScript chunk warning.
 - [ ] Supabase Preview remains blocked by the existing remote/local migration-version mismatch (`Remote migration versions not found in local migrations directory`). No database migrations or production data changes were made.
@@ -203,8 +203,8 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Replaced the in-memory-only child “cheer” counter (which reset on refresh and was not shared or saved) with a real child-profile action to update interests; retained the routine action for activities.
 - [x] Renamed the interests section to describe what it actually contains; it no longer implies a developmental-milestone tracker.
 - [x] Removed the now-empty audio toggle from the welcome header and simplified the tools drawer after consolidation.
-- [ ] Review unused/duplicate code and remove only code with verified zero references and no runtime, migration, test or historical dependency.
-- [ ] Verify the latest Home consolidation commits with CI (unit/security tests, TypeScript and production build); do not infer success from a commit alone.
+- [ ] Complete a repository-wide unused/duplicate-code audit and remove only code with verified zero references and no runtime, migration, test or historical dependency. A targeted review of `HomeDashboardSection.tsx` imports and all 11 component-local state pairs found no unused imports or state; no speculative deletion was made.
+- [x] Verify the latest Home consolidation code with CI (37/37 unit/security tests, TypeScript verification and production build passed on `c444bf6`; the subsequent `56850cd` commit only updates this content map). The latest Vercel production deployment for `56850cd` is READY.
 - [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review when a preview deployment is available.
 
 
@@ -221,8 +221,8 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Removed the separate morning/afternoon/evening read-aloud card because its guidance substantially repeated the Daily Parenting Compass.
 - [x] Kept the time-aware Compass as the single source of daily guidance, including its child-contextual advice, optional routine action and device read-aloud control.
 - [x] Removed obsolete audio-card state, data and welcome-header toggle; the tools drawer no longer reserves an empty grid for the removed control.
-- [ ] Run and verify CI for the consolidation commits.
-- [ ] Complete browser-level RTL/LTR, mobile and keyboard review after a preview deployment is available.
+- [x] Run and verify CI for the consolidation commits: 37/37 unit/security tests, TypeScript verification and production build passed on `c444bf6`; later `56850cd` contains documentation only.
+- [ ] Complete browser-level RTL/LTR, mobile and keyboard interaction review using the existing READY production deployment when the connected browser is available. The current browser connection is unavailable; no new deployment is authorized or required for this review.
 
 
 - [x] Grouped practical family ideas and the available video preview beneath the final Home journey heading; the three section headings now follow the content they introduce.
