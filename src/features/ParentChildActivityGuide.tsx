@@ -14,6 +14,7 @@ export interface GuidedActivity {
 interface ParentChildActivityGuideProps {
   activity: GuidedActivity;
   language: 'ar' | 'en';
+  ageMonths: number | null;
   onClose: () => void;
   onComplete: (activity: GuidedActivity) => Promise<boolean>;
 }
@@ -133,7 +134,7 @@ const PLAY_CHALLENGES: Record<string, { ar: string[]; en: string[] }> = {
   independence: { ar: ['رتّبوا ٣ أشياء في مكانها', 'اختاروا مهمة صغيرة للغد', 'علّموا بعض خطوة جديدة'], en: ['Put three things in their place', 'Choose one small task for tomorrow', 'Teach each other one new step'] },
 };
 
-export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> = ({ activity, language, onClose, onComplete }) => {
+export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> = ({ activity, language, ageMonths, onClose, onComplete }) => {
   const isEn = language === 'en';
   const plan = (isEn ? ENGLISH_PLANS[activity.id] : PLANS[activity.id]) ?? PLANS['family-connection'];
   const [step, setStep] = useState(0);
@@ -166,7 +167,33 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
       // Sound is optional; the activity remains fully usable if audio is unavailable.
     }
   };
-  const challenges = PLAY_CHALLENGES[activity.id] ?? PLAY_CHALLENGES['family-connection'];
+  const baseChallenges = PLAY_CHALLENGES[activity.id] ?? PLAY_CHALLENGES['family-connection'];
+  const ageChallenges = ageMonths !== null && ageMonths < 18
+    ? {
+        ar: ['راقبوا معًا لونًا أو شكلًا واضحًا', 'قلّدوا صوتًا لطيفًا بالتبادل', 'اتبعوا لعبة نظر بسيطة بإيقاع بطيء'],
+        en: ['Notice one clear color or shape together', 'Take turns copying a gentle sound', 'Follow a simple, slow visual game'],
+      }
+    : ageMonths !== null && ageMonths < 36
+      ? {
+          ar: ['اختاروا بين لونين أو صورتين كبيرتين', 'قلّدوا حركة بسيطة مع ولي الأمر', 'سمّوا شيئًا مألوفًا وشجّعوا الطفل يكرره'],
+          en: ['Choose between two large colors or pictures', 'Copy one simple movement with the parent', 'Name a familiar object and invite your child to repeat'],
+        }
+      : ageMonths !== null && ageMonths < 72
+        ? baseChallenges
+        : baseChallenges;
+  const challenges = ageChallenges;
+  const ageGuidance = ageMonths === null
+    ? (isEn ? 'Choose materials and movements that match your child’s abilities. Stay nearby and adapt whenever needed.' : 'اختاروا الخامات والحركات حسب قدرة طفلك، وكونوا قريبين منه وعدّلوا النشاط وقت الحاجة.')
+    : ageMonths < 18
+      ? (isEn ? 'For babies: keep the activity face-to-face and sensory. Use only large, securely held materials; no loose objects or small parts. Keep direct adult supervision throughout.' : 'للرضّع: خلّوا النشاط تواصل بصري وحسي مع ولي الأمر. استخدموا خامات كبيرة وممسوكة بإحكام فقط؛ ممنوع القطع الصغيرة أو الأشياء السائبة، مع إشراف مباشر طوال الوقت.')
+      : ageMonths < 36
+        ? (isEn ? 'For toddlers: use large, sturdy materials only, avoid detachable or swallowable pieces, and keep close adult supervision.' : 'للأطفال الصغيرين: استخدموا خامات كبيرة ومتينة فقط، وابعدوا أي قطع قابلة للفصل أو البلع، مع إشراف قريب ومباشر.')
+        : ageMonths < 72
+          ? (isEn ? 'For preschoolers: offer two clear choices, keep steps short, and let your child lead without pressure.' : 'لأطفال ما قبل المدرسة: اعرضوا اختيارين واضحين، وخطوات قصيرة، وسيبوا طفلك يقود التجربة من غير ضغط.')
+          : (isEn ? 'For school-age children: invite planning and choice, then let them take the lead while you stay available.' : 'للأطفال في سن المدرسة: شجّعوا التخطيط والاختيار، وسيبوا طفلك يقود التجربة مع بقائكم قريبين للمساندة.');
+  const foodSafetyNote = activity.id === 'food-rhythm'
+    ? (isEn ? 'Food activity: use only foods and textures already known to be suitable for your child. An adult handles preparation; never leave a child eating unattended.' : 'تنبيه وقت الطعام: استخدموا أطعمة وقوامًا سبق التأكد من مناسبتها لطفلك. ولي الأمر يتولى التحضير، ولا تتركوا الطفل يأكل من غير إشراف.')
+    : null;
 
   useEffect(() => {
     setStep(0);
@@ -185,9 +212,12 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
 
   const finish = async () => {
     setSaving(true);
-    const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined, chosenChallenge: chosenChallenge || undefined, childResponse });
-    setSaving(false);
-    if (ok) setSaved(true);
+    try {
+      const ok = await onComplete({ ...activity, durationMinutes: Math.max(1, Math.round(elapsed / 60)), reflectionNote: reflectionNote.trim() || undefined, chosenChallenge: chosenChallenge || undefined, childResponse });
+      if (ok) setSaved(true);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -214,6 +244,11 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <div className="rounded-2xl bg-teal-50 p-3 dark:bg-teal-400/10"><span className="text-[10px] font-bold text-teal-800 dark:text-teal-200">{isEn ? 'TIME TOGETHER' : 'وقت التجربة'}</span><p className="mt-1 flex items-center gap-1.5 text-lg font-black tabular-nums"><Clock3 size={17} /> {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}</p></div>
               <div className="rounded-2xl bg-violet-50 p-3 dark:bg-violet-400/10"><span className="text-[10px] font-bold text-violet-800 dark:text-violet-200">{isEn ? 'SUGGESTED TIME' : 'الوقت المقترح'}</span><p className="mt-1 text-lg font-black">{plan.minutes} {isEn ? 'min' : 'دقيقة'}</p></div>
             </div>
+            <div className="mb-4 rounded-2xl border border-teal-200 bg-teal-50/70 p-3 dark:border-teal-300/15 dark:bg-teal-400/10">
+              <p className="text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'Adapted to your child’s age' : 'النشاط متظبط على عمر طفلك'}</p>
+              <p className="mt-1 text-xs leading-6 text-teal-900 dark:text-teal-100">{ageGuidance}</p>
+              {foodSafetyNote && <p className="mt-2 border-t border-teal-200 pt-2 text-xs leading-6 text-teal-900 dark:border-white/10 dark:text-teal-100">{foodSafetyNote}</p>}
+            </div>
             <div className="mb-4 rounded-2xl border border-slate-200 p-3 dark:border-white/10">
               <p className="mb-2 text-xs font-black">{isEn ? 'Get these ready' : 'جهّزوا مع بعض'}</p>
               <div className="flex flex-wrap gap-2">{plan.materials.map((item) => <span key={item} className="rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-bold dark:bg-white/10">{item}</span>)}</div>
@@ -224,7 +259,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <span className="text-3xl">{['🤝', '🌱', '✨'][step]}</span>
               <h3 className="mt-3 text-xl font-black">{plan.steps[step].title}</h3>
               <p className="mt-2 text-sm leading-7 text-white/85">{plan.steps[step].prompt}</p>
-              <p className="mt-3 text-[10px] font-bold text-teal-100/75">{isEn ? 'Follow your child’s pace. Adapt or stop whenever they need.' : 'امشوا على إيقاع طفلك. غيّروا الخطوة أو وقفوا وقت ما يحتاج.'}</p>
+              <p className="mt-3 text-[10px] font-bold text-teal-100/75">{ageGuidance}</p>
             </div>
             {step === 1 && (
               <section className="mt-3 rounded-2xl border border-violet-200 bg-violet-50/80 p-3 dark:border-violet-300/15 dark:bg-violet-400/10" aria-label={isEn ? 'Choose a mini game' : 'اختاروا تحديًا صغيرًا'}>
