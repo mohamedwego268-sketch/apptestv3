@@ -19,6 +19,7 @@ import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { HomeVisualDiscovery } from './HomeVisualDiscovery';
+import { HomeDailyExperience } from './HomeDailyExperience';
 import { HomeContentTracks } from './HomeContentTracks';
 import { HomeDynamicContentSection } from './HomeDynamicContentSection';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
@@ -207,7 +208,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   // Shared open/close state for all Home accordion sections.
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
-    quickTrack: true,
+    quickTrack: false,
     dailyWisdom: false,
     heroesArena: false,
     bedtimeStories: false,
@@ -1065,6 +1066,29 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </SectionToolsDrawer>
 
+
+      {activeKid && (
+        <HomeDailyExperience
+          language={lang}
+          childName={activeKidName}
+          childEmoji={activeKid.emoji}
+          ageLabel={activeKidStageLabel}
+          records={activeKidRecentRecords}
+          todayProgress={quickPulseByKid[activeKidId] || {
+            sleepLogged: false,
+            mealLogged: false,
+            careLogged: false,
+          }}
+          onOpenDailyLog={() => {
+            setOpenAccordions((previous) => ({ ...previous, quickTrack: true }));
+            window.setTimeout(() => {
+              document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }}
+          onOpenMood={openChildMoodCheckin}
+          onOpenProfile={() => navigateTo('children')}
+        />
+      )}
 
       <HomeContentGroupHeading
         id="home-content-group-daily"
