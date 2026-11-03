@@ -53,7 +53,6 @@ Never attach a family-level reflection to a child's private record. Never use on
 | Family video preview | A preview of the real internal video feed | `media` | Only show available/reviewed media; no fake playback |
 | Practical family ideas | Small actions that can be tried today | Matching health, child profile or routine destination | CTA must match the advice |
 | Child daily log | Sleep, meal, mood and care check-ins | Save against selected child; open child profile | Never show success unless persistence succeeds |
-| Daily parenting compass | Contextual guidance for today | Add a relevant task to `routine` | Use the active child's actual profile or generic copy |
 | Child interests & activities | Discover and nurture real interests | `children` and add activity to `routine` | Empty state should help create or complete a child profile |
 | Bedtime stories | Age- and interest-aware stories | Selected real child, story library and routine | No sample identities or false AI/save claims |
 | Daily care essentials | Meals, hydration, movement and daily care | Save to child record, `medical` or `routine` as appropriate | No invented health targets; age-aware guidance |
@@ -229,3 +228,7 @@ The expert network is an editorial layer across the six existing tracks, not a s
 - [x] Grouped practical family ideas and the available video preview beneath the final Home journey heading; the three section headings now follow the content they introduce.
 - [x] Removed the temporary, local-only cheer counter from child interest cards and replaced it with a direct profile update action.
 - [x] Clarified the child interests section title to avoid implying that milestones are being tracked.
+
+
+- [x] Updated the read-aloud regression contract to assert the Daily Parenting Compass control and its explicit device-voice label.
+- [x] Latest Home consolidation CI on commit `c444bf6`: 37/37 unit/security tests passed, TypeScript verification passed and production build passed.
