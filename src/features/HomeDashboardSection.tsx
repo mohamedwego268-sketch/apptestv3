@@ -1321,7 +1321,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             ageLabel={activeKidStageLabel}
             signals={activeKidSignals}
             onNavigate={navigateTo}
-            onOpenSection={openHomeSection}
             onCompleteActivity={completeParentChildActivity}
           />
         </div>
