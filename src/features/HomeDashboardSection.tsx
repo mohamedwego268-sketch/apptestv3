@@ -380,6 +380,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     topic: string;
     durationMinutes: number;
     reflectionNote?: string;
+    chosenChallenge?: string;
   }): Promise<boolean> => {
     if (!activeKid?.remoteId) {
       onShowToast?.(isEn
@@ -396,6 +397,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       childParticipated: true,
       completedTogether: true,
       parentReflection: activity.reflectionNote || null,
+      chosenChallenge: activity.chosenChallenge || null,
     });
     if (!saved) return false;
     const refreshed = await fetchRecentChildLifeRecords([String(activeKid.remoteId)], 14);
