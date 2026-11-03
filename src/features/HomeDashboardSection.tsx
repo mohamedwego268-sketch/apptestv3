@@ -2079,9 +2079,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div
                 key={card.id}
                 data-testid={`wisdom-gallery-card-${card.id}`}
-                className={`min-w-[270px] sm:min-w-[310px] max-w-[320px] snap-start rounded-2xl border-2 ${card.borderTone} bg-[var(--color-control-muted)]/35 dark:bg-[#142430] overflow-hidden flex flex-col justify-between shrink-0 shadow-xs`}
+                className={`min-w-[270px] max-w-[320px] shrink-0 snap-start overflow-hidden rounded-3xl border ${card.borderTone} bg-white shadow-[0_10px_28px_-20px_rgba(15,23,42,0.42)] transition-shadow hover:shadow-lg dark:bg-[#142430] sm:min-w-[310px]`}
               >
-                <div className="relative h-40 w-full overflow-hidden bg-slate-900">
+                <div className="relative h-44 w-full overflow-hidden bg-slate-900">
                   <img
                     src={card.imageUrl}
                     alt={isEn ? card.titleEn : card.titleAr}
@@ -2096,8 +2096,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </h3>
                 </div>
 
-                <div className="p-3.5 flex-1 flex flex-col justify-between gap-2">
-                  <p className="text-xs font-semibold text-[var(--color-text)] dark:text-[#CBD5E1] leading-relaxed">
+                <div className="flex flex-1 flex-col justify-between gap-2.5 bg-gradient-to-b from-white to-slate-50/70 p-4 dark:from-[#142430] dark:to-[#101D26]">
+                  <p className="text-xs font-semibold leading-relaxed text-[var(--color-text)] dark:text-[#CBD5E1]">
                     {isEn ? card.wisdomEn : card.wisdomAr}
                   </p>
                 </div>
