@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { calculateAgeInMonths, extractProfileSignals, getSafeFavoriteFood } from './contentRecommendationEngine';
+import {
+  buildDailyWelcomePersonalization,
+  calculateAgeInMonths,
+  extractProfileSignals,
+  getSafeFavoriteFood,
+} from './contentRecommendationEngine';
 
 describe('dynamic profile signals', () => {
   it('calculates completed age months and rejects invalid dates', () => {
@@ -31,4 +36,60 @@ describe('dynamic profile signals', () => {
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'], foodRestrictions: ['strawberry'] }), null);
     assert.equal(getSafeFavoriteFood({ favoriteFoods: ['banana'], dislikedFoods: ['banana'] }), null);
   });
+
+  it('personalizes daily welcome and compass by child name, age, interests and time of day without inventing data', () => {
+    const morningPreschool = buildDailyWelcomePersonalization({
+      child: {
+        name: 'ليلى',
+        birth: '2022-05-01',
+        interests: 'الألوان المائية, القصص المصورة',
+        profileDetails: { hobbies: ['الرسم'] },
+      },
+      parentDisplayNameAr: 'مريم',
+      parentDisplayNameEn: 'Maryam',
+      timeBucket: 'morning',
+      now: new Date('2026-11-03T09:00:00'),
+    });
+
+    assert.equal(morningPreschool.ageStage, '2-5');
+    assert.ok(morningPreschool.greetingAr.includes('صباح الخير يا مريم'));
+    assert.ok(morningPreschool.greetingAr.includes('ليلى'));
+    assert.ok(morningPreschool.greetingEn.includes('Good morning, Maryam'));
+    assert.ok(morningPreschool.greetingEn.includes('Layla'));
+    assert.ok(morningPreschool.summaryAr.includes('الألوان المائية'));
+    assert.ok(morningPreschool.summaryEn.includes('Watercolors'));
+    assert.ok(morningPreschool.compass.actionTaskAr.includes('الألوان المائية'));
+
+    const eveningSchoolAge = buildDailyWelcomePersonalization({
+      child: {
+        name: 'يوسف',
+        birth: '2019-03-10',
+        interests: '',
+        profileDetails: { sports: ['السباحة'] },
+      },
+      parentDisplayNameAr: 'أحمد',
+      parentDisplayNameEn: 'Ahmad',
+      timeBucket: 'evening',
+      now: new Date('2026-11-03T20:00:00'),
+    });
+
+    assert.equal(eveningSchoolAge.ageStage, '5-8');
+    assert.ok(eveningSchoolAge.greetingAr.includes('مساء الهدوء يا أحمد'));
+    assert.ok(eveningSchoolAge.greetingAr.includes('يوسف'));
+    assert.ok(eveningSchoolAge.summaryAr.includes('السباحة'));
+    assert.ok(eveningSchoolAge.summaryEn.includes('Swimming'));
+
+    const noChildAfternoon = buildDailyWelcomePersonalization({
+      child: null,
+      parentDisplayNameAr: 'مريم',
+      parentDisplayNameEn: 'Maryam',
+      timeBucket: 'afternoon',
+    });
+
+    assert.equal(noChildAfternoon.ageStage, 'unknown');
+    assert.deepEqual(noChildAfternoon.topInterestsAr, []);
+    assert.ok(noChildAfternoon.greetingAr.includes('طاب يومك يا مريم'));
+    assert.ok(noChildAfternoon.greetingEn.includes('Good afternoon, Maryam'));
+  });
 });
+

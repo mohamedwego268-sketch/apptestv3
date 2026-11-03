@@ -23,7 +23,11 @@ import { HomeContentTracks } from './HomeContentTracks';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
-import { extractProfileSignals, getSafeFavoriteFood } from '../domain/contentRecommendationEngine';
+import {
+  buildDailyWelcomePersonalization,
+  extractProfileSignals,
+  getSafeFavoriteFood,
+} from '../domain/contentRecommendationEngine';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -507,59 +511,35 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     };
   };
 
+  // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
+  const isMotherActive =
+    state.activeParentAccount === 'mother' ||
+    state.role === 'mom' ||
+    parentProfileSpec.role === 'mom';
+
+  const fatherShortAr = (state.parentAccounts.father?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
+  const motherShortAr = (state.parentAccounts.mother?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
+
+  const activeParentNameAr = isMotherActive ? motherShortAr : fatherShortAr;
+  const activeParentDisplayNameAr = activeParentNameAr || (isMotherActive ? 'ماما' : 'ولي الأمر');
+  const activeParentNameEn = activeParentNameAr ? locText(activeParentNameAr, 'en') : isMotherActive ? 'Mother' : 'Parent';
+  const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
+  const partnerParentNameEn = partnerParentNameAr ? locText(partnerParentNameAr, 'en') : '';
+
+  const welcomePersonalization = useMemo(
+    () =>
+      buildDailyWelcomePersonalization({
+        child: activeKid ?? null,
+        parentDisplayNameAr: activeParentDisplayNameAr,
+        parentDisplayNameEn: activeParentNameEn,
+        timeBucket: effectiveTimeBucket,
+        recentRecords: activeKidRecentRecords,
+      }),
+    [activeKid, activeParentDisplayNameAr, activeParentNameEn, effectiveTimeBucket, activeKidRecentRecords]
+  );
+
   // Time-of-Day Dynamic Parenting Wisdom
-  const dailyCompassWisdom = useMemo(() => {
-    const childLabel = activeKidName;
-    if (effectiveTimeBucket === 'morning') {
-      return {
-        badgeAr: '☀️ بداية اليوم · تواصل قبل الانشغال',
-        badgeEn: '☀️ Morning · Connect Before the Rush',
-        titleAr: 'ابدأوا اليوم بسؤال بسيط وخطة واضحة',
-        titleEn: 'Start with One Warm Check-in and a Clear Plan',
-        bodyAr: `خدوا دقيقة مع ${childLabel}: اسألوه عن حاجة متحمس لها النهارده، وشاركوه خطوة واحدة من خطة اليوم. لو لسه صغير، خلي البداية بابتسامة وكلام هادي وتواصل مناسب لعمره.`,
-        bodyEn: `Take a minute with ${childLabel}: ask what they are looking forward to and share one simple part of the day’s plan. For younger children, start with a warm smile and calm interaction.`,
-        quoteAr: '«مش مطلوب يوم مثالي؛ المهم بداية فيها اهتمام ووضوح.»',
-        quoteEn: '“The goal is not a perfect day; it is a start built on attention and clarity.”',
-        actionLabelAr: 'إضافة لحظة تواصل للروتين',
-        actionLabelEn: 'Add a Connection Moment',
-        actionTaskAr: `خمس دقائق تواصل هادي مع ${childLabel} قبل بداية اليوم`,
-        actionTaskEn: `Five calm minutes of connection with ${childLabel}`,
-        actionTime: '07:30 ص',
-      };
-    }
-    if (effectiveTimeBucket === 'afternoon') {
-      return {
-        badgeAr: '🌤️ وقت الرجوع · اسمع قبل ما توجّه',
-        badgeEn: '🌤️ Afternoon · Listen Before You Guide',
-        titleAr: 'ادي طفلك فرصة يفصل ويحكي عن يومه',
-        titleEn: 'Give Your Child Space to Unwind and Share',
-        bodyAr: `بعد الرجوع، ابدأوا بوقت هادي ومياه أو وجبة مناسبة، وبعدها اسألوا ${childLabel} عن حاجة حلوة وحاجة كانت صعبة في يومه. سيبوا له مساحة يرد على قد سنه ومزاجه.`,
-        bodyEn: `After the day, allow some quiet time and offer water or an age-appropriate snack. Then ask ${childLabel} about one good moment and one difficult moment, without rushing the answer.`,
-        quoteAr: '«الاستماع الهادي أحياناً أهم من النصيحة السريعة.»',
-        quoteEn: '“A calm listener can matter more than a quick solution.”',
-        actionLabelAr: 'جدولة وقت حكي وونس',
-        actionLabelEn: 'Schedule a Check-in',
-        actionTaskAr: `١٠ دقائق حكي وونس مع ${childLabel} من غير شاشات`,
-        actionTaskEn: `10 screen-free minutes to reconnect with ${childLabel}`,
-        actionTime: '03:30 م',
-      };
-    }
-    return {
-      badgeAr: '🌙 نهاية اليوم · هدوء واستعداد للنوم',
-      badgeEn: '🌙 Evening · Slow Down Together',
-      titleAr: 'اختتموا اليوم بروتين بسيط ومتكرر',
-      titleEn: 'Close the Day with a Simple, Familiar Routine',
-      bodyAr: `اختاروا مع ${childLabel} نشاطاً هادئاً يناسب عمره: قصة قصيرة، ترتيب لعبة، أو حديث عن أحلى لحظة في اليوم. خفّفوا الإضاءة وخلّوا الترتيب مرناً حسب احتياج الطفل.`,
-      bodyEn: `Choose a calm, age-appropriate activity with ${childLabel}: a short story, putting a toy away, or sharing a favorite moment from the day. Soften the lights and keep the routine flexible.`,
-      quoteAr: '«الروتين المألوف يسهّل الانتقال للراحة، من غير ما يتحول لضغط.»',
-      quoteEn: '“A familiar routine can make winding down easier without turning it into pressure.”',
-      actionLabelAr: 'إضافة طقس هدوء للمساء',
-      actionLabelEn: 'Add an Evening Wind-down',
-      actionTaskAr: `وقت هادي وقصة قصيرة مع ${childLabel} قبل النوم`,
-      actionTaskEn: `A calm moment and short story with ${childLabel} before bed`,
-      actionTime: '08:00 م',
-    };
-  }, [effectiveTimeBucket, activeKidName]);
+  const dailyCompassWisdom = welcomePersonalization.compass;
 
   const toggleCompassReadAloud = () => {
     if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') {
@@ -898,20 +878,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const sportActionKey = `${activeKidId}:sports`;
   const isSportSaving = Boolean(savingDashboardActions[sportActionKey]);
 
-  // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
-  const isMotherActive =
-    state.activeParentAccount === 'mother' ||
-    state.role === 'mom' ||
-    parentProfileSpec.role === 'mom';
-
-  const fatherShortAr = (state.parentAccounts.father?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
-  const motherShortAr = (state.parentAccounts.mother?.fullName || '').replace(/\s*\(.*?\)\s*/g, '').trim();
-
-  const activeParentNameAr = isMotherActive ? motherShortAr : fatherShortAr;
-  const activeParentDisplayNameAr = activeParentNameAr || (isMotherActive ? 'ماما' : 'ولي الأمر');
-  const activeParentNameEn = activeParentNameAr ? locText(activeParentNameAr, 'en') : isMotherActive ? 'Mother' : 'Parent';
-  const partnerParentNameAr = isMotherActive ? fatherShortAr : motherShortAr;
-  const partnerParentNameEn = partnerParentNameAr ? locText(partnerParentNameAr, 'en') : '';
   const parentWellbeingMessage = useMemo(() => {
     if (effectiveTimeBucket === 'morning') {
       return {
@@ -980,6 +946,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   ? `👨🏻‍🍼 Active Profile: Parent${fatherShortAr ? ` ${activeParentNameEn}` : ''}`
                   : `👨🏻‍🍼 الحساب النشط: ولي الأمر${fatherShortAr ? ` · ${activeParentNameAr}` : ''}`}
               </span>
+              <span
+                data-testid="home-welcome-time-badge"
+                className="px-2.5 py-1 rounded-full text-[11px] font-black border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
+              >
+                {isEn ? welcomePersonalization.timeBadgeEn : welcomePersonalization.timeBadgeAr}
+              </span>
               <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
               {partnerParentNameAr && (
                 <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
@@ -992,24 +964,84 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
                 {todayFormattedCombined}
               </span>
-              
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <h1
               id="home-main-greeting-heading"
               className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
             >
-              {isEn
-                ? `Welcome back, ${activeParentNameEn} 👋 Let's make today's family routine easier.`
-                : `أهلاً يا ${activeParentDisplayNameAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`}
+              {isEn ? welcomePersonalization.greetingEn : welcomePersonalization.greetingAr}
             </h1>
-            <p className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]">
-              {isEn
-                ? `Start with what your child needs today. Keep daily care, family support and useful activities connected in one place.`
-                : `ابدأ من احتياج طفلك النهارده؛ تابع يومه، واهتم براحة الأسرة، واختار الخطوة المناسبة من مكان واحد.`}
+            <p
+              data-testid="home-welcome-personalized-summary"
+              className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]"
+            >
+              {isEn ? welcomePersonalization.summaryEn : welcomePersonalization.summaryAr}
             </p>
+
+            {activeKid && (
+              <div
+                data-testid="home-welcome-child-context"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-teal-500/20 bg-teal-50/50 dark:bg-[#142430] px-3 py-2"
+              >
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {state.kids.length > 1 ? (
+                    state.kids.map((kid, idx) => {
+                      const isSelected = idx === selectedKidIdx;
+                      const cTone = getChildColorClasses(idx);
+                      return (
+                        <button
+                          key={kid.id}
+                          type="button"
+                          data-testid={`home-welcome-kid-pill-${kid.id}`}
+                          onClick={() => setSelectedKidIdx(idx)}
+                          className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
+                            isSelected ? cTone.pillActive : cTone.pillInactive
+                          }`}
+                        >
+                          {kid.emoji} {locText(kid.name, lang)}
+                        </button>
+                      );
+                    })
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-xl bg-teal-500/12 px-2.5 py-1 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                      {activeKid.emoji} {activeKidName}
+                    </span>
+                  )}
+                  <span
+                    data-testid="home-welcome-child-age-badge"
+                    className="rounded-xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#0B131A] px-2.5 py-1 text-[11px] font-bold text-[var(--color-text)] dark:text-[#CBD5E1]"
+                  >
+                    {isEn ? welcomePersonalization.ageLabelEn : welcomePersonalization.ageLabelAr}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {(isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).length > 0 ? (
+                    (isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).map((interest) => (
+                      <span
+                        key={interest}
+                        data-testid="home-welcome-child-interest-tag"
+                        className="rounded-full border border-teal-500/25 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-bold text-teal-800 dark:text-teal-200"
+                      >
+                        🌱 {interest}
+                      </span>
+                    ))
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => navigateTo('children')}
+                      className="min-h-[34px] rounded-xl border border-dashed border-teal-500/35 px-2.5 py-1 text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
+                    >
+                      + {isEn ? 'Add child interests' : 'أضف اهتمامات الطفل'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <button
               type="button"
               data-testid="home-start-daily-checkin"
@@ -1017,7 +1049,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               className="mt-2 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-teal-700 px-4 py-3 text-xs font-black text-white shadow-sm transition-all hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98]"
             >
               <span aria-hidden="true">⚡</span>
-              {isEn ? "Start today's child check-in" : 'ابدأ بمتابعة يوم طفلك'}
+              {activeKid
+                ? isEn
+                  ? `Start ${activeKidName}'s daily check-in`
+                  : `ابدأ بمتابعة يوم ${activeKidName}`
+                : isEn
+                ? "Start today's child check-in"
+                : 'ابدأ بمتابعة يوم طفلك'}
               <span aria-hidden="true">{isEn ? '→' : '←'}</span>
             </button>
           </div>
@@ -1385,7 +1423,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   onAddSuggestedRoutineTask?.(
                     isEn ? dailyCompassWisdom.actionTaskEn : dailyCompassWisdom.actionTaskAr,
                     dailyCompassWisdom.actionTime,
-                    null
+                    activeKid?.id ?? null
                   );
                 }}
                 className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold transition-all cursor-pointer"
