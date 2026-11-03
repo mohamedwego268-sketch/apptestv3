@@ -1405,7 +1405,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <div
                 key={hero.id}
                 data-testid={`hero-passion-card-${hero.id}`}
-                className={`rounded-2xl border-2 ${hero.accentBorder} bg-[var(--color-control-muted)]/30 dark:bg-[#142430]/80 p-4 flex flex-col justify-between gap-3 transition-all`}
+                className={`flex flex-col justify-between gap-3 rounded-3xl border ${hero.accentBorder} bg-gradient-to-br from-white via-white to-slate-50/80 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.34)] transition-all hover:-translate-y-0.5 hover:shadow-md dark:from-[#142430] dark:via-[#142430] dark:to-[#101D26]`}
               >
                 <div className="space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
@@ -1434,7 +1434,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     {isEn ? hero.nextGoalEn : hero.nextGoalAr}
                   </p>
 
-                  <div className="rounded-xl bg-[var(--color-surface)]/80 dark:bg-[#0B131A]/60 border border-[var(--color-border)]/70 px-3 py-2">
+                  <div className="rounded-2xl border border-slate-200/75 bg-white/75 px-3.5 py-3 shadow-sm dark:border-[#29404D] dark:bg-[#0B131A]/65">
                     <p className="text-[10px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
                       {isEn ? 'Profile-based information' : 'معلومات من ملف الطفل'}
                     </p>
@@ -1446,11 +1446,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
+                <div className="mt-1 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3 dark:border-[#29404D]">
                   <button
                     type="button"
                     onClick={() => navigateTo('children')}
-                    className="min-h-[40px] px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-extrabold"
+                    className="min-h-[44px] rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-xs font-extrabold text-amber-800 transition-all hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:scale-[.98] dark:text-amber-200"
                   >
                     {isEn ? 'Update interests' : 'تحديث الاهتمامات'}
                   </button>
@@ -1463,7 +1463,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         hero.kidId
                       )
                     }
-                    className="min-h-[40px] px-3 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold cursor-pointer"
+                    className="min-h-[44px] rounded-xl bg-[#0d9488] px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-[#0f766e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98]"
                   >
                     + {isEn ? 'Add Activity' : 'أضف للروتين'}
                   </button>
