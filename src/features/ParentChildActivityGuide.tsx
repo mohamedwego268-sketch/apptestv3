@@ -141,6 +141,29 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
   const [saved, setSaved] = useState(false);
   const [reflectionNote, setReflectionNote] = useState('');
   const [chosenChallenge, setChosenChallenge] = useState('');
+  const [soundEnabled, setSoundEnabled] = useState(false);
+
+  const playCue = () => {
+    if (!soundEnabled || typeof window === 'undefined' || !('AudioContext' in window)) return;
+    try {
+      const audio = new window.AudioContext();
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(660, audio.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(880, audio.currentTime + 0.09);
+      gain.gain.setValueAtTime(0.0001, audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.08, audio.currentTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.18);
+      oscillator.connect(gain);
+      gain.connect(audio.destination);
+      oscillator.start();
+      oscillator.stop(audio.currentTime + 0.19);
+      oscillator.onended = () => { void audio.close(); };
+    } catch {
+      // Sound is optional; the activity remains fully usable if audio is unavailable.
+    }
+  };
   const challenges = PLAY_CHALLENGES[activity.id] ?? PLAY_CHALLENGES['family-connection'];
 
   useEffect(() => {
@@ -172,6 +195,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
             <span className="text-[10px] font-black tracking-widest text-teal-700 dark:text-teal-300">{isEn ? 'PARENT + CHILD MODE' : 'وقت مشترك · ولي الأمر والطفل'}</span>
             <h2 id="nekbaar-guided-activity-title" className="mt-1 text-lg font-black">{activity.title}</h2>
           </div>
+          <button type="button" onClick={() => setSoundEnabled((value) => !value)} aria-pressed={soundEnabled} aria-label={isEn ? 'Toggle sound effects' : 'تشغيل أو إيقاف صوت التفاعل'} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${soundEnabled ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-white'}`}><span aria-hidden="true">{soundEnabled ? '🔊' : '🔈'}</span></button>
           <button type="button" onClick={onClose} aria-label={isEn ? 'Close activity' : 'إغلاق النشاط'} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-slate-200 text-slate-700 transition hover:rotate-90 dark:bg-white/10 dark:text-white"><X size={19} /></button>
         </div>
         {saved ? (
@@ -210,12 +234,12 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
                 </div>
                 <div className="grid gap-2">
                   {(isEn ? challenges.en : challenges.ar).map((challenge, index) => (
-                    <button key={challenge} type="button" aria-pressed={chosenChallenge === challenge} onClick={() => setChosenChallenge(challenge)} className={`min-h-11 rounded-xl border px-3 py-2 text-start text-xs font-bold transition ${chosenChallenge === challenge ? 'border-violet-500 bg-violet-200 text-violet-950 dark:bg-violet-300/20 dark:text-white' : 'border-violet-200 bg-white/80 text-slate-700 hover:border-violet-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-100'}`}>
+                    <button key={challenge} type="button" aria-pressed={chosenChallenge === challenge} onClick={() => { setChosenChallenge(challenge); playCue(); }} className={`min-h-11 rounded-xl border px-3 py-2 text-start text-xs font-bold transition ${chosenChallenge === challenge ? 'border-violet-500 bg-violet-200 text-violet-950 dark:bg-violet-300/20 dark:text-white' : 'border-violet-200 bg-white/80 text-slate-700 hover:border-violet-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-100'}`}>
                       <span className="me-2 inline-grid h-6 w-6 place-items-center rounded-lg bg-violet-100 text-[10px] font-black text-violet-800 dark:bg-white/10 dark:text-violet-100">{index + 1}</span>{challenge}
                     </button>
                   ))}
                 </div>
-                {chosenChallenge && <p className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-[11px] font-black text-violet-900 dark:bg-white/10 dark:text-violet-100">{isEn ? 'Your mission:' : 'مهمتكم:'} {chosenChallenge} ✨</p>}
+                {chosenChallenge && <p aria-live="polite" className="mt-2 rounded-xl bg-white/80 px-3 py-2 text-[11px] font-black text-violet-900 dark:bg-white/10 dark:text-violet-100">{isEn ? 'Your mission:' : 'مهمتكم:'} {chosenChallenge} ✨</p>}
               </section>
             )}
             {step === plan.steps.length - 1 && (
@@ -233,7 +257,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
             )}
             <div className="mt-4 flex gap-2">
               <button type="button" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))} className="grid min-h-12 w-12 shrink-0 place-items-center rounded-xl border border-slate-200 disabled:opacity-30 dark:border-white/10">{isEn ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}</button>
-              {step < plan.steps.length - 1 ? <button type="button" onClick={() => setStep((value) => Math.min(plan.steps.length - 1, value + 1))} className="min-h-12 flex-1 rounded-xl bg-teal-600 px-4 py-3 text-sm font-black text-white transition hover:bg-teal-500">{isEn ? 'Next step →' : 'خلصنا الخطوة.. نكمل ←'}</button> : <button type="button" disabled={saving} onClick={() => void finish()} className="min-h-12 flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-500 disabled:opacity-60">{saving ? (isEn ? 'Saving…' : 'جارٍ حفظ اللحظة…') : (isEn ? 'We did it — save our moment ✓' : 'خلصنا.. سجّلوا اللحظة دي ✓')}</button>}
+              {step < plan.steps.length - 1 ? <button type="button" onClick={() => { setStep((value) => Math.min(plan.steps.length - 1, value + 1)); playCue(); }} className="min-h-12 flex-1 rounded-xl bg-teal-600 px-4 py-3 text-sm font-black text-white transition hover:bg-teal-500">{isEn ? 'Next step →' : 'خلصنا الخطوة.. نكمل ←'}</button> : <button type="button" disabled={saving} onClick={() => void finish()} className="min-h-12 flex-1 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-500 disabled:opacity-60">{saving ? (isEn ? 'Saving…' : 'جارٍ حفظ اللحظة…') : (isEn ? 'We did it — save our moment ✓' : 'خلصنا.. سجّلوا اللحظة دي ✓')}</button>}
             </div>
             <p className="mt-3 text-center text-[10px] leading-5 text-slate-500 dark:text-slate-400">{plan.reflection}</p>
           </>
