@@ -19,6 +19,7 @@ import { StoriesLibraryView } from '../components/StoriesLibraryView';
 import { CatalogView } from '../components/CatalogView';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { HomeVisualDiscovery } from './HomeVisualDiscovery';
+import { DailyChildJournal, type JournalRecordType } from './DailyChildJournal';
 import { HomeContentTracks } from './HomeContentTracks';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
@@ -394,6 +395,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         return next;
       });
     }
+  };
+
+  const saveJournalEntry = async (recordType: JournalRecordType,title: string,notes: string,details: Record<string,unknown>,occurredAt: string):Promise<boolean>=>{
+    if(!activeKid?.remoteId){onShowToast?.(isEn?'Save this child profile to the family first.':'احفظ ملف الطفل في حساب الأسرة أولًا قبل تسجيل اليوم.');return false;}
+    const result=await createChildLifeRecord({childRemoteId:activeKid.remoteId,recordType,title,notes,details:{...details,source:'daily_child_journal'},occurredAt});
+    if(result.error||!result.record){onShowToast?.(isEn?'Could not save this moment: '+(result.error||'Unknown error'):'تعذر حفظ اللحظة: '+(result.error||'خطأ غير معروف'));return false;}
+    setRecentRecordsByKid(p=>({...p,[activeKidId]:[result.record!,...(p[activeKidId]||[])].slice(0,40)}));
+    onShowToast?.(isEn?'Saved to '+activeKidName+'’s timeline ✓':'اتحفظت اللحظة في سجل '+activeKidName+' بنجاح ✓');return true;
   };
 
   const activeKidStageLabel = activeKidAge?.label || (isEn ? 'Age not set' : 'العمر غير محدد');
@@ -892,66 +901,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </p>
 
             {activeKid && (
-              <div
-                data-testid="home-welcome-child-context"
-                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-teal-500/20 bg-teal-50/50 dark:bg-[#142430] px-3 py-2"
-              >
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {state.kids.length > 1 ? (
-                    state.kids.map((kid, idx) => {
-                      const isSelected = idx === selectedKidIdx;
-                      const cTone = getChildColorClasses(idx);
-                      return (
-                        <button
-                          key={kid.id}
-                          type="button"
-                          data-testid={`home-welcome-kid-pill-${kid.id}`}
-                          onClick={() => setSelectedKidIdx(idx)}
-                          className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                            isSelected ? cTone.pillActive : cTone.pillInactive
-                          }`}
-                        >
-                          {kid.emoji} {locText(kid.name, lang)}
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-xl bg-teal-500/12 px-2.5 py-1 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {activeKid.emoji} {activeKidName}
-                    </span>
-                  )}
-                  <span
-                    data-testid="home-welcome-child-age-badge"
-                    className="rounded-xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#0B131A] px-2.5 py-1 text-[11px] font-bold text-[var(--color-text)] dark:text-[#CBD5E1]"
-                  >
-                    {isEn ? welcomePersonalization.ageLabelEn : welcomePersonalization.ageLabelAr}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {(isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).length > 0 ? (
-                    (isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).map((interest) => (
-                      <span
-                        key={interest}
-                        data-testid="home-welcome-child-interest-tag"
-                        className="rounded-full border border-teal-500/25 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-bold text-teal-800 dark:text-teal-200"
-                      >
-                        🌱 {interest}
-                      </span>
-                    ))
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('children')}
-                      className="min-h-[34px] rounded-xl border border-dashed border-teal-500/35 px-2.5 py-1 text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
-                    >
-                      + {isEn ? 'Add child interests' : 'أضف اهتمامات الطفل'}
-                    </button>
-                  )}
-                </div>
+              <div id="home-child-profile-picker" data-testid="home-welcome-child-context" className="space-y-3 rounded-3xl border border-teal-500/20 bg-gradient-to-br from-teal-50/80 via-white to-sky-50/70 p-3 dark:from-[#142B35] dark:via-[#101D26] dark:to-[#142430]">
+                <div className="flex items-center justify-between gap-2"><div><p className="text-xs font-black">{isEn?'Who are we spending time with today?':'مين معانا النهارده؟'}</p><p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn?'Choose a profile; the home adapts to them.':'اختار ملف الطفل والمحتوى هيتظبط تلقائيًا عليه.'}</p></div><span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-teal-800 dark:bg-[#0B131A]">{state.kids.length} {isEn?'profiles':'ملفات'}</span></div>
+                <div className="flex snap-x gap-2.5 overflow-x-auto pb-1">{state.kids.map((kid,idx)=>{const selected=idx===selectedKidIdx;const age=calculateChildAge(kid.birth,lang);return <button key={kid.id} type="button" data-testid={`home-welcome-kid-pill-${kid.id}`} aria-pressed={selected} onClick={()=>setSelectedKidIdx(idx)} className={`relative flex min-w-[132px] snap-start flex-col items-center gap-1.5 rounded-2xl border px-3 py-3 text-center ${selected?'border-teal-600 bg-teal-700 text-white shadow-lg':'border-[var(--color-border)] bg-white/85 text-[var(--color-text)] dark:border-[#29404D] dark:bg-[#101D26] dark:text-white'}`}><span className="grid h-14 w-14 place-items-center overflow-hidden rounded-full bg-teal-500/10">{kid.photoDataUrl&&!kid.useIllustratedAvatar?<img src={kid.photoDataUrl} alt="" className="h-full w-full object-cover"/>:<span className="text-3xl">{kid.emoji}</span>}</span><b className="max-w-full truncate text-xs">{locText(kid.name,lang)}</b><span className="text-[10px] opacity-75">{age?.label||(isEn?'Age not set':'العمر غير محدد')}</span>{selected&&<span className="absolute end-2 top-2 rounded-full bg-white px-1 text-teal-800">✓</span>}</button>})}</div>
+                <div className="flex flex-wrap gap-1.5"><span data-testid="home-welcome-child-age-badge" className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-teal-800 dark:bg-[#0B131A]">{isEn?welcomePersonalization.ageLabelEn:welcomePersonalization.ageLabelAr}</span>{(isEn?welcomePersonalization.topInterestsEn:welcomePersonalization.topInterestsAr).map(interest=><span key={interest} data-testid="home-welcome-child-interest-tag" className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[10px] font-bold text-teal-800 dark:text-teal-200">🌱 {interest}</span>)}</div>
               </div>
             )}
-
             <button
               type="button"
               data-testid="home-start-daily-checkin"
@@ -1000,6 +955,21 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
 
       </div>
+
+      <HomeContentGroupHeading
+        id="home-content-group-inspiration"
+        step="٣"
+        title={isEn ? 'Discover, watch and listen' : 'اكتشفوا.. شاهدوا.. واسمعوا'}
+        description={isEn ? 'A visual family experience shaped around your child.' : 'تجربة بصرية وصوتية تتشكل حسب عمر طفلك واهتماماته.'}
+      />
+      <HomeVisualDiscovery
+        language={lang}
+        childName={activeKidName}
+        ageLabel={activeKidStageLabel}
+        signals={activeKidSignals}
+        onNavigate={navigateTo}
+        onOpenSection={openHomeSection}
+      />
 
       {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
       <SectionToolsDrawer
@@ -1086,171 +1056,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isOpen={Boolean(openAccordions.quickTrack)}
         onToggle={() => toggleAccordion('quickTrack')}
         isEn={isEn}
-        headerExtraAction={<button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-black text-white">{isEn ? 'Open child profile' : 'فتح ملف الطفل'}</button>}
+        headerExtraAction={<button type="button" onClick={() => document.getElementById('home-child-profile-picker')?.scrollIntoView({behavior:'smooth',block:'center'})} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-black text-white">{isEn?'Switch child':'تغيير الطفل'}</button>}
       >
-        <div className="space-y-3">
-          {state.kids.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-teal-500/35 bg-teal-50/50 dark:bg-[#142430] p-4 text-center space-y-3">
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Your child’s daily log will appear here after adding a child profile.' : 'سجل يوم الطفل هيظهر هنا بعد إضافة ملفه للأسرة.'}</p>
-              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
-            </div>
-          ) : (
-          <>
-          {/* Clean Child Selector Strip */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              {isEn ? 'Select Child:' : 'اختر الطفل:'}
-            </span>
-            <div className="inline-flex flex-wrap items-center gap-1.5">
-              {state.kids.map((kid, idx) => {
-                const isActive = idx === selectedKidIdx;
-                const cTone = getChildColorClasses(idx);
-                return (
-                  <button
-                    key={kid.id}
-                    type="button"
-                    data-testid={`home-kid-switcher-${kid.id}`}
-                    onClick={() => setSelectedKidIdx(idx)}
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                      isActive ? cTone.pillActive : cTone.pillInactive
-                    }`}
-                  >
-                    {kid.emoji} {locText(kid.name, lang)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 4 Balanced, Intuitive One-Tap Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            {(() => {
-              const pulse = quickPulseByKid[activeKidId] || {
-                sleepLogged: false,
-                mealLogged: false,
-                moodEmoji: '😊',
-                careLogged: false,
-              };
-              const sleepActionKey = `${activeKidId}:sleep`;
-              const mealActionKey = `${activeKidId}:meal`;
-              const careActionKey = `${activeKidId}:care`;
-              const isSleepSaving = Boolean(savingDashboardActions[sleepActionKey]);
-              const isMealSaving = Boolean(savingDashboardActions[mealActionKey]);
-              const isCareSaving = Boolean(savingDashboardActions[careActionKey]);
-              const loggedCount = Number(pulse.sleepLogged) + Number(pulse.mealLogged) + Number(pulse.careLogged);
-              const progressPercent = Math.round((loggedCount / 3) * 100);
-              return (
-                <>
-                  <div className="col-span-2 sm:col-span-4 rounded-2xl border border-teal-500/20 bg-gradient-to-r from-teal-50 to-sky-50 dark:from-[#142B35] dark:to-[#142430] p-3.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? activeKidName + '’s daily log' : 'ملخص يوم ' + activeKidName}</p>
-                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Saved sleep, meal and care entries appear in the child profile.' : 'أي تسجيل نوم أو وجبة أو رعاية محفوظ هتلاقوه في ملف الطفل.'}</p>
-                      </div>
-                      <span className="shrink-0 rounded-xl bg-white/80 dark:bg-[#0B131A] px-3 py-2 text-xs font-black tabular-nums text-teal-800 dark:text-teal-200">{loggedCount}/3</span>
-                    </div>
-                    <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-[#0B131A]">
-                      <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-sky-500 transition-all duration-500" style={{ width: progressPercent + '%' }} />
-                    </div>
-                    <p className="mt-1.5 text-[9px] font-bold text-[var(--color-muted)]">{progressPercent === 100 ? (isEn ? 'Daily essentials completed' : 'اكتملت أساسيات تسجيل اليوم') : (isEn ? 'Complete the three essentials when they happen.' : 'سجّل الأساسيات وقت حدوثها.. من غير ضغط أو التزام يومي.')}</p>
-                  </div>
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-sleep-btn"
-                    disabled={pulse.sleepLogged || isSleepSaving}
-                    onClick={() => {
-                      void runDashboardSave(sleepActionKey, 'sleep_log', 'تسجيل النوم أو القيلولة', {}, () => {
-                        setQuickPulseByKid((prev) => {
-                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
-                          return { ...prev, [activeKidId]: { ...current, sleepLogged: true } };
-                        });
-                        onShowToast?.(isEn ? `🌙 ${activeKidName}: sleep logged and saved ✓` : `🌙 تم حفظ سجل نوم ${activeKidName} بنجاح ✓`);
-                      });
-                    }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
-                      pulse.sleepLogged
-                        ? 'border-indigo-500/40 bg-indigo-500/15 text-indigo-900 dark:text-indigo-200'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>🌙</span>
-                      <span>{isEn ? 'Sleep / Nap' : 'نوم / قيلولة'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">{isSleepSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.sleepLogged ? '✓' : '+'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-meal-btn"
-                    disabled={pulse.mealLogged || isMealSaving}
-                    onClick={() => {
-                      void runDashboardSave(mealActionKey, 'nutrition', 'تسجيل وجبة أو رضعة', { dashboardKind: 'meal' }, () => {
-                        setQuickPulseByKid((prev) => {
-                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
-                          return { ...prev, [activeKidId]: { ...current, mealLogged: true } };
-                        });
-                        onShowToast?.(isEn ? `🥣 ${activeKidName}: meal saved ✓` : `🥣 تم حفظ سجل وجبة ${activeKidName} بنجاح ✓`);
-                      });
-                    }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
-                      pulse.mealLogged
-                        ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-900 dark:text-emerald-200'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>🥣</span>
-                      <span>{isEn ? 'Meal / Feed' : 'وجبة / رضعة'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">{isMealSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.mealLogged ? '✓' : '+'}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-mood-btn"
-                    onClick={() => openChildMoodCheckin()}
-                    className="min-h-[48px] px-3.5 py-2.5 rounded-2xl border border-amber-500/40 bg-amber-500/12 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>{pulse.moodEmoji}</span>
-                      <span>{isEn ? 'Emotional check-in' : 'متابعة المشاعر'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">↗</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    data-testid="quick-pulse-care-btn"
-                    disabled={pulse.careLogged || isCareSaving}
-                    onClick={() => {
-                      void runDashboardSave(careActionKey, 'other', 'تسجيل الرعاية اليومية', { dashboardKind: 'care' }, () => {
-                        setQuickPulseByKid((prev) => {
-                          const current = prev[activeKidId] || { sleepLogged: false, mealLogged: false, moodEmoji: '😊', careLogged: false };
-                          return { ...prev, [activeKidId]: { ...current, careLogged: true } };
-                        });
-                        onShowToast?.(isEn ? `🩺 ${activeKidName}: daily care saved ✓` : `🩺 تم حفظ سجل الرعاية اليومية لـ ${activeKidName} ✓`);
-                      });
-                    }}
-                    className={`min-h-[48px] px-3.5 py-2.5 rounded-2xl border flex items-center justify-between gap-2 text-xs font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
-                      pulse.careLogged
-                        ? 'border-teal-500/40 bg-teal-500/15 text-[#0d9488] dark:text-[#2DD4BF]'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/40 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span>🩺</span>
-                      <span>{isEn ? 'Daily care' : 'رعاية يومية'}</span>
-                    </span>
-                    <span className="text-[11px] font-black">{isCareSaving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : pulse.careLogged ? '✓' : '+'}</span>
-                  </button>
-                </>
-              );
-            })()}
-          </div>
-          </>
-          )}
-        </div>
+        <div className="space-y-4">{state.kids.length===0?<div className="rounded-3xl border border-dashed border-teal-500/35 p-5 text-center"><p className="text-xs">{isEn?'Add a child profile to start.':'ضيف ملف الطفل الأول علشان نبدأ.'}</p><button onClick={()=>navigateTo('children')} className="mt-3 min-h-11 rounded-xl bg-teal-700 px-4 text-xs font-black text-white">{isEn?'Add child':'إضافة طفل'}</button></div>:<DailyChildJournal language={lang} childName={activeKidName} hasSavedProfile={Boolean(activeKid?.remoteId)} records={recentRecordsByKid[activeKidId]||[]} onSave={saveJournalEntry} onOpenChildren={()=>navigateTo('children')}/>}</div>
       </HomeAccordionCard>
 
       <div className="scroll-mt-24">
@@ -1956,20 +1764,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           13. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
-      <HomeContentGroupHeading
-        id="home-content-group-inspiration"
-        step="٣"
-        title={isEn ? 'Discover, watch and listen' : 'اكتشفوا.. شاهدوا.. واسمعوا'}
-        description={isEn ? 'A visual family experience shaped around your child.' : 'تجربة بصرية وصوتية تتشكل حسب عمر طفلك واهتماماته.'}
-      />
-      <HomeVisualDiscovery
-        language={lang}
-        childName={activeKidName}
-        ageLabel={activeKidStageLabel}
-        signals={activeKidSignals}
-        onNavigate={navigateTo}
-        onOpenSection={openHomeSection}
-      />
+
 
       {/* =====================================================================
           14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
