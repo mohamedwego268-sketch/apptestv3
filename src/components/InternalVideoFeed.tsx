@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Film } from 'lucide-react';
+import { ArrowUpLeft, ArrowUpRight, Film, Play } from 'lucide-react';
 import { supabaseClient } from '../services/supabaseService';
 import { InternalVideoPlayer } from './InternalVideoPlayer';
 
@@ -14,9 +14,9 @@ type FeedAsset = {
   created_at: string;
 };
 
-type InternalVideoFeedProps = { language?: 'ar' | 'en'; limit?: number };
+type InternalVideoFeedProps = { language?: 'ar' | 'en'; limit?: number; onOpenLibrary?: () => void };
 
-export const InternalVideoFeed: React.FC<InternalVideoFeedProps> = ({ language = 'ar', limit = 6 }) => {
+export const InternalVideoFeed: React.FC<InternalVideoFeedProps> = ({ language = 'ar', limit = 6, onOpenLibrary }) => {
   const en = language === 'en';
   const [items, setItems] = useState<FeedAsset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +49,22 @@ export const InternalVideoFeed: React.FC<InternalVideoFeedProps> = ({ language =
 
   if (loading) return <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{Array.from({length: Math.min(limit, 2)}).map((_, i) => <div key={i} className="aspect-video animate-pulse rounded-2xl bg-white/10"/>)}</div>;
   if (error) return <p role="status" className="rounded-xl border border-white/15 bg-white/5 px-3 py-3 text-xs leading-5 text-white/75">{error}</p>;
-  if (!items.length) return <div className="rounded-2xl border border-dashed border-white/20 bg-white/[0.04] px-4 py-6 text-center text-white"><Film className="mx-auto text-teal-200" size={28}/><p className="mt-2 text-xs font-extrabold">{en ? 'No approved videos yet' : 'مفيش فيديوهات معتمدة للعرض حاليًا'}</p><p className="mt-1 text-[10px] leading-5 text-white/65">{en ? 'Approved internal uploads will appear here automatically.' : 'أول ما يتم رفع الفيديوهات واعتمادها، هتظهر هنا تلقائيًا.'}</p></div>;
+  if (!items.length) return (
+    <div className="relative isolate overflow-hidden rounded-2xl border border-white/15 bg-[#0B2530] p-4 text-white sm:p-5">
+      <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&w=1000&q=80" alt="" loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#06151D] via-[#08232D]/90 to-[#0B2530]/65" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="max-w-md">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-black text-teal-100"><Film size={12}/>{en ? 'FAMILY VIDEO SPACE' : 'مساحة فيديوهات الأسرة'}</span>
+          <p className="mt-2 text-sm font-black">{en ? 'Your next family watch is waiting here' : 'لحظات المشاهدة العائلية هتلاقوها هنا'}</p>
+          <p className="mt-1 text-[10px] leading-5 text-white/75">{en ? 'New approved videos will appear automatically. Explore the library in the meantime.' : 'الفيديوهات الجديدة هتظهر تلقائيًا بعد اعتمادها. تقدروا تستكشفوا مكتبة الوسائط دلوقتي.'}</p>
+        </div>
+        <button type="button" onClick={onOpenLibrary} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-300 px-4 py-2 text-xs font-black text-[#06242A] transition hover:bg-teal-200">
+          <Play size={14}/>{en ? 'Open media library' : 'افتح مكتبة الوسائط'} {en ? <ArrowUpRight size={14}/> : <ArrowUpLeft size={14}/>}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
