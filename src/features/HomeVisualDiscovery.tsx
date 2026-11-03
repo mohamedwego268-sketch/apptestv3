@@ -14,6 +14,7 @@ interface HomeVisualDiscoveryProps {
   ageLabel: string;
   signals: HomeVisualSignals | null;
   onNavigate: (page: PageId) => void;
+  onCompleteActivity: (activity: GuidedActivity) => Promise<boolean>;
 }
 
 type VisualStory = {
@@ -161,7 +162,7 @@ const NEXT_ACTIVITY_BY_FAVORITE: Record<string, string> = {
 };
 
 export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
-  language, childName, ageLabel, signals, onNavigate,
+  language, childName, ageLabel, signals, onNavigate, onCompleteActivity,
 }) => {
   const isEn = language === 'en';
   const [isReading, setIsReading] = useState(false);
@@ -349,6 +350,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
             durationMinutes: 1,
           }}
           language={isEn ? 'en' : 'ar'}
+          ageMonths={signals?.ageMonths ?? null}
           onClose={() => setActiveActivity(null)}
           onComplete={onCompleteActivity}
         />
