@@ -1806,11 +1806,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     ? 'We are preparing a new illustrated storytelling experience for families. Details will be shared when it is ready.'
                     : 'بنجهّز تجربة جديدة للحواديت المصوّرة للأسرة. هنشارك تفاصيلها لما تكون جاهزة.'}
                 </p>
-                <p className="mt-2 text-[10px] font-bold text-violet-800 dark:text-violet-200">
-                  {isEn
-                    ? ''
-                    : ''}
-                </p>
               </div>
             </div>
           </section>
