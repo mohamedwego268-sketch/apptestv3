@@ -168,6 +168,9 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
     ].map(normalize);
     const recentTopics = signals?.recentTopics ?? [];
     const recentTitles = (signals?.recentTitles ?? []).map(normalize);
+    const sharedActivityHistory = signals?.recentSharedActivities ?? [];
+    const likedActivityIds = new Set(sharedActivityHistory.filter((entry) => entry.childResponse === 'loved' || entry.childResponse === 'repeat').map((entry) => entry.activityId).filter((id): id is string => Boolean(id)));
+    const declinedActivityIds = new Set(sharedActivityHistory.filter((entry) => entry.childResponse === 'not_interested').map((entry) => entry.activityId).filter((id): id is string => Boolean(id)));
     const hasFoodPreferences = Boolean(signals?.favoriteFoods.length || signals?.favoriteDrinks.length);
     const dayRotation = Math.floor(Date.now() / 86400000) % VISUAL_STORIES.length;
     const ranked = VISUAL_STORIES
@@ -181,7 +184,9 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           story.keywords.some((keyword) => title.includes(normalize(keyword)))
         ) ? 2 : 0;
         const foodPreferenceBoost = story.topic === 'nutrition' && hasFoodPreferences ? 5 : 0;
-        return { story, score: keywordMatches * 5 + foodPreferenceBoost + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty };
+        const childEnjoymentBoost = likedActivityIds.has(story.id) ? 12 : 0;
+        const avoidImmediateRepeat = declinedActivityIds.has(story.id) ? 10 : 0;
+        return { story, score: keywordMatches * 5 + foodPreferenceBoost + childEnjoymentBoost + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty - avoidImmediateRepeat };
       })
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
@@ -254,6 +259,11 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           <div className="flex items-center gap-2 text-teal-200"><Sparkles size={15} /><span className="text-[10px] font-black tracking-wide">{isEn ? 'PICKED FOR YOUR FAMILY' : 'اختيار مناسب لاهتمامات طفلك'}</span></div>
           <h3 className="max-w-xl text-2xl font-black leading-tight sm:text-3xl">{isEn ? featured.titleEn : featured.titleAr}</h3>
           <p className="max-w-xl text-sm leading-7 text-white/85">{isEn ? featured.bodyEn : featured.bodyAr}</p>
+          {(signals?.recentSharedActivities ?? []).some((entry) => entry.activityId === featured.id && (entry.childResponse === 'loved' || entry.childResponse === 'repeat')) && (
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200/50 bg-amber-300/15 px-3 py-1.5 text-[10px] font-black text-amber-50">
+              <Sparkles size={12} /> {isEn ? 'A favorite from your last play' : 'نشاط طفلك حبه قبل كده'}
+            </span>
+          )}
           <div className="flex flex-wrap gap-2 pt-1">
             <button type="button" onClick={() => openDestination(featured)} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-teal-400 px-4 py-3 text-xs font-black text-[#06242A] shadow-lg transition hover:bg-teal-300 active:scale-[.98]">
               {isEn ? 'Try it together' : 'جرّبوها مع بعض'} {isEn ? <ArrowUpRight size={16} /> : <ArrowUpLeft size={16} />}
