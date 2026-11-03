@@ -1954,7 +1954,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          11. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
+          13. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
       <HomeContentGroupHeading
         id="home-content-group-inspiration"
@@ -2091,7 +2091,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
-          12. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
+          14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
           ===================================================================== */}
       <HomeAccordionCard
         id="home-minimalist-gateways"
