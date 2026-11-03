@@ -293,6 +293,32 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
   );
 };
 
+
+interface HomeContentGroupHeadingProps {
+  id: string;
+  title: string;
+  description: string;
+  step: string;
+}
+
+const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
+  id,
+  title,
+  description,
+  step,
+}) => (
+  <div id={id} data-testid={id} className="flex items-center gap-3 px-1 pt-2">
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-teal-500/20 bg-teal-500/10 text-sm font-black text-teal-800 dark:text-teal-200">
+      {step}
+    </span>
+    <div className="min-w-0 flex-1">
+      <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{title}</h2>
+      <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{description}</p>
+    </div>
+    <span aria-hidden="true" className="h-px min-w-5 flex-1 bg-gradient-to-l from-teal-500/35 to-transparent" />
+  </div>
+);
+
 export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   state,
   lang,
@@ -1330,6 +1356,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           3. DAILY CHILD LOG — KEEP THE USEFUL TRACKING ACTIONS
           ===================================================================== */}
+      <HomeContentGroupHeading
+        id="home-content-group-daily"
+        step="١"
+        title={isEn ? 'Follow your child’s day' : 'تابع يوم طفلك'}
+        description={isEn ? 'Small daily records, interests and routines — all connected to the selected child.' : 'سجلات يومية واهتمامات وروتين مرتبط بملف الطفل المختار.'}
+      />
       <HomeAccordionCard
         id="home-one-handed-quick-pulse"
         testId="home-one-handed-quick-pulse"
@@ -1771,13 +1803,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
                   {isEn
-                    ? 'With a parent-approved photo, your child will become a private illustrated character in an age-aware story. This feature is not available yet.'
-                    : 'بموافقة ولي الأمر واختيار صورة الطفل، هيتحوّل لشخصية كرتونية داخل حكاية تناسب عمره واهتماماته. الميزة لسه مش متاحة، ومش بنطلب صورة دلوقتي.'}
+                    ? 'We are preparing a new illustrated storytelling experience for families. Details will be shared when it is ready.'
+                    : 'بنجهّز تجربة جديدة للحواديت المصوّرة للأسرة. هنشارك تفاصيلها لما تكون جاهزة.'}
                 </p>
                 <p className="mt-2 text-[10px] font-bold text-violet-800 dark:text-violet-200">
                   {isEn
-                    ? 'Private by design: no public profile or sharing of the child photo.'
-                    : 'خصوصية الطفل أساسية: الصورة والقصص هتكون خاصة بالأسرة، من غير نشر عام.'}
+                    ? ''
+                    : ''}
                 </p>
               </div>
             </div>
@@ -2079,6 +2111,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           8. ACCORDION: FAMILY WELLBEING & POSITIVE PARENTING SUPPORT
           Household support is separate from each child's emotional record.
           ===================================================================== */}
+      <HomeContentGroupHeading
+        id="home-content-group-growth"
+        step="٢"
+        title={isEn ? 'Support, learning and growth' : 'الدعم والتربية والنمو'}
+        description={isEn ? 'Care for parents’ wellbeing while supporting each child’s feelings, skills and values.' : 'اهتمام براحة الأب والأم، ومشاعر كل طفل، ومهاراته وقيمه.'}
+      />
       <HomeAccordionCard
         id="home-parenting-support-center"
         testId="home-parenting-support-center"
@@ -2325,6 +2363,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           10. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
           ===================================================================== */}
+      <HomeContentGroupHeading
+        id="home-content-group-inspiration"
+        step="٣"
+        title={isEn ? 'Ideas and family resources' : 'أفكار وموارد للأسرة'}
+        description={isEn ? 'Practical inspiration and useful family supplies in one place.' : 'أفكار سهلة التطبيق، ومستلزمات وخدمات تساعد الأسرة.'}
+      />
       <HomeAccordionCard
         id="home-horizontal-wisdom-gallery"
         testId="home-horizontal-wisdom-gallery"
