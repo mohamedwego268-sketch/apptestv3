@@ -345,9 +345,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     galleryScrollRef.current.scrollBy({ left: isEn ? delta : -delta, behavior: 'smooth' });
   };
 
-  // Child interests and activities are grounded in each child's own profile.
-  const [cheeredHeroIds, setCheeredHeroIds] = useState<Record<string, number>>({});
-
   // Streamlined One-Handed Quick Log State per Child (Checklist #2)
   const [quickPulseByKid, setQuickPulseByKid] = useState<
     Record<
@@ -1404,9 +1401,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to see interests and activities grounded in your family’s real information.' : 'أضيفوا ملف طفل علشان تظهر الاهتمامات والأنشطة المرتبطة ببيانات أسرتكم الفعلية.'}</p>
               <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
             </div>
-          ) : heroesPassionsFeed.map((hero) => {
-            const cheerCount = cheeredHeroIds[hero.id] ?? 0;
-            return (
+          ) : heroesPassionsFeed.map((hero) => (
               <div
                 key={hero.id}
                 data-testid={`hero-passion-card-${hero.id}`}
@@ -1451,29 +1446,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex items-center justify-between gap-2">
+                <div className="pt-2.5 border-t border-[var(--color-border)]/60 dark:border-[#1E3646] flex flex-wrap items-center justify-between gap-2">
                   <button
                     type="button"
-                    data-testid={`cheer-hero-btn-${hero.id}`}
-                    onClick={() => {
-                      setCheeredHeroIds((prev) => ({
-                        ...prev,
-                        [hero.id]: (prev[hero.id] ?? 0) + 1,
-                      }));
-                      onShowToast?.(
-                        isEn
-                          ? `🌟 Added family cheer for ${hero.nameEn}!`
-                          : `🌟 تشجيع عائلي جديد للبطل ${hero.nameAr}!`
-                      );
-                    }}
-                    className="min-h-[36px] px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 text-xs font-black cursor-pointer inline-flex items-center gap-1.5"
+                    onClick={() => navigateTo('children')}
+                    className="min-h-[40px] px-3 py-2 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs font-extrabold"
                   >
-                    <span>🌟</span>
-                    <span>
-                      {isEn ? `Cheer · ${cheerCount}` : `تشجيع البطل · ${cheerCount}`}
-                    </span>
+                    {isEn ? 'Update interests' : 'تحديث الاهتمامات'}
                   </button>
-
                   <button
                     type="button"
                     onClick={() =>
@@ -1483,19 +1463,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                         hero.kidId
                       )
                     }
-                    className="min-h-[36px] px-3 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold cursor-pointer"
+                    className="min-h-[40px] px-3 py-2 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold cursor-pointer"
                   >
                     + {isEn ? 'Add Activity' : 'أضف للروتين'}
                   </button>
                 </div>
               </div>
-            );
-          })}
+          ))}
         </div>
       </HomeAccordionCard>
 
       {/* =====================================================================
-          6. ACCORDION: AI STORYTELLER
+          6. ACCORDION: BEDTIME STORY CREATOR
           ===================================================================== */}
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
