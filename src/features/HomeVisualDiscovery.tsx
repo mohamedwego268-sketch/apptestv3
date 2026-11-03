@@ -86,6 +86,18 @@ const VISUAL_STORIES: VisualStory[] = [
     duration: '10–15 د', destination: { kind: 'section', section: 'sportsTrack' },
   },
   {
+    id: 'food-rhythm', topic: 'nutrition', minAge: 6, maxAge: 96,
+    keywords: ['وجبة', 'تغذية', 'طعام', 'مشروب', 'meal', 'nutrition', 'food'],
+    titleAr: 'اختيارات أكل تشاركوا فيها', titleEn: 'Make mealtimes a shared choice',
+    bodyAr: 'خلّوا وقت الأكل فرصة للمشاركة والاستقلال، مع مراعاة احتياجات الطفل الغذائية المسجلة.',
+    bodyEn: 'Make mealtimes a chance to participate and build independence while respecting the child’s recorded dietary needs.',
+    activityAr: 'اعرضوا اختيارين مناسبين سبق التأكد من ملاءمتهما لحساسية الطفل واحتياجاته، وسيبوه يختار.',
+    activityEn: 'Offer two options already confirmed as suitable for the child’s allergies and dietary needs, then let them choose.',
+    tagAr: 'التغذية والعادات', tagEn: 'Nutrition & routines',
+    image: 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=1200&q=85',
+    duration: 'وقت الوجبة', destination: { kind: 'section', section: 'dailyEssentials' },
+  },
+  {
     id: 'feelings-checkin', topic: 'wellbeing', minAge: 0, maxAge: 96,
     keywords: ['مشاعر', 'قلق', 'هدوء', 'تواصل', 'feelings', 'calm', 'emotion'],
     titleAr: 'دقيقة تسمعوا فيها بعض', titleEn: 'One minute to really listen',
@@ -149,10 +161,15 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
       ...(signals?.interests ?? []),
       ...(signals?.hobbies ?? []),
       ...(signals?.sports ?? []),
+      ...(signals?.favoriteFoods ?? []),
+      ...(signals?.favoriteDrinks ?? []),
+      ...Object.values(signals?.sleepPreferences ?? {}).filter((value): value is string => typeof value === 'string'),
+      ...Object.values(signals?.emotionalProfile ?? {}).filter((value): value is string => typeof value === 'string'),
     ].map(normalize);
     const recentTopics = signals?.recentTopics ?? [];
     const recentTitles = (signals?.recentTitles ?? []).map(normalize);
-    const dayRotation = Math.floor(Date.now() / 86400000) % 3;
+    const hasFoodPreferences = Boolean(signals?.favoriteFoods.length || signals?.favoriteDrinks.length);
+    const dayRotation = Math.floor(Date.now() / 86400000) % VISUAL_STORIES.length;
     const ranked = VISUAL_STORIES
       .filter((story) => ageMonths === null || (ageMonths >= story.minAge && ageMonths <= story.maxAge))
       .map((story) => {
@@ -160,14 +177,21 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           profileWords.some((word) => word.includes(normalize(keyword)) || normalize(keyword).includes(word))
         ).length;
         const recentPenalty = recentTopics.includes(story.topic) ? 2 : 0;
-        const titlePenalty = recentTitles.some((title) => title.includes(story.topic)) ? 1 : 0;
-        return { story, score: keywordMatches * 5 + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty };
+        const titlePenalty = recentTitles.some((title) =>
+          story.keywords.some((keyword) => title.includes(normalize(keyword)))
+        ) ? 2 : 0;
+        const foodPreferenceBoost = story.topic === 'nutrition' && hasFoodPreferences ? 5 : 0;
+        return { story, score: keywordMatches * 5 + foodPreferenceBoost + (ageMonths === null ? 0 : 2) - recentPenalty - titlePenalty };
       })
-      .sort((a, b) => b.score - a.score || a.story.id.localeCompare(b.story.id))
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        const ai = VISUAL_STORIES.findIndex((story) => story.id === a.story.id);
+        const bi = VISUAL_STORIES.findIndex((story) => story.id === b.story.id);
+        return ((ai - dayRotation + VISUAL_STORIES.length) % VISUAL_STORIES.length) -
+          ((bi - dayRotation + VISUAL_STORIES.length) % VISUAL_STORIES.length);
+      })
       .map((entry) => entry.story);
-    if (ranked.length < 2) return ranked;
-    const rotation = dayRotation % Math.min(3, ranked.length);
-    return [...ranked.slice(rotation), ...ranked.slice(0, rotation)].slice(0, 4);
+    return ranked.slice(0, 4);
   }, [signals]);
 
   const featured = recommendations[0] ?? VISUAL_STORIES[0];
