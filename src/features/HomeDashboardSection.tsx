@@ -1856,6 +1856,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             if (selectedIndex >= 0) setSelectedKidIdx(selectedIndex);
           }}
           language={lang}
+          activeParentRole={isMotherActive ? 'mother' : 'father'}
+          motherName={motherShortAr}
+          fatherName={fatherShortAr}
+          recentRecordsByKid={recentRecordsByKid}
           onSaveChildMood={async (kidId, mood) => {
             const targetKid = state.kids.find((kid) => kid.id === kidId);
             if (!targetKid?.remoteId) {

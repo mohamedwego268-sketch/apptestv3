@@ -1,9 +1,19 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { calculateChildAge, ChildProfile, LanguageCode, locText } from '../domain/familySpaceCore';
-
-type ChildMoodId = 'happy' | 'calm' | 'sad' | 'angry' | 'worried' | 'tired' | 'overwhelmed';
-type HouseholdEnergy = 'steady' | 'tired' | 'overloaded';
-type HouseholdCoordination = 'shared' | 'uneven' | 'not_discussed';
+import type { RecommendationProfile } from '../domain/contentRecommendationEngine';
+import {
+  buildChildStageEmotionalGuidance,
+  buildFamilyBondingRituals,
+  buildParentEmotionalSupportCards,
+  buildPositiveParentingAdviceList,
+  buildScenarioPersonalizedAddOn,
+  ChildMoodId,
+  FamilyBondingModeId,
+  HouseholdCoordination,
+  HouseholdEnergy,
+  ParentSupportRole,
+  PositiveParentingFocusId,
+} from '../domain/familyWellbeingEngine';
 
 const CHILD_MOODS: Array<{
   id: ChildMoodId;
@@ -109,13 +119,17 @@ const PARENTING_SCENARIOS = [
   },
 ] as const;
 
-interface ParentingSupportCenterProps {
+export interface ParentingSupportCenterProps {
   kids: ChildProfile[];
   language: LanguageCode;
   onSaveChildMood: (kidId: number, mood: (typeof CHILD_MOODS)[number]) => Promise<boolean>;
   onAddRoutineTask?: (taskName: string, time: string, kidId: number | null) => void;
   initialKidId?: number | null;
   onActiveKidChange?: (kidId: number) => void;
+  activeParentRole?: ParentSupportRole;
+  motherName?: string;
+  fatherName?: string;
+  recentRecordsByKid?: Record<number, RecommendationProfile['recentRecords']>;
 }
 
 export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
@@ -125,6 +139,10 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   onAddRoutineTask,
   initialKidId,
   onActiveKidChange,
+  activeParentRole = 'mother',
+  motherName,
+  fatherName,
+  recentRecordsByKid,
 }) => {
   const isEn = language === 'en';
   const [activeKidId, setActiveKidId] = useState<number | null>(initialKidId ?? kids[0]?.id ?? null);
@@ -136,6 +154,13 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
       setActiveKidId(kids[0]?.id ?? null);
     }
   }, [initialKidId, kids, activeKidId]);
+
+  const [selectedParentRole, setSelectedParentRole] = useState<ParentSupportRole>(activeParentRole);
+  useEffect(() => {
+    setSelectedParentRole(activeParentRole);
+  }, [activeParentRole]);
+
+  const [selectedParentCardIdx, setSelectedParentCardIdx] = useState<number>(0);
   const [selectedMoodByKid, setSelectedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savedMoodByKid, setSavedMoodByKid] = useState<Record<number, ChildMoodId>>({});
   const [savingMood, setSavingMood] = useState(false);
@@ -143,15 +168,77 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   const [selectedScenario, setSelectedScenario] = useState<(typeof PARENTING_SCENARIOS)[number]['id']>('big-feelings');
   const [householdEnergy, setHouseholdEnergy] = useState<HouseholdEnergy>('steady');
   const [householdCoordination, setHouseholdCoordination] = useState<HouseholdCoordination>('shared');
+  const [selectedPositiveFocus, setSelectedPositiveFocus] = useState<PositiveParentingFocusId>('confidence');
+  const [selectedBondingMode, setSelectedBondingMode] = useState<FamilyBondingModeId>('dialogue');
 
   const activeKid = useMemo(
     () => kids.find((kid) => kid.id === activeKidId) || kids[0] || null,
     [kids, activeKidId]
   );
+  const activeKidRecords = activeKid ? recentRecordsByKid?.[activeKid.id] ?? [] : [];
   const activeMood = activeKid ? CHILD_MOODS.find((mood) => mood.id === selectedMoodByKid[activeKid.id]) : null;
   const savedMood = activeKid ? CHILD_MOODS.find((mood) => mood.id === savedMoodByKid[activeKid.id]) : null;
   const scenario = PARENTING_SCENARIOS.find((item) => item.id === selectedScenario) || PARENTING_SCENARIOS[0];
   const ageLabel = activeKid ? calculateChildAge(activeKid.birth, language).label : '';
+
+  const parentSupportCards = useMemo(
+    () =>
+      buildParentEmotionalSupportCards({
+        role: selectedParentRole,
+        motherName,
+        fatherName,
+        kidsCount: kids.length,
+        selectedChildNameAr: activeKid ? locText(activeKid.name, 'ar') : undefined,
+        selectedChildNameEn: activeKid ? locText(activeKid.name, 'en') : undefined,
+      }),
+    [selectedParentRole, motherName, fatherName, kids.length, activeKid]
+  );
+
+  const activeParentCard = parentSupportCards[selectedParentCardIdx % parentSupportCards.length] || parentSupportCards[0];
+
+  const childStageGuidance = useMemo(
+    () =>
+      buildChildStageEmotionalGuidance({
+        child: activeKid,
+        selectedMoodId: activeMood?.id ?? null,
+        recentRecords: activeKidRecords,
+      }),
+    [activeKid, activeMood?.id, activeKidRecords]
+  );
+
+  const positiveAdviceList = useMemo(
+    () =>
+      buildPositiveParentingAdviceList({
+        child: activeKid,
+        recentRecords: activeKidRecords,
+      }),
+    [activeKid, activeKidRecords]
+  );
+  const activePositiveAdvice =
+    positiveAdviceList.find((item) => item.id === selectedPositiveFocus) || positiveAdviceList[0];
+
+  const scenarioPersonalization = useMemo(
+    () =>
+      buildScenarioPersonalizedAddOn({
+        scenarioId: selectedScenario,
+        child: activeKid,
+        kidsCount: kids.length,
+        recentRecords: activeKidRecords,
+      }),
+    [selectedScenario, activeKid, kids.length, activeKidRecords]
+  );
+
+  const familyBondingRituals = useMemo(
+    () =>
+      buildFamilyBondingRituals({
+        child: activeKid,
+        kidsCount: kids.length,
+        recentRecords: activeKidRecords,
+      }),
+    [activeKid, kids.length, activeKidRecords]
+  );
+  const activeBondingRitual =
+    familyBondingRituals.find((item) => item.id === selectedBondingMode) || familyBondingRituals[0];
 
   const householdGuidance = householdEnergy === 'overloaded'
     ? (isEn
@@ -201,14 +288,117 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
 
   return (
     <div className="space-y-4" dir={isEn ? 'ltr' : 'rtl'} data-testid="parenting-support-center">
-      <section className="rounded-3xl border border-rose-300/35 bg-gradient-to-br from-rose-50/80 via-white to-teal-50/60 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-rose-900/40 dark:from-[#241B26] dark:via-[#101D26] dark:to-[#142430]" data-testid="household-wellbeing-checkin">
-        <div className="flex items-start gap-3">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-500/12 text-2xl">🏡</span>
-          <div className="min-w-0">
-            <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'The whole household · Parents first' : 'البيت كله · الأب والأم أولًا'}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'A quick check-in about the adults and shared responsibilities — separate from each child’s personal record.' : 'متابعة سريعة لحالة الكبار وتوزيع المسؤوليات، وده منفصل تمامًا عن سجل كل طفل.'}</p>
+      {/* =====================================================================
+          1. EMOTIONAL SUPPORT FOR PARENTS (MOTHERS & FATHERS) + HOUSEHOLD CHECK-IN
+          ===================================================================== */}
+      <section
+        className="rounded-3xl border border-rose-300/35 bg-gradient-to-br from-rose-50/80 via-white to-teal-50/60 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-rose-900/40 dark:from-[#241B26] dark:via-[#101D26] dark:to-[#142430]"
+        data-testid="household-wellbeing-checkin"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-500/12 text-2xl">🏡</span>
+            <div className="min-w-0">
+              <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+                {isEn ? 'The whole household · Parents first' : 'البيت كله · الأب والأم أولًا'}
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                {isEn
+                  ? 'Emotional support for mothers and fathers, plus shared responsibility check-ins — separate from each child’s record.'
+                  : 'مساندة نفسية للأم والأب، ومتابعة لطاقة البيت وتوزيع المسؤوليات — وده منفصل تمامًا عن سجل كل طفل.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-500/20 bg-white/80 p-1 dark:border-[#1E3646] dark:bg-[#0B131A]/70">
+            <button
+              type="button"
+              data-testid="parent-support-role-mother"
+              aria-pressed={selectedParentRole === 'mother'}
+              onClick={() => {
+                setSelectedParentRole('mother');
+                setSelectedParentCardIdx(0);
+              }}
+              className={`min-h-[38px] rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all cursor-pointer ${
+                selectedParentRole === 'mother'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-[var(--color-text)] dark:text-[#CBD5E1]'
+              }`}
+            >
+              {isEn ? '👩🏻‍🍼 For Mom' : '👩🏻‍🍼 دعم الأم'}
+            </button>
+            <button
+              type="button"
+              data-testid="parent-support-role-father"
+              aria-pressed={selectedParentRole === 'father'}
+              onClick={() => {
+                setSelectedParentRole('father');
+                setSelectedParentCardIdx(0);
+              }}
+              className={`min-h-[38px] rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all cursor-pointer ${
+                selectedParentRole === 'father'
+                  ? 'bg-teal-700 text-white shadow-xs'
+                  : 'text-[var(--color-text)] dark:text-[#CBD5E1]'
+              }`}
+            >
+              {isEn ? '👨🏻‍🍼 For Dad' : '👨🏻‍🍼 دعم الأب'}
+            </button>
           </div>
         </div>
+
+        <div
+          data-testid="parent-role-emotional-support"
+          className="rounded-2xl border border-rose-500/20 bg-white/85 p-3.5 shadow-sm space-y-2.5 dark:border-[#29404D] dark:bg-[#0B131A]/75"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="rounded-full bg-rose-500/12 px-2.5 py-1 text-[11px] font-black text-rose-800 dark:text-rose-200">
+              {isEn ? activeParentCard.badgeEn : activeParentCard.badgeAr}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {parentSupportCards.map((card, idx) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  data-testid={`parent-support-card-tab-${idx}`}
+                  onClick={() => setSelectedParentCardIdx(idx)}
+                  className={`min-h-[32px] rounded-lg px-2.5 py-1 text-[11px] font-extrabold border transition-all cursor-pointer ${
+                    idx === selectedParentCardIdx
+                      ? 'border-rose-500 bg-rose-500/15 text-rose-900 dark:text-rose-100'
+                      : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-muted)]'
+                  }`}
+                >
+                  {isEn ? `Message ${idx + 1}` : `رسالة ${idx + 1}`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <h4 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-white leading-snug">
+            {isEn ? activeParentCard.titleEn : activeParentCard.titleAr}
+          </h4>
+          <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+            {isEn ? activeParentCard.bodyEn : activeParentCard.bodyAr}
+          </p>
+          <div className="rounded-xl bg-rose-50/80 dark:bg-[#142430] px-3 py-2 text-xs font-bold text-[var(--color-text)] dark:text-[#E2E8F0]">
+            💡 {isEn ? activeParentCard.practicalStepEn : activeParentCard.practicalStepAr}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() =>
+                onAddRoutineTask?.(
+                  isEn ? activeParentCard.routineTaskEn : activeParentCard.routineTaskAr,
+                  activeParentCard.routineTime,
+                  null
+                )
+              }
+              className="min-h-[44px] rounded-xl bg-rose-700 px-3.5 py-2 text-xs font-extrabold text-white hover:bg-rose-800 transition-colors cursor-pointer"
+            >
+              + {isEn ? 'Schedule parent recharge in routine' : 'أضف وقت راحة الوالدين للروتين'}
+            </button>
+          </div>
+        </div>
+
         <div className="space-y-2">
           <p className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'How is the household energy today?' : 'طاقة البيت والأب والأم عاملة إيه النهارده؟'}</p>
           <div className="grid grid-cols-3 gap-2">
@@ -238,14 +428,20 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         <div className="rounded-2xl border border-slate-200/75 bg-white/75 p-3.5 shadow-sm space-y-2.5 dark:border-[#29404D] dark:bg-[#0B131A]/65">
           <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{householdGuidance}</p>
           <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{coordinationGuidance}</p>
-          <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute parent check-in and task sharing' : 'جلسة تنسيق وراحة للأب والأم لمدة ١٠ دقائق', '08:30 م', null)} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white hover:bg-teal-800">
+          <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute parent check-in and task sharing' : 'جلسة تنسيق وراحة للأب والأم لمدة ١٠ دقائق', '08:30 م', null)} className="min-h-[44px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white hover:bg-teal-800">
             + {isEn ? 'Add a family check-in to the routine' : 'أضف جلسة تنسيق للأسرة للروتين'}
           </button>
         </div>
         <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'This is a supportive reflection, not a mental-health assessment or diagnosis. Household answers stay in this screen and are not saved.' : 'دي مساحة مساندة للتفكير، مش تقييم أو تشخيص نفسي. اختيارات البيت هنا لا تُحفظ ولا تُرسل.'}</p>
       </section>
 
-      <section className="rounded-3xl border border-sky-300/35 bg-gradient-to-br from-sky-50/75 via-white to-cyan-50/40 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-sky-900/40 dark:from-[#172D3A] dark:via-[#101F2B] dark:to-[#101D26]" data-testid="child-emotional-checkin">
+      {/* =====================================================================
+          2. CHILDREN'S EMOTIONAL WELLBEING BY AGE & DEVELOPMENTAL STAGE
+          ===================================================================== */}
+      <section
+        className="rounded-3xl border border-sky-300/35 bg-gradient-to-br from-sky-50/75 via-white to-cyan-50/40 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-sky-900/40 dark:from-[#172D3A] dark:via-[#101F2B] dark:to-[#101D26]"
+        data-testid="child-emotional-checkin"
+      >
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-sky-500/12 text-2xl">🧒</span>
           <div className="min-w-0">
@@ -271,6 +467,22 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                   <p className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">{locText(activeKid.name, language)} · {ageLabel || (isEn ? 'Age not recorded' : 'العمر غير مسجل')}</p>
                   <span className="text-[10px] font-bold text-[var(--color-muted)]">{isEn ? 'Private child record' : 'سجل خاص بالطفل'}</span>
                 </div>
+
+                <div
+                  data-testid="child-stage-emotional-guidance"
+                  className="rounded-2xl border border-sky-500/20 bg-white/80 p-3.5 shadow-sm space-y-2 dark:border-[#29404D] dark:bg-[#0B131A]/70"
+                >
+                  <span className="inline-block rounded-full bg-sky-500/12 px-2.5 py-0.5 text-[11px] font-black text-sky-800 dark:text-sky-200">
+                    {isEn ? childStageGuidance.stageBadgeEn : childStageGuidance.stageBadgeAr}
+                  </span>
+                  <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">
+                    {isEn ? childStageGuidance.coreNeedEn : childStageGuidance.coreNeedAr}
+                  </p>
+                  <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+                    💬 {isEn ? childStageGuidance.communicationTipEn : childStageGuidance.communicationTipAr}
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {CHILD_MOODS.map((mood) => (
                     <button key={mood.id} type="button" aria-pressed={selectedMoodByKid[activeKid.id] === mood.id} onClick={() => {
@@ -284,9 +496,27 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                 {activeMood && (
                   <div className="rounded-2xl border border-sky-500/20 bg-white/80 p-3.5 shadow-sm space-y-2.5 dark:bg-[#0B131A]/70">
                     <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{isEn ? activeMood.responseEn : activeMood.responseAr}</p>
-                    <button type="button" disabled={savingMood} onClick={() => void handleSaveMood()} className="min-h-[42px] rounded-xl bg-sky-700 px-4 py-2 text-xs font-extrabold text-white disabled:opacity-50">
-                      {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظ في ملف الطفل')}
-                    </button>
+                    <p className="text-xs leading-relaxed text-sky-900 dark:text-sky-200">
+                      🌱 {isEn ? childStageGuidance.moodFollowUpEn : childStageGuidance.moodFollowUpAr}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button type="button" disabled={savingMood} onClick={() => void handleSaveMood()} className="min-h-[44px] rounded-xl bg-sky-700 px-4 py-2 text-xs font-extrabold text-white disabled:opacity-50">
+                        {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظ في ملف الطفل')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          onAddRoutineTask?.(
+                            isEn ? childStageGuidance.suggestedRoutineTaskEn : childStageGuidance.suggestedRoutineTaskAr,
+                            '05:30 م',
+                            activeKid.id
+                          )
+                        }
+                        className="min-h-[44px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3.5 py-2 text-xs font-extrabold text-sky-800 dark:text-sky-200"
+                      >
+                        + {isEn ? 'Add connection step to routine' : 'أضف خطوة تواصل لروتين الطفل'}
+                      </button>
+                    </div>
                     {savedMood?.id === activeMood.id && <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">✓ {isEn ? 'Saved to the child record.' : 'تم حفظ الحالة في سجل الطفل.'}</p>}
                     {moodSaveError && <p role="alert" className="text-[11px] font-bold leading-relaxed text-rose-700 dark:text-rose-300">{moodSaveError}</p>}
                   </div>
@@ -300,7 +530,85 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A mood log is not a diagnosis. If distress is persistent, severe or affects safety and daily functioning, speak with a qualified professional.' : 'تسجيل المزاج مش تشخيص. لو الضيق مستمر أو شديد أو مؤثر على الأمان والحياة اليومية، تواصلوا مع مختص مؤهل.'}</p>
       </section>
 
-      <section className="rounded-3xl border border-amber-300/35 bg-gradient-to-br from-amber-50/75 via-white to-orange-50/35 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-amber-900/40 dark:from-[#29251D] dark:via-[#1D1B18] dark:to-[#101D26]" data-testid="parenting-situation-guide">
+      {/* =====================================================================
+          3. POSITIVE PARENTING GUIDANCE & PRACTICAL DAILY ADVICE
+          ===================================================================== */}
+      <section
+        className="rounded-3xl border border-teal-300/35 bg-gradient-to-br from-teal-50/75 via-white to-emerald-50/40 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-teal-900/40 dark:from-[#122A2B] dark:via-[#101D26] dark:to-[#142430]"
+        data-testid="positive-parenting-daily-guidance"
+      >
+        <div className="flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-500/12 text-2xl">🌱</span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+              {isEn ? 'Positive Parenting & Daily Practical Guidance' : 'التربية الإيجابية وإرشادات التعامل اليومي'}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              {isEn
+                ? 'Four distinct, non-repetitive pillars tailored to your child’s stage and interests.'
+                : '٤ مسارات عملية متجددة تناسب عمر طفلك واهتماماته لبناء الثقة والهدوء بدون صدام.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {positiveAdviceList.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              data-testid={`positive-parenting-focus-${item.id}`}
+              aria-pressed={selectedPositiveFocus === item.id}
+              onClick={() => setSelectedPositiveFocus(item.id)}
+              className={`min-h-[60px] rounded-2xl border px-3 py-2 text-start text-xs font-extrabold shadow-xs transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 cursor-pointer ${
+                selectedPositiveFocus === item.id
+                  ? 'border-teal-600 bg-teal-500/15 text-teal-900 dark:text-teal-100'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'
+              }`}
+            >
+              <span className="block text-base">{item.emoji}</span>
+              <span>{isEn ? item.labelEn : item.labelAr}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-2xl border border-teal-500/20 bg-white/85 p-3.5 shadow-sm space-y-3 dark:border-[#29404D] dark:bg-[#0B131A]/70">
+          <h4 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+            {isEn ? activePositiveAdvice.headlineEn : activePositiveAdvice.headlineAr}
+          </h4>
+          <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+            {isEn ? activePositiveAdvice.adviceEn : activePositiveAdvice.adviceAr}
+          </p>
+          <div className="rounded-xl bg-teal-500/10 p-3">
+            <p className="text-[10px] font-black text-teal-800 dark:text-teal-200">
+              {isEn ? 'Suggested phrase' : 'جملة عملية مقترحة'}
+            </p>
+            <p className="mt-1 text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn ? activePositiveAdvice.sayThisEn : activePositiveAdvice.sayThisAr}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              onAddRoutineTask?.(
+                isEn ? activePositiveAdvice.routineTaskEn : activePositiveAdvice.routineTaskAr,
+                activePositiveAdvice.routineTime,
+                activeKid?.id ?? null
+              )
+            }
+            className="min-h-[44px] rounded-xl bg-teal-700 px-3.5 py-2 text-xs font-extrabold text-white hover:bg-teal-800 transition-colors cursor-pointer"
+          >
+            + {isEn ? 'Add practice to daily routine' : 'أضف هذا التطبيق لروتين اليوم'}
+          </button>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          4. HANDLING COMMON PARENTING SITUATIONS (WITH STAGE & INTEREST ADAPTATION)
+          ===================================================================== */}
+      <section
+        className="rounded-3xl border border-amber-300/35 bg-gradient-to-br from-amber-50/75 via-white to-orange-50/35 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-amber-900/40 dark:from-[#29251D] dark:via-[#1D1B18] dark:to-[#101D26]"
+        data-testid="parenting-situation-guide"
+      >
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-500/12 text-2xl">🧭</span>
           <div>
@@ -317,6 +625,14 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         </div>
         <div className="rounded-2xl border border-amber-500/20 bg-white/80 p-3.5 shadow-sm space-y-3.5 dark:bg-[#0B131A]/70">
           <h4 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? scenario.titleEn : scenario.titleAr}</h4>
+          <div className="rounded-xl border border-amber-500/20 bg-amber-50/70 dark:bg-[#142430] p-3 space-y-1.5">
+            <p className="text-[11px] font-black text-amber-900 dark:text-amber-200">
+              {isEn ? scenarioPersonalization.stageNoteEn : scenarioPersonalization.stageNoteAr}
+            </p>
+            <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">
+              {isEn ? scenarioPersonalization.personalizedPhraseEn : scenarioPersonalization.personalizedPhraseAr}
+            </p>
+          </div>
           <div>
             <p className="text-[11px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'Try these steps' : 'جرّبوا الخطوات دي'}</p>
             <ol className="mt-1 space-y-1.5 ps-5 list-decimal text-xs leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">
@@ -335,6 +651,91 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             <p className="text-[10px] font-black text-teal-800 dark:text-teal-200">{isEn ? 'When to seek extra support' : 'إمتى نطلب دعم متخصص؟'}</p>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? scenario.seekEn : scenario.seekAr}</p>
           </div>
+          <button
+            type="button"
+            onClick={() =>
+              onAddRoutineTask?.(
+                isEn ? scenarioPersonalization.preventiveTaskEn : scenarioPersonalization.preventiveTaskAr,
+                scenarioPersonalization.preventiveTime,
+                activeKid?.id ?? null
+              )
+            }
+            className="min-h-[44px] rounded-xl bg-amber-700 px-3.5 py-2 text-xs font-extrabold text-white hover:bg-amber-800 transition-colors cursor-pointer"
+          >
+            + {isEn ? 'Add preventive step to routine' : 'أضف خطوة وقائية للروتين'}
+          </button>
+        </div>
+      </section>
+
+      {/* =====================================================================
+          5. FAMILY COMMUNICATION & BONDING RITUALS
+          ===================================================================== */}
+      <section
+        className="rounded-3xl border border-indigo-300/35 bg-gradient-to-br from-indigo-50/75 via-white to-sky-50/40 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-indigo-900/40 dark:from-[#1B1F38] dark:via-[#101D26] dark:to-[#142430]"
+        data-testid="family-bonding-communication-hub"
+      >
+        <div className="flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-indigo-500/12 text-2xl">🤝</span>
+          <div className="min-w-0">
+            <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+              {isEn ? 'Family Communication & Bonding Rituals' : 'التواصل الأسري وطقوس الترابط اليومية'}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+              {isEn
+                ? 'Simple daily habits for warm conversation, child-led connection, and mutual appreciation.'
+                : 'عادات يومية بسيطة للحوار الدافئ، والوقت المشترك، والتقدير المتبادل بين أفراد الأسرة.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {familyBondingRituals.map((ritual) => (
+            <button
+              key={ritual.id}
+              type="button"
+              data-testid={`family-bonding-mode-${ritual.id}`}
+              aria-pressed={selectedBondingMode === ritual.id}
+              onClick={() => setSelectedBondingMode(ritual.id)}
+              className={`min-h-[54px] rounded-2xl border px-3 py-2 text-start text-xs font-extrabold shadow-xs transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer ${
+                selectedBondingMode === ritual.id
+                  ? 'border-indigo-600 bg-indigo-500/15 text-indigo-900 dark:text-indigo-100'
+                  : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'
+              }`}
+            >
+              <span className="me-1.5">{ritual.emoji}</span>
+              <span>{isEn ? ritual.labelEn : ritual.labelAr}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="rounded-2xl border border-indigo-500/20 bg-white/85 p-3.5 shadow-sm space-y-3 dark:border-[#29404D] dark:bg-[#0B131A]/70">
+          <h4 className="text-sm font-black text-[var(--color-text)] dark:text-white">
+            {isEn ? activeBondingRitual.titleEn : activeBondingRitual.titleAr}
+          </h4>
+          <p className="text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
+            {isEn ? activeBondingRitual.descriptionEn : activeBondingRitual.descriptionAr}
+          </p>
+          <div className="rounded-xl bg-indigo-500/10 p-3">
+            <p className="text-[10px] font-black text-indigo-800 dark:text-indigo-200">
+              {isEn ? 'Start with these words' : 'ابدأوا الحوار بالجملة دي'}
+            </p>
+            <p className="mt-1 text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#F8FAFC]">
+              {isEn ? activeBondingRitual.promptEn : activeBondingRitual.promptAr}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() =>
+              onAddRoutineTask?.(
+                isEn ? activeBondingRitual.routineTaskEn : activeBondingRitual.routineTaskAr,
+                activeBondingRitual.routineTime,
+                activeKid?.id ?? null
+              )
+            }
+            className="min-h-[44px] rounded-xl bg-indigo-700 px-3.5 py-2 text-xs font-extrabold text-white hover:bg-indigo-800 transition-colors cursor-pointer"
+          >
+            + {isEn ? 'Schedule bonding ritual in routine' : 'أضف طقس الترابط لروتين الأسرة'}
+          </button>
         </div>
       </section>
     </div>
