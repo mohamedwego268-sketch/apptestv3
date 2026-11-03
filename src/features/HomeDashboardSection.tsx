@@ -1350,7 +1350,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 onClick={toggleCompassReadAloud}
                 className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-teal-500/35 bg-teal-500/10 text-xs font-extrabold text-teal-800 dark:text-teal-200"
               >
-                {isReadingCompass ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : (isEn ? '🔊 Listen' : '🔊 استمع')}
+                {isReadingCompass ? (isEn ? '⏸ Pause' : '⏸ إيقاف') : (isEn ? '🔊 Listen with device voice' : '🔊 استمع بصوت الجهاز')}
               </button>
               <button
                 type="button"
