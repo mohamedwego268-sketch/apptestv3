@@ -3740,6 +3740,48 @@ export async function fetchDailyChildLifeRecords(
   }
 }
 
+/**
+ * Fetch a bounded recent history for recommendation context.
+ * The same verified-family check and child_life_records RLS apply; callers
+ * pass only the active family's saved child UUIDs.
+ */
+export async function fetchRecentChildLifeRecords(
+  childRemoteIds: string[],
+  days = 14,
+  customClient?: SupabaseClient | null
+): Promise<{ records: DailyChildLifeRecord[]; error: string | null }> {
+  const activeClient = customClient !== undefined ? customClient : supabaseClient;
+  const ids = [...new Set(childRemoteIds.filter(isValidUuid))];
+  if (!activeClient) return { records: [], error: 'Supabase client is not initialized.' };
+  if (ids.length === 0) return { records: [], error: null };
+
+  try {
+    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+      return { records: [], error: verifiedCtx.error || 'A verified family account is required.' };
+    }
+    const safeDays = Math.max(1, Math.min(30, Math.floor(days) || 14));
+    const since = new Date(Date.now() - safeDays * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await withSupabaseTimeout(
+      activeClient
+        .from('child_life_records')
+        .select('id,child_id,record_type,title,notes,occurred_at,details')
+        .eq('family_id', verifiedCtx.verifiedFamilyId)
+        .in('child_id', ids)
+        .gte('occurred_at', since)
+        .order('occurred_at', { ascending: false })
+        .limit(200)
+    );
+    if (error) throw error;
+    return { records: (Array.isArray(data) ? data : []) as DailyChildLifeRecord[], error: null };
+  } catch (err) {
+    return {
+      records: [],
+      error: err instanceof Error ? err.message : 'Unable to load recent child records.',
+    };
+  }
+}
+
 export async function createChildLifeRecord(params: {
   childRemoteId: string | number;
   recordType: ChildLifeRecordType;

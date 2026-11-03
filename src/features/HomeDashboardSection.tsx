@@ -22,7 +22,8 @@ import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { HomeContentTracks } from './HomeContentTracks';
 import { HomeValuesTrackSection } from './HomeValuesTrackSection';
 import { HomeLearningTrackSection } from './HomeLearningTrackSection';
-import { createChildLifeRecord, fetchDailyChildLifeRecords } from '../services/supabaseService';
+import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
+import { extractProfileSignals, getSafeFavoriteFood } from '../domain/contentRecommendationEngine';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -358,6 +359,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     >
   >({});
   const [savingDashboardActions, setSavingDashboardActions] = useState<Record<string, boolean>>({});
+  const [recentRecordsByKid, setRecentRecordsByKid] = useState<Record<number, DailyChildLifeRecord[]>>({});
   const savingDashboardActionKeysRef = useRef(new Set<string>());
 
   // Daily Essentials Interactive State
@@ -375,16 +377,38 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidId = activeKid?.id ?? -1;
   const activeKidAge = activeKid ? calculateChildAge(activeKid.birth, lang) : null;
   const activeKidName = activeKid ? locText(activeKid.name, lang) : isEn ? 'your child' : 'طفلك';
+  const activeKidRecentRecords = recentRecordsByKid[activeKidId] ?? [];
+  const activeKidSignals = useMemo(
+    () => activeKid
+      ? extractProfileSignals({ child: activeKid, language: lang, recentRecords: activeKidRecentRecords })
+      : null,
+    [activeKid, activeKidRecentRecords, lang]
+  );
+  const activeKidFavoriteFood = getSafeFavoriteFood(activeKid?.profileDetails);
+  const latestSportRecord = activeKidRecentRecords.find((record) => record.record_type === 'sports');
 
   // Hydrate the dashboard's one-tap indicators from today's real family records.
   useEffect(() => {
     const savedChildren = state.kids.filter((kid) => typeof kid.remoteId === 'string' && kid.remoteId);
     if (!state.verifiedFamilyId || savedChildren.length === 0) {
       setQuickPulseByKid({});
+      setRecentRecordsByKid({});
       return;
     }
     let active = true;
-    void fetchDailyChildLifeRecords(savedChildren.map((kid) => String(kid.remoteId))).then(({ records }) => {
+    const childRemoteIds = savedChildren.map((kid) => String(kid.remoteId));
+    void fetchRecentChildLifeRecords(childRemoteIds, 14).then(({ records }) => {
+      if (!active) return;
+      const remoteToLocal = new Map(savedChildren.map((kid) => [String(kid.remoteId), kid.id]));
+      const grouped: Record<number, DailyChildLifeRecord[]> = {};
+      for (const record of records) {
+        const localId = remoteToLocal.get(record.child_id);
+        if (localId === undefined) continue;
+        (grouped[localId] ||= []).push(record);
+      }
+      setRecentRecordsByKid(grouped);
+    });
+    void fetchDailyChildLifeRecords(childRemoteIds).then(({ records }) => {
       if (!active) return;
       const remoteToLocal = new Map(savedChildren.map((kid) => [String(kid.remoteId), kid.id]));
       const next: typeof quickPulseByKid = {};
@@ -691,10 +715,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         snack: {
           badgeAr: '🍌 وجبة خفيفة',
           badgeEn: '🍌 Snack idea',
-          titleAr: `وجبة خفيفة مفضلة لدى ${activeKidName}`,
-          titleEn: `A snack ${activeKidName} enjoys`,
-          descAr: 'استخدموا الأطعمة المفضلة المسجلة في ملف الطفل إذا كانت مناسبة ولا تتعارض مع أي قيود.',
-          descEn: 'Use foods recorded as favorites when they are suitable and do not conflict with dietary restrictions.',
+          titleAr: activeKidFavoriteFood
+            ? `فكرة سناك باستخدام ${activeKidFavoriteFood} لـ ${activeKidName}`
+            : `وجبة خفيفة مفضلة لدى ${activeKidName}`,
+          titleEn: activeKidFavoriteFood
+            ? `A snack idea using ${locText(activeKidFavoriteFood, lang)} for ${activeKidName}`
+            : `A snack ${activeKidName} enjoys`,
+          descAr: activeKidFavoriteFood
+            ? 'هذا الطعام مسجل كمفضل في ملف الطفل. راعوا الكمية والملاءمة العمرية وطريقة التقديم الآمنة.'
+            : 'لا نقترح طعامًا محددًا هنا؛ راجعوا القيود والتفضيلات المسجلة قبل اختيار الوجبة.',
+          descEn: activeKidFavoriteFood
+            ? 'This food is recorded as a favorite. Consider age suitability, serving size and safe preparation.'
+            : 'No specific food is suggested here; review recorded restrictions and preferences before choosing.',
           time: '04:00 م',
         },
       };
@@ -710,7 +742,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       lunchbox: { badgeAr: '🍱 وجبة اليوم', badgeEn: '🍱 Meal idea', titleAr: generalTitleAr, titleEn: generalTitleEn, descAr: generalDescAr, descEn: generalDescEn, time: '11:30 ص' },
       snack: { badgeAr: '🍎 وجبة خفيفة', badgeEn: '🍎 Snack idea', titleAr: generalTitleAr, titleEn: generalTitleEn, descAr: generalDescAr, descEn: generalDescEn, time: '03:45 م' },
     };
-  }, [activeKid?.birth, activeKidAge?.months, activeKidAge?.stageCode, activeKidName]);
+  }, [activeKid?.birth, activeKid?.profileDetails, activeKidAge?.months, activeKidAge?.stageCode, activeKidFavoriteFood, activeKidName, lang]);
 
   const currentNutrition = nutritionPlans[selectedMealSlot];
 
@@ -787,14 +819,26 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
 
     if (stageCode === '5-8') {
+      const preferredSport = activeKidSignals?.sports[0];
+      const localizedSport = preferredSport ? locText(preferredSport, lang) : null;
+      const recentSportNoteAr = latestSportRecord?.title ? ` آخر نشاط مسجل: ${latestSportRecord.title}.` : '';
+      const recentSportNoteEn = latestSportRecord?.title ? ` Last logged activity: ${latestSportRecord.title}.` : '';
       return {
         outdoor: {
-          badgeAr: '🏊‍♂️ رياضة واستقلالية حركية',
-          badgeEn: '🏊‍♂️ Swimming & Athletic Agility',
-          titleAr: `٤٠ دقيقة تمرين سباحة أو كرة قدم وتفريغ طاقة بدون شاشات لـ ${activeKidName}`,
-          titleEn: `40-Min Screen-Free Swimming or Football Practice for ${activeKidName}`,
-          descAr: 'يعزز اللياقة البدنية، الثقة بالنفس، والالتزام بجدول توازن اللعب والمذاكرة.',
-          descEn: 'Builds stamina, teamwork discipline, and healthy screen-time balance.',
+          badgeAr: preferredSport ? `🏅 رياضة ${preferredSport}` : '🏊‍♂️ رياضة واستقلالية حركية',
+          badgeEn: preferredSport ? `🏅 ${localizedSport} activity` : '🏊‍♂️ Swimming & Athletic Agility',
+          titleAr: preferredSport
+            ? `نشاط ${preferredSport} مناسب لعمر ${activeKidName}`
+            : `٤٠ دقيقة نشاط حركي مناسب للعمر لـ ${activeKidName}`,
+          titleEn: preferredSport
+            ? `Age-aware ${localizedSport} activity for ${activeKidName}`
+            : `40-Min Age-Aware Physical Activity for ${activeKidName}`,
+          descAr: preferredSport
+            ? `ابدؤوا بوقت قصير يناسب قدرة الطفل، وبإشراف مناسب. لا حاجة لفرض تدريب أو منافسة.${recentSportNoteAr}`
+            : 'اختاروا نشاطًا يحبه الطفل، وراعوا قدرته وإشراف شخص بالغ وتوازن الحركة مع الراحة.',
+          descEn: preferredSport
+            ? `Start with a short session suited to the child’s ability and appropriate supervision; there is no need to force training or competition.${recentSportNoteEn}`
+            : 'Choose a movement activity the child enjoys, with suitable supervision and a balance of activity and rest.',
           time: '05:00 م',
         },
         balance: {
@@ -847,7 +891,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         time: '06:00 م',
       },
     };
-  }, [activeKidAge?.stageCode, activeKidName]);
+  }, [activeKidAge?.stageCode, activeKidName, activeKidSignals?.sports, lang, latestSportRecord?.title]);
 
   const currentSport = sportActivities[selectedSportSlot];
   const isSportDoneToday = Boolean(completedSportByKid[activeKidId]);
@@ -1843,6 +1887,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           language={lang}
           childName={activeKidName}
           ageStage={activeKidAge?.stageCode || 'all'}
+          childInterests={activeKidSignals?.interests ?? []}
+          childHobbies={activeKidSignals?.hobbies ?? []}
           childId={activeKid?.id ?? null}
           onNavigate={navigateTo}
           onAddRoutineTask={onAddSuggestedRoutineTask}

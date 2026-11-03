@@ -7,6 +7,8 @@ interface HomeLearningTrackSectionProps {
   language: LanguageCode;
   childName: string;
   ageStage: AgeStage;
+  childInterests?: string[];
+  childHobbies?: string[];
   childId: number | null;
   onNavigate: (pageId: PageId) => void;
   onAddRoutineTask?: (taskName: string, time: string, kidId: number | null) => void;
@@ -118,12 +120,41 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
   language,
   childName,
   ageStage,
+  childInterests = [],
+  childHobbies = [],
   childId,
   onNavigate,
   onAddRoutineTask,
 }) => {
   const isEn = language === 'en';
-  const activities = LEARNING_BY_AGE[ageStage] || LEARNING_BY_AGE.all;
+  const baseActivities = LEARNING_BY_AGE[ageStage] || LEARNING_BY_AGE.all;
+  const interest = childInterests[0];
+  const hobby = childHobbies[0];
+  const activities = baseActivities.map((activity, index) => {
+    if (index === 0 && interest) {
+      return {
+        ...activity,
+        titleAr: `اكتشفوا ${interest} سوا`,
+        titleEn: `Explore ${interest} together`,
+        descriptionAr: `ابدؤوا بسؤال بسيط أو نشاط قصير حول ${interest}، وسيبوا الطفل يقود التجربة حسب فضوله.`,
+        descriptionEn: `Start with a simple question or short activity around ${interest}, and let the child lead at their own pace.`,
+        taskAr: `وقت اكتشاف: ${interest}`,
+        taskEn: `Explore: ${interest}`,
+      };
+    }
+    if (index === 1 && hobby) {
+      return {
+        ...activity,
+        titleAr: `طوّروا مهارة مرتبطة بـ ${hobby}`,
+        titleEn: `Build on the hobby: ${hobby}`,
+        descriptionAr: `خصصوا وقتًا قصيرًا لـ ${hobby} مع تشجيع المحاولة والاختيار دون مقارنة.`,
+        descriptionEn: `Set aside a short, child-led moment for ${hobby}, encouraging experimentation without comparison.`,
+        taskAr: `وقت نشاط: ${hobby}`,
+        taskEn: `Hobby time: ${hobby}`,
+      };
+    }
+    return activity;
+  });
 
   return (
     <section data-testid="home-learning-track" dir={isEn ? 'ltr' : 'rtl'} className="space-y-3">
