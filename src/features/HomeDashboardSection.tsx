@@ -1001,14 +1001,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
 
-        <HomeContentTracks
-          language={lang}
-          childName={activeKidName}
-          onNavigate={navigateTo}
-          onOpenSection={openHomeSection}
-        />
-
-
       </div>
 
       {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
@@ -1060,30 +1052,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         ]}
       >
         <div className="space-y-3">
-          {state.kids.length > 0 && (
-            <div className="space-y-1.5">
-              <div className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                {isEn ? 'Active Child Focus' : 'تخصيص العرض حسب الطفل'}
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {state.kids.map((kid, idx) => (
-                  <button
-                    key={kid.id}
-                    type="button"
-                    onClick={() => setSelectedKidIdx(idx)}
-                    className={`min-h-[36px] px-3 py-1.5 rounded-xl border text-xs font-extrabold transition-colors cursor-pointer ${
-                      selectedKidIdx === idx
-                        ? 'border-[#0d9488] bg-[#0d9488] text-white'
-                        : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-bg)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC]'
-                    }`}
-                  >
-                    {locText(kid.name, lang)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {onReplaySplash && (
             <div className="border-t border-[var(--color-border)] pt-2 dark:border-[#1E3646]">
               <button
@@ -1286,6 +1254,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           )}
         </div>
       </HomeAccordionCard>
+
+      <div className="scroll-mt-24">
+        <HomeContentTracks
+          language={lang}
+          childName={activeKidName}
+          onNavigate={navigateTo}
+          onOpenSection={openHomeSection}
+        />
+      </div>
 
       {/* =====================================================================
           4. ACCORDION: TIME-AWARE PARENTING COMPASS
