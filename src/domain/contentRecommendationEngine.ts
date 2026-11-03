@@ -61,6 +61,16 @@ export function extractProfileSignals(profile: RecommendationProfile) {
       return 'general';
     }),
     recentTitles: recentRecords.slice(0, 12).map((record) => record.title?.trim()).filter((title): title is string => Boolean(title)),
+    recentSharedActivities: recentRecords
+      .filter((record) => record.details?.dashboardKind === 'shared_activity')
+      .slice(0, 12)
+      .map((record) => ({
+        activityId: typeof record.details?.activityId === 'string' ? record.details.activityId : null,
+        childResponse: ['loved', 'okay', 'not_interested', 'repeat'].includes(String(record.details?.childResponse))
+          ? String(record.details?.childResponse) as 'loved' | 'okay' | 'not_interested' | 'repeat'
+          : null,
+        occurredAt: record.occurred_at ?? null,
+      })),
   };
 }
 
