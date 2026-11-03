@@ -201,7 +201,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
 
   return (
     <div className="space-y-4" dir={isEn ? 'ltr' : 'rtl'} data-testid="parenting-support-center">
-      <section className="rounded-2xl border border-rose-300/45 dark:border-rose-900/50 bg-gradient-to-br from-rose-50/80 via-[var(--color-surface)] to-teal-50/60 dark:from-[#241B26] dark:via-[#101D26] dark:to-[#142430] p-4 space-y-3" data-testid="household-wellbeing-checkin">
+      <section className="rounded-3xl border border-rose-300/35 bg-gradient-to-br from-rose-50/80 via-white to-teal-50/60 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-rose-900/40 dark:from-[#241B26] dark:via-[#101D26] dark:to-[#142430]" data-testid="household-wellbeing-checkin">
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-500/12 text-2xl">🏡</span>
           <div className="min-w-0">
@@ -217,7 +217,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
               ['tired', '😮‍💨', 'محتاجين راحة', 'Need a break'],
               ['overloaded', '🫶', 'الضغط كبير', 'Overloaded'],
             ] as const).map(([id, emoji, ar, en]) => (
-              <button key={id} type="button" aria-pressed={householdEnergy === id} onClick={() => setHouseholdEnergy(id)} className={`min-h-[68px] rounded-xl border px-2 py-2 text-center text-[11px] font-extrabold transition-colors ${householdEnergy === id ? 'border-rose-500 bg-rose-500/12 text-rose-800 dark:text-rose-200' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+              <button key={id} type="button" aria-pressed={householdEnergy === id} onClick={() => setHouseholdEnergy(id)} className={`min-h-[68px] rounded-2xl border px-2 py-2 text-center text-[11px] font-extrabold shadow-[0_3px_12px_-10px_rgba(15,23,42,0.3)] transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 active:scale-[.98] ${householdEnergy === id ? 'border-rose-500 bg-rose-500/12 text-rose-800 dark:text-rose-200' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
                 <span className="block text-xl">{emoji}</span><span>{isEn ? en : ar}</span>
               </button>
             ))}
@@ -231,11 +231,11 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
               ['uneven', 'فيه حمل على طرف أكتر', 'Uneven load'],
               ['not_discussed', 'محتاجين نتكلم ونتفق', 'Need to discuss'],
             ] as const).map(([id, ar, en]) => (
-              <button key={id} type="button" aria-pressed={householdCoordination === id} onClick={() => setHouseholdCoordination(id)} className={`min-h-[44px] rounded-xl border px-3 py-2 text-xs font-bold transition-colors ${householdCoordination === id ? 'border-teal-500 bg-teal-500/10 text-teal-800 dark:text-teal-200' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>{isEn ? en : ar}</button>
+              <button key={id} type="button" aria-pressed={householdCoordination === id} onClick={() => setHouseholdCoordination(id)} className={`min-h-[46px] rounded-2xl border px-3 py-2.5 text-xs font-bold shadow-[0_3px_12px_-10px_rgba(15,23,42,0.3)] transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] ${householdCoordination === id ? 'border-teal-500 bg-teal-500/10 text-teal-800 dark:text-teal-200' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>{isEn ? en : ar}</button>
             ))}
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--color-border)]/70 bg-white/65 dark:bg-[#0B131A]/55 p-3 space-y-2">
+        <div className="rounded-2xl border border-slate-200/75 bg-white/75 p-3.5 shadow-sm space-y-2.5 dark:border-[#29404D] dark:bg-[#0B131A]/65">
           <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{householdGuidance}</p>
           <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{coordinationGuidance}</p>
           <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute parent check-in and task sharing' : 'جلسة تنسيق وراحة للأب والأم لمدة ١٠ دقائق', '08:30 م', null)} className="min-h-[40px] rounded-xl bg-teal-700 px-3 py-2 text-xs font-extrabold text-white hover:bg-teal-800">
@@ -245,7 +245,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'This is a supportive reflection, not a mental-health assessment or diagnosis. Household answers stay in this screen and are not saved.' : 'دي مساحة مساندة للتفكير، مش تقييم أو تشخيص نفسي. اختيارات البيت هنا لا تُحفظ ولا تُرسل.'}</p>
       </section>
 
-      <section className="rounded-2xl border border-sky-300/45 dark:border-sky-900/45 bg-sky-50/55 dark:bg-[#101F2B] p-4 space-y-3" data-testid="child-emotional-checkin">
+      <section className="rounded-3xl border border-sky-300/35 bg-gradient-to-br from-sky-50/75 via-white to-cyan-50/40 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-sky-900/40 dark:from-[#172D3A] dark:via-[#101F2B] dark:to-[#101D26]" data-testid="child-emotional-checkin">
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-sky-500/12 text-2xl">🧒</span>
           <div className="min-w-0">
@@ -260,7 +260,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                 <button key={kid.id} type="button" aria-pressed={activeKid?.id === kid.id} onClick={() => {
                     setActiveKidId(kid.id);
                     onActiveKidChange?.(kid.id);
-                  }} className={`min-h-[42px] rounded-xl border px-3 py-2 text-xs font-extrabold ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+                  }} className={`min-h-[44px] rounded-2xl border px-3 py-2 text-xs font-extrabold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
                   {kid.emoji} {locText(kid.name, language)}
                 </button>
               ))}
@@ -276,13 +276,13 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                     <button key={mood.id} type="button" aria-pressed={selectedMoodByKid[activeKid.id] === mood.id} onClick={() => {
                         setSelectedMoodByKid((previous) => ({ ...previous, [activeKid.id]: mood.id }));
                         setMoodSaveError(null);
-                      }} className={`min-h-[64px] rounded-xl border px-2 py-2 text-center transition-colors ${selectedMoodByKid[activeKid.id] === mood.id ? 'border-sky-600 bg-sky-500/15 text-sky-900 dark:text-sky-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+                      }} className={`min-h-[68px] rounded-2xl border px-2 py-2.5 text-center shadow-[0_3px_12px_-10px_rgba(15,23,42,0.3)] transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 active:scale-[.98] ${selectedMoodByKid[activeKid.id] === mood.id ? 'border-sky-600 bg-sky-500/15 text-sky-900 dark:text-sky-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
                       <span className="block text-xl">{mood.emoji}</span><span className="text-[11px] font-extrabold">{isEn ? mood.labelEn : mood.labelAr}</span>
                     </button>
                   ))}
                 </div>
                 {activeMood && (
-                  <div className="rounded-xl border border-sky-500/25 bg-white/70 dark:bg-[#0B131A]/60 p-3 space-y-2">
+                  <div className="rounded-2xl border border-sky-500/20 bg-white/80 p-3.5 shadow-sm space-y-2.5 dark:bg-[#0B131A]/70">
                     <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{isEn ? activeMood.responseEn : activeMood.responseAr}</p>
                     <button type="button" disabled={savingMood} onClick={() => void handleSaveMood()} className="min-h-[42px] rounded-xl bg-sky-700 px-4 py-2 text-xs font-extrabold text-white disabled:opacity-50">
                       {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظ في ملف الطفل')}
@@ -300,7 +300,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A mood log is not a diagnosis. If distress is persistent, severe or affects safety and daily functioning, speak with a qualified professional.' : 'تسجيل المزاج مش تشخيص. لو الضيق مستمر أو شديد أو مؤثر على الأمان والحياة اليومية، تواصلوا مع مختص مؤهل.'}</p>
       </section>
 
-      <section className="rounded-2xl border border-amber-300/45 dark:border-amber-900/40 bg-amber-50/45 dark:bg-[#1D1B18] p-4 space-y-3" data-testid="parenting-situation-guide">
+      <section className="rounded-3xl border border-amber-300/35 bg-gradient-to-br from-amber-50/75 via-white to-orange-50/35 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.32)] space-y-4 dark:border-amber-900/40 dark:from-[#29251D] dark:via-[#1D1B18] dark:to-[#101D26]" data-testid="parenting-situation-guide">
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-500/12 text-2xl">🧭</span>
           <div>
@@ -310,12 +310,12 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {PARENTING_SCENARIOS.map((item) => (
-            <button key={item.id} type="button" aria-pressed={selectedScenario === item.id} onClick={() => setSelectedScenario(item.id)} className={`min-h-[64px] rounded-xl border px-2 py-2 text-start text-xs font-extrabold transition-colors ${selectedScenario === item.id ? 'border-amber-600 bg-amber-500/15 text-amber-900 dark:text-amber-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+            <button key={item.id} type="button" aria-pressed={selectedScenario === item.id} onClick={() => setSelectedScenario(item.id)} className={`min-h-[68px] rounded-2xl border px-3 py-2.5 text-start text-xs font-extrabold shadow-[0_3px_12px_-10px_rgba(15,23,42,0.3)] transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:scale-[.98] ${selectedScenario === item.id ? 'border-amber-600 bg-amber-500/15 text-amber-900 dark:text-amber-100' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
               <span className="block text-lg">{item.emoji}</span>{isEn ? item.titleEn : item.titleAr}
             </button>
           ))}
         </div>
-        <div className="rounded-xl border border-amber-500/25 bg-white/70 dark:bg-[#0B131A]/65 p-3 space-y-3">
+        <div className="rounded-2xl border border-amber-500/20 bg-white/80 p-3.5 shadow-sm space-y-3.5 dark:bg-[#0B131A]/70">
           <h4 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? scenario.titleEn : scenario.titleAr}</h4>
           <div>
             <p className="text-[11px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'Try these steps' : 'جرّبوا الخطوات دي'}</p>
