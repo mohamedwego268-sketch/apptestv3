@@ -2240,6 +2240,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
+                onClick={() => openHomeSection('parentingSupport')}
+                className="min-h-[38px] px-3.5 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs font-extrabold text-rose-800 dark:text-rose-200"
+              >
+                {isEn ? 'Family support' : 'دعم الأسرة'}
+              </button>
+              <button
+                type="button"
                 data-testid="daily-compass-read-aloud-toggle"
                 aria-label={isReadingCompass ? (isEn ? 'Pause reading' : 'إيقاف القراءة') : (isEn ? 'Read today’s guidance aloud' : 'استمع لإرشاد اليوم')}
                 onClick={toggleCompassReadAloud}
@@ -2545,7 +2552,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             ? 'Practical support for parents, individual child check-ins and everyday situations'
             : 'رسائل وإرشادات بسيطة للأب والأم، وأفكار تساعد الأسرة في المواقف اليومية'
         }
-        badgeText={isEn ? 'Parents + Each Child' : 'البيت + كل طفل'}
+        badgeText={isEn ? 'Whole family' : 'الأسرة كلها'}
         headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Family messages' : 'رسائل الأسرة'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
         isOpen={Boolean(openAccordions.parentingSupport)}
         onToggle={() => toggleAccordion('parentingSupport')}
