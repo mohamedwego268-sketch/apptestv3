@@ -53,13 +53,13 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="image-card-badge px-2.5 py-0.5 rounded-full text-xs font-extrabold">
-              {isEn ? 'Your children’s profiles and milestones' : 'تابعوا تفاصيل كل طفل وتطوراته في مكان واحد'}
+              {isEn ? 'Your children’s profiles and growth' : 'كل معلومات طفلك وتفاصيل نموه في مكان واحد'}
             </span>
           </div>
           <h2 className="image-card-title text-base sm:text-lg font-extrabold leading-snug">
             {isEn
-              ? '3D Child Profiles, Milestones & Growth Tracker'
-              : 'ملفات أطفالنا 3D · متابعة النمو والمحطات العمرية'}
+              ? 'Child Profiles & Growth'
+              : 'ملف طفلك ومتابعة نموه'}
           </h2>
         </div>
         <PrimaryCtaButton variant="teal" size="sm" onClick={onOpenAddChild}>
@@ -104,8 +104,8 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
       {state.kids.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] p-6 text-center text-xs sm:text-sm font-bold text-[var(--color-muted)]">
           {isEn
-            ? 'No child profiles yet. Tap "+ Add Child Profile" to create the first profile.'
-            : 'لا توجد ملفات أطفال حاليًا. اضغط على «إضافة طفل جديد» لإنشاء الملف الأول.'}
+            ? 'No children added yet. Tap "+ Add Child Profile" to add your first child.'
+            : 'لسه مفيش أطفال مضافين. اضغط على «إضافة طفل جديد» عشان تضيف أول طفل.'}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -173,7 +173,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                     onClick={() => onOpenEditChild(kid)}
                     className="min-h-[44px] px-2.5 text-xs font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline cursor-pointer"
                   >
-                    {isEn ? 'Edit Growth' : 'تعديل النمو'}
+                    {isEn ? 'Edit Child Info' : 'تعديل بيانات الطفل'}
                   </button>
                 }
                 bodyContent={
@@ -209,7 +209,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                     {/* Stage & Health Compact Card */}
                     <div className="rounded-xl bg-white/85 dark:bg-[#142430] border border-white dark:border-[#1E3646] p-3 text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed break-words">
                       <div className="font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] mb-1">
-                        {isEn ? 'Passions & Milestones:' : 'عالم الاهتمامات والمحطة الحالية:'}
+                        {isEn ? 'Interests:' : 'الحاجات اللي بيحبها:'}
                       </div>
                       {locText(kid.interests || 'لم تحدد الاهتمامات بعد', lang)} ·{' '}
                       {isEn ? 'Vaccinations:' : 'التطعيمات:'}{' '}
@@ -231,7 +231,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                       onClick={() => onOpenEditChild(kid)}
                       className="min-h-[44px] px-3.5 py-2 rounded-xl text-xs font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] shadow-2xs cursor-pointer"
                     >
-                      {isEn ? 'Edit Child Profile & Growth' : 'تعديل ملف الطفل وبيانات النمو'}
+                      {isEn ? 'Edit Child Profile' : 'تعديل ملف الطفل'}
                     </button>
                     <button
                       type="button"
