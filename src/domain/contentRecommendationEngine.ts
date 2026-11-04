@@ -40,7 +40,13 @@ export function extractProfileSignals(profile: RecommendationProfile) {
     ...cleanList(details.interests),
     ...(profile.child.interests || '').split(/[,،;|]/).map((value) => value.trim()).filter(Boolean),
   ];
-  const recentRecords = profile.recentRecords ?? [];
+  const now = profile.now ?? new Date();
+  const recentRecords = (profile.recentRecords ?? []).filter((record) => {
+    if (!record.occurred_at) return false;
+    const occurredAt = new Date(record.occurred_at).getTime();
+    const ageMs = now.getTime() - occurredAt;
+    return Number.isFinite(occurredAt) && ageMs >= 0 && ageMs <= 14 * 24 * 60 * 60 * 1000;
+  });
   return {
     ageMonths: calculateAgeInMonths(profile.child.birth, profile.now),
     interests: [...new Set(interests)],

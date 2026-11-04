@@ -17,13 +17,31 @@ describe('dynamic profile signals', () => {
         profileDetails: { hobbies: ['painting'], sports: ['football'], favoriteFoods: ['banana'] },
       },
       language: 'en',
-      recentRecords: [{ record_type: 'sports', title: 'Football practice' }],
+      recentRecords: [{ record_type: 'sports', title: 'Football practice', occurred_at: '2025-12-31T12:00:00.000Z' }],
       now: new Date('2026-01-01T12:00:00'),
     });
     assert.ok(signals.interests.includes('space'));
     assert.deepEqual(signals.hobbies, ['painting']);
     assert.deepEqual(signals.sports, ['football']);
     assert.deepEqual(signals.recentTopics, ['sports']);
+  });
+
+  it('uses only dated records from the last 14 days for recent recommendation signals', () => {
+    const now = new Date('2026-11-04T12:00:00.000Z');
+    const signals = extractProfileSignals({
+      child: { birth: '2020-01-01', interests: '', profileDetails: {} },
+      language: 'en',
+      now,
+      recentRecords: [
+        { record_type: 'sports', title: 'Recent football', occurred_at: '2026-11-03T12:00:00.000Z' },
+        { record_type: 'nutrition', title: 'Older meal', occurred_at: '2026-10-01T12:00:00.000Z' },
+        { record_type: 'sleep_log', title: 'Future sleep', occurred_at: '2026-11-05T12:00:00.000Z' },
+        { record_type: 'routine', title: 'Undated routine' },
+      ],
+    });
+
+    assert.deepEqual(signals.recentTopics, ['sports']);
+    assert.deepEqual(signals.recentTitles, ['Recent football']);
   });
 
   it('extracts only this child’s shared activity feedback for progressive recommendations', () => {
