@@ -812,6 +812,9 @@ export interface FamilySpaceState {
   currency: CurrencyCode;
   calendarMode: CalendarDisplayMode;
   disputeFreezeActive: boolean;
+  /** Family-wide community and chat records, persisted through the existing shared JSONB workspace. */
+  communityState?: Record<string, unknown>;
+  chatState?: Record<string, unknown>;
   savedMediaIds: number[];
   events: CalendarEvent[];
   kids: ChildProfile[];
@@ -4089,6 +4092,12 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   }
   if (typeof input.disputeFreezeActive === 'boolean') {
     base.disputeFreezeActive = input.disputeFreezeActive;
+  }
+  if (input.communityState && typeof input.communityState === 'object' && !Array.isArray(input.communityState)) {
+    base.communityState = input.communityState as Record<string, unknown>;
+  }
+  if (input.chatState && typeof input.chatState === 'object' && !Array.isArray(input.chatState)) {
+    base.chatState = input.chatState as Record<string, unknown>;
   }
   if (typeof input.darkMode === 'boolean') {
     base.darkMode = input.darkMode;

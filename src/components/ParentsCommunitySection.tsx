@@ -263,6 +263,8 @@ interface ParentsCommunitySectionProps {
   city: string;
   language: LanguageCode;
   onShowToast: (msg: string) => void;
+  initialPersistedState?: Record<string, unknown>;
+  onPersistState?: (value: Record<string, unknown>) => void;
 }
 
 export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = ({
@@ -270,9 +272,15 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   city,
   language,
   onShowToast,
+  initialPersistedState,
+  onPersistState,
 }) => {
   const isEn = language === 'en';
-  const [posts, setPosts] = useState<CommunityPost[]>(INITIAL_COMMUNITY_POSTS);
+  const [posts, setPosts] = useState<CommunityPost[]>(
+    Array.isArray(initialPersistedState?.posts)
+      ? initialPersistedState.posts as CommunityPost[]
+      : INITIAL_COMMUNITY_POSTS
+  );
   const [topicFilter, setTopicFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [likedIds, setLikedIds] = useState<number[]>([501]);
@@ -485,7 +493,9 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       comments: [],
     };
 
-    setPosts((prev) => [created, ...prev]);
+    const nextPosts = [created, ...posts];
+    setPosts(nextPosts);
+    onPersistState?.({ ...(initialPersistedState || {}), posts: nextPosts });
     setNewPostTitle('');
     setNewPostBody('');
     setComposerOpen(false);
@@ -496,28 +506,28 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
   const handleAddComment = (postId: number) => {
     const text = sanitizeUserText(commentDrafts[postId] || '', 400);
     if (!text) return;
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? {
-              ...p,
-              comments: [
-                ...p.comments,
-                {
-                  id: Date.now(),
-                  authorAr: sanitizeUserText(parentName, 60),
-                  authorEn: sanitizeUserText(parentName, 60),
-                  roleBadgeAr: 'ولي أمر',
-                  roleBadgeEn: 'Parent',
-                  textAr: text,
-                  textEn: text,
-                  timeLabel: isEn ? 'Just now' : 'الآن',
-                },
-              ],
-            }
-          : p
-      )
+    const nextPosts = posts.map((p) =>
+      p.id === postId
+        ? {
+            ...p,
+            comments: [
+              ...p.comments,
+              {
+                id: Date.now(),
+                authorAr: sanitizeUserText(parentName, 60),
+                authorEn: sanitizeUserText(parentName, 60),
+                roleBadgeAr: 'ولي أمر',
+                roleBadgeEn: 'Parent',
+                textAr: text,
+                textEn: text,
+                timeLabel: isEn ? 'Just now' : 'الآن',
+              },
+            ],
+          }
+        : p
     );
+    setPosts(nextPosts);
+    onPersistState?.({ ...(initialPersistedState || {}), posts: nextPosts });
     setCommentDrafts((prev) => ({ ...prev, [postId]: '' }));
     onShowToast(isEn ? 'Comment added' : 'تمت إضافة تعليقك');
   };

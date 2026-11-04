@@ -2564,6 +2564,8 @@ export default function App() {
                   city={activeParentCity}
                   language={state.language}
                   onShowToast={showToast}
+                  initialPersistedState={state.communityState}
+                  onPersistState={(value) => setState((prev) => ({ ...prev, communityState: value }))}
                 />
                 </React.Suspense>
               ))}
@@ -2574,6 +2576,8 @@ export default function App() {
                 language={state.language}
                 darkMode={Boolean(state.darkMode)}
                 onShowToast={showToast}
+                initialPersistedState={state.chatState}
+                onPersistState={(value) => setState((prev) => ({ ...prev, chatState: value }))}
               />
               </React.Suspense>
             )}

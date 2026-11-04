@@ -1265,6 +1265,12 @@ export async function fetchFamilySpaceFromSupabase(
         events: Array.isArray(sharedPayload.events) ? sharedPayload.events : currentState.events,
         wishes: Array.isArray(sharedPayload.wishes) ? sharedPayload.wishes : currentState.wishes,
         invitations: Array.isArray(sharedPayload.invitations) ? sharedPayload.invitations : currentState.invitations,
+        communityState: sharedPayload.communityState && typeof sharedPayload.communityState === 'object' && !Array.isArray(sharedPayload.communityState)
+          ? sharedPayload.communityState as Record<string, unknown>
+          : currentState.communityState,
+        chatState: sharedPayload.chatState && typeof sharedPayload.chatState === 'object' && !Array.isArray(sharedPayload.chatState)
+          ? sharedPayload.chatState as Record<string, unknown>
+          : currentState.chatState,
         disputeFreezeActive: typeof sharedPayload.disputeFreezeActive === 'boolean'
           ? sharedPayload.disputeFreezeActive
           : currentState.disputeFreezeActive,
@@ -1434,6 +1440,8 @@ export async function persistFamilyWorkspaceStateToSupabase(
       wishes: state.wishes,
       family: state.family,
       invitations: state.invitations,
+      communityState: state.communityState || {},
+      chatState: state.chatState || {},
       disputeFreezeActive: state.disputeFreezeActive,
     };
     if (!isCanonicalThreeDemoKids(state.kids)) {

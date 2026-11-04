@@ -125,15 +125,23 @@ interface InternalChatSectionProps {
   language: LanguageCode;
   darkMode?: boolean;
   onShowToast: (msg: string) => void;
+  initialPersistedState?: Record<string, unknown>;
+  onPersistState?: (value: Record<string, unknown>) => void;
 }
 
 export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
   language,
   darkMode = false,
   onShowToast,
+  initialPersistedState,
+  onPersistState,
 }) => {
   const isEn = language === 'en';
-  const [threads, setThreads] = useState<ChatThread[]>(INITIAL_CHAT_THREADS);
+  const [threads, setThreads] = useState<ChatThread[]>(
+    Array.isArray(initialPersistedState?.threads)
+      ? initialPersistedState.threads as ChatThread[]
+      : INITIAL_CHAT_THREADS
+  );
   const [activeThreadId, setActiveThreadId] = useState<string>('thread-nursery');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'doctor' | 'nursery' | 'family'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -184,17 +192,17 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setThreads((prev) =>
-      prev.map((th) =>
-        th.id === activeThread.id
-          ? {
-              ...th,
-              unreadCount: 0,
-              messages: [...th.messages, userMsg, autoReply],
-            }
-          : th
-      )
+    const nextThreads = threads.map((th) =>
+      th.id === activeThread.id
+        ? {
+            ...th,
+            unreadCount: 0,
+            messages: [...th.messages, userMsg, autoReply],
+          }
+        : th
     );
+    setThreads(nextThreads);
+    onPersistState?.({ ...(initialPersistedState || {}), threads: nextThreads });
     setMessageInput('');
     onShowToast(isEn ? 'Message added' : 'تمت إضافة الرسالة');
   };
