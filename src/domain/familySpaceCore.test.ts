@@ -27,6 +27,16 @@ import {
   resolveCurrencyCode,
   validateChildInput,
   validatePhoneForCountry,
+  CHILD_COLOR_PALETTE_ORDER,
+  CHILD_VISUAL_IDENTITY_THEMES,
+  isValidChildColorTheme,
+  resolveChildColorTheme,
+  getChildVisualIdentitySpec,
+  getDaysInMonth,
+  isTaskScheduledForDate,
+  isTaskCompletedOnDate,
+  toggleTaskCompletionForDate,
+  refreshTasksForCurrentDate,
 } from './familySpaceCore';
 import { formatCountryCurrencySummary } from '../utils/familyFormatters';
 import { MasterBackendService } from '../services/MasterAppController';
@@ -4044,4 +4054,229 @@ describe('Backend & Database Engineering: Query Deduplication, Relational Consis
     assert.match(invalidTimestampRes.error || '', /valid ISO timestamp/);
   });
 });
+
+describe('Child Life Command Center — Independent Visual Identity, Date-Aware Tasks & Recurrence', () => {
+  it('assigns distinct non-repeating visual identity colors to siblings and persists explicit colorTheme choices', () => {
+    assert.deepEqual(CHILD_COLOR_PALETTE_ORDER, ['teal', 'sky', 'violet', 'coral', 'emerald']);
+
+    const siblings = [
+      { id: 1, name: 'ليان', gender: 'girl' as const, birth: '2021-05-14', interests: 'الرسم', emoji: '👧🏻' },
+      { id: 2, name: 'يوسف', gender: 'boy' as const, birth: '2018-10-03', interests: 'الفضاء', emoji: '👦🏻' },
+      { id: 3, name: 'عمر', gender: 'boy' as const, birth: '2023-11-20', interests: 'الألعاب', emoji: '👶🏻' },
+    ];
+
+    const c0 = resolveChildColorTheme(siblings[0], siblings);
+    const c1 = resolveChildColorTheme(siblings[1], siblings);
+    const c2 = resolveChildColorTheme(siblings[2], siblings);
+
+    assert.equal(c0, 'teal');
+    assert.equal(c1, 'sky');
+    assert.equal(c2, 'violet');
+    assert.notEqual(c0, c1);
+    assert.notEqual(c1, c2);
+
+    // Explicit colorTheme on child overrides automatic index assignment and prevents sibling collision
+    const customSiblings = [
+      { ...siblings[0], colorTheme: 'coral' as const },
+      siblings[1],
+      { ...siblings[2], profileDetails: { colorTheme: 'emerald' as const } },
+    ];
+    assert.equal(resolveChildColorTheme(customSiblings[0], customSiblings), 'coral');
+    assert.equal(resolveChildColorTheme(customSiblings[2], customSiblings), 'emerald');
+    // Sibling 1 gets the first unused color ('teal')
+    assert.equal(resolveChildColorTheme(customSiblings[1], customSiblings), 'teal');
+
+    // normalizeAppData preserves colorTheme and syncs it into profileDetails.colorTheme and profileDetails.extra.colorTheme
+    const normalized = normalizeAppData({
+      ...DEFAULT_SEED,
+      kids: [
+        {
+          id: 1,
+          name: 'ليان',
+          gender: 'girl',
+          birth: '2021-05-14',
+          interests: 'الرسم',
+          colorTheme: 'violet',
+        },
+      ],
+    });
+    assert.equal(normalized.kids[0].colorTheme, 'violet');
+    assert.equal(normalized.kids[0].profileDetails?.colorTheme, 'violet');
+    assert.equal(normalized.kids[0].profileDetails?.extra?.colorTheme, 'violet');
+
+    const spec = getChildVisualIdentitySpec('violet');
+    assert.equal(spec.id, 'violet');
+    assert.ok(spec.swatchHex);
+    assert.ok(spec.commandCenterGradient);
+    assert.ok(spec.commandCenterBorder);
+    assert.ok(CHILD_VISUAL_IDENTITY_THEMES.violet);
+    assert.equal(isValidChildColorTheme('violet'), true);
+    assert.equal(isValidChildColorTheme('invalid-color'), false);
+  });
+
+  it('prevents yesterday completed tasks from counting as completed today while preserving historical completedDates', () => {
+    const yesterdayISO = '2026-11-03';
+    const todayISO = '2026-11-04';
+
+    const initialTask = {
+      id: 101,
+      name: 'تنظيم حقيبة المدرسة',
+      time: '07:30 م',
+      done: false,
+      kidId: 1,
+      category: 'دراسة وتعلّم',
+      owner: 'الأم',
+      cadence: 'daily' as const,
+      completedDates: [],
+    };
+
+    // Complete task yesterday
+    const completedYesterday = toggleTaskCompletionForDate(initialTask, true, yesterdayISO);
+    assert.equal(completedYesterday.done, true);
+    assert.deepEqual(completedYesterday.completedDates, [yesterdayISO]);
+    assert.equal(completedYesterday.lastCompletedDate, yesterdayISO);
+    assert.equal(isTaskCompletedOnDate(completedYesterday, yesterdayISO), true);
+
+    // On today's date, yesterday's completion must NOT count as completed today
+    assert.equal(isTaskCompletedOnDate(completedYesterday, todayISO), false);
+
+    // Refreshing tasks for today resets `done` to false while keeping yesterday in `completedDates`
+    const [refreshedForToday] = refreshTasksForCurrentDate([completedYesterday], todayISO);
+    assert.equal(refreshedForToday.done, false);
+    assert.deepEqual(refreshedForToday.completedDates, [yesterdayISO]);
+    assert.equal(refreshedForToday.lastCompletedDate, yesterdayISO);
+
+    // Completing today appends todayISO without duplicating or losing yesterdayISO
+    const completedToday = toggleTaskCompletionForDate(refreshedForToday, true, todayISO);
+    assert.equal(completedToday.done, true);
+    assert.deepEqual(completedToday.completedDates, [yesterdayISO, todayISO]);
+    assert.equal(completedToday.lastCompletedDate, todayISO);
+
+    // Toggling true again on the same date does not duplicate the date entry
+    const toggledTwice = toggleTaskCompletionForDate(completedToday, true, todayISO);
+    assert.deepEqual(toggledTwice.completedDates, [yesterdayISO, todayISO]);
+
+    // Unchecking today removes only todayISO and preserves yesterdayISO
+    const uncheckedToday = toggleTaskCompletionForDate(toggledTwice, false, todayISO);
+    assert.equal(uncheckedToday.done, false);
+    assert.deepEqual(uncheckedToday.completedDates, [yesterdayISO]);
+    assert.equal(uncheckedToday.lastCompletedDate, yesterdayISO);
+  });
+
+  it('maintains backward compatibility with legacy tasks and preserves completedDates when editing owner, time, or category', () => {
+    const legacyDoneTask = {
+      id: 202,
+      name: 'قراءة قصة المساء',
+      time: '08:00 م',
+      done: true,
+      kidId: 1,
+      category: 'قراءة',
+      owner: 'الأم',
+      cadence: 'daily' as const,
+    };
+
+    // Legacy task without completedDates or lastCompletedDate still respects `done: true`
+    assert.equal(isTaskCompletedOnDate(legacyDoneTask, '2026-11-04'), true);
+
+    // Editing owner, time, or category preserves completedDates through normalizeAppData
+    const taskWithHistory = {
+      ...legacyDoneTask,
+      owner: 'الأب',
+      time: '08:30 م',
+      category: 'نوم وراحة',
+      completedDates: ['2026-11-01', '2026-11-02'],
+      lastCompletedDate: '2026-11-02',
+    };
+    const normalized = normalizeAppData({
+      ...DEFAULT_SEED,
+      tasks: [taskWithHistory],
+    });
+    assert.equal(normalized.tasks[0].owner, 'الأب');
+    assert.equal(normalized.tasks[0].time, '08:30 م');
+    assert.equal(normalized.tasks[0].category, 'نوم وراحة');
+    assert.deepEqual(normalized.tasks[0].completedDates, ['2026-11-01', '2026-11-02']);
+    assert.equal(normalized.tasks[0].lastCompletedDate, '2026-11-02');
+  });
+
+  it('evaluates daily, weekly, and monthly task recurrence accurately including 28/29/30-day months and leap years', () => {
+    assert.equal(getDaysInMonth(2026, 2), 28); // 2026 is non-leap
+    assert.equal(getDaysInMonth(2028, 2), 29); // 2028 is leap year
+    assert.equal(getDaysInMonth(2026, 4), 30); // April has 30 days
+    assert.equal(getDaysInMonth(2026, 11), 30); // November has 30 days
+    assert.equal(getDaysInMonth(2026, 12), 31); // December has 31 days
+
+    const dailyTask = {
+      id: 1,
+      name: 'شرب الماء',
+      time: '10:00 ص',
+      done: false,
+      kidId: 1,
+      category: 'وجبات وشرب الماء',
+      owner: 'الأم',
+      cadence: 'daily' as const,
+    };
+    assert.equal(isTaskScheduledForDate(dailyTask, '2026-11-04'), true);
+    assert.equal(isTaskScheduledForDate(dailyTask, '2026-11-05'), true);
+
+    // 2026-11-06 is Friday (dayOfWeek = 5)
+    const weeklyFridayTask = {
+      ...dailyTask,
+      id: 2,
+      name: 'تمرين السباحة الأسبوعي',
+      cadence: 'weekly' as const,
+      dayOfWeek: 5,
+    };
+    assert.equal(isTaskScheduledForDate(weeklyFridayTask, '2026-11-06'), true);
+    assert.equal(isTaskScheduledForDate(weeklyFridayTask, '2026-11-04'), false);
+
+    // Multi-day weekly task (Sunday = 0, Wednesday = 3)
+    const multiDayWeeklyTask = {
+      ...dailyTask,
+      id: 3,
+      name: 'مراجعة القراءة',
+      cadence: 'weekly' as const,
+      daysOfWeek: [0, 3],
+    };
+    assert.equal(isTaskScheduledForDate(multiDayWeeklyTask, '2026-11-01'), true); // Sunday
+    assert.equal(isTaskScheduledForDate(multiDayWeeklyTask, '2026-11-04'), true); // Wednesday
+    assert.equal(isTaskScheduledForDate(multiDayWeeklyTask, '2026-11-05'), false); // Thursday
+
+    // Monthly task on day 31 clamps to last day of short months
+    const monthly31Task = {
+      ...dailyTask,
+      id: 4,
+      name: 'قياس الطول والوزن الشهري',
+      cadence: 'monthly' as const,
+      dayOfMonth: 31,
+    };
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2026-12-31'), true);
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2026-11-30'), true); // Clamped in 30-day Nov
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2026-11-29'), false);
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2026-02-28'), true); // Clamped in non-leap Feb 2026
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2028-02-28'), false); // Leap Feb 2028 has 29 days!
+    assert.equal(isTaskScheduledForDate(monthly31Task, '2028-02-29'), true); // Appears on Feb 29 in leap year
+  });
+
+  it('wires Command Center visual identity, 8 care domains, balanced faith paths, inline task editing, and Undo delete in HomeDashboardSection', async () => {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const homeSrc = await fs.readFile(
+      path.resolve(process.cwd(), 'src/features/HomeDashboardSection.tsx'),
+      'utf8'
+    );
+
+    assert.ok(homeSrc.includes('data-child-color={activeKidColorId}'));
+    assert.ok(homeSrc.includes('command-center-color-${colorId}'));
+    assert.ok(homeSrc.includes('command-center-undo-banner'));
+    assert.ok(homeSrc.includes('command-center-undo-btn'));
+    assert.ok(homeSrc.includes('hideChildSelector={true}'));
+    for (const domainId of ['nutrition', 'sleep', 'learning', 'sports', 'health', 'hobbies', 'wellbeing', 'values']) {
+      assert.ok(homeSrc.includes(`command-domain-${domainId}`), `Missing Command Center care domain: ${domainId}`);
+    }
+    for (const faithPath of ["'shared'", "'islam'", "'christian'"]) {
+      assert.ok(homeSrc.includes(`id: ${faithPath}`), `Missing balanced faith path option: ${faithPath}`);
+    }
+  });
+});
+
 

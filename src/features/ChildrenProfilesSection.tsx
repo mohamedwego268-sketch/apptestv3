@@ -1,11 +1,16 @@
 import React from 'react';
 import {
+  CHILD_COLOR_PALETTE_ORDER,
+  CHILD_VISUAL_IDENTITY_THEMES,
+  ChildColorThemeId,
   ChildProfile,
   FamilySpaceState,
   LanguageCode,
   VoiceVaultMoment,
   calculateChildAge,
+  getChildVisualIdentitySpec,
   locText,
+  resolveChildColorTheme,
 } from '../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../domain/assetManifest3D';
 import { getCardBackgroundSpec } from '../domain/cardBackgrounds';
@@ -25,6 +30,7 @@ export interface ChildrenProfilesSectionProps {
   onOpenAddChild: () => void;
   onOpenEditChild: (kid: ChildProfile) => void;
   onConfirmDeleteChild: (kidId: number) => void;
+  onChangeChildColorTheme?: (kidId: number, colorTheme: ChildColorThemeId) => void;
   onAddVoiceMoment?: (kidId: number, moment: VoiceVaultMoment) => void;
   onShowToast?: (msg: string) => void;
 }
@@ -35,14 +41,9 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
   onOpenAddChild,
   onOpenEditChild,
   onConfirmDeleteChild,
+  onChangeChildColorTheme,
 }) => {
   const isEn = lang === 'en';
-
-  // Helper to assign standardized color tone per child profile (Hamza 6m boy = sky, Laila 4y girl = rose, Youssef 8y boy = amber)
-  const getChildStandardTone = (kid: ChildProfile, idx: number): 'sky' | 'rose' | 'amber' | 'teal' => {
-    if (kid.gender === 'girl') return 'rose';
-    return (['sky', 'teal', 'amber'] as const)[idx % 3];
-  };
 
   return (
     <section className="space-y-4" aria-label={isEn ? 'Your Children & Their Growth' : 'ملفات أطفالك ومراحل نموهم'}>
@@ -109,7 +110,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {state.kids.map((kid, idx) => {
+          {state.kids.map((kid) => {
             const ageInfo = calculateChildAge(kid.birth, state.language);
             const kidTasksCount = state.tasks.filter((tItem) => Number(tItem.kidId) === kid.id).length;
             const kidEventsCount = state.events.filter((ev) => Number(ev.childId) === kid.id).length;
@@ -118,7 +119,9 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
               AVATAR_ACCESSORY_THEMES.find((th) => th.id === kid.avatarTheme) ||
               AVATAR_ACCESSORY_THEMES[0];
             const displayKidName = locText(kid.name, lang);
-            const cardTone = getChildStandardTone(kid, idx);
+            const resolvedColorId = resolveChildColorTheme(kid, state.kids);
+            const visualSpec = getChildVisualIdentitySpec(resolvedColorId);
+            const cardTone = visualSpec.cardTone;
 
             const kidDoneTasksCount = state.tasks.filter(
               (tItem) => tItem.done && Number(tItem.kidId) === kid.id
@@ -203,6 +206,42 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                         <div className="text-xs sm:text-sm font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] tabular-nums">
                           {kidWishesCount} {isEn ? 'wishes' : 'أمنية'}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Dedicated Color Identity Selector */}
+                    <div className="rounded-xl bg-white/85 dark:bg-[#142430] border border-white dark:border-[#1E3646] p-2.5 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                        {isEn ? 'Command Center Color:' : 'لون مركز قيادة الطفل:'}{' '}
+                        <span className="text-[var(--color-muted)] dark:text-[#94A3B8]">
+                          {isEn ? visualSpec.labelEn : visualSpec.labelAr}
+                        </span>
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {CHILD_COLOR_PALETTE_ORDER.map((colorId) => {
+                          const cSpec = CHILD_VISUAL_IDENTITY_THEMES[colorId];
+                          const isSelectedColor = resolvedColorId === colorId;
+                          return (
+                            <button
+                              key={colorId}
+                              type="button"
+                              data-testid={`child-color-swatch-${kid.id}-${colorId}`}
+                              aria-label={
+                                isEn
+                                  ? `Set ${displayKidName} color to ${cSpec.labelEn}`
+                                  : `تغيير لون ${displayKidName} إلى ${cSpec.labelAr}`
+                              }
+                              aria-pressed={isSelectedColor}
+                              onClick={() => onChangeChildColorTheme?.(kid.id, colorId)}
+                              style={{ backgroundColor: cSpec.swatchHex }}
+                              className={`h-6 w-6 rounded-full border-2 transition-transform cursor-pointer ${
+                                isSelectedColor
+                                  ? 'border-slate-900 dark:border-white scale-110 ring-2 ring-offset-1 ring-slate-400'
+                                  : 'border-white/80 opacity-80 hover:opacity-100'
+                              }`}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
 

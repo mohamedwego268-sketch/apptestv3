@@ -549,6 +549,16 @@ export interface VoiceVaultMoment {
   melodyHz?: number[];
 }
 
+export type ChildColorThemeId = 'teal' | 'sky' | 'violet' | 'coral' | 'emerald';
+
+export const CHILD_COLOR_PALETTE_ORDER: readonly ChildColorThemeId[] = [
+  'teal',
+  'sky',
+  'violet',
+  'coral',
+  'emerald',
+] as const;
+
 export interface ChildProfileDetails {
   favoriteFoods?: string[];
   favoriteDrinks?: string[];
@@ -562,6 +572,7 @@ export interface ChildProfileDetails {
   emotionalProfile?: Record<string, unknown>;
   socialProfile?: Record<string, unknown>;
   interests?: string[];
+  colorTheme?: ChildColorThemeId;
   extra?: Record<string, unknown>;
 }
 
@@ -582,6 +593,8 @@ export interface ChildProfile {
   growthWeightKg?: number;
   /** 3D personality/accessory theme when using 3D avatar */
   avatarTheme?: AvatarAccessoryTheme;
+  /** Dedicated visual identity color theme for this child */
+  colorTheme?: ChildColorThemeId;
   /** Real uploaded child photograph data URL (preserved when present) */
   photoDataUrl?: string;
   /** Whether parent prefers the 3D illustrated avatar even if a photo is uploaded */
@@ -603,6 +616,14 @@ export interface RoutineTask {
   cadence: TaskCadence;
   /** 0 = Sunday ... 6 = Saturday; used when cadence is weekly. */
   dayOfWeek?: number;
+  /** Optional list of weekdays (0..6) when weekly task repeats on multiple days. */
+  daysOfWeek?: number[];
+  /** 1..31; used when cadence is monthly (automatically clamped at month end / leap year). */
+  dayOfMonth?: number;
+  /** Sorted, deduplicated local YYYY-MM-DD dates on which this task was completed. */
+  completedDates?: string[];
+  /** Most recent local YYYY-MM-DD date on which this task was completed. */
+  lastCompletedDate?: string;
 }
 
 export interface CalendarEvent {
@@ -4205,6 +4226,29 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
             : seedKid?.profileDetails
             ? structuredClone(seedKid.profileDetails)
             : undefined;
+        const rawColorTheme =
+          (typeof k.colorTheme === 'string' ? k.colorTheme : undefined) ||
+          (typeof normalizedProfileDetails?.colorTheme === 'string'
+            ? normalizedProfileDetails.colorTheme
+            : undefined) ||
+          (typeof normalizedProfileDetails?.extra?.colorTheme === 'string'
+            ? String(normalizedProfileDetails.extra.colorTheme)
+            : undefined);
+        const validColorThemes = new Set<ChildColorThemeId>(CHILD_COLOR_PALETTE_ORDER);
+        const resolvedExplicitColor =
+          rawColorTheme && validColorThemes.has(rawColorTheme as ChildColorThemeId)
+            ? (rawColorTheme as ChildColorThemeId)
+            : undefined;
+        const mergedProfileDetails: ChildProfileDetails | undefined = resolvedExplicitColor
+          ? {
+              ...(normalizedProfileDetails || {}),
+              colorTheme: resolvedExplicitColor,
+              extra: {
+                ...(normalizedProfileDetails?.extra || {}),
+                colorTheme: resolvedExplicitColor,
+              },
+            }
+          : normalizedProfileDetails;
         return {
           id: kidId,
           ...(remoteId !== undefined ? { remoteId } : {}),
@@ -4212,7 +4256,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           gender,
           birth: typeof k.birth === 'string' ? k.birth : '',
           interests: typeof k.interests === 'string' ? k.interests : '',
-          ...(normalizedProfileDetails ? { profileDetails: normalizedProfileDetails } : {}),
+          ...(mergedProfileDetails ? { profileDetails: mergedProfileDetails } : {}),
           emoji: typeof k.emoji === 'string' && k.emoji ? k.emoji : gender === 'girl' ? '👧🏻' : '👦🏻',
           bloodType: typeof k.bloodType === 'string' ? k.bloodType : undefined,
           vaccinationsNote: typeof k.vaccinationsNote === 'string' ? k.vaccinationsNote : undefined,
@@ -4220,6 +4264,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           growthHeightCm: Number.isFinite(Number(k.growthHeightCm)) ? Number(k.growthHeightCm) : undefined,
           growthWeightKg: Number.isFinite(Number(k.growthWeightKg)) ? Number(k.growthWeightKg) : undefined,
           avatarTheme: validThemes.has(rawTheme) ? rawTheme : gender === 'girl' ? 'artist' : 'astronaut',
+          ...(resolvedExplicitColor ? { colorTheme: resolvedExplicitColor } : {}),
           photoDataUrl: typeof k.photoDataUrl === 'string' && k.photoDataUrl ? k.photoDataUrl : undefined,
           useIllustratedAvatar: typeof k.useIllustratedAvatar === 'boolean' ? k.useIllustratedAvatar : true,
           voiceMoments: rawVoiceMoments,
@@ -4237,6 +4282,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
   });
 
   if (Array.isArray(input.tasks)) {
+    const todayLocalISO = dateLocalISO(new Date());
     base.tasks = input.tasks
       .filter((t): t is Record<string, unknown> => Boolean(t && typeof t === 'object'))
       .map((t, idx) => {
@@ -4263,17 +4309,62 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
             : null;
         const cadence: TaskCadence =
           t.cadence === 'weekly' || t.cadence === 'monthly' ? t.cadence : 'daily';
+        const rawDayOfWeek = Number(t.dayOfWeek);
+        const dayOfWeek =
+          Number.isInteger(rawDayOfWeek) && rawDayOfWeek >= 0 && rawDayOfWeek <= 6
+            ? rawDayOfWeek
+            : undefined;
+        const daysOfWeek = Array.isArray(t.daysOfWeek)
+          ? Array.from(
+              new Set(
+                t.daysOfWeek
+                  .map((d) => Number(d))
+                  .filter((d) => Number.isInteger(d) && d >= 0 && d <= 6)
+              )
+            ).sort((a, b) => a - b)
+          : undefined;
+        const rawDayOfMonth = Number(t.dayOfMonth);
+        const dayOfMonth =
+          Number.isInteger(rawDayOfMonth) && rawDayOfMonth >= 1 && rawDayOfMonth <= 31
+            ? rawDayOfMonth
+            : undefined;
+        const hasCompletedDatesArray = Array.isArray(t.completedDates);
+        const completedDates = hasCompletedDatesArray
+          ? Array.from(
+              new Set(
+                (t.completedDates as unknown[])
+                  .filter((d): d is string => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.trim()))
+                  .map((d) => d.trim())
+              )
+            ).sort()
+          : undefined;
+        const lastCompletedDate =
+          typeof t.lastCompletedDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t.lastCompletedDate.trim())
+            ? t.lastCompletedDate.trim()
+            : completedDates && completedDates.length > 0
+            ? completedDates[completedDates.length - 1]
+            : undefined;
+        const resolvedDone = hasCompletedDatesArray
+          ? completedDates!.includes(todayLocalISO)
+          : lastCompletedDate
+          ? Boolean(t.done) && lastCompletedDate === todayLocalISO
+          : Boolean(t.done);
         return {
           id: Number.isFinite(Number(t.id)) ? Number(t.id) : idx + 1,
           ...(remoteId !== undefined ? { remoteId } : {}),
           name: String(t.name ?? '').trim() || `مهمة ${idx + 1}`,
           time: typeof t.time === 'string' ? t.time : '',
-          done: Boolean(t.done),
+          done: resolvedDone,
           kidId: resolvedKidId,
           ...(remoteChildId ? { remoteChildId } : {}),
           category: typeof t.category === 'string' && t.category ? t.category : 'روتين عام',
           owner: typeof t.owner === 'string' && t.owner ? t.owner : 'مشترك',
           cadence,
+          ...(dayOfWeek !== undefined ? { dayOfWeek } : {}),
+          ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
+          ...(dayOfMonth !== undefined ? { dayOfMonth } : {}),
+          ...(completedDates !== undefined ? { completedDates } : {}),
+          ...(lastCompletedDate !== undefined ? { lastCompletedDate } : {}),
         };
       });
   }
@@ -4511,6 +4602,330 @@ export function dateLocalISO(dte: Date = new Date()): string {
   const m = String(dte.getMonth() + 1).padStart(2, '0');
   const day = String(dte.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+/**
+ * Parses a local YYYY-MM-DD date string without UTC timezone drift.
+ */
+export function parseLocalISODateParts(
+  dateISO: string
+): { year: number; month: number; day: number; dayOfWeek: number } | null {
+  if (typeof dateISO !== 'string') return null;
+  const match = dateISO.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (month < 1 || month > 12) return null;
+  const maxDay = getDaysInMonth(year, month);
+  if (day < 1 || day > maxDay) return null;
+  const localDate = new Date(year, month - 1, day, 12, 0, 0);
+  return {
+    year,
+    month,
+    day,
+    dayOfWeek: localDate.getDay(),
+  };
+}
+
+/**
+ * Returns the exact number of days in a given 1-indexed month (1 = January .. 12 = December),
+ * accounting for leap years in February.
+ */
+export function getDaysInMonth(year: number, month1To12: number): number {
+  if (month1To12 === 2) {
+    const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+    return isLeap ? 29 : 28;
+  }
+  if (month1To12 === 4 || month1To12 === 6 || month1To12 === 9 || month1To12 === 11) {
+    return 30;
+  }
+  return 31;
+}
+
+/**
+ * Determines whether a routine task is scheduled to appear on a given local YYYY-MM-DD date.
+ * - Daily tasks appear every day.
+ * - Weekly tasks appear on their configured weekday(s) (`daysOfWeek` or `dayOfWeek`).
+ * - Monthly tasks appear on their `dayOfMonth`, clamped safely for short months (28/29/30 days) and leap years.
+ */
+export function isTaskScheduledForDate(
+  task: Pick<RoutineTask, 'cadence' | 'dayOfWeek' | 'daysOfWeek' | 'dayOfMonth'>,
+  targetDateISO: string = dateLocalISO(new Date())
+): boolean {
+  const parts = parseLocalISODateParts(targetDateISO);
+  if (!parts) return true;
+
+  if (task.cadence === 'weekly') {
+    if (Array.isArray(task.daysOfWeek) && task.daysOfWeek.length > 0) {
+      return task.daysOfWeek.includes(parts.dayOfWeek);
+    }
+    if (typeof task.dayOfWeek === 'number' && Number.isInteger(task.dayOfWeek)) {
+      return task.dayOfWeek === parts.dayOfWeek;
+    }
+    return true;
+  }
+
+  if (task.cadence === 'monthly') {
+    if (typeof task.dayOfMonth === 'number' && Number.isInteger(task.dayOfMonth) && task.dayOfMonth >= 1) {
+      const effectiveDay = Math.min(task.dayOfMonth, getDaysInMonth(parts.year, parts.month));
+      return parts.day === effectiveDay;
+    }
+    return true;
+  }
+
+  return true;
+}
+
+/**
+ * Checks whether a routine task was completed on the specified local YYYY-MM-DD date.
+ * Ensures yesterday's completion never bleeds into today while keeping backward compatibility
+ * for legacy tasks that only set `done: true` without date history.
+ */
+export function isTaskCompletedOnDate(
+  task: Pick<RoutineTask, 'done' | 'completedDates' | 'lastCompletedDate'>,
+  targetDateISO: string = dateLocalISO(new Date())
+): boolean {
+  if (Array.isArray(task.completedDates)) {
+    return task.completedDates.includes(targetDateISO);
+  }
+  if (typeof task.lastCompletedDate === 'string' && task.lastCompletedDate.trim()) {
+    return Boolean(task.done) && task.lastCompletedDate.trim() === targetDateISO;
+  }
+  return Boolean(task.done);
+}
+
+/**
+ * Toggles a task's completion status for a specific local YYYY-MM-DD date.
+ * - Preserves all past completion dates in `completedDates`.
+ * - Prevents duplicate entries for the same date.
+ * - Updates `done` to match the target date.
+ */
+export function toggleTaskCompletionForDate(
+  task: RoutineTask,
+  done: boolean,
+  targetDateISO: string = dateLocalISO(new Date())
+): RoutineTask {
+  const cleanDate = targetDateISO.trim();
+  const existingSet = new Set<string>(
+    Array.isArray(task.completedDates)
+      ? task.completedDates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+      : task.lastCompletedDate && /^\d{4}-\d{2}-\d{2}$/.test(task.lastCompletedDate)
+      ? [task.lastCompletedDate]
+      : []
+  );
+
+  if (done) {
+    existingSet.add(cleanDate);
+  } else {
+    existingSet.delete(cleanDate);
+  }
+
+  const completedDates = Array.from(existingSet).sort();
+  const lastCompletedDate =
+    completedDates.length > 0 ? completedDates[completedDates.length - 1] : undefined;
+
+  return {
+    ...task,
+    done: completedDates.includes(cleanDate),
+    completedDates,
+    lastCompletedDate,
+  };
+}
+
+/**
+ * Refreshes a task list for the current local date so that yesterday's completions
+ * remain in `completedDates` history while `done` accurately reflects today.
+ */
+export function refreshTasksForCurrentDate(
+  tasks: RoutineTask[],
+  todayISO: string = dateLocalISO(new Date())
+): RoutineTask[] {
+  return tasks.map((task) => {
+    if (!Array.isArray(task.completedDates) && !task.lastCompletedDate) {
+      return task;
+    }
+    const doneToday = isTaskCompletedOnDate(task, todayISO);
+    if (task.done === doneToday) return task;
+    return {
+      ...task,
+      done: doneToday,
+    };
+  });
+}
+
+export interface ChildVisualIdentitySpec {
+  id: ChildColorThemeId;
+  labelAr: string;
+  labelEn: string;
+  swatchHex: string;
+  commandCenterGradient: string;
+  commandCenterBorder: string;
+  innerPanelBg: string;
+  activePillClass: string;
+  inactivePillClass: string;
+  accentButtonClass: string;
+  progressBarClass: string;
+  selectBgClass: string;
+  softBadgeClass: string;
+  cardTone: 'teal' | 'sky' | 'purple' | 'rose' | 'emerald';
+}
+
+export const CHILD_VISUAL_IDENTITY_THEMES: Record<ChildColorThemeId, ChildVisualIdentitySpec> = {
+  teal: {
+    id: 'teal',
+    labelAr: 'تركواز هادئ',
+    labelEn: 'Calm Teal',
+    swatchHex: '#0D9488',
+    commandCenterGradient: 'from-[#073F43] via-[#0B5054] to-[#123E52]',
+    commandCenterBorder: 'border-teal-400/30',
+    innerPanelBg: 'bg-[#052B30]/65',
+    activePillClass: 'border-[#8FF0D0] bg-[#8FF0D0] text-[#063236] shadow-md',
+    inactivePillClass: 'border-white/20 bg-white/10 text-white hover:bg-white/15',
+    accentButtonClass: 'bg-[#8FF0D0] text-[#063236] hover:bg-[#A7F5DC]',
+    progressBarClass: 'bg-[#8FF0D0]',
+    selectBgClass: 'bg-[#093D42]',
+    softBadgeClass: 'bg-teal-500/15 text-teal-800 dark:text-teal-200 border-teal-500/30',
+    cardTone: 'teal',
+  },
+  sky: {
+    id: 'sky',
+    labelAr: 'أزرق سماوي',
+    labelEn: 'Sky Blue',
+    swatchHex: '#0284C7',
+    commandCenterGradient: 'from-[#0B2F4E] via-[#0E3F68] to-[#144C78]',
+    commandCenterBorder: 'border-sky-400/30',
+    innerPanelBg: 'bg-[#08243D]/65',
+    activePillClass: 'border-[#93E2FF] bg-[#93E2FF] text-[#082842] shadow-md',
+    inactivePillClass: 'border-white/20 bg-white/10 text-white hover:bg-white/15',
+    accentButtonClass: 'bg-[#93E2FF] text-[#082842] hover:bg-[#B3ECFF]',
+    progressBarClass: 'bg-[#93E2FF]',
+    selectBgClass: 'bg-[#0B3558]',
+    softBadgeClass: 'bg-sky-500/15 text-sky-800 dark:text-sky-200 border-sky-500/30',
+    cardTone: 'sky',
+  },
+  violet: {
+    id: 'violet',
+    labelAr: 'بنفسجي دافئ',
+    labelEn: 'Soft Violet',
+    swatchHex: '#7C3AED',
+    commandCenterGradient: 'from-[#2A1B4E] via-[#382368] to-[#2B2B5E]',
+    commandCenterBorder: 'border-violet-400/30',
+    innerPanelBg: 'bg-[#1D1238]/65',
+    activePillClass: 'border-[#DDD6FE] bg-[#DDD6FE] text-[#28184A] shadow-md',
+    inactivePillClass: 'border-white/20 bg-white/10 text-white hover:bg-white/15',
+    accentButtonClass: 'bg-[#DDD6FE] text-[#28184A] hover:bg-[#EDE9FE]',
+    progressBarClass: 'bg-[#C4B5FD]',
+    selectBgClass: 'bg-[#2B1B52]',
+    softBadgeClass: 'bg-violet-500/15 text-violet-800 dark:text-violet-200 border-violet-500/30',
+    cardTone: 'purple',
+  },
+  coral: {
+    id: 'coral',
+    labelAr: 'مرجاني دافئ',
+    labelEn: 'Warm Coral',
+    swatchHex: '#E11D48',
+    commandCenterGradient: 'from-[#4A182B] via-[#5E2038] to-[#4D243D]',
+    commandCenterBorder: 'border-rose-400/30',
+    innerPanelBg: 'bg-[#36101F]/65',
+    activePillClass: 'border-[#FECDD3] bg-[#FECDD3] text-[#451225] shadow-md',
+    inactivePillClass: 'border-white/20 bg-white/10 text-white hover:bg-white/15',
+    accentButtonClass: 'bg-[#FECDD3] text-[#451225] hover:bg-[#FFE4E6]',
+    progressBarClass: 'bg-[#FDA4AF]',
+    selectBgClass: 'bg-[#4D192D]',
+    softBadgeClass: 'bg-rose-500/15 text-rose-800 dark:text-rose-200 border-rose-500/30',
+    cardTone: 'rose',
+  },
+  emerald: {
+    id: 'emerald',
+    labelAr: 'أخضر زمردي',
+    labelEn: 'Fresh Emerald',
+    swatchHex: '#059669',
+    commandCenterGradient: 'from-[#093B2C] via-[#0E4F3B] to-[#13463E]',
+    commandCenterBorder: 'border-emerald-400/30',
+    innerPanelBg: 'bg-[#062B20]/65',
+    activePillClass: 'border-[#A7F3D0] bg-[#A7F3D0] text-[#063325] shadow-md',
+    inactivePillClass: 'border-white/20 bg-white/10 text-white hover:bg-white/15',
+    accentButtonClass: 'bg-[#A7F3D0] text-[#063325] hover:bg-[#D1FAE5]',
+    progressBarClass: 'bg-[#6EE7B7]',
+    selectBgClass: 'bg-[#0B3F2F]',
+    softBadgeClass: 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
+    cardTone: 'emerald',
+  },
+};
+
+export function isValidChildColorTheme(value: unknown): value is ChildColorThemeId {
+  return typeof value === 'string' && (CHILD_COLOR_PALETTE_ORDER as readonly string[]).includes(value);
+}
+
+/**
+ * Resolves the child's dedicated visual identity color theme.
+ * - Uses the explicit `colorTheme` saved on the child profile when present.
+ * - Otherwise assigns a distinct color from `CHILD_COLOR_PALETTE_ORDER` without repeating
+ *   colors already assigned to preceding children in `allKids`.
+ */
+export function resolveChildColorTheme(
+  kid: ChildProfile | null | undefined,
+  allKids: readonly ChildProfile[] = []
+): ChildColorThemeId {
+  if (!kid) return 'teal';
+  const explicit =
+    kid.colorTheme ||
+    kid.profileDetails?.colorTheme ||
+    (typeof kid.profileDetails?.extra?.colorTheme === 'string'
+      ? kid.profileDetails.extra.colorTheme
+      : undefined);
+  if (isValidChildColorTheme(explicit)) {
+    return explicit;
+  }
+
+  const usedThemes = new Set<ChildColorThemeId>();
+  for (const other of allKids) {
+    if (!other || other.id === kid.id) continue;
+    const otherExplicit =
+      other.colorTheme ||
+      other.profileDetails?.colorTheme ||
+      (typeof other.profileDetails?.extra?.colorTheme === 'string'
+        ? other.profileDetails.extra.colorTheme
+        : undefined);
+    if (isValidChildColorTheme(otherExplicit)) {
+      usedThemes.add(otherExplicit);
+    }
+  }
+
+  for (const other of allKids) {
+    if (!other) continue;
+    if (other.id === kid.id) {
+      const available = CHILD_COLOR_PALETTE_ORDER.find((c) => !usedThemes.has(c));
+      if (available) return available;
+      const idx = allKids.findIndex((k) => k.id === kid.id);
+      return CHILD_COLOR_PALETTE_ORDER[Math.max(0, idx) % CHILD_COLOR_PALETTE_ORDER.length];
+    }
+    const otherExplicit =
+      other.colorTheme ||
+      other.profileDetails?.colorTheme ||
+      (typeof other.profileDetails?.extra?.colorTheme === 'string'
+        ? other.profileDetails.extra.colorTheme
+        : undefined);
+    if (isValidChildColorTheme(otherExplicit)) {
+      usedThemes.add(otherExplicit);
+    } else {
+      const assigned = CHILD_COLOR_PALETTE_ORDER.find((c) => !usedThemes.has(c));
+      if (assigned) usedThemes.add(assigned);
+    }
+  }
+
+  const fallbackAvailable = CHILD_COLOR_PALETTE_ORDER.find((c) => !usedThemes.has(c));
+  return fallbackAvailable || CHILD_COLOR_PALETTE_ORDER[Math.abs(Number(kid.id) || 0) % CHILD_COLOR_PALETTE_ORDER.length];
+}
+
+export function getChildVisualIdentitySpec(
+  themeId: ChildColorThemeId | null | undefined
+): ChildVisualIdentitySpec {
+  if (themeId && CHILD_VISUAL_IDENTITY_THEMES[themeId]) {
+    return CHILD_VISUAL_IDENTITY_THEMES[themeId];
+  }
+  return CHILD_VISUAL_IDENTITY_THEMES.teal;
 }
 
 export interface ChildAgeInfo {

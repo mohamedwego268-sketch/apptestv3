@@ -17,6 +17,7 @@ import {
   getSuggestedCurrencyForCountry,
   isSupportedCountryCode,
   isSupportedCurrencyCode,
+  isValidChildColorTheme,
   normalizeAppData,
   resolveCountryCode,
   resolveCurrencyCode,
@@ -951,6 +952,15 @@ function mapChildEntityToProfile(
 
   const canonicalSeedKid = DEFAULT_SEED.kids.find((sk) => sk.name === child.name);
   const isGirl = child.gender === 'girl' || child.gender === 'female';
+  const rawColorCandidate =
+    child.profile_details?.colorTheme ||
+    (typeof child.profile_details?.extra?.colorTheme === 'string'
+      ? child.profile_details.extra.colorTheme
+      : undefined) ||
+    existingMatch?.colorTheme;
+  const resolvedColorTheme = isValidChildColorTheme(rawColorCandidate)
+    ? rawColorCandidate
+    : undefined;
 
   if (canonicalSeedKid) {
     return {
@@ -962,6 +972,7 @@ function mapChildEntityToProfile(
       gender: isGirl ? 'girl' : 'boy',
       emoji: child.emoji || canonicalSeedKid.emoji,
       avatarTheme: child.avatar_theme || canonicalSeedKid.avatarTheme,
+      ...(resolvedColorTheme ? { colorTheme: resolvedColorTheme } : {}),
       interests: child.interests || '',
       profileDetails: child.profile_details || {},
       vaccinationsNote: child.vaccinations_note || undefined,
@@ -984,6 +995,7 @@ function mapChildEntityToProfile(
     gender: isGirl ? 'girl' : 'boy',
     emoji: child.emoji || (isGirl ? '👧🏻' : '👦🏻'),
     avatarTheme: child.avatar_theme || (isGirl ? 'artist' : 'astronaut'),
+    ...(resolvedColorTheme ? { colorTheme: resolvedColorTheme } : {}),
     interests: child.interests || '',
     profileDetails: child.profile_details || {},
     vaccinationsNote: child.vaccinations_note || undefined,

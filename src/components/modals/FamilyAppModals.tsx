@@ -14,6 +14,9 @@ import {
   getDefaultCityForCountry,
   getSuggestedCurrencyForCountry,
   locText,
+  CHILD_COLOR_PALETTE_ORDER,
+  CHILD_VISUAL_IDENTITY_THEMES,
+  resolveChildColorTheme,
 } from '../../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../../domain/assetManifest3D';
 import { CATEGORY_UNSPLASH_POOLS, getProductUnsplashImageUrl } from '../../domain/cardBackgrounds';
@@ -286,6 +289,36 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   </select>
                 </div>
 
+                <div>
+                  <label htmlFor="kidColorThemeInput" className="block text-xs text-[var(--color-muted)] mb-1">
+                    {isEn ? 'Child Dedicated Color Theme' : 'اللون المخصص لهوية الطفل'}
+                  </label>
+                  <select
+                    id="kidColorThemeInput"
+                    name="colorTheme"
+                    defaultValue={
+                      editingChild
+                        ? resolveChildColorTheme(editingChild, state.kids)
+                        : ''
+                    }
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1.5 text-xs text-[var(--color-text)]"
+                  >
+                    <option value="">
+                      {isEn
+                        ? 'Automatic (distinct from siblings)'
+                        : 'تلقائي (لون مميز غير مكرر بين الإخوة)'}
+                    </option>
+                    {CHILD_COLOR_PALETTE_ORDER.map((colorId) => {
+                      const spec = CHILD_VISUAL_IDENTITY_THEMES[colorId];
+                      return (
+                        <option key={colorId} value={colorId}>
+                          {isEn ? `${spec.labelEn}` : `${spec.labelAr} (${spec.labelEn})`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+
                 <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                   <label className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-xs font-semibold cursor-pointer text-[var(--color-text)]">
                     رفع صورة حقيقية للطفل (تُحفظ محليًا)
@@ -549,14 +582,22 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   <select
                     id="taskCategoryInput"
                     name="category"
-                    defaultValue={editingTask?.category || 'روتين عام'}
+                    defaultValue={editingTask?.category || 'روتين يومي'}
                     className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
                   >
+                    <option value="روتين يومي">روتين يومي</option>
                     <option value="روتين عام">روتين عام</option>
+                    <option value="الأكل والتغذية">الأكل والتغذية</option>
                     <option value="أكل وشرب">أكل وشرب</option>
-                    <option value="لعب وتعلم">لعب وتعلم</option>
+                    <option value="النوم والراحة">النوم والراحة</option>
                     <option value="نوم">نوم</option>
+                    <option value="التعليم والتعلم">التعليم والتعلم</option>
+                    <option value="لعب وتعلم">لعب وتعلم</option>
+                    <option value="الرياضة والحركة">الرياضة والحركة</option>
+                    <option value="الصحة والمتابعة">الصحة والمتابعة</option>
                     <option value="صحة">صحة</option>
+                    <option value="الصلاة والقيم">الصلاة والقيم</option>
+                    <option value="مواعيد وأنشطة">مواعيد وأنشطة</option>
                   </select>
                 </div>
                 <div>
@@ -574,6 +615,46 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     <option value="الأب">الأب</option>
                     <option value="مقدم رعاية">مقدم رعاية</option>
                   </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="taskDayOfWeekInput" className="block text-xs text-[var(--color-muted)] mb-1">
+                    يوم الأسبوع (للمهام الأسبوعية)
+                  </label>
+                  <select
+                    id="taskDayOfWeekInput"
+                    name="dayOfWeek"
+                    defaultValue={
+                      editingTask?.dayOfWeek !== undefined
+                        ? String(editingTask.dayOfWeek)
+                        : String(new Date().getDay())
+                    }
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  >
+                    <option value="0">الأحد</option>
+                    <option value="1">الإثنين</option>
+                    <option value="2">الثلاثاء</option>
+                    <option value="3">الأربعاء</option>
+                    <option value="4">الخميس</option>
+                    <option value="5">الجمعة</option>
+                    <option value="6">السبت</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="taskDayOfMonthInput" className="block text-xs text-[var(--color-muted)] mb-1">
+                    يوم الشهر (للمهام الشهرية ١–٣١)
+                  </label>
+                  <input
+                    id="taskDayOfMonthInput"
+                    name="dayOfMonth"
+                    type="number"
+                    min={1}
+                    max={31}
+                    defaultValue={editingTask?.dayOfMonth ?? new Date().getDate()}
+                    className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-sm text-[var(--color-text)]"
+                  />
                 </div>
               </div>
 

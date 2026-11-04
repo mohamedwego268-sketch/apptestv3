@@ -334,7 +334,18 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                   metaLeft={
                     <span>
                       👶 {assignedKid ? locText(assignedKid.name, lang) : locText('الأسرة', lang)} ·{' '}
-                      {locText(task.category, lang)}
+                      {locText(task.category, lang)} ·{' '}
+                      {task.cadence === 'monthly'
+                        ? isEn
+                          ? `Monthly (Day ${task.dayOfMonth || 1})`
+                          : `شهري (يوم ${task.dayOfMonth || 1})`
+                        : task.cadence === 'weekly'
+                        ? isEn
+                          ? 'Weekly'
+                          : 'أسبوعي'
+                        : isEn
+                        ? 'Daily'
+                        : 'يومي'}
                     </span>
                   }
                   metaRightAction={renderReminderBadge(reminder)}

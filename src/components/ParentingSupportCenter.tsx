@@ -126,6 +126,7 @@ export interface ParentingSupportCenterProps {
   onAddRoutineTask?: (taskName: string, time: string, kidId: number | null) => void;
   initialKidId?: number | null;
   onActiveKidChange?: (kidId: number) => void;
+  hideChildSelector?: boolean;
   activeParentRole?: ParentSupportRole;
   motherName?: string;
   fatherName?: string;
@@ -139,6 +140,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   onAddRoutineTask,
   initialKidId,
   onActiveKidChange,
+  hideChildSelector = false,
   activeParentRole = 'mother',
   motherName,
   fatherName,
@@ -542,16 +544,18 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         </div>
         {kids.length > 0 ? (
           <>
-            <div className="flex flex-wrap gap-2">
-              {kids.map((kid) => (
-                <button key={kid.id} type="button" aria-pressed={activeKid?.id === kid.id} onClick={() => {
-                    setActiveKidId(kid.id);
-                    onActiveKidChange?.(kid.id);
-                  }} className={`min-h-[44px] rounded-2xl border px-3 py-2 text-xs font-extrabold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
-                  {kid.emoji} {locText(kid.name, language)}
-                </button>
-              ))}
-            </div>
+            {!hideChildSelector && (
+              <div className="flex flex-wrap gap-2">
+                {kids.map((kid) => (
+                  <button key={kid.id} type="button" aria-pressed={activeKid?.id === kid.id} onClick={() => {
+                      setActiveKidId(kid.id);
+                      onActiveKidChange?.(kid.id);
+                    }} className={`min-h-[44px] rounded-2xl border px-3 py-2 text-xs font-extrabold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ${activeKid?.id === kid.id ? 'border-sky-600 bg-sky-600 text-white' : 'border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] text-[var(--color-text)]'}`}>
+                    {kid.emoji} {locText(kid.name, language)}
+                  </button>
+                ))}
+              </div>
+            )}
             {activeKid && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2">

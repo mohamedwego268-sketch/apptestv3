@@ -61,6 +61,12 @@ import {
   ALLOWED_IMAGE_MIME_TYPES,
   MAX_CHILD_PHOTO_BYTES,
   validateAndSanitizeImageDataUrl,
+  ChildColorThemeId,
+  isValidChildColorTheme,
+  getChildVisualIdentitySpec,
+  isTaskCompletedOnDate,
+  toggleTaskCompletionForDate,
+  refreshTasksForCurrentDate,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
 import { createChildLifeRecord, type ChildLifeRecordType } from './services/childLifeRecordService';
@@ -269,11 +275,25 @@ export default function App() {
     const now = new Date();
     return now.getHours() * 60 + now.getMinutes();
   });
+  const [currentLocalDateISO, setCurrentLocalDateISO] = useState<string>(() =>
+    dateLocalISO(new Date())
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
       const now = new Date();
       setLiveClockMinutes(now.getHours() * 60 + now.getMinutes());
+      const nextDateISO = dateLocalISO(now);
+      setCurrentLocalDateISO((prevDateISO) => {
+        if (prevDateISO !== nextDateISO) {
+          setState((prevState) => ({
+            ...prevState,
+            tasks: refreshTasksForCurrentDate(prevState.tasks, nextDateISO),
+          }));
+          return nextDateISO;
+        }
+        return prevDateISO;
+      });
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -505,24 +525,34 @@ export default function App() {
             profile.role === 'dad' || profile.role === 'mom' ? profile.role : familyState.role;
           const pid = nextRole === 'dad' ? 'father' : 'mother';
           const nextKids = Array.isArray(restoredChildren)
-            ? restoredChildren.map((child, idx) => ({
-                id: child.id || idx + 1,
-                remoteId: child.remote_id,
-                name: child.name,
-                gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
-                birth: child.birth || '2022-05-14',
-                interests: child.interests || '',
-                profileDetails: child.profile_details || {},
-                vaccinationsNote: child.vaccinations_note || undefined,
-                growthHeightCm:
-                  typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
-                growthWeightKg:
-                  typeof child.growth_weight_kg === 'number' ? child.growth_weight_kg : undefined,
-                emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
-                avatarTheme:
-                  child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
-                useIllustratedAvatar: true,
-              }))
+            ? restoredChildren.map((child, idx) => {
+                const rawDetails = (child.profile_details || {}) as Record<string, unknown>;
+                const rawExtra = (rawDetails.extra || {}) as Record<string, unknown>;
+                const rawColor = isValidChildColorTheme(rawDetails.colorTheme)
+                  ? rawDetails.colorTheme
+                  : isValidChildColorTheme(rawExtra.colorTheme)
+                  ? rawExtra.colorTheme
+                  : undefined;
+                return {
+                  id: child.id || idx + 1,
+                  remoteId: child.remote_id,
+                  name: child.name,
+                  gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
+                  birth: child.birth || '2022-05-14',
+                  interests: child.interests || '',
+                  colorTheme: rawColor,
+                  profileDetails: child.profile_details || {},
+                  vaccinationsNote: child.vaccinations_note || undefined,
+                  growthHeightCm:
+                    typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
+                  growthWeightKg:
+                    typeof child.growth_weight_kg === 'number' ? child.growth_weight_kg : undefined,
+                  emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
+                  avatarTheme:
+                    child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
+                  useIllustratedAvatar: true,
+                };
+              })
             : familyState.kids;
           setState({
             ...familyState,
@@ -732,7 +762,7 @@ export default function App() {
   ]);
 
   const lang = state.language;
-  const todayISO = useMemo(() => dateLocalISO(new Date()), []);
+  const todayISO = currentLocalDateISO;
   const todayFormatted = useMemo(
     () => formatGregorianAndHijri(todayISO, state.country, state.language, state.calendarMode),
     [todayISO, state.country, state.language, state.calendarMode]
@@ -1031,6 +1061,10 @@ export default function App() {
     const growthWeightKg = Number(fd.get('growthWeightKg')) || undefined;
     const avatarTheme =
       (String(fd.get('avatarTheme') || 'astronaut') as AvatarAccessoryTheme) || 'astronaut';
+    const colorThemeRaw = String(fd.get('colorTheme') || '').trim();
+    const colorTheme: ChildColorThemeId | undefined = isValidChildColorTheme(colorThemeRaw)
+      ? colorThemeRaw
+      : editingChild?.colorTheme;
 
     const validation = validateChildInput({ name, birth, interests }, todayISO);
     if (!validation.valid) {
@@ -1043,6 +1077,14 @@ export default function App() {
       ? editingChild.id
       : Date.now() + Math.floor(Math.random() * 100);
     const existingRemoteId = editingChild?.remoteId;
+    const baseProfileDetails = editingChild?.profileDetails || {};
+    const mergedProfileDetails = colorTheme
+      ? {
+          ...baseProfileDetails,
+          colorTheme,
+          extra: { ...(baseProfileDetails.extra || {}), colorTheme },
+        }
+      : baseProfileDetails;
 
     setState((prev) => {
       if (editingChild) {
@@ -1063,6 +1105,8 @@ export default function App() {
                   growthHeightCm,
                   growthWeightKg,
                   avatarTheme,
+                  colorTheme,
+                  profileDetails: mergedProfileDetails,
                   photoDataUrl: childPhotoDraft,
                   useIllustratedAvatar: childPhotoDraft ? childUse3DAvatarDraft : true,
                 }
@@ -1083,6 +1127,8 @@ export default function App() {
         growthHeightCm,
         growthWeightKg,
         avatarTheme,
+        colorTheme,
+        profileDetails: mergedProfileDetails,
         photoDataUrl: childPhotoDraft,
         useIllustratedAvatar: childPhotoDraft ? childUse3DAvatarDraft : true,
       };
@@ -1107,7 +1153,7 @@ export default function App() {
             gender,
             interests,
             avatarTheme,
-            profileDetails: existingKidObj?.profileDetails || {},
+            profileDetails: mergedProfileDetails,
             vaccinationsNote: vaccinationsNote || existingKidObj?.vaccinationsNote,
             growthHeightCm: growthHeightCm ?? existingKidObj?.growthHeightCm,
             growthWeightKg: growthWeightKg ?? existingKidObj?.growthWeightKg,
@@ -1130,8 +1176,69 @@ export default function App() {
     setEditingChild(null);
     showToast(
       lang === 'en'
-        ? 'Child 3D profile saved!'
-        : 'تم حفظ ملف الطفل وهويته ثلاثية الأبعاد بنجاح'
+        ? 'Child 3D profile & color identity saved!'
+        : 'تم حفظ ملف الطفل وهويته اللونية بنجاح'
+    );
+  };
+
+  const handleChangeChildColorTheme = (kidId: number, colorTheme: ChildColorThemeId) => {
+    if (!isValidChildColorTheme(colorTheme)) return;
+    const targetKid = state.kids.find((k) => k.id === kidId);
+    if (!targetKid) return;
+
+    const updatedProfileDetails = {
+      ...(targetKid.profileDetails || {}),
+      colorTheme,
+      extra: {
+        ...(targetKid.profileDetails?.extra || {}),
+        colorTheme,
+      },
+    };
+
+    setState((prev) => ({
+      ...prev,
+      kids: prev.kids.map((k) =>
+        k.id === kidId
+          ? {
+              ...k,
+              colorTheme,
+              profileDetails: updatedProfileDetails,
+            }
+          : k
+      ),
+    }));
+
+    const verifiedFamilyUuid =
+      (isValidUuid(state.verifiedFamilyId) && state.verifiedFamilyId) ||
+      (isValidUuid(recognizedProfile?.verifiedFamilyId) && recognizedProfile?.verifiedFamilyId) ||
+      null;
+
+    if (verifiedFamilyUuid && !isPreviewMode) {
+      void saveOnboardingChildrenToSupabase({
+        familyId: verifiedFamilyUuid,
+        childrenList: [
+          {
+            id: targetKid.id,
+            remoteId: isValidUuid(targetKid.remoteId) ? String(targetKid.remoteId) : undefined,
+            name: targetKid.name,
+            birth: targetKid.birth,
+            gender: targetKid.gender,
+            interests: targetKid.interests,
+            avatarTheme: targetKid.avatarTheme,
+            profileDetails: updatedProfileDetails,
+            vaccinationsNote: targetKid.vaccinationsNote,
+            growthHeightCm: targetKid.growthHeightCm,
+            growthWeightKg: targetKid.growthWeightKg,
+          },
+        ],
+      });
+    }
+
+    const themeSpec = getChildVisualIdentitySpec(colorTheme);
+    showToast(
+      lang === 'en'
+        ? `Updated ${targetKid.name}'s visual identity to ${themeSpec.labelEn}`
+        : `تم تحديث الهوية البصرية لـ ${targetKid.name} إلى «${themeSpec.labelAr}»`
     );
   };
 
@@ -1166,6 +1273,26 @@ export default function App() {
     const cadenceRaw = String(fd.get('cadence') || 'daily');
     const cadence: TaskCadence =
       cadenceRaw === 'weekly' || cadenceRaw === 'monthly' ? cadenceRaw : 'daily';
+    const dayOfWeekRaw = fd.get('dayOfWeek');
+    const dayOfWeekNum =
+      dayOfWeekRaw !== null && String(dayOfWeekRaw).trim() !== '' ? Number(dayOfWeekRaw) : undefined;
+    const dayOfWeek =
+      typeof dayOfWeekNum === 'number' &&
+      Number.isInteger(dayOfWeekNum) &&
+      dayOfWeekNum >= 0 &&
+      dayOfWeekNum <= 6
+        ? dayOfWeekNum
+        : undefined;
+    const dayOfMonthRaw = fd.get('dayOfMonth');
+    const dayOfMonthNum =
+      dayOfMonthRaw !== null && String(dayOfMonthRaw).trim() !== '' ? Number(dayOfMonthRaw) : undefined;
+    const dayOfMonth =
+      typeof dayOfMonthNum === 'number' &&
+      Number.isInteger(dayOfMonthNum) &&
+      dayOfMonthNum >= 1 &&
+      dayOfMonthNum <= 31
+        ? dayOfMonthNum
+        : undefined;
 
     setState((prev) => {
       if (editingTask) {
@@ -1173,7 +1300,17 @@ export default function App() {
           ...prev,
           tasks: prev.tasks.map((tItem) =>
             tItem.id === editingTask.id
-              ? { ...tItem, name, time, kidId, category, owner, cadence }
+              ? {
+                  ...tItem,
+                  name,
+                  time,
+                  kidId,
+                  category,
+                  owner,
+                  cadence,
+                  dayOfWeek: cadence === 'weekly' ? (dayOfWeek ?? tItem.dayOfWeek ?? new Date().getDay()) : undefined,
+                  dayOfMonth: cadence === 'monthly' ? (dayOfMonth ?? tItem.dayOfMonth ?? new Date().getDate()) : undefined,
+                }
               : tItem
           ),
         };
@@ -1191,6 +1328,9 @@ export default function App() {
             category,
             owner,
             cadence,
+            dayOfWeek: cadence === 'weekly' ? (dayOfWeek ?? new Date().getDay()) : undefined,
+            dayOfMonth: cadence === 'monthly' ? (dayOfMonth ?? new Date().getDate()) : undefined,
+            completedDates: [],
           },
         ],
       };
@@ -1201,59 +1341,81 @@ export default function App() {
     showToast(editingTask ? 'تم تحديث المهمة' : 'تمت إضافة المهمة للروتين');
   };
 
-  const handleToggleTask = async (id: number, done: boolean) => {
+  const handleToggleTask = async (
+    id: number,
+    done: boolean,
+    targetDateISO: string = todayISO
+  ) => {
     const targetTask = state.tasks.find((tItem) => tItem.id === id);
-    if (done && (targetTask?.done || savingRoutineTaskIdsRef.current.has(id))) return;
+    const alreadyCompletedOnTargetDate = targetTask
+      ? isTaskCompletedOnDate(targetTask, targetDateISO)
+      : false;
+    const alreadyRecordedInHistory = Boolean(
+      targetTask?.completedDates?.includes(targetDateISO)
+    );
+
+    if (done && (alreadyCompletedOnTargetDate || savingRoutineTaskIdsRef.current.has(id))) return;
     if (done) savingRoutineTaskIdsRef.current.add(id);
     try {
       setState((prev) => ({
         ...prev,
-        tasks: prev.tasks.map((tItem) => (tItem.id === id ? { ...tItem, done } : tItem)),
+        tasks: prev.tasks.map((tItem) =>
+          tItem.id === id
+            ? toggleTaskCompletionForDate(tItem, done, targetDateISO)
+            : tItem
+        ),
       }));
       if (done) {
-      const targetKid = targetTask?.kidId
-        ? state.kids.find((k) => k.id === Number(targetTask.kidId))
-        : null;
-      const remoteChildId = targetTask?.remoteChildId || targetKid?.remoteId;
-      const taskCategory = `${targetTask?.category || ''} ${targetTask?.name || ''}`.toLowerCase();
-      const lifeRecordType: ChildLifeRecordType = /نوم|sleep|قيلولة/.test(taskCategory)
-        ? 'sleep_log'
-        : /أكل|طعام|شرب|وجبة|food|meal|nutrition|water/.test(taskCategory)
-        ? 'nutrition'
-        : /رياضة|حركة|sport|exercise|نشاط بدني/.test(taskCategory)
-        ? 'sports'
-        : /تعلم|دراسة|واجب|قراءة|education|study|homework/.test(taskCategory)
-        ? 'education'
-        : 'routine';
-      if (!isPreviewMode && targetTask && typeof remoteChildId === 'string' && isValidUuid(remoteChildId)) {
-        const savedRecord = await createChildLifeRecord({
-          childId: remoteChildId,
-          recordType: lifeRecordType,
-          title: `اكتملت مهمة: ${targetTask.name}`,
-          notes: `تم تسجيل إكمال المهمة من الروتين اليومي · ${targetTask.category || 'روتين يومي'}`,
-          occurredAt: new Date().toISOString(),
-          details: {
-            source: 'daily_routine',
-            routineTaskId: targetTask.id,
-            category: targetTask.category,
-            scheduledTime: targetTask.time,
-          },
-        });
-        if (savedRecord.error) {
-          showToast(`تم تحديث الروتين، لكن تعذر حفظه في حكاية الطفل: ${savedRecord.error}`);
+        const targetKid = targetTask?.kidId
+          ? state.kids.find((k) => k.id === Number(targetTask.kidId))
+          : null;
+        const remoteChildId = targetTask?.remoteChildId || targetKid?.remoteId;
+        const taskCategory = `${targetTask?.category || ''} ${targetTask?.name || ''}`.toLowerCase();
+        const lifeRecordType: ChildLifeRecordType = /نوم|sleep|قيلولة/.test(taskCategory)
+          ? 'sleep_log'
+          : /أكل|طعام|شرب|وجبة|food|meal|nutrition|water/.test(taskCategory)
+          ? 'nutrition'
+          : /رياضة|حركة|sport|exercise|نشاط بدني/.test(taskCategory)
+          ? 'sports'
+          : /تعلم|دراسة|واجب|قراءة|education|study|homework/.test(taskCategory)
+          ? 'education'
+          : 'routine';
+        if (
+          !isPreviewMode &&
+          !alreadyRecordedInHistory &&
+          targetTask &&
+          typeof remoteChildId === 'string' &&
+          isValidUuid(remoteChildId)
+        ) {
+          const savedRecord = await createChildLifeRecord({
+            childId: remoteChildId,
+            recordType: lifeRecordType,
+            title: `اكتملت مهمة: ${targetTask.name}`,
+            notes: `تم تسجيل إكمال المهمة من الروتين اليومي · ${targetTask.category || 'روتين يومي'}`,
+            occurredAt: new Date().toISOString(),
+            details: {
+              source: 'daily_routine',
+              routineTaskId: targetTask.id,
+              completedDate: targetDateISO,
+              category: targetTask.category,
+              scheduledTime: targetTask.time,
+            },
+          });
+          if (savedRecord.error) {
+            showToast(`تم تحديث الروتين، لكن تعذر حفظه في حكاية الطفل: ${savedRecord.error}`);
+          }
         }
-      }
-      setFestivalCelebration({
-        id: Date.now(),
-        titleAr: targetTask ? `برافو! اكتملت مهمة «${targetTask.name}» ✨` : 'برافو! اكتملت المهمة بنجاح ✨',
-        titleEn: targetTask ? `Awesome! Completed "${targetTask.name}" ✨` : 'Awesome! Task completed ✨',
-        subtitleAr: targetKid
-          ? `👑 نجمة اليوم مضافة لـ ${targetKid.name}`
-          : '🌟 خطوة جميلة في روتين العيلة اليوم',
-        subtitleEn: targetKid
-          ? `👑 Star of the Day milestone for ${targetKid.name}`
-          : '🌟 Another great family milestone today',
-      });
+        setFestivalCelebration({
+          id: Date.now(),
+          titleAr: targetTask ? `برافو! اكتملت مهمة «${targetTask.name}» ✨` : 'برافو! اكتملت المهمة بنجاح ✨',
+          titleEn: targetTask ? `Awesome! Completed "${targetTask.name}" ✨` : 'Awesome! Task completed ✨',
+          subtitleAr: targetKid
+            ? `👑 نجمة اليوم مضافة لـ ${targetKid.name}`
+            : '🌟 خطوة جميلة في روتين العيلة اليوم',
+          subtitleEn: targetKid
+            ? `👑 Star of the Day milestone for ${targetKid.name}`
+            : '🌟 Another great family milestone today',
+        });
       }
     } finally {
       if (done) savingRoutineTaskIdsRef.current.delete(id);
@@ -1271,9 +1433,11 @@ export default function App() {
   const handleResetTasks = () => {
     setState((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((tItem) => ({ ...tItem, done: false })),
+      tasks: prev.tasks.map((tItem) =>
+        toggleTaskCompletionForDate(tItem, false, todayISO)
+      ),
     }));
-    showToast('تمت إعادة ضبط حالة مهام الروتين');
+    showToast('تمت إعادة ضبط حالة مهام اليوم');
   };
 
   // Calendar Event CRUD
@@ -2372,7 +2536,17 @@ export default function App() {
                 onAddProductToWishes={(item) =>
                   handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                 }
-                onAddSuggestedRoutineTask={(taskName, timeStr, kidId, category = 'روتين يومي', cadence = 'daily', owner = 'مشترك', dayOfWeek = new Date().getDay()) => {
+                onAddSuggestedRoutineTask={(
+                  taskName,
+                  timeStr,
+                  kidId,
+                  category = 'روتين يومي',
+                  cadence = 'daily',
+                  owner = 'مشترك',
+                  dayOfWeek = new Date().getDay(),
+                  dayOfMonth = new Date().getDate(),
+                  daysOfWeek
+                ) => {
                   setState((prev) => ({
                     ...prev,
                     tasks: [
@@ -2385,7 +2559,13 @@ export default function App() {
                         owner,
                         cadence,
                         dayOfWeek: cadence === 'weekly' ? dayOfWeek : undefined,
+                        daysOfWeek:
+                          cadence === 'weekly' && Array.isArray(daysOfWeek) && daysOfWeek.length > 0
+                            ? daysOfWeek
+                            : undefined,
+                        dayOfMonth: cadence === 'monthly' ? dayOfMonth : undefined,
                         done: false,
+                        completedDates: [],
                       },
                       ...prev.tasks,
                     ],
@@ -2400,10 +2580,67 @@ export default function App() {
                 onUpdateRoutineTaskOwner={(taskId, owner) => {
                   setState((prev) => ({
                     ...prev,
-                    tasks: prev.tasks.map((task) => task.id === taskId ? { ...task, owner } : task),
+                    tasks: prev.tasks.map((task) =>
+                      task.id === taskId ? { ...task, owner } : task
+                    ),
                   }));
-                  showToast(lang === 'en' ? 'Task responsibility updated.' : 'تم تحديث المسؤول عن المهمة.');
+                  showToast(
+                    lang === 'en'
+                      ? 'Task responsibility updated.'
+                      : 'تم تحديث المسؤول عن المهمة.'
+                  );
                 }}
+                onEditRoutineTask={(taskId, patch) => {
+                  setState((prev) => ({
+                    ...prev,
+                    tasks: prev.tasks.map((task) => {
+                      if (task.id !== taskId) return task;
+                      const nextCadence = patch.cadence ?? task.cadence;
+                      return {
+                        ...task,
+                        name: patch.name !== undefined ? sanitizeUserText(patch.name, 180) || task.name : task.name,
+                        time: patch.time !== undefined ? sanitizeUserText(patch.time, 40) : task.time,
+                        category:
+                          patch.category !== undefined
+                            ? sanitizeUserText(patch.category, 60) || task.category
+                            : task.category,
+                        owner:
+                          patch.owner !== undefined
+                            ? sanitizeUserText(patch.owner, 60) || task.owner
+                            : task.owner,
+                        kidId: patch.kidId !== undefined ? patch.kidId : task.kidId,
+                        cadence: nextCadence,
+                        dayOfWeek:
+                          nextCadence === 'weekly'
+                            ? patch.dayOfWeek ?? task.dayOfWeek ?? new Date().getDay()
+                            : undefined,
+                        daysOfWeek:
+                          nextCadence === 'weekly' ? patch.daysOfWeek ?? task.daysOfWeek : undefined,
+                        dayOfMonth:
+                          nextCadence === 'monthly'
+                            ? patch.dayOfMonth ?? task.dayOfMonth ?? new Date().getDate()
+                            : undefined,
+                      };
+                    }),
+                  }));
+                }}
+                onDeleteRoutineTask={(taskId) => {
+                  setState((prev) => ({
+                    ...prev,
+                    tasks: prev.tasks.filter((task) => task.id !== taskId),
+                  }));
+                }}
+                onRestoreRoutineTask={(restoredTask) => {
+                  setState((prev) => {
+                    if (prev.tasks.some((tItem) => tItem.id === restoredTask.id)) return prev;
+                    return {
+                      ...prev,
+                      tasks: [restoredTask, ...prev.tasks],
+                    };
+                  });
+                }}
+                onChangeChildColorTheme={handleChangeChildColorTheme}
+                onOpenEditChild={openEditChild}
                 onShowToast={showToast}
                 bedtimeMode={bedtimeMode}
                 onToggleBedtimeMode={handleToggleBedtimeMode}
@@ -2425,6 +2662,7 @@ export default function App() {
                 onOpenEditChild={openEditChild}
                 onConfirmDeleteChild={(kidId) => setConfirmDeleteChildId(kidId)}
                 onAddVoiceMoment={handleAddVoiceMomentToChild}
+                onChangeChildColorTheme={handleChangeChildColorTheme}
                 onShowToast={showToast}
               /></React.Suspense>
             )}
