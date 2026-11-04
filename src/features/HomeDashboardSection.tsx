@@ -1543,7 +1543,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         iconBgClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
         title={
           isEn
-            ? `Daily Care Essentials for ${activeKidName}`
+            ? `Food, water and movement for ${activeKidName}`
             : `الأكل والماء والحركة مع ${activeKidName}`
         }
         subtitle={
@@ -1732,9 +1732,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
                   <div className="grid grid-cols-3 gap-1.5 pt-0.5">
                     {[
-                      { id: 'outdoor' as const, labelAr: '⚽ حديقة/كرة', labelEn: '⚽ Outdoor' },
+                      { id: 'outdoor' as const, labelAr: '⚽ لعب بره', labelEn: '⚽ Outdoor' },
                       { id: 'balance' as const, labelAr: '🧘‍♂️ توازن', labelEn: '🧘‍♂️ Balance' },
-                      { id: 'cardio' as const, labelAr: '🏃‍♂️ لياقة', labelEn: '🏃‍♂️ Cardio' },
+                      { id: 'cardio' as const, labelAr: '🏃‍♂️ حركة ونشاط', labelEn: '🏃‍♂️ Cardio' },
                     ].map((act) => {
                       const active = selectedSportSlot === act.id;
                       return (
