@@ -176,35 +176,19 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    const autoReply: ChatMessage = {
-      id: Date.now() + 1,
-      sender: 'other',
-      senderNameAr: activeThread.participantNameAr.split('—')[0].trim(),
-      senderNameEn: activeThread.participantNameEn.split('—')[0].trim(),
-      textAr:
-        activeThread.category === 'nursery'
-          ? 'تم استلام رسالتك في سجل متابعة الحضانة، وسنوافيكم بالتحديث فورًا.'
-          : activeThread.category === 'doctor'
-          ? 'شكرًا لتواصلكم مع العيادة، تم تسجيل استفساركم في ملف الطفل الطبي.'
-          : 'تمام، وصلت رسالتك وتم تحديث تنسيق اليوم العائلي 👍.',
-      textEn:
-        'Message received and logged in your family care record.',
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-    };
-
     const nextThreads = threads.map((th) =>
       th.id === activeThread.id
         ? {
             ...th,
             unreadCount: 0,
-            messages: [...th.messages, userMsg, autoReply],
+            messages: [...th.messages, userMsg],
           }
         : th
     );
     setThreads(nextThreads);
     onPersistState?.({ ...(initialPersistedState || {}), threads: nextThreads });
     setMessageInput('');
-    onShowToast(isEn ? 'Message added' : 'تمت إضافة الرسالة');
+    onShowToast(isEn ? 'Message saved to conversation history' : 'تم حفظ رسالتك في سجل المحادثة. لم تُرسل إلى الطرف الآخر بعد.');
   };
 
   return (

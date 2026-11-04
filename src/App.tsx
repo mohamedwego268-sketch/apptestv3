@@ -638,6 +638,8 @@ export default function App() {
     state.shippingAddress,
     state.orders,
     state.darkMode,
+    state.communityState,
+    state.chatState,
   ]);
 
   // If the first cloud hydration failed while offline, hydrate before allowing any upload when connectivity returns.
@@ -2524,8 +2526,8 @@ export default function App() {
                     }));
                     showToast(
                       lang === 'en'
-                        ? `Appointment booked with ${doctorName} and added to Family Calendar!`
-                        : `تم حجز الموعد مع «${doctorName}» وإضافته إلى التقويم الأسري!`
+                        ? `Appointment request saved to your Family Calendar: ${doctorName}`
+                        : `تمت إضافة طلب الموعد مع «${doctorName}» إلى تقويم الأسرة. الموعد غير مؤكد بعد.`
                     );
                   }}
                   onShowToast={showToast}
