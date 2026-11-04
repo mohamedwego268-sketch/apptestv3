@@ -49,6 +49,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const [occurredAt, setOccurredAt] = useState(() => new Date().toISOString().slice(0, 10));
   const [heightCm, setHeightCm] = useState('');
   const [weightKg, setWeightKg] = useState('');
+  const [interestCategory, setInterestCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +69,24 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
     .filter((item) => item.record_type === 'growth_measurement' && (Number(item.details?.heightCm) > 0 || Number(item.details?.weightKg) > 0))
     .slice()
     .sort((a, b) => new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime());
+  const interestRecords = records
+    .filter((item) => ['hobby', 'sports', 'education'].includes(item.record_type))
+    .slice()
+    .sort((a, b) => new Date(b.occurred_at).getTime() - new Date(a.occurred_at).getTime());
+  const interestGroups = [
+    { id: 'movement', icon: '🏃', ar: 'حركة ورياضة', en: 'Movement', keywords: ['sport', 'football', 'swim', 'run', 'dance', 'رياض', 'كرة', 'سباح', 'جري', 'حركة', 'رقص'] },
+    { id: 'creative', icon: '🎨', ar: 'إبداع وفنون', en: 'Creative arts', keywords: ['draw', 'paint', 'craft', 'music', 'art', 'رسم', 'تلوين', 'فن', 'موسيقى', 'عجين'] },
+    { id: 'discovery', icon: '🔬', ar: 'اكتشاف وتجربة', en: 'Discovery', keywords: ['science', 'experiment', 'nature', 'build', 'discover', 'علوم', 'تجربة', 'اكتشاف', 'تركيب', 'طبيعة'] },
+    { id: 'learning', icon: '📚', ar: 'قراءة وتعلّم', en: 'Reading & learning', keywords: ['read', 'book', 'letter', 'number', 'learn', 'قراءة', 'كتاب', 'حروف', 'أرقام', 'تعلم'] },
+    { id: 'social', icon: '🤝', ar: 'تواصل ومشاركة', en: 'Social play', keywords: ['friend', 'team', 'share', 'group', 'صديق', 'أصدقاء', 'فريق', 'مشاركة', 'جماعي'] },
+  ];
+  const getInterestGroup = (record: ChildLifeRecord) => {
+    const savedCategory = typeof record.details?.interestCategory === 'string' ? record.details.interestCategory : '';
+    if (savedCategory) return interestGroups.find((group) => group.id === savedCategory) || null;
+    const text = `${record.title} ${record.notes}`.toLocaleLowerCase();
+    return interestGroups.find((group) => group.keywords.some((keyword) => text.includes(keyword))) ||
+      (record.record_type === 'sports' ? interestGroups[0] : record.record_type === 'education' ? interestGroups[3] : null);
+  };
 
   const refresh = useCallback(async () => {
     if (!validChildId || typeof childId !== 'string') return;
@@ -98,7 +117,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
       details: recordType === 'growth_measurement' ? {
         ...(Number(heightCm) > 0 ? { heightCm: Number(heightCm) } : {}),
         ...(Number(weightKg) > 0 ? { weightKg: Number(weightKg) } : {}),
-      } : {},
+      } : ['hobby', 'sports', 'education'].includes(recordType) && interestCategory
+        ? { interestCategory }
+        : {},
     });
     setSaving(false);
     if (result.error) {
@@ -109,6 +130,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
     setNotes('');
     setHeightCm('');
     setWeightKg('');
+    setInterestCategory('');
     setOccurredAt(new Date().toISOString().slice(0, 10));
     await refresh();
   };
@@ -139,6 +161,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                 </select>
                 <input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} placeholder={isEn ? 'Record title' : 'عنوان التسجيل'} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm" />
                 <label className="flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'Date of this event' : 'تاريخ حدوث التسجيل'}</span><input type="date" value={occurredAt} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setOccurredAt(event.target.value)} required className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm text-[var(--color-text)]" /></label>
+                {['hobby', 'sports', 'education'].includes(recordType) && <label className="sm:col-span-2 flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'Activity area (optional)' : 'مجال النشاط (اختياري)'}</span><select value={interestCategory} onChange={(event) => setInterestCategory(event.target.value)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm"><option value="">{isEn ? 'Let the activity speak for itself' : 'سيب النشاط يعبّر عن نفسه'}</option>{interestGroups.map((group) => <option key={group.id} value={group.id}>{isEn ? group.en : group.ar}</option>)}</select><span className="font-normal">{isEn ? 'Choose only if it genuinely describes what you tried together.' : 'اختار المجال لو بيوصف النشاط فعلًا، وممكن تسيبه بدون تصنيف.'}</span></label>}
                 {recordType === 'growth_measurement' && <div className="sm:col-span-2 grid grid-cols-2 gap-2 rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50/60 dark:bg-teal-950/20 p-3"><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Measured height (cm)' : 'الطول المقاس (سم)'}</span><input type="number" min="1" max="250" step="0.1" inputMode="decimal" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} placeholder={isEn ? 'e.g. 102.5' : 'مثال: 102.5'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Measured weight (kg)' : 'الوزن المقاس (كجم)'}</span><input type="number" min="0.1" max="200" step="0.1" inputMode="decimal" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder={isEn ? 'e.g. 16.2' : 'مثال: 16.2'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><p className="col-span-2 text-[10px] leading-5 text-teal-800/80 dark:text-teal-200/80">{isEn ? 'Enter values from an actual measurement. Missing values are not estimated.' : 'أدخل القيم من قياس فعلي. لن يتم تقدير أي قيمة غير مسجلة.'}</p></div>}
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={4000} rows={2} placeholder={isEn ? 'Notes and details (optional)' : 'ملاحظات وتفاصيل (اختياري)'} className="sm:col-span-2 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 py-2 text-sm" />
                 <button disabled={saving || !title.trim() || (recordType === 'growth_measurement' && !(Number(heightCm) > 0 || Number(weightKg) > 0))} type="submit" className="sm:col-span-2 min-h-11 rounded-xl bg-teal-600 text-white text-sm font-extrabold disabled:opacity-50">
@@ -161,6 +184,21 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                   {growthRecords.length === 1 && <p className="text-[10px] leading-5 text-teal-900/80 dark:text-teal-100/80">{isEn ? 'Add another dated measurement to begin comparing real changes over time.' : 'أضف قياسًا آخر بتاريخ مختلف علشان نقدر نتابع التغير الفعلي بمرور الوقت.'}</p>}
                 </section>
               )}
+              <section data-testid="child-interest-map" className="overflow-hidden rounded-2xl border border-violet-200/80 dark:border-violet-900/70 bg-gradient-to-br from-violet-50/90 via-white to-amber-50/60 dark:from-[#201B32] dark:via-[#142430] dark:to-[#29251D] p-3 sm:p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-black tracking-wide text-violet-700 dark:text-violet-300">{isEn ? 'CURIOSITY MAP' : 'خريطة الفضول والاكتشاف'}</p><h4 className="mt-1 text-sm font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? `${childName}’s explored interests` : `الحاجات اللي ${childName} جرّبها واهتم بيها`}</h4><p className="mt-1 text-[10px] leading-5 text-[var(--color-muted)]">{isEn ? 'A reflection of saved activities, not a talent test or a child rating.' : 'انعكاس للأنشطة المسجلة، مش اختبار مواهب ولا تقييم للطفل.'}</p></div><span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-violet-100 dark:bg-violet-900/50 text-xl">🪁</span></div>
+                {interestRecords.length > 0 ? <>
+                  <div className="flex flex-wrap gap-2">{interestGroups.map((group) => { const matching = interestRecords.filter((record) => getInterestGroup(record)?.id === group.id); if (!matching.length) return null; return <div key={group.id} className="rounded-xl border border-violet-200/80 dark:border-violet-800 bg-white/80 dark:bg-[#172536] px-3 py-2"><span className="text-sm">{group.icon}</span><span className="ms-1.5 text-[11px] font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? group.en : group.ar}</span><span className="ms-2 text-[10px] font-black text-violet-700 dark:text-violet-300">{matching.length}</span></div>; })}</div>
+                  <div className="space-y-2"><div className="flex items-center justify-between"><span className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'Recently explored' : 'آخر الأنشطة اللي اتجربت'}</span><span className="text-[10px] text-[var(--color-muted)]">{interestRecords.length} {isEn ? 'records' : 'تسجيلات'}</span></div><div className="flex gap-2 overflow-x-auto pb-1 snap-x">{interestRecords.slice(0, 8).map((record) => { const group = getInterestGroup(record); return <article key={record.id} className="min-w-[155px] max-w-[190px] snap-start rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-3"><span className="text-lg">{group?.icon || (record.record_type === 'sports' ? '🏃' : record.record_type === 'education' ? '🧩' : '✨')}</span><p className="mt-1 text-xs font-extrabold text-[var(--color-text)] dark:text-white line-clamp-2">{record.title}</p><time className="mt-1 block text-[10px] text-[var(--color-muted)]" dateTime={record.occurred_at}>{new Date(record.occurred_at).toLocaleDateString(isEn ? 'en' : 'ar', { day: 'numeric', month: 'short' })}</time></article>; })}</div></div>
+                </> : <div className="rounded-xl border border-dashed border-violet-300 dark:border-violet-800 bg-white/60 dark:bg-[#172536]/60 p-3"><p className="text-xs font-bold text-[var(--color-text)] dark:text-white">{isEn ? 'The best way to discover an interest is to try something together.' : 'أحسن طريقة لاكتشاف اهتمام جديد إنكم تجربوا حاجة سوا.'}</p><p className="mt-1 text-[10px] leading-5 text-[var(--color-muted)]">{isEn ? 'Try drawing, building, a short story, or a movement game. Save what you tried and how your child responded.' : 'جرّبوا رسم، تركيب مكعبات، حكاية قصيرة، أو لعبة حركة. سجّلوا النشاط ورد فعل الطفل من غير ضغط أو توقعات.'}</p></div>}
+                <div className="border-t border-violet-200/70 dark:border-violet-900/70 pt-3"><div className="flex items-center justify-between gap-2"><div><h5 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'Try it together' : 'جرّبوا سوا'}</h5><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Small ideas, no scores and no pressure' : 'أفكار بسيطة من غير درجات أو ضغط'}</p></div><span className="text-lg">💡</span></div><div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">{[
+                  { id: 'creative', icon: '🖍️', ar: 'ارسموا حكاية سوا', en: 'Draw a story together', type: 'hobby' as ChildLifeRecordType },
+                  { id: 'discovery', icon: '🧪', ar: 'جرّبوا تجربة آمنة', en: 'Try a safe experiment', type: 'education' as ChildLifeRecordType },
+                  { id: 'movement', icon: '⚽', ar: 'ابتكروا لعبة حركة', en: 'Invent a movement game', type: 'sports' as ChildLifeRecordType },
+                  { id: 'learning', icon: '📖', ar: 'اختاروا قصة واقرؤوها', en: 'Choose and read a story', type: 'education' as ChildLifeRecordType },
+                  { id: 'social', icon: '🧩', ar: 'ابنوا حاجة كفريق', en: 'Build something as a team', type: 'hobby' as ChildLifeRecordType },
+                  { id: 'creative', icon: '🎵', ar: 'اعملوا إيقاع بالموجود', en: 'Make a rhythm together', type: 'hobby' as ChildLifeRecordType },
+                ].map((idea, index) => <button key={`${idea.id}-${index}`} type="button" onClick={() => { setRecordType(idea.type); setInterestCategory(idea.id); setTitle(isEn ? idea.en : idea.ar); setNotes(''); setActiveFilter('interests'); }} className="min-h-[76px] rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-2 text-start transition hover:-translate-y-0.5 hover:border-violet-400"><span className="text-lg">{idea.icon}</span><span className="mt-1 block text-[10px] font-extrabold leading-4 text-[var(--color-text)] dark:text-white">{isEn ? idea.en : idea.ar}</span><span className="mt-1 block text-[9px] font-bold text-violet-700 dark:text-violet-300">{isEn ? 'Use in activity log →' : 'سجّلوا التجربة ←'}</span></button>)}</div></div>
+              </section>
               <div data-testid="child-timeline-insights" className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'Explore this child’s story' : 'اكتشفوا حكاية طفلكم'}</h4>
