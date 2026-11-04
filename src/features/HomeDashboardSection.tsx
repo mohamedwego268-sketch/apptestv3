@@ -464,6 +464,45 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     }
     return true;
   };
+  const toggleCommandTask = async (task: RoutineTask, nextDone: boolean, targetDateISO: string) => {
+    const wasDone = isTaskCompletedOnDate(task, targetDateISO);
+    onToggleRoutineTask?.(task.id, nextDone, targetDateISO);
+    if (!nextDone || wasDone || !activeKid?.remoteId) return;
+
+    const completionKey = `command-task:${activeKid.id}:${task.id}:${targetDateISO}`;
+    if (savingDashboardActionKeysRef.current.has(completionKey)) return;
+    const alreadyRecorded = activeKidRecentRecords.some((record) =>
+      record.record_type === 'routine' &&
+      record.details?.dashboardKind === 'command_center_task' &&
+      Number(record.details?.taskId) === task.id &&
+      record.details?.scheduledDateISO === targetDateISO &&
+      record.details?.action === 'completed'
+    );
+    if (alreadyRecorded) return;
+
+    savingDashboardActionKeysRef.current.add(completionKey);
+    try {
+      const saved = await saveDashboardChildLog(
+        'routine',
+        isEn ? `Completed task: ${task.name}` : `إنجاز مهمة: ${task.name}`,
+        {
+          dashboardKind: 'command_center_task',
+          taskId: task.id,
+          scheduledDateISO: targetDateISO,
+          category: task.category,
+          owner: task.owner || 'مشترك',
+          time: task.time,
+          cadence: task.cadence || 'daily',
+          action: 'completed',
+        }
+      );
+      if (saved) {
+        onShowToast?.(isEn ? 'Task completion added to the child timeline ✓' : 'اتسجل إنجاز المهمة في سجل الطفل ✓');
+      }
+    } finally {
+      savingDashboardActionKeysRef.current.delete(completionKey);
+    }
+  };
   const completeParentChildActivity = async (activity: {
     id: string;
     title: string;
@@ -1508,6 +1547,40 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     const progress = childTasks.length
                       ? Math.round((completedCount / childTasks.length) * 100)
                       : 0;
+                    const weeklyDays = Array.from({ length: 7 }, (_, index) => {
+                      const dayDate = new Date(
+                        localNow.getFullYear(),
+                        localNow.getMonth(),
+                        localNow.getDate() + plannerWeekOffset * 7 + index - localNow.getDay(),
+                        12,
+                        0,
+                        0
+                      );
+                      return { date: dayDate, iso: dateLocalISO(dayDate) };
+                    });
+                    const weeklyDateSet = new Set(weeklyDays.map((day) => day.iso));
+                    const weeklyTaskInstances = weeklyDays.flatMap(({ iso }) =>
+                      state.tasks
+                        .filter((task) =>
+                          (task.kidId === null || task.kidId === activeKidId) &&
+                          isTaskScheduledForDate(task, iso)
+                        )
+                        .map((task) => ({ task, iso }))
+                    );
+                    const weeklyCompletedCount = weeklyTaskInstances.filter(({ task, iso }) =>
+                      isTaskCompletedOnDate(task, iso)
+                    ).length;
+                    const weeklyEventCount = state.events.filter((event) =>
+                      weeklyDateSet.has(event.date) &&
+                      (event.childId == null || event.childId === activeKidId)
+                    ).length;
+                    const recentRecordsStartISO = dateLocalISO(new Date(Date.now() - 13 * 24 * 60 * 60 * 1000));
+                    const weeklyRecordsWindowAvailable = weeklyDays.every((day) => day.iso >= recentRecordsStartISO);
+                    const weeklyRecordCount = weeklyRecordsWindowAvailable
+                      ? activeKidRecentRecords.filter((record) =>
+                          weeklyDateSet.has(dateLocalISO(new Date(record.occurred_at)))
+                        ).length
+                      : null;
 
                     const visibleTasks = childTasks
                       .filter((task) => {
@@ -1539,6 +1612,41 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                             />
                           </div>
                         </div>
+
+                        <section
+                          data-testid="command-center-weekly-summary"
+                          aria-label={isEn ? 'Weekly family summary' : 'ملخص الأسبوع'}
+                          className="rounded-2xl border border-white/15 bg-slate-950/15 p-3 space-y-2.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div>
+                              <h3 className="text-[11px] font-black text-white">{isEn ? 'Your week at a glance' : 'ملخص أسبوع طفلك'}</h3>
+                              <p className="mt-0.5 text-[9px] text-white/65">{isEn ? 'A quick view of what happened and what is coming up' : 'نظرة سريعة على اللي اتعمل والمواعيد المسجلة'}</p>
+                            </div>
+                            <span className="rounded-full bg-white/10 px-2 py-1 text-[9px] font-bold text-white/80 tabular-nums">{weeklyDays[0].iso.slice(5)} — {weeklyDays[6].iso.slice(5)}</span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="rounded-xl bg-white/[0.08] p-2">
+                              <div className="text-[9px] text-white/65">{isEn ? 'Tasks done' : 'مهام اتعملت'}</div>
+                              <div className="mt-1 text-lg font-black leading-none text-white tabular-nums">{weeklyCompletedCount}<span className="mx-1 text-[10px] font-semibold text-white/55">/ {weeklyTaskInstances.length}</span></div>
+                              <div className="mt-1 text-[8px] text-white/55">{weeklyTaskInstances.length ? `${Math.round((weeklyCompletedCount / weeklyTaskInstances.length) * 100)}% ${isEn ? 'complete' : 'إنجاز'}` : (isEn ? 'No tasks planned' : 'مفيش مهام مجدولة')}</div>
+                            </div>
+                            <div className="rounded-xl bg-white/[0.08] p-2">
+                              <div className="text-[9px] text-white/65">{isEn ? 'Appointments' : 'مواعيد'}</div>
+                              <div className="mt-1 text-lg font-black leading-none text-white tabular-nums">{weeklyEventCount}</div>
+                              <div className="mt-1 text-[8px] text-white/55">{isEn ? 'Family calendar' : 'في تقويم الأسرة'}</div>
+                            </div>
+                            <div className="rounded-xl bg-white/[0.08] p-2">
+                              <div className="text-[9px] text-white/65">{isEn ? 'Child records' : 'تسجيلات الطفل'}</div>
+                              <div className="mt-1 text-lg font-black leading-none text-white tabular-nums">{weeklyRecordCount === null ? '—' : weeklyRecordCount}</div>
+                              <div className="mt-1 text-[8px] text-white/55">{weeklyRecordCount === null ? (isEn ? 'Available for recent weeks' : 'متاحة للأسابيع الأخيرة') : (isEn ? 'Saved moments & care' : 'لحظات ومتابعات محفوظة')}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 border-t border-white/10 pt-2">
+                            <span className="text-[9px] text-white/65">{isEn ? 'Still to do this week' : 'لسه متبقي خلال الأسبوع'}</span>
+                            <strong className="text-[11px] font-black text-white tabular-nums">{weeklyTaskInstances.length - weeklyCompletedCount}</strong>
+                          </div>
+                        </section>
 
                         <details className="group rounded-xl border border-white/10 bg-white/[0.05]">
                           <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 px-3 text-[11px] font-bold text-white/85 [&::-webkit-details-marker]:hidden"><span>{isEn ? 'More filters' : 'تصفية متقدمة'}</span><span className="text-white/60 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></summary>
@@ -1588,7 +1696,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                             return (
                               <div key={task.id} data-testid={`command-task-row-${task.id}`} className="rounded-xl border border-white/10 bg-white/[0.07] p-3">
                                 <div className="flex items-center gap-2.5">
-                                  <button type="button" aria-label={doneOnDate ? (isEn ? 'Mark incomplete' : 'إعادة فتح المهمة') : (isEn ? 'Complete task' : 'إنجاز المهمة')} disabled={!onToggleRoutineTask} onClick={() => onToggleRoutineTask?.(task.id, !doneOnDate, selectedPlannerDateISO)} className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border text-sm font-black transition cursor-pointer ${doneOnDate ? 'border-emerald-300 bg-emerald-300 text-[#073F43]' : 'border-white/30 bg-white/5 text-white hover:bg-white/15'}`}>{doneOnDate ? '✓' : '○'}</button>
+                                  <button type="button" aria-label={doneOnDate ? (isEn ? 'Mark incomplete' : 'إعادة فتح المهمة') : (isEn ? 'Complete task' : 'إنجاز المهمة')} disabled={!onToggleRoutineTask} onClick={() => { void toggleCommandTask(task, !doneOnDate, selectedPlannerDateISO); }} className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border text-sm font-black transition cursor-pointer ${doneOnDate ? 'border-emerald-300 bg-emerald-300 text-[#073F43]' : 'border-white/30 bg-white/5 text-white hover:bg-white/15'}`}>{doneOnDate ? '✓' : '○'}</button>
                                   <div className="min-w-0 flex-1"><div className={`truncate text-[13px] font-bold ${doneOnDate ? 'text-white/55 line-through' : 'text-white'}`}>{task.name}</div><div className="mt-1 flex flex-wrap items-center gap-x-2 text-[10px] text-white/65"><span>{task.time}</span><span>· {task.owner || (isEn ? 'Shared' : 'مشترك')}</span>{task.cadence === 'weekly' && <span>· {isEn ? 'Weekly' : 'أسبوعي'}</span>}{task.cadence === 'monthly' && <span>· {isEn ? `Monthly · day ${task.dayOfMonth || 1}` : `شهري · يوم ${task.dayOfMonth || 1}`}</span>}</div></div>
                                   <div className="flex shrink-0 items-center gap-1">
                                     {onEditRoutineTask && <button type="button" data-testid={`command-task-edit-btn-${task.id}`} aria-label={isEn ? 'Edit task' : 'تعديل المهمة'} title={isEn ? 'Edit' : 'تعديل'} onClick={() => { if (editingCommandTaskId === task.id) { setEditingCommandTaskId(null); setEditTaskDraft(null); } else { setEditingCommandTaskId(task.id); setConfirmDeleteTaskId(null); setEditTaskDraft({ name: task.name, time: task.time || '17:00', category: task.category || 'روتين يومي', owner: task.owner === 'الأم' || task.owner === 'الأب' ? task.owner : 'مشترك', kidId: task.kidId, cadence: task.cadence || 'daily', dayOfWeek: task.dayOfWeek ?? plannerDay, dayOfMonth: task.dayOfMonth ?? new Date().getDate() }); } }} className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-sm text-white/80 hover:bg-white/15 cursor-pointer">✎</button>}

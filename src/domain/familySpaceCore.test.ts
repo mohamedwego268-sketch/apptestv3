@@ -4280,6 +4280,11 @@ describe('Child Life Command Center — Independent Visual Identity, Date-Aware 
     assert.ok(homeSrc.includes('data-testid={`planner-day-${dayISO}`}'));
     assert.ok(homeSrc.includes('dayTasks.length'));
     assert.ok(homeSrc.includes('setQuickTaskDay(index)'));
+    assert.ok(homeSrc.includes('command-center-weekly-summary'));
+    assert.ok(homeSrc.includes('weeklyTaskInstances'));
+    assert.ok(homeSrc.includes('weeklyCompletedCount'));
+    assert.ok(homeSrc.includes("dashboardKind: 'command_center_task'"));
+    assert.ok(homeSrc.includes('toggleCommandTask(task, !doneOnDate, selectedPlannerDateISO)'));
     assert.ok(homeSrc.includes('hideChildSelector={true}'));
     for (const domainId of ['nutrition', 'sleep', 'learning', 'sports', 'health', 'hobbies', 'wellbeing', 'values']) {
       assert.ok(homeSrc.includes(`command-domain-${domainId}`), `Missing Command Center care domain: ${domainId}`);
