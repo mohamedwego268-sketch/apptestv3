@@ -3794,7 +3794,7 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(!homeSrc.includes('<HomeDynamicContentSection'));
     assert.ok(!homeSrc.includes('<HomeVisualDiscovery'));
     assert.ok(!homeSrc.includes('id="home-heroes-passions-arena"'));
-    assert.ok(!homeSrc.includes('id="home-daily-essentials-hub"'));
+    assert.ok(homeSrc.includes('id="home-daily-essentials-hub"'));
     assert.ok(homeSrc.indexOf('id="child-life-command-center"') < homeSrc.indexOf('home-parenting-support-center'));
     assert.ok(homeSrc.includes('home-kid-switcher-'));
     assert.ok(!homeSrc.includes('home-welcome-kid-pill-'));
