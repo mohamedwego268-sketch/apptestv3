@@ -40,10 +40,10 @@ const VISUAL_STORIES: VisualStory[] = [
   {
     id: 'sensory-play', topic: 'learning', minAge: 0, maxAge: 30,
     keywords: ['حسي', 'ألوان', 'مكعبات', 'أصوات', 'sensory', 'blocks', 'colors'],
-    titleAr: 'اكتشفوا العالم بحواس صغيرة', titleEn: 'Explore the world through little senses',
-    bodyAr: 'لحظات قصيرة من اللمس والنظر والاستماع تساعد طفلك يكتشف العالم بإيقاعه.',
+    titleAr: 'خلّوا طفلك يلمس ويشوف ويسمع', titleEn: 'Explore the world through little senses',
+    bodyAr: 'قدّموا لطفلك حاجات آمنة يلمسها ويشوفها ويسمع صوتها، وسيبوه يكتشف براحة.',
     bodyEn: 'Short moments of touching, looking and listening let your child explore at their own pace.',
-    activityAr: 'جهّزوا ٣ خامات آمنة مختلفة، وسمّوا الملمس واللون والصوت معًا.',
+    activityAr: 'هاتوا ٣ حاجات آمنة مختلفة، والمسوا كل واحدة واحكوا عن لونها وملمسها وصوتها.',
     activityEn: 'Offer three safe textures and name each texture, color and sound together.',
     tagAr: 'اللعب الحسي · للسن الصغير', tagEn: 'Sensory play · Early years',
     image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=1200&q=85',
@@ -52,8 +52,8 @@ const VISUAL_STORIES: VisualStory[] = [
   {
     id: 'picture-story', topic: 'learning', minAge: 12, maxAge: 72,
     keywords: ['قصص', 'حيوانات', 'خيال', 'قراءة', 'story', 'animals', 'books'],
-    titleAr: 'خلّوا الحكاية تبدأ من صورة', titleEn: 'Let one picture start the story',
-    bodyAr: 'اختاروا صورة واحدة، وسيبوا طفلكم يلاحظ ويسأل ويكمل الحكاية بطريقته.',
+    titleAr: 'احكوا حكاية من صورة', titleEn: 'Let one picture start the story',
+    bodyAr: 'اختاروا صورة واسألوه شايف إيه، وبعدها خلّوه يحكي لكم اللي في خياله.',
     bodyEn: 'Choose one picture and let your child notice, ask questions and lead the story.',
     activityAr: 'اسألوه: شايف إيه؟ تتوقع إيه اللي هيحصل بعد كده؟',
     activityEn: 'Ask: What can you see? What do you think might happen next?',
@@ -64,8 +64,8 @@ const VISUAL_STORIES: VisualStory[] = [
   {
     id: 'creative-art', topic: 'learning', minAge: 24, maxAge: 96,
     keywords: ['رسم', 'ألوان', 'فن', 'painting', 'drawing', 'art', 'watercolor'],
-    titleAr: 'مساحة صغيرة للإبداع', titleEn: 'A little space for creativity',
-    bodyAr: 'مش مطلوب رسمة مثالية؛ المهم مساحة آمنة للتجربة والاختيار والتعبير.',
+    titleAr: 'يلا نرسم ونلوّن', titleEn: 'A little space for creativity',
+    bodyAr: 'مش مهم الرسمة تطلع عاملة إزاي؛ المهم يستمتع ويجرب ألوان وأفكار جديدة.',
     bodyEn: 'The goal is not a perfect picture. It is a safe space to experiment and express.',
     activityAr: 'اختاروا لونين أو ثلاثة، وسيبوا الطفل يختار شكلًا أو فكرة من خياله.',
     activityEn: 'Offer two or three colors and let your child choose what to create.',
@@ -76,8 +76,8 @@ const VISUAL_STORIES: VisualStory[] = [
   {
     id: 'active-play', topic: 'sports', minAge: 24, maxAge: 96,
     keywords: ['رياضة', 'سباحة', 'كرة', 'جري', 'حركة', 'football', 'swimming', 'sport'],
-    titleAr: 'الحركة أحلى لما تبقى لعبة', titleEn: 'Movement is better when it feels like play',
-    bodyAr: 'نشاط بسيط يناسب طاقة الطفل واهتمامه، من غير منافسة أو ضغط على الأداء.',
+    titleAr: 'يلا نلعب ونتحرك', titleEn: 'Movement is better when it feels like play',
+    bodyAr: 'اختاروا لعبة تناسب سنه وطاقته، وخلوها للمتعة مش للمنافسة.',
     bodyEn: 'A simple activity that fits your child’s energy and interests, without pressure to perform.',
     activityAr: 'اعملوا مسار حركة آمن في البيت أو اختاروا لعبة بالكرة حسب عمره.',
     activityEn: 'Create a safe movement path at home or play a simple ball game that fits their age.',
@@ -88,12 +88,12 @@ const VISUAL_STORIES: VisualStory[] = [
   {
     id: 'food-rhythm', topic: 'nutrition', minAge: 6, maxAge: 96,
     keywords: ['وجبة', 'تغذية', 'طعام', 'مشروب', 'meal', 'nutrition', 'food'],
-    titleAr: 'اختيارات أكل تشاركوا فيها', titleEn: 'Make mealtimes a shared choice',
-    bodyAr: 'خلّوا وقت الأكل فرصة للمشاركة والاستقلال، مع مراعاة احتياجات الطفل الغذائية المسجلة.',
+    titleAr: 'خلوه يشارك في اختيار أكله', titleEn: 'Make mealtimes a shared choice',
+    bodyAr: 'ادّوا طفلك فرصة يختار بين أكلتين مناسبين له، مع مراعاة أي حساسية أو احتياج خاص.',
     bodyEn: 'Make mealtimes a chance to participate and build independence while respecting the child’s recorded dietary needs.',
     activityAr: 'اعرضوا اختيارين مناسبين سبق التأكد من ملاءمتهما لحساسية الطفل واحتياجاته، وسيبوه يختار.',
     activityEn: 'Offer two options already confirmed as suitable for the child’s allergies and dietary needs, then let them choose.',
-    tagAr: 'التغذية والعادات', tagEn: 'Nutrition & routines',
+    tagAr: 'الأكل والعادات اليومية', tagEn: 'Nutrition & routines',
     image: 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?auto=format&fit=crop&w=1200&q=85',
     duration: 'وقت الوجبة', destination: { kind: 'section', section: 'dailyEssentials' },
   },
@@ -253,10 +253,10 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
         <div>
           <span className="text-[10px] font-black tracking-[0.18em] text-teal-700 dark:text-teal-300">NEKBAAR · DISCOVER</span>
           <h2 className="mt-1 text-xl font-black text-[var(--color-text)] dark:text-white">
-            {isEn ? 'A little inspiration for ' + childName : 'حاجة جديدة نكتشفها مع ' + childName}
+            {isEn ? 'A little inspiration for ' + childName : 'يلا نجرب حاجة جديدة مع ' + childName}
           </h2>
           <p className="mt-1 text-xs leading-5 text-[var(--color-muted)] dark:text-[#94A3B8]">
-            {isEn ? 'Stories, movement and moments chosen around your family.' : 'حواديت وأنشطة ولحظات مختارة حسب عمر طفلك واهتماماته.'}
+            {isEn ? 'Stories, movement and moments chosen around your family.' : 'أفكار بسيطة نعملها سوا، مناسبة لسن طفلك والحاجات اللي بيحبها.'}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">{ageLabel}</span>
@@ -265,8 +265,8 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
       <div data-testid="shared-discovery-loop" className="rounded-2xl border border-violet-500/15 bg-gradient-to-br from-violet-50 via-white to-teal-50/70 p-3 dark:from-[#201A39] dark:via-[#17232E] dark:to-[#12333A]">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Make it a shared experience' : 'خلّوا الاكتشاف تجربة تعيشوها سوا'}</p>
-            <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'You lead, your child explores, and you notice what matters.' : 'إنتوا تفتحوا الباب، وطفلك يكتشف، وسوا تلاحظوا اللي بيفرق.'}</p>
+            <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Make it a shared experience' : 'اعملوا الحاجة دي سوا'}</p>
+            <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'You lead, your child explores, and you notice what matters.' : 'اختاروا حاجة، جربوها مع بعض، وبعدها اسألوه انبسط بإيه.'}</p>
           </div>
           <span className="text-xl" aria-hidden="true">🪄</span>
         </div>
@@ -289,17 +289,17 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           <span className="rounded-full bg-white/15 px-3 py-1.5 text-[10px] font-extrabold text-white backdrop-blur-md">{featured.duration}</span>
         </div>
         <div className="absolute inset-x-0 bottom-0 space-y-3 p-5 sm:p-7">
-          <div className="flex items-center gap-2 text-teal-200"><Sparkles size={15} /><span className="text-[10px] font-black tracking-wide">{isEn ? 'PICKED FOR YOUR FAMILY' : 'اختيار مناسب لاهتمامات طفلك'}</span></div>
+          <div className="flex items-center gap-2 text-teal-200"><Sparkles size={15} /><span className="text-[10px] font-black tracking-wide">{isEn ? 'PICKED FOR YOUR FAMILY' : 'فكرة ممكن تعجب طفلك'}</span></div>
           <h3 className="max-w-xl text-2xl font-black leading-tight sm:text-3xl">{isEn ? featured.titleEn : featured.titleAr}</h3>
           <p className="max-w-xl text-sm leading-7 text-white/85">{isEn ? featured.bodyEn : featured.bodyAr}</p>
           {(signals?.recentSharedActivities ?? []).some((entry) => NEXT_ACTIVITY_BY_FAVORITE[entry.activityId ?? ''] === featured.id && (entry.childResponse === 'loved' || entry.childResponse === 'repeat')) && (
             <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-amber-200/50 bg-amber-300/15 px-3 py-1.5 text-[10px] font-black text-amber-50">
-              <Sparkles size={12} /> {isEn ? 'A next step based on what your child enjoyed' : 'تجربة جديدة مبنية على حاجة طفلك حبها'}
+              <Sparkles size={12} /> {isEn ? 'A next step based on what your child enjoyed' : 'اخترناها عشان طفلك حب تجربة شبهها'}
             </span>
           )}
           <div className="flex flex-wrap gap-2 pt-1">
             <button type="button" onClick={() => openDestination(featured)} className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-teal-400 px-4 py-3 text-xs font-black text-[#06242A] shadow-lg transition hover:bg-teal-300 active:scale-[.98]">
-              {isEn ? 'Try it together' : 'جرّبوها مع بعض'} {isEn ? <ArrowUpRight size={16} /> : <ArrowUpLeft size={16} />}
+              {isEn ? 'Try it together' : 'يلا نعملها سوا'} {isEn ? <ArrowUpRight size={16} /> : <ArrowUpLeft size={16} />}
             </button>
             <button type="button" onClick={toggleReadAloud} className="inline-flex min-h-12 items-center gap-2 rounded-2xl border border-white/30 bg-black/25 px-4 py-3 text-xs font-black text-white backdrop-blur-md transition hover:bg-white/15" aria-pressed={isReading}>
               {isReading ? <Pause size={16} /> : <Volume2 size={16} />}
@@ -312,10 +312,10 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <div>
-            <h3 className="text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'More to explore' : 'اختيارات تانية تستاهل التجربة'}</h3>
-            <p className="mt-1 text-[11px] text-[var(--color-muted)]">{isEn ? 'The mix changes with age, interests and recent activity.' : 'الاختيارات بتتغير حسب السن والاهتمامات والنشاط الأخير.'}</p>
+            <h3 className="text-base font-black text-[var(--color-text)] dark:text-white">{isEn ? 'More to explore' : 'أفكار تانية نجربها'}</h3>
+            <p className="mt-1 text-[11px] text-[var(--color-muted)]">{isEn ? 'The mix changes with age, interests and recent activity.' : 'هنقترح أفكار مختلفة حسب سن طفلك والحاجات اللي بيحبها.'}</p>
           </div>
-          <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300">{isEn ? 'For you' : 'مخصص لكم'}</span>
+          <span className="text-[10px] font-bold text-teal-700 dark:text-teal-300">{isEn ? 'For you' : 'مناسب لطفلكم'}</span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {supporting.map((story) => (
@@ -339,7 +339,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/10 text-violet-100"><Headphones size={23} /></span>
           <div className="min-w-0 flex-1">
             <span className="text-[10px] font-black tracking-widest text-violet-200">{isEn ? 'AUDIO MOMENT' : 'لحظة صوتية'}</span>
-            <h3 className="mt-1 text-base font-black">{isEn ? 'Listen, connect and slow down' : 'اسمعوا بعض.. وخدوا نفس'}</h3>
+            <h3 className="mt-1 text-base font-black">{isEn ? 'Listen, connect and slow down' : 'اسمعوا الفكرة وجربوها سوا'}</h3>
           </div>
           <button type="button" onClick={toggleReadAloud} className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white text-violet-900 transition hover:scale-105" aria-label={isReading ? 'Stop audio' : 'Play audio'}>
             {isReading ? <Pause size={19} /> : <Play size={19} />}
@@ -354,9 +354,9 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
           <div className="min-w-0">
             <span className="text-[10px] font-black tracking-widest text-teal-200">NEKBAAR MEDIA</span>
             <h3 className="mt-1 text-base font-black">{isEn ? 'Watch and learn together' : 'شاهدوا واتعلموا مع بعض'}</h3>
-            <p className="mt-1 text-[11px] leading-5 text-white/70">{isEn ? 'Approved family videos, in one safe place.' : 'فيديوهات الأسرة المعتمدة في مكان واحد.'}</p>
+            <p className="mt-1 text-[11px] leading-5 text-white/70">{isEn ? 'Approved family videos, in one safe place.' : 'فيديوهات مناسبة للأسرة تقدروا تشوفوها في مكان واحد.'}</p>
           </div>
-          <button type="button" onClick={() => onNavigate('media')} className="min-h-11 rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Explore media' : 'استكشف الوسائط'} {isEn ? '→' : '←'}</button>
+          <button type="button" onClick={() => onNavigate('media')} className="min-h-11 rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-[11px] font-black text-white hover:bg-white/20">{isEn ? 'Explore media' : 'شوفوا الفيديوهات'} {isEn ? '→' : '←'}</button>
         </div>
         <InternalVideoFeed language={isEn ? 'en' : 'ar'} limit={4} onOpenLibrary={() => onNavigate('media')} />
       </section>
