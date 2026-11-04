@@ -103,14 +103,14 @@ export const FamilyCalendarSection: React.FC<FamilyCalendarSectionProps> = ({
               }}
               className="min-h-[32px] px-2.5 py-1 rounded-lg text-[11px] font-extrabold border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#142430] text-[var(--color-text)] transition-all cursor-pointer"
             >
-              {isEn ? `All Events (${state.events.length})` : `كل الأحداث (${state.events.length})`}
+              {isEn ? `All Events (${state.events.length})` : `كل المواعيد (${state.events.length})`}
             </button>
           </div>
 
           <div
             className="flex items-center gap-1 bg-[var(--color-control-muted)] dark:bg-[#142430] p-0.5 rounded-lg border border-transparent dark:border-[#1E3646]"
             role="group"
-            aria-label={isEn ? 'Date display mode' : 'نظام عرض التاريخ'}
+            aria-label={isEn ? 'Date display mode' : 'عرض التاريخ'}
           >
             {[
               { id: 'both', label: isEn ? 'Gregorian & Hijri' : 'الميلادي والهجري' },
