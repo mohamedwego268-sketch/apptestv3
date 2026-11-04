@@ -1023,29 +1023,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-teal-500/20 bg-teal-50/50 dark:bg-[#142430] px-3 py-2"
               >
                 <div className="flex flex-wrap items-center gap-1.5">
-                  {state.kids.length > 1 ? (
-                    state.kids.map((kid, idx) => {
-                      const isSelected = idx === selectedKidIdx;
-                      const cTone = getChildColorClasses(idx);
-                      return (
-                        <button
-                          key={kid.id}
-                          type="button"
-                          data-testid={`home-welcome-kid-pill-${kid.id}`}
-                          onClick={() => setSelectedKidIdx(idx)}
-                          className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                            isSelected ? cTone.pillActive : cTone.pillInactive
-                          }`}
-                        >
-                          {kid.emoji} {locText(kid.name, lang)}
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-xl bg-teal-500/12 px-2.5 py-1 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                      {activeKid.emoji} {activeKidName}
-                    </span>
-                  )}
+                  <span data-testid="home-welcome-selected-child" className="inline-flex items-center gap-1 rounded-xl bg-teal-500/12 px-2.5 py-1 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
+                    {activeKid.emoji} {activeKidName}
+                  </span>
                   <span
                     data-testid="home-welcome-child-age-badge"
                     className="rounded-xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#0B131A] px-2.5 py-1 text-[11px] font-bold text-[var(--color-text)] dark:text-[#CBD5E1]"
@@ -1097,32 +1077,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </div>
         </div>
 
-        <div data-testid="home-parent-wellbeing-card" className="rounded-2xl border border-rose-200/70 dark:border-rose-900/40 bg-gradient-to-br from-rose-50/90 via-white to-teal-50/70 dark:from-[#211B25] dark:via-[#101D26] dark:to-[#142430] p-3.5 sm:p-4 flex items-start gap-3 shadow-sm">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-200 text-xl">💚</span>
-          <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'A moment for you, too' : 'رسالة ليك كمان يا أب أو أم'}</h2>
-              <span className="rounded-full bg-rose-100/80 dark:bg-rose-500/15 px-2 py-0.5 text-[9px] font-extrabold text-rose-700 dark:text-rose-200">{isEn ? 'Parent wellbeing' : 'دعم نفسي للوالدين'}</span>
-            </div>
-            <h3 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? parentWellbeingMessage.titleEn : parentWellbeingMessage.titleAr}</h3>
-            <p className="text-xs leading-relaxed font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? parentWellbeingMessage.bodyEn : parentWellbeingMessage.bodyAr}</p>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
-              <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[44px] px-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg">
-                {isEn ? 'Open wellbeing & parenting center →' : 'مساعدة ليك ولطفلك ←'}
-              </button>
-              <button
-                type="button"
-                data-testid="home-child-emotional-checkin-link"
-                onClick={openChildMoodCheckin}
-                className="min-h-[44px] px-1 text-xs font-black text-violet-700 dark:text-violet-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 rounded-lg"
-              >
-                {isEn ? 'Check in with your child’s feelings' : 'تابع مشاعر طفلك'}
-              </button>
-              <button type="button" onClick={() => navigateTo('notifications')} className="min-h-[44px] px-1 text-xs font-black text-teal-800 dark:text-teal-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-lg">
-                {isEn ? 'Parent support messages' : 'رسائل دعم الأب والأم'}
-              </button>
-            </div>
-          </div>
+        <div data-testid="home-parent-wellbeing-card" className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-rose-200/60 dark:border-rose-900/30 bg-rose-50/60 dark:bg-rose-500/5 px-3 py-2">
+          <span className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
+            <span aria-hidden="true">💚</span>
+            {isEn ? 'A gentle reminder: you do not have to get every moment right.' : 'افتكر إنك مش مطالب إن كل لحظة تكون مثالية.'}
+          </span>
+          <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-9 rounded-xl px-3 text-xs font-black text-rose-700 dark:text-rose-200 hover:bg-rose-100/70 dark:hover:bg-rose-500/10">
+            {isEn ? 'Support for parents & children' : 'دعم الأب والأم والطفل'} {isEn ? '→' : '←'}
+          </button>
         </div>
 
       </div>
@@ -2222,14 +2184,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       )}
 
-      <div className="scroll-mt-24">
-        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeContentTracks
-          language={lang}
-          childName={activeKidName}
-          onNavigate={navigateTo}
-          onOpenSection={openHomeSection}
-        /></React.Suspense>
-      </div>
+      {/* Navigation shortcuts live in the command center to avoid repeating the same destinations. */}
 
       <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDynamicContentSection
         child={activeKid}
