@@ -285,8 +285,8 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* 1. Experience & Interface Preferences */}
             <CollapsibleSectionCard
-              title={lang === 'en' ? 'Theme, Language & Calendar' : 'السمة البصرية واللغة والتقويم'}
-              subtitle={lang === 'en' ? 'Personalize your profile, appearance and language' : 'خصص ملفك وطريقة عرض التطبيق واللغة'}
+              title={lang === 'en' ? 'Theme, Language & Calendar' : 'الشكل واللغة والتاريخ'}
+              subtitle={lang === 'en' ? 'Personalize your profile, appearance and language' : 'اختار شكل التطبيق واللغة وطريقة عرض التاريخ'}
               iconId="settings"
               badgeLabel={lang === 'en' ? 'Preferences' : 'تفضيلات العرض'}
               badgeTone="purple"
@@ -310,7 +310,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
                 <div>
                   <label htmlFor="parentRole" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                    {lang === 'en' ? 'Visual Theme & Parent Mode' : 'نوع التجربة والسمة البصرية'}
+                    {lang === 'en' ? 'Visual Theme & Parent Mode' : 'اختار شكل التطبيق'}
                   </label>
                   <select
                     id="parentRole"
@@ -321,7 +321,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
                     <option value="mom">{lang === 'en' ? 'Mother Mode — Rose' : 'الأم — روز'}</option>
                     <option value="dad">{lang === 'en' ? 'Father Mode — Aqua' : 'الأب — أكوا'}</option>
                     <option value="high-contrast">
-                      {lang === 'en' ? 'High Contrast — Readability' : 'تباين عالٍ — لسهولة القراءة'}
+                      {lang === 'en' ? 'High Contrast — Readability' : 'ألوان أوضح — لسهولة القراءة'}
                     </option>
                   </select>
                 </div>
@@ -344,7 +344,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
                   <div>
                     <label htmlFor="settingsCalendarMode" className="block text-xs font-bold text-[var(--color-muted)] mb-1">
-                      {lang === 'en' ? 'Calendar Date Display' : 'نظام عرض التاريخ'}
+                      {lang === 'en' ? 'Calendar Date Display' : 'طريقة عرض التاريخ'}
                     </label>
                     <select
                       id="settingsCalendarMode"
@@ -455,7 +455,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
             subtitle={
               lang === 'en'
                 ? 'Set your country, city, display currency and phone number'
-                : 'حدد الدولة والمدينة والعملة، وأدر رقم هاتف الحساب'
+                : 'اختار بلدك ومدينتك والعملة، وحدّث رقم جوالك'
             }
             iconId="location"
             badgeLabel={`${getCountryMetadata(state.country).dialCode} · ${state.currency} · ${locText(
@@ -566,7 +566,7 @@ export const ProfileSettingsSection: React.FC<ProfileSettingsSectionProps> = ({
 
                 <div>
                   <label htmlFor="settingsCurrency" className="block text-xs font-bold text-[var(--color-text)] mb-1">
-                    {lang === 'en' ? 'Display Currency' : 'العملة المعتمدة للأسعار'}
+                    {lang === 'en' ? 'Display Currency' : 'العملة المستخدمة في الأسعار'}
                   </label>
                   <select
                     id="settingsCurrency"
