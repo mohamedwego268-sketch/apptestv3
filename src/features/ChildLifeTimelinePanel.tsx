@@ -9,16 +9,16 @@ import {
 
 const LABELS: Record<ChildLifeRecordType, { ar: string; en: string }> = {
   sleep_log: { ar: 'النوم', en: 'Sleep' },
-  education: { ar: 'التعليم', en: 'Education' },
+  education: { ar: 'التعلّم', en: 'Learning' },
   nutrition: { ar: 'الأكل', en: 'Nutrition' },
-  sports: { ar: 'الرياضة والنشاط', en: 'Sports & Activity' },
+  sports: { ar: 'اللعب والحركة', en: 'Play & Movement' },
   routine: { ar: 'الروتين اليومي', en: 'Daily Routine' },
-  growth_measurement: { ar: 'قياسات النمو', en: 'Growth' },
+  growth_measurement: { ar: 'الطول والوزن', en: 'Height & Weight' },
   vaccination: { ar: 'التطعيمات', en: 'Vaccinations' },
-  medical_event: { ar: 'حدث صحي', en: 'Health Event' },
+  medical_event: { ar: 'معلومة صحية', en: 'Health Note' },
   milestone: { ar: 'حاجة جديدة اتعلمها أو عملها', en: 'Milestone' },
   hobby: { ar: 'الحاجات اللي بيحبها', en: 'Hobbies' },
-  emotional_social: { ar: 'المشاعر والتعامل مع الناس', en: 'Emotional & Social' },
+  emotional_social: { ar: 'المشاعر والعلاقات', en: 'Feelings & Relationships' },
   memory: { ar: 'ذكرى', en: 'Memory' },
   daily_note: { ar: 'ملاحظة يومية', en: 'Daily Note' },
   other: { ar: 'أخرى', en: 'Other' },
@@ -60,9 +60,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>('all');
   const filterCards: { id: TimelineFilter; icon: string; ar: string; en: string; count: number }[] = [
     { id: 'all', icon: '🧭', ar: 'الكل', en: 'All', count: records.length },
-    { id: 'care', icon: '🌙', ar: 'الرعاية', en: 'Care', count: records.filter((item) => FILTER_TYPES.care.includes(item.record_type)).length },
+    { id: 'care', icon: '🌙', ar: 'الصحة والعناية', en: 'Health & Care', count: records.filter((item) => FILTER_TYPES.care.includes(item.record_type)).length },
     { id: 'learning', icon: '🧩', ar: 'التعلم', en: 'Learning', count: records.filter((item) => FILTER_TYPES.learning.includes(item.record_type)).length },
-    { id: 'interests', icon: '🎨', ar: 'الاهتمامات', en: 'Interests', count: records.filter((item) => FILTER_TYPES.interests.includes(item.record_type)).length },
+    { id: 'interests', icon: '🎨', ar: 'الحاجات اللي بيحبها', en: 'Things They Like', count: records.filter((item) => FILTER_TYPES.interests.includes(item.record_type)).length },
     { id: 'memories', icon: '💛', ar: 'الذكريات', en: 'Memories', count: records.filter((item) => FILTER_TYPES.memories.includes(item.record_type)).length },
   ];
   const visibleRecords = activeFilter === 'all'
@@ -143,9 +143,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
     <section className="mt-4 rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white/80 dark:bg-[#142430] p-3 sm:p-4 space-y-3" dir={isEn ? 'ltr' : 'rtl'}>
       <button type="button" onClick={() => setExpanded((value) => !value)} className="w-full flex items-center justify-between gap-3 text-start">
         <span className="font-extrabold text-sm text-[var(--color-text)] dark:text-[#F8FAFC]">
-          {isEn ? childName + ' · Life Timeline' : 'سجل حياة ' + childName}
+          {isEn ? childName + ' · Life Timeline' : 'حكاية ' + childName}
           <span className="block text-xs font-semibold text-[var(--color-muted)] mt-1">
-            {isEn ? 'Sleep, health, nutrition, learning, activities & memories' : 'النوم والصحة والتغذية والتعليم والأنشطة والذكريات'}
+            {isEn ? 'Sleep, health, food, learning, play & memories' : 'النوم والصحة والأكل والتعلّم واللعب والذكريات'}
           </span>
         </span>
         <span className="text-xs font-extrabold text-teal-700 dark:text-teal-300">{expanded ? (isEn ? 'Hide' : 'إخفاء') : (isEn ? 'Open' : 'فتح')} · {records.length}</span>
@@ -163,13 +163,13 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
                 <select value={recordType} onChange={(event) => setRecordType(event.target.value as ChildLifeRecordType)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm">
                   {CHILD_LIFE_RECORD_TYPES.map((type) => <option key={type} value={type}>{isEn ? LABELS[type].en : LABELS[type].ar}</option>)}
                 </select>
-                <input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} placeholder={isEn ? 'Record title' : 'اكتب عنوان بسيط'} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm" />
-                <label className="flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'Date of this event' : 'التاريخ'}</span><input type="date" value={occurredAt} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setOccurredAt(event.target.value)} required className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm text-[var(--color-text)]" /></label>
+                <input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} placeholder={isEn ? 'What happened?' : 'إيه اللي حصل؟'} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm" />
+                <label className="flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'When did it happen?' : 'التاريخ'}</span><input type="date" value={occurredAt} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setOccurredAt(event.target.value)} required className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm text-[var(--color-text)]" /></label>
                 {['hobby', 'sports', 'education'].includes(recordType) && <label className="sm:col-span-2 flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'Activity area (optional)' : 'نوع النشاط (اختياري)'}</span><select value={interestCategory} onChange={(event) => setInterestCategory(event.target.value)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm"><option value="">{isEn ? 'Let the activity speak for itself' : 'ممكن تسيبه من غير تصنيف'}</option>{interestGroups.map((group) => <option key={group.id} value={group.id}>{isEn ? group.en : group.ar}</option>)}</select><span className="font-normal">{isEn ? 'Choose only if it genuinely describes what you tried together.' : 'اختار النوع لو مناسب، أو سيبه فاضي.'}</span><span className="mt-1">{isEn ? 'How did your child feel about it?' : 'طفلك كان مبسوط بالتجربة؟'}</span><select value={interestReaction} onChange={(event) => setInterestReaction(event.target.value)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm"><option value="">{isEn ? 'Not noted' : 'مش مسجل'}</option><option value="asked_again">{isEn ? 'Asked to do it again' : 'طلب يكرر التجربة'}</option><option value="engaged">{isEn ? 'Stayed engaged' : 'كان مندمج ومهتم'}</option><option value="curious">{isEn ? 'Asked questions' : 'سأل واستكشف'}</option><option value="neutral">{isEn ? 'Tried it calmly' : 'جرّب بهدوء'}</option><option value="not_interested">{isEn ? 'Was not interested today' : 'ماكانش مهتم النهارده'}</option><option value="uncertain">{isEn ? 'Not sure yet' : 'لسه مش واضح'}</option></select><span className="font-normal">{isEn ? 'One try does not decide what your child will like.' : 'لو طفلك محبّش حاجة مرة، ده مش معناه إنه مش هيحبها بعدين.'}</span></label>}
                 {recordType === 'growth_measurement' && <div className="sm:col-span-2 grid grid-cols-2 gap-2 rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50/60 dark:bg-teal-950/20 p-3"><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Height (cm)' : 'الطول المقاس (سم)'}</span><input type="number" min="1" max="250" step="0.1" inputMode="decimal" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} placeholder={isEn ? 'e.g. 102.5' : 'مثال: 102.5'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Weight (kg)' : 'الوزن المقاس (كجم)'}</span><input type="number" min="0.1" max="200" step="0.1" inputMode="decimal" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder={isEn ? 'e.g. 16.2' : 'مثال: 16.2'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><p className="col-span-2 text-[10px] leading-5 text-teal-800/80 dark:text-teal-200/80">{isEn ? 'Enter values from an actual measurement. Missing values are not estimated.' : 'أدخل القيم من قياس فعلي. لن يتم تقدير أي قيمة غير مسجلة.'}</p></div>}
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={4000} rows={2} placeholder={isEn ? 'Notes and details (optional)' : 'ملاحظات وتفاصيل (اختياري)'} className="sm:col-span-2 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 py-2 text-sm" />
                 <button disabled={saving || !title.trim() || (recordType === 'growth_measurement' && !(Number(heightCm) > 0 || Number(weightKg) > 0))} type="submit" className="sm:col-span-2 min-h-11 rounded-xl bg-teal-600 text-white text-sm font-extrabold disabled:opacity-50">
-                  {saving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Save to child timeline' : 'احفظ في ملف الطفل')}
+                  {saving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Save to child profile' : 'احفظ في ملف الطفل')}
                 </button>
               </form>
               {growthRecords.length > 0 && (
@@ -191,9 +191,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
               <section data-testid="child-interest-map" className="overflow-hidden rounded-2xl border border-violet-200/80 dark:border-violet-900/70 bg-gradient-to-br from-violet-50/90 via-white to-amber-50/60 dark:from-[#201B32] dark:via-[#142430] dark:to-[#29251D] p-3 sm:p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-black tracking-wide text-violet-700 dark:text-violet-300">{isEn ? 'CURIOSITY MAP' : 'الحاجات اللي بيحب يجربها'}</p>
+                    <p className="text-[10px] font-black tracking-wide text-violet-700 dark:text-violet-300">{isEn ? 'THINGS YOUR CHILD LIKES' : 'حاجات طفلك بيحب يجربها'}</p>
                     <h4 className="mt-1 text-sm font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? `${childName}’s explored interests` : `الحاجات اللي ${childName} جرّبها واهتم بيها`}</h4>
-                    <p className="mt-1 text-[10px] leading-5 text-[var(--color-muted)]">{isEn ? 'A reflection of saved activities, not a talent test or a child rating.' : 'انعكاس للأنشطة المسجلة، مش اختبار مواهب ولا تقييم للطفل.'}</p>
+                    <p className="mt-1 text-[10px] leading-5 text-[var(--color-muted)]">{isEn ? 'A look at saved activities, not a test or a rating of your child.' : 'دي صورة من الحاجات اللي سجلتوها، مش اختبار ولا تقييم لطفلك.'}</p>
                     {profileInterests.trim() && (
                       <div className="mt-2 rounded-xl border border-amber-200/80 dark:border-amber-900/70 bg-amber-50/70 dark:bg-amber-950/20 px-3 py-2">
                         <span className="block text-[9px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'Interests saved in the child profile' : 'حاجات طفلك بيحبها'}</span>
@@ -214,7 +214,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
                   { id: 'learning', icon: '📖', ar: 'اختاروا قصة واقرؤوها', en: 'Choose and read a story', type: 'education' as ChildLifeRecordType },
                   { id: 'social', icon: '🧩', ar: 'ابنوا حاجة كفريق', en: 'Build something as a team', type: 'hobby' as ChildLifeRecordType },
                   { id: 'creative', icon: '🎵', ar: 'اعملوا إيقاع بالموجود', en: 'Make a rhythm together', type: 'hobby' as ChildLifeRecordType },
-                ].map((idea, index) => <button key={`${idea.id}-${index}`} type="button" onClick={() => { setRecordType(idea.type); setInterestCategory(idea.id); setTitle(isEn ? idea.en : idea.ar); setNotes(''); setActiveFilter('interests'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="min-h-[76px] rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-2 text-start transition hover:-translate-y-0.5 hover:border-violet-400"><span className="text-lg">{idea.icon}</span><span className="mt-1 block text-[10px] font-extrabold leading-4 text-[var(--color-text)] dark:text-white">{isEn ? idea.en : idea.ar}</span><span className="mt-1 block text-[9px] font-bold text-violet-700 dark:text-violet-300">{isEn ? 'Use in activity log →' : 'سجّلوا التجربة ←'}</span></button>)}</div></div>
+                ].map((idea, index) => <button key={`${idea.id}-${index}`} type="button" onClick={() => { setRecordType(idea.type); setInterestCategory(idea.id); setTitle(isEn ? idea.en : idea.ar); setNotes(''); setActiveFilter('interests'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="min-h-[76px] rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-2 text-start transition hover:-translate-y-0.5 hover:border-violet-400"><span className="text-lg">{idea.icon}</span><span className="mt-1 block text-[10px] font-extrabold leading-4 text-[var(--color-text)] dark:text-white">{isEn ? idea.en : idea.ar}</span><span className="mt-1 block text-[9px] font-bold text-violet-700 dark:text-violet-300">{isEn ? 'Save this activity →' : 'احفظوا اللي عملتوه ←'}</span></button>)}</div></div>
               </section>
               <div data-testid="child-timeline-insights" className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
@@ -235,7 +235,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, pr
               {error && <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p>}
               <div className="space-y-2">
                 {loading ? <p className="text-xs text-[var(--color-muted)]">{isEn ? 'Loading records…' : 'جارٍ تحميل السجل…'}</p> :
-                  visibleRecords.length === 0 ? <p className="text-xs text-[var(--color-muted)]">{records.length === 0 ? (isEn ? 'No records yet. Add the first moment above.' : 'لسه مفيش حاجة اتسجلت. ابدأوا بأول تسجيل من فوق.') : (isEn ? 'No records in this story yet.' : 'مفيش تسجيلات في المسار ده لسه.')}</p> :
+                  visibleRecords.length === 0 ? <p className="text-xs text-[var(--color-muted)]">{records.length === 0 ? (isEn ? 'No records yet. Add the first moment above.' : 'لسه مفيش حاجة اتسجلت. ابدأوا بأول تسجيل من فوق.') : (isEn ? 'Nothing has been saved here yet.' : 'لسه مفيش حاجة متسجلة هنا.')}</p> :
                   visibleRecords.map((record) => (
                     <article key={record.id} className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
