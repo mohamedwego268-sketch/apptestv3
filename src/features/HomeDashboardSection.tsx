@@ -44,6 +44,7 @@ export interface HomeDashboardSectionProps {
   onInspectCommercialItem: (item: CommercialItem) => void;
   onAddProductToWishes: (item: CommercialItem) => void;
   onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null) => void;
+  onToggleRoutineTask?: (taskId: number, done: boolean) => void;
   onShowToast?: (msg: string) => void;
   bedtimeMode?: boolean;
   onToggleBedtimeMode?: () => void;
@@ -192,6 +193,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onInspectCommercialItem,
   onAddProductToWishes,
   onAddSuggestedRoutineTask,
+  onToggleRoutineTask,
   onShowToast,
   bedtimeMode = false,
   onToggleBedtimeMode,
@@ -200,6 +202,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 }) => {
   const isEn = lang === 'en';
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
+  const [quickTaskName, setQuickTaskName] = useState('');
+  const [quickTaskTime, setQuickTaskTime] = useState('05:00 م');
 
   useEffect(() => {
     if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
@@ -1113,6 +1117,155 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </SectionToolsDrawer>
 
+      {/* Child Life Command Center — the single place to switch child and manage the day. */}
+      <section
+        id="child-life-command-center"
+        data-testid="child-life-command-center"
+        dir={isEn ? 'ltr' : 'rtl'}
+        className="relative overflow-hidden rounded-[28px] border border-teal-500/20 bg-gradient-to-br from-[#073F43] via-[#0B5054] to-[#123E52] p-4 text-white shadow-[0_18px_45px_-25px_rgba(4,55,59,.65)] sm:p-5 space-y-4"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[10px] font-bold text-teal-100">
+              {isEn ? 'FAMILY DAILY CONTROL CENTER' : 'مركز إدارة يوم الطفل'}
+            </span>
+            <h2 className="mt-2 text-xl font-black sm:text-2xl">
+              {activeKid ? (isEn ? `${activeKidName}’s day` : `يوم ${activeKidName}`) : (isEn ? 'Your child’s day' : 'يوم طفلك')}
+            </h2>
+            <p className="mt-1 text-xs leading-6 text-teal-50/80">
+              {isEn ? 'One shared plan for parents, routines and important moments.' : 'جدول واحد يجمع الأب والأم ومهام الطفل ومواعيده وتسجيلات يومه.'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-center">
+            <div className="text-xl font-black tabular-nums">{state.tasks.filter((task) => !task.done && (task.kidId === null || task.kidId === activeKidId)).length}</div>
+            <div className="text-[10px] text-teal-100">{isEn ? 'Tasks left' : 'مهام متبقية'}</div>
+          </div>
+        </div>
+
+        {state.kids.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-[11px] font-bold text-teal-100">{isEn ? 'CHOOSE CHILD' : 'اختاروا الطفل'}</div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {state.kids.map((kid, idx) => {
+                const selected = idx === selectedKidIdx;
+                return (
+                  <button
+                    key={kid.id}
+                    type="button"
+                    data-testid={`home-kid-switcher-${kid.id}`}
+                    aria-pressed={selected}
+                    onClick={() => setSelectedKidIdx(idx)}
+                    className={`min-h-11 shrink-0 rounded-2xl border px-4 py-2 text-xs font-black transition ${selected ? 'border-[#8FF0D0] bg-[#8FF0D0] text-[#073F43] shadow-md' : 'border-white/20 bg-white/10 text-white hover:bg-white/15'}`}
+                  >
+                    {kid.emoji} {locText(kid.name, lang)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {activeKid && (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
+                <div className="text-lg font-black">{activeKidStageLabel}</div>
+                <div className="text-[10px] text-teal-100">{isEn ? 'Age stage' : 'مرحلة العمر'}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
+                <div className="text-lg font-black">{state.tasks.filter((task) => task.done && (task.kidId === null || task.kidId === activeKidId)).length}</div>
+                <div className="text-[10px] text-teal-100">{isEn ? 'Completed' : 'تم إنجازها'}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 p-3">
+                <div className="text-lg font-black">{state.events.filter((event) => event.childId === null || event.childId === activeKidId).length}</div>
+                <div className="text-[10px] text-teal-100">{isEn ? 'Family events' : 'مواعيد مسجلة'}</div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/15 bg-[#062F35]/55 p-3.5 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-black">{isEn ? 'Today’s plan' : 'خطة اليوم'}</h3>
+                  <p className="mt-0.5 text-[10px] text-teal-100/75">{isEn ? 'Child tasks and shared family commitments' : 'مهام الطفل والالتزامات المشتركة'}</p>
+                </div>
+                <button type="button" onClick={() => navigateTo('routine')} className="min-h-10 rounded-xl border border-white/20 px-3 text-[11px] font-bold text-teal-50">
+                  {isEn ? 'Full planner' : 'كل المهام ←'}
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {state.tasks
+                  .filter((task) => task.kidId === null || task.kidId === activeKidId)
+                  .slice()
+                  .sort((a, b) => a.time.localeCompare(b.time))
+                  .slice(0, 6)
+                  .map((task) => (
+                    <div key={task.id} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] p-2.5">
+                      <button
+                        type="button"
+                        aria-label={task.done ? (isEn ? 'Mark incomplete' : 'إعادة فتح المهمة') : (isEn ? 'Complete task' : 'إنجاز المهمة')}
+                        disabled={!onToggleRoutineTask}
+                        onClick={() => onToggleRoutineTask?.(task.id, !task.done)}
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl border text-sm ${task.done ? 'border-emerald-300 bg-emerald-300 text-[#073F43]' : 'border-white/30 text-white'}`}
+                      >
+                        {task.done ? '✓' : '○'}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <div className={`truncate text-xs font-bold ${task.done ? 'text-teal-100/60 line-through' : 'text-white'}`}>{task.name}</div>
+                        <div className="mt-0.5 text-[10px] text-teal-100/70">{task.time} · {task.owner || (isEn ? 'Family' : 'الأسرة')}</div>
+                      </div>
+                      <span className="text-[10px] text-teal-100/70">{task.done ? (isEn ? 'Done' : 'تم') : (isEn ? 'To do' : 'مطلوب')}</span>
+                    </div>
+                  ))}
+                {state.tasks.filter((task) => task.kidId === null || task.kidId === activeKidId).length === 0 && (
+                  <div className="rounded-xl border border-dashed border-white/20 p-3 text-center text-xs text-teal-100/80">
+                    {isEn ? 'No tasks yet. Add the first item to the child’s day.' : 'لسه مفيش مهام. أضيفوا أول مهمة لجدول الطفل.'}
+                  </div>
+                )}
+              </div>
+
+              <form
+                className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_112px_auto]"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  const name = quickTaskName.trim();
+                  if (!name || !onAddSuggestedRoutineTask) return;
+                  onAddSuggestedRoutineTask(name, quickTaskTime, activeKidId);
+                  setQuickTaskName('');
+                }}
+              >
+                <input
+                  value={quickTaskName}
+                  onChange={(event) => setQuickTaskName(event.target.value)}
+                  maxLength={90}
+                  placeholder={isEn ? 'Add a task or appointment…' : 'أضيفوا مهمة أو ميعاد...'}
+                  aria-label={isEn ? 'New task' : 'مهمة جديدة'}
+                  className="min-h-11 min-w-0 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#8FF0D0]"
+                />
+                <input
+                  type="time"
+                  aria-label={isEn ? 'Task time' : 'ميعاد المهمة'}
+                  value={quickTaskTime === '05:00 م' ? '17:00' : quickTaskTime}
+                  onChange={(event) => setQuickTaskTime(event.target.value)}
+                  className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                />
+                <button type="submit" disabled={!quickTaskName.trim() || !onAddSuggestedRoutineTask} className="min-h-11 rounded-xl bg-[#8FF0D0] px-4 text-xs font-black text-[#073F43] disabled:opacity-50">
+                  {isEn ? '+ Add' : '+ إضافة'}
+                </button>
+              </form>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => navigateTo('calendar')} className="min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-bold text-white">
+                📅 {isEn ? 'Calendar & appointments' : 'التقويم والمواعيد'}
+              </button>
+              <button type="button" onClick={() => document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-bold text-white">
+                ✍️ {isEn ? 'Log a moment' : 'سجّل لحظة من يومه'}
+              </button>
+            </div>
+          </>
+        )}
+      </section>
 
       {activeKid && (
         <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDailyExperience
@@ -1168,32 +1321,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             </div>
           ) : (
           <>
-          {/* Clean Child Selector Strip */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              {isEn ? 'Select Child:' : 'اختر الطفل:'}
-            </span>
-            <div className="inline-flex flex-wrap items-center gap-1.5">
-              {state.kids.map((kid, idx) => {
-                const isActive = idx === selectedKidIdx;
-                const cTone = getChildColorClasses(idx);
-                return (
-                  <button
-                    key={kid.id}
-                    type="button"
-                    data-testid={`home-kid-switcher-${kid.id}`}
-                    onClick={() => setSelectedKidIdx(idx)}
-                    className={`min-h-[38px] px-3.5 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                      isActive ? cTone.pillActive : cTone.pillInactive
-                    }`}
-                  >
-                    {kid.emoji} {locText(kid.name, lang)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* 4 Balanced, Intuitive One-Tap Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {(() => {
@@ -1565,30 +1692,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isEn={isEn}
       >
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              {isEn ? 'Customize essentials for:' : 'اختاروا الطفل:'}
-            </span>
-            <div className="inline-flex flex-wrap items-center gap-1.5">
-              {state.kids.map((kid, idx) => {
-                const isSelected = idx === selectedKidIdx;
-                const cTone = getChildColorClasses(idx);
-                return (
-                  <button
-                    key={kid.id}
-                    type="button"
-                    onClick={() => setSelectedKidIdx(idx)}
-                    className={`min-h-[36px] px-3 py-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                      isSelected ? cTone.pillActive : cTone.pillInactive
-                    }`}
-                  >
-                    {kid.emoji} {locText(kid.name, lang)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* ESSENTIAL CARD 1: DAILY NUTRITION & LUNCHBOX */}
             <MasterPatternCard
