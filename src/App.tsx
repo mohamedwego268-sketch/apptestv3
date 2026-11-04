@@ -2372,7 +2372,7 @@ export default function App() {
                 onAddProductToWishes={(item) =>
                   handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                 }
-                onAddSuggestedRoutineTask={(taskName, timeStr, kidId, category = 'روتين يومي', cadence = 'daily') => {
+                onAddSuggestedRoutineTask={(taskName, timeStr, kidId, category = 'روتين يومي', cadence = 'daily', owner = 'مشترك', dayOfWeek = new Date().getDay()) => {
                   setState((prev) => ({
                     ...prev,
                     tasks: [
@@ -2382,8 +2382,9 @@ export default function App() {
                         kidId,
                         category,
                         time: timeStr,
-                        owner: prev.role === 'dad' ? 'الأب' : 'الأم',
+                        owner,
                         cadence,
+                        dayOfWeek: cadence === 'weekly' ? dayOfWeek : undefined,
                         done: false,
                       },
                       ...prev.tasks,
