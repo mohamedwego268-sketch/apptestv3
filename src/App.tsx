@@ -94,21 +94,22 @@ import { KidsWishesSection } from './features/KidsWishesSection';
 import { ProfileSettingsSection } from './features/ProfileSettingsSection';
 import { FamilyHomesSection } from './features/FamilyHomesSection';
 import { FamilyAppModals } from './components/modals/FamilyAppModals';
-import { MedicalHealthSection } from './components/MedicalHealthSection';
-import { MediaPlatformSection } from './components/MediaPlatformSection';
-import { ParentsCommunitySection } from './components/ParentsCommunitySection';
-import { InternalChatSection } from './components/InternalChatSection';
-import { AiAssistantSection, AiModelId } from './components/AiAssistantSection';
+const MedicalHealthSection = React.lazy(() => import('./components/MedicalHealthSection').then((module) => ({ default: module.MedicalHealthSection })));
+const MediaPlatformSection = React.lazy(() => import('./components/MediaPlatformSection').then((module) => ({ default: module.MediaPlatformSection })));
+const ParentsCommunitySection = React.lazy(() => import('./components/ParentsCommunitySection').then((module) => ({ default: module.ParentsCommunitySection })));
+const InternalChatSection = React.lazy(() => import('./components/InternalChatSection').then((module) => ({ default: module.InternalChatSection })));
+import type { AiModelId } from './components/AiAssistantSection';
+const AiAssistantSection = React.lazy(() => import('./components/AiAssistantSection').then((module) => ({ default: module.AiAssistantSection })));
 import { OnboardingFlowModal } from './components/OnboardingFlowModal';
 import {
   OnboardingFlowController,
   UserSessionProfile,
   hasVerifiedFamilyAccess,
 } from './services/OnboardingFlowController';
-import { CommercialEcosystemSection } from './components/CommercialEcosystemSection';
+const CommercialEcosystemSection = React.lazy(() => import('./components/CommercialEcosystemSection').then((module) => ({ default: module.CommercialEcosystemSection })));
 import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
 import { NotificationsCenterSection } from './components/NotificationsCenterSection';
-import { InteractiveGamesSection } from './components/InteractiveGamesSection';
+const InteractiveGamesSection = React.lazy(() => import('./components/InteractiveGamesSection').then((module) => ({ default: module.InteractiveGamesSection })));
 import { LegalAndContactSection } from './components/LegalAndContactSection';
 import { HeaderBar } from './components/HeaderBar';
 import {
@@ -2473,7 +2474,7 @@ export default function App() {
               (isTabLoading ? (
                 <SectionSkeletonLoader section="medical" language={state.language} />
               ) : (
-                <MedicalHealthSection
+<React.Suspense fallback={<SectionSkeletonLoader section="medical" language={state.language} />}>                <MedicalHealthSection
                   kids={state.kids}
                   doctorsAndClinics={COMMERCIAL_CATALOG.filter(
                     (item) => item.category === 'doctor' || item.category === 'consultation'
@@ -2528,12 +2529,12 @@ export default function App() {
                     );
                   }}
                   onShowToast={showToast}
-                />
+</React.Suspense>                />
               ))}
 
             {/* PAGE 6B: MEDIA, VIDEOS & VERTICAL REELS 9:16 HUB */}
             {activePage === 'media' && (
-              <MediaPlatformSection
+<React.Suspense fallback={<SectionSkeletonLoader section="media" language={state.language} />}>              <MediaPlatformSection
                 savedMediaIds={state.savedMediaIds}
                 language={state.language}
                 onShowToast={showToast}
@@ -2548,7 +2549,7 @@ export default function App() {
                   showToast('تم تحديث قائمة المحتوى المحفوظ');
                 }}
                 onSelectMediaModal={(item) => setActiveMediaModal(item)}
-              />
+</React.Suspense>              />
             )}
 
             {/* PAGE 6C: PARENTS' COMMUNITY */}
@@ -2556,30 +2557,30 @@ export default function App() {
               (isTabLoading ? (
                 <SectionSkeletonLoader section="community" language={state.language} />
               ) : (
-                <ParentsCommunitySection
+<React.Suspense fallback={<SectionSkeletonLoader section="community" language={state.language} />}>                <ParentsCommunitySection
                   parentName={state.parentName}
                   city={activeParentCity}
                   language={state.language}
                   onShowToast={showToast}
-                />
+</React.Suspense>                />
               ))}
 
             {/* PAGE 6D: INTERNAL CHAT & MESSAGING */}
             {activePage === 'chat' && (
-              <InternalChatSection
+<React.Suspense fallback={<SectionSkeletonLoader section="chat" language={state.language} />}>              <InternalChatSection
                 language={state.language}
                 darkMode={Boolean(state.darkMode)}
                 onShowToast={showToast}
-              />
+</React.Suspense>              />
             )}
 
             {/* PAGE 7: INTERACTIVE 3D CHILDREN'S GAMES */}
             {activePage === 'games' && (
-              <InteractiveGamesSection
+<React.Suspense fallback={<SectionSkeletonLoader section="games" language={state.language} />}>              <InteractiveGamesSection
                 kids={state.kids}
                 language={state.language}
                 onExitGamesToDashboard={() => navigateTo('home')}
-              />
+</React.Suspense>              />
             )}
 
             {/* PAGE 8: COMMERCIAL ECOSYSTEM — 3D STORE, CART & SERVICES */}
@@ -2587,7 +2588,7 @@ export default function App() {
               (isTabLoading ? (
                 <SectionSkeletonLoader section="services" language={state.language} />
               ) : (
-                <CommercialEcosystemSection
+<React.Suspense fallback={<SectionSkeletonLoader section="services" language={state.language} />}>                <CommercialEcosystemSection
                   country={activeParentCountry}
                   city={activeParentCity}
                   currency={activeParentCurrency}
@@ -2617,7 +2618,7 @@ export default function App() {
                   }
                   onCompleteDemoCheckout={handleCompleteDemoCheckout}
                   onShowToast={showToast}
-                />
+</React.Suspense>                />
               ))}
 
             {/* PAGE 9: THREE DAILY PARENTING NOTIFICATIONS CENTER */}
@@ -2676,7 +2677,7 @@ export default function App() {
 
             {/* PAGE 10: IN-APP AI PARENTING ASSISTANT */}
             {activePage === 'assistant' && (
-              <AiAssistantSection
+<React.Suspense fallback={<SectionSkeletonLoader section="assistant" language={state.language} />}>              <AiAssistantSection
                 kids={state.kids}
                 parentName={state.parentName}
                 city={activeParentCity}
@@ -2708,7 +2709,7 @@ export default function App() {
                   );
                 }}
                 onShowToast={showToast}
-              />
+</React.Suspense>              />
             )}
 
             {/* PAGE 11: FAMILY SPACE, ONBOARDING & PERMISSIONS */}
