@@ -134,6 +134,7 @@ const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds mus
 export default function App() {
   const [state, setState] = useState<FamilySpaceState>(() => createEmptyFamilySpaceState());
   const stateRef = React.useRef(state);
+  const savingRoutineTaskIdsRef = React.useRef(new Set<number>());
   stateRef.current = state;
   const activeParentProfile = state.parentAccounts[state.activeParentAccount];
   const activeParentCountry = activeParentProfile?.country || state.country;
@@ -1191,12 +1192,14 @@ export default function App() {
 
   const handleToggleTask = async (id: number, done: boolean) => {
     const targetTask = state.tasks.find((tItem) => tItem.id === id);
-    if (done && targetTask?.done) return;
-    setState((prev) => ({
-      ...prev,
-      tasks: prev.tasks.map((tItem) => (tItem.id === id ? { ...tItem, done } : tItem)),
-    }));
-    if (done) {
+    if (done && (targetTask?.done || savingRoutineTaskIdsRef.current.has(id))) return;
+    if (done) savingRoutineTaskIdsRef.current.add(id);
+    try {
+      setState((prev) => ({
+        ...prev,
+        tasks: prev.tasks.map((tItem) => (tItem.id === id ? { ...tItem, done } : tItem)),
+      }));
+      if (done) {
       const targetKid = targetTask?.kidId
         ? state.kids.find((k) => k.id === Number(targetTask.kidId))
         : null;
@@ -1240,6 +1243,9 @@ export default function App() {
           ? `👑 Star of the Day milestone for ${targetKid.name}`
           : '🌟 Another great family milestone today',
       });
+      }
+    } finally {
+      if (done) savingRoutineTaskIdsRef.current.delete(id);
     }
   };
 

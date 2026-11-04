@@ -413,13 +413,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       childResponse: activity.childResponse || null,
     });
     if (!saved) return false;
-    const refreshed = await fetchRecentChildLifeRecords([String(activeKid.remoteId)], 14);
-    if (refreshed.records) {
-      setRecentRecordsByKid((previous) => ({
-        ...previous,
-        [activeKid.id]: refreshed.records,
-      }));
-    }
     onShowToast?.(isEn
       ? 'Shared moment saved to your child’s timeline ✓'
       : 'اتسجلت اللحظة المشتركة في سجل طفلك ✓');
@@ -1867,7 +1860,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           fatherName={fatherShortAr}
           recentRecordsByKid={recentRecordsByKid}
           onSaveChildMood={async (kidId, mood) => {
-            const targetKid = state.kids.find((kid) => kid.id === kidId);
+            const actionKey = `mood:${kidId}`;
+            if (savingDashboardActionKeysRef.current.has(actionKey)) return false;
+            savingDashboardActionKeysRef.current.add(actionKey);
+            try {
+              const targetKid = state.kids.find((kid) => kid.id === kidId);
             if (!targetKid?.remoteId) {
               onShowToast?.(
                 isEn
@@ -1917,7 +1914,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 ? `💛 Saved ${mood.labelEn.toLowerCase()} check-in to ${locText(targetKid.name, 'en')}’s child record.`
                 : `💛 تم حفظ حالة «${mood.labelAr}» في ملف ${locText(targetKid.name, 'ar')}.`
             );
-            return true;
+              return true;
+            } finally {
+              savingDashboardActionKeysRef.current.delete(actionKey);
+            }
           }}
           onAddRoutineTask={onAddSuggestedRoutineTask}
         /></React.Suspense>
