@@ -34,7 +34,6 @@ import {
 const ParentingSupportCenter = React.lazy(() => import('../components/ParentingSupportCenter').then((module) => ({ default: module.ParentingSupportCenter })));
 const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibraryView').then((module) => ({ default: module.StoriesLibraryView })));
 const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
-const HomeDailyExperience = React.lazy(() => import('./HomeDailyExperience').then((module) => ({ default: module.HomeDailyExperience })));
 const HomeValuesTrackSection = React.lazy(() => import('./HomeValuesTrackSection').then((module) => ({ default: module.HomeValuesTrackSection })));
 const HomeLearningTrackSection = React.lazy(() => import('./HomeLearningTrackSection').then((module) => ({ default: module.HomeLearningTrackSection })));
 
@@ -1883,29 +1882,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         );
       })()}
 
-      {activeKid && (
-        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDailyExperience
-          language={lang}
-          childName={activeKidName}
-          childEmoji={activeKid.emoji}
-          ageLabel={activeKidStageLabel}
-          records={activeKidRecentRecords}
-          todayProgress={quickPulseByKid[activeKidId] || {
-            sleepLogged: false,
-            mealLogged: false,
-            careLogged: false,
-          }}
-          onOpenDailyLog={() => {
-            setOpenAccordions((previous) => ({ ...previous, quickTrack: true }));
-            window.setTimeout(() => {
-              document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-          }}
-          onOpenMood={openChildMoodCheckin}
-          onOpenProfile={() => navigateTo('children')}
-        /></React.Suspense>
-      )}
-
       <HomeContentGroupHeading
         id="home-content-group-daily"
         step="١"
@@ -2549,8 +2525,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={isEn ? 'Support for the Whole Family' : 'دعم ومساندة للأسرة كلها'}
         subtitle={
           isEn
-            ? 'Practical support for parents, individual child check-ins and everyday situations'
-            : 'رسائل وإرشادات بسيطة للأب والأم، وأفكار تساعد الأسرة في المواقف اليومية'
+            ? 'Practical support for parents and everyday family situations'
+            : 'رسائل عامة للأب والأم، وأفكار بسيطة تساعد الأسرة في مواقف الحياة اليومية'
         }
         badgeText={isEn ? 'Whole family' : 'الأسرة كلها'}
         headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Family messages' : 'رسائل الأسرة'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
@@ -2559,18 +2535,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isEn={isEn}
       >
         <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><ParentingSupportCenter
-          kids={state.kids}
-          initialKidId={activeKid?.id ?? null}
+          kids={[]}
+          initialKidId={null}
           hideChildSelector={true}
-          onActiveKidChange={(kidId) => {
-            const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
-            if (selectedIndex >= 0) setSelectedKidIdx(selectedIndex);
-          }}
           language={lang}
           activeParentRole={isMotherActive ? 'mother' : 'father'}
           motherName={motherShortAr}
           fatherName={fatherShortAr}
-          recentRecordsByKid={recentRecordsByKid}
+          recentRecordsByKid={{}}
           onSaveChildMood={async (kidId, mood) => {
             const actionKey = `mood:${kidId}`;
             if (savingDashboardActionKeysRef.current.has(actionKey)) return false;
