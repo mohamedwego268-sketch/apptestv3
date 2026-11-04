@@ -169,6 +169,26 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
         </p>
       </div>
 
+      <div data-testid="learning-discovery-map" className="rounded-2xl border border-sky-500/20 bg-gradient-to-br from-sky-50 via-white to-indigo-50/70 p-3.5 dark:from-[#172D3A] dark:via-[#142430] dark:to-[#1B1F38]">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-black text-sky-950 dark:text-sky-100">{isEn ? 'The discovery loop' : 'دائرة الاكتشاف والتعلّم'}</p>
+            <p className="mt-1 text-[10px] text-sky-900/70 dark:text-sky-100/65">{isEn ? 'A gentle path from curiosity to confidence.' : 'رحلة هادية من الفضول لحد الثقة.'}</p>
+          </div>
+          <span className="text-2xl">🔎</span>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          {(isEn ? [{e:'💡',t:'Wonder'},{e:'🧭',t:'Explore'},{e:'🧩',t:'Try'},{e:'🌟',t:'Share'}] : [{e:'💡',t:'فضول'},{e:'🧭',t:'اكتشاف'},{e:'🧩',t:'تجربة'},{e:'🌟',t:'مشاركة'}]).map((step,index)=>(
+            <div key={step.t} className="min-w-0 rounded-xl border border-sky-500/10 bg-white/80 px-1 py-2 text-center dark:border-white/10 dark:bg-white/5">
+              <span className="block text-lg">{step.e}</span>
+              <span className="mt-1 block text-[9px] font-black text-sky-950 dark:text-sky-100">{step.t}</span>
+              <span className="mt-1 block text-[8px] font-bold text-sky-700/65 dark:text-sky-200/55">{index+1}</span>
+            </div>
+          ))}
+        </div>
+        {(interest || hobby) && <p className="mt-2 rounded-lg bg-sky-600/5 px-2.5 py-2 text-[10px] font-bold text-sky-900 dark:text-sky-100">{isEn ? 'Starting from a real interest: ' : 'نبدأ من اهتمام مسجل: '}{[interest,hobby].filter(Boolean).join(' · ')}</p>}
+      </div>
+
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {activities.map((activity) => {
           const Icon = activity.icon;
