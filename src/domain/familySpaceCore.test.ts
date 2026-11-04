@@ -3643,8 +3643,8 @@ describe('Homepage child emotional check-in linkage', () => {
     assert.ok(homeSrc.includes('data-testid="quick-pulse-mood-btn"'));
     assert.ok(homeSrc.includes('onClick={() => openChildMoodCheckin()}'));
     assert.ok(homeSrc.includes("document.getElementById('child-emotional-checkin')"));
-    assert.ok(homeSrc.includes('initialKidId={null}'));
-    assert.ok(homeSrc.includes('kids={[]}'));
+    assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
+    assert.ok(homeSrc.includes('kids={state.kids}'));
     assert.ok(!homeSrc.includes('<HomeDailyExperience'));
     assert.equal(homeSrc.includes('const moodCycle ='), false);
     assert.equal(homeSrc.includes("moodCycle[(moodCycle.indexOf"), false);
@@ -3790,7 +3790,7 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(!homeSrc.includes('home-welcome-child-context'));
     assert.ok(homeSrc.includes('Support for the Whole Family'));
     assert.ok(homeSrc.includes('رسائل الأسرة'));
-    assert.ok(homeSrc.includes('initialKidId={null}'));
+    assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
     assert.ok(homeSrc.includes("dailyEssentials: 'home-daily-essentials-hub'"));
     assert.ok(homeSrc.includes("sportsTrack: 'home-essential-sports-card'"));
     assert.ok(!homeSrc.includes('<HomeDynamicContentSection'));
