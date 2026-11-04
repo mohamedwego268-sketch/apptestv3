@@ -362,8 +362,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       onShowToast?.(isEn ? 'Save this child profile to the family first, then log daily activity.' : 'احفظ ملف الطفل في حساب الأسرة أولاً، وبعدها سجّل النشاط اليومي.');
       return false;
     }
+    const savedKid = activeKid;
     const result = await createChildLifeRecord({
-      childRemoteId: activeKid.remoteId,
+      childRemoteId: savedKid.remoteId,
       recordType,
       title,
       details: { ...details, source: 'dashboard_quick_track' },
@@ -371,6 +372,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     if (result.error || !result.record) {
       onShowToast?.(isEn ? `Could not save: ${result.error || 'Unknown error'}` : `تعذر حفظ السجل: ${result.error || 'خطأ غير معروف'}`);
       return false;
+    }
+
+    // Keep the dashboard's recommendation context in sync with the record just saved.
+    // Use the captured child so a fast child switch cannot attach records to another profile.
+    const refreshed = await fetchRecentChildLifeRecords([String(savedKid.remoteId)], 14);
+    if (!refreshed.error) {
+      setRecentRecordsByKid((previous) => ({
+        ...previous,
+        [savedKid.id]: refreshed.records,
+      }));
     }
     return true;
   };
@@ -1884,6 +1895,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   : `تعذر حفظ متابعة الطفل: ${result.error || 'خطأ غير معروف'}`
               );
               return false;
+            }
+            const refreshed = await fetchRecentChildLifeRecords([String(targetKid.remoteId)], 14);
+            if (!refreshed.error) {
+              setRecentRecordsByKid((previous) => ({
+                ...previous,
+                [kidId]: refreshed.records,
+              }));
             }
             setQuickPulseByKid((previous) => {
               const current = previous[kidId] || {
