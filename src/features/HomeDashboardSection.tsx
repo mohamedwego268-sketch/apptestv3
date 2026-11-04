@@ -259,6 +259,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [quickTaskDay, setQuickTaskDay] = useState(new Date().getDay());
   const [quickTaskDayOfMonth, setQuickTaskDayOfMonth] = useState(new Date().getDate());
   const [plannerDay, setPlannerDay] = useState(new Date().getDay());
+  const [plannerWeekOffset, setPlannerWeekOffset] = useState(0);
   const [plannerOwner, setPlannerOwner] = useState<'all' | 'الأم' | 'الأب' | 'مشترك'>('all');
   const [plannerScope, setPlannerScope] = useState<'all' | 'child' | 'shared'>('all');
   const [plannerCategory, setPlannerCategory] = useState<string>('all');
@@ -1138,7 +1139,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         const selectedDateObj = new Date(
           localNow.getFullYear(),
           localNow.getMonth(),
-          localNow.getDate() + (plannerDay - localNow.getDay()),
+          localNow.getDate() + plannerWeekOffset * 7 + (plannerDay - localNow.getDay()),
           12,
           0,
           0
@@ -1437,33 +1438,55 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
                   {/* Weekly Day Switcher */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-[10px] font-bold text-white/90">
-                        {isEn ? 'Weekly Schedule View' : 'عرض أيام الأسبوع'}
+                        {isEn ? 'Weekly Schedule' : 'جدول الأسبوع'}
                       </span>
-                      <span className="text-[10px] text-white/75 tabular-nums">
-                        {selectedPlannerDateISO}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button type="button" data-testid="planner-current-week" onClick={() => { setPlannerWeekOffset(0); setPlannerDay(localNow.getDay()); }} className="min-h-8 rounded-lg border border-white/15 bg-white/10 px-2.5 text-[10px] font-bold text-white hover:bg-white/15">
+                          {isEn ? 'This week' : 'الأسبوع الحالي'}
+                        </button>
+                        <button type="button" aria-label={isEn ? 'Previous week' : 'الأسبوع السابق'} data-testid="planner-previous-week" onClick={() => setPlannerWeekOffset((value) => value - 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-white/15 bg-white/10 text-sm text-white hover:bg-white/15">‹</button>
+                        <button type="button" aria-label={isEn ? 'Next week' : 'الأسبوع التالي'} data-testid="planner-next-week" onClick={() => setPlannerWeekOffset((value) => value + 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-white/15 bg-white/10 text-sm text-white hover:bg-white/15">›</button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 text-[10px] text-white/70">
+                      <span>{isEn ? 'Selected day' : 'اليوم المختار'}</span>
+                      <span className="font-bold tabular-nums text-white/90">{selectedPlannerDateISO}</span>
                     </div>
                     <div className="grid grid-cols-7 gap-1">
                       {(isEn
                         ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
                         : ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']
-                      ).map((day, index) => (
-                        <button
-                          key={day}
-                          type="button"
-                          aria-pressed={plannerDay === index}
-                          onClick={() => setPlannerDay(index)}
-                          className={`min-h-10 rounded-xl border px-1 text-[9px] font-bold transition cursor-pointer ${
-                            plannerDay === index
-                              ? activeKidVisual.activePillClass
-                              : 'border-white/15 bg-white/5 text-white/90'
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
+                      ).map((day, index) => {
+                        const dayDate = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate() + plannerWeekOffset * 7 + index - localNow.getDay(), 12, 0, 0);
+                        const dayISO = dateLocalISO(dayDate);
+                        const dayTasks = state.tasks.filter((task) =>
+                          (task.kidId === null || task.kidId === activeKidId) &&
+                          isTaskScheduledForDate(task, dayISO)
+                        );
+                        const doneTasks = dayTasks.filter((task) => isTaskCompletedOnDate(task, dayISO)).length;
+                        const isToday = dayISO === todayLocalISO;
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            aria-pressed={plannerDay === index}
+                            aria-label={`${day} ${dayDate.toLocaleDateString(isEn ? 'en-US' : 'ar-EG')}, ${dayTasks.length} ${isEn ? 'tasks' : 'مهام'}`}
+                            data-testid={`planner-day-${dayISO}`}
+                            onClick={() => { setPlannerDay(index); setQuickTaskDay(index); }}
+                            className={`relative flex min-h-[66px] min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-0.5 py-1 transition cursor-pointer ${
+                              plannerDay === index
+                                ? activeKidVisual.activePillClass
+                                : 'border-white/15 bg-white/5 text-white/90'
+                            } ${isToday && plannerDay !== index ? 'ring-1 ring-emerald-200/70' : ''}`}
+                          >
+                            <span className="text-[9px] font-bold">{day}</span>
+                            <span className="text-sm font-black tabular-nums">{dayDate.getDate()}</span>
+                            <span className="text-[8px] opacity-75">{dayTasks.length ? `${doneTasks}/${dayTasks.length}` : isToday ? (isEn ? 'Today' : 'اليوم') : '—'}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
