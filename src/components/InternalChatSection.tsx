@@ -431,7 +431,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                   size="md"
                   onClick={() => handleSendMessage()}
                 >
-                  {isEn ? 'Send' : 'إرسال'}
+                  {isEn ? 'Save message' : 'حفظ الرسالة'}
                 </PrimaryCtaButton>
               </div>
             </div>

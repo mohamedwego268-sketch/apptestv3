@@ -315,7 +315,10 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       summaryEn: string;
       imageUrl: string;
     }>
-  >([]);
+  >(Array.isArray(initialPersistedState?.stories) ? initialPersistedState.stories as Array<{
+    id: string; authorAr: string; authorEn: string; roleAr: string; roleEn: string; isExpert: boolean;
+    duration: string; emoji: string; titleAr: string; titleEn: string; summaryAr: string; summaryEn: string; imageUrl: string;
+  }> : []);
   const [viewedStoryIds, setViewedStoryIds] = useState<Record<string, boolean>>({});
   const [storyModalId, setStoryModalId] = useState<string | null>(null);
   const [addStoryModalOpen, setAddStoryModalOpen] = useState<boolean>(false);
@@ -430,12 +433,14 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
       imageUrl:
         'https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=600&q=80',
     };
-    setCustomParentStories((prev) => [createdStory, ...prev]);
+    const nextStories = [createdStory, ...customParentStories];
+    setCustomParentStories(nextStories);
+    onPersistState?.({ ...(initialPersistedState || {}), posts, stories: nextStories });
     setNewStoryText('');
     setAddStoryModalOpen(false);
     setStoryModalId(createdStory.id);
     onShowToast(
-      isEn ? '✨ Your moment has been shared with the community.' : '✨ تمت مشاركة لحظتك مع مجتمع الأهل.'
+      isEn ? '✨ Your moment was saved to your family space.' : '✨ تم حفظ لحظتك في مساحة أسرتك.'
     );
   };
 
@@ -500,7 +505,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
     setNewPostBody('');
     setComposerOpen(false);
     setExpandedPostId(created.id);
-    onShowToast(isEn ? 'Your post has been shared with the community.' : 'تمت مشاركة منشورك مع مجتمع الأهل.');
+    onShowToast(isEn ? 'Your post was saved to your family space.' : 'تم حفظ مشاركتك في مساحة الأسرة.');
   };
 
   const handleAddComment = (postId: number) => {
@@ -1095,7 +1100,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
                 {isEn ? 'Cancel' : 'إلغاء'}
               </button>
               <PrimaryCtaButton type="submit" variant="orange" size="sm">
-                {isEn ? 'Publish to Community' : 'نشر في المجتمع الآن'}
+                {isEn ? 'Save post' : 'حفظ المشاركة'}
               </PrimaryCtaButton>
             </div>
           </form>
