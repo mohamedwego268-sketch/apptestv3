@@ -364,8 +364,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       return false;
     }
     const savedKid = activeKid;
+    const remoteChildId = savedKid.remoteId;
     const result = await createChildLifeRecord({
-      childRemoteId: savedKid.remoteId,
+      childRemoteId: remoteChildId,
       recordType,
       title,
       details: { ...details, source: 'dashboard_quick_track' },
