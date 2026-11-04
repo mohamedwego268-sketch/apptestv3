@@ -172,6 +172,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   const [selectedBondingMode, setSelectedBondingMode] = useState<FamilyBondingModeId>('dialogue');
   const [parentNeed, setParentNeed] = useState<'rest' | 'listening' | 'shared_load' | 'reassurance'>('rest');
   const [parentResetStep, setParentResetStep] = useState(0);
+  const [childSupportStep, setChildSupportStep] = useState(0);
   const parentNeedContent = {
     rest: { ar: 'محتاج/ة أهدى وأستعيد طاقتي', en: 'I need a pause and some energy back', promptAr: 'خدوا دقيقة بعيد عن الضوضاء لو ده آمن، اشربوا مياه، واختاروا مهمة واحدة ممكن تستنى.', promptEn: 'Take a quiet minute if it is safe, drink some water, and choose one task that can wait.', taskAr: 'استراحة قصيرة للأب أو الأم بدون مهام', taskEn: 'A short no-task break for a parent' },
     listening: { ar: 'محتاج/ة حد يسمعني من غير حلول', en: 'I need someone to listen without fixing', promptAr: 'قولوا لشخص موثوق: محتاج/ة عشر دقايق تحكيلي فيها من غير نصايح، وبعدها نشوف محتاجين إيه.', promptEn: 'Tell someone you trust: I need ten minutes to be heard without advice; then we can decide what helps.', taskAr: 'وقت استماع متبادل بين الوالدين', taskEn: 'A listening check-in between parents' },
@@ -215,6 +216,35 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
     [activeKid, activeMood?.id, activeKidRecords]
   );
 
+  const childRegulationPlan = childStageGuidance.stageCode === '0-2'
+    ? (isEn ? [
+        'Check comfort first: feeding, diaper, temperature, tiredness and signs of discomfort.',
+        'Lower noise and light; stay close and use a calm, familiar voice. Never shake or leave an infant unattended.',
+        'When settled, follow the child’s cues with a short, gentle interaction. Stop if they turn away or become distressed.',
+      ] : [
+        'راجعوا الراحة أولًا: الرضاعة، الحفاض، الحرارة، الإرهاق وأي علامة انزعاج.',
+        'قللوا الصوت والإضاءة، وابقوا قريبين بصوت مألوف وهادئ. ممنوع هز الرضيع أو تركه دون متابعة.',
+        'بعد الهدوء، اتبعوا إشارات الطفل في تفاعل بسيط، وتوقفوا لو أدار وجهه أو زاد انزعاجه.',
+      ])
+    : childStageGuidance.stageCode === '2-5'
+    ? (isEn ? [
+        'Get close at the child’s level and name the feeling in a few simple words.',
+        'Offer two safe choices, such as sitting together or having some quiet space nearby.',
+        'Talk about what happened only after the child is calmer; do not demand an explanation or apology at the peak.',
+      ] : [
+        'قربوا لمستوى نظر الطفل وسمّوا الشعور بكلمات قليلة وبسيطة.',
+        'اعرضوا اختيارين آمنين، زي نقعد سوا أو ياخد مساحة هادية وأنتم قريبين.',
+        'اتكلموا عن اللي حصل بعد ما يهدأ؛ ما تطلبوش تفسير أو اعتذار وقت ذروة الانفعال.',
+      ])
+    : (isEn ? [
+        'Validate the feeling without agreeing to unsafe behavior: “It makes sense that you’re upset.”',
+        'Listen first. Ask whether they want help, a short break, or to think aloud together.',
+        'When ready, agree on one repair or next step and revisit it later if needed.',
+      ] : [
+        'اعترفوا بالشعور من غير قبول السلوك المؤذي: «فاهم إنك متضايق، ومن حقك تحس كده».',
+        'اسمعوا الأول، واسألوا: تحب مساعدة، استراحة قصيرة، ولا نفكر سوا بصوت عالي؟',
+        'لما يكون مستعد، اتفقوا على إصلاح أو خطوة واحدة، وممكن ترجعوا للموضوع لاحقًا.',
+      ]);
   const positiveAdviceList = useMemo(
     () =>
       buildPositiveParentingAdviceList({
@@ -544,6 +574,17 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                   </p>
                 </div>
 
+                {activeMood && (
+                  <div data-testid="child-co-regulation-practice" className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-50/80 via-white to-sky-50/70 p-3 dark:from-[#132B35] dark:via-[#101D26] dark:to-[#172D3A]">
+                    <div className="flex items-start justify-between gap-2"><div><p className="text-[10px] font-black text-cyan-900 dark:text-cyan-200">{isEn ? 'AGE-AWARE CO-REGULATION' : 'خطوات تهدئة مناسبة للعمر'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What can I do with my child now?' : 'أعمل إيه مع طفلي دلوقتي؟'}</h4></div><span className="text-xl">🫶</span></div>
+                    <div className="mt-3 grid grid-cols-3 gap-1.5">
+                      {childRegulationPlan.map((step,index) => <button key={step} type="button" aria-pressed={childSupportStep === index} onClick={() => setChildSupportStep(index)} className={`min-h-[54px] rounded-xl border px-2 py-2 text-start text-[9px] font-extrabold leading-relaxed ${childSupportStep === index ? 'border-cyan-600 bg-cyan-100 text-cyan-950 dark:bg-cyan-900/40 dark:text-cyan-100' : 'border-cyan-200/70 bg-white/80 text-[var(--color-text)] dark:border-cyan-900/60 dark:bg-[#0B131A]/60 dark:text-slate-200'}`}>{index+1}. {isEn ? ['Notice','Connect','Support'][index] : ['لاحظ','اتواصل','اسند'][index]}</button>)}
+                    </div>
+                    <p className="mt-2 rounded-xl bg-white/85 p-3 text-[11px] font-bold leading-relaxed text-[var(--color-text)] dark:bg-[#0B131A]/70 dark:text-[#E2E8F0]">{childRegulationPlan[childSupportStep]}</p>
+                    <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute calm connection and co-regulation with child' : '١٠ دقائق تواصل وتهدئة مشتركة مع الطفل', '05:30 م', activeKid?.id ?? null)} className="mt-2 min-h-[42px] rounded-xl bg-cyan-800 px-3 py-2 text-[10px] font-extrabold text-white hover:bg-cyan-900">+ {isEn ? 'Add a calm connection moment' : 'أضف لحظة تواصل وتهدئة للروتين'}</button>
+                    <p className="mt-2 text-[9px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Follow the child’s cues and safety needs. Never force touch, eye contact, breathing exercises or talking.' : 'اتبعوا إشارات الطفل واحتياجات الأمان. ما تجبروش الطفل على اللمس أو التواصل البصري أو تمارين التنفس أو الكلام.'}</p>
+                  </div>
+                )}
                 {activeMood && (
                   <div data-testid="child-emotion-path" className="rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-50/90 via-white to-cyan-50/80 p-3 dark:from-[#172D3A] dark:via-[#101D26] dark:to-[#102B36]">
                     <div className="flex items-center justify-between gap-2">
