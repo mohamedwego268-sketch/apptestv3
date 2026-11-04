@@ -3783,8 +3783,12 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(tracksSrc.includes("section: 'valuesTrack'"));
     assert.ok(tracksSrc.includes("section: 'dailyEssentials'"));
     assert.ok(tracksSrc.includes('focus-visible:ring-2'));
-    assert.ok(homeSrc.includes('min-h-[44px] px-1 text-xs font-black text-rose-700'));
-    assert.ok(homeSrc.includes('min-h-[44px] px-1 text-xs font-black text-teal-800'));
+    assert.ok(homeSrc.includes('data-testid="home-parent-wellbeing-card"'));
+    assert.ok(homeSrc.includes('Support for parents & children'));
+    assert.ok(homeSrc.includes('home-kid-switcher-'));
+    assert.ok(!homeSrc.includes('home-welcome-kid-pill-'));
+    assert.ok(homeSrc.includes('data-testid="child-recent-activity"'));
+    assert.ok(homeSrc.includes('آخر الحاجات اللي سجلتوها'));
   });
 });
 
