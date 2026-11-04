@@ -203,7 +203,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const isEn = lang === 'en';
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
   const [quickTaskName, setQuickTaskName] = useState('');
-  const [quickTaskTime, setQuickTaskTime] = useState('05:00 م');
+  const [quickTaskTime, setQuickTaskTime] = useState('17:00');
 
   useEffect(() => {
     if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
@@ -1193,6 +1193,25 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 </button>
               </div>
 
+              {(() => {
+                const today = new Date().toISOString().slice(0, 10);
+                const nextEvent = state.events
+                  .filter((event) => (event.childId === null || event.childId === activeKidId) && event.date >= today)
+                  .slice()
+                  .sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`))[0];
+                return nextEvent ? (
+                  <div className="flex items-center gap-3 rounded-xl border border-amber-200/20 bg-amber-300/10 p-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-300/15 text-lg">📅</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-bold text-amber-100">{isEn ? 'NEXT APPOINTMENT' : 'أقرب ميعاد'}</div>
+                      <div className="truncate text-xs font-black text-white">{nextEvent.title}</div>
+                      <div className="mt-0.5 text-[10px] text-amber-100/80">{nextEvent.date}{nextEvent.time ? ` · ${nextEvent.time}` : ''}</div>
+                    </div>
+                    <button type="button" onClick={() => navigateTo('calendar')} className="min-h-9 rounded-lg border border-white/15 px-2 text-[10px] font-bold text-white">{isEn ? 'View' : 'عرض'}</button>
+                  </div>
+                ) : null;
+              })()}
+
               <div className="space-y-2">
                 {state.tasks
                   .filter((task) => task.kidId === null || task.kidId === activeKidId)
@@ -1245,7 +1264,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <input
                   type="time"
                   aria-label={isEn ? 'Task time' : 'ميعاد المهمة'}
-                  value={quickTaskTime === '05:00 م' ? '17:00' : quickTaskTime}
+                  value={quickTaskTime}
                   onChange={(event) => setQuickTaskTime(event.target.value)}
                   className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
                 />
