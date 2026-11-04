@@ -65,7 +65,6 @@ export function buildChildGrowthTimeline(
 export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
   kids,
   language,
-  darkMode = false,
   initialSelectedChildId,
   onEditChildGrowth,
 }) => {
@@ -89,17 +88,13 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
   const currentWeightKg = Number(activeChild.growthWeightKg) > 0 ? Number(activeChild.growthWeightKg) : 0;
   const hasGrowthMeasurements = currentHeightCm > 0 || currentWeightKg > 0;
 
-  const gridStroke = darkMode ? '#1E3646' : '#E2E8F0';
-  const axisTextColor = darkMode ? '#94A3B8' : '#475569';
-  const heightColor = darkMode ? '#2DD4BF' : '#0D9488'; // Teal for Height (cm)
-  const weightColor = darkMode ? '#FB923C' : '#EA580C'; // Warm Coral/Orange for Weight (kg)
 
   return (
     <div
       data-testid="child-growth-chart-card"
       className="rounded-[24px] border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-5 shadow-2xs"
     >
-      {/* Top Header: Title, Child Switcher & Metric Filter */}
+      {/* Top Header: Title and Child Switcher */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3.5">
           <ThreeDChildAvatar
