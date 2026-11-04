@@ -209,7 +209,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
         <div className="flex flex-col items-center justify-center text-center gap-2">
           <span className="image-card-badge px-3 py-1 rounded-full text-xs font-extrabold inline-flex items-center gap-1.5">
             <SoftFilledIcon id="shield" size={24} />
-            <span>{isEn ? 'Family Messages · Child-Specific Access' : 'محادثات الأسرة · صلاحيات مرتبطة بكل طفل'}</span>
+            <span>{isEn ? 'Family Messages · Child-Specific Access' : 'رسائل الأسرة · كل محادثة خاصة بطفل'}</span>
           </span>
           <h2 className="section-heading-centered image-card-title">
             {isEn ? 'Family & Care Team Messages' : 'رسائل الأسرة ومقدمي الرعاية'}
@@ -332,7 +332,7 @@ export const InternalChatSection: React.FC<InternalChatSectionProps> = ({
                   )}
                 </div>
                 <div className="text-[11px] font-bold text-blue-800 dark:text-[#7DD3FC] truncate">
-                  🔒 {isEn ? `Scope: ${thread.scopedChildEn}` : `النطاق: ${thread.scopedChildAr}`}
+                  🔒 {isEn ? `Scope: ${thread.scopedChildEn}` : `المحادثة تخص: ${thread.scopedChildAr}`}
                 </div>
                 {lastMsg && (
                   <p className="text-xs text-[var(--color-muted)] line-clamp-1">
