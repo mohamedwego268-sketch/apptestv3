@@ -309,6 +309,10 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
     };
     if (key === 'parentingSupport' || key === 'valuesTrack' || key === 'dailyEssentials' || key === 'learningTrack' || key === 'sportsTrack') {
       setOpenAccordions((previous) => ({ ...previous, [key]: true }));
+      window.setTimeout(() => {
+        document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
+      return;
     }
     document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -1142,7 +1146,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </summary>
                   <div className="grid grid-cols-2 gap-2 border-t border-white/10 p-3 sm:grid-cols-4">
                     <button type="button" data-testid="command-domain-nutrition" onClick={() => openHomeSection('dailyEssentials')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🥣</span><span className="min-w-0"><span className="block">{isEn ? 'Meals' : 'الأكل'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? currentNutrition.titleEn : currentNutrition.titleAr}</span></span></button>
-                    <button type="button" data-testid="command-domain-sleep" onClick={() => { setOpenAccordions((prev) => ({ ...prev, quickTrack: true })); document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🌙</span><span className="min-w-0"><span className="block">{isEn ? 'Sleep' : 'النوم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activePulse.sleepLogged ? (isEn ? 'Logged today' : 'تم تسجيله اليوم') : (isEn ? 'Add sleep log' : 'سجّل النوم')}</span></span></button>
+                    <button type="button" data-testid="command-domain-sleep" onClick={() => { setOpenAccordions((prev) => ({ ...prev, quickTrack: true })); window.setTimeout(() => document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120); }} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🌙</span><span className="min-w-0"><span className="block">{isEn ? 'Sleep' : 'النوم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activePulse.sleepLogged ? (isEn ? 'Logged today' : 'تم تسجيله اليوم') : (isEn ? 'Add sleep log' : 'سجّل النوم')}</span></span></button>
                     <button type="button" data-testid="command-domain-learning" onClick={() => openHomeSection('learningTrack')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">📚</span><span className="min-w-0"><span className="block">{isEn ? 'Learning' : 'التعلم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activeKidStageLabel}</span></span></button>
                     <button type="button" data-testid="command-domain-sports" onClick={() => openHomeSection('sportsTrack')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">⚽</span><span className="min-w-0"><span className="block">{isEn ? 'Movement' : 'الحركة'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? currentSport.titleEn : currentSport.titleAr}</span></span></button>
                     <button type="button" data-testid="command-domain-health" onClick={() => navigateTo('medical')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🩺</span><span className="min-w-0"><span className="block">{isEn ? 'Health' : 'الصحة'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activeKid.vaccinationsNote ? locText(activeKid.vaccinationsNote, lang) : (isEn ? 'Growth & care' : 'النمو والمتابعة')}</span></span></button>
@@ -1868,9 +1872,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     type="button"
                     onClick={() => {
                       setOpenAccordions((prev) => ({ ...prev, quickTrack: true }));
-                      document
-                        .getElementById('home-one-handed-quick-pulse')
-                        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      window.setTimeout(() => {
+                        document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 120);
                     }}
                     className="min-h-11 rounded-xl border border-white/20 bg-white/10 px-3 text-xs font-bold text-white hover:bg-white/15 cursor-pointer"
                   >
@@ -1883,6 +1887,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         );
       })()}
 
+      <div hidden={!openAccordions.quickTrack}>
       <HomeContentGroupHeading
         id="home-content-group-daily"
         step="١"
@@ -2162,6 +2167,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </SectionToolsDrawer>
 
+      </div>
+
       <HomeAccordionCard
         id="home-daily-parenting-wisdom"
         testId="home-daily-parenting-wisdom"
@@ -2252,6 +2259,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           7. ACCORDION: DAILY CARE ESSENTIALS (NUTRITION, HYDRATION & SPORTS — CHECKLIST #3)
           ===================================================================== */}
+      <div hidden={!openAccordions.dailyEssentials}>
       <HomeAccordionCard
         id="home-daily-essentials-hub"
         testId="home-daily-essentials-hub"
@@ -2515,9 +2523,11 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-growth"
         step="٢"
-        title={isEn ? 'Support, learning and growth' : 'الدعم والتربية والنمو'}
-        description={isEn ? 'Care for parents’ wellbeing while supporting each child’s feelings, skills and values.' : 'اهتمام براحة الأب والأم، ومشاعر كل طفل، ومهاراته وقيمه.'}
+        title={isEn ? 'Family support and useful guidance' : 'دعم الأسرة وإرشادات مفيدة'}
+        description={isEn ? 'Practical guidance for parents and everyday family life.' : 'إرشادات بسيطة تساعد الأب والأم في مواقف الحياة اليومية.'}
       />
+      </div>
+
       <HomeAccordionCard
         id="home-parenting-support-center"
         testId="home-parenting-support-center"
@@ -2615,6 +2625,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           9. ACCORDION: AGE-AWARE LEARNING & CURIOSITY
           ===================================================================== */}
+      <div hidden={!openAccordions.learningTrack}>
       <HomeAccordionCard
         id="home-learning-track-card"
         testId="home-learning-track-card"
@@ -2642,6 +2653,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           10. ACCORDION: FAMILY VALUES & AGE-AWARE DAILY HABITS
           ===================================================================== */}
+      </div>
+
+      <div hidden={!openAccordions.valuesTrack}>
       <HomeAccordionCard
         id="home-values-track-card"
         testId="home-values-track-card"
@@ -2666,6 +2680,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           12. OPTIONAL ACCORDION: BEDTIME STORY CREATOR
           ===================================================================== */}
+      </div>
+
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
         testId="home-ai-storyteller-accordion"

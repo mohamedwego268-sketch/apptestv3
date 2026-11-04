@@ -3792,6 +3792,10 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(homeSrc.includes('رسائل الأسرة'));
     assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
     assert.ok(homeSrc.includes("dailyEssentials: 'home-daily-essentials-hub'"));
+    assert.ok(homeSrc.includes('<div hidden={!openAccordions.quickTrack}>'));
+    assert.ok(homeSrc.includes('<div hidden={!openAccordions.dailyEssentials}>'));
+    assert.ok(homeSrc.includes('<div hidden={!openAccordions.learningTrack}>'));
+    assert.ok(homeSrc.includes('<div hidden={!openAccordions.valuesTrack}>'));
     assert.ok(homeSrc.includes("sportsTrack: 'home-essential-sports-card'"));
     assert.ok(!homeSrc.includes('<HomeDynamicContentSection'));
     assert.ok(!homeSrc.includes('<HomeVisualDiscovery'));
