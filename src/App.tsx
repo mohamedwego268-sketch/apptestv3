@@ -2395,6 +2395,7 @@ export default function App() {
                       : `تمت إضافة «${taskName}» إلى الروتين اليومي!`
                   );
                 }}
+                onToggleRoutineTask={handleToggleTask}
                 onShowToast={showToast}
                 bedtimeMode={bedtimeMode}
                 onToggleBedtimeMode={handleToggleBedtimeMode}
