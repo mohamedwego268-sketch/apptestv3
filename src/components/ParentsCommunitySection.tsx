@@ -531,7 +531,7 @@ export const ParentsCommunitySection: React.FC<ParentsCommunitySectionProps> = (
         : 'شارك تجربتك اليومية واحصل على مساهمات وتجارب المجتمع',
       subtitle: isEn
         ? `${posts.length} Active Discussions · Grouped by Age (0–8 Yrs)`
-        : `${posts.length} نقاشات نشطة · مصنفة حسب عمر الطفل (0–8 سنوات)`,
+        : `أمثلة توضيحية ونقاشات الأهل · ${posts.length} مشاركة`,
       ctaLabel: isEn ? '+ Publish Post or Question' : '+ انشر تجربة أو سؤال الآن',
       onCtaClick: () => setComposerOpen(true),
       iconId: 'star',
