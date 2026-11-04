@@ -316,7 +316,7 @@ export const MedicalHealthSection: React.FC<MedicalHealthSectionProps> = ({
                   title={isEn ? doc.nameEn : doc.name}
                   metaLeft={
                     <span>
-                      📍 {locText(doc.city, language)} · {isEn ? 'Sample profile' : 'ملف تجريبي'}
+                      📍 {locText(doc.city, language)} · {isEn ? 'Example listing · Verify details' : 'بيانات توضيحية · تأكد من التفاصيل'}
                     </span>
                   }
                   metaRightAction={
