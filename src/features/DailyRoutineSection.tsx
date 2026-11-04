@@ -153,7 +153,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               >
                 {isEn
                   ? `Overdue (${routineRemindersSummary.overdueCount})`
-                  : `تجاوزت الموعد (${routineRemindersSummary.overdueCount})`}
+                  : `فات موعدها (${routineRemindersSummary.overdueCount})`}
               </button>
               <button
                 type="button"
