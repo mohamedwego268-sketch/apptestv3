@@ -1025,7 +1025,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             <p className="text-xs leading-relaxed font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? parentWellbeingMessage.bodyEn : parentWellbeingMessage.bodyAr}</p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
               <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-[44px] px-1 text-xs font-black text-rose-700 dark:text-rose-200 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-lg">
-                {isEn ? 'Open wellbeing & parenting center →' : 'افتح مركز الدعم النفسي والتربوي ←'}
+                {isEn ? 'Open wellbeing & parenting center →' : 'مساعدة ليك ولطفلك ←'}
               </button>
               <button
                 type="button"
@@ -1134,8 +1134,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-daily"
         step="١"
-        title={isEn ? 'Follow your child’s day' : 'تابع يوم طفلك'}
-        description={isEn ? 'Small daily records, interests and routines — all connected to the selected child.' : 'سجلات يومية واهتمامات وروتين مرتبط بملف الطفل المختار.'}
+        title={isEn ? 'Follow your child’s day' : 'تفاصيل يوم طفلك'}
+        description={isEn ? 'Small daily records, interests and routines — all connected to the selected child.' : 'سجّلوا نومه وأكله ومشاعره والحاجات اللي بيحب يعملها.'}
       />
       <HomeAccordionCard
         id="home-one-handed-quick-pulse"
@@ -1210,15 +1210,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   <div className="col-span-2 sm:col-span-4 rounded-2xl border border-teal-500/20 bg-gradient-to-r from-teal-50 to-sky-50 dark:from-[#142B35] dark:to-[#142430] p-3.5">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? activeKidName + '’s daily log' : 'ملخص يوم ' + activeKidName}</p>
-                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Saved sleep, meal and care entries appear in the child profile.' : 'أي تسجيل نوم أو وجبة أو رعاية محفوظ هتلاقوه في ملف الطفل.'}</p>
+                        <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? activeKidName + '’s daily log' : 'إيه اللي سجلتوه النهارده لـ ' + activeKidName}</p>
+                        <p className="mt-1 text-[10px] font-semibold text-[var(--color-muted)]">{isEn ? 'Saved sleep, meal and care entries appear in the child profile.' : 'التسجيلات اللي بتحفظوها هتلاقوها في ملف طفلكم.'}</p>
                       </div>
                       <span className="shrink-0 rounded-xl bg-white/80 dark:bg-[#0B131A] px-3 py-2 text-xs font-black tabular-nums text-teal-800 dark:text-teal-200">{loggedCount}/3</span>
                     </div>
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/80 dark:bg-[#0B131A]">
                       <div className="h-full rounded-full bg-gradient-to-r from-teal-500 to-sky-500 transition-all duration-500" style={{ width: progressPercent + '%' }} />
                     </div>
-                    <p className="mt-1.5 text-[9px] font-bold text-[var(--color-muted)]">{progressPercent === 100 ? (isEn ? 'Daily essentials completed' : 'اكتملت أساسيات تسجيل اليوم') : (isEn ? 'Complete the three essentials when they happen.' : 'سجّل الأساسيات وقت حدوثها.. من غير ضغط أو التزام يومي.')}</p>
+                    <p className="mt-1.5 text-[9px] font-bold text-[var(--color-muted)]">{progressPercent === 100 ? (isEn ? 'Daily essentials completed' : 'اكتملت أساسيات تسجيل اليوم') : (isEn ? 'Complete the three essentials when they happen.' : 'سجّلوا اللي حصل وقت ما تحبوا، ومش لازم تسجلوا كل حاجة.')}</p>
                   </div>
                   <button
                     type="button"
@@ -1280,7 +1280,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <span>{pulse.moodEmoji}</span>
-                      <span>{isEn ? 'Emotional check-in' : 'متابعة المشاعر'}</span>
+                      <span>{isEn ? 'Emotional check-in' : 'حاسس بإيه؟'}</span>
                     </span>
                     <span className="text-[11px] font-black">↗</span>
                   </button>
@@ -1831,7 +1831,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         testId="home-parenting-support-center"
         iconEmoji="💚"
         iconBgClass="bg-rose-500/15 text-rose-700 dark:text-rose-300"
-        title={isEn ? 'Family Wellbeing & Parenting Support' : 'الدعم النفسي والتربوي للأسرة'}
+        title={isEn ? 'Family Wellbeing & Parenting Support' : 'مساعدة للأسرة في المشاعر والتربية'}
         subtitle={
           isEn
             ? 'Practical support for parents, individual child check-ins and everyday situations'
@@ -1913,8 +1913,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         testId="home-learning-track-card"
         iconEmoji="📚"
         iconBgClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
-        title={isEn ? 'Learning, Curiosity & Development' : 'التعلم والفضول وتنمية المهارات'}
-        subtitle={isEn ? 'Simple shared activities shaped around the child’s age' : 'أنشطة بسيطة مشتركة تناسب عمر الطفل واهتماماته'}
+        title={isEn ? 'Learning, Curiosity & Development' : 'نتعلم ونجرب حاجات جديدة'}
+        subtitle={isEn ? 'Simple shared activities shaped around the child’s age' : 'أفكار سهلة تعملوها سوا، على قد سن طفلك والحاجات اللي بيحبها'}
         badgeText={activeKidAge?.label || (isEn ? 'Age not recorded' : 'العمر غير مسجل')}
         isOpen={Boolean(openAccordions.learningTrack)}
         onToggle={() => toggleAccordion('learningTrack')}
