@@ -2538,7 +2538,7 @@ export default function App() {
                         : 'تم تحديث قائمة الأدلة الطبية المحفوظة'
                     );
                   }}
-                  onBookDoctorAppointment={(doctorName, childId, date, time, note) => {
+                  onBookDoctorAppointment={async (doctorName, childId, date, time, note) => {
                     setState((prev) => ({
                       ...prev,
                       events: [
@@ -2555,6 +2555,27 @@ export default function App() {
                         ...prev.events,
                       ],
                     }));
+                    const appointmentKid = childId === null ? null : state.kids.find((kid) => kid.id === childId);
+                    const remoteChildId = appointmentKid?.remoteId;
+                    if (!isPreviewMode && typeof remoteChildId === 'string' && isValidUuid(remoteChildId)) {
+                      const savedRecord = await createChildLifeRecord({
+                        childId: remoteChildId,
+                        recordType: 'medical_event',
+                        title: `طلب موعد طبي: ${doctorName}`,
+                        notes: note,
+                        occurredAt: new Date(`${date}T${time || '12:00'}:00`).toISOString(),
+                        details: {
+                          source: 'medical_appointment_request',
+                          doctorName,
+                          appointmentDate: date,
+                          appointmentTime: time,
+                          status: 'pending_confirmation',
+                        },
+                      });
+                      if (savedRecord.error) {
+                        showToast(`تمت إضافة الطلب للتقويم، لكن تعذر حفظه في حكاية الطفل: ${savedRecord.error}`);
+                      }
+                    }
                     showToast(
                       lang === 'en'
                         ? `Appointment request saved to your Family Calendar: ${doctorName}`
