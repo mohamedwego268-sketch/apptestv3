@@ -111,14 +111,14 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
               <ThreeDIcon id="health" size={13} />
               <span>
                 {isEn
-                  ? 'Interactive Growth Curve (Height & Weight)'
-                  : 'منحنى متابعة النمو التفاعلي (الطول والوزن)'}
+                  ? 'Recorded Growth Measurements'
+                  : 'سجل قياسات النمو المسجلة'}
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC] mt-1">
               {isEn
-                ? `${displayKidName}'s Growth Trajectory (${ageInfo.label})`
-                : `تطور نمو ${displayKidName} عبر الوقت (${ageInfo.label})`}
+                ? `${displayKidName}'s Growth Measurements (${ageInfo.label})`
+                : `قياسات نمو ${displayKidName} (${ageInfo.label})`}
             </h3>
           </div>
         </div>
