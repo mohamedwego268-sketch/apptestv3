@@ -1362,6 +1362,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                     </div>
                   </details>
                 )}
+              </div>
+            )}
 
             {activeKid && (
               <>
@@ -1632,7 +1634,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                                   </div>
                                 </div>
 
-                                {/* Inline Delete Confirmation */}                                {/* Inline Delete Confirmation */}
+                                {/* Inline Delete Confirmation */}
                                 {isConfirmingDelete && (
                                   <div
                                     data-testid={`command-task-delete-confirm-${task.id}`}
