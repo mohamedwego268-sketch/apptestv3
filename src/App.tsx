@@ -63,7 +63,7 @@ import {
   validateAndSanitizeImageDataUrl,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
-import { createChildLifeRecord } from './services/childLifeRecordService';
+import { createChildLifeRecord, type ChildLifeRecordType } from './services/childLifeRecordService';
 import { t } from './domain/i18n';
 import {
   createEmptyFamilySpaceState,
@@ -1201,10 +1201,20 @@ export default function App() {
         ? state.kids.find((k) => k.id === Number(targetTask.kidId))
         : null;
       const remoteChildId = targetTask?.remoteChildId || targetKid?.remoteId;
+      const taskCategory = `${targetTask?.category || ''} ${targetTask?.name || ''}`.toLowerCase();
+      const lifeRecordType: ChildLifeRecordType = /نوم|sleep|قيلولة/.test(taskCategory)
+        ? 'sleep_log'
+        : /أكل|طعام|شرب|وجبة|food|meal|nutrition|water/.test(taskCategory)
+        ? 'nutrition'
+        : /رياضة|حركة|sport|exercise|نشاط بدني/.test(taskCategory)
+        ? 'sports'
+        : /تعلم|دراسة|واجب|قراءة|education|study|homework/.test(taskCategory)
+        ? 'education'
+        : 'routine';
       if (!isPreviewMode && targetTask && typeof remoteChildId === 'string' && isValidUuid(remoteChildId)) {
         const savedRecord = await createChildLifeRecord({
           childId: remoteChildId,
-          recordType: 'routine',
+          recordType: lifeRecordType,
           title: `اكتملت مهمة: ${targetTask.name}`,
           notes: `تم تسجيل إكمال المهمة من الروتين اليومي · ${targetTask.category || 'روتين يومي'}`,
           occurredAt: new Date().toISOString(),
