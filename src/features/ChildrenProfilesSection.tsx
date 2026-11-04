@@ -253,6 +253,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
           key={kid.id}
           childId={kid.remoteId}
           childName={locText(kid.name, lang)}
+          profileInterests={locText(kid.interests || '', lang)}
           lang={lang}
         />
       ))}
