@@ -1212,7 +1212,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             (task.kidId === null || task.kidId === activeKidId) &&
             isTaskScheduledForDate(task, todayLocalISO)
         );
-        const todayOpenCount = Math.max(0, scopedTodayTasks.length - todayDoneCount);
+        const todayOpenCount = scopedTodayTasks.filter((task) => !isTaskCompletedOnDate(task, todayLocalISO)).length;
 
         const activePulse = quickPulseByKid[activeKidId] || {
           sleepLogged: false,
