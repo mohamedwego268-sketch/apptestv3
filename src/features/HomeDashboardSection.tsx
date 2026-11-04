@@ -2166,6 +2166,60 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               );
             })()}
           </div>
+          <section data-testid="child-recent-activity" className="rounded-2xl border border-white/60 dark:border-[#294352] bg-gradient-to-br from-slate-50 to-white dark:from-[#132631] dark:to-[#101D26] p-3.5 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Recent moments' : 'آخر الحاجات اللي سجلتوها'}</h3>
+                <p className="mt-0.5 text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A small timeline that grows with your child.' : 'كل تسجيل بيضيف جزء جديد لحكاية طفلك.'}</p>
+              </div>
+              <span className="rounded-full bg-teal-500/10 px-2.5 py-1 text-[10px] font-black text-teal-800 dark:text-teal-200">{activeKidRecentRecords.length} {isEn ? 'records' : 'تسجيل'}</span>
+            </div>
+            {activeKidRecentRecords.length > 0 ? (
+              <div className="space-y-2">
+                {activeKidRecentRecords.slice(0, 3).map((record) => {
+                  const labels: Record<string, { ar: string; en: string; icon: string }> = {
+                    sleep_log: { ar: 'النوم والراحة', en: 'Sleep & rest', icon: '🌙' },
+                    nutrition: { ar: 'الأكل والتغذية', en: 'Food & nutrition', icon: '🥣' },
+                    sports: { ar: 'اللعب والحركة', en: 'Play & movement', icon: '🏃' },
+                    emotional_social: { ar: 'المشاعر', en: 'Feelings', icon: '💛' },
+                    education: { ar: 'التعلّم', en: 'Learning', icon: '📚' },
+                    routine: { ar: 'الروتين', en: 'Routine', icon: '🗓️' },
+                    growth_measurement: { ar: 'النمو', en: 'Growth', icon: '📏' },
+                    vaccination: { ar: 'التطعيمات', en: 'Vaccinations', icon: '💉' },
+                    medical_event: { ar: 'الصحة', en: 'Health', icon: '🩺' },
+                    milestone: { ar: 'إنجاز جديد', en: 'Milestone', icon: '⭐' },
+                    hobby: { ar: 'الهوايات', en: 'Hobbies', icon: '🎨' },
+                    memory: { ar: 'ذكرى', en: 'Memory', icon: '📸' },
+                    daily_note: { ar: 'ملاحظة', en: 'Note', icon: '📝' },
+                    other: { ar: 'لحظة عائلية', en: 'Family moment', icon: '💚' },
+                  };
+                  const label = labels[record.record_type] || labels.other;
+                  return (
+                    <div key={record.id} className="flex items-start gap-3 rounded-xl border border-[var(--color-border)]/70 dark:border-[#294352] bg-white/80 dark:bg-[#0F202A] p-2.5">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-teal-500/10 text-lg">{label.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-1">
+                          <span className="text-[10px] font-extrabold text-teal-800 dark:text-teal-200">{isEn ? label.en : label.ar}</span>
+                          <time dateTime={record.occurred_at} className="text-[10px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">{new Date(record.occurred_at).toLocaleDateString(isEn ? 'en' : 'ar', { day: 'numeric', month: 'short' })}</time>
+                        </div>
+                        <p className="mt-0.5 truncate text-xs font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">{record.title}</p>
+                        {record.notes ? <p className="mt-0.5 line-clamp-2 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{record.notes}</p> : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-teal-500/30 bg-teal-500/5 px-3 py-4 text-center">
+                <span className="text-2xl" aria-hidden="true">🌱</span>
+                <p className="mt-1 text-xs font-bold text-[var(--color-text)] dark:text-white">{isEn ? 'Your child’s story starts with a small moment.' : 'حكاية طفلك بتبدأ بتفصيلة صغيرة.'}</p>
+                <p className="mt-1 text-[11px] text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'Save sleep, food, feelings or a new skill to build a useful history.' : 'سجّل النوم أو الأكل أو المشاعر أو مهارة جديدة علشان يبقى عندكم سجل مفيد مع الوقت.'}</p>
+              </div>
+            )}
+            <button type="button" onClick={() => navigateTo('children')} className="min-h-10 w-full rounded-xl border border-teal-500/25 bg-teal-500/8 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200 hover:bg-teal-500/15">
+              {isEn ? 'Open the full child record' : 'افتح سجل الطفل بالكامل'} {isEn ? '→' : '←'}
+            </button>
+          </section>
           </>
           )}
         </div>
