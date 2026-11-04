@@ -14,22 +14,22 @@ import {
   MasterPatternCard,
 } from '../components/DesignSystem';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
-import { ParentingSupportCenter } from '../components/ParentingSupportCenter';
-import { StoriesLibraryView } from '../components/StoriesLibraryView';
-import { CatalogView } from '../components/CatalogView';
-import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
-import { HomeVisualDiscovery } from './HomeVisualDiscovery';
-import { HomeDailyExperience } from './HomeDailyExperience';
-import { HomeContentTracks } from './HomeContentTracks';
-import { HomeDynamicContentSection } from './HomeDynamicContentSection';
-import { HomeValuesTrackSection } from './HomeValuesTrackSection';
-import { HomeLearningTrackSection } from './HomeLearningTrackSection';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
 import {
   buildDailyWelcomePersonalization,
   extractProfileSignals,
   getSafeFavoriteFood,
 } from '../domain/contentRecommendationEngine';
+const ParentingSupportCenter = React.lazy(() => import('../components/ParentingSupportCenter').then((module) => ({ default: module.ParentingSupportCenter })));
+const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibraryView').then((module) => ({ default: module.StoriesLibraryView })));
+const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
+const SectionToolsDrawer = React.lazy(() => import('../components/SectionToolsDrawer').then((module) => ({ default: module.SectionToolsDrawer })));
+const HomeVisualDiscovery = React.lazy(() => import('./HomeVisualDiscovery').then((module) => ({ default: module.HomeVisualDiscovery })));
+const HomeDailyExperience = React.lazy(() => import('./HomeDailyExperience').then((module) => ({ default: module.HomeDailyExperience })));
+const HomeContentTracks = React.lazy(() => import('./HomeContentTracks').then((module) => ({ default: module.HomeContentTracks })));
+const HomeDynamicContentSection = React.lazy(() => import('./HomeDynamicContentSection').then((module) => ({ default: module.HomeDynamicContentSection })));
+const HomeValuesTrackSection = React.lazy(() => import('./HomeValuesTrackSection').then((module) => ({ default: module.HomeValuesTrackSection })));
+const HomeLearningTrackSection = React.lazy(() => import('./HomeLearningTrackSection').then((module) => ({ default: module.HomeLearningTrackSection })));
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -1045,7 +1045,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </div>
 
       {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
-      <SectionToolsDrawer
+      <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><SectionToolsDrawer
         language={lang}
         sectionId="dashboard"
         titleAr="أدوات الرئيسية"
@@ -1109,7 +1109,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
 
       {activeKid && (
-        <HomeDailyExperience
+        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDailyExperience
           language={lang}
           childName={activeKidName}
           childEmoji={activeKid.emoji}
@@ -1128,7 +1128,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           }}
           onOpenMood={openChildMoodCheckin}
           onOpenProfile={() => navigateTo('children')}
-        />
+        /></React.Suspense></React.Suspense>
       )}
 
       <HomeContentGroupHeading
@@ -1321,31 +1321,31 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
       {activeKid && (
         <div className="scroll-mt-24 pt-1">
-          <HomeVisualDiscovery
+          <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeVisualDiscovery
             language={lang}
             childName={activeKidName}
             ageLabel={activeKidStageLabel}
             signals={activeKidSignals}
             onNavigate={navigateTo}
             onCompleteActivity={completeParentChildActivity}
-          />
+          /></React.Suspense>
         </div>
       )}
 
       <div className="scroll-mt-24">
-        <HomeContentTracks
+        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeContentTracks
           language={lang}
           childName={activeKidName}
           onNavigate={navigateTo}
           onOpenSection={openHomeSection}
-        />
+        /></React.Suspense>
       </div>
 
-      <HomeDynamicContentSection
+      <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDynamicContentSection
         child={activeKid}
         language={lang}
         recentRecords={activeKidRecentRecords}
-      />
+      /></React.Suspense>
 
       {/* =====================================================================
           4. ACCORDION: TIME-AWARE PARENTING COMPASS
@@ -1843,7 +1843,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onToggle={() => toggleAccordion('parentingSupport')}
         isEn={isEn}
       >
-        <ParentingSupportCenter
+        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><ParentingSupportCenter
           kids={state.kids}
           initialKidId={activeKid?.id ?? null}
           onActiveKidChange={(kidId) => {
@@ -1902,7 +1902,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             return true;
           }}
           onAddRoutineTask={onAddSuggestedRoutineTask}
-        />
+        /></React.Suspense>
       </HomeAccordionCard>
 
       {/* =====================================================================
@@ -1920,7 +1920,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onToggle={() => toggleAccordion('learningTrack')}
         isEn={isEn}
       >
-        <HomeLearningTrackSection
+        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeLearningTrackSection
           language={lang}
           childName={activeKidName}
           ageStage={activeKidAge?.stageCode || 'all'}
@@ -1929,7 +1929,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           childId={activeKid?.id ?? null}
           onNavigate={navigateTo}
           onAddRoutineTask={onAddSuggestedRoutineTask}
-        />
+        /></React.Suspense>
       </HomeAccordionCard>
 
       {/* =====================================================================
@@ -1947,13 +1947,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onToggle={() => toggleAccordion('valuesTrack')}
         isEn={isEn}
       >
-        <HomeValuesTrackSection
+        <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeValuesTrackSection
           language={lang}
           childName={activeKidName}
           ageStage={activeKidAge?.stageCode || 'all'}
           childId={activeKid?.id ?? null}
           onAddRoutineTask={onAddSuggestedRoutineTask}
-        />
+        /></React.Suspense>
       </HomeAccordionCard>
 
       {/* =====================================================================
@@ -2028,13 +2028,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </button>
             </div>
           </section>
-          <StoriesLibraryView
+          <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><StoriesLibraryView
             lang={lang}
             kids={state.kids}
             onOpenChildren={() => navigateTo('children')}
             onShowToast={onShowToast}
             onScheduleStoryTask={onAddSuggestedRoutineTask}
-          />
+          /></React.Suspense>
         </div>
       </HomeAccordionCard>
 
@@ -2145,13 +2145,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             )}
           </div>
 
-          <CatalogView
+          <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><CatalogView
             lang={lang}
             onAddToCart={onAddToCart}
             onInspectItem={onInspectCommercialItem}
             onAddToWishes={onAddProductToWishes}
             onShowToast={onShowToast}
-          />
+          /></React.Suspense>
         </div>
       </HomeAccordionCard>
     </section>
