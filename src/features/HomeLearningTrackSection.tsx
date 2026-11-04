@@ -164,7 +164,7 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
         </p>
         <p className="mt-1 text-[11px] leading-relaxed text-sky-950/80 dark:text-sky-100/80">
           {isEn
-            ? 'Little things you do together matter. Let your child learn at their own pace.'
+            ? 'Little things you do together matter. Follow the child’s pace and interests.'
             : 'الوقت اللي بتقضوه سوا أهم من أي نتيجة. سيبوا طفلك يتعلم براحة ومن الحاجات اللي بيحبها.'}
         </p>
       </div>
