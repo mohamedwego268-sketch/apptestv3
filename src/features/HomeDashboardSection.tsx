@@ -204,6 +204,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
   const [quickTaskName, setQuickTaskName] = useState('');
   const [quickTaskTime, setQuickTaskTime] = useState('17:00');
+  const [taskView, setTaskView] = useState<'all' | 'open' | 'done'>('all');
 
   useEffect(() => {
     if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
@@ -1194,7 +1195,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               </div>
 
               {(() => {
-                const today = new Date().toISOString().slice(0, 10);
+                const localNow = new Date();
+                const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
                 const nextEvent = state.events
                   .filter((event) => (event.childId === null || event.childId === activeKidId) && event.date >= today)
                   .slice()
@@ -1212,13 +1214,44 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 ) : null;
               })()}
 
-              <div className="space-y-2">
-                {state.tasks
-                  .filter((task) => task.kidId === null || task.kidId === activeKidId)
+              {(() => {
+                const childTasks = state.tasks.filter((task) => task.kidId === null || task.kidId === activeKidId);
+                const completedCount = childTasks.filter((task) => task.done).length;
+                const progress = childTasks.length ? Math.round((completedCount / childTasks.length) * 100) : 0;
+                const visibleTasks = childTasks
+                  .filter((task) => taskView === 'all' || (taskView === 'done' ? task.done : !task.done))
                   .slice()
-                  .sort((a, b) => a.time.localeCompare(b.time))
-                  .slice(0, 6)
-                  .map((task) => (
+                  .sort((a, b) => a.time.localeCompare(b.time));
+                return (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px] text-teal-100/80">
+                        <span>{isEn ? 'Daily progress' : 'إنجاز مهام الطفل'}</span>
+                        <span className="font-black tabular-nums">{completedCount}/{childTasks.length} · {progress}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-[#8FF0D0] transition-all duration-500" style={{ width: `${progress}%` }} />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {([
+                        { id: 'all', ar: 'كل المهام', en: 'All', count: childTasks.length },
+                        { id: 'open', ar: 'المتبقية', en: 'To do', count: childTasks.length - completedCount },
+                        { id: 'done', ar: 'المكتملة', en: 'Done', count: completedCount },
+                      ] as const).map((filter) => (
+                        <button
+                          key={filter.id}
+                          type="button"
+                          aria-pressed={taskView === filter.id}
+                          onClick={() => setTaskView(filter.id)}
+                          className={`min-h-9 shrink-0 rounded-xl border px-3 text-[10px] font-bold transition ${taskView === filter.id ? 'border-[#8FF0D0] bg-[#8FF0D0] text-[#073F43]' : 'border-white/15 bg-white/5 text-teal-50'}`}
+                        >
+                          {isEn ? filter.en : filter.ar} ({filter.count})
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      {visibleTasks.map((task) => (
                     <div key={task.id} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] p-2.5">
                       <button
                         type="button"
@@ -1235,13 +1268,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       </div>
                       <span className="text-[10px] text-teal-100/70">{task.done ? (isEn ? 'Done' : 'تم') : (isEn ? 'To do' : 'مطلوب')}</span>
                     </div>
-                  ))}
-                {state.tasks.filter((task) => task.kidId === null || task.kidId === activeKidId).length === 0 && (
-                  <div className="rounded-xl border border-dashed border-white/20 p-3 text-center text-xs text-teal-100/80">
-                    {isEn ? 'No tasks yet. Add the first item to the child’s day.' : 'لسه مفيش مهام. أضيفوا أول مهمة لجدول الطفل.'}
+                      ))}
+                      {visibleTasks.length === 0 && (
+                        <div className="rounded-xl border border-dashed border-white/20 p-3 text-center text-xs text-teal-100/80">
+                          {childTasks.length === 0
+                            ? (isEn ? 'No tasks yet. Add the first item to the child’s day.' : 'لسه مفيش مهام. أضيفوا أول مهمة لجدول الطفل.')
+                            : (isEn ? 'Nothing in this filter.' : 'مفيش مهام في التصنيف ده حاليًا.')}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               <form
                 className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_112px_auto]"
