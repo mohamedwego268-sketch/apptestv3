@@ -62,11 +62,11 @@ const LEARNING_BY_AGE: Record<AgeStage, LearningActivity[]> = {
     {
       id: 'sorting-game',
       icon: Puzzle,
-      titleAr: 'لعبة التصنيف والاكتشاف',
-      titleEn: 'Sort, compare and discover',
+      titleAr: 'نرتب الحاجات ونلعب',
+      titleEn: 'Sort and play together',
       descriptionAr: 'استخدموا أشياء آمنة ومتاحة لتجميعها حسب اللون أو الشكل أو الحجم، واسألوا الطفل عن سبب اختياره.',
       descriptionEn: 'Use safe everyday objects to sort by color, shape or size, and ask your child why they chose each group.',
-      taskAr: 'لعبة تصنيف واكتشاف لمدة ١٠ دقائق',
+      taskAr: 'لعبة ترتيب حاجات لمدة ١٠ دقائق',
       taskEn: 'A 10-minute sorting and discovery game',
     },
   ],
@@ -74,8 +74,8 @@ const LEARNING_BY_AGE: Record<AgeStage, LearningActivity[]> = {
     {
       id: 'curiosity-question',
       icon: Lightbulb,
-      titleAr: 'سؤال فضول كل يوم',
-      titleEn: 'One curiosity question',
+      titleAr: 'سؤال جديد كل يوم',
+      titleEn: 'One new question a day',
       descriptionAr: 'اختاروا سؤالًا من الحياة اليومية، وابحثوا عن إجابته معًا من كتاب أو تجربة منزلية آمنة.',
       descriptionEn: 'Choose an everyday question and explore it together through a book or a safe home activity.',
       taskAr: 'وقت سؤال واكتشاف مشترك',
@@ -96,8 +96,8 @@ const LEARNING_BY_AGE: Record<AgeStage, LearningActivity[]> = {
     {
       id: 'follow-interest',
       icon: Lightbulb,
-      titleAr: 'ابدأوا من اهتمام الطفل',
-      titleEn: 'Start with your child’s interest',
+      titleAr: 'ابدأوا من حاجة بيحبها',
+      titleEn: 'Start with something your child likes',
       descriptionAr: 'اسألوا الطفل يحب يكتشف إيه النهارده، وشاركوه نشاطًا بسيطًا يقوده هو. لو العمر غير مسجل، اختاروا ما يناسب قدرته الحالية.',
       descriptionEn: 'Ask what your child would like to explore today and follow their lead. If age is unknown, choose an activity that fits their current abilities.',
       taskAr: 'نشاط اكتشاف يختاره الطفل',
@@ -165,7 +165,7 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
         <p className="mt-1 text-[11px] leading-relaxed text-sky-950/80 dark:text-sky-100/80">
           {isEn
             ? 'Little things you do together matter. Let your child learn at their own pace.'
-            : 'الوقت اللي بتقضوه سوا أهم من الدرجات. سيبوا طفلك يتعلم على راحته ومن الحاجات اللي بيحبها.'}
+            : 'الوقت اللي بتقضوه سوا أهم من أي نتيجة. سيبوا طفلك يتعلم براحة ومن الحاجات اللي بيحبها.'}
         </p>
       </div>
 
@@ -186,7 +186,7 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
             </div>
           ))}
         </div>
-        {(interest || hobby) && <p className="mt-2 rounded-lg bg-sky-600/5 px-2.5 py-2 text-[10px] font-bold text-sky-900 dark:text-sky-100">{isEn ? 'Starting from a real interest: ' : 'نبدأ من اهتمام مسجل: '}{[interest,hobby].filter(Boolean).join(' · ')}</p>}
+        {(interest || hobby) && <p className="mt-2 rounded-lg bg-sky-600/5 px-2.5 py-2 text-[10px] font-bold text-sky-900 dark:text-sky-100">{isEn ? 'Starting from a real interest: ' : 'نبدأ من حاجة طفلك بيحبها: '}{[interest,hobby].filter(Boolean).join(' · ')}</p>}
       </div>
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -222,10 +222,10 @@ export const HomeLearningTrackSection: React.FC<HomeLearningTrackSectionProps> =
 
       <div className="flex flex-wrap gap-2.5">
         <button type="button" onClick={() => onNavigate('children')} className="min-h-[44px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-extrabold text-sky-900 dark:text-sky-200">
-          {isEn ? 'Explore child interests' : 'اكتشف اهتمامات الطفل'}
+          {isEn ? 'Explore child interests' : 'شوف الحاجات اللي طفلك بيحبها'}
         </button>
         <button type="button" onClick={() => onNavigate('games')} className="min-h-[44px] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-white">
-          {isEn ? 'Open learning games' : 'افتح ألعاب التعلم'}
+          {isEn ? 'Open learning games' : 'يلا نلعب ونتعلم'}
         </button>
       </div>
     </section>
