@@ -24,20 +24,16 @@ import {
   MasterPatternCard,
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar } from '../components/ThreeDVisuals';
-import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
 import {
-  buildDailyWelcomePersonalization,
   extractProfileSignals,
   getSafeFavoriteFood,
 } from '../domain/contentRecommendationEngine';
 const ParentingSupportCenter = React.lazy(() => import('../components/ParentingSupportCenter').then((module) => ({ default: module.ParentingSupportCenter })));
 const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibraryView').then((module) => ({ default: module.StoriesLibraryView })));
 const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
-const HomeVisualDiscovery = React.lazy(() => import('./HomeVisualDiscovery').then((module) => ({ default: module.HomeVisualDiscovery })));
 const HomeDailyExperience = React.lazy(() => import('./HomeDailyExperience').then((module) => ({ default: module.HomeDailyExperience })));
-const HomeDynamicContentSection = React.lazy(() => import('./HomeDynamicContentSection').then((module) => ({ default: module.HomeDynamicContentSection })));
 const HomeValuesTrackSection = React.lazy(() => import('./HomeValuesTrackSection').then((module) => ({ default: module.HomeValuesTrackSection })));
 const HomeLearningTrackSection = React.lazy(() => import('./HomeLearningTrackSection').then((module) => ({ default: module.HomeLearningTrackSection })));
 
@@ -288,9 +284,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     quickTrack: false,
     dailyWisdom: false,
-    heroesArena: false,
     bedtimeStories: false,
-    dailyEssentials: false,
     parentingSupport: false,
     learningTrack: false,
     valuesTrack: false,
@@ -304,18 +298,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
   const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack') => {
     const sectionIds: Record<typeof key, string> = {
-      heroesArena: 'home-heroes-passions-arena',
-      parentingSupport: 'home-parenting-support-center',
-      valuesTrack: 'home-values-track-card',
-      dailyEssentials: 'home-daily-essentials-hub',
-      learningTrack: 'home-learning-track-card',
-      sportsTrack: 'home-essential-sports-card',
+      heroesArena: 'command-domain-hobbies',
+      parentingSupport: 'command-domain-wellbeing',
+      valuesTrack: 'command-domain-values',
+      dailyEssentials: 'command-domain-nutrition',
+      learningTrack: 'command-domain-learning',
+      sportsTrack: 'command-domain-sports',
     };
-    const accordionKey = key === 'sportsTrack' ? 'dailyEssentials' : key;
-    setOpenAccordions((previous) => ({ ...previous, [accordionKey]: true }));
-    window.setTimeout(() => {
-      document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 80);
+    document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   const openChildMoodCheckin = () => {
@@ -966,209 +956,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           1. PERSONALIZED WELCOME & PARENT WELLBEING
           ===================================================================== */}
-      <div
-        id="home-core-value-hero"
-        data-testid="home-core-value-hero"
-        data-parent-profile={parentProfileSpec.role}
-        dir={isEn ? 'ltr' : 'rtl'}
-        style={{
-          borderColor: isMotherActive ? 'rgba(225, 29, 72, 0.35)' : 'rgba(13, 148, 136, 0.38)',
-        }}
-        className="relative overflow-hidden bg-gradient-to-br from-white via-white to-teal-50/40 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] shadow-[0_12px_32px_-22px_rgba(15,23,42,0.35)] rounded-3xl p-4 sm:p-5 border border-slate-100 dark:border-[#1E3646] flex flex-col justify-between gap-4 transition-all duration-300 ease-in-out"
-      >
-        {/* Top Accordion Header for Personalized Welcome Banner */}
-        <div
-          id="home-personalized-welcome-banner"
-          data-testid="home-personalized-welcome-banner"
-          className="space-y-2.5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-extrabold">
-            <div className="inline-flex flex-wrap items-center gap-2 text-[var(--color-text)] dark:text-[#F8FAFC]">
-              <span
-                className={`px-2.5 py-1 rounded-full text-[11px] font-black border ${
-                  isMotherActive
-                    ? 'bg-rose-500/12 text-rose-700 dark:text-rose-300 border-rose-500/30'
-                    : 'bg-teal-500/12 text-[#0d9488] dark:text-[#2DD4BF] border-teal-500/30'
-                }`}
-              >
-                {isMotherActive
-                  ? isEn
-                    ? `👩🏻‍🍼 Active Profile: Mom${motherShortAr ? ` ${activeParentNameEn}` : ''}`
-                    : `👩🏻‍🍼 الحساب النشط: الأم${motherShortAr ? ` · ${activeParentNameAr}` : ''}`
-                  : isEn
-                  ? `👨🏻‍🍼 Active Profile: Parent${fatherShortAr ? ` ${activeParentNameEn}` : ''}`
-                  : `👨🏻‍🍼 الحساب النشط: ولي الأمر${fatherShortAr ? ` · ${activeParentNameAr}` : ''}`}
-              </span>
-              <span
-                data-testid="home-welcome-time-badge"
-                className="px-2.5 py-1 rounded-full text-[11px] font-black border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300"
-              >
-                {isEn ? welcomePersonalization.timeBadgeEn : welcomePersonalization.timeBadgeAr}
-              </span>
-              <span className="text-[#0d9488] dark:text-[#2DD4BF]">📍 {localizedCity}</span>
-              {partnerParentNameAr && (
-                <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                  · {isEn ? `Family link: ${partnerParentNameEn}` : `مرتبط بحساب الأسرة: ${partnerParentNameAr}`}
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500 dark:text-[#94A3B8]">
-                {todayFormattedCombined}
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <h1
-              id="home-main-greeting-heading"
-              className="text-xl font-bold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug"
-            >
-              {isEn ? welcomePersonalization.greetingEn : welcomePersonalization.greetingAr}
-            </h1>
-            <p
-              data-testid="home-welcome-personalized-summary"
-              className="text-sm leading-relaxed text-gray-600 dark:text-[#CBD5E1]"
-            >
-              {isEn ? welcomePersonalization.summaryEn : welcomePersonalization.summaryAr}
-            </p>
-
-            {activeKid && (
-              <div
-                data-testid="home-welcome-child-context"
-                className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-teal-500/20 bg-teal-50/50 dark:bg-[#142430] px-3 py-2"
-              >
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span data-testid="home-welcome-selected-child" className="inline-flex items-center gap-1 rounded-xl bg-teal-500/12 px-2.5 py-1 text-xs font-extrabold text-[#0d9488] dark:text-[#2DD4BF]">
-                    {activeKid.emoji} {activeKidName}
-                  </span>
-                  <span
-                    data-testid="home-welcome-child-age-badge"
-                    className="rounded-xl border border-slate-200 dark:border-[#1E3646] bg-white/80 dark:bg-[#0B131A] px-2.5 py-1 text-[11px] font-bold text-[var(--color-text)] dark:text-[#CBD5E1]"
-                  >
-                    {isEn ? welcomePersonalization.ageLabelEn : welcomePersonalization.ageLabelAr}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {(isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).length > 0 ? (
-                    (isEn ? welcomePersonalization.topInterestsEn : welcomePersonalization.topInterestsAr).map((interest) => (
-                      <span
-                        key={interest}
-                        data-testid="home-welcome-child-interest-tag"
-                        className="rounded-full border border-teal-500/25 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-bold text-teal-800 dark:text-teal-200"
-                      >
-                        🌱 {interest}
-                      </span>
-                    ))
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => navigateTo('children')}
-                      className="min-h-[34px] rounded-xl border border-dashed border-teal-500/35 px-2.5 py-1 text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
-                    >
-                      + {isEn ? 'Add child interests' : 'أضف اهتمامات الطفل'}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              data-testid="home-start-daily-checkin"
-              onClick={() => document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="mt-2 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-teal-700 px-4 py-3 text-xs font-black text-white shadow-sm transition-all hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98]"
-            >
-              <span aria-hidden="true">⚡</span>
-              {activeKid
-                ? isEn
-                  ? `Start ${activeKidName}'s daily check-in`
-                  : `ابدأ بمتابعة يوم ${activeKidName}`
-                : isEn
-                ? "Start today's child check-in"
-                : 'ابدأ بمتابعة يوم طفلك'}
-              <span aria-hidden="true">{isEn ? '→' : '←'}</span>
-            </button>
-          </div>
-        </div>
-
-        <div data-testid="home-parent-wellbeing-card" className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-rose-200/60 dark:border-rose-900/30 bg-rose-50/60 dark:bg-rose-500/5 px-3 py-2">
-          <span className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-            <span aria-hidden="true">💚</span>
-            {isEn ? 'A gentle reminder: you do not have to get every moment right.' : 'افتكر إنك مش مطالب إن كل لحظة تكون مثالية.'}
-          </span>
-          <button type="button" onClick={() => openHomeSection('parentingSupport')} className="min-h-9 rounded-xl px-3 text-xs font-black text-rose-700 dark:text-rose-200 hover:bg-rose-100/70 dark:hover:bg-rose-500/10">
-            {isEn ? 'Support for parents & children' : 'دعم الأب والأم والطفل'} {isEn ? '→' : '←'}
-          </button>
-        </div>
-
-      </div>
-
-      {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
-      <SectionToolsDrawer
-        language={lang}
-        sectionId="dashboard"
-        titleAr="أدوات الرئيسية"
-        titleEn="Dashboard tools"
-        badgeCount={state.tasks.filter((t) => !t.done).length}
-        cartItemCount={cartItemCount}
-        onOpenCart={() => navigateTo('services')}
-        quickActions={[
-          {
-            id: 'routine-shortcut',
-            icon: '✅',
-            labelAr: 'مهام اليوم',
-            labelEn: 'Daily Routine',
-            badge: state.tasks.filter((t) => !t.done).length,
-            onClick: () => navigateTo('routine'),
-          },
-          {
-            id: 'calendar-shortcut',
-            icon: '📅',
-            labelAr: 'التقويم الأسري',
-            labelEn: 'Family Calendar',
-            badge: state.events.length,
-            onClick: () => navigateTo('calendar'),
-          },
-          {
-            id: 'children-shortcut',
-            icon: '👶',
-            labelAr: 'ملفات الأطفال',
-            labelEn: 'Children Profiles',
-            badge: state.kids.length,
-            onClick: () => navigateTo('children'),
-          },
-          ...(onToggleBedtimeMode
-            ? [
-                {
-                  id: 'toggle-bedtime',
-                  icon: '🌙',
-                  labelAr: bedtimeMode ? 'إيقاف وضع النوم' : 'وضع ما قبل النوم',
-                  labelEn: bedtimeMode ? 'Exit Bedtime Mode' : 'Bedtime Mode',
-                  active: Boolean(bedtimeMode),
-                  onClick: onToggleBedtimeMode,
-                },
-              ]
-            : []),
-        ]}
-      >
-        <div className="space-y-3">
-          {onReplaySplash && (
-            <div className="border-t border-[var(--color-border)] pt-2 dark:border-[#1E3646]">
-              <button
-                type="button"
-                onClick={onReplaySplash}
-                className="min-h-[40px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-[#F8FAFC] cursor-pointer"
-              >
-                {isEn ? '✨ Replay Welcome' : '✨ شاشة الترحيب'}
-              </button>
-            </div>
-          )}
-        </div>
-      </SectionToolsDrawer>
-
       {/* Child Life Command Center — the single place to switch child and manage the day with per-child visual identity. */}
       {(() => {
         const activeKidColorId = resolveChildColorTheme(activeKid, state.kids);
@@ -2333,28 +2120,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </HomeAccordionCard>
 
-      {activeKid && (
-        <div className="scroll-mt-24 pt-1">
-          <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeVisualDiscovery
-            language={lang}
-            childName={activeKidName}
-            ageLabel={activeKidStageLabel}
-            signals={activeKidSignals}
-            onNavigate={navigateTo}
-            onCompleteActivity={completeParentChildActivity}
-          /></React.Suspense>
-        </div>
-      )}
-
-      {/* Navigation shortcuts live in the command center to avoid repeating the same destinations. */}
-
-      <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><HomeDynamicContentSection
-        child={activeKid}
-        language={lang}
-        recentRecords={activeKidRecentRecords}
-      /></React.Suspense>
-
-      {/* =====================================================================
           4. ACCORDION: TIME-AWARE PARENTING COMPASS
           ===================================================================== */}
       <HomeAccordionCard
@@ -2425,7 +2190,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   onAddSuggestedRoutineTask?.(
                     isEn ? dailyCompassWisdom.actionTaskEn : dailyCompassWisdom.actionTaskAr,
                     dailyCompassWisdom.actionTime,
-                    activeKid?.id ?? null
+                    null
                   );
                 }}
                 className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-extrabold transition-all cursor-pointer"
@@ -2433,368 +2198,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 + {isEn ? dailyCompassWisdom.actionLabelEn : dailyCompassWisdom.actionLabelAr}
               </button>
             </div>
-          </div>
-        </div>
-      </HomeAccordionCard>
-
-      {/* =====================================================================
-          5. ACCORDION: CHILD PROFILES, INTERESTS & ACTIVITIES
-          ===================================================================== */}
-      <HomeAccordionCard
-        id="home-heroes-passions-arena"
-        testId="home-heroes-passions-arena"
-        iconEmoji="🏅"
-        iconBgClass="bg-amber-500/15 text-amber-700 dark:text-amber-300"
-        title={
-          isEn
-            ? 'Child Interests & Activities'
-            : 'اهتمامات أطفالنا وأنشطتهم'
-        }
-        subtitle={
-          isEn
-            ? 'Each child’s interests and activities, based on their own profile'
-            : 'اهتمامات وأنشطة كل طفل بناءً على بيانات ملفه الفعلية'
-        }
-        badgeText={isEn ? `${state.kids.length} Child Profiles` : `${state.kids.length} ملفات أطفال`}
-        badgeClass="bg-amber-500/15 text-amber-800 dark:text-amber-300"
-        isOpen={Boolean(openAccordions.heroesArena)}
-        onToggle={() => toggleAccordion('heroesArena')}
-        isEn={isEn}
-        headerExtraAction={<button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-3 py-2 text-xs font-black text-white">{isEn ? 'Manage profiles' : 'إدارة ملفات الأطفال'}</button>}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {heroesPassionsFeed.length === 0 ? (
-            <div className="lg:col-span-3 rounded-2xl border border-dashed border-amber-500/35 bg-amber-50/40 dark:bg-[#142430] p-4 text-center space-y-3">
-              <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Add a child profile to see interests and activities grounded in your family’s real information.' : 'أضيفوا ملف طفل علشان تظهر الاهتمامات والأنشطة المرتبطة ببيانات أسرتكم الفعلية.'}</p>
-              <button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl bg-[#0d9488] px-4 py-2 text-xs font-black text-white">{isEn ? 'Add child profile' : 'إضافة ملف طفل'}</button>
-            </div>
-          ) : heroesPassionsFeed.map((hero) => (
-              <div
-                key={hero.id}
-                data-testid={`hero-passion-card-${hero.id}`}
-                className={`flex flex-col justify-between gap-3 rounded-3xl border ${hero.accentBorder} bg-gradient-to-br from-white via-white to-slate-50/80 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.34)] transition-all hover:-translate-y-0.5 hover:shadow-md dark:from-[#142430] dark:via-[#142430] dark:to-[#101D26]`}
-              >
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className={`px-2.5 py-1 rounded-xl text-[11px] font-black ${hero.accentBg}`}>
-                      {isEn ? hero.arenaBadgeEn : hero.arenaBadgeAr}
-                    </span>
-                    <span className="text-xs font-black text-[var(--color-text)] dark:text-[#F8FAFC]">
-                      {isEn ? hero.nameEn : hero.nameAr}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xs sm:text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
-                    {isEn ? hero.titleEn : hero.titleAr}
-                  </h3>
-
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">
-                    {(isEn ? hero.passionTagsEn : hero.passionTagsAr).map((tag, i, arr) => (
-                      <React.Fragment key={tag}>
-                        <span>{tag}</span>
-                        {i < arr.length - 1 && <span aria-hidden="true">·</span>}
-                      </React.Fragment>
-                    ))}
-                  </div>
-
-                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#94A3B8] leading-relaxed">
-                    {isEn ? hero.nextGoalEn : hero.nextGoalAr}
-                  </p>
-
-                  <div className="rounded-2xl border border-slate-200/75 bg-white/75 px-3.5 py-3 shadow-sm dark:border-[#29404D] dark:bg-[#0B131A]/65">
-                    <p className="text-[10px] font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-                      {isEn ? 'Profile-based information' : 'معلومات من ملف الطفل'}
-                    </p>
-                    <p className="mt-0.5 text-[11px] font-semibold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                      {hero.passionTagsAr.length > 0
-                        ? (isEn ? 'Interests are saved in this profile.' : 'الاهتمامات المعروضة مسجلة في الملف.')
-                        : (isEn ? 'Add interests to personalize activities.' : 'أضيفوا الاهتمامات لتخصيص الأنشطة.')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-1 flex flex-wrap items-center justify-between gap-2.5 border-t border-slate-100 pt-3 dark:border-[#29404D]">
-                  <button
-                    type="button"
-                    onClick={() => navigateTo('children')}
-                    className="min-h-[44px] rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2.5 text-xs font-extrabold text-amber-800 transition-all hover:bg-amber-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 active:scale-[.98] dark:text-amber-200"
-                  >
-                    {isEn ? 'Update interests' : 'تحديث الاهتمامات'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onAddSuggestedRoutineTask?.(
-                        isEn ? hero.routineTaskEn : hero.routineTaskAr,
-                        hero.routineTime,
-                        hero.kidId
-                      )
-                    }
-                    className="min-h-[44px] rounded-xl bg-[#0d9488] px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-[#0f766e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98]"
-                  >
-                    + {isEn ? 'Add Activity' : 'أضف للروتين'}
-                  </button>
-                </div>
-              </div>
-          ))}
-        </div>
-      </HomeAccordionCard>
-
-      {/* =====================================================================
-          7. ACCORDION: DAILY CARE ESSENTIALS (NUTRITION, HYDRATION & SPORTS — CHECKLIST #3)
-          ===================================================================== */}
-      <HomeAccordionCard
-        id="home-daily-essentials-hub"
-        testId="home-daily-essentials-hub"
-        iconEmoji="🌟"
-        iconBgClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
-        title={
-          isEn
-            ? `Food, water and movement for ${activeKidName}`
-            : `الأكل والماء والحركة مع ${activeKidName}`
-        }
-        subtitle={
-          isEn
-            ? 'Food, age-appropriate water tracking, and daily movement'
-            : 'أفكار للأكل، ومتابعة شرب الماء لما يكون مناسب لسن الطفل، وحركة ولعب كل يوم'
-        }
-        badgeText={`${currentWaterCups} 💧`}
-        badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
-        headerExtraAction={<button type="button" onClick={() => navigateTo('medical')} className="min-h-[40px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-800 dark:text-sky-200">{isEn ? 'Open health record' : 'فتح السجل الصحي'}</button>}
-        isOpen={Boolean(openAccordions.dailyEssentials)}
-        onToggle={() => toggleAccordion('dailyEssentials')}
-        isEn={isEn}
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* ESSENTIAL CARD 1: DAILY NUTRITION & LUNCHBOX */}
-            <MasterPatternCard
-              id="home-essential-nutrition-card"
-              testId="home-essential-nutrition-card"
-              tone="amber"
-              categoryKey="nutrition"
-              itemIdOrIndex={1}
-              darkMode={Boolean(state.darkMode)}
-              topLeftBadge={<span>{isEn ? currentNutrition.badgeEn : currentNutrition.badgeAr}</span>}
-              topRightBadge={<span>🕒 {currentNutrition.time}</span>}
-              title={isEn ? currentNutrition.titleEn : currentNutrition.titleAr}
-              metaLeft={
-                <>
-                  <span>👶 {activeKidName} · {activeKidStageLabel}</span>
-                </>
-              }
-              bodyContent={
-                <div className="space-y-2.5 pt-1">
-                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                    {isEn ? currentNutrition.descEn : currentNutrition.descAr}
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                    {[
-                      { id: 'breakfast' as const, labelAr: '🥣 الفطور', labelEn: '🥣 Breakfast' },
-                      { id: 'lunchbox' as const, labelAr: '🍱 لانش بوكس', labelEn: '🍱 Lunchbox' },
-                      { id: 'snack' as const, labelAr: '🍎 سناك', labelEn: '🍎 Snack' },
-                    ].map((slot) => {
-                      const active = selectedMealSlot === slot.id;
-                      return (
-                        <button
-                          key={slot.id}
-                          type="button"
-                          onClick={() => setSelectedMealSlot(slot.id)}
-                          className={`py-1.5 px-2 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
-                            active
-                              ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                              : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                          }`}
-                        >
-                          {isEn ? slot.labelEn : slot.labelAr}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              }
-              footerLeft={
-                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                  {isEn ? 'Healthy Meal Plan' : 'وجبة صحية متوازنة'}
-                </span>
-              }
-              footerRight={
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onAddSuggestedRoutineTask) {
-                      onAddSuggestedRoutineTask(
-                        isEn ? currentNutrition.titleEn : currentNutrition.titleAr,
-                        currentNutrition.time,
-                        activeKid?.id || null
-                      );
-                    } else {
-                      navigateTo('routine');
-                    }
-                  }}
-                  className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer"
-                >
-                  + {isEn ? 'Add to Routine' : 'أضف للروتين'}
-                </button>
-              }
-            />
-
-            {/* Water logging is hidden for infants under 6 months and when age is unknown. */}
-            {activeKid?.birth && activeKidAge && activeKidAge.months >= 6 && (
-              <MasterPatternCard
-                id="home-essential-hydration-card"
-                testId="home-essential-hydration-card"
-                tone="sky"
-                categoryKey="medical"
-                itemIdOrIndex={2}
-                darkMode={Boolean(state.darkMode)}
-                topLeftBadge={<span>💧 {isEn ? 'Water log' : 'تسجيل شرب الماء'}</span>}
-                topRightBadge={<span>{currentWaterCups} {isEn ? 'logged' : 'مرات مسجلة'}</span>}
-                title={isEn ? `Water servings logged for ${activeKidName}` : `مرات تقديم الماء لـ ${activeKidName}`}
-                metaLeft={<span>{isEn ? 'A record, not a daily target' : 'للمتابعة فقط، مش هدف لازم توصلوله'}</span>}
-                bodyContent={
-                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                    {isEn
-                      ? 'Record water servings offered during the day. Needs vary with age, food, weather and health; follow your child’s clinician for individual guidance.'
-                      : 'سجلوا كل مرة قدمتوا فيها ماء خلال اليوم. احتياج الطفل بيختلف حسب سنه وأكله والجو وحالته الصحية؛ اسألوا طبيبه لو محتاجين توجيه.'}
-                  </p>
-                }
-                footerLeft={
-                  <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {currentWaterCups} {isEn ? 'servings today' : 'مرات اليوم'}
-                  </span>
-                }
-                footerRight={
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
-                      onClick={() => handleAdjustWater(-1)}
-                      aria-label={isEn ? 'Decrease water log' : 'تقليل عدد مرات تسجيل الماء'}
-                      className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      data-testid="home-hydration-add-cup-btn"
-                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
-                      onClick={() => handleAdjustWater(1)}
-                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
-                    >
-                      + {savingDashboardActions[`${activeKidId}:hydration`] ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Log water' : 'سجلوا مرة 💧')}
-                    </button>
-                  </div>
-                }
-              />
-            )}
-
-            {/* ESSENTIAL CARD 3: PHYSICAL SPORTS & ACTIVITY */}
-            <MasterPatternCard
-              id="home-essential-sports-card"
-              testId="home-essential-sports-card"
-              tone="teal"
-              categoryKey="sports"
-              itemIdOrIndex={3}
-              darkMode={Boolean(state.darkMode)}
-              topLeftBadge={<span>{isEn ? currentSport.badgeEn : currentSport.badgeAr}</span>}
-              topRightBadge={<span>🕒 {currentSport.time}</span>}
-              title={isEn ? currentSport.titleEn : currentSport.titleAr}
-              metaLeft={
-                <>
-                  <span>👶 {activeKidName}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{isEn ? 'Movement & Play' : 'الحركة واللعب'}</span>
-                </>
-              }
-              bodyContent={
-                <div className="space-y-2.5 pt-1">
-                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
-                    {isEn ? currentSport.descEn : currentSport.descAr}
-                  </p>
-
-                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                    {[
-                      { id: 'outdoor' as const, labelAr: '⚽ لعب بره', labelEn: '⚽ Outdoor' },
-                      { id: 'balance' as const, labelAr: '🧘‍♂️ توازن', labelEn: '🧘‍♂️ Balance' },
-                      { id: 'cardio' as const, labelAr: '🏃‍♂️ حركة ونشاط', labelEn: '🏃‍♂️ Cardio' },
-                    ].map((act) => {
-                      const active = selectedSportSlot === act.id;
-                      return (
-                        <button
-                          key={act.id}
-                          type="button"
-                          onClick={() => setSelectedSportSlot(act.id)}
-                          className={`py-1.5 px-2 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
-                            active
-                              ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
-                              : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
-                          }`}
-                        >
-                          {isEn ? act.labelEn : act.labelAr}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              }
-              footerLeft={
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onAddSuggestedRoutineTask) {
-                      onAddSuggestedRoutineTask(
-                        isEn ? currentSport.titleEn : currentSport.titleAr,
-                        currentSport.time,
-                        activeKid?.id || null
-                      );
-                    } else {
-                      navigateTo('routine');
-                    }
-                  }}
-                  className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
-                >
-                  + {isEn ? 'Schedule in Routine' : 'جدولة في الروتين'}
-                </button>
-              }
-              footerRight={
-                <button
-                  type="button"
-                  data-testid="home-sports-complete-btn"
-                  disabled={isSportDoneToday || isSportSaving}
-                  onClick={() => {
-                    void runDashboardSave(sportActionKey, 'sports', isEn ? currentSport.titleEn : currentSport.titleAr, {
-                      dashboardKind: 'sports',
-                      activityId: selectedSportSlot,
-                    }, () => {
-                      setCompletedSportByKid((prev) => ({ ...prev, [activeKidId]: true }));
-                      onShowToast?.(
-                        isEn
-                          ? `🏅 ${activeKidName}’s activity was saved for today ✓`
-                          : `🏅 تم حفظ نشاط ${activeKidName} الرياضي اليوم ✓`
-                      );
-                    });
-                  }}
-                  className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
-                    isSportDoneToday
-                      ? 'bg-emerald-600 text-white shadow-2xs'
-                      : 'bg-[#FF8C61] hover:bg-[#e86a3d] text-white'
-                  }`}
-                >
-                  {isSportSaving
-                    ? isEn
-                      ? 'Saving…'
-                      : 'جارٍ الحفظ…'
-                    : isSportDoneToday
-                    ? isEn
-                      ? '✓ Completed'
-                      : '✓ تم التمرين'
-                    : isEn
-                    ? 'Mark Done 🏅'
-                    : 'إتمام التمرين 🏅'}
-                </button>
-              }
-            />
           </div>
         </div>
       </HomeAccordionCard>
@@ -2814,21 +2217,21 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         testId="home-parenting-support-center"
         iconEmoji="💚"
         iconBgClass="bg-rose-500/15 text-rose-700 dark:text-rose-300"
-        title={isEn ? 'Family Wellbeing & Parenting Support' : 'مساعدة للأسرة في المشاعر والتربية'}
+        title={isEn ? 'Support for the Whole Family' : 'دعم ومساندة للأسرة كلها'}
         subtitle={
           isEn
             ? 'Practical support for parents, individual child check-ins and everyday situations'
-            : 'مساندة للأب والأم، ومتابعة مشاعر كل طفل، وخطوات عملية للمواقف اليومية'
+            : 'رسائل وإرشادات بسيطة للأب والأم، وأفكار تساعد الأسرة في المواقف اليومية'
         }
         badgeText={isEn ? 'Parents + Each Child' : 'البيت + كل طفل'}
-        headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Parent support messages' : 'رسائل دعم الوالدين'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
+        headerExtraAction={<div className="flex flex-wrap gap-2"><button type="button" onClick={() => navigateTo('notifications')} className="min-h-[40px] rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-800 dark:text-rose-200">{isEn ? 'Family messages' : 'رسائل الأسرة'}</button><button type="button" onClick={() => navigateTo('children')} className="min-h-[40px] rounded-xl border border-teal-500/30 bg-teal-500/10 px-3 py-2 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Child profiles' : 'ملفات الأطفال'}</button></div>}
         isOpen={Boolean(openAccordions.parentingSupport)}
         onToggle={() => toggleAccordion('parentingSupport')}
         isEn={isEn}
       >
         <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><ParentingSupportCenter
           kids={state.kids}
-          initialKidId={activeKid?.id ?? null}
+          initialKidId={null}
           hideChildSelector={true}
           onActiveKidChange={(kidId) => {
             const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
@@ -3035,11 +2438,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           /></React.Suspense>
         </div>
       </HomeAccordionCard>
-
-      {/* =====================================================================
-          13. ACCORDION: HORIZONTAL SCROLLABLE IMAGE GALLERY (CHECKLIST #3 & #12B)
-          ===================================================================== */}
-
 
       {/* =====================================================================
           14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
