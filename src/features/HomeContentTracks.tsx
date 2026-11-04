@@ -70,8 +70,8 @@ const CONTENT_TRACKS: ContentTrack[] = [
     id: 'wellbeing',
     icon: HeartHandshake,
     titleAr: 'المشاعر والدعم',
-    titleEn: 'Emotional wellbeing',
-    descriptionAr: 'مساندة الوالدين ومشاعر كل طفل',
+    titleEn: 'Feelings & support',
+    descriptionAr: 'مساعدة للأهل وفهم مشاعر الطفل',
     descriptionEn: 'Parent support and each child’s feelings',
     nextStepAr: 'تابع مشاعر طفلك',
     nextStepEn: 'Check in on feelings',
@@ -81,9 +81,9 @@ const CONTENT_TRACKS: ContentTrack[] = [
     id: 'values',
     icon: Sparkles,
     titleAr: 'القيم والعادات',
-    titleEn: 'Values & character',
-    descriptionAr: 'خطوات يومية للرحمة والاحترام والمسؤولية',
-    descriptionEn: 'Everyday kindness, respect and responsibility',
+    titleEn: 'Good habits & values',
+    descriptionAr: 'عادات بسيطة للرحمة والاحترام وتحمل المسؤولية',
+    descriptionEn: 'Simple ways to teach kindness, respect and responsibility',
     nextStepAr: 'اختر عادة نبنيها',
     nextStepEn: 'Choose a habit to build',
     destination: { kind: 'section', section: 'valuesTrack' },
@@ -119,15 +119,15 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 id="home-content-tracks-heading" className="text-sm font-black text-[var(--color-text)] dark:text-white">
-            {isEn ? 'Your family’s six growth tracks' : 'مسارات نكبر الستة'}
+            {isEn ? 'Everything that helps your child grow' : 'كل اللي يهم طفلك'}
           </h2>
           <p className="mt-1 text-[10px] font-extrabold tracking-wide text-teal-700 dark:text-teal-300">
-            {isEn ? 'Understand → Log → Follow → Understand better → Take action' : 'اعرف ← سجّل ← تابع ← افهم ← اتصرف'}
+            {isEn ? 'Notice → Save → Follow → Try a helpful step' : 'لاحظ ← سجّل ← تابع ← جرّب خطوة مفيدة'}
           </p>
           <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
             {isEn
               ? `One connected journey, starting with what ${childName} needs today.`
-              : `مسارات مترابطة تبدأ من احتياج ${childName} النهارده.`}
+              : `خطوات بسيطة تساعد ${childName}، ونبدأ باللي محتاجه النهارده.`}
           </p>
         </div>
         <span className="shrink-0 rounded-full border border-teal-500/15 bg-teal-500/10 px-3 py-1.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">
@@ -137,7 +137,7 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
 
       <div data-testid="family-growth-map" className="mb-4 rounded-2xl border border-teal-500/15 bg-gradient-to-r from-teal-50 via-white to-sky-50/80 p-3 dark:from-[#102D32] dark:via-[#142430] dark:to-[#152C3C]">
         <div className="flex items-center justify-between gap-2">
-          <p className="text-[10px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How the six tracks work together' : 'إزاي مسارات نكبر بتكمل بعض؟'}</p>
+          <p className="text-[10px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How these parts help your family' : 'إزاي نكبر بيساعد أسرتك؟'}</p>
           <span className="text-lg" aria-hidden="true">🧭</span>
         </div>
         <div className="mt-2.5 grid grid-cols-5 gap-1">
