@@ -1,16 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  Area,
-  CartesianGrid,
-  ComposedChart,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import {
   ChildProfile,
   LanguageCode,
   calculateChildAge,
@@ -39,8 +28,7 @@ export interface ChildGrowthChartProps {
 }
 
 /**
- * Generates a realistic, chronologically ordered growth series anchored to the child's
- * actual `growthHeightCm`, `growthWeightKg`, and birth date from the profile state.
+ * Returns only the latest measurements explicitly saved in the child profile.
  */
 export function buildChildGrowthTimeline(
   child: ChildProfile,
@@ -79,24 +67,17 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
   language,
   darkMode = false,
   initialSelectedChildId,
-  compact = false,
   onEditChildGrowth,
 }) => {
   const isEn = language === 'en';
   const [selectedChildId, setSelectedChildId] = useState<number>(
     initialSelectedChildId || kids[0]?.id || 0
   );
-  const [metricView, setMetricView] = useState<'both' | 'height' | 'weight'>('both');
 
   const activeChild = useMemo(
     () => kids.find((k) => k.id === selectedChildId) || kids[0] || null,
     [kids, selectedChildId]
   );
-
-  const chartData = useMemo(() => {
-    if (!activeChild) return [];
-    return buildChildGrowthTimeline(activeChild, language);
-  }, [activeChild, language]);
 
   if (!activeChild) {
     return null;
@@ -177,48 +158,7 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
             </div>
           )}
 
-          <div
-            role="group"
-            aria-label={isEn ? 'Growth Metric Filter' : 'تصفية مؤشر النمو'}
-            className="inline-flex items-center gap-1 p-1 rounded-2xl bg-[var(--color-control-muted)] dark:bg-[#0B131A] border border-[var(--color-border)] dark:border-[#1E3646]"
-          >
-            <button
-              type="button"
-              onClick={() => setMetricView('both')}
-              aria-pressed={metricView === 'both'}
-              className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                metricView === 'both'
-                  ? 'bg-emerald-600 text-white shadow-2xs'
-                  : 'text-[var(--color-muted)] dark:text-[#94A3B8] hover:text-[var(--color-text)]'
-              }`}
-            >
-              {isEn ? 'Both' : 'الطول والوزن معاً'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setMetricView('height')}
-              aria-pressed={metricView === 'height'}
-              className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                metricView === 'height'
-                  ? 'bg-[#0d9488] text-white shadow-2xs'
-                  : 'text-[var(--color-muted)] dark:text-[#94A3B8] hover:text-[var(--color-text)]'
-              }`}
-            >
-              📏 {isEn ? 'Height (cm)' : 'الطول (سم)'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setMetricView('weight')}
-              aria-pressed={metricView === 'weight'}
-              className={`min-h-[34px] px-3 py-1 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                metricView === 'weight'
-                  ? 'bg-[#EA580C] text-white shadow-2xs'
-                  : 'text-[var(--color-muted)] dark:text-[#94A3B8] hover:text-[var(--color-text)]'
-              }`}
-            >
-              📊 {isEn ? 'Weight (kg)' : 'الوزن (كجم)'}
-            </button>
-          </div>
+>
         </div>
       </div>
 
