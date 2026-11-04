@@ -3716,6 +3716,7 @@ describe('Homepage learning and values track coverage', () => {
     assert.ok(tracksSrc.includes("destination: { kind: 'section', section: 'sportsTrack' }"));
     assert.ok(tracksSrc.includes('لاحظ ← سجّل ← تابع ← جرّب خطوة مفيدة'));
     assert.ok(homeSrc.includes("sportsTrack: 'home-essential-sports-card'"));
+    assert.ok(homeSrc.includes("const accordionKey = key === 'sportsTrack' ? 'dailyEssentials' : key"));
     assert.ok(homeSrc.includes("key === 'parentingSupport' || key === 'valuesTrack' || key === 'dailyEssentials' || key === 'learningTrack' || key === 'sportsTrack'"));
     assert.ok(learningSrc.includes('min-h-[44px]'));
   });
