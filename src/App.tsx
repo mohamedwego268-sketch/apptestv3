@@ -2397,6 +2397,13 @@ export default function App() {
                   );
                 }}
                 onToggleRoutineTask={handleToggleTask}
+                onUpdateRoutineTaskOwner={(taskId, owner) => {
+                  setState((prev) => ({
+                    ...prev,
+                    tasks: prev.tasks.map((task) => task.id === taskId ? { ...task, owner } : task),
+                  }));
+                  showToast(lang === 'en' ? 'Task responsibility updated.' : 'تم تحديث المسؤول عن المهمة.');
+                }}
                 onShowToast={showToast}
                 bedtimeMode={bedtimeMode}
                 onToggleBedtimeMode={handleToggleBedtimeMode}
