@@ -802,7 +802,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-indigo-500/12 text-2xl">🤝</span>
           <div className="min-w-0">
             <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
-              {isEn ? 'Family Communication & Bonding Rituals' : 'التواصل الأسري وطقوس الترابط اليومية'}
+              {isEn ? 'Family Time Together' : 'وقت حلو يجمع الأسرة'}
             </h3>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
               {isEn
@@ -858,7 +858,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             }
             className="min-h-[44px] rounded-xl bg-indigo-700 px-3.5 py-2 text-xs font-extrabold text-white hover:bg-indigo-800 transition-colors cursor-pointer"
           >
-            + {isEn ? 'Schedule bonding ritual in routine' : 'أضف طقس الترابط لروتين الأسرة'}
+            + {isEn ? 'Add family time to routine' : 'ضيفوا وقتكم الحلو لروتين الأسرة'}
           </button>
         </div>
       </section>
