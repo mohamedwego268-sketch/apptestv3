@@ -538,7 +538,8 @@ export function rankDynamicContent(
         ...signals.hobbies,
         ...signals.sports,
       ]);
-      const topicMatch = signals.recentTopics.includes(normalizeSignal(item.topic));
+      const normalizedTopic = normalizeSignal(item.topic);
+      const topicMatch = signals.recentTopics.some((topic) => normalizeSignal(topic) === normalizedTopic);
       const featuredBoost = item.is_featured ? 2 : 0;
       const score =
         1 +

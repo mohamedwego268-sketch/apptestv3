@@ -567,7 +567,7 @@ export const InnerScreenTopBar: React.FC<InnerScreenTopBarProps> = ({
 };
 
 interface SectionSkeletonLoaderProps {
-  section: 'services' | 'medical' | 'community';
+  section: string;
   language: LanguageCode;
 }
 
@@ -846,9 +846,13 @@ export const SectionSkeletonLoader: React.FC<SectionSkeletonLoaderProps> = ({
       ? isEn
         ? 'Loading Verified Pediatricians & Records...'
         : 'جاري تجهيز أطباء الأطفال وسجل متابعة النمو...'
+      : section === 'community'
+      ? isEn
+        ? 'Loading Parents Community Discussions...'
+        : 'جاري تجهيز أحدث تجارب ونقاشات مجتمع الآباء والأمهات...'
       : isEn
-      ? 'Loading Parents Community Discussions...'
-      : 'جاري تجهيز أحدث تجارب ونقاشات مجتمع الآباء والأمهات...';
+      ? 'Preparing this section...'
+      : 'جاري تجهيز القسم...';
 
   const cardCount = section === 'community' ? 4 : 6;
 

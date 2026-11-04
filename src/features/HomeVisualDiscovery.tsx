@@ -7,6 +7,7 @@ import { InternalVideoFeed } from '../components/InternalVideoFeed';
 import { ParentChildActivityGuide, type GuidedActivity } from './ParentChildActivityGuide';
 
 type HomeVisualSignals = ReturnType<typeof extractProfileSignals>;
+type HomeSectionKey = 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack';
 
 interface HomeVisualDiscoveryProps {
   language: LanguageCode;
@@ -193,7 +194,7 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
         const keywordMatches = story.keywords.filter((keyword) =>
           profileWords.some((word) => word.includes(normalize(keyword)) || normalize(keyword).includes(word))
         ).length;
-        const recentPenalty = recentTopics.includes(story.topic) ? 2 : 0;
+        const recentPenalty = recentTopics.some((topic) => normalize(topic) === normalize(story.topic)) ? 2 : 0;
         const titlePenalty = recentTitles.some((title) =>
           story.keywords.some((keyword) => title.includes(normalize(keyword)))
         ) ? 2 : 0;
