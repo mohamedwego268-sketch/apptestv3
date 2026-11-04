@@ -46,6 +46,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const [recordType, setRecordType] = useState<ChildLifeRecordType>('daily_note');
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
+  const [occurredAt, setOccurredAt] = useState(() => new Date().toISOString().slice(0, 10));
+  const [heightCm, setHeightCm] = useState('');
+  const [weightKg, setWeightKg] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +79,10 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validChildId || typeof childId !== 'string' || !title.trim()) return;
+    if (recordType === 'growth_measurement' && !(Number(heightCm) > 0 || Number(weightKg) > 0)) {
+      setError(isEn ? 'Enter a measured height or weight.' : 'سجّل الطول أو الوزن الفعلي على الأقل.');
+      return;
+    }
     setSaving(true);
     setError(null);
     const result = await createChildLifeRecord({
@@ -83,6 +90,11 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
       recordType,
       title: title.trim(),
       notes: notes.trim(),
+      occurredAt: new Date(`${occurredAt}T12:00:00`).toISOString(),
+      details: recordType === 'growth_measurement' ? {
+        ...(Number(heightCm) > 0 ? { heightCm: Number(heightCm) } : {}),
+        ...(Number(weightKg) > 0 ? { weightKg: Number(weightKg) } : {}),
+      } : {},
     });
     setSaving(false);
     if (result.error) {
@@ -91,6 +103,9 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
     }
     setTitle('');
     setNotes('');
+    setHeightCm('');
+    setWeightKg('');
+    setOccurredAt(new Date().toISOString().slice(0, 10));
     await refresh();
   };
 
@@ -119,8 +134,10 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                   {CHILD_LIFE_RECORD_TYPES.map((type) => <option key={type} value={type}>{isEn ? LABELS[type].en : LABELS[type].ar}</option>)}
                 </select>
                 <input value={title} onChange={(event) => setTitle(event.target.value)} required maxLength={160} placeholder={isEn ? 'Record title' : 'عنوان التسجيل'} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm" />
+                <label className="flex flex-col gap-1 text-[11px] font-bold text-[var(--color-muted)]"><span>{isEn ? 'Date of this event' : 'تاريخ حدوث التسجيل'}</span><input type="date" value={occurredAt} max={new Date().toISOString().slice(0, 10)} onChange={(event) => setOccurredAt(event.target.value)} required className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm text-[var(--color-text)]" /></label>
+                {recordType === 'growth_measurement' && <div className="sm:col-span-2 grid grid-cols-2 gap-2 rounded-xl border border-teal-200 dark:border-teal-900 bg-teal-50/60 dark:bg-teal-950/20 p-3"><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Measured height (cm)' : 'الطول المقاس (سم)'}</span><input type="number" min="1" max="250" step="0.1" inputMode="decimal" value={heightCm} onChange={(event) => setHeightCm(event.target.value)} placeholder={isEn ? 'e.g. 102.5' : 'مثال: 102.5'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><label className="flex flex-col gap-1 text-[11px] font-bold text-teal-800 dark:text-teal-200"><span>{isEn ? 'Measured weight (kg)' : 'الوزن المقاس (كجم)'}</span><input type="number" min="0.1" max="200" step="0.1" inputMode="decimal" value={weightKg} onChange={(event) => setWeightKg(event.target.value)} placeholder={isEn ? 'e.g. 16.2' : 'مثال: 16.2'} className="min-h-11 rounded-lg border border-teal-200 dark:border-teal-900 bg-white dark:bg-[#0D1B26] px-3 text-sm" /></label><p className="col-span-2 text-[10px] leading-5 text-teal-800/80 dark:text-teal-200/80">{isEn ? 'Enter values from an actual measurement. Missing values are not estimated.' : 'أدخل القيم من قياس فعلي. لن يتم تقدير أي قيمة غير مسجلة.'}</p></div>}
                 <textarea value={notes} onChange={(event) => setNotes(event.target.value)} maxLength={4000} rows={2} placeholder={isEn ? 'Notes and details (optional)' : 'ملاحظات وتفاصيل (اختياري)'} className="sm:col-span-2 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 py-2 text-sm" />
-                <button disabled={saving || !title.trim()} type="submit" className="sm:col-span-2 min-h-11 rounded-xl bg-teal-600 text-white text-sm font-extrabold disabled:opacity-50">
+                <button disabled={saving || !title.trim() || (recordType === 'growth_measurement' && !(Number(heightCm) > 0 || Number(weightKg) > 0))} type="submit" className="sm:col-span-2 min-h-11 rounded-xl bg-teal-600 text-white text-sm font-extrabold disabled:opacity-50">
                   {saving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Save to child timeline' : 'حفظ في سجل الطفل')}
                 </button>
               </form>
@@ -151,6 +168,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                         <time className="text-[11px] text-[var(--color-muted)]" dateTime={record.occurred_at}>{new Date(record.occurred_at).toLocaleString(isEn ? 'en' : 'ar')}</time>
                       </div>
                       <h4 className="mt-1 text-sm font-bold text-[var(--color-text)] dark:text-[#F8FAFC]">{record.title}</h4>
+                      {record.record_type === 'growth_measurement' && (Number(record.details?.heightCm) > 0 || Number(record.details?.weightKg) > 0) && <div className="mt-2 flex flex-wrap gap-2">{Number(record.details?.heightCm) > 0 && <span dir="ltr" className="rounded-lg bg-teal-50 dark:bg-teal-950/30 px-2.5 py-1 text-xs font-extrabold text-teal-800 dark:text-teal-200">📏 {Number(record.details.heightCm)} cm</span>}{Number(record.details?.weightKg) > 0 && <span dir="ltr" className="rounded-lg bg-orange-50 dark:bg-orange-950/30 px-2.5 py-1 text-xs font-extrabold text-orange-800 dark:text-orange-200">⚖️ {Number(record.details.weightKg)} kg</span>}</div>}
                       {record.notes && <p className="mt-1 text-xs leading-6 whitespace-pre-wrap text-[var(--color-muted)]">{record.notes}</p>}
                     </article>
                   ))}
