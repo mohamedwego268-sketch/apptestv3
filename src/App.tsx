@@ -2558,12 +2558,20 @@ export default function App() {
                     const appointmentKid = childId === null ? null : state.kids.find((kid) => kid.id === childId);
                     const remoteChildId = appointmentKid?.remoteId;
                     if (!isPreviewMode && typeof remoteChildId === 'string' && isValidUuid(remoteChildId)) {
+                      const timeParts = time.match(/(\d{1,2}):(\d{2})/);
+                      let appointmentHour = timeParts ? Number(timeParts[1]) : 12;
+                      const appointmentMinute = timeParts ? Number(timeParts[2]) : 0;
+                      if (/م|pm/i.test(time) && appointmentHour < 12) appointmentHour += 12;
+                      if (/ص|am/i.test(time) && appointmentHour === 12) appointmentHour = 0;
+                      const appointmentDate = new Date(
+                        `${date}T${String(appointmentHour).padStart(2, '0')}:${String(appointmentMinute).padStart(2, '0')}:00`
+                      );
                       const savedRecord = await createChildLifeRecord({
                         childId: remoteChildId,
                         recordType: 'medical_event',
                         title: `طلب موعد طبي: ${doctorName}`,
                         notes: note,
-                        occurredAt: new Date(`${date}T${time || '12:00'}:00`).toISOString(),
+                        occurredAt: Number.isNaN(appointmentDate.getTime()) ? new Date().toISOString() : appointmentDate.toISOString(),
                         details: {
                           source: 'medical_appointment_request',
                           doctorName,
