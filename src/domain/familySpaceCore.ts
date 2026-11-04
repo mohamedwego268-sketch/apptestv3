@@ -4197,6 +4197,12 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           : seedKid?.voiceMoments
           ? structuredClone(seedKid.voiceMoments)
           : [];
+        const normalizedProfileDetails =
+          k.profileDetails && typeof k.profileDetails === 'object' && !Array.isArray(k.profileDetails)
+            ? (k.profileDetails as ChildProfileDetails)
+            : seedKid?.profileDetails
+            ? structuredClone(seedKid.profileDetails)
+            : undefined;
         return {
           id: kidId,
           ...(remoteId !== undefined ? { remoteId } : {}),
@@ -4204,6 +4210,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           gender,
           birth: typeof k.birth === 'string' ? k.birth : '',
           interests: typeof k.interests === 'string' ? k.interests : '',
+          ...(normalizedProfileDetails ? { profileDetails: normalizedProfileDetails } : {}),
           emoji: typeof k.emoji === 'string' && k.emoji ? k.emoji : gender === 'girl' ? '👧🏻' : '👦🏻',
           bloodType: typeof k.bloodType === 'string' ? k.bloodType : undefined,
           vaccinationsNote: typeof k.vaccinationsNote === 'string' ? k.vaccinationsNote : undefined,

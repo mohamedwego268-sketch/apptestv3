@@ -512,7 +512,13 @@ export default function App() {
                 gender: child.gender === 'girl' ? ('girl' as const) : ('boy' as const),
                 birth: child.birth || '2022-05-14',
                 interests: child.interests || '',
-                emoji: child.gender === 'girl' ? '👧🏻' : '👦🏻',
+                profileDetails: child.profile_details || {},
+                vaccinationsNote: child.vaccinations_note || undefined,
+                growthHeightCm:
+                  typeof child.growth_height_cm === 'number' ? child.growth_height_cm : undefined,
+                growthWeightKg:
+                  typeof child.growth_weight_kg === 'number' ? child.growth_weight_kg : undefined,
+                emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
                 avatarTheme:
                   child.avatar_theme || (child.gender === 'girl' ? 'artist' : 'astronaut'),
                 useIllustratedAvatar: true,
@@ -1089,6 +1095,7 @@ export default function App() {
       null;
 
     if (verifiedFamilyUuid) {
+      const existingKidObj = state.kids.find((k) => k.id === targetLocalId);
       void saveOnboardingChildrenToSupabase({
         familyId: verifiedFamilyUuid,
         childrenList: [
@@ -1100,6 +1107,10 @@ export default function App() {
             gender,
             interests,
             avatarTheme,
+            profileDetails: existingKidObj?.profileDetails || {},
+            vaccinationsNote: vaccinationsNote || existingKidObj?.vaccinationsNote,
+            growthHeightCm: growthHeightCm ?? existingKidObj?.growthHeightCm,
+            growthWeightKg: growthWeightKg ?? existingKidObj?.growthWeightKg,
           },
         ],
       }).then((saveRes) => {

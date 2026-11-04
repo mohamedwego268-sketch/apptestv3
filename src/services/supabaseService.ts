@@ -283,11 +283,14 @@ function isUndefinedColumnError(err: { code?: string; message?: string } | null 
   );
 }
 
+const inFlightFamilyContextRequests = new WeakMap<object, Promise<VerifiedSupabaseFamilyContext>>();
+
 /**
  * Strictly resolves an authenticated Supabase Auth session AND verifies the user's real
  * `family_id` UUID directly from database membership (`public.users`), NEVER trusting
  * `localStorage`, `SHARED_FAMILY_ID = 1`, or unverified `user_metadata.family_id`.
  * Never marks `emailVerified` or `phoneVerified` based on database sync alone.
+ * Deduplicates concurrent in-flight requests on the same client instance.
  */
 export async function resolveVerifiedFamilyContext(
   customClient?: SupabaseClient | null
@@ -307,6 +310,13 @@ export async function resolveVerifiedFamilyContext(
     };
   }
 
+  const clientKey = activeClient as unknown as object;
+  const existingInFlight = inFlightFamilyContextRequests.get(clientKey);
+  if (existingInFlight) {
+    return existingInFlight;
+  }
+
+  const requestPromise = (async (): Promise<VerifiedSupabaseFamilyContext> => {
   try {
     const { data: sessionRes, error: sessionErr } = await withSupabaseTimeout(
       activeClient.auth.getSession(),
@@ -459,6 +469,12 @@ export async function resolveVerifiedFamilyContext(
       error: err instanceof Error ? err.message : 'Failed to verify authenticated family context.',
     };
   }
+  })().finally(() => {
+    inFlightFamilyContextRequests.delete(clientKey);
+  });
+
+  inFlightFamilyContextRequests.set(clientKey, requestPromise);
+  return requestPromise;
 }
 
 /**
@@ -475,7 +491,8 @@ export async function ensureSharedFamilyRecordInSupabase(
     currency?: CurrencyCode;
     activeParent?: 'mother' | 'father';
   },
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  preverifiedContext?: VerifiedSupabaseFamilyContext | null
 ): Promise<{ family: Family; synced: boolean; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const rawFamilyId = params?.familyId ?? SHARED_FAMILY_ID;
@@ -496,7 +513,7 @@ export async function ensureSharedFamilyRecordInSupabase(
     return { family: fallbackRecord, synced: false, error: 'Supabase client is not initialized.' };
   }
 
-  const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+  const verifiedCtx = preverifiedContext ?? await resolveVerifiedFamilyContext(activeClient);
   if (!verifiedCtx.authenticated || !verifiedCtx.userId) {
     return {
       family: fallbackRecord,
@@ -545,13 +562,23 @@ export async function ensureSharedFamilyRecordInSupabase(
     // policy for browser clients, so upsert would attempt INSERT and fail RLS even when
     // the family row already exists.
     const updatePayload: Record<string, unknown> = {
-      family_name: verifiedFamilyRecord.family_name,
-      country: verifiedFamilyRecord.country,
-      city: verifiedFamilyRecord.city,
-      currency: verifiedFamilyRecord.currency,
-      active_parent: verifiedFamilyRecord.active_parent,
       updated_at: verifiedFamilyRecord.updated_at,
     };
+    if (typeof params?.familyName === 'string' && params.familyName.trim()) {
+      updatePayload.family_name = verifiedFamilyRecord.family_name;
+    }
+    if (params?.country !== undefined) {
+      updatePayload.country = verifiedFamilyRecord.country;
+    }
+    if (typeof params?.city === 'string' && params.city.trim()) {
+      updatePayload.city = verifiedFamilyRecord.city;
+    }
+    if (params?.currency !== undefined) {
+      updatePayload.currency = verifiedFamilyRecord.currency;
+    }
+    if (params?.activeParent !== undefined) {
+      updatePayload.active_parent = verifiedFamilyRecord.active_parent;
+    }
 
     let updateRes = await withSupabaseRetry(() =>
       activeClient
@@ -612,7 +639,8 @@ export async function ensureSharedFamilyRecordInSupabase(
  */
 export async function fetchUsersFromSupabase(
   familyId: string | number = SHARED_FAMILY_ID,
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  preverifiedContext?: VerifiedSupabaseFamilyContext | null
 ): Promise<{
   data: User[];
   resolvedFamilyId: string | number;
@@ -628,7 +656,7 @@ export async function fetchUsersFromSupabase(
   }
 
   try {
-    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    const verifiedCtx = preverifiedContext ?? await resolveVerifiedFamilyContext(activeClient);
     if (
       isValidUuid(familyId) &&
       isValidUuid(verifiedCtx.verifiedFamilyId) &&
@@ -754,7 +782,8 @@ export function isDefaultDemoSeedState(state: FamilySpaceState): boolean {
 
 export async function fetchChildrenFromSupabase(
   familyId: string | number = SHARED_FAMILY_ID,
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  preverifiedContext?: VerifiedSupabaseFamilyContext | null
 ): Promise<{
   data: Child[];
   error: string | null;
@@ -774,7 +803,7 @@ export async function fetchChildrenFromSupabase(
       return { data: [], error: null };
     }
 
-    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    const verifiedCtx = preverifiedContext ?? await resolveVerifiedFamilyContext(activeClient);
     if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
       return {
         data: [],
@@ -1067,8 +1096,8 @@ export async function fetchFamilySpaceFromSupabase(
 
     const [usersResult, childrenResult, familiesRes, extendedFamilyRes, catalogRes, sharedStateRes, privateStateRes] =
       await Promise.all([
-        fetchUsersFromSupabase(verifiedFamilyUuid, activeClient),
-        fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient),
+        fetchUsersFromSupabase(verifiedFamilyUuid, activeClient, verifiedCtx),
+        fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient, verifiedCtx),
         withSupabaseRetry(() =>
           activeClient
             .from(SUPABASE_TABLES.FAMILIES)
@@ -1413,14 +1442,15 @@ export async function fetchFamilySpaceFromSupabase(
  */
 export async function persistFamilyWorkspaceStateToSupabase(
   state: FamilySpaceState,
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  preverifiedContext?: VerifiedSupabaseFamilyContext | null
 ): Promise<{ synced: boolean; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   if (!activeClient) return { synced: false, error: 'Supabase client is not initialized.' };
   if (isDefaultDemoSeedState(state)) return { synced: false, error: null };
 
   try {
-    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    const verifiedCtx = preverifiedContext ?? await resolveVerifiedFamilyContext(activeClient);
     const familyId = verifiedCtx.verifiedFamilyId;
     const authUserId = verifiedCtx.userId;
     const activeRole = verifiedCtx.role;
@@ -1433,11 +1463,42 @@ export async function persistFamilyWorkspaceStateToSupabase(
       return { synced: false, error: verifiedCtx.error || 'A verified parent account is required to save family workspace data.' };
     }
 
+    const localToRemoteChildMap = new Map<number, string>();
+    for (const kid of state.kids) {
+      if (typeof kid.id === 'number' && isValidUuid(kid.remoteId)) {
+        localToRemoteChildMap.set(kid.id, String(kid.remoteId).trim());
+      }
+    }
+
+    const synchronizedTasks = state.tasks.map((task) => {
+      const matchedRemoteChildId =
+        typeof task.kidId === 'number' ? localToRemoteChildMap.get(task.kidId) : undefined;
+      return matchedRemoteChildId && !isValidUuid(task.remoteChildId)
+        ? { ...task, remoteChildId: matchedRemoteChildId }
+        : task;
+    });
+
+    const synchronizedEvents = state.events.map((event) => {
+      const matchedRemoteChildId =
+        typeof event.childId === 'number' ? localToRemoteChildMap.get(event.childId) : undefined;
+      return matchedRemoteChildId && !isValidUuid(event.remoteChildId)
+        ? { ...event, remoteChildId: matchedRemoteChildId }
+        : event;
+    });
+
+    const synchronizedWishes = state.wishes.map((wish) => {
+      const matchedRemoteChildId =
+        typeof wish.kid === 'number' ? localToRemoteChildMap.get(wish.kid) : undefined;
+      return matchedRemoteChildId && !isValidUuid(wish.remoteChildId)
+        ? { ...wish, remoteChildId: matchedRemoteChildId }
+        : wish;
+    });
+
     const now = new Date().toISOString();
     const sharedPayload: Record<string, unknown> = {
-      tasks: state.tasks,
-      events: state.events,
-      wishes: state.wishes,
+      tasks: synchronizedTasks,
+      events: synchronizedEvents,
+      wishes: synchronizedWishes,
       family: state.family,
       invitations: state.invitations,
       communityState: state.communityState || {},
@@ -1586,17 +1647,26 @@ export async function syncFamilySpaceToSupabase(
       verified: verifiedCtx.emailVerified || verifiedCtx.phoneVerified,
     };
 
-    const { data: existingUsers } = await withSupabaseTimeout(
-      activeClient
-        .from(SUPABASE_TABLES.USERS)
-        .select('id')
-        .eq('auth_user_id', authUserId)
-        .limit(1)
-    );
-    const existingUserRowId =
-      Array.isArray(existingUsers) && existingUsers[0] && isValidUuid((existingUsers[0] as Record<string, unknown>).id)
-        ? String((existingUsers[0] as Record<string, unknown>).id).trim()
+    let existingUserRowId: string | null =
+      isValidUuid(verifiedCtx.userRowId)
+        ? verifiedCtx.userRowId.trim()
+        : isValidUuid(verifiedCtx.profileUserId)
+        ? verifiedCtx.profileUserId.trim()
         : null;
+
+    if (!existingUserRowId) {
+      const { data: existingUsers } = await withSupabaseTimeout(
+        activeClient
+          .from(SUPABASE_TABLES.USERS)
+          .select('id')
+          .eq('auth_user_id', authUserId)
+          .limit(1)
+      );
+      existingUserRowId =
+        Array.isArray(existingUsers) && existingUsers[0] && isValidUuid((existingUsers[0] as Record<string, unknown>).id)
+          ? String((existingUsers[0] as Record<string, unknown>).id).trim()
+          : null;
+    }
 
     let userErr: unknown = null;
     if (existingUserRowId) {
@@ -1643,6 +1713,7 @@ export async function syncFamilySpaceToSupabase(
 
     // 3. Persist non-demo children (both existing UUID children and newly added children)
     const nonDemoKids = isCanonicalThreeDemoKids(state.kids) ? [] : state.kids;
+    let stateWithSavedKids = state;
     if (nonDemoKids.length > 0) {
       const saveKidsRes = await saveOnboardingChildrenToSupabase(
         {
@@ -1656,16 +1727,37 @@ export async function syncFamilySpaceToSupabase(
             interests: kid.interests || '',
             avatarTheme: kid.avatarTheme || 'astronaut',
             profileDetails: kid.profileDetails || {},
+            vaccinationsNote: kid.vaccinationsNote,
+            growthHeightCm: kid.growthHeightCm,
+            growthWeightKg: kid.growthWeightKg,
           })),
         },
-        activeClient
+        activeClient,
+        verifiedCtx
       );
       if (!saveKidsRes.synced) {
         return false;
       }
+      if (saveKidsRes.savedChildren.length > 0) {
+        const remoteByLocalId = new Map<number, string>();
+        for (const savedChild of saveKidsRes.savedChildren) {
+          if (typeof savedChild.id === 'number' && isValidUuid(savedChild.remote_id)) {
+            remoteByLocalId.set(savedChild.id, savedChild.remote_id.trim());
+          }
+        }
+        if (remoteByLocalId.size > 0) {
+          stateWithSavedKids = {
+            ...state,
+            kids: state.kids.map((kid) => {
+              const matchedRemote = remoteByLocalId.get(kid.id);
+              return matchedRemote ? { ...kid, remoteId: matchedRemote } : kid;
+            }),
+          };
+        }
+      }
     }
 
-    const workspaceSync = await persistFamilyWorkspaceStateToSupabase(state, activeClient);
+    const workspaceSync = await persistFamilyWorkspaceStateToSupabase(stateWithSavedKids, activeClient, verifiedCtx);
     if (!workspaceSync.synced) return false;
 
     return true;
@@ -2615,14 +2707,21 @@ export async function restoreAuthenticatedAccountFromSupabase(
 
   try {
     const familyUuid = verifiedCtx.verifiedFamilyId;
+    const preloadedUserRow =
+      verifiedCtx.userRow && typeof verifiedCtx.userRow === 'object'
+        ? verifiedCtx.userRow
+        : null;
+
     const [userRes, famRes, childrenRes] = await Promise.all([
-      withSupabaseTimeout(
-        activeClient
-          .from(SUPABASE_TABLES.USERS)
-          .select('*')
-          .eq('auth_user_id', verifiedCtx.userId)
-          .limit(1)
-      ),
+      preloadedUserRow
+        ? Promise.resolve({ data: [preloadedUserRow], error: null })
+        : withSupabaseTimeout(
+            activeClient
+              .from(SUPABASE_TABLES.USERS)
+              .select('*')
+              .eq('auth_user_id', verifiedCtx.userId)
+              .limit(1)
+          ),
       withSupabaseTimeout(
         activeClient
           .from(SUPABASE_TABLES.FAMILIES)
@@ -2630,7 +2729,7 @@ export async function restoreAuthenticatedAccountFromSupabase(
           .eq('id', familyUuid)
           .limit(1)
       ),
-      fetchChildrenFromSupabase(familyUuid, activeClient),
+      fetchChildrenFromSupabase(familyUuid, activeClient, verifiedCtx),
     ]);
 
     const rawUser =
@@ -2976,6 +3075,7 @@ export async function saveOnboardingLocationToSupabase(
   const activeParent = normalizeOnboardingRoleToAccount(params.activeParent);
   const familyName = (params.familyName || '').trim() || 'أسرة أحمد ومريم — نكبر';
 
+  const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
   const res = await ensureSharedFamilyRecordInSupabase(
     {
       familyId: params.familyId || SHARED_FAMILY_ID,
@@ -2985,13 +3085,13 @@ export async function saveOnboardingLocationToSupabase(
       currency,
       activeParent,
     },
-    activeClient
+    activeClient,
+    verifiedCtx
   );
 
   // The onboarding location belongs to this parent account as well as setting the
   // initial family service area. Keep the parent's private location in its own row.
   if (res.synced && activeClient) {
-    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
     if (isValidUuid(verifiedCtx.profileUserId) && isValidUuid(verifiedCtx.verifiedFamilyId)) {
       const { error: locationError } = await withSupabaseRetry(() =>
         activeClient.from('parent_locations').upsert({
@@ -3024,6 +3124,9 @@ export interface OnboardingChildPersistenceItem {
   interests?: string;
   avatarTheme?: ChildProfile['avatarTheme'];
   profileDetails?: ChildProfileDetails;
+  vaccinationsNote?: string;
+  growthHeightCm?: number | null;
+  growthWeightKg?: number | null;
 }
 
 export interface SaveOnboardingChildrenPayload {
@@ -3039,7 +3142,8 @@ export interface SaveOnboardingChildrenPayload {
  */
 export async function saveOnboardingChildrenToSupabase(
   params: SaveOnboardingChildrenPayload,
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  preverifiedContext?: VerifiedSupabaseFamilyContext | null
 ): Promise<{ synced: boolean; savedChildren: Child[]; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   if (!params || typeof params !== 'object' || !Array.isArray(params.childrenList)) {
@@ -3097,6 +3201,14 @@ export async function saveOnboardingChildrenToSupabase(
     usedIds.add(resolvedId);
 
     const gender: 'boy' | 'girl' = item.gender === 'girl' ? 'girl' : 'boy';
+    const growthHeightCm =
+      typeof item.growthHeightCm === 'number' && Number.isFinite(item.growthHeightCm) && item.growthHeightCm > 0
+        ? item.growthHeightCm
+        : null;
+    const growthWeightKg =
+      typeof item.growthWeightKg === 'number' && Number.isFinite(item.growthWeightKg) && item.growthWeightKg > 0
+        ? item.growthWeightKg
+        : null;
     return {
       id: resolvedId,
       ...(isValidUuid(item.remoteId) ? { remote_id: item.remoteId.trim() } : {}),
@@ -3107,6 +3219,9 @@ export async function saveOnboardingChildrenToSupabase(
       emoji: gender === 'girl' ? '👧🏻' : '👦🏻',
       avatar_theme: item.avatarTheme || (gender === 'girl' ? 'artist' : 'astronaut'),
       interests: (item.interests || '').trim(),
+      vaccinations_note: typeof item.vaccinationsNote === 'string' ? item.vaccinationsNote.trim() : '',
+      growth_height_cm: growthHeightCm,
+      growth_weight_kg: growthWeightKg,
       profile_details: item.profileDetails && typeof item.profileDetails === 'object' && !Array.isArray(item.profileDetails)
         ? item.profileDetails
         : {},
@@ -3131,7 +3246,7 @@ export async function saveOnboardingChildrenToSupabase(
   }
 
   try {
-    const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
+    const verifiedCtx = preverifiedContext ?? await resolveVerifiedFamilyContext(activeClient);
     if (
       isValidUuid(targetFamilyId) &&
       isValidUuid(verifiedCtx.verifiedFamilyId) &&
@@ -3160,24 +3275,28 @@ export async function saveOnboardingChildrenToSupabase(
     }
 
     // Query existing children in DB for this family to prevent duplicate insertions on retry
-    const existingDbRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient);
-    const existingByKey = new Map<string, string>();
+    const existingDbRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient, verifiedCtx);
+    const existingByKey = new Map<string, Child>();
     for (const existingChild of existingDbRes.data) {
       if (isValidUuid(existingChild.remote_id)) {
         const nameKey = `${(existingChild.name || '').trim().toLowerCase()}::${(existingChild.birth || '').trim()}`;
-        existingByKey.set(nameKey, existingChild.remote_id.trim());
+        existingByKey.set(nameKey, existingChild);
       }
     }
 
     const fullPayload = mappedChildren.map((child) => {
       const ageInfo = calculateChildAge(child.birth, 'ar');
+      const existingRow = existingByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`);
       const matchedRemoteUuid =
         (isValidUuid(child.remote_id) && child.remote_id.trim()) ||
-        existingByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`) ||
-        undefined;
+        (existingRow && isValidUuid(existingRow.remote_id) ? existingRow.remote_id.trim() : undefined);
       if (matchedRemoteUuid) {
         child.remote_id = matchedRemoteUuid;
       }
+      const mergedProfileDetails =
+        child.profile_details && Object.keys(child.profile_details).length > 0
+          ? child.profile_details
+          : existingRow?.profile_details || {};
       const row: Record<string, unknown> = {
         family_id: verifiedFamilyUuid,
         name: child.name,
@@ -3188,7 +3307,16 @@ export async function saveOnboardingChildrenToSupabase(
         interests: child.interests || '',
         emoji: child.emoji || (child.gender === 'girl' ? '👧🏻' : '👦🏻'),
         avatar_theme: child.avatar_theme || 'astronaut',
-        profile_details: child.profile_details || {},
+        vaccinations_note: child.vaccinations_note || existingRow?.vaccinations_note || '',
+        growth_height_cm:
+          typeof child.growth_height_cm === 'number'
+            ? child.growth_height_cm
+            : existingRow?.growth_height_cm ?? null,
+        growth_weight_kg:
+          typeof child.growth_weight_kg === 'number'
+            ? child.growth_weight_kg
+            : existingRow?.growth_weight_kg ?? null,
+        profile_details: mergedProfileDetails,
       };
       if (matchedRemoteUuid) {
         row.id = matchedRemoteUuid;
@@ -3242,7 +3370,7 @@ export async function saveOnboardingChildrenToSupabase(
     if (error) {
       return { synced: false, savedChildren: mappedChildren, error: error.message };
     }
-    const verifyRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient);
+    const verifyRes = await fetchChildrenFromSupabase(verifiedFamilyUuid, activeClient, verifiedCtx);
     if (verifyRes.error) {
       return { synced: false, savedChildren: mappedChildren, error: `Write completed but read-back verification failed: ${verifyRes.error}` };
     }
@@ -3252,7 +3380,18 @@ export async function saveOnboardingChildrenToSupabase(
     const verifiedChildren = mappedChildren.map((child) => {
       const persisted = persistedByKey.get(`${child.name.trim().toLowerCase()}::${child.birth.trim()}`);
       return persisted && isValidUuid(persisted.remote_id)
-        ? { ...child, remote_id: persisted.remote_id, family_id: verifiedFamilyUuid }
+        ? {
+            ...child,
+            remote_id: persisted.remote_id,
+            family_id: verifiedFamilyUuid,
+            profile_details:
+              persisted.profile_details && Object.keys(persisted.profile_details).length > 0
+                ? persisted.profile_details
+                : child.profile_details,
+            vaccinations_note: persisted.vaccinations_note || child.vaccinations_note,
+            growth_height_cm: persisted.growth_height_cm ?? child.growth_height_cm,
+            growth_weight_kg: persisted.growth_weight_kg ?? child.growth_weight_kg,
+          }
         : child;
     });
     const synced = verifiedChildren.every((child) =>
@@ -3680,18 +3819,26 @@ export async function signInWithOAuthProviderInSupabase(
 
 /**
  * Daily child-life records used by the parent dashboard.
- * These operations always resolve the authenticated, verified family and rely on
- * the existing child_life_records RLS policies for family/child ownership.
+ * Unified with all 14 database-supported record types (`public.child_life_records.record_type`).
  */
-export type ChildLifeRecordType =
-  | 'sleep_log'
-  | 'nutrition'
-  | 'sports'
-  | 'emotional_social'
-  | 'routine'
-  | 'medical_event'
-  | 'daily_note'
-  | 'other';
+export const VALID_CHILD_LIFE_RECORD_TYPES = [
+  'sleep_log',
+  'education',
+  'nutrition',
+  'sports',
+  'routine',
+  'growth_measurement',
+  'vaccination',
+  'medical_event',
+  'milestone',
+  'hobby',
+  'emotional_social',
+  'memory',
+  'daily_note',
+  'other',
+] as const;
+
+export type ChildLifeRecordType = (typeof VALID_CHILD_LIFE_RECORD_TYPES)[number];
 
 export interface DailyChildLifeRecord {
   id: string;
@@ -3853,7 +4000,7 @@ export async function fetchRecentChildLifeRecords(
 }
 
 export async function createChildLifeRecord(params: {
-  childRemoteId: string | number;
+  childRemoteId?: string | number | null;
   recordType: ChildLifeRecordType;
   title: string;
   notes?: string;
@@ -3865,6 +4012,21 @@ export async function createChildLifeRecord(params: {
   if (!isValidUuid(params.childRemoteId)) {
     return { record: null, error: 'This child has not been saved to the family database yet.' };
   }
+  if (!(VALID_CHILD_LIFE_RECORD_TYPES as readonly string[]).includes(params.recordType)) {
+    return { record: null, error: 'نوع السجل غير مدعوم.' };
+  }
+  const cleanTitle = (params.title || '').trim().slice(0, 160);
+  if (!cleanTitle) {
+    return { record: null, error: 'عنوان السجل مطلوب قبل الحفظ.' };
+  }
+  const cleanDetails =
+    params.details && typeof params.details === 'object' && !Array.isArray(params.details)
+      ? params.details
+      : {};
+  const parsedOccurredAt = params.occurredAt ? new Date(params.occurredAt) : new Date();
+  const safeOccurredAt = Number.isNaN(parsedOccurredAt.getTime())
+    ? new Date().toISOString()
+    : parsedOccurredAt.toISOString();
 
   try {
     const verifiedCtx = await resolveVerifiedFamilyContext(activeClient);
@@ -3877,12 +4039,12 @@ export async function createChildLifeRecord(params: {
     }
     const payload = {
       family_id: verifiedCtx.verifiedFamilyId,
-      child_id: String(params.childRemoteId),
+      child_id: String(params.childRemoteId).trim(),
       record_type: params.recordType,
-      title: params.title.trim().slice(0, 160),
+      title: cleanTitle,
       notes: (params.notes || '').trim().slice(0, 2000),
-      occurred_at: params.occurredAt || new Date().toISOString(),
-      details: params.details || {},
+      occurred_at: safeOccurredAt,
+      details: cleanDetails,
       created_by: verifiedCtx.userId,
     };
     const { data, error } = await withSupabaseTimeout(

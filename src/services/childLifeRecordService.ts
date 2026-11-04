@@ -1,30 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ChildProfileDetails } from '../domain/familySpaceCore';
 import {
+  VALID_CHILD_LIFE_RECORD_TYPES,
+  type ChildLifeRecordType,
   isValidUuid,
   resolveVerifiedFamilyContext,
   supabaseClient,
   withSupabaseRetry,
 } from './supabaseService';
 
-export const CHILD_LIFE_RECORD_TYPES = [
-  'sleep_log',
-  'education',
-  'nutrition',
-  'sports',
-  'routine',
-  'growth_measurement',
-  'vaccination',
-  'medical_event',
-  'milestone',
-  'hobby',
-  'emotional_social',
-  'memory',
-  'daily_note',
-  'other',
-] as const;
-
-export type ChildLifeRecordType = (typeof CHILD_LIFE_RECORD_TYPES)[number];
+export const CHILD_LIFE_RECORD_TYPES = VALID_CHILD_LIFE_RECORD_TYPES;
+export type { ChildLifeRecordType };
 
 export interface ChildLifeRecord {
   id: string;
@@ -47,11 +33,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function normalizeOccurredAtIso(raw?: string): { valid: true; iso: string } | { valid: false; error: string } {
+  if (!raw || !raw.trim()) {
+    return { valid: true, iso: new Date().toISOString() };
+  }
+  const parsed = new Date(raw.trim());
+  if (Number.isNaN(parsed.getTime())) {
+    return { valid: false, error: 'A valid ISO timestamp is required for occurred_at.' };
+  }
+  return { valid: true, iso: parsed.toISOString() };
+}
+
 async function resolveChildScope(
   childId: string,
   client: SupabaseClient
-): Promise<{ familyId: string; userId: string } | { error: string }> {
+): Promise<{ familyId: string; userId: string; childUuid: string } | { error: string }> {
   if (!isValidUuid(childId)) return { error: 'A valid remote child UUID is required.' };
+  const cleanChildUuid = childId.trim();
   const ctx = await resolveVerifiedFamilyContext(client);
   if (!ctx.authenticated || !isValidUuid(ctx.verifiedFamilyId) || !isValidUuid(ctx.userId)) {
     return { error: ctx.error || 'A verified signed-in family session is required.' };
@@ -59,13 +57,13 @@ async function resolveChildScope(
   const { data, error } = await withSupabaseRetry(() =>
     client.from('children')
       .select('id')
-      .eq('id', childId)
+      .eq('id', cleanChildUuid)
       .eq('family_id', ctx.verifiedFamilyId)
       .maybeSingle()
   );
   if (error) return { error: error.message };
   if (!data) return { error: 'The child does not belong to the signed-in family.' };
-  return { familyId: ctx.verifiedFamilyId, userId: ctx.userId };
+  return { familyId: ctx.verifiedFamilyId, userId: ctx.userId, childUuid: cleanChildUuid };
 }
 
 function getClient(customClient?: SupabaseClient | null): SupabaseClient | null {
@@ -85,8 +83,9 @@ export async function fetchChildLifeRecords(
       client.from('child_life_records')
         .select('*')
         .eq('family_id', scope.familyId)
-        .eq('child_id', childId)
+        .eq('child_id', scope.childUuid)
         .order('occurred_at', { ascending: false })
+        .limit(250)
     );
     if (error) return { data: [], error: error.message };
     return { data: (data || []) as ChildLifeRecord[], error: null };
@@ -114,17 +113,21 @@ export async function createChildLifeRecord(
   if (input.details !== undefined && !isRecord(input.details)) {
     return { data: null, error: 'Record details must be a JSON object.' };
   }
+  const occurredCheck = normalizeOccurredAtIso(input.occurredAt);
+  if (!occurredCheck.valid) {
+    return { data: null, error: occurredCheck.error };
+  }
   try {
     const scope = await resolveChildScope(input.childId, client);
     if ('error' in scope) return { data: null, error: scope.error };
     const row = {
       family_id: scope.familyId,
-      child_id: input.childId,
+      child_id: scope.childUuid,
       record_type: input.recordType,
-      title: input.title?.trim() || '',
-      notes: input.notes?.trim() || '',
-      occurred_at: input.occurredAt || new Date().toISOString(),
-      details: (input.details || {}),
+      title: (input.title || '').trim().slice(0, 160),
+      notes: (input.notes || '').trim().slice(0, 2000),
+      occurred_at: occurredCheck.iso,
+      details: input.details || {},
       created_by: scope.userId,
     };
     const { data, error } = await withSupabaseRetry(() =>
@@ -152,20 +155,27 @@ export async function updateChildLifeRecord(
   if (patch.details !== undefined && !isRecord(patch.details)) {
     return { data: null, error: 'Record details must be a JSON object.' };
   }
+  if (patch.occurred_at !== undefined) {
+    const occurredCheck = normalizeOccurredAtIso(patch.occurred_at);
+    if (!occurredCheck.valid) {
+      return { data: null, error: occurredCheck.error };
+    }
+    patch = { ...patch, occurred_at: occurredCheck.iso };
+  }
   try {
     const scope = await resolveChildScope(childId, client);
     if ('error' in scope) return { data: null, error: scope.error };
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (patch.record_type !== undefined) updates.record_type = patch.record_type;
-    if (patch.title !== undefined) updates.title = patch.title.trim();
-    if (patch.notes !== undefined) updates.notes = patch.notes.trim();
+    if (patch.title !== undefined) updates.title = patch.title.trim().slice(0, 160);
+    if (patch.notes !== undefined) updates.notes = patch.notes.trim().slice(0, 2000);
     if (patch.occurred_at !== undefined) updates.occurred_at = patch.occurred_at;
     if (patch.details !== undefined) updates.details = patch.details;
     const { data, error } = await withSupabaseRetry(() =>
       client.from('child_life_records').update(updates)
-        .eq('id', recordId)
+        .eq('id', recordId.trim())
         .eq('family_id', scope.familyId)
-        .eq('child_id', childId)
+        .eq('child_id', scope.childUuid)
         .select('*')
         .maybeSingle()
     );

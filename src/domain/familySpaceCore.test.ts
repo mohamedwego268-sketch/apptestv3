@@ -45,8 +45,10 @@ import {
 } from '../services/OnboardingFlowController';
 import {
   SHARED_FAMILY_ID,
+  VALID_CHILD_LIFE_RECORD_TYPES,
   acceptFamilyInvitation,
   authenticateParentWithSupabase,
+  createChildLifeRecord as createDashboardChildLifeRecord,
   createFamilyPrivateMediaSignedUrl,
   deleteChildFromSupabase,
   deleteFamilyPrivateMediaFromStorage,
@@ -62,6 +64,7 @@ import {
   normalizeOnboardingAuthPayload,
   normalizeOnboardingRoleToAccount,
   normalizeOnboardingRoleToTheme,
+  persistFamilyWorkspaceStateToSupabase,
   resolveVerifiedFamilyContext,
   restoreAuthenticatedAccountFromSupabase,
   saveOnboardingChildrenToSupabase,
@@ -73,6 +76,10 @@ import {
   validateFamilyStorageObjectPath,
   verifyAccountIdentityOtpInSupabase,
 } from '../services/supabaseService';
+import {
+  CHILD_LIFE_RECORD_TYPES,
+  createChildLifeRecord as createScopedChildLifeRecord,
+} from '../services/childLifeRecordService';
 import {
   VERIFIED_LIVE_AUTH_SETTINGS,
   VERIFIED_LIVE_TABLE_COLUMNS,
@@ -3770,3 +3777,271 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(homeSrc.includes('min-h-[44px] px-1 text-xs font-black text-teal-800'));
   });
 });
+
+describe('Backend & Database Engineering: Query Deduplication, Relational Consistency & Unified Validation', () => {
+  it('preserves child profileDetails, vaccinationsNote, and growth metrics through normalizeAppData and saveOnboardingChildrenToSupabase', async () => {
+    const rawState = {
+      ...DEFAULT_SEED,
+      kids: [
+        {
+          id: 1,
+          remoteId: '770e8400-e29b-41d4-a716-446655440011',
+          name: 'فريدة',
+          gender: 'girl',
+          birth: '2021-04-10',
+          interests: 'الرسم، السباحة',
+          vaccinationsNote: 'مكتمل تطعيم ٤ سنوات',
+          growthHeightCm: 104,
+          growthWeightKg: 16.5,
+          profileDetails: {
+            favoriteFoods: ['تفاح', 'شوفان'],
+            foodRestrictions: ['فراولة'],
+            hobbies: ['الرسم بالألوان المائية'],
+          },
+        },
+      ],
+    };
+
+    const normalized = normalizeAppData(rawState);
+    assert.equal(normalized.kids.length, 1);
+    assert.deepEqual(normalized.kids[0].profileDetails, {
+      favoriteFoods: ['تفاح', 'شوفان'],
+      foodRestrictions: ['فراولة'],
+      hobbies: ['الرسم بالألوان المائية'],
+    });
+    assert.equal(normalized.kids[0].vaccinationsNote, 'مكتمل تطعيم ٤ سنوات');
+    assert.equal(normalized.kids[0].growthHeightCm, 104);
+    assert.equal(normalized.kids[0].growthWeightKg, 16.5);
+  });
+
+  it('deduplicates concurrent resolveVerifiedFamilyContext calls and avoids redundant users/context queries during restore and workspace persistence', async () => {
+    const familyUuid = '880e8400-e29b-41d4-a716-446655440088';
+    const authUid = '990e8400-e29b-41d4-a716-446655440099';
+    const userRowUuid = 'aa0e8400-e29b-41d4-a716-4466554400aa';
+    const childRemoteUuid = 'bb0e8400-e29b-41d4-a716-4466554400bb';
+
+    let getSessionCalls = 0;
+    let usersSelectCalls = 0;
+    let savedSharedPayload: Record<string, unknown> | null = null;
+
+    const mockClient = {
+      auth: {
+        async getSession() {
+          getSessionCalls += 1;
+          await new Promise((r) => setTimeout(r, 10));
+          return {
+            data: {
+              session: {
+                access_token: 'jwt_token_dedup',
+                user: {
+                  id: authUid,
+                  email: 'parent@nekbaar.app',
+                  email_confirmed_at: '2026-11-01T00:00:00Z',
+                },
+              },
+            },
+            error: null,
+          };
+        },
+      },
+      from(table: string) {
+        return {
+          select() {
+            const chain = {
+              eq() {
+                return chain;
+              },
+              limit() {
+                return chain;
+              },
+              maybeSingle() {
+                return Promise.resolve({ data: { version: 2 }, error: null });
+              },
+              then(onFulfilled?: (val: unknown) => unknown) {
+                if (table === 'users') {
+                  usersSelectCalls += 1;
+                  return Promise.resolve({
+                    data: [
+                      {
+                        id: userRowUuid,
+                        auth_user_id: authUid,
+                        family_id: familyUuid,
+                        full_name: 'كريم المنصور',
+                        role: 'father',
+                        email: 'parent@nekbaar.app',
+                        country: 'EG',
+                        verified: true,
+                      },
+                    ],
+                    error: null,
+                  }).then(onFulfilled);
+                }
+                if (table === 'families') {
+                  return Promise.resolve({
+                    data: [
+                      {
+                        id: familyUuid,
+                        family_name: 'أسرة كريم — نكبر',
+                        country: 'EG',
+                        city: 'القاهرة',
+                        currency: 'EGP',
+                        active_parent: 'father',
+                      },
+                    ],
+                    error: null,
+                  }).then(onFulfilled);
+                }
+                if (table === 'children') {
+                  return Promise.resolve({
+                    data: [
+                      {
+                        id: childRemoteUuid,
+                        family_id: familyUuid,
+                        name: 'سليم',
+                        birth: '2022-03-15',
+                        gender: 'boy',
+                        interests: 'الفضاء',
+                        vaccinations_note: 'مكتمل',
+                        growth_height_cm: 95,
+                        growth_weight_kg: 14.2,
+                        profile_details: { favoriteFoods: ['موز'] },
+                      },
+                    ],
+                    error: null,
+                  }).then(onFulfilled);
+                }
+                return Promise.resolve({ data: [], error: null }).then(onFulfilled);
+              },
+            };
+            return chain;
+          },
+          upsert(payload: Record<string, unknown>) {
+            if (table === 'family_shared_state') {
+              savedSharedPayload = payload.payload as Record<string, unknown>;
+            }
+            return Promise.resolve({ data: [payload], error: null });
+          },
+        };
+      },
+    } as unknown as SupabaseClient;
+
+    // 1. Concurrent resolveVerifiedFamilyContext calls share a single session + users lookup
+    const [ctx1, ctx2, ctx3] = await Promise.all([
+      resolveVerifiedFamilyContext(mockClient),
+      resolveVerifiedFamilyContext(mockClient),
+      resolveVerifiedFamilyContext(mockClient),
+    ]);
+    assert.equal(ctx1.verifiedFamilyId, familyUuid);
+    assert.equal(ctx2.verifiedFamilyId, familyUuid);
+    assert.equal(ctx3.verifiedFamilyId, familyUuid);
+    assert.equal(getSessionCalls, 1, 'Concurrent context resolution must only call getSession once');
+    assert.equal(usersSelectCalls, 1, 'Concurrent context resolution must only query public.users once');
+
+    // 2. restoreAuthenticatedAccountFromSupabase reuses verifiedCtx.userRow and passes verifiedCtx to fetchChildrenFromSupabase
+    getSessionCalls = 0;
+    usersSelectCalls = 0;
+    const restored = await restoreAuthenticatedAccountFromSupabase(mockClient);
+    assert.equal(restored.restored, true);
+    assert.equal(restored.verifiedFamilyId, familyUuid);
+    assert.equal(getSessionCalls, 1, 'restoreAuthenticatedAccountFromSupabase should only resolve session once');
+    assert.equal(usersSelectCalls, 1, 'restoreAuthenticatedAccountFromSupabase should not re-query public.users when userRow is already in context');
+    assert.equal(restored.children.length, 1);
+    assert.equal(restored.children[0].vaccinations_note, 'مكتمل');
+    assert.equal(restored.children[0].growth_height_cm, 95);
+    assert.deepEqual(restored.children[0].profile_details, { favoriteFoods: ['موز'] });
+
+    // 3. persistFamilyWorkspaceStateToSupabase enriches tasks, events, and wishes with remoteChildId
+    const customState = normalizeAppData({
+      ...DEFAULT_SEED,
+      verifiedFamilyId: familyUuid,
+      kids: [
+        {
+          id: 10,
+          remoteId: childRemoteUuid,
+          name: 'سليم',
+          gender: 'boy',
+          birth: '2022-03-15',
+          interests: 'الفضاء',
+          emoji: '👦🏻',
+        },
+      ],
+      tasks: [
+        {
+          id: 1,
+          name: 'قراءة قصة الفضاء',
+          time: '07:30 م',
+          done: false,
+          kidId: 10,
+          category: 'قراءة',
+          owner: 'مشترك',
+          cadence: 'daily',
+        },
+      ],
+      events: [
+        {
+          id: 1,
+          title: 'موعد طبيب الأطفال',
+          date: '2026-11-10',
+          time: '05:00 م',
+          type: 'صحة وتطعيم',
+          childId: 10,
+          repeat: 'none',
+        },
+      ],
+      wishes: [
+        {
+          id: 1,
+          name: 'تلسكوب صغير',
+          kid: 10,
+          price: 450,
+          currency: 'EGP',
+          emoji: '🔭',
+          reserved: false,
+          progress: 50,
+        },
+      ],
+    });
+
+    const persistRes = await persistFamilyWorkspaceStateToSupabase(customState, mockClient, ctx1);
+    assert.equal(persistRes.synced, true);
+    assert.ok(savedSharedPayload);
+    const payloadObj = savedSharedPayload as Record<string, unknown>;
+    const savedTasks = payloadObj.tasks as Array<Record<string, unknown>>;
+    const savedEvents = payloadObj.events as Array<Record<string, unknown>>;
+    const savedWishes = payloadObj.wishes as Array<Record<string, unknown>>;
+    assert.equal(savedTasks[0].remoteChildId, childRemoteUuid);
+    assert.equal(savedEvents[0].remoteChildId, childRemoteUuid);
+    assert.equal(savedWishes[0].remoteChildId, childRemoteUuid);
+  });
+
+  it('unifies CHILD_LIFE_RECORD_TYPES across services and validates record types, titles, and timestamps before DB writes', async () => {
+    assert.deepEqual(CHILD_LIFE_RECORD_TYPES, VALID_CHILD_LIFE_RECORD_TYPES);
+    assert.equal(CHILD_LIFE_RECORD_TYPES.length, 14);
+
+    const dummyClient = {} as unknown as SupabaseClient;
+
+    const emptyTitleRes = await createDashboardChildLifeRecord(
+      {
+        childRemoteId: 'bb0e8400-e29b-41d4-a716-4466554400bb',
+        recordType: 'sleep_log',
+        title: '   ',
+      },
+      dummyClient
+    );
+    assert.equal(emptyTitleRes.record, null);
+    assert.ok(emptyTitleRes.error);
+
+    const invalidTimestampRes = await createScopedChildLifeRecord(
+      {
+        childId: 'bb0e8400-e29b-41d4-a716-4466554400bb',
+        recordType: 'milestone',
+        title: 'أول خطوة',
+        occurredAt: 'not-a-valid-date',
+      },
+      dummyClient
+    );
+    assert.equal(invalidTimestampRes.data, null);
+    assert.match(invalidTimestampRes.error || '', /valid ISO timestamp/);
+  });
+});
+

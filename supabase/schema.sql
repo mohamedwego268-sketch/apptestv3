@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS public.children (
 CREATE INDEX IF NOT EXISTS idx_children_family_id ON public.children(family_id);
 CREATE UNIQUE INDEX IF NOT EXISTS children_id_family_id_uidx ON public.children(id, family_id);
 CREATE INDEX IF NOT EXISTS idx_children_current_home_family ON public.children(current_home_id, family_id);
+CREATE INDEX IF NOT EXISTS idx_children_family_name_birth ON public.children(family_id, lower(name), birth);
 
 -- ============================================================================
 -- 2. Co-Parent Pairings, Extended Family & Child Life Records
@@ -137,6 +138,9 @@ CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_invited_by_user_id
   ON public.co_parent_pairings(invited_by_user_id);
 CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_partner_user_id
   ON public.co_parent_pairings(partner_user_id);
+CREATE INDEX IF NOT EXISTS idx_co_parent_pairings_pending_email
+  ON public.co_parent_pairings(lower(partner_email), status)
+  WHERE status = 'pending';
 
 CREATE TABLE IF NOT EXISTS public.extended_family (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

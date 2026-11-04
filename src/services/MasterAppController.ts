@@ -537,7 +537,11 @@ export class MasterBackendService implements MasterControllerAPI {
         if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
           return 0;
         }
-        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedCtx.verifiedFamilyId });
+        await ensureSharedFamilyRecordInSupabase(
+          { familyId: verifiedCtx.verifiedFamilyId },
+          undefined,
+          verifiedCtx
+        );
         return itemsToProcess.length;
       },
       0,
@@ -598,6 +602,16 @@ export class MasterBackendService implements MasterControllerAPI {
     this.persistLocalCache();
     this.notifyListeners();
 
+    const kidByLocalId = new Map<number, ChildProfile>(kids.map((k) => [k.id, k]));
+    const hasRemoteLinkedChild = Object.values(nextSummary.childrenDiagnostics).some((diag) => {
+      const matchedKid = kidByLocalId.get(diag.childId);
+      return Boolean(matchedKid && isValidUuid(matchedKid.remoteId));
+    });
+
+    if (!hasRemoteLinkedChild) {
+      return nextSummary;
+    }
+
     await this.executeWithExponentialBackoff(
       async () => {
         if (!supabaseClient) return nextSummary;
@@ -609,8 +623,6 @@ export class MasterBackendService implements MasterControllerAPI {
           return nextSummary;
         }
         const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
-        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
-        const kidByLocalId = new Map<number, ChildProfile>(kids.map((k) => [k.id, k]));
         const rows = Object.values(nextSummary.childrenDiagnostics)
           .map((diag) => {
             const matchedKid = kidByLocalId.get(diag.childId);
@@ -852,48 +864,54 @@ export class MasterBackendService implements MasterControllerAPI {
     this.persistLocalCache();
     this.notifyListeners();
 
-    await this.executeWithExponentialBackoff(
-      async () => {
-        if (!supabaseClient) return this.batterySummary;
-        const verifiedCtx = await resolveVerifiedFamilyContext();
-        if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+    const childByLocalId = new Map(this.latestChildren.map((kid) => [kid.id, kid]));
+    const hasRemoteLinkedChild = Object.values(this.batterySummary.childrenDiagnostics).some((d) => {
+      const child = childByLocalId.get(d.childId);
+      return Boolean(child && isValidUuid(child.remoteId));
+    });
+
+    if (hasRemoteLinkedChild) {
+      await this.executeWithExponentialBackoff(
+        async () => {
+          if (!supabaseClient) return this.batterySummary;
+          const verifiedCtx = await resolveVerifiedFamilyContext();
+          if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
+            return this.batterySummary;
+          }
+          const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
+          const rows = Object.values(this.batterySummary.childrenDiagnostics).flatMap((d) => {
+            const child = childByLocalId.get(d.childId);
+            const childUuid = child && isValidUuid(child.remoteId) ? child.remoteId : null;
+            if (!childUuid) return [];
+            return [{
+              family_id: verifiedFamilyUuid,
+              child_id: childUuid,
+              child_name: d.childName,
+              age_stage: d.ageStage,
+              overall_score: d.overallScore,
+              sleep_score: d.sleepScore,
+              nutrition_score: d.nutritionScore,
+              mood_score: d.moodScore,
+              routine_score: d.routineCompletionScore,
+              routine_completion_score: d.routineCompletionScore,
+              status_level: d.statusLevel,
+              recommendation_ar: d.recommendationAr,
+              recommendation_en: d.recommendationEn,
+              updated_at: d.updatedAt,
+            }];
+          });
+          if (rows.length > 0) {
+            const { error } = await supabaseClient
+              .from('wellness_diagnostics')
+              .upsert(rows, { onConflict: 'family_id,child_id' });
+            if (error) throw error;
+          }
           return this.batterySummary;
-        }
-        const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
-        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
-        const childByLocalId = new Map(this.latestChildren.map((kid) => [kid.id, kid]));
-        const rows = Object.values(this.batterySummary.childrenDiagnostics).flatMap((d) => {
-          const child = childByLocalId.get(d.childId);
-          const childUuid = child && isValidUuid(child.remoteId) ? child.remoteId : null;
-          if (!childUuid) return [];
-          return [{
-            family_id: verifiedFamilyUuid,
-            child_id: childUuid,
-            child_name: d.childName,
-            age_stage: d.ageStage,
-            overall_score: d.overallScore,
-            sleep_score: d.sleepScore,
-            nutrition_score: d.nutritionScore,
-            mood_score: d.moodScore,
-            routine_score: d.routineCompletionScore,
-            routine_completion_score: d.routineCompletionScore,
-            status_level: d.statusLevel,
-            recommendation_ar: d.recommendationAr,
-            recommendation_en: d.recommendationEn,
-            updated_at: d.updatedAt,
-          }];
-        });
-        if (rows.length > 0) {
-          const { error } = await supabaseClient
-            .from('wellness_diagnostics')
-            .upsert(rows, { onConflict: 'family_id,child_id' });
-          if (error) throw error;
-        }
-        return this.batterySummary;
-      },
-      this.batterySummary,
-      2
-    );
+        },
+        this.batterySummary,
+        2
+      );
+    }
 
     return this.batterySummary;
   }
@@ -957,7 +975,6 @@ export class MasterBackendService implements MasterControllerAPI {
           return newStory;
         }
         const verifiedFamilyUuid = verifiedCtx.verifiedFamilyId;
-        await ensureSharedFamilyRecordInSupabase({ familyId: verifiedFamilyUuid });
         const remoteId = req.childRemoteId ?? matchingKid?.remoteId;
         const remoteChildUuid = isValidUuid(String(remoteId ?? '')) ? String(remoteId) : null;
         const storyPayload: Record<string, unknown> = {
@@ -979,7 +996,7 @@ export class MasterBackendService implements MasterControllerAPI {
         }
         await supabaseClient
           .from('bedtime_stories')
-          .upsert(storyPayload, { onConflict: 'sequence_code' });
+          .insert(storyPayload);
         return newStory;
       },
       newStory,
@@ -1106,13 +1123,9 @@ export class MasterBackendService implements MasterControllerAPI {
 
     const { synced } = await this.executeWithExponentialBackoff(
       async () => {
-        if (appState) {
+        if (appState && !isDefaultDemoSeedState(appState)) {
           const verifiedCtx = await resolveVerifiedFamilyContext();
-          if (
-            verifiedCtx.authenticated &&
-            isValidUuid(verifiedCtx.verifiedFamilyId) &&
-            !isDefaultDemoSeedState(appState)
-          ) {
+          if (verifiedCtx.authenticated && isValidUuid(verifiedCtx.verifiedFamilyId)) {
             const ok = await syncFamilySpaceToSupabase(appState);
             if (!ok) {
               throw new Error('Supabase state sync returned false');
