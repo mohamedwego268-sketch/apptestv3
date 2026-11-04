@@ -79,11 +79,11 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     savesBase: 610,
     sharesBase: 315,
     captionAr:
-      'انزلي لمستوى نظره، سمّي شعوره بهدوء («أنا شايفة إنك زعلان عشان اللعبة خلصت»)، وخدي نفس عميق معاه لمدة 30 ثانية.',
+      'انزلي لمستوى طفلك، وقولي له بهدوء: «أنا شايفة إنك زعلان عشان اللعبة خلصت». خدي وقتك واسمعيه من غير ضغط.',
     captionEn:
       'Kneel to eye level, name the feeling calmly, and take 3 slow breaths together before giving any instruction.',
     keyTakeawaysAr: [
-      '١. النزول لمستوى عين الطفل يقلل شعوره بالتهديد فورًا.',
+      '١. اقربي من طفلك واتكلمي بصوت هادي.',
       '٢. تسمية الشعور قبل التصحيح («أنت غضبان لأن...»).',
       '٣. تقديم خيارين بسيطين بعد الهدوء.',
     ],
@@ -111,13 +111,13 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
     savesBase: 940,
     sharesBase: 490,
     captionAr:
-      'فرز المعكرونة الملونة، نقل الماء بإسفنجة، وتقشير الموز مع ماما يقوي عضلات اليد الدقيقة ويجهز الطفل للكتابة بمتعة.',
+      'فرز المعكرونة الكبيرة تحت إشرافك، ونقل الماء بإسفنجة، وتجهيز الموز معًا أنشطة بسيطة لليد والتركيز. اختاري ما يناسب عمر طفلك.',
     captionEn:
       'Sorting pasta shapes, transferring water with a sponge, and peeling a banana build fine motor strength.',
     keyTakeawaysAr: [
       '١. نقل الحبوب بالملعقة يقوي قبضة القلم.',
       '٢. مطابقة أغطية العلب ينمي التفكير المنطقي.',
-      '٣. مدة النشاط المثالية 12–15 دقيقة.',
+      '٣. ابدؤوا بدقايق قليلة، وكمّلوا طول ما طفلك مستمتع.',
     ],
     keyTakeawaysEn: [
       '1. Spoon transfers strengthen pencil grip muscles.',
@@ -148,7 +148,7 @@ const PARENTING_REELS_FEED: ParentingReelItem[] = [
       'Stopping screens 1 hour before bed, warm dim lighting, a brief bath, and the same audio lullaby sequence.',
     keyTakeawaysAr: [
       '١. ثبات ترتيب الخطوات أهم من طول مدتها.',
-      '٢. الإضاءة الصفراء الخافتة تحفز هرمون الميلاتونين.',
+      '٢. قللوا الإضاءة والأصوات عشان الجو يبقى أهدى.',
       '٣. جملة ختامية ثابتة ومطمئنة قبل إطفاء النور.',
     ],
     keyTakeawaysEn: [
