@@ -24,6 +24,15 @@ const LABELS: Record<ChildLifeRecordType, { ar: string; en: string }> = {
   other: { ar: 'أخرى', en: 'Other' },
 };
 
+type TimelineFilter = 'all' | 'care' | 'learning' | 'interests' | 'memories';
+
+const FILTER_TYPES: Record<Exclude<TimelineFilter, 'all'>, ChildLifeRecordType[]> = {
+  care: ['sleep_log', 'nutrition', 'routine', 'vaccination', 'medical_event', 'growth_measurement'],
+  learning: ['education'],
+  interests: ['sports', 'hobby'],
+  memories: ['milestone', 'memory', 'emotional_social', 'daily_note', 'other'],
+};
+
 interface Props {
   childId?: string | number;
   childName: string;
@@ -41,6 +50,17 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<TimelineFilter>('all');
+  const filterCards: { id: TimelineFilter; icon: string; ar: string; en: string; count: number }[] = [
+    { id: 'all', icon: '🧭', ar: 'الكل', en: 'All', count: records.length },
+    { id: 'care', icon: '🌙', ar: 'الرعاية', en: 'Care', count: records.filter((item) => FILTER_TYPES.care.includes(item.record_type)).length },
+    { id: 'learning', icon: '🧩', ar: 'التعلم', en: 'Learning', count: records.filter((item) => FILTER_TYPES.learning.includes(item.record_type)).length },
+    { id: 'interests', icon: '🎨', ar: 'الاهتمامات', en: 'Interests', count: records.filter((item) => FILTER_TYPES.interests.includes(item.record_type)).length },
+    { id: 'memories', icon: '💛', ar: 'الذكريات', en: 'Memories', count: records.filter((item) => FILTER_TYPES.memories.includes(item.record_type)).length },
+  ];
+  const visibleRecords = activeFilter === 'all'
+    ? records
+    : records.filter((item) => FILTER_TYPES[activeFilter].includes(item.record_type));
 
   const refresh = useCallback(async () => {
     if (!validChildId || typeof childId !== 'string') return;
@@ -104,11 +124,27 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                   {saving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Save to child timeline' : 'حفظ في سجل الطفل')}
                 </button>
               </form>
+              <div data-testid="child-timeline-insights" className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'Explore this child’s story' : 'اكتشفوا حكاية طفلكم'}</h4>
+                  <span className="text-[10px] text-[var(--color-muted)]">{isEn ? `${records.length} saved moments` : `${records.length} تسجيلات محفوظة`}</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {filterCards.map((card) => (
+                    <button key={card.id} type="button" onClick={() => setActiveFilter(card.id)} aria-pressed={activeFilter === card.id}
+                      className={`min-w-0 rounded-xl border p-2 text-center transition-all ${activeFilter === card.id ? 'border-teal-500 bg-teal-50 dark:bg-teal-950/40' : 'border-[var(--color-border)] bg-[var(--color-bg)] dark:bg-[#0D1B26]'}`}>
+                      <span className="block text-base" aria-hidden="true">{card.icon}</span>
+                      <span className="mt-1 block truncate text-[9px] font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? card.en : card.ar}</span>
+                      <span className="mt-0.5 block text-xs font-black tabular-nums text-teal-700 dark:text-teal-300">{card.count}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
               {error && <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p>}
               <div className="space-y-2">
                 {loading ? <p className="text-xs text-[var(--color-muted)]">{isEn ? 'Loading records…' : 'جارٍ تحميل السجل…'}</p> :
-                  records.length === 0 ? <p className="text-xs text-[var(--color-muted)]">{isEn ? 'No records yet. Add the first moment above.' : 'لسه مفيش تسجيلات. أضف أول لحظة من النموذج.'}</p> :
-                  records.map((record) => (
+                  visibleRecords.length === 0 ? <p className="text-xs text-[var(--color-muted)]">{records.length === 0 ? (isEn ? 'No records yet. Add the first moment above.' : 'لسه مفيش تسجيلات. أضف أول لحظة من النموذج.') : (isEn ? 'No records in this story yet.' : 'مفيش تسجيلات في المسار ده لسه.')}</p> :
+                  visibleRecords.map((record) => (
                     <article key={record.id} className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-xs font-extrabold text-teal-700 dark:text-teal-300">{isEn ? LABELS[record.record_type].en : LABELS[record.record_type].ar}</span>
