@@ -43,7 +43,7 @@ export interface HomeDashboardSectionProps {
   onAddToCart: (item: CommercialItem, variant?: string) => void;
   onInspectCommercialItem: (item: CommercialItem) => void;
   onAddProductToWishes: (item: CommercialItem) => void;
-  onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null) => void;
+  onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null, category?: string, cadence?: 'daily' | 'weekly' | 'monthly') => void;
   onToggleRoutineTask?: (taskId: number, done: boolean) => void;
   onShowToast?: (msg: string) => void;
   bedtimeMode?: boolean;
@@ -204,6 +204,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
   const [quickTaskName, setQuickTaskName] = useState('');
   const [quickTaskTime, setQuickTaskTime] = useState('17:00');
+  const [quickTaskCategory, setQuickTaskCategory] = useState('روتين يومي');
+  const [quickTaskCadence, setQuickTaskCadence] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [taskView, setTaskView] = useState<'all' | 'open' | 'done'>('all');
 
   useEffect(() => {
@@ -1282,12 +1284,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               })()}
 
               <form
-                className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_112px_auto]"
+                className="grid grid-cols-1 gap-2 sm:grid-cols-2"
                 onSubmit={(event) => {
                   event.preventDefault();
                   const name = quickTaskName.trim();
                   if (!name || !onAddSuggestedRoutineTask) return;
-                  onAddSuggestedRoutineTask(name, quickTaskTime, activeKidId);
+                  onAddSuggestedRoutineTask(name, quickTaskTime, activeKidId, quickTaskCategory, quickTaskCadence);
                   setQuickTaskName('');
                 }}
               >
@@ -1306,6 +1308,31 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   onChange={(event) => setQuickTaskTime(event.target.value)}
                   className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
                 />
+                <select
+                  aria-label={isEn ? 'Task category' : 'نوع المهمة'}
+                  value={quickTaskCategory}
+                  onChange={(event) => setQuickTaskCategory(event.target.value)}
+                  className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                >
+                  <option value="روتين يومي">{isEn ? 'Daily routine' : 'روتين يومي'}</option>
+                  <option value="الأكل والتغذية">{isEn ? 'Food & nutrition' : 'الأكل والتغذية'}</option>
+                  <option value="النوم والراحة">{isEn ? 'Sleep & rest' : 'النوم والراحة'}</option>
+                  <option value="التعليم والتعلم">{isEn ? 'Learning' : 'التعليم والتعلم'}</option>
+                  <option value="الرياضة والحركة">{isEn ? 'Sports & movement' : 'الرياضة والحركة'}</option>
+                  <option value="الصحة والمتابعة">{isEn ? 'Health' : 'الصحة والمتابعة'}</option>
+                  <option value="الصلاة والقيم">{isEn ? 'Prayer & values' : 'الصلاة والقيم'}</option>
+                  <option value="مواعيد وأنشطة">{isEn ? 'Appointments & activities' : 'مواعيد وأنشطة'}</option>
+                </select>
+                <select
+                  aria-label={isEn ? 'Repeat schedule' : 'تكرار المهمة'}
+                  value={quickTaskCadence}
+                  onChange={(event) => setQuickTaskCadence(event.target.value as 'daily' | 'weekly' | 'monthly')}
+                  className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                >
+                  <option value="daily">{isEn ? 'Every day' : 'كل يوم'}</option>
+                  <option value="weekly">{isEn ? 'Every week' : 'كل أسبوع'}</option>
+                  <option value="monthly">{isEn ? 'Every month' : 'كل شهر'}</option>
+                </select>
                 <button type="submit" disabled={!quickTaskName.trim() || !onAddSuggestedRoutineTask} className="min-h-11 rounded-xl bg-[#8FF0D0] px-4 text-xs font-black text-[#073F43] disabled:opacity-50">
                   {isEn ? '+ Add' : '+ إضافة'}
                 </button>
