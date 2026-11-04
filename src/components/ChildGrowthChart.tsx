@@ -152,8 +152,6 @@ export const ChildGrowthChart: React.FC<ChildGrowthChartProps> = ({
               })}
             </div>
           )}
-
->
         </div>
       </div>
 
