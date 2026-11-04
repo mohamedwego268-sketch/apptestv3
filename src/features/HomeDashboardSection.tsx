@@ -45,6 +45,7 @@ export interface HomeDashboardSectionProps {
   onAddProductToWishes: (item: CommercialItem) => void;
   onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null, category?: string, cadence?: 'daily' | 'weekly' | 'monthly', owner?: string, dayOfWeek?: number) => void;
   onToggleRoutineTask?: (taskId: number, done: boolean) => void;
+  onUpdateRoutineTaskOwner?: (taskId: number, owner: string) => void;
   onShowToast?: (msg: string) => void;
   bedtimeMode?: boolean;
   onToggleBedtimeMode?: () => void;
@@ -194,6 +195,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onAddProductToWishes,
   onAddSuggestedRoutineTask,
   onToggleRoutineTask,
+  onUpdateRoutineTaskOwner,
   onShowToast,
   bedtimeMode = false,
   onToggleBedtimeMode,
@@ -1311,7 +1313,17 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                           {task.cadence === 'weekly' && <span>{isEn ? 'Weekly' : 'أسبوعي'}</span>}
                         </div>
                       </div>
-                      <span className="text-[10px] text-teal-100/70">{task.done ? (isEn ? 'Done' : 'تم') : (isEn ? 'To do' : 'مطلوب')}</span>
+                      <select
+                        aria-label={isEn ? `Change responsible parent for ${task.name}` : `تغيير المسؤول عن ${task.name}`}
+                        value={task.owner === 'الأم' || task.owner === 'الأب' ? task.owner : 'مشترك'}
+                        disabled={!onUpdateRoutineTaskOwner}
+                        onChange={(event) => onUpdateRoutineTaskOwner?.(task.id, event.target.value)}
+                        className="min-h-9 max-w-[92px] rounded-lg border border-white/15 bg-[#0b454a] px-1.5 text-[9px] font-bold text-white outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                      >
+                        <option value="مشترك">{isEn ? 'Shared' : 'مشترك'}</option>
+                        <option value="الأم">{isEn ? 'Mother' : 'الأم'}</option>
+                        <option value="الأب">{isEn ? 'Father' : 'الأب'}</option>
+                      </select>
                     </div>
                       ))}
                       {visibleTasks.length === 0 && (
