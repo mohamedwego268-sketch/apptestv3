@@ -13,6 +13,7 @@ import { PageId } from '../context/FamilyAppContext';
 import {
   MasterPatternCard,
 } from '../components/DesignSystem';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
 import {
@@ -23,7 +24,6 @@ import {
 const ParentingSupportCenter = React.lazy(() => import('../components/ParentingSupportCenter').then((module) => ({ default: module.ParentingSupportCenter })));
 const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibraryView').then((module) => ({ default: module.StoriesLibraryView })));
 const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
-const SectionToolsDrawer = React.lazy(() => import('../components/SectionToolsDrawer').then((module) => ({ default: module.SectionToolsDrawer })));
 const HomeVisualDiscovery = React.lazy(() => import('./HomeVisualDiscovery').then((module) => ({ default: module.HomeVisualDiscovery })));
 const HomeDailyExperience = React.lazy(() => import('./HomeDailyExperience').then((module) => ({ default: module.HomeDailyExperience })));
 const HomeContentTracks = React.lazy(() => import('./HomeContentTracks').then((module) => ({ default: module.HomeContentTracks })));
@@ -1045,7 +1045,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </div>
 
       {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
-      <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><SectionToolsDrawer
+      <SectionToolsDrawer
         language={lang}
         sectionId="dashboard"
         titleAr="أدوات الرئيسية"
@@ -1128,7 +1128,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           }}
           onOpenMood={openChildMoodCheckin}
           onOpenProfile={() => navigateTo('children')}
-        /></React.Suspense></React.Suspense>
+        /></React.Suspense>
       )}
 
       <HomeContentGroupHeading
