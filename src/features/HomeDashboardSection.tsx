@@ -210,6 +210,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [quickTaskOwner, setQuickTaskOwner] = useState<'الأم' | 'الأب' | 'مشترك'>('مشترك');
   const [quickTaskDay, setQuickTaskDay] = useState(new Date().getDay());
   const [plannerDay, setPlannerDay] = useState(new Date().getDay());
+  const [plannerOwner, setPlannerOwner] = useState<'all' | 'الأم' | 'الأب' | 'مشترك'>('all');
 
   useEffect(() => {
     if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
@@ -1244,6 +1245,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 const progress = childTasks.length ? Math.round((completedCount / childTasks.length) * 100) : 0;
                 const visibleTasks = childTasks
                   .filter((task) => taskView === 'all' || (taskView === 'done' ? task.done : !task.done))
+                  .filter((task) => plannerOwner === 'all' || task.owner === plannerOwner)
                   .slice()
                   .sort((a, b) => a.time.localeCompare(b.time));
                 return (
@@ -1256,6 +1258,20 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       <div className="h-2 overflow-hidden rounded-full bg-white/10">
                         <div className="h-full rounded-full bg-[#8FF0D0] transition-all duration-500" style={{ width: `${progress}%` }} />
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="shrink-0 text-[10px] font-bold text-teal-100">{isEn ? 'RESPONSIBLE' : 'المسؤول'}</span>
+                      <select
+                        aria-label={isEn ? 'Filter by parent' : 'تصفية حسب المسؤول'}
+                        value={plannerOwner}
+                        onChange={(event) => setPlannerOwner(event.target.value as 'all' | 'الأم' | 'الأب' | 'مشترك')}
+                        className="min-h-9 flex-1 rounded-xl border border-white/15 bg-[#0b454a] px-3 text-[10px] font-bold text-white outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                      >
+                        <option value="all">{isEn ? 'Both parents' : 'الأب والأم'}</option>
+                        <option value="الأم">{isEn ? 'Mother' : 'الأم'}</option>
+                        <option value="الأب">{isEn ? 'Father' : 'الأب'}</option>
+                        <option value="مشترك">{isEn ? 'Shared' : 'مشترك'}</option>
+                      </select>
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-1">
                       {([
@@ -1288,7 +1304,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       </button>
                       <div className="min-w-0 flex-1">
                         <div className={`truncate text-xs font-bold ${task.done ? 'text-teal-100/60 line-through' : 'text-white'}`}>{task.name}</div>
-                        <div className="mt-0.5 text-[10px] text-teal-100/70">{task.time} · {task.owner || (isEn ? 'Family' : 'الأسرة')}</div>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-teal-100/70">
+                          <span>{task.time}</span>
+                          <span>· {task.owner || (isEn ? 'Family' : 'الأسرة')}</span>
+                          {task.category && <span className="rounded-md bg-white/10 px-1.5 py-0.5">{task.category}</span>}
+                          {task.cadence === 'weekly' && <span>{isEn ? 'Weekly' : 'أسبوعي'}</span>}
+                        </div>
                       </div>
                       <span className="text-[10px] text-teal-100/70">{task.done ? (isEn ? 'Done' : 'تم') : (isEn ? 'To do' : 'مطلوب')}</span>
                     </div>
