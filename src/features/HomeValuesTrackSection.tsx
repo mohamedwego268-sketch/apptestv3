@@ -129,6 +129,25 @@ export const HomeValuesTrackSection: React.FC<HomeValuesTrackSectionProps> = ({
         </p>
       </div>
 
+      <div data-testid="values-practice-map" className="rounded-2xl border border-amber-300/35 bg-gradient-to-br from-amber-50 via-white to-orange-50/70 p-3.5 dark:from-[#29251D] dark:via-[#211F1A] dark:to-[#2B211B]">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-black text-amber-950 dark:text-amber-100">{isEn ? 'How values become habits' : 'إزاي القيمة تتحول لعادة؟'}</p>
+            <p className="mt-1 text-[10px] text-amber-900/70 dark:text-amber-100/65">{isEn ? 'Children learn values through lived moments, not lectures.' : 'الطفل بيتعلم القيم من المواقف اللي بيعيشها، مش من الكلام بس.'}</p>
+          </div>
+          <span className="text-2xl">🌱</span>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          {(isEn ? [{e:'👀',t:'See it'},{e:'💬',t:'Talk'},{e:'🤲',t:'Practice'},{e:'✨',t:'Notice'}] : [{e:'👀',t:'يشوفها'},{e:'💬',t:'يفهمها'},{e:'🤲',t:'يمارسها'},{e:'✨',t:'نقدّرها'}]).map((step,index)=>(
+            <div key={step.t} className="min-w-0 rounded-xl border border-amber-500/10 bg-white/80 px-1 py-2 text-center dark:border-white/10 dark:bg-white/5">
+              <span className="block text-lg">{step.e}</span>
+              <span className="mt-1 block text-[9px] font-black text-amber-950 dark:text-amber-100">{step.t}</span>
+              <span className="mt-1 block text-[8px] font-bold text-amber-700/65 dark:text-amber-200/55">{index+1}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {activities.map((activity) => (
           <article key={activity.id} className="flex flex-col rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 p-4 shadow-[0_5px_16px_-14px_rgba(15,23,42,0.35)] dark:border-[#29404D] dark:from-[#142430] dark:to-[#101D26]">
