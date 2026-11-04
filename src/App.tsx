@@ -63,6 +63,7 @@ import {
   validateAndSanitizeImageDataUrl,
 } from './domain/familySpaceCore';
 import { AvatarAccessoryTheme } from './domain/assetManifest3D';
+import { createChildLifeRecord } from './services/childLifeRecordService';
 import { t } from './domain/i18n';
 import {
   createEmptyFamilySpaceState,
@@ -1188,8 +1189,9 @@ export default function App() {
     showToast(editingTask ? 'تم تحديث المهمة' : 'تمت إضافة المهمة للروتين');
   };
 
-  const handleToggleTask = (id: number, done: boolean) => {
+  const handleToggleTask = async (id: number, done: boolean) => {
     const targetTask = state.tasks.find((tItem) => tItem.id === id);
+    if (done && targetTask?.done) return;
     setState((prev) => ({
       ...prev,
       tasks: prev.tasks.map((tItem) => (tItem.id === id ? { ...tItem, done } : tItem)),
@@ -1198,6 +1200,25 @@ export default function App() {
       const targetKid = targetTask?.kidId
         ? state.kids.find((k) => k.id === Number(targetTask.kidId))
         : null;
+      const remoteChildId = targetTask?.remoteChildId || targetKid?.remoteId;
+      if (!isPreviewMode && targetTask && typeof remoteChildId === 'string' && isValidUuid(remoteChildId)) {
+        const savedRecord = await createChildLifeRecord({
+          childId: remoteChildId,
+          recordType: 'routine',
+          title: `اكتملت مهمة: ${targetTask.name}`,
+          notes: `تم تسجيل إكمال المهمة من الروتين اليومي · ${targetTask.category || 'روتين يومي'}`,
+          occurredAt: new Date().toISOString(),
+          details: {
+            source: 'daily_routine',
+            routineTaskId: targetTask.id,
+            category: targetTask.category,
+            scheduledTime: targetTask.time,
+          },
+        });
+        if (savedRecord.error) {
+          showToast(`تم تحديث الروتين، لكن تعذر حفظه في حكاية الطفل: ${savedRecord.error}`);
+        }
+      }
       setFestivalCelebration({
         id: Date.now(),
         titleAr: targetTask ? `برافو! اكتملت مهمة «${targetTask.name}» ✨` : 'برافو! اكتملت المهمة بنجاح ✨',
