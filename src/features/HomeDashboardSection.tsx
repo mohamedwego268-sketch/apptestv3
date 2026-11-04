@@ -37,7 +37,6 @@ const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibrary
 const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
 const HomeVisualDiscovery = React.lazy(() => import('./HomeVisualDiscovery').then((module) => ({ default: module.HomeVisualDiscovery })));
 const HomeDailyExperience = React.lazy(() => import('./HomeDailyExperience').then((module) => ({ default: module.HomeDailyExperience })));
-const HomeContentTracks = React.lazy(() => import('./HomeContentTracks').then((module) => ({ default: module.HomeContentTracks })));
 const HomeDynamicContentSection = React.lazy(() => import('./HomeDynamicContentSection').then((module) => ({ default: module.HomeDynamicContentSection })));
 const HomeValuesTrackSection = React.lazy(() => import('./HomeValuesTrackSection').then((module) => ({ default: module.HomeValuesTrackSection })));
 const HomeLearningTrackSection = React.lazy(() => import('./HomeLearningTrackSection').then((module) => ({ default: module.HomeLearningTrackSection })));
@@ -525,29 +524,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const activeKidStageLabel = activeKidAge?.label || (isEn ? 'Age not set' : 'العمر غير محدد');
 
   // Give each child a consistent accent without depending on names or sample IDs.
-  const getChildColorClasses = (idx: number) => {
-    if (idx % 3 === 1) {
-      return {
-        pillActive: 'bg-rose-600 text-white border-rose-600 shadow-2xs',
-        pillInactive: 'border-rose-500/35 text-rose-700 dark:text-rose-300 bg-rose-50/60 dark:bg-[#142430]',
-        accentText: 'text-rose-600 dark:text-rose-300',
-      };
-    }
-    if (idx % 3 === 2) {
-      return {
-        pillActive: 'bg-amber-600 text-white border-amber-600 shadow-2xs',
-        pillInactive: 'border-amber-500/35 text-amber-800 dark:text-amber-300 bg-amber-50/60 dark:bg-[#142430]',
-        accentText: 'text-amber-700 dark:text-amber-300',
-      };
-    }
-    return {
-      pillActive: 'bg-sky-600 text-white border-sky-600 shadow-2xs',
-      pillInactive: 'border-sky-500/35 text-sky-700 dark:text-sky-300 bg-sky-50/60 dark:bg-[#142430]',
-      accentText: 'text-sky-600 dark:text-sky-300',
-    };
-  };
-
-  // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
+    // Personalized Active Parent Profile Details from live `state.parentAccounts` (fetched from Supabase `users` table)
   const isMotherActive =
     state.activeParentAccount === 'mother' ||
     state.role === 'mom' ||
