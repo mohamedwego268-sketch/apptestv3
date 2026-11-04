@@ -121,7 +121,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
             const cardTone = getChildStandardTone(kid, idx);
 
             const kidDoneTasksCount = state.tasks.filter(
-              (tItem) => tItem.done && (Number(tItem.kidId) === kid.id || tItem.kidId === null)
+              (tItem) => tItem.done && Number(tItem.kidId) === kid.id
             ).length;
 
             return (
@@ -136,7 +136,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                 topRightBadge={
                   <StarOfTheDayCrownBadge
                     language={lang}
-                    completedCount={Math.max(1, kidDoneTasksCount)}
+                    completedCount={kidDoneTasksCount}
                   />
                 }
                 titlePrefixSlot={
