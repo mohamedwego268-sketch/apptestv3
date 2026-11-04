@@ -170,6 +170,15 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
   const [householdCoordination, setHouseholdCoordination] = useState<HouseholdCoordination>('shared');
   const [selectedPositiveFocus, setSelectedPositiveFocus] = useState<PositiveParentingFocusId>('confidence');
   const [selectedBondingMode, setSelectedBondingMode] = useState<FamilyBondingModeId>('dialogue');
+  const [parentNeed, setParentNeed] = useState<'rest' | 'listening' | 'shared_load' | 'reassurance'>('rest');
+  const [parentResetStep, setParentResetStep] = useState(0);
+  const parentNeedContent = {
+    rest: { ar: 'محتاج/ة أهدى وأستعيد طاقتي', en: 'I need a pause and some energy back', promptAr: 'خدوا دقيقة بعيد عن الضوضاء لو ده آمن، اشربوا مياه، واختاروا مهمة واحدة ممكن تستنى.', promptEn: 'Take a quiet minute if it is safe, drink some water, and choose one task that can wait.', taskAr: 'استراحة قصيرة للأب أو الأم بدون مهام', taskEn: 'A short no-task break for a parent' },
+    listening: { ar: 'محتاج/ة حد يسمعني من غير حلول', en: 'I need someone to listen without fixing', promptAr: 'قولوا لشخص موثوق: محتاج/ة عشر دقايق تحكيلي فيها من غير نصايح، وبعدها نشوف محتاجين إيه.', promptEn: 'Tell someone you trust: I need ten minutes to be heard without advice; then we can decide what helps.', taskAr: 'وقت استماع متبادل بين الوالدين', taskEn: 'A listening check-in between parents' },
+    shared_load: { ar: 'محتاج/ة الحمل يتقسم بشكل أوضح', en: 'I need the load shared more clearly', promptAr: 'حوّلوا الطلب لمهمة محددة بموعد واضح: مين هيعمل إيه وإمتى؟ وابدأوا بالأكثر إلحاحًا فقط.', promptEn: 'Turn the request into one specific task and time: who will do what, and when? Start with only what is urgent.', taskAr: 'مراجعة توزيع مهمة واحدة بين الوالدين', taskEn: 'Review and share one household task' },
+    reassurance: { ar: 'محتاج/ة أفتكر إن مش لازم أكون مثالي', en: 'I need reassurance that I do not have to be perfect', promptAr: 'اختاروا معيار نجاح صغير لليوم: أمان الطفل، احتياج أساسي، ولحظة تواصل. الباقي ممكن يستنى.', promptEn: 'Choose a small definition of success today: child safety, one basic need, and one moment of connection. The rest can wait.', taskAr: 'تحديد أولوية واقعية واحدة لليوم', taskEn: 'Choose one realistic priority for today' },
+  }[parentNeed];
+
 
   const activeKid = useMemo(
     () => kids.find((kid) => kid.id === activeKidId) || kids[0] || null,
@@ -398,6 +407,30 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             </button>
           </div>
         </div>
+
+        <section data-testid="parent-reset-practice" className="rounded-2xl border border-orange-300/50 bg-gradient-to-br from-orange-50/90 via-white to-rose-50/60 p-3.5 space-y-3 dark:border-orange-900/50 dark:from-[#2A211D] dark:via-[#142430] dark:to-[#241B26]">
+          <div className="flex items-start justify-between gap-2">
+            <div><p className="text-[10px] font-black tracking-wide text-orange-800 dark:text-orange-200">{isEn ? 'A CHECK-IN FOR THE PARENT' : 'وقفة صغيرة للأب أو الأم'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What do I need right now?' : 'أنا محتاج/ة إيه دلوقتي؟'}</h4><p className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Choose honestly. This is a private reflection on this screen, not a diagnosis or a saved record.' : 'اختاروا بصدق ومن غير لوم. دي مساحة تفكير على الشاشة فقط، مش تشخيص ولا سجل محفوظ.'}</p></div>
+            <span className="text-2xl">🧡</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              ['rest','☕',isEn ? 'A pause' : 'راحة وهدوء'],
+              ['listening','👂',isEn ? 'To be heard' : 'حد يسمعني'],
+              ['shared_load','🤝',isEn ? 'Shared load' : 'تقسيم الحمل'],
+              ['reassurance','🌱',isEn ? 'Reassurance' : 'طمأنة'],
+            ] as const).map(([id,emoji,label]) => <button key={id} type="button" aria-pressed={parentNeed === id} onClick={() => {setParentNeed(id);setParentResetStep(0);}} className={`min-h-11 rounded-xl border px-2 py-2 text-[10px] font-extrabold transition ${parentNeed === id ? 'border-orange-500 bg-orange-100 text-orange-950 dark:bg-orange-900/40 dark:text-orange-100' : 'border-[var(--color-border)] bg-white/80 text-[var(--color-text)] dark:border-[#29404D] dark:bg-[#0B131A]/70'}`}>{emoji} {label}</button>)}
+          </div>
+          <div className="rounded-xl bg-white/85 p-3 dark:bg-[#0B131A]/70">
+            <p className="text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{isEn ? parentNeedContent.promptEn : parentNeedContent.promptAr}</p>
+            <div className="mt-3 flex items-center justify-between gap-2"><p className="text-[10px] font-black text-orange-800 dark:text-orange-200">{isEn ? 'A 3-step reset' : 'وقفة من ٣ خطوات'}</p><span className="text-[9px] text-[var(--color-muted)]">{parentResetStep + 1}/3</span></div>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {(isEn ? ['Pause safely','Name the need','Choose one step'] : ['قف بأمان','سمّي احتياجك','اختار خطوة']).map((label,index) => <button key={label} type="button" aria-pressed={parentResetStep === index} onClick={() => setParentResetStep(index)} className={`min-h-10 rounded-lg px-1.5 py-2 text-[9px] font-extrabold ${parentResetStep === index ? 'bg-orange-600 text-white' : parentResetStep > index ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-emerald-100' : 'bg-orange-50 text-orange-900 dark:bg-orange-950/30 dark:text-orange-100'}`}>{index+1}. {label}</button>)}
+            </div>
+            <p className="mt-2 text-[10px] leading-relaxed text-[var(--color-muted)]">{parentResetStep === 0 ? (isEn ? 'If the child is with you, first make sure they are in a safe place with a trusted adult before stepping away.' : 'لو الطفل معاكم، اتأكدوا الأول إنه في مكان آمن ومع شخص كبير موثوق قبل ما تبعدوا.') : parentResetStep === 1 ? (isEn ? 'Name the need without judging yourself: rest, listening, help or reassurance.' : 'سمّوا الاحتياج من غير حكم على نفسكم: راحة، استماع، مساعدة أو طمأنة.') : (isEn ? 'Ask for one specific, realistic action. Small support is still support.' : 'اطلبوا مساعدة واحدة محددة وواقعية. المساندة الصغيرة برضه مساندة.')}</p>
+            <div className="mt-3 flex flex-wrap gap-2"><button type="button" onClick={() => setParentResetStep((step) => (step + 1) % 3)} className="min-h-10 rounded-xl bg-orange-700 px-3 py-2 text-[10px] font-extrabold text-white">{isEn ? 'Next step' : 'الخطوة التالية'}</button><button type="button" onClick={() => onAddRoutineTask?.(isEn ? parentNeedContent.taskEn : parentNeedContent.taskAr,'08:00 م',null)} className="min-h-10 rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-[10px] font-extrabold text-orange-900 dark:text-orange-100">+ {isEn ? 'Add to family routine' : 'أضف للروتين الأسري'}</button></div>
+          </div>
+        </section>
 
         <div
           data-testid="household-balance-visual"
