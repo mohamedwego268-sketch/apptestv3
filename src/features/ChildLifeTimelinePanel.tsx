@@ -64,6 +64,10 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const visibleRecords = activeFilter === 'all'
     ? records
     : records.filter((item) => FILTER_TYPES[activeFilter].includes(item.record_type));
+  const growthRecords = records
+    .filter((item) => item.record_type === 'growth_measurement' && (Number(item.details?.heightCm) > 0 || Number(item.details?.weightKg) > 0))
+    .slice()
+    .sort((a, b) => new Date(a.occurred_at).getTime() - new Date(b.occurred_at).getTime());
 
   const refresh = useCallback(async () => {
     if (!validChildId || typeof childId !== 'string') return;
@@ -141,6 +145,22 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                   {saving ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Save to child timeline' : 'حفظ في سجل الطفل')}
                 </button>
               </form>
+              {growthRecords.length > 0 && (
+                <section data-testid="child-growth-history" className="rounded-2xl border border-teal-200/80 dark:border-teal-900 bg-gradient-to-br from-teal-50/80 to-white dark:from-teal-950/30 dark:to-[#101D26] p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-2"><div><h4 className="text-xs font-extrabold text-teal-900 dark:text-teal-100">{isEn ? 'Growth measurement history' : 'تاريخ قياسات النمو'}</h4><p className="mt-0.5 text-[10px] text-teal-800/80 dark:text-teal-200/80">{isEn ? 'Recorded values, in date order' : 'القيم الفعلية المسجلة مرتبة حسب التاريخ'}</p></div><span className="rounded-full bg-teal-100 dark:bg-teal-900/60 px-2.5 py-1 text-[10px] font-black text-teal-800 dark:text-teal-100">{growthRecords.length}</span></div>
+                  <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
+                    {growthRecords.map((record, index) => (
+                      <article key={record.id} className="relative min-w-[138px] snap-start rounded-xl border border-teal-200/80 dark:border-teal-900 bg-white/90 dark:bg-[#142430] p-3">
+                        <time className="text-[10px] font-bold text-[var(--color-muted)]" dateTime={record.occurred_at}>{new Date(record.occurred_at).toLocaleDateString(isEn ? 'en' : 'ar', { day: 'numeric', month: 'short', year: 'numeric' })}</time>
+                        {Number(record.details?.heightCm) > 0 && <div className="mt-2 flex items-baseline justify-between gap-1"><span className="text-[10px] text-teal-800 dark:text-teal-200">{isEn ? 'Height' : 'الطول'}</span><strong dir="ltr" className="text-sm text-teal-800 dark:text-teal-200">{Number(record.details.heightCm)} cm</strong></div>}
+                        {Number(record.details?.weightKg) > 0 && <div className="mt-1 flex items-baseline justify-between gap-1"><span className="text-[10px] text-orange-800 dark:text-orange-200">{isEn ? 'Weight' : 'الوزن'}</span><strong dir="ltr" className="text-sm text-orange-800 dark:text-orange-200">{Number(record.details.weightKg)} kg</strong></div>}
+                        {index < growthRecords.length - 1 && <span className="absolute -end-2 top-1/2 z-10 grid h-5 w-5 -translate-y-1/2 place-items-center rounded-full bg-teal-600 text-[10px] text-white shadow">{isEn ? '›' : '‹'}</span>}
+                      </article>
+                    ))}
+                  </div>
+                  {growthRecords.length === 1 && <p className="text-[10px] leading-5 text-teal-900/80 dark:text-teal-100/80">{isEn ? 'Add another dated measurement to begin comparing real changes over time.' : 'أضف قياسًا آخر بتاريخ مختلف علشان نقدر نتابع التغير الفعلي بمرور الوقت.'}</p>}
+                </section>
+              )}
               <div data-testid="child-timeline-insights" className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'Explore this child’s story' : 'اكتشفوا حكاية طفلكم'}</h4>
