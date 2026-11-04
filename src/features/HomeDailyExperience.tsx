@@ -163,6 +163,33 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
           ))}
         </div>
 
+        <div data-testid="daily-care-journey" className="rounded-2xl border border-white/10 bg-white/[.06] p-3.5">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-black">{isEn ? 'Today, one caring moment at a time' : 'رحلة رعاية النهارده.. خطوة بخطوة'}</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">{isEn ? 'A gentle overview of what has been recorded so far.' : 'نظرة بسيطة على اللي اتسجل لحد دلوقتي، من غير ضغط.'}</p>
+            </div>
+            <span className="rounded-xl border border-teal-200/20 bg-teal-200/10 px-2.5 py-1.5 text-xs font-black text-[#8AF0D0] tabular-nums">{completedEssentials}/3</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: 'sleep', icon: '🌙', label: isEn ? 'Rest' : 'راحة', detail: isEn ? 'Sleep' : 'النوم', done: todayProgress.sleepLogged },
+              { id: 'meal', icon: '🥣', label: isEn ? 'Nourish' : 'تغذية', detail: isEn ? 'Meals' : 'الأكل', done: todayProgress.mealLogged },
+              { id: 'care', icon: '💚', label: isEn ? 'Care' : 'اهتمام', detail: isEn ? 'Daily care' : 'الرعاية', done: todayProgress.careLogged },
+            ].map((step, index) => (
+              <div key={step.id} className={`relative min-w-0 rounded-xl border p-2 text-center transition-colors ${step.done ? 'border-[#8AF0D0]/35 bg-[#8AF0D0]/10' : 'border-white/10 bg-black/10'}`}>
+                <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-white/10 text-base">{step.done ? '✓' : step.icon}</span>
+                <p className="mt-1.5 text-[10px] font-black">{isEn ? step.label : step.label}</p>
+                <p className="mt-0.5 text-[9px] text-cyan-50/60">{step.done ? (isEn ? 'Recorded' : 'اتسجلت') : step.detail}</p>
+                {index < 2 && <span aria-hidden="true" className={`absolute -end-2 top-5 z-10 h-px w-2 ${step.done ? 'bg-[#8AF0D0]/70' : 'bg-white/20'}`} />}
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-gradient-to-r from-teal-300 to-emerald-200 transition-all duration-700" style={{ width: `${completion}%` }} />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
