@@ -601,6 +601,8 @@ export interface RoutineTask {
   category: string;
   owner: string;
   cadence: TaskCadence;
+  /** 0 = Sunday ... 6 = Saturday; used when cadence is weekly. */
+  dayOfWeek?: number;
 }
 
 export interface CalendarEvent {
