@@ -54,6 +54,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const formRef = React.useRef<HTMLFormElement | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [activeFilter, setActiveFilter] = useState<TimelineFilter>('all');
   const filterCards: { id: TimelineFilter; icon: string; ar: string; en: string; count: number }[] = [
@@ -157,7 +158,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
             </p>
           ) : (
             <>
-              <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <form ref={formRef} onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-2 scroll-mt-4">
                 <select value={recordType} onChange={(event) => setRecordType(event.target.value as ChildLifeRecordType)} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-white dark:bg-[#0D1B26] px-3 text-sm">
                   {CHILD_LIFE_RECORD_TYPES.map((type) => <option key={type} value={type}>{isEn ? LABELS[type].en : LABELS[type].ar}</option>)}
                 </select>
@@ -199,7 +200,7 @@ export const ChildLifeTimelinePanel: React.FC<Props> = ({ childId, childName, la
                   { id: 'learning', icon: '📖', ar: 'اختاروا قصة واقرؤوها', en: 'Choose and read a story', type: 'education' as ChildLifeRecordType },
                   { id: 'social', icon: '🧩', ar: 'ابنوا حاجة كفريق', en: 'Build something as a team', type: 'hobby' as ChildLifeRecordType },
                   { id: 'creative', icon: '🎵', ar: 'اعملوا إيقاع بالموجود', en: 'Make a rhythm together', type: 'hobby' as ChildLifeRecordType },
-                ].map((idea, index) => <button key={`${idea.id}-${index}`} type="button" onClick={() => { setRecordType(idea.type); setInterestCategory(idea.id); setTitle(isEn ? idea.en : idea.ar); setNotes(''); setActiveFilter('interests'); }} className="min-h-[76px] rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-2 text-start transition hover:-translate-y-0.5 hover:border-violet-400"><span className="text-lg">{idea.icon}</span><span className="mt-1 block text-[10px] font-extrabold leading-4 text-[var(--color-text)] dark:text-white">{isEn ? idea.en : idea.ar}</span><span className="mt-1 block text-[9px] font-bold text-violet-700 dark:text-violet-300">{isEn ? 'Use in activity log →' : 'سجّلوا التجربة ←'}</span></button>)}</div></div>
+                ].map((idea, index) => <button key={`${idea.id}-${index}`} type="button" onClick={() => { setRecordType(idea.type); setInterestCategory(idea.id); setTitle(isEn ? idea.en : idea.ar); setNotes(''); setActiveFilter('interests'); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="min-h-[76px] rounded-xl border border-violet-100 dark:border-violet-900/70 bg-white/90 dark:bg-[#172536] p-2 text-start transition hover:-translate-y-0.5 hover:border-violet-400"><span className="text-lg">{idea.icon}</span><span className="mt-1 block text-[10px] font-extrabold leading-4 text-[var(--color-text)] dark:text-white">{isEn ? idea.en : idea.ar}</span><span className="mt-1 block text-[9px] font-bold text-violet-700 dark:text-violet-300">{isEn ? 'Use in activity log →' : 'سجّلوا التجربة ←'}</span></button>)}</div></div>
               </section>
               <div data-testid="child-timeline-insights" className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
