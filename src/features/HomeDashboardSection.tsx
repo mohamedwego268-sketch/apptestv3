@@ -953,9 +953,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       className="space-y-5 sm:space-y-6 pb-3"
       aria-label={isEn ? 'Nekbaar Family Home Dashboard' : 'لوحة العائلة الرئيسية — نكبر'}
     >
-      {/* =====================================================================
-          1. PERSONALIZED WELCOME & PARENT WELLBEING
-          ===================================================================== */}
       {/* Child Life Command Center — the single place to switch child and manage the day with per-child visual identity. */}
       {(() => {
         const activeKidColorId = resolveChildColorTheme(activeKid, state.kids);
@@ -2120,8 +2117,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </HomeAccordionCard>
 
-          4. ACCORDION: TIME-AWARE PARENTING COMPASS
-          ===================================================================== */}
       <HomeAccordionCard
         id="home-daily-parenting-wisdom"
         testId="home-daily-parenting-wisdom"
