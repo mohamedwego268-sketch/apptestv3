@@ -410,7 +410,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             </div>
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-500/10 text-xl">⚖️</span>
           </div>
-          <div className="mt-3 grid grid-cols-3 items-center gap-1.5">
+          <div className="mt-3 grid grid-cols-3 gap-1.5">
             {[
               { n: '١', icon: '🌡️', ar: householdEnergy === 'steady' ? 'الطاقة مستقرة' : householdEnergy === 'tired' ? 'محتاجين راحة' : 'الضغط كبير', en: householdEnergy === 'steady' ? 'Energy is steady' : householdEnergy === 'tired' ? 'Rest is needed' : 'Pressure is high' },
               { n: '٢', icon: '🤝', ar: householdCoordination === 'shared' ? 'المسؤوليات مشتركة' : householdCoordination === 'uneven' ? 'الحمل محتاج يتوزع' : 'محتاجين نتفق', en: householdCoordination === 'shared' ? 'Shared responsibilities' : householdCoordination === 'uneven' ? 'Rebalance the load' : 'Agree together' },
@@ -421,7 +421,6 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                   <span className="mx-auto grid h-7 w-7 place-items-center rounded-full bg-rose-500/10 text-sm">{step.icon}</span>
                   <p className="mt-1 text-[9px] font-black leading-relaxed text-[var(--color-text)] dark:text-white">{isEn ? step.en : step.ar}</p>
                 </div>
-                {index < 2 && <span aria-hidden="true" className="hidden text-center text-rose-500 sm:block">←</span>}
               </React.Fragment>
             ))}
           </div>
