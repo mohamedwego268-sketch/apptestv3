@@ -135,6 +135,22 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
         </span>
       </div>
 
+      <div data-testid="family-growth-map" className="mb-4 rounded-2xl border border-teal-500/15 bg-gradient-to-r from-teal-50 via-white to-sky-50/80 p-3 dark:from-[#102D32] dark:via-[#142430] dark:to-[#152C3C]">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-[10px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How the six tracks work together' : 'إزاي مسارات نكبر بتكمل بعض؟'}</p>
+          <span className="text-lg" aria-hidden="true">🧭</span>
+        </div>
+        <div className="mt-2.5 grid grid-cols-5 gap-1">
+          {(isEn ? [{icon:'👀',label:'Notice'},{icon:'📝',label:'Record'},{icon:'📈',label:'Follow'},{icon:'💡',label:'Understand'},{icon:'🤝',label:'Act'}] : [{icon:'👀',label:'لاحظ'},{icon:'📝',label:'سجّل'},{icon:'📈',label:'تابع'},{icon:'💡',label:'افهم'},{icon:'🤝',label:'اتصرف'}]).map((step,index)=>(
+            <div key={step.label} className="min-w-0 text-center">
+              <span className="mx-auto grid h-8 w-8 place-items-center rounded-xl border border-teal-500/10 bg-white/85 text-sm shadow-sm dark:border-white/10 dark:bg-white/5">{step.icon}</span>
+              <span className="mt-1 block text-[8px] font-black text-teal-950 dark:text-teal-100 sm:text-[9px]">{step.label}</span>
+              {index < 4 && <span className="sr-only">{isEn ? 'then' : 'ثم'}</span>}
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {CONTENT_TRACKS.map((track) => {
           const Icon = track.icon;
