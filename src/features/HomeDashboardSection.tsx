@@ -1346,50 +1346,22 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 </div>
 
                 {activeKid && (
-                  <div className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2">
-                    <span className="text-[10px] font-bold text-white/90">
-                      {isEn ? 'Child color:' : 'لون الطفل:'}
-                    </span>
-                    <div className="flex items-center gap-1.5">
+                  <details className="group relative shrink-0">
+                    <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-xl border border-white/15 bg-white/[0.07] px-3 text-[11px] font-bold text-white [&::-webkit-details-marker]:hidden">
+                      <span aria-hidden="true">🎨</span><span>{isEn ? 'Color' : 'اللون'}</span><span className="text-white/60 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+                    </summary>
+                    <div className="absolute end-0 top-full z-30 mt-2 flex items-center gap-2 rounded-xl border border-white/15 bg-slate-900 p-3 shadow-xl">
                       {CHILD_COLOR_PALETTE_ORDER.map((colorId) => {
                         const cSpec = CHILD_VISUAL_IDENTITY_THEMES[colorId];
                         const isSelectedColor = activeKidColorId === colorId;
                         return (
-                          <button
-                            key={colorId}
-                            type="button"
-                            data-testid={`command-center-color-${colorId}`}
-                            aria-label={
-                              isEn
-                                ? `Set ${activeKidName} color to ${cSpec.labelEn}`
-                                : `تخصيص لون ${activeKidName} إلى ${cSpec.labelAr}`
-                            }
-                            aria-pressed={isSelectedColor}
-                            onClick={() => onChangeChildColorTheme?.(activeKid.id, colorId)}
-                            style={{ backgroundColor: cSpec.swatchHex }}
-                            className={`h-5 w-5 rounded-full border transition-transform cursor-pointer ${
-                              isSelectedColor
-                                ? 'border-white scale-125 ring-2 ring-white/70'
-                                : 'border-white/50 opacity-75 hover:opacity-100'
-                            }`}
-                          />
+                          <button key={colorId} type="button" data-testid={`command-center-color-${colorId}`} aria-label={isEn ? `Set ${activeKidName} color to ${cSpec.labelEn}` : `تخصيص لون ${activeKidName} إلى ${cSpec.labelAr}`} aria-pressed={isSelectedColor} onClick={() => onChangeChildColorTheme?.(activeKid.id, colorId)} style={{ backgroundColor: cSpec.swatchHex }} className={`h-7 w-7 rounded-full border transition-transform cursor-pointer ${isSelectedColor ? 'border-white scale-110 ring-2 ring-white/70' : 'border-white/50 opacity-80 hover:opacity-100'}`} />
                         );
                       })}
+                      {onOpenEditChild && <button type="button" data-testid="command-center-edit-child-btn" onClick={() => onOpenEditChild(activeKid)} className="ms-1 rounded-lg border border-white/20 bg-white/10 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-white/20 cursor-pointer">{isEn ? 'Profile' : 'ملف الطفل'}</button>}
                     </div>
-                    {onOpenEditChild && (
-                      <button
-                        type="button"
-                        data-testid="command-center-edit-child-btn"
-                        onClick={() => onOpenEditChild(activeKid)}
-                        className="ms-1 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px] font-bold text-white hover:bg-white/20 cursor-pointer"
-                      >
-                        {isEn ? 'Profile' : 'ملف الطفل'}
-                      </button>
-                    )}
-                  </div>
+                  </details>
                 )}
-              </div>
-            )}
 
             {activeKid && (
               <>
@@ -1420,7 +1392,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   </div>
                 </details>
 
-                {/* Tasks, Recurrence & Shared Parent Plan */}                {/* Tasks, Recurrence & Shared Parent Plan */}
+                {/* Tasks, Recurrence & Shared Parent Plan */}
                 <div className={`rounded-2xl border border-white/15 ${activeKidVisual.innerPanelBg} p-3.5 space-y-3`}>
                   <div className="flex items-center justify-between gap-2">
                     <div>
