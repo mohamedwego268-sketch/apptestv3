@@ -3695,7 +3695,7 @@ describe('Homepage learning and values track coverage', () => {
     assert.ok(homeSrc.includes("learningTrack: 'home-learning-track-card'"));
     assert.ok(tracksSrc.includes("destination: { kind: 'section', section: 'learningTrack' }"));
     assert.ok(tracksSrc.includes("destination: { kind: 'section', section: 'sportsTrack' }"));
-    assert.ok(tracksSrc.includes('اعرف ← سجّل ← تابع ← افهم ← اتصرف'));
+    assert.ok(tracksSrc.includes('لاحظ ← سجّل ← تابع ← افهم ← اتصرف'));
     assert.ok(homeSrc.includes("sportsTrack: 'home-essential-sports-card'"));
     assert.ok(homeSrc.includes("key === 'sportsTrack' ? 'dailyEssentials' : key"));
     assert.ok(learningSrc.includes('min-h-[44px]'));
