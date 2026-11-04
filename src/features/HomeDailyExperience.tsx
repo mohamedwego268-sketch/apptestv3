@@ -85,13 +85,13 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
           <div className="min-w-0">
             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[10px] font-extrabold text-teal-100">
               <Sparkles size={13} />
-              {isEn ? 'YOUR FAMILY, IN THE MOMENT' : 'لحظات طفلك.. تستاهل تتسجل'}
+              {isEn ? 'YOUR FAMILY, IN THE MOMENT' : 'تفاصيل صغيرة من يوم طفلك'}
             </div>
             <h2 id="home-daily-experience-title" className="text-lg font-black leading-tight sm:text-xl">
               {isEn ? `A little closer to ${childName}’s world` : `كل يوم بنعرف عالم ${childName} أكتر`}
             </h2>
             <p className="mt-1.5 text-xs font-medium leading-relaxed text-cyan-50/75">
-              {isEn ? 'A living picture built from the moments you actually record.' : 'صورة بتكبر من اللحظات الحقيقية اللي بتسجّلها معاه.'}
+              {isEn ? 'Every note helps you remember more about your child’s day.' : 'كل ما تسجّلوا حاجة من يومه، هتفتكروا تفاصيل أكتر عنه.'}
             </p>
           </div>
           <button
@@ -128,8 +128,8 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
         <div className="rounded-2xl border border-white/10 bg-[#062C35]/35 p-3.5">
           <div className="mb-3 flex items-center justify-between gap-2">
             <div>
-              <p className="text-xs font-black">{isEn ? 'Your week in moments' : 'أسبوع طفلك في لحظات'}</p>
-              <p className="mt-0.5 text-[10px] text-cyan-50/60">{isEn ? 'Saved moments by day — not a score or a target.' : 'عدد اللحظات المسجلة كل يوم، مش تقييم ولا سباق.'}</p>
+              <p className="text-xs font-black">{isEn ? 'Your child’s week' : 'ملخص أسبوع طفلك'}</p>
+              <p className="mt-0.5 text-[10px] text-cyan-50/60">{isEn ? 'Saved moments by day — not a score or a target.' : 'دي بس بتوضح إيه اللي سجلتوه خلال الأسبوع، من غير درجات أو مقارنة.'}</p>
             </div>
             <span className="rounded-lg bg-white/10 px-2 py-1 text-[10px] font-black">{activeDays}/7</span>
           </div>
@@ -166,16 +166,16 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
         <div data-testid="daily-care-journey" className="rounded-2xl border border-white/10 bg-white/[.06] p-3.5">
           <div className="mb-3 flex items-center justify-between gap-2">
             <div>
-              <p className="text-xs font-black">{isEn ? 'Today, one caring moment at a time' : 'رحلة رعاية النهارده.. خطوة بخطوة'}</p>
-              <p className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">{isEn ? 'A gentle overview of what has been recorded so far.' : 'نظرة بسيطة على اللي اتسجل لحد دلوقتي، من غير ضغط.'}</p>
+              <p className="text-xs font-black">{isEn ? 'What you have recorded today' : 'إيه اللي سجلناه النهارده؟'}</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-cyan-50/65">{isEn ? 'You can add more whenever you like. There is no rush.' : 'تقدروا تكملوا التسجيل وقت ما تحبوا، مفيش حاجة لازم تخلص.'}</p>
             </div>
             <span className="rounded-xl border border-teal-200/20 bg-teal-200/10 px-2.5 py-1.5 text-xs font-black text-[#8AF0D0] tabular-nums">{completedEssentials}/3</span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { id: 'sleep', icon: '🌙', label: isEn ? 'Rest' : 'راحة', detail: isEn ? 'Sleep' : 'النوم', done: todayProgress.sleepLogged },
-              { id: 'meal', icon: '🥣', label: isEn ? 'Nourish' : 'تغذية', detail: isEn ? 'Meals' : 'الأكل', done: todayProgress.mealLogged },
-              { id: 'care', icon: '💚', label: isEn ? 'Care' : 'اهتمام', detail: isEn ? 'Daily care' : 'الرعاية', done: todayProgress.careLogged },
+              { id: 'sleep', icon: '🌙', label: isEn ? 'Rest' : 'النوم', detail: isEn ? 'Sleep' : 'النوم', done: todayProgress.sleepLogged },
+              { id: 'meal', icon: '🥣', label: isEn ? 'Food' : 'الأكل', detail: isEn ? 'Meals' : 'الأكل', done: todayProgress.mealLogged },
+              { id: 'care', icon: '💚', label: isEn ? 'Care' : 'العناية اليومية', detail: isEn ? 'Daily care' : 'الرعاية', done: todayProgress.careLogged },
             ].map((step, index) => (
               <div key={step.id} className={`relative min-w-0 rounded-xl border p-2 text-center transition-colors ${step.done ? 'border-[#8AF0D0]/35 bg-[#8AF0D0]/10' : 'border-white/10 bg-black/10'}`}>
                 <span className="mx-auto grid h-8 w-8 place-items-center rounded-full bg-white/10 text-base">{step.done ? '✓' : step.icon}</span>
@@ -198,7 +198,7 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
             className="inline-flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-xl bg-[#8AF0D0] px-4 py-3 text-xs font-black text-[#07343B] shadow-lg shadow-black/10 transition duration-200 hover:-translate-y-0.5 hover:bg-[#A5F5DD] active:translate-y-0 active:scale-[.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0D4850]"
           >
             <ClipboardCheck size={16} />
-            {isEn ? 'Add a moment to today' : 'سجّل لحظة من يومه'}
+            {isEn ? 'Record part of today' : 'سجّل لحظة من يومه'}
             <Arrow size={15} />
           </button>
           <button
@@ -208,7 +208,7 @@ export const HomeDailyExperience: React.FC<HomeDailyExperienceProps> = ({
             className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[.08] px-4 py-3 text-xs font-extrabold text-white transition duration-200 hover:bg-white/[.14] active:scale-[.98]"
           >
             <Heart size={15} />
-            {isEn ? 'How are they feeling?' : 'عامل إيه من جواه؟'}
+            {isEn ? 'How are they feeling?' : 'حاسس بإيه النهارده؟'}
           </button>
         </div>
         <p className="text-center text-[9px] font-medium leading-relaxed text-cyan-50/50">
