@@ -1544,12 +1544,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         title={
           isEn
             ? `Daily Care Essentials for ${activeKidName}`
-            : `أساسيات الرعاية اليومية لـ ${activeKidName}`
+            : `الأكل والماء والحركة مع ${activeKidName}`
         }
         subtitle={
           isEn
-            ? 'Nutrition, age-appropriate water logging, and physical activity'
-            : 'التغذية، وتسجيل الماء عند ملاءمة العمر، والنشاط البدني والرياضي اليومي'
+            ? 'Food, age-appropriate water tracking, and daily movement'
+            : 'أفكار للأكل، ومتابعة شرب الماء لما يكون مناسب لسن الطفل، وحركة ولعب كل يوم'
         }
         badgeText={`${currentWaterCups} 💧`}
         badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
@@ -1561,7 +1561,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-extrabold text-[var(--color-muted)] dark:text-[#94A3B8]">
-              {isEn ? 'Customize essentials for:' : 'تخصيص أساسيات الرعاية لـ:'}
+              {isEn ? 'Customize essentials for:' : 'اختاروا الطفل:'}
             </span>
             <div className="inline-flex flex-wrap items-center gap-1.5">
               {state.kids.map((kid, idx) => {
@@ -1666,19 +1666,19 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 itemIdOrIndex={2}
                 darkMode={Boolean(state.darkMode)}
                 topLeftBadge={<span>💧 {isEn ? 'Water log' : 'تسجيل شرب الماء'}</span>}
-                topRightBadge={<span>{currentWaterCups} {isEn ? 'logged' : 'حصص مسجلة'}</span>}
-                title={isEn ? `Water servings logged for ${activeKidName}` : `حصص الماء المسجلة لـ ${activeKidName}`}
-                metaLeft={<span>{isEn ? 'A record, not a daily target' : 'سجل متابعة وليس هدفًا يوميًا ثابتًا'}</span>}
+                topRightBadge={<span>{currentWaterCups} {isEn ? 'logged' : 'مرات مسجلة'}</span>}
+                title={isEn ? `Water servings logged for ${activeKidName}` : `مرات تقديم الماء لـ ${activeKidName}`}
+                metaLeft={<span>{isEn ? 'A record, not a daily target' : 'للمتابعة فقط، مش هدف لازم توصلوله'}</span>}
                 bodyContent={
                   <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
                     {isEn
                       ? 'Record water servings offered during the day. Needs vary with age, food, weather and health; follow your child’s clinician for individual guidance.'
-                      : 'سجلوا حصص الماء المقدمة خلال اليوم. الاحتياج يختلف حسب العمر والطعام والطقس والحالة الصحية؛ اتبعوا إرشادات الطبيب عند الحاجة.'}
+                      : 'سجلوا كل مرة قدمتوا فيها ماء خلال اليوم. احتياج الطفل بيختلف حسب سنه وأكله والجو وحالته الصحية؛ اسألوا طبيبه لو محتاجين توجيه.'}
                   </p>
                 }
                 footerLeft={
                   <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
-                    {currentWaterCups} {isEn ? 'servings today' : 'حصص اليوم'}
+                    {currentWaterCups} {isEn ? 'servings today' : 'مرات اليوم'}
                   </span>
                 }
                 footerRight={
@@ -1687,7 +1687,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       type="button"
                       disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
                       onClick={() => handleAdjustWater(-1)}
-                      aria-label={isEn ? 'Decrease water log' : 'إنقاص تسجيل الماء'}
+                      aria-label={isEn ? 'Decrease water log' : 'تقليل عدد مرات تسجيل الماء'}
                       className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
                     >
                       −
@@ -1699,7 +1699,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                       onClick={() => handleAdjustWater(1)}
                       className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
                     >
-                      + {savingDashboardActions[`${activeKidId}:hydration`] ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Log water' : 'تسجيل ماء 💧')}
+                      + {savingDashboardActions[`${activeKidId}:hydration`] ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Log water' : 'سجلوا مرة 💧')}
                     </button>
                   </div>
                 }
@@ -1721,7 +1721,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 <>
                   <span>👶 {activeKidName}</span>
                   <span aria-hidden="true">·</span>
-                  <span>{isEn ? 'Motor & Physical Growth' : 'تنمية اللياقة والمهارات الحركية'}</span>
+                  <span>{isEn ? 'Movement & Play' : 'الحركة واللعب'}</span>
                 </>
               }
               bodyContent={
