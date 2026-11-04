@@ -164,7 +164,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
     });
     setSaving(false);
     if (!result.error) onPersonalLocationSaved(personalCountry, personalCity);
-    onShowToast(result.error || (isEn ? 'Your private location has been saved.' : 'تم حفظ موقع حسابك الشخصي بشكل مستقل.'));
+    onShowToast(result.error || (isEn ? 'Your private location has been saved.' : 'تم حفظ مكانك أنت بشكل مستقل.'));
   };
 
   const handleAddHome = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -263,7 +263,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
           <div className="rounded-xl bg-[var(--color-control-muted)]/50 p-3 space-y-3">
             <div>
               <h3 className="text-sm font-extrabold text-[var(--color-text)]">{isEn ? 'Your personal location' : 'موقع حسابك الشخصي'}</h3>
-              <p className="text-xs text-[var(--color-muted)] mt-1">{isEn ? 'This is kept separate from the other parent’s location.' : 'يُحفظ بشكل مستقل عن موقع ولي الأمر الآخر.'}</p>
+              <p className="text-xs text-[var(--color-muted)] mt-1">{isEn ? 'This is kept separate from the other parent’s location.' : 'مكانك يظهر لوحده، ومش بيغيّر مكان ولي الأمر الآخر.'}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <select value={personalCountry} onChange={(e) => { const value = e.target.value as CountryCode; setPersonalCountry(value); setPersonalCity(COUNTRY_CITIES_MAP[value][0]?.id || ''); }} className="min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-text)]">
@@ -359,7 +359,7 @@ export const FamilyHomesSection: React.FC<FamilyHomesSectionProps> = ({ state, o
           <div className="space-y-3">
             <div>
               <h3 className="text-sm font-extrabold text-[var(--color-text)]">{isEn ? 'Child location & weekly routine' : 'مكان الطفل وجدول الإقامة'}</h3>
-              <p className="text-xs text-[var(--color-muted)] mt-1">{isEn ? 'Set the current place and, if useful, a recurring weekly schedule.' : 'حدد مكان الطفل الحالي، ويمكنك إضافة جدول أسبوعي متكرر عند الحاجة.'}</p>
+              <p className="text-xs text-[var(--color-muted)] mt-1">{isEn ? 'Set the current place and, if useful, a recurring weekly schedule.' : 'اختار مكان الطفل الحالي، وممكن تضيف جدول أسبوعي لو محتاج.'}</p>
             </div>
             {children.map((child) => (
               <div key={child.id} className="rounded-xl border border-[var(--color-border)] p-3 space-y-2">
