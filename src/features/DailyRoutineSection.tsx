@@ -90,10 +90,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
         <div className="image-card-glass-panel rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-0.5 text-start">
             <span className="image-card-badge px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums">
-              {isEn ? 'Done:' : 'أُنجز:'} {completedTasksCount}/{state.tasks.length}
+              {isEn ? 'Done:' : 'اتعمل:'} {completedTasksCount}/{state.tasks.length}
             </span>
             <h2 className="image-card-title text-sm sm:text-base font-extrabold">
-              {isEn ? 'Family Routine & Reminders' : 'روتين الأسرة والتذكيرات'}
+              {isEn ? 'Family tasks and reminders' : 'حاجات الأسرة ومواعيدها'}
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
@@ -102,7 +102,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               onClick={onResetTasks}
               className="min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold border border-white/80 dark:border-[#1E3646] bg-white/90 dark:bg-[#142430] text-slate-900 dark:text-[#F8FAFC] whitespace-nowrap transition-all active:scale-95 cursor-pointer"
             >
-              {isEn ? 'Clear filters' : 'مسح التصفية'}
+              {isEn ? 'Show everything' : 'إظهار الكل'}
             </button>
             <PrimaryCtaButton variant="orange" size="sm" onClick={onOpenAddTask}>
               {isEn ? '+ Add Task' : '+ إضافة مهمة'}
@@ -129,7 +129,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <div
               className="flex flex-wrap items-center gap-1.5"
               role="group"
-              aria-label={isEn ? 'Filter by reminder status' : 'تصفية حسب حالة التذكير'}
+              aria-label={isEn ? 'Filter by reminder status' : 'اختاروا التذكيرات اللي عايزين تشوفوها'}
             >
               <button
                 type="button"
@@ -174,7 +174,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <select
                 id="routineLeadWindow"
-                aria-label={isEn ? 'Reminder lead time' : 'مدة التنبيه قبل الموعد'}
+                aria-label={isEn ? 'Reminder lead time' : 'التنبيه قبل الموعد بقد إيه'}
                 value={routineApproachingWindow}
                 onChange={(e) => setRoutineApproachingWindow(Number(e.target.value))}
                 className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
@@ -186,7 +186,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
               </select>
               <select
                 id="routineRefTime"
-                aria-label={isEn ? 'Reference time' : 'الوقت المرجعي لحساب التذكيرات'}
+                aria-label={isEn ? 'Reference time' : 'احسبوا المواعيد على أساس أنهي وقت'}
                 value={routineRefTimePreset}
                 onChange={(e) => setRoutineRefTimePreset(e.target.value)}
                 className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-white dark:bg-[#142430] px-2.5 py-1.5 text-xs font-bold text-[var(--color-text)]"
@@ -205,10 +205,10 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <div
               className="grid grid-cols-2 gap-1.5"
               role="tablist"
-              aria-label={isEn ? 'Routine cadence' : 'نطاق تكرار الروتين'}
+              aria-label={isEn ? 'Routine cadence' : 'عرض المهام حسب الفترة'}
             >
               {[
-                { id: 'all', label: isEn ? 'All Periods' : 'كل الفترات' },
+                { id: 'all', label: isEn ? 'All Periods' : 'كل المواعيد' },
                 { id: 'daily', label: isEn ? 'Daily' : 'اليوم' },
                 { id: 'weekly', label: isEn ? 'Weekly' : 'الأسبوع' },
                 { id: 'monthly', label: isEn ? 'Monthly' : 'الشهر' },
@@ -231,12 +231,12 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             <div className="grid grid-cols-1 gap-2">
               <select
                 id="routineKidFilter"
-                aria-label={isEn ? 'Filter by child' : 'عرض مهام'}
+                aria-label={isEn ? 'Filter by child' : 'اختاروا طفل أو كل الأسرة'}
                 value={routineKidFilter}
                 onChange={(e) => setRoutineKidFilter(e.target.value)}
                 className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
               >
-                <option value="all">{isEn ? 'Everyone in the family' : 'كل أفراد الأسرة'}</option>
+                <option value="all">{isEn ? 'Everyone in the family' : 'كل الأسرة'}</option>
                 {state.kids.map((k) => (
                   <option key={k.id} value={String(k.id)}>
                     {locText(k.name, lang)}
@@ -250,7 +250,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                 onChange={(e) => setRoutineStatusFilter(e.target.value as 'all' | 'open' | 'done')}
                 className="w-full rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3 py-2 text-xs font-bold text-[var(--color-text)]"
               >
-                <option value="all">{isEn ? 'All Statuses' : 'كل الحالات'}</option>
+                <option value="all">{isEn ? 'All Statuses' : 'الكل'}</option>
                 <option value="open">{isEn ? 'Open' : 'غير مكتملة'}</option>
                 <option value="done">{isEn ? 'Completed' : 'مكتملة'}</option>
               </select>
@@ -271,7 +271,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
             subtitle={emptyRoutineCopy.subtitle}
             actionLabel={emptyRoutineCopy.actionLabel}
             onAction={onOpenAddTask}
-            secondaryCtaLabel={isEn ? 'Show All Tasks' : 'عرض كل مهام الروتين'}
+            secondaryCtaLabel={isEn ? 'Show All Tasks' : 'عرض كل المهام'}
             onSecondaryCtaClick={() => {
               setRoutineReminderFilter('all');
               setRoutineCadenceFilter('all');
@@ -346,7 +346,7 @@ export const DailyRoutineSection: React.FC<DailyRoutineSectionProps> = ({
                           : 'مكتملة ✓'
                         : isEn
                         ? 'Pending Task'
-                        : 'قيد التنفيذ'}
+                        : 'لسه متعملتش'}
                     </UnifiedBadge>
                   }
                   footerRight={
