@@ -2535,14 +2535,18 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         isEn={isEn}
       >
         <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><ParentingSupportCenter
-          kids={[]}
-          initialKidId={null}
+          kids={state.kids}
+          initialKidId={activeKid?.id ?? null}
           hideChildSelector={true}
+          onActiveKidChange={(kidId) => {
+            const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
+            if (selectedIndex >= 0) setSelectedKidIdx(selectedIndex);
+          }}
           language={lang}
           activeParentRole={isMotherActive ? 'mother' : 'father'}
           motherName={motherShortAr}
           fatherName={fatherShortAr}
-          recentRecordsByKid={{}}
+          recentRecordsByKid={recentRecordsByKid}
           onSaveChildMood={async (kidId, mood) => {
             const actionKey = `mood:${kidId}`;
             if (savingDashboardActionKeysRef.current.has(actionKey)) return false;
