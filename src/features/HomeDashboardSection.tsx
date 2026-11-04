@@ -25,6 +25,7 @@ import {
 } from '../components/DesignSystem';
 import { ThreeDChildAvatar } from '../components/ThreeDVisuals';
 import { HeaderBarProfileSpec } from '../components/HeaderBar';
+import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
 import {
   extractProfileSignals,
@@ -284,6 +285,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     quickTrack: false,
     dailyWisdom: false,
+    dailyEssentials: false,
     bedtimeStories: false,
     parentingSupport: false,
     learningTrack: false,
@@ -299,12 +301,15 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const openHomeSection = (key: 'heroesArena' | 'parentingSupport' | 'valuesTrack' | 'dailyEssentials' | 'learningTrack' | 'sportsTrack') => {
     const sectionIds: Record<typeof key, string> = {
       heroesArena: 'command-domain-hobbies',
-      parentingSupport: 'command-domain-wellbeing',
-      valuesTrack: 'command-domain-values',
-      dailyEssentials: 'command-domain-nutrition',
-      learningTrack: 'command-domain-learning',
-      sportsTrack: 'command-domain-sports',
+      parentingSupport: 'home-parenting-support-center',
+      valuesTrack: 'home-values-track-card',
+      dailyEssentials: 'home-daily-essentials-hub',
+      learningTrack: 'home-learning-track-card',
+      sportsTrack: 'home-daily-essentials-hub',
     };
+    if (key === 'parentingSupport' || key === 'valuesTrack' || key === 'dailyEssentials' || key === 'learningTrack') {
+      setOpenAccordions((previous) => ({ ...previous, [key]: true }));
+    }
     document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -2117,6 +2122,69 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         </div>
       </HomeAccordionCard>
 
+      {/* Standardized Section Tools (أدوات القسم) immediately after the top welcome banner */}
+      <SectionToolsDrawer
+        language={lang}
+        sectionId="dashboard"
+        titleAr="أدوات الرئيسية"
+        titleEn="Dashboard tools"
+        badgeCount={state.tasks.filter((t) => !t.done).length}
+        cartItemCount={cartItemCount}
+        onOpenCart={() => navigateTo('services')}
+        quickActions={[
+          {
+            id: 'routine-shortcut',
+            icon: '✅',
+            labelAr: 'مهام اليوم',
+            labelEn: 'Daily Routine',
+            badge: state.tasks.filter((t) => !t.done).length,
+            onClick: () => navigateTo('routine'),
+          },
+          {
+            id: 'calendar-shortcut',
+            icon: '📅',
+            labelAr: 'التقويم الأسري',
+            labelEn: 'Family Calendar',
+            badge: state.events.length,
+            onClick: () => navigateTo('calendar'),
+          },
+          {
+            id: 'children-shortcut',
+            icon: '👶',
+            labelAr: 'ملفات الأطفال',
+            labelEn: 'Children Profiles',
+            badge: state.kids.length,
+            onClick: () => navigateTo('children'),
+          },
+          ...(onToggleBedtimeMode
+            ? [
+                {
+                  id: 'toggle-bedtime',
+                  icon: '🌙',
+                  labelAr: bedtimeMode ? 'إيقاف وضع النوم' : 'وضع ما قبل النوم',
+                  labelEn: bedtimeMode ? 'Exit Bedtime Mode' : 'Bedtime Mode',
+                  active: Boolean(bedtimeMode),
+                  onClick: onToggleBedtimeMode,
+                },
+              ]
+            : []),
+        ]}
+      >
+        <div className="space-y-3">
+          {onReplaySplash && (
+            <div className="border-t border-[var(--color-border)] pt-2 dark:border-[#1E3646]">
+              <button
+                type="button"
+                onClick={onReplaySplash}
+                className="min-h-[40px] w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-3 py-2 text-xs font-extrabold text-[var(--color-text)] dark:border-[#1E3646] dark:bg-[#142430] dark:text-[#F8FAFC] cursor-pointer"
+              >
+                {isEn ? '✨ Replay Welcome' : '✨ شاشة الترحيب'}
+              </button>
+            </div>
+          )}
+        </div>
+      </SectionToolsDrawer>
+
       <HomeAccordionCard
         id="home-daily-parenting-wisdom"
         testId="home-daily-parenting-wisdom"
@@ -2198,6 +2266,265 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       </HomeAccordionCard>
 
       {/* =====================================================================
+          7. ACCORDION: DAILY CARE ESSENTIALS (NUTRITION, HYDRATION & SPORTS — CHECKLIST #3)
+          ===================================================================== */}
+      <HomeAccordionCard
+        id="home-daily-essentials-hub"
+        testId="home-daily-essentials-hub"
+        iconEmoji="🌟"
+        iconBgClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
+        title={
+          isEn
+            ? `Food, water and movement for ${activeKidName}`
+            : `الأكل والماء والحركة مع ${activeKidName}`
+        }
+        subtitle={
+          isEn
+            ? 'Food, age-appropriate water tracking, and daily movement'
+            : 'أفكار للأكل، ومتابعة شرب الماء لما يكون مناسب لسن الطفل، وحركة ولعب كل يوم'
+        }
+        badgeText={`${currentWaterCups} 💧`}
+        badgeClass="bg-sky-500/15 text-sky-700 dark:text-sky-300"
+        headerExtraAction={<button type="button" onClick={() => navigateTo('medical')} className="min-h-[40px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-800 dark:text-sky-200">{isEn ? 'Open health record' : 'فتح السجل الصحي'}</button>}
+        isOpen={Boolean(openAccordions.dailyEssentials)}
+        onToggle={() => toggleAccordion('dailyEssentials')}
+        isEn={isEn}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* ESSENTIAL CARD 1: DAILY NUTRITION & LUNCHBOX */}
+            <MasterPatternCard
+              id="home-essential-nutrition-card"
+              testId="home-essential-nutrition-card"
+              tone="amber"
+              categoryKey="nutrition"
+              itemIdOrIndex={1}
+              darkMode={Boolean(state.darkMode)}
+              topLeftBadge={<span>{isEn ? currentNutrition.badgeEn : currentNutrition.badgeAr}</span>}
+              topRightBadge={<span>🕒 {currentNutrition.time}</span>}
+              title={isEn ? currentNutrition.titleEn : currentNutrition.titleAr}
+              metaLeft={
+                <>
+                  <span>👶 {activeKidName} · {activeKidStageLabel}</span>
+                </>
+              }
+              bodyContent={
+                <div className="space-y-2.5 pt-1">
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                    {isEn ? currentNutrition.descEn : currentNutrition.descAr}
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                    {[
+                      { id: 'breakfast' as const, labelAr: '🥣 الفطور', labelEn: '🥣 Breakfast' },
+                      { id: 'lunchbox' as const, labelAr: '🍱 لانش بوكس', labelEn: '🍱 Lunchbox' },
+                      { id: 'snack' as const, labelAr: '🍎 سناك', labelEn: '🍎 Snack' },
+                    ].map((slot) => {
+                      const active = selectedMealSlot === slot.id;
+                      return (
+                        <button
+                          key={slot.id}
+                          type="button"
+                          onClick={() => setSelectedMealSlot(slot.id)}
+                          className={`py-1.5 px-2 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
+                            active
+                              ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                              : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                          }`}
+                        >
+                          {isEn ? slot.labelEn : slot.labelAr}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              }
+              footerLeft={
+                <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                  {isEn ? 'Healthy Meal Plan' : 'وجبة صحية متوازنة'}
+                </span>
+              }
+              footerRight={
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onAddSuggestedRoutineTask) {
+                      onAddSuggestedRoutineTask(
+                        isEn ? currentNutrition.titleEn : currentNutrition.titleAr,
+                        currentNutrition.time,
+                        activeKid?.id || null
+                      );
+                    } else {
+                      navigateTo('routine');
+                    }
+                  }}
+                  className="min-h-[34px] px-3 py-1 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer"
+                >
+                  + {isEn ? 'Add to Routine' : 'أضف للروتين'}
+                </button>
+              }
+            />
+
+            {/* Water logging is hidden for infants under 6 months and when age is unknown. */}
+            {activeKid?.birth && activeKidAge && activeKidAge.months >= 6 && (
+              <MasterPatternCard
+                id="home-essential-hydration-card"
+                testId="home-essential-hydration-card"
+                tone="sky"
+                categoryKey="medical"
+                itemIdOrIndex={2}
+                darkMode={Boolean(state.darkMode)}
+                topLeftBadge={<span>💧 {isEn ? 'Water log' : 'تسجيل شرب الماء'}</span>}
+                topRightBadge={<span>{currentWaterCups} {isEn ? 'logged' : 'مرات مسجلة'}</span>}
+                title={isEn ? `Water servings logged for ${activeKidName}` : `مرات تقديم الماء لـ ${activeKidName}`}
+                metaLeft={<span>{isEn ? 'A record, not a daily target' : 'للمتابعة فقط، مش هدف لازم توصلوله'}</span>}
+                bodyContent={
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                    {isEn
+                      ? 'Record water servings offered during the day. Needs vary with age, food, weather and health; follow your child’s clinician for individual guidance.'
+                      : 'سجلوا كل مرة قدمتوا فيها ماء خلال اليوم. احتياج الطفل بيختلف حسب سنه وأكله والجو وحالته الصحية؛ اسألوا طبيبه لو محتاجين توجيه.'}
+                  </p>
+                }
+                footerLeft={
+                  <span className="text-xs font-extrabold text-[var(--color-text)] dark:text-[#F8FAFC]">
+                    {currentWaterCups} {isEn ? 'servings today' : 'مرات اليوم'}
+                  </span>
+                }
+                footerRight={
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
+                      onClick={() => handleAdjustWater(-1)}
+                      aria-label={isEn ? 'Decrease water log' : 'تقليل عدد مرات تسجيل الماء'}
+                      className="min-w-[44px] min-h-[44px] rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)] dark:bg-[#142430] text-sm font-black text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center cursor-pointer active:scale-95"
+                    >
+                      −
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="home-hydration-add-cup-btn"
+                      disabled={Boolean(savingDashboardActions[`${activeKidId}:hydration`])}
+                      onClick={() => handleAdjustWater(1)}
+                      className="min-h-[44px] px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold transition-all active:scale-95 cursor-pointer"
+                    >
+                      + {savingDashboardActions[`${activeKidId}:hydration`] ? (isEn ? 'Saving…' : 'جارٍ الحفظ…') : (isEn ? 'Log water' : 'سجلوا مرة 💧')}
+                    </button>
+                  </div>
+                }
+              />
+            )}
+
+            {/* ESSENTIAL CARD 3: PHYSICAL SPORTS & ACTIVITY */}
+            <MasterPatternCard
+              id="home-essential-sports-card"
+              testId="home-essential-sports-card"
+              tone="teal"
+              categoryKey="sports"
+              itemIdOrIndex={3}
+              darkMode={Boolean(state.darkMode)}
+              topLeftBadge={<span>{isEn ? currentSport.badgeEn : currentSport.badgeAr}</span>}
+              topRightBadge={<span>🕒 {currentSport.time}</span>}
+              title={isEn ? currentSport.titleEn : currentSport.titleAr}
+              metaLeft={
+                <>
+                  <span>👶 {activeKidName}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{isEn ? 'Movement & Play' : 'الحركة واللعب'}</span>
+                </>
+              }
+              bodyContent={
+                <div className="space-y-2.5 pt-1">
+                  <p className="text-xs font-semibold text-[var(--color-muted)] dark:text-[#CBD5E1] leading-relaxed">
+                    {isEn ? currentSport.descEn : currentSport.descAr}
+                  </p>
+
+                  <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                    {[
+                      { id: 'outdoor' as const, labelAr: '⚽ لعب بره', labelEn: '⚽ Outdoor' },
+                      { id: 'balance' as const, labelAr: '🧘‍♂️ توازن', labelEn: '🧘‍♂️ Balance' },
+                      { id: 'cardio' as const, labelAr: '🏃‍♂️ حركة ونشاط', labelEn: '🏃‍♂️ Cardio' },
+                    ].map((act) => {
+                      const active = selectedSportSlot === act.id;
+                      return (
+                        <button
+                          key={act.id}
+                          type="button"
+                          onClick={() => setSelectedSportSlot(act.id)}
+                          className={`py-1.5 px-2 rounded-xl text-[10.5px] font-extrabold border transition-all cursor-pointer ${
+                            active
+                              ? 'bg-[#0d9488] text-white border-[#0d9488] shadow-2xs'
+                              : 'bg-[var(--color-control-muted)] dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] border-[var(--color-border)] dark:border-[#1E3646]'
+                          }`}
+                        >
+                          {isEn ? act.labelEn : act.labelAr}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              }
+              footerLeft={
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onAddSuggestedRoutineTask) {
+                      onAddSuggestedRoutineTask(
+                        isEn ? currentSport.titleEn : currentSport.titleAr,
+                        currentSport.time,
+                        activeKid?.id || null
+                      );
+                    } else {
+                      navigateTo('routine');
+                    }
+                  }}
+                  className="text-[11px] font-extrabold text-[#0d9488] dark:text-[#2DD4BF] hover:underline cursor-pointer"
+                >
+                  + {isEn ? 'Schedule in Routine' : 'جدولة في الروتين'}
+                </button>
+              }
+              footerRight={
+                <button
+                  type="button"
+                  data-testid="home-sports-complete-btn"
+                  disabled={isSportDoneToday || isSportSaving}
+                  onClick={() => {
+                    void runDashboardSave(sportActionKey, 'sports', isEn ? currentSport.titleEn : currentSport.titleAr, {
+                      dashboardKind: 'sports',
+                      activityId: selectedSportSlot,
+                    }, () => {
+                      setCompletedSportByKid((prev) => ({ ...prev, [activeKidId]: true }));
+                      onShowToast?.(
+                        isEn
+                          ? `🏅 ${activeKidName}’s activity was saved for today ✓`
+                          : `🏅 تم حفظ نشاط ${activeKidName} الرياضي اليوم ✓`
+                      );
+                    });
+                  }}
+                  className={`min-h-[34px] px-3 py-1 rounded-xl text-[11px] font-extrabold transition-all active:scale-95 cursor-pointer disabled:cursor-wait disabled:opacity-60 ${
+                    isSportDoneToday
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'bg-[#FF8C61] hover:bg-[#e86a3d] text-white'
+                  }`}
+                >
+                  {isSportSaving
+                    ? isEn
+                      ? 'Saving…'
+                      : 'جارٍ الحفظ…'
+                    : isSportDoneToday
+                    ? isEn
+                      ? '✓ Completed'
+                      : '✓ تم التمرين'
+                    : isEn
+                    ? 'Mark Done 🏅'
+                    : 'إتمام التمرين 🏅'}
+                </button>
+              }
+            />
+          </div>
+        </div>
+      </HomeAccordionCard>
+
+      {/* =====================================================================
           8. ACCORDION: FAMILY WELLBEING & POSITIVE PARENTING SUPPORT
           Household support is separate from each child's emotional record.
           ===================================================================== */}
@@ -2226,7 +2553,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       >
         <React.Suspense fallback={<div className="min-h-24 animate-pulse rounded-2xl bg-slate-100/70 dark:bg-white/5" aria-label="Loading section" />}><ParentingSupportCenter
           kids={state.kids}
-          initialKidId={null}
+          initialKidId={activeKid?.id ?? null}
           hideChildSelector={true}
           onActiveKidChange={(kidId) => {
             const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
