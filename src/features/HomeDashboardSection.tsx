@@ -305,9 +305,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       valuesTrack: 'home-values-track-card',
       dailyEssentials: 'home-daily-essentials-hub',
       learningTrack: 'home-learning-track-card',
-      sportsTrack: 'home-daily-essentials-hub',
+      sportsTrack: 'home-essential-sports-card',
     };
-    if (key === 'parentingSupport' || key === 'valuesTrack' || key === 'dailyEssentials' || key === 'learningTrack') {
+    if (key === 'parentingSupport' || key === 'valuesTrack' || key === 'dailyEssentials' || key === 'learningTrack' || key === 'sportsTrack') {
       setOpenAccordions((previous) => ({ ...previous, [key]: true }));
     }
     document.getElementById(sectionIds[key])?.scrollIntoView({ behavior: 'smooth', block: 'center' });
