@@ -262,6 +262,25 @@ export const HomeVisualDiscovery: React.FC<HomeVisualDiscoveryProps> = ({
         <span className="shrink-0 rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">{ageLabel}</span>
       </div>
 
+      <div data-testid="shared-discovery-loop" className="rounded-2xl border border-violet-500/15 bg-gradient-to-br from-violet-50 via-white to-teal-50/70 p-3 dark:from-[#201A39] dark:via-[#17232E] dark:to-[#12333A]">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Make it a shared experience' : 'خلّوا الاكتشاف تجربة تعيشوها سوا'}</p>
+            <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'You lead, your child explores, and you notice what matters.' : 'إنتوا تفتحوا الباب، وطفلك يكتشف، وسوا تلاحظوا اللي بيفرق.'}</p>
+          </div>
+          <span className="text-xl" aria-hidden="true">🪄</span>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-1.5">
+          {(isEn ? [{icon:'🧑‍🤝‍🧑',label:'Together'},{icon:'🎯',label:'Choose'},{icon:'🎨',label:'Explore'},{icon:'💬',label:'Reflect'}] : [{icon:'🧑‍🤝‍🧑',label:'سوا'},{icon:'🎯',label:'اختاروا'},{icon:'🎨',label:'اكتشفوا'},{icon:'💬',label:'احكوا'}]).map((step,index)=>(
+            <div key={step.label} className="min-w-0 rounded-xl border border-violet-500/10 bg-white/80 px-1 py-2 text-center dark:border-white/10 dark:bg-white/5">
+              <span className="block text-base">{step.icon}</span>
+              <span className="mt-1 block text-[9px] font-black text-[var(--color-text)] dark:text-white">{step.label}</span>
+              <span className="mt-0.5 block text-[8px] text-[var(--color-muted)]">{index+1}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <article className="group relative isolate min-h-[360px] overflow-hidden rounded-[2rem] bg-slate-950 text-white shadow-xl sm:min-h-[420px]">
         <img src={featured.image} alt={isEn ? featured.titleEn : featured.titleAr} loading="lazy" decoding="async" className="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#06151D] via-[#06151D]/55 to-black/5" />
