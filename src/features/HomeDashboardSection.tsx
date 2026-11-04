@@ -43,7 +43,7 @@ export interface HomeDashboardSectionProps {
   onAddToCart: (item: CommercialItem, variant?: string) => void;
   onInspectCommercialItem: (item: CommercialItem) => void;
   onAddProductToWishes: (item: CommercialItem) => void;
-  onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null, category?: string, cadence?: 'daily' | 'weekly' | 'monthly') => void;
+  onAddSuggestedRoutineTask?: (taskName: string, timeStr: string, kidId: number | null, category?: string, cadence?: 'daily' | 'weekly' | 'monthly', owner?: string, dayOfWeek?: number) => void;
   onToggleRoutineTask?: (taskId: number, done: boolean) => void;
   onShowToast?: (msg: string) => void;
   bedtimeMode?: boolean;
@@ -207,6 +207,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const [quickTaskCategory, setQuickTaskCategory] = useState('روتين يومي');
   const [quickTaskCadence, setQuickTaskCadence] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [taskView, setTaskView] = useState<'all' | 'open' | 'done'>('all');
+  const [quickTaskOwner, setQuickTaskOwner] = useState<'الأم' | 'الأب' | 'مشترك'>('مشترك');
+  const [quickTaskDay, setQuickTaskDay] = useState(new Date().getDay());
+  const [plannerDay, setPlannerDay] = useState(new Date().getDay());
 
   useEffect(() => {
     if (selectedKidIdx >= state.kids.length && selectedKidIdx !== 0) {
@@ -1216,8 +1219,27 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 ) : null;
               })()}
 
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-bold text-teal-100">{isEn ? 'WEEKLY VIEW' : 'عرض الأسبوع'}</span>
+                  <span className="text-[10px] text-teal-100/70">{isEn ? 'Choose a day to see its plan' : 'اختاروا اليوم لعرض جدوله'}</span>
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {(isEn ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت']).map((day, index) => (
+                    <button
+                      key={day}
+                      type="button"
+                      aria-pressed={plannerDay === index}
+                      onClick={() => setPlannerDay(index)}
+                      className={`min-h-10 rounded-xl border px-1 text-[9px] font-bold transition ${plannerDay === index ? 'border-[#8FF0D0] bg-[#8FF0D0] text-[#073F43]' : 'border-white/15 bg-white/5 text-teal-50'}`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {(() => {
-                const childTasks = state.tasks.filter((task) => task.kidId === null || task.kidId === activeKidId);
+                const childTasks = state.tasks.filter((task) => (task.kidId === null || task.kidId === activeKidId) && (task.cadence !== 'weekly' || task.dayOfWeek === undefined || task.dayOfWeek === plannerDay));
                 const completedCount = childTasks.filter((task) => task.done).length;
                 const progress = childTasks.length ? Math.round((completedCount / childTasks.length) * 100) : 0;
                 const visibleTasks = childTasks
@@ -1289,7 +1311,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   event.preventDefault();
                   const name = quickTaskName.trim();
                   if (!name || !onAddSuggestedRoutineTask) return;
-                  onAddSuggestedRoutineTask(name, quickTaskTime, activeKidId, quickTaskCategory, quickTaskCadence);
+                  onAddSuggestedRoutineTask(name, quickTaskTime, activeKidId, quickTaskCategory, quickTaskCadence, quickTaskOwner, quickTaskDay);
                   setQuickTaskName('');
                 }}
               >
@@ -1322,6 +1344,25 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                   <option value="الصحة والمتابعة">{isEn ? 'Health' : 'الصحة والمتابعة'}</option>
                   <option value="الصلاة والقيم">{isEn ? 'Prayer & values' : 'الصلاة والقيم'}</option>
                   <option value="مواعيد وأنشطة">{isEn ? 'Appointments & activities' : 'مواعيد وأنشطة'}</option>
+                </select>
+                <select
+                  aria-label={isEn ? 'Responsible parent' : 'المسؤول عن المهمة'}
+                  value={quickTaskOwner}
+                  onChange={(event) => setQuickTaskOwner(event.target.value as 'الأم' | 'الأب' | 'مشترك')}
+                  className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0]"
+                >
+                  <option value="مشترك">{isEn ? 'Shared' : 'مشترك بين الأب والأم'}</option>
+                  <option value="الأم">{isEn ? 'Mother' : 'الأم'}</option>
+                  <option value="الأب">{isEn ? 'Father' : 'الأب'}</option>
+                </select>
+                <select
+                  aria-label={isEn ? 'Scheduled weekday' : 'يوم تنفيذ المهمة'}
+                  value={quickTaskDay}
+                  onChange={(event) => setQuickTaskDay(Number(event.target.value))}
+                  disabled={quickTaskCadence !== 'weekly'}
+                  className="min-h-11 rounded-xl border border-white/15 bg-white px-3 text-xs font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-[#8FF0D0] disabled:opacity-50"
+                >
+                  {(isEn ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] : ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']).map((day, index) => <option key={day} value={index}>{day}</option>)}
                 </select>
                 <select
                   aria-label={isEn ? 'Repeat schedule' : 'تكرار المهمة'}
