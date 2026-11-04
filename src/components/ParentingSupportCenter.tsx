@@ -399,6 +399,35 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           </div>
         </div>
 
+        <div
+          data-testid="household-balance-visual"
+          className="rounded-2xl border border-rose-500/15 bg-gradient-to-br from-white via-rose-50/50 to-teal-50/60 p-3.5 dark:from-[#18232D] dark:via-[#241B26] dark:to-[#122A2B]"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'A small map for a calmer home' : 'خريطة صغيرة لبيت أهدى'}</p>
+              <p className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Notice the load, talk together, then choose one realistic step.' : 'لاحظوا الحمل، اتكلموا سوا، وبعدها اختاروا خطوة واقعية واحدة.'}</p>
+            </div>
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-rose-500/10 text-xl">⚖️</span>
+          </div>
+          <div className="mt-3 grid grid-cols-3 items-center gap-1.5">
+            {[
+              { n: '١', icon: '🌡️', ar: householdEnergy === 'steady' ? 'الطاقة مستقرة' : householdEnergy === 'tired' ? 'محتاجين راحة' : 'الضغط كبير', en: householdEnergy === 'steady' ? 'Energy is steady' : householdEnergy === 'tired' ? 'Rest is needed' : 'Pressure is high' },
+              { n: '٢', icon: '🤝', ar: householdCoordination === 'shared' ? 'المسؤوليات مشتركة' : householdCoordination === 'uneven' ? 'الحمل محتاج يتوزع' : 'محتاجين نتفق', en: householdCoordination === 'shared' ? 'Shared responsibilities' : householdCoordination === 'uneven' ? 'Rebalance the load' : 'Agree together' },
+              { n: '٣', icon: '🌱', ar: 'خطوة واحدة صغيرة', en: 'One small next step' },
+            ].map((step, index) => (
+              <React.Fragment key={step.n}>
+                <div className="min-w-0 rounded-xl border border-white/80 bg-white/80 px-1.5 py-2 text-center shadow-sm dark:border-white/10 dark:bg-white/5">
+                  <span className="mx-auto grid h-7 w-7 place-items-center rounded-full bg-rose-500/10 text-sm">{step.icon}</span>
+                  <p className="mt-1 text-[9px] font-black leading-relaxed text-[var(--color-text)] dark:text-white">{isEn ? step.en : step.ar}</p>
+                </div>
+                {index < 2 && <span aria-hidden="true" className="hidden text-center text-rose-500 sm:block">←</span>}
+              </React.Fragment>
+            ))}
+          </div>
+          <p className="mt-2 text-[9px] text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A private reflection on this screen only — not saved or sent.' : 'مساحة تفكير خاصة على الشاشة دي فقط — الاختيارات مش محفوظة ولا مُرسلة.'}</p>
+        </div>
+
         <div className="space-y-2">
           <p className="text-xs font-extrabold text-[var(--color-text)] dark:text-white">{isEn ? 'How is the household energy today?' : 'طاقة البيت والأب والأم عاملة إيه النهارده؟'}</p>
           <div className="grid grid-cols-3 gap-2">
@@ -483,6 +512,23 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                   </p>
                 </div>
 
+                {activeMood && (
+                  <div data-testid="child-emotion-path" className="rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-50/90 via-white to-cyan-50/80 p-3 dark:from-[#172D3A] dark:via-[#101D26] dark:to-[#102B36]">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-black text-sky-950 dark:text-sky-100">{isEn ? 'From feeling to connection' : 'من الشعور للتواصل'}</p>
+                      <span className="rounded-full bg-sky-600/10 px-2 py-1 text-[10px] font-black text-sky-800 dark:text-sky-200">{activeMood.emoji} {isEn ? activeMood.labelEn : activeMood.labelAr}</span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-4 gap-1.5">
+                      {(isEn ? ['Notice', 'Name', 'Listen', 'Support'] : ['لاحظ', 'سمّي', 'اسمع', 'اسند']).map((label, index) => (
+                        <div key={label} className="min-w-0 text-center">
+                          <span className="mx-auto grid h-8 w-8 place-items-center rounded-full border border-sky-500/20 bg-white text-xs font-black text-sky-800 shadow-sm dark:bg-[#0B131A] dark:text-sky-200">{index + 1}</span>
+                          <p className="mt-1 text-[9px] font-extrabold text-sky-950 dark:text-sky-100">{label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-sky-900/10 dark:bg-white/10"><div className="h-full w-full rounded-full bg-gradient-to-r from-sky-400 to-teal-400" /></div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {CHILD_MOODS.map((mood) => (
                     <button key={mood.id} type="button" aria-pressed={selectedMoodByKid[activeKid.id] === mood.id} onClick={() => {
@@ -634,10 +680,15 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             </p>
           </div>
           <div>
-            <p className="text-[11px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'Try these steps' : 'جرّبوا الخطوات دي'}</p>
-            <ol className="mt-1 space-y-1.5 ps-5 list-decimal text-xs leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">
-              {(isEn ? scenario.stepsEn : scenario.stepsAr).map((step) => <li key={step}>{step}</li>)}
-            </ol>
+            <p className="text-[11px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'A practical path, one step at a time' : 'مسار عملي.. خطوة ورا خطوة'}</p>
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {(isEn ? scenario.stepsEn : scenario.stepsAr).map((step, index) => (
+                <div key={step} className="relative rounded-xl border border-amber-500/15 bg-gradient-to-br from-white to-amber-50/70 p-3 dark:from-[#142430] dark:to-[#29251D]">
+                  <span className="grid h-7 w-7 place-items-center rounded-full bg-amber-600 text-[11px] font-black text-white shadow-sm">{index + 1}</span>
+                  <p className="mt-2 text-[11px] font-bold leading-relaxed text-[var(--color-text)] dark:text-[#E2E8F0]">{step}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="rounded-lg bg-amber-500/10 p-3">
             <p className="text-[10px] font-black text-amber-800 dark:text-amber-200">{isEn ? 'A phrase you can use' : 'جملة ممكن تقولوها'}</p>
