@@ -28,9 +28,9 @@ type ActivityPlan = {
 
 const PLANS: Record<string, ActivityPlan> = {
   'sensory-play': { minutes: 7, materials: ['٣ خامات آمنة مختلفة', 'مكان هادئ'], steps: [
-    { title: 'جهّزوا الاكتشاف', prompt: 'حطّوا الخامات قدام الطفل وخلوه يختار واحدة بنفسه.' },
+    { title: 'جهّزوا الحاجة اللي هتلعبوا بيها', prompt: 'حطّوا الخامات قدام الطفل وخلوه يختار واحدة بنفسه.' },
     { title: 'اكتشفوا سوا', prompt: 'المسوا الخامة ووصفوا إحساسها: ناعمة، خشنة، باردة أو طرية.' },
-    { title: 'سيبوا له القيادة', prompt: 'اسألوه: تحب تجرب أنهي واحدة بعد كده؟ واحترموا اختياره.' },
+    { title: 'خلّوه يختار', prompt: 'اسألوه: تحب تجرب أنهي واحدة بعد كده؟ واحترموا اختياره.' },
   ], reflection: 'إيه أكتر خامة شدت انتباهه؟' },
   'picture-story': { minutes: 8, materials: ['كتاب مصور أو صورة واحدة'], steps: [
     { title: 'اختاروا صورة', prompt: 'خلّوا الطفل يختار الصورة اللي عجباه، من غير ما تفرضوا موضوع.' },
@@ -38,7 +38,7 @@ const PLANS: Record<string, ActivityPlan> = {
     { title: 'كمّلوا الحكاية', prompt: 'خلوه يتخيل اللي هيحصل بعد كده، وشاركوه بإضافة لطيفة.' },
   ], reflection: 'إيه الفكرة اللي فاجأتكم؟' },
   'creative-art': { minutes: 12, materials: ['ورق', 'ألوان آمنة مناسبة للعمر'], steps: [
-    { title: 'افتحوا مساحة للإبداع', prompt: 'اختاروا لونين أو ثلاثة وسيبوا الطفل يقرر يبدأ بإيه.' },
+    { title: 'يلا نرسم ونلوّن', prompt: 'اختاروا لونين أو ثلاثة وسيبوا الطفل يقرر يبدأ بإيه.' },
     { title: 'شاركوه من غير تصحيح', prompt: 'ارسموا جنبه، واسألوه يحكي لكم عن اختياراته.' },
     { title: 'احتفلوا بالمحاولة', prompt: 'اعرضوا العمل في مكان يختاره الطفل، من غير تقييم أو مقارنة.' },
   ], reflection: 'إيه اللي استمتع بعمله النهارده؟' },
@@ -123,13 +123,13 @@ const ENGLISH_PLANS: Record<string, ActivityPlan> = {
 };
 
 const PLAY_CHALLENGES: Record<string, { ar: string[]; en: string[] }> = {
-  'sensory-play': { ar: ['اعملوا تخمين للخامة قبل لمسها', 'دوروا على خامة شبهها في البيت', 'غمّضوا العينين وخمّنوا الملمس'], en: ['Guess the texture before touching', 'Find a similar texture at home', 'Close your eyes and guess the feel'] },
+  'sensory-play': { ar: ['خمنوا ملمس الحاجة قبل ما تلمسوها', 'دوروا على خامة شبهها في البيت', 'غمّضوا العينين وخمّنوا الملمس'], en: ['Guess the texture before touching', 'Find a similar texture at home', 'Close your eyes and guess the feel'] },
   'picture-story': { ar: ['اخترعوا صوتًا لشخصية في الصورة', 'تخيلوا نهاية مختلفة للحكاية', 'ابحثوا عن ٣ تفاصيل صغيرة'], en: ['Invent a voice for a character', 'Imagine a different ending', 'Find three tiny details'] },
   'creative-art': { ar: ['ارسموا بنفس اللون وأنتم مغمضين', 'حوّلوا شكلًا عشوائيًا لشيء جديد', 'ارسموا لوحة بالتبادل'], en: ['Draw using one color with eyes closed', 'Turn a random shape into something new', 'Take turns adding to one picture'] },
   'active-play': { ar: ['قلّدوا حركة حيوان', 'امشوا كأنكم روبوتات', 'ابتكروا حركة سرية للأسرة'], en: ['Copy an animal movement', 'Walk like friendly robots', 'Invent a secret family move'] },
   'food-rhythm': { ar: ['اوصفوا اللون والرائحة معًا', 'رتّبوا الأطعمة حسب اللون', 'اختاروا اسمًا مضحكًا للطبق'], en: ['Describe the color and smell together', 'Sort foods by color', 'Give the plate a funny name'] },
   'feelings-checkin': { ar: ['اختاروا لونًا يعبّر عن الإحساس', 'ارسموا الإحساس في شكل', 'اختاروا شيئًا يساعد على الهدوء'], en: ['Choose a color for the feeling', 'Draw the feeling as a shape', 'Choose something that helps you feel calm'] },
-  'calm-evening': { ar: ['اسمعوا صوتًا هادئًا وخمّنوه', 'اختاروا كلمة لطيفة لليوم', 'خذوا ٣ أنفاس بطيئة سوا'], en: ['Listen and guess a gentle sound', 'Choose a kind word for today', 'Take three slow breaths together'] },
+  'calm-evening': { ar: ['اسمعوا صوتًا هادئًا وخمّنوه', 'اختاروا كلمة لطيفة لليوم', 'اهدوا وخدوا نفس براحة سوا'], en: ['Listen and guess a gentle sound', 'Choose a kind word for today', 'Take three slow breaths together'] },
   'family-connection': { ar: ['مثّلوا ذكرى مضحكة', 'قولوا مجاملة لكل شخص', 'اخترعوا تحية أسرية جديدة'], en: ['Act out a funny memory', 'Give everyone a kind compliment', 'Invent a new family greeting'] },
   independence: { ar: ['رتّبوا ٣ أشياء في مكانها', 'اختاروا مهمة صغيرة للغد', 'علّموا بعض خطوة جديدة'], en: ['Put three things in their place', 'Choose one small task for tomorrow', 'Teach each other one new step'] },
 };
@@ -256,7 +256,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
       <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-[2rem] border border-white/15 bg-[#F8FCFB] p-4 text-slate-900 shadow-2xl dark:bg-[#10212A] dark:text-white sm:rounded-[2rem] sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <span className="text-[10px] font-black tracking-widest text-teal-700 dark:text-teal-300">{isEn ? 'PARENT + CHILD MODE' : 'وقت مشترك · ولي الأمر والطفل'}</span>
+            <span className="text-[10px] font-black tracking-widest text-teal-700 dark:text-teal-300">{isEn ? 'PARENT + CHILD MODE' : 'وقت حلو مع طفلك'}</span>
             <h2 id="nekbaar-guided-activity-title" className="mt-1 text-lg font-black">{activity.title}</h2>
           </div>
           <button type="button" onClick={() => setSoundEnabled((value) => !value)} aria-pressed={soundEnabled} aria-label={isEn ? 'Toggle sound effects' : 'تشغيل أو إيقاف صوت التفاعل'} className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition ${soundEnabled ? 'bg-teal-600 text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-white'}`}><span aria-hidden="true">{soundEnabled ? '🔊' : '🔈'}</span></button>
@@ -265,8 +265,8 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
         {saved ? (
           <div className="space-y-4 py-8 text-center">
             <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300"><CheckCircle2 size={42} /></div>
-            <h3 className="text-xl font-black">{isEn ? 'A real moment, saved!' : 'لحظة حقيقية اتسجلت!'}</h3>
-            <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{isEn ? 'This shared activity is now part of your child’s timeline.' : 'التجربة دي بقت جزء من حكاية يوم طفلك وتقدروا ترجعولها.'}</p>
+            <h3 className="text-xl font-black">{isEn ? 'A real moment, saved!' : 'لحظة حلوة اتحفظت!'}</h3>
+            <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{isEn ? 'This shared activity is now part of your child’s timeline.' : 'حفظنا التجربة دي في ملف طفلك، وتقدروا ترجعولها وقت ما تحبوا.'}</p>
             <button type="button" onClick={onClose} className="min-h-12 w-full rounded-2xl bg-teal-600 px-4 py-3 text-sm font-black text-white">{isEn ? 'Back to our day' : 'نرجع ليومنا'}</button>
           </div>
         ) : (
@@ -276,7 +276,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <div className="rounded-2xl bg-violet-50 p-3 dark:bg-violet-400/10"><span className="text-[10px] font-bold text-violet-800 dark:text-violet-200">{isEn ? 'SUGGESTED TIME' : 'الوقت المقترح'}</span><p className="mt-1 text-lg font-black">{plan.minutes} {isEn ? 'min' : 'دقيقة'}</p></div>
             </div>
             <div className="mb-4 rounded-2xl border border-teal-200 bg-teal-50/70 p-3 dark:border-teal-300/15 dark:bg-teal-400/10">
-              <p className="text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'Adapted to your child’s age' : 'النشاط متظبط على عمر طفلك'}</p>
+              <p className="text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'Made for your child’s age' : 'النشاط مناسب لسن طفلك'}</p>
               <p className="mt-1 text-xs leading-6 text-teal-900 dark:text-teal-100">{ageGuidance}</p>
               {foodSafetyNote && <p className="mt-2 border-t border-teal-200 pt-2 text-xs leading-6 text-teal-900 dark:border-white/10 dark:text-teal-100">{foodSafetyNote}</p>}
             </div>
@@ -284,7 +284,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
               <p className="mb-2 text-xs font-black">{isEn ? 'Get these ready' : 'جهّزوا مع بعض'}</p>
               <div className="flex flex-wrap gap-2">{plan.materials.map((item) => <span key={item} className="rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-bold dark:bg-white/10">{item}</span>)}</div>
             </div>
-            <div className="mb-3 flex items-center justify-between"><span className="text-xs font-black">{isEn ? 'Do it together, step by step' : 'نفّذوا النشاط خطوة بخطوة'}</span><span className="text-[11px] font-black text-teal-700 dark:text-teal-300">{step + 1}/{plan.steps.length}</span></div>
+            <div className="mb-3 flex items-center justify-between"><span className="text-xs font-black">{isEn ? 'Do it together, step by step' : 'يلا نعملها خطوة خطوة'}</span><span className="text-[11px] font-black text-teal-700 dark:text-teal-300">{step + 1}/{plan.steps.length}</span></div>
             <div className="mb-4 flex gap-1.5">{plan.steps.map((item, index) => <div key={item.title} className={`h-1.5 flex-1 rounded-full transition-colors ${index <= step ? 'bg-teal-500' : 'bg-slate-200 dark:bg-white/10'}`} />)}</div>
             <div className="min-h-[170px] rounded-[1.5rem] bg-gradient-to-br from-[#0D4850] to-[#174A69] p-5 text-white shadow-lg">
               <span className="text-3xl">{['🤝', '🌱', '✨'][step]}</span>
@@ -297,8 +297,8 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
                 <div className="mb-2 flex items-center gap-2">
                   <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet-200 text-lg dark:bg-violet-300/15">🎲</span>
                   <div>
-                    <p className="text-xs font-black text-violet-950 dark:text-violet-100">{isEn ? 'Pick a playful mini-challenge' : 'اختاروا تحدي صغير يخلّيها لعبة'}</p>
-                    <p className="text-[10px] text-violet-800/80 dark:text-violet-200/80">{isEn ? 'No right or wrong answers — just do it together.' : 'مفيش إجابة صح أو غلط.. اختاروا ونفّذوا سوا.'}</p>
+                    <p className="text-xs font-black text-violet-950 dark:text-violet-100">{isEn ? 'Pick a playful mini-challenge' : 'اختاروا لعبة صغيرة'}</p>
+                    <p className="text-[10px] text-violet-800/80 dark:text-violet-200/80">{isEn ? 'No right or wrong answers — just do it together.' : 'مفيش صح وغلط.. اختاروا اللي يعجبكم وجربوه سوا.'}</p>
                   </div>
                 </div>
                 <div className="grid gap-2">
@@ -313,7 +313,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
             )}
             {step === plan.steps.length - 1 && (
               <fieldset className="mt-3 rounded-2xl border border-teal-200 bg-teal-50/70 p-3 dark:border-teal-300/15 dark:bg-teal-400/10">
-                <legend className="px-1 text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How did your child respond?' : 'طفلك استقبل التجربة إزاي؟'}</legend>
+                <legend className="px-1 text-[11px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How did your child respond?' : 'طفلك انبسط بالتجربة؟'}</legend>
                 <div className="mt-1 grid grid-cols-2 gap-2">
                   {([
                     ['loved', isEn ? 'Loved it 😍' : 'انبسط جدًا 😍'],
@@ -328,7 +328,7 @@ export const ParentChildActivityGuide: React.FC<ParentChildActivityGuideProps> =
             )}
             {step === plan.steps.length - 1 && (
               <label className="mt-3 block">
-                <span className="mb-1.5 block text-[11px] font-black text-slate-700 dark:text-slate-200">{isEn ? 'A note about this moment (optional)' : 'احفظوا ملاحظة صغيرة عن اللحظة (اختياري)'}</span>
+                <span className="mb-1.5 block text-[11px] font-black text-slate-700 dark:text-slate-200">{isEn ? 'A note about this moment (optional)' : 'اكتبوا ملاحظة عن اللحظة (اختياري)'}</span>
                 <textarea
                   value={reflectionNote}
                   onChange={(event) => setReflectionNote(event.target.value)}
