@@ -87,13 +87,6 @@ import { useMasterController } from './services/MasterAppController';
 import { getLocalizedDocumentTitle, locText } from './utils/familyFormatters';
 import { FamilyAppProvider, PageId } from './context/FamilyAppContext';
 import { HomeDashboardSection } from './features/HomeDashboardSection';
-import { ChildrenProfilesSection } from './features/ChildrenProfilesSection';
-import { DailyRoutineSection } from './features/DailyRoutineSection';
-import { FamilyCalendarSection } from './features/FamilyCalendarSection';
-import { KidsWishesSection } from './features/KidsWishesSection';
-import { ProfileSettingsSection } from './features/ProfileSettingsSection';
-import { FamilyHomesSection } from './features/FamilyHomesSection';
-import { FamilyAppModals } from './components/modals/FamilyAppModals';
 import type { AiModelId } from './components/AiAssistantSection';
 import { OnboardingFlowModal } from './components/OnboardingFlowModal';
 import {
@@ -101,9 +94,6 @@ import {
   UserSessionProfile,
   hasVerifiedFamilyAccess,
 } from './services/OnboardingFlowController';
-import { FamilyPermissionsSection } from './components/FamilyPermissionsSection';
-import { NotificationsCenterSection } from './components/NotificationsCenterSection';
-import { LegalAndContactSection } from './components/LegalAndContactSection';
 import { HeaderBar } from './components/HeaderBar';
 import {
   ThreeDIcon,
@@ -127,6 +117,16 @@ const InternalChatSection = React.lazy(() => import('./components/InternalChatSe
 const AiAssistantSection = React.lazy(() => import('./components/AiAssistantSection').then((module) => ({ default: module.AiAssistantSection })));
 const CommercialEcosystemSection = React.lazy(() => import('./components/CommercialEcosystemSection').then((module) => ({ default: module.CommercialEcosystemSection })));
 const InteractiveGamesSection = React.lazy(() => import('./components/InteractiveGamesSection').then((module) => ({ default: module.InteractiveGamesSection })));
+const ChildrenProfilesSection = React.lazy(() => import('./features/ChildrenProfilesSection').then((module) => ({ default: module.ChildrenProfilesSection })));
+const DailyRoutineSection = React.lazy(() => import('./features/DailyRoutineSection').then((module) => ({ default: module.DailyRoutineSection })));
+const FamilyCalendarSection = React.lazy(() => import('./features/FamilyCalendarSection').then((module) => ({ default: module.FamilyCalendarSection })));
+const KidsWishesSection = React.lazy(() => import('./features/KidsWishesSection').then((module) => ({ default: module.KidsWishesSection })));
+const ProfileSettingsSection = React.lazy(() => import('./features/ProfileSettingsSection').then((module) => ({ default: module.ProfileSettingsSection })));
+const FamilyHomesSection = React.lazy(() => import('./features/FamilyHomesSection').then((module) => ({ default: module.FamilyHomesSection })));
+const FamilyPermissionsSection = React.lazy(() => import('./components/FamilyPermissionsSection').then((module) => ({ default: module.FamilyPermissionsSection })));
+const NotificationsCenterSection = React.lazy(() => import('./components/NotificationsCenterSection').then((module) => ({ default: module.NotificationsCenterSection })));
+const LegalAndContactSection = React.lazy(() => import('./components/LegalAndContactSection').then((module) => ({ default: module.LegalAndContactSection })));
+const FamilyAppModals = React.lazy(() => import('./components/modals/FamilyAppModals').then((module) => ({ default: module.FamilyAppModals })));
 
 const PREVIEW_ACCESS_BYPASS = false; // Production and shared-preview builds must use the real authentication flow.
 
@@ -2359,7 +2359,7 @@ export default function App() {
 
             {/* PAGE 2: CHILDREN PROFILES & 3D IDENTITY */}
             {activePage === 'children' && (
-              <ChildrenProfilesSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="ChildrenProfilesSection" language={state.language} />}><ChildrenProfilesSection
                 state={state}
                 lang={lang}
                 onOpenAddChild={openAddChild}
@@ -2367,12 +2367,12 @@ export default function App() {
                 onConfirmDeleteChild={(kidId) => setConfirmDeleteChildId(kidId)}
                 onAddVoiceMoment={handleAddVoiceMomentToChild}
                 onShowToast={showToast}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 3: DAILY ROUTINE */}
             {activePage === 'routine' && (
-              <DailyRoutineSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="DailyRoutineSection" language={state.language} />}><DailyRoutineSection
                 state={state}
                 lang={lang}
                 completedTasksCount={completedTasksCount}
@@ -2404,12 +2404,12 @@ export default function App() {
                 }}
                 onToggleTask={handleToggleTask}
                 onDeleteTask={handleDeleteTask}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 4: FAMILY CALENDAR */}
             {activePage === 'calendar' && (
-              <FamilyCalendarSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="FamilyCalendarSection" language={state.language} />}><FamilyCalendarSection
                 state={state}
                 lang={lang}
                 todayFormattedCombined={todayFormatted.combined}
@@ -2436,12 +2436,12 @@ export default function App() {
                   setEventModalOpen(true);
                 }}
                 onDeleteEvent={handleDeleteEvent}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 5: WISHES & GOALS */}
             {activePage === 'wishes' && (
-              <KidsWishesSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="KidsWishesSection" language={state.language} />}><KidsWishesSection
                 state={state}
                 lang={lang}
                 wishKidTab={wishKidTab}
@@ -2466,7 +2466,7 @@ export default function App() {
                 onToggleWishReserve={handleToggleWishReserve}
                 onDeleteWish={handleDeleteWish}
                 onQuickAddWish={handleQuickAddWish}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 6A: MEDICAL & CHILD HEALTH HUB */}
@@ -2629,7 +2629,7 @@ export default function App() {
 
             {/* PAGE 9: THREE DAILY PARENTING NOTIFICATIONS CENTER */}
             {activePage === 'notifications' && (
-              <NotificationsCenterSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="NotificationsCenterSection" language={state.language} />}><NotificationsCenterSection
                 state={state}
                 language={state.language}
                 onShowToast={showToast}
@@ -2678,7 +2678,7 @@ export default function App() {
                       : 'تم تحديد جميع إشعارات اليوم كمقروءة'
                   );
                 }}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 10: IN-APP AI PARENTING ASSISTANT */}
@@ -2721,7 +2721,7 @@ export default function App() {
 
             {/* PAGE 11: FAMILY SPACE, ONBOARDING & PERMISSIONS */}
             {activePage === 'family' && (
-              <FamilyPermissionsSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="FamilyPermissionsSection" language={state.language} />}><FamilyPermissionsSection
                 family={state.family}
                 kids={state.kids}
                 parentAccounts={state.parentAccounts}
@@ -2852,12 +2852,12 @@ export default function App() {
                   );
                 }}
                 onShowToast={showToast}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGE 12: PROFILE WITH SETTINGS INSIDE */}
             {activePage === 'settings' && (
-              <ProfileSettingsSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="ProfileSettingsSection" language={state.language} />}><ProfileSettingsSection
                 state={state}
                 parentProfileSpec={parentProfileSpec}
                 unreadNotifCount={unreadNotifCount}
@@ -2900,27 +2900,27 @@ export default function App() {
                 settingsOtpCode={settingsOtpCode}
                 onChangeSettingsOtpCode={setSettingsOtpCode}
                 onSaveBottomInternationalAndPhone={handleSaveBottomInternationalAndPhone}
-              />
+              /></React.Suspense>
             )}
 
             {activePage === 'settings' && (
-              <FamilyHomesSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="FamilyHomesSection" language={state.language} />}><FamilyHomesSection
                 state={state}
                 onShowToast={showToast}
                 onPersonalLocationSaved={handlePersonalLocationSaved}
-              />
+              /></React.Suspense>
             )}
 
             {/* PAGES 13–15: LEGAL POLICIES & DIGITAL CONTACT US */}
             {(activePage === 'privacy' || activePage === 'terms' || activePage === 'contact') && (
-              <LegalAndContactSection
+              <React.Suspense fallback={<SectionSkeletonLoader section="LegalAndContactSection" language={state.language} />}><LegalAndContactSection
                 pageType={activePage}
                 language={state.language}
                 parentName={state.parentName}
                 darkMode={Boolean(state.darkMode)}
                 onNavigateSubPage={(target) => navigateTo(target)}
                 onShowToast={showToast}
-              />
+              /></React.Suspense>
             )}
 
             {/* OFFICIAL BRAND, WEBSITE, SOCIAL & LEGAL FOOTER */}
@@ -3411,7 +3411,7 @@ export default function App() {
         />
 
         {/* Modular Modals Collection (Modals 1–11) */}
-        <FamilyAppModals
+        <React.Suspense fallback={<SectionSkeletonLoader section="FamilyAppModals" language={state.language} />}><FamilyAppModals
           state={state}
           todayISO={todayISO}
           todayFormattedCombined={todayFormatted.combined}
@@ -3504,7 +3504,7 @@ export default function App() {
           confirmResetModal={confirmResetModal}
           onCloseConfirmResetModal={() => setConfirmResetModal(false)}
           onResetAllData={handleResetAllData}
-        />
+        /></React.Suspense>
 
         {/* Dedicated Smart Family Calendar & To-Do List Modal ("مفكرة العيلة الذكية") */}
         <FamilySmartPlannerModal
