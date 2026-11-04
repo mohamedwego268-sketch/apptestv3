@@ -1212,9 +1212,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             (task.kidId === null || task.kidId === activeKidId) &&
             isTaskScheduledForDate(task, todayLocalISO)
         );
-        const todayDoneCount = scopedTodayTasks.filter((task) =>
-          isTaskCompletedOnDate(task, todayLocalISO)
-        ).length;
         const todayOpenCount = Math.max(0, scopedTodayTasks.length - todayDoneCount);
 
         const activePulse = quickPulseByKid[activeKidId] || {
@@ -1396,242 +1393,34 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
 
             {activeKid && (
               <>
-                {/* Top Summary Metrics */}
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-3">
-                    <div className="text-base sm:text-lg font-black">{activeKidStageLabel}</div>
-                    <div className="text-[10px] text-white/80">{isEn ? 'Age stage' : 'مرحلة العمر'}</div>
+                <details className="group rounded-2xl border border-white/15 bg-white/[0.07]">
+                  <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-3 [&::-webkit-details-marker]:hidden">
+                    <span className="min-w-0"><span className="block text-sm font-black">{isEn ? 'Child life areas' : 'جوانب حياة الطفل'}</span><span className="mt-0.5 block text-[11px] text-white/70">{isEn ? 'Meals, sleep, learning, health and wellbeing' : 'الأكل والنوم والتعلم والصحة والمشاعر والقيم'}</span></span>
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-sm transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+                  </summary>
+                  <div className="grid grid-cols-2 gap-2 border-t border-white/10 p-3 sm:grid-cols-4">
+                    <button type="button" data-testid="command-domain-nutrition" onClick={() => openHomeSection('dailyEssentials')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🥣</span><span className="min-w-0"><span className="block">{isEn ? 'Meals' : 'الأكل'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? currentNutrition.titleEn : currentNutrition.titleAr}</span></span></button>
+                    <button type="button" data-testid="command-domain-sleep" onClick={() => { setOpenAccordions((prev) => ({ ...prev, quickTrack: true })); document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🌙</span><span className="min-w-0"><span className="block">{isEn ? 'Sleep' : 'النوم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activePulse.sleepLogged ? (isEn ? 'Logged today' : 'تم تسجيله اليوم') : (isEn ? 'Add sleep log' : 'سجّل النوم')}</span></span></button>
+                    <button type="button" data-testid="command-domain-learning" onClick={() => openHomeSection('learningTrack')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">📚</span><span className="min-w-0"><span className="block">{isEn ? 'Learning' : 'التعلم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activeKidStageLabel}</span></span></button>
+                    <button type="button" data-testid="command-domain-sports" onClick={() => openHomeSection('sportsTrack')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">⚽</span><span className="min-w-0"><span className="block">{isEn ? 'Movement' : 'الحركة'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? currentSport.titleEn : currentSport.titleAr}</span></span></button>
+                    <button type="button" data-testid="command-domain-health" onClick={() => navigateTo('medical')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🩺</span><span className="min-w-0"><span className="block">{isEn ? 'Health' : 'الصحة'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activeKid.vaccinationsNote ? locText(activeKid.vaccinationsNote, lang) : (isEn ? 'Growth & care' : 'النمو والمتابعة')}</span></span></button>
+                    <button type="button" data-testid="command-domain-hobbies" onClick={() => openHomeSection('heroesArena')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🎨</span><span className="min-w-0"><span className="block">{isEn ? 'Interests' : 'الهوايات'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{activeKidHero && activeKidHero.passionTagsAr.length > 0 ? activeKidHero.passionTagsAr.join(' · ') : (isEn ? 'Discover interests' : 'اكتشف اهتماماته')}</span></span></button>
+                    <button type="button" data-testid="command-domain-wellbeing" onClick={() => openChildMoodCheckin()} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">💚</span><span className="min-w-0"><span className="block">{isEn ? 'Feelings' : 'المشاعر'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? 'Emotional support' : 'الدعم النفسي'}</span></span></button>
+                    <button type="button" data-testid="command-domain-values" onClick={() => openHomeSection('valuesTrack')} className="flex min-h-[58px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-start text-xs font-bold hover:bg-white/15 cursor-pointer"><span className="text-lg">🕊️</span><span className="min-w-0"><span className="block">{isEn ? 'Values' : 'القيم'}</span><span className="mt-0.5 block truncate text-[10px] font-normal text-white/65">{isEn ? 'Family faith & values' : 'القيم والدين حسب الأسرة'}</span></span></button>
                   </div>
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-3">
-                    <div className="text-base sm:text-lg font-black tabular-nums">{todayDoneCount}/{scopedTodayTasks.length}</div>
-                    <div className="text-[10px] text-white/80">{isEn ? 'Completed today' : 'أُنجز اليوم'}</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/15 bg-white/10 p-3">
-                    <div className="text-base sm:text-lg font-black tabular-nums">
-                      {state.events.filter((event) => event.childId === null || event.childId === activeKidId).length}
+                  <div className="border-t border-white/10 px-3 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="min-w-0"><p className="text-xs font-bold">{isEn ? 'Family values path' : 'مسار القيم والصلاة'}</p><p className="mt-0.5 text-[10px] text-white/65">{isEn ? 'Choose what fits your family' : 'اختاروا ما يناسب أسرتكم'}</p></div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {([{ id: 'shared', ar: 'قيم عامة', en: 'Shared' }, { id: 'islam', ar: 'إسلامي', en: 'Islam' }, { id: 'christian', ar: 'مسيحي', en: 'Christian' }] as const).map((fp) => <button key={fp.id} type="button" aria-pressed={commandFaithMode === fp.id} onClick={() => setCommandFaithMode(fp.id)} className={`min-h-8 rounded-lg border px-2.5 text-[10px] font-bold transition cursor-pointer ${commandFaithMode === fp.id ? activeKidVisual.activePillClass : 'border-white/15 bg-white/5 text-white/80'}`}>{isEn ? fp.en : fp.ar}</button>)}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-white/80">{isEn ? 'Appointments' : 'مواعيد مسجلة'}</div>
+                    <p className="mt-2 text-[11px] font-semibold text-white/85">{isEn ? faithQuickPrompt.titleEn : faithQuickPrompt.titleAr}</p>
+                    <button type="button" onClick={() => onAddSuggestedRoutineTask?.(isEn ? faithQuickPrompt.titleEn : faithQuickPrompt.titleAr, '19:30', activeKidId, 'الصلاة والقيم', 'daily', 'مشترك')} className={`mt-2 min-h-9 rounded-xl px-3 text-[11px] font-bold transition cursor-pointer ${activeKidVisual.accentButtonClass}`}>+ {isEn ? 'Add to today' : 'أضف لجدول اليوم'}</button>
                   </div>
-                </div>
+                </details>
 
-                {/* Integrated 8-Domain Daily Care & Growth Strip (Meals, Sleep, Study, Sports, Health, Hobbies, Wellbeing, Faith/Values) */}
-                <div className={`rounded-2xl border border-white/15 ${activeKidVisual.innerPanelBg} p-3.5 space-y-3`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <h3 className="text-xs sm:text-sm font-black">
-                        {isEn ? `${activeKidName}’s Daily Care & Growth` : `جوانب يوم ${activeKidName} الأساسية`}
-                      </h3>
-                      <p className="text-[10px] text-white/75">
-                        {isEn
-                          ? 'Quick access to meals, sleep, study, movement, health, hobbies and values'
-                          : 'الأكل، النوم، الدراسة، الرياضة، الصحة، الهوايات، الدعم النفسي والقيم في مكان واحد'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {/* 1. Food & Nutrition */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-nutrition"
-                      onClick={() => openHomeSection('dailyEssentials')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>🥣 {isEn ? 'Meals & Water' : 'الأكل والوجبات'}</span>
-                        <span>{activePulse.mealLogged ? '✓' : `${currentWaterCups}💧`}</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {isEn ? currentNutrition.titleEn : currentNutrition.titleAr}
-                      </p>
-                    </button>
-
-                    {/* 2. Sleep & Rest */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-sleep"
-                      onClick={() => {
-                        setOpenAccordions((prev) => ({ ...prev, quickTrack: true }));
-                        document.getElementById('home-one-handed-quick-pulse')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>🌙 {isEn ? 'Sleep & Rest' : 'النوم والراحة'}</span>
-                        <span>{activePulse.sleepLogged ? '✓' : '+'}</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {activePulse.sleepLogged
-                          ? isEn
-                            ? 'Sleep logged today'
-                            : 'تم تسجيل النوم اليوم'
-                          : isEn
-                          ? 'Log nap or bedtime routine'
-                          : 'تنظيم النوم والقيلولة'}
-                      </p>
-                    </button>
-
-                    {/* 3. Study & Learning */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-learning"
-                      onClick={() => openHomeSection('learningTrack')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>📚 {isEn ? 'Study & Learn' : 'الدراسة والتعلم'}</span>
-                        <span>↗</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {isEn ? `Activities for ${activeKidStageLabel}` : `مهارات مناسبة لعمر ${activeKidStageLabel}`}
-                      </p>
-                    </button>
-
-                    {/* 4. Sports & Movement */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-sports"
-                      onClick={() => openHomeSection('sportsTrack')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>⚽ {isEn ? 'Sports & Play' : 'الرياضة والحركة'}</span>
-                        <span>{completedSportByKid[activeKidId] ? '✓' : '↗'}</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {isEn ? currentSport.titleEn : currentSport.titleAr}
-                      </p>
-                    </button>
-
-                    {/* 5. Health & Follow-up */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-health"
-                      onClick={() => navigateTo('medical')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>🩺 {isEn ? 'Health & Care' : 'الصحة والمتابعة'}</span>
-                        <span>{activePulse.careLogged ? '✓' : '↗'}</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {activeKid.vaccinationsNote
-                          ? locText(activeKid.vaccinationsNote, lang)
-                          : isEn
-                          ? 'Growth & vaccinations'
-                          : 'النمو والتطعيمات'}
-                      </p>
-                    </button>
-
-                    {/* 6. Activities & Hobbies */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-hobbies"
-                      onClick={() => openHomeSection('heroesArena')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>🎨 {isEn ? 'Hobbies' : 'الأنشطة والهوايات'}</span>
-                        <span>↗</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {activeKidHero && activeKidHero.passionTagsAr.length > 0
-                          ? activeKidHero.passionTagsAr.join(' · ')
-                          : isEn
-                          ? 'Discover child interests'
-                          : 'اكتشاف اهتمامات الطفل'}
-                      </p>
-                    </button>
-
-                    {/* 7. Positive Parenting & Emotional Support */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-wellbeing"
-                      onClick={() => openChildMoodCheckin()}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>💚 {isEn ? 'Feelings & Support' : 'التربية والدعم النفسي'}</span>
-                        <span>{activePulse.moodEmoji}</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {isEn ? 'Child feelings & parent guidance' : 'مشاعر الطفل وإرشاد الأب والأم'}
-                      </p>
-                    </button>
-
-                    {/* 8. Values & Optional Faith Learning */}
-                    <button
-                      type="button"
-                      data-testid="command-domain-values"
-                      onClick={() => openHomeSection('valuesTrack')}
-                      className="rounded-xl border border-white/15 bg-white/10 p-2.5 text-start transition hover:bg-white/15 cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between text-xs font-black">
-                        <span>🕊️ {isEn ? 'Values & Prayer' : 'القيم والصلاة'}</span>
-                        <span>↗</span>
-                      </div>
-                      <p className="mt-1 truncate text-[10px] text-white/80">
-                        {isEn ? 'Shared values, Islam or Christianity' : 'قيم مشتركة · إسلامي · مسيحي'}
-                      </p>
-                    </button>
-                  </div>
-
-                  {/* Balanced Family Values & Faith Quick Bar (Islam / Christianity / Shared Values without imposition) */}
-                  <div className="rounded-xl border border-white/15 bg-white/[0.07] p-2.5 flex flex-wrap items-center justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[10px] font-bold text-white/90">
-                          {isEn ? 'Values & Prayer Path:' : 'مسار القيم والصلاة (بحسب اختيار الأسرة):'}
-                        </span>
-                        {(
-                          [
-                            { id: 'shared', ar: 'قيم عامة', en: 'Shared Values' },
-                            { id: 'islam', ar: 'الإسلام والصلاة', en: 'Islamic Path' },
-                            { id: 'christian', ar: 'المسيحية والصلاة', en: 'Christian Path' },
-                          ] as const
-                        ).map((fp) => (
-                          <button
-                            key={fp.id}
-                            type="button"
-                            aria-pressed={commandFaithMode === fp.id}
-                            onClick={() => setCommandFaithMode(fp.id)}
-                            className={`rounded-lg border px-2 py-0.5 text-[10px] font-bold transition cursor-pointer ${
-                              commandFaithMode === fp.id
-                                ? activeKidVisual.activePillClass
-                                : 'border-white/15 bg-white/5 text-white/85'
-                            }`}
-                          >
-                            {isEn ? fp.en : fp.ar}
-                          </button>
-                        ))}
-                      </div>
-                      <p className="mt-1 text-[11px] font-bold text-white">
-                        {isEn ? faithQuickPrompt.titleEn : faithQuickPrompt.titleAr}
-                      </p>
-                      <p className="text-[10px] text-white/75">
-                        {isEn ? faithQuickPrompt.descEn : faithQuickPrompt.descAr}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onAddSuggestedRoutineTask?.(
-                          isEn ? faithQuickPrompt.titleEn : faithQuickPrompt.titleAr,
-                          '19:30',
-                          activeKidId,
-                          'الصلاة والقيم',
-                          'daily',
-                          'مشترك'
-                        )
-                      }
-                      className={`min-h-9 shrink-0 rounded-xl px-3 text-[10px] font-black transition cursor-pointer ${activeKidVisual.accentButtonClass}`}
-                    >
-                      + {isEn ? 'Add to routine' : 'أضف لجدول اليوم'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Tasks, Recurrence & Shared Parent Plan */}
+                {/* Tasks, Recurrence & Shared Parent Plan */}                {/* Tasks, Recurrence & Shared Parent Plan */}
                 <div className={`rounded-2xl border border-white/15 ${activeKidVisual.innerPanelBg} p-3.5 space-y-3`}>
                   <div className="flex items-center justify-between gap-2">
                     <div>
@@ -1815,62 +1604,16 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                           </div>
                         </div>
 
-                        {/* Filters: Scope (Child vs Shared), Responsible Parent, Category */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                          <select
-                            aria-label={isEn ? 'Filter by task scope' : 'تصفية حسب الطفل أو المشترك'}
-                            value={plannerScope}
-                            onChange={(event) =>
-                              setPlannerScope(event.target.value as 'all' | 'child' | 'shared')
-                            }
-                            className={`min-h-9 rounded-xl border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[10px] font-bold text-white outline-none`}
-                          >
-                            <option value="all">
-                              {isEn ? `${activeKidName} + Shared` : `مهام ${activeKidName} والمشتركة`}
-                            </option>
-                            <option value="child">
-                              {isEn ? `${activeKidName} only` : `مهام ${activeKidName} فقط`}
-                            </option>
-                            <option value="shared">
-                              {isEn ? 'Shared family tasks' : 'المهام المشتركة للأب والأم'}
-                            </option>
-                          </select>
+                        <details className="group rounded-xl border border-white/10 bg-white/[0.05]">
+                          <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 px-3 text-[11px] font-bold text-white/85 [&::-webkit-details-marker]:hidden"><span>{isEn ? 'More filters' : 'تصفية متقدمة'}</span><span className="text-white/60 transition-transform group-open:rotate-180" aria-hidden="true">⌄</span></summary>
+                          <div className="grid grid-cols-1 gap-2 border-t border-white/10 p-2 sm:grid-cols-3">
+                            <select aria-label={isEn ? 'Filter by task scope' : 'تصفية حسب الطفل أو المشترك'} value={plannerScope} onChange={(event) => setPlannerScope(event.target.value as 'all' | 'child' | 'shared')} className={`min-h-10 rounded-lg border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[11px] font-bold text-white outline-none`}><option value="all">{isEn ? `${activeKidName} + Shared` : `مهام ${activeKidName} والمشتركة`}</option><option value="child">{isEn ? `${activeKidName} only` : `مهام ${activeKidName} فقط`}</option><option value="shared">{isEn ? 'Shared family tasks' : 'المهام المشتركة للأسرة'}</option></select>
+                            <select aria-label={isEn ? 'Filter by parent' : 'تصفية حسب المسؤول'} value={plannerOwner} onChange={(event) => setPlannerOwner(event.target.value as 'all' | 'الأم' | 'الأب' | 'مشترك')} className={`min-h-10 rounded-lg border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[11px] font-bold text-white outline-none`}><option value="all">{isEn ? 'All responsible' : 'كل المسؤولين'}</option><option value="الأم">{isEn ? 'Mother' : 'الأم'}</option><option value="الأب">{isEn ? 'Father' : 'الأب'}</option><option value="مشترك">{isEn ? 'Shared' : 'مشترك'}</option></select>
+                            <select aria-label={isEn ? 'Filter by category' : 'تصفية حسب التصنيف'} value={plannerCategory} onChange={(event) => setPlannerCategory(event.target.value)} className={`min-h-10 rounded-lg border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[11px] font-bold text-white outline-none`}><option value="all">{isEn ? 'All categories' : 'كل التصنيفات'}</option><option value="روتين يومي">{isEn ? 'Daily routine' : 'روتين يومي'}</option><option value="الأكل والتغذية">{isEn ? 'Food & nutrition' : 'الأكل والتغذية'}</option><option value="النوم والراحة">{isEn ? 'Sleep & rest' : 'النوم والراحة'}</option><option value="التعليم والتعلم">{isEn ? 'Learning' : 'التعليم والتعلم'}</option><option value="الرياضة والحركة">{isEn ? 'Sports & movement' : 'الرياضة والحركة'}</option><option value="الصحة والمتابعة">{isEn ? 'Health' : 'الصحة والمتابعة'}</option><option value="الصلاة والقيم">{isEn ? 'Prayer & values' : 'الصلاة والقيم'}</option><option value="مواعيد وأنشطة">{isEn ? 'Appointments & activities' : 'المواعيد والأنشطة'}</option></select>
+                          </div>
+                        </details>
 
-                          <select
-                            aria-label={isEn ? 'Filter by parent' : 'تصفية حسب المسؤول'}
-                            value={plannerOwner}
-                            onChange={(event) =>
-                              setPlannerOwner(
-                                event.target.value as 'all' | 'الأم' | 'الأب' | 'مشترك'
-                              )
-                            }
-                            className={`min-h-9 rounded-xl border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[10px] font-bold text-white outline-none`}
-                          >
-                            <option value="all">{isEn ? 'All responsible' : 'كل المسؤولين (الأب والأم)'}</option>
-                            <option value="الأم">{isEn ? 'Mother' : 'الأم'}</option>
-                            <option value="الأب">{isEn ? 'Father' : 'الأب'}</option>
-                            <option value="مشترك">{isEn ? 'Shared' : 'مشترك'}</option>
-                          </select>
-
-                          <select
-                            aria-label={isEn ? 'Filter by category' : 'تصفية حسب التصنيف'}
-                            value={plannerCategory}
-                            onChange={(event) => setPlannerCategory(event.target.value)}
-                            className={`min-h-9 rounded-xl border border-white/15 ${activeKidVisual.selectBgClass} px-2.5 text-[10px] font-bold text-white outline-none`}
-                          >
-                            <option value="all">{isEn ? 'All categories' : 'كل التصنيفات'}</option>
-                            <option value="روتين يومي">{isEn ? 'Daily routine' : 'روتين يومي'}</option>
-                            <option value="الأكل والتغذية">{isEn ? 'Food & nutrition' : 'الأكل والتغذية'}</option>
-                            <option value="النوم والراحة">{isEn ? 'Sleep & rest' : 'النوم والراحة'}</option>
-                            <option value="التعليم والتعلم">{isEn ? 'Learning' : 'التعليم والتعلم'}</option>
-                            <option value="الرياضة والحركة">{isEn ? 'Sports & movement' : 'الرياضة والحركة'}</option>
-                            <option value="الصحة والمتابعة">{isEn ? 'Health' : 'الصحة والمتابعة'}</option>
-                            <option value="الصلاة والقيم">{isEn ? 'Prayer & values' : 'الصلاة والقيم'}</option>
-                            <option value="مواعيد وأنشطة">{isEn ? 'Appointments & activities' : 'مواعيد وأنشطة'}</option>
-                          </select>
-                        </div>
-
-                        {/* Status Filter Tabs */}
+                        {/* Status Filter Tabs */}                        {/* Status Filter Tabs */}
                         <div className="flex gap-2 overflow-x-auto pb-1">
                           {(
                             [
@@ -1900,154 +1643,24 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                           ))}
                         </div>
 
-                        {/* Task Rows with Completion, Inline Edit, Responsible Selector & Delete Confirmation */}
+                        {/* Calm task rows: one primary action and compact secondary controls. */}
                         <div className="space-y-2">
                           {visibleTasks.map((task) => {
                             const doneOnDate = isTaskCompletedOnDate(task, selectedPlannerDateISO);
                             const isEditingThis = editingCommandTaskId === task.id && editTaskDraft;
                             const isConfirmingDelete = confirmDeleteTaskId === task.id;
-
                             return (
-                              <div
-                                key={task.id}
-                                data-testid={`command-task-row-${task.id}`}
-                                className="rounded-xl border border-white/12 bg-white/[0.08] p-2.5 space-y-2"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    aria-label={
-                                      doneOnDate
-                                        ? isEn
-                                          ? 'Mark incomplete'
-                                          : 'إعادة فتح المهمة'
-                                        : isEn
-                                        ? 'Complete task'
-                                        : 'إنجاز المهمة'
-                                    }
-                                    disabled={!onToggleRoutineTask}
-                                    onClick={() =>
-                                      onToggleRoutineTask?.(
-                                        task.id,
-                                        !doneOnDate,
-                                        selectedPlannerDateISO
-                                      )
-                                    }
-                                    className={`grid h-8 w-8 shrink-0 place-items-center rounded-xl border text-sm font-black cursor-pointer ${
-                                      doneOnDate
-                                        ? 'border-emerald-300 bg-emerald-300 text-[#073F43]'
-                                        : 'border-white/30 text-white'
-                                    }`}
-                                  >
-                                    {doneOnDate ? '✓' : '○'}
-                                  </button>
-
-                                  <div className="min-w-0 flex-1">
-                                    <div
-                                      className={`truncate text-xs font-bold ${
-                                        doneOnDate ? 'text-white/60 line-through' : 'text-white'
-                                      }`}
-                                    >
-                                      {task.name}
-                                    </div>
-                                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-white/75">
-                                      <span>{task.time}</span>
-                                      <span>· {task.owner || (isEn ? 'Shared' : 'مشترك')}</span>
-                                      <span>
-                                        ·{' '}
-                                        {task.kidId === null
-                                          ? isEn
-                                            ? 'Shared family'
-                                            : 'مشتركة للأسرة'
-                                          : activeKidName}
-                                      </span>
-                                      {task.category && <span>· {task.category}</span>}
-                                      {task.cadence === 'weekly' && (
-                                        <span>· {isEn ? 'Weekly' : 'أسبوعي'}</span>
-                                      )}
-                                      {task.cadence === 'monthly' && (
-                                        <span>
-                                          ·{' '}
-                                          {isEn
-                                            ? `Monthly (Day ${task.dayOfMonth || 1})`
-                                            : `شهري (يوم ${task.dayOfMonth || 1})`}
-                                        </span>
-                                      )}
-                                    </div>
+                              <div key={task.id} data-testid={`command-task-row-${task.id}`} className="rounded-xl border border-white/10 bg-white/[0.07] p-3">
+                                <div className="flex items-center gap-2.5">
+                                  <button type="button" aria-label={doneOnDate ? (isEn ? 'Mark incomplete' : 'إعادة فتح المهمة') : (isEn ? 'Complete task' : 'إنجاز المهمة')} disabled={!onToggleRoutineTask} onClick={() => onToggleRoutineTask?.(task.id, !doneOnDate, selectedPlannerDateISO)} className={`grid h-9 w-9 shrink-0 place-items-center rounded-full border text-sm font-black transition cursor-pointer ${doneOnDate ? 'border-emerald-300 bg-emerald-300 text-[#073F43]' : 'border-white/30 bg-white/5 text-white hover:bg-white/15'}`}>{doneOnDate ? '✓' : '○'}</button>
+                                  <div className="min-w-0 flex-1"><div className={`truncate text-[13px] font-bold ${doneOnDate ? 'text-white/55 line-through' : 'text-white'}`}>{task.name}</div><div className="mt-1 flex flex-wrap items-center gap-x-2 text-[10px] text-white/65"><span>{task.time}</span><span>· {task.owner || (isEn ? 'Shared' : 'مشترك')}</span>{task.cadence === 'weekly' && <span>· {isEn ? 'Weekly' : 'أسبوعي'}</span>}{task.cadence === 'monthly' && <span>· {isEn ? `Monthly · day ${task.dayOfMonth || 1}` : `شهري · يوم ${task.dayOfMonth || 1}`}</span>}</div></div>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    {onEditRoutineTask && <button type="button" data-testid={`command-task-edit-btn-${task.id}`} aria-label={isEn ? 'Edit task' : 'تعديل المهمة'} title={isEn ? 'Edit' : 'تعديل'} onClick={() => { if (editingCommandTaskId === task.id) { setEditingCommandTaskId(null); setEditTaskDraft(null); } else { setEditingCommandTaskId(task.id); setConfirmDeleteTaskId(null); setEditTaskDraft({ name: task.name, time: task.time || '17:00', category: task.category || 'روتين يومي', owner: task.owner === 'الأم' || task.owner === 'الأب' ? task.owner : 'مشترك', kidId: task.kidId, cadence: task.cadence || 'daily', dayOfWeek: task.dayOfWeek ?? plannerDay, dayOfMonth: task.dayOfMonth ?? new Date().getDate() }); } }} className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.06] text-sm text-white/80 hover:bg-white/15 cursor-pointer">✎</button>}
+                                    {onDeleteRoutineTask && <button type="button" data-testid={`command-task-delete-btn-${task.id}`} aria-label={isEn ? 'Delete task' : 'حذف المهمة'} title={isEn ? 'Delete' : 'حذف'} onClick={() => { setConfirmDeleteTaskId(isConfirmingDelete ? null : task.id); setEditingCommandTaskId(null); }} className="grid h-9 w-9 place-items-center rounded-lg border border-rose-200/20 bg-rose-400/10 text-sm text-rose-100 hover:bg-rose-400/20 cursor-pointer">×</button>}
                                   </div>
-
-                                  <select
-                                    aria-label={
-                                      isEn
-                                        ? `Change responsible parent for ${task.name}`
-                                        : `تغيير المسؤول عن ${task.name}`
-                                    }
-                                    value={
-                                      task.owner === 'الأم' || task.owner === 'الأب'
-                                        ? task.owner
-                                        : 'مشترك'
-                                    }
-                                    disabled={!onUpdateRoutineTaskOwner}
-                                    onChange={(event) =>
-                                      onUpdateRoutineTaskOwner?.(task.id, event.target.value)
-                                    }
-                                    className={`min-h-8 max-w-[86px] rounded-lg border border-white/15 ${activeKidVisual.selectBgClass} px-1.5 text-[9px] font-bold text-white outline-none`}
-                                  >
-                                    <option value="مشترك">{isEn ? 'Shared' : 'مشترك'}</option>
-                                    <option value="الأم">{isEn ? 'Mother' : 'الأم'}</option>
-                                    <option value="الأب">{isEn ? 'Father' : 'الأب'}</option>
-                                  </select>
-
-                                  {onEditRoutineTask && (
-                                    <button
-                                      type="button"
-                                      data-testid={`command-task-edit-btn-${task.id}`}
-                                      onClick={() => {
-                                        if (editingCommandTaskId === task.id) {
-                                          setEditingCommandTaskId(null);
-                                          setEditTaskDraft(null);
-                                        } else {
-                                          setEditingCommandTaskId(task.id);
-                                          setConfirmDeleteTaskId(null);
-                                          setEditTaskDraft({
-                                            name: task.name,
-                                            time: task.time || '17:00',
-                                            category: task.category || 'روتين يومي',
-                                            owner:
-                                              task.owner === 'الأم' || task.owner === 'الأب'
-                                                ? task.owner
-                                                : 'مشترك',
-                                            kidId: task.kidId,
-                                            cadence: task.cadence || 'daily',
-                                            dayOfWeek: task.dayOfWeek ?? plannerDay,
-                                            dayOfMonth: task.dayOfMonth ?? new Date().getDate(),
-                                          });
-                                        }
-                                      }}
-                                      className="min-h-8 rounded-lg border border-white/15 bg-white/10 px-2 text-[10px] font-bold text-white hover:bg-white/20 cursor-pointer"
-                                    >
-                                      {isEn ? 'Edit' : 'تعديل'}
-                                    </button>
-                                  )}
-
-                                  {onDeleteRoutineTask && (
-                                    <button
-                                      type="button"
-                                      data-testid={`command-task-delete-btn-${task.id}`}
-                                      onClick={() => {
-                                        setConfirmDeleteTaskId(
-                                          isConfirmingDelete ? null : task.id
-                                        );
-                                        setEditingCommandTaskId(null);
-                                      }}
-                                      className="min-h-8 rounded-lg border border-rose-300/30 bg-rose-500/20 px-2 text-[10px] font-bold text-rose-100 hover:bg-rose-500/30 cursor-pointer"
-                                    >
-                                      {isEn ? 'Delete' : 'حذف'}
-                                    </button>
-                                  )}
                                 </div>
 
-                                {/* Inline Delete Confirmation */}
+                                {/* Inline Delete Confirmation */}                                {/* Inline Delete Confirmation */}
                                 {isConfirmingDelete && (
                                   <div
                                     data-testid={`command-task-delete-confirm-${task.id}`}
