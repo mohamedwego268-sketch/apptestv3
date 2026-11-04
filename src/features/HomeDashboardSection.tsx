@@ -28,6 +28,7 @@ import { HeaderBarProfileSpec } from '../components/HeaderBar';
 import { SectionToolsDrawer } from '../components/SectionToolsDrawer';
 import { createChildLifeRecord, fetchDailyChildLifeRecords, fetchRecentChildLifeRecords, type DailyChildLifeRecord } from '../services/supabaseService';
 import {
+  buildDailyWelcomePersonalization,
   extractProfileSignals,
   getSafeFavoriteFood,
 } from '../domain/contentRecommendationEngine';
@@ -576,13 +577,13 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   const welcomePersonalization = useMemo(
     () =>
       buildDailyWelcomePersonalization({
-        child: activeKid ?? null,
-        parentDisplayNameAr: activeParentDisplayNameAr,
-        parentDisplayNameEn: activeParentNameEn,
+        child: null,
+        parentDisplayNameAr: 'الأسرة',
+        parentDisplayNameEn: 'Family',
         timeBucket: effectiveTimeBucket,
-        recentRecords: activeKidRecentRecords,
+        recentRecords: [],
       }),
-    [activeKid, activeParentDisplayNameAr, activeParentNameEn, effectiveTimeBucket, activeKidRecentRecords]
+    [effectiveTimeBucket]
   );
 
   // Time-of-Day Dynamic Parenting Wisdom

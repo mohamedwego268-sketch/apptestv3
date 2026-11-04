@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { calculateAgeInMonths, extractProfileSignals, getSafeFavoriteFood, rankDynamicContent, type DynamicContentCatalogItem } from './contentRecommendationEngine';
+import { buildDailyWelcomePersonalization, calculateAgeInMonths, extractProfileSignals, getSafeFavoriteFood, rankDynamicContent, type DynamicContentCatalogItem } from './contentRecommendationEngine';
 
 describe('dynamic profile signals', () => {
   it('calculates completed age months and rejects invalid dates', () => {
@@ -66,6 +66,25 @@ describe('dynamic profile signals', () => {
   });
 });
 
+
+describe('family-wide daily compass', () => {
+  it('keeps the daily message independent from the dashboard child selection', () => {
+    const message = buildDailyWelcomePersonalization({
+      child: null,
+      parentDisplayNameAr: 'الأسرة',
+      parentDisplayNameEn: 'Family',
+      timeBucket: 'morning',
+      recentRecords: [],
+      now: new Date('2026-11-05T08:00:00'),
+    });
+
+    assert.match(message.greetingAr, /الأسرة/);
+    assert.match(message.summaryAr, /الأسرة/);
+    assert.match(message.compass.bodyAr, /مع بعض/);
+    assert.doesNotMatch(message.greetingAr, /طفلك/);
+    assert.doesNotMatch(message.compass.bodyAr, /طفلك/);
+  });
+});
 
 describe('dynamic content ranking', () => {
   const item = (overrides: Partial<DynamicContentCatalogItem> = {}): DynamicContentCatalogItem => ({

@@ -158,12 +158,12 @@ export function buildDailyWelcomePersonalization(
     return {
       timeBadgeAr: timeMeta.badgeAr,
       timeBadgeEn: timeMeta.badgeEn,
-      greetingAr: `${timeMeta.parentGreetingAr} 👋 خلّينا نرتّب يومكم ونركز على اللي يهم طفلك.`,
-      greetingEn: `${timeMeta.parentGreetingEn} 👋 Let's make today's family routine easier.`,
+      greetingAr: `${timeMeta.badgeAr} 👋 خلّينا نرتّب يوم الأسرة ونختار خطوة بسيطة تناسبكم.`,
+      greetingEn: `${timeMeta.badgeEn} 👋 Let's make the day easier for everyone at home.`,
       summaryAr:
-        'ابدأ من احتياج طفلك النهارده؛ تابع يومه، واهتم براحة الأسرة، واختار الخطوة المناسبة من مكان واحد.',
+        'ابدأوا بما تحتاجه الأسرة النهارده، واختاروا خطوة بسيطة تساعدكم في يومكم.',
       summaryEn:
-        'Start with what your child needs today. Keep daily care, family support and useful activities connected in one place.',
+        'Start with what the family needs today and choose one simple step that helps everyone at home.',
       ageLabelAr: 'العمر غير محدد',
       ageLabelEn: 'Age not set',
       ageStage: 'unknown',
@@ -177,15 +177,15 @@ export function buildDailyWelcomePersonalization(
               titleAr: 'ابدأوا اليوم بسؤال بسيط وخطة واضحة',
               titleEn: 'Start with One Warm Check-in and a Clear Plan',
               bodyAr:
-                'خدوا دقيقة مع طفلك: اسألوه عن حاجة متحمس لها النهارده، وشاركوه خطوة واحدة من خطة اليوم.',
+                'خدوا دقيقة مع بعض: اتكلموا عن حاجة حلوة مستنيينها النهارده، واتفقوا على خطوة بسيطة لليوم.',
               bodyEn:
-                'Take a minute with your child: ask what they are looking forward to and share one simple part of the day’s plan.',
+                'Take a minute together, share one thing everyone is looking forward to, and agree on one simple step for the day.',
               quoteAr: '«مش مطلوب يوم مثالي؛ المهم بداية فيها اهتمام ووضوح.»',
               quoteEn: '“The goal is not a perfect day; it is a start built on attention and clarity.”',
               actionLabelAr: 'إضافة لحظة تواصل للروتين',
               actionLabelEn: 'Add a Connection Moment',
-              actionTaskAr: 'خمس دقائق تواصل هادي مع طفلك قبل بداية اليوم',
-              actionTaskEn: 'Five calm minutes of connection with your child',
+              actionTaskAr: 'خمس دقائق تواصل هادي بين أفراد الأسرة قبل بداية اليوم',
+              actionTaskEn: 'Five calm minutes of family connection',
               actionTime: '07:30 ص',
             }
           : timeBucket === 'afternoon'
@@ -195,15 +195,15 @@ export function buildDailyWelcomePersonalization(
               titleAr: 'ادي طفلك فرصة يفصل ويحكي عن يومه',
               titleEn: 'Give Your Child Space to Unwind and Share',
               bodyAr:
-                'بعد الرجوع، ابدأوا بوقت هادي ومياه أو وجبة مناسبة، وبعدها اسألوا طفلك عن حاجة حلوة وحاجة كانت صعبة في يومه.',
+                'بعد الرجوع، خصصوا وقت هادي للأسرة، وبعدها شاركوا بعض أحلى حاجة حصلت وحاجة محتاجة مساعدة.',
               bodyEn:
-                'After the day, allow some quiet time and offer water or an age-appropriate snack, then ask about one good moment and one difficult moment.',
+                'After the day, make room for a calm family pause and share one good moment and one thing that needs support.',
               quoteAr: '«الاستماع الهادي أحياناً أهم من النصيحة السريعة.»',
               quoteEn: '“A calm listener can matter more than a quick solution.”',
               actionLabelAr: 'جدولة وقت حكي وونس',
               actionLabelEn: 'Schedule a Check-in',
-              actionTaskAr: '١٠ دقائق حكي وونس مع طفلك من غير شاشات',
-              actionTaskEn: '10 screen-free minutes to reconnect with your child',
+              actionTaskAr: '١٠ دقائق حكي وونس للأسرة من غير شاشات',
+              actionTaskEn: '10 screen-free minutes to reconnect as a family',
               actionTime: '03:30 م',
             }
           : {
@@ -212,15 +212,15 @@ export function buildDailyWelcomePersonalization(
               titleAr: 'اختتموا اليوم بروتين بسيط ومتكرر',
               titleEn: 'Close the Day with a Simple, Familiar Routine',
               bodyAr:
-                'اختاروا مع طفلك نشاطاً هادئاً يناسب عمره: قصة قصيرة، ترتيب لعبة، أو حديث عن أحلى لحظة في اليوم.',
+                'اختاروا نشاطاً هادئاً يجمع الأسرة: قصة قصيرة، ترتيب شيء معاً، أو حديث عن أحلى لحظة في اليوم.',
               bodyEn:
-                'Choose a calm, age-appropriate activity with your child: a short story, putting a toy away, or sharing a favorite moment from the day.',
+                'Choose a calm family activity: a short story, tidying something together, or sharing a favorite moment from the day.',
               quoteAr: '«الروتين المألوف يسهّل الانتقال للراحة، من غير ما يتحول لضغط.»',
               quoteEn: '“A familiar routine can make winding down easier without turning it into pressure.”',
               actionLabelAr: 'إضافة طقس هدوء للمساء',
               actionLabelEn: 'Add an Evening Wind-down',
-              actionTaskAr: 'وقت هادي وقصة قصيرة مع طفلك قبل النوم',
-              actionTaskEn: 'A calm moment and short story with your child before bed',
+              actionTaskAr: 'وقت هادي وقصة قصيرة تجمع الأسرة قبل النوم',
+              actionTaskEn: 'A calm moment and short story together before bed',
               actionTime: '08:00 م',
             },
     };
