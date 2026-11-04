@@ -440,7 +440,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
 
         <section data-testid="parent-reset-practice" className="rounded-2xl border border-orange-300/50 bg-gradient-to-br from-orange-50/90 via-white to-rose-50/60 p-3.5 space-y-3 dark:border-orange-900/50 dark:from-[#2A211D] dark:via-[#142430] dark:to-[#241B26]">
           <div className="flex items-start justify-between gap-2">
-            <div><p className="text-[10px] font-black tracking-wide text-orange-800 dark:text-orange-200">{isEn ? 'A CHECK-IN FOR THE PARENT' : 'وقفة صغيرة للأب أو الأم'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What do I need right now?' : 'أنا محتاج/ة إيه دلوقتي؟'}</h4><p className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Choose honestly. This is a private reflection on this screen, not a diagnosis or a saved record.' : 'اختاروا بصدق ومن غير لوم. دي مساحة تفكير على الشاشة فقط، مش تشخيص ولا سجل محفوظ.'}</p></div>
+            <div><p className="text-[10px] font-black tracking-wide text-orange-800 dark:text-orange-200">{isEn ? 'A MOMENT FOR YOU' : 'دقيقة ليك كأب أو أم'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What would help me right now?' : 'إيه اللي ممكن يساعدني دلوقتي؟'}</h4><p className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Choose honestly. This is a private reflection on this screen, not a diagnosis or a saved record.' : 'اختاروا بصدق ومن غير لوم. دي مساحة تفكير على الشاشة فقط، مش تشخيص ولا سجل محفوظ.'}</p></div>
             <span className="text-2xl">🧡</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -576,7 +576,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
 
                 {activeMood && (
                   <div data-testid="child-co-regulation-practice" className="rounded-2xl border border-cyan-500/25 bg-gradient-to-br from-cyan-50/80 via-white to-sky-50/70 p-3 dark:from-[#132B35] dark:via-[#101D26] dark:to-[#172D3A]">
-                    <div className="flex items-start justify-between gap-2"><div><p className="text-[10px] font-black text-cyan-900 dark:text-cyan-200">{isEn ? 'AGE-AWARE CO-REGULATION' : 'خطوات تهدئة مناسبة للعمر'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'What can I do with my child now?' : 'أعمل إيه مع طفلي دلوقتي؟'}</h4></div><span className="text-xl">🫶</span></div>
+                    <div className="flex items-start justify-between gap-2"><div><p className="text-[10px] font-black text-cyan-900 dark:text-cyan-200">{isEn ? 'CALMING HELP FOR EVERY AGE' : 'إزاي نساعد الطفل يهدأ حسب سنه'}</p><h4 className="mt-1 text-xs font-black text-[var(--color-text)] dark:text-white">{isEn ? 'How can I help my child right now?' : 'أساعد طفلي إزاي دلوقتي؟'}</h4></div><span className="text-xl">🫶</span></div>
                     <div className="mt-3 grid grid-cols-3 gap-1.5">
                       {childRegulationPlan.map((step,index) => <button key={step} type="button" aria-pressed={childSupportStep === index} onClick={() => setChildSupportStep(index)} className={`min-h-[54px] rounded-xl border px-2 py-2 text-start text-[9px] font-extrabold leading-relaxed ${childSupportStep === index ? 'border-cyan-600 bg-cyan-100 text-cyan-950 dark:bg-cyan-900/40 dark:text-cyan-100' : 'border-cyan-200/70 bg-white/80 text-[var(--color-text)] dark:border-cyan-900/60 dark:bg-[#0B131A]/60 dark:text-slate-200'}`}>{index+1}. {isEn ? ['Notice','Connect','Support'][index] : ['لاحظ','اتواصل','اسند'][index]}</button>)}
                     </div>
@@ -660,7 +660,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-500/12 text-2xl">🌱</span>
           <div className="min-w-0">
             <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
-              {isEn ? 'Positive Parenting & Daily Practical Guidance' : 'التربية الإيجابية وإرشادات التعامل اليومي'}
+              {isEn ? 'Everyday parenting help' : 'مساعدة بسيطة لمواقف التربية كل يوم'}
             </h3>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
               {isEn
