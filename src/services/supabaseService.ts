@@ -3703,16 +3703,78 @@ export interface DailyChildLifeRecord {
   details: Record<string, unknown>;
 }
 
-function getLocalDayBoundsIso(date = new Date()): { start: string; end: string } {
-  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
-  return { start: start.toISOString(), end: end.toISOString() };
+function getZonedDateParts(date: Date, timeZone: string): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return {
+    year: Number(values.year),
+    month: Number(values.month),
+    day: Number(values.day),
+  };
+}
+
+function zonedMidnightToUtc(year: number, month: number, day: number, timeZone: string): Date {
+  const targetWallTime = Date.UTC(year, month - 1, day);
+  let utcGuess = targetWallTime;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(new Date(utcGuess));
+    const values = Object.fromEntries(parts.map((part) => [part.type, Number(part.value)]));
+    const representedWallTime = Date.UTC(
+      values.year,
+      values.month - 1,
+      values.day,
+      values.hour,
+      values.minute,
+      values.second
+    );
+    utcGuess += targetWallTime - representedWallTime;
+  }
+  return new Date(utcGuess);
+}
+
+export function getLocalDayBoundsIso(date = new Date(), timeZone?: string): { start: string; end: string } {
+  if (!timeZone) {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    return { start: start.toISOString(), end: end.toISOString() };
+  }
+
+  try {
+    const { year, month, day } = getZonedDateParts(date, timeZone);
+    const nextDay = new Date(Date.UTC(year, month - 1, day + 1));
+    const nextYear = nextDay.getUTCFullYear();
+    const nextMonth = nextDay.getUTCMonth() + 1;
+    const nextDate = nextDay.getUTCDate();
+    return {
+      start: zonedMidnightToUtc(year, month, day, timeZone).toISOString(),
+      end: zonedMidnightToUtc(nextYear, nextMonth, nextDate, timeZone).toISOString(),
+    };
+  } catch {
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    return { start: start.toISOString(), end: end.toISOString() };
+  }
 }
 
 export async function fetchDailyChildLifeRecords(
   childRemoteIds: string[],
   date = new Date(),
-  customClient?: SupabaseClient | null
+  customClient?: SupabaseClient | null,
+  timeZone?: string
 ): Promise<{ records: DailyChildLifeRecord[]; error: string | null }> {
   const activeClient = customClient !== undefined ? customClient : supabaseClient;
   const ids = [...new Set(childRemoteIds.filter(isValidUuid))];
@@ -3724,7 +3786,7 @@ export async function fetchDailyChildLifeRecords(
     if (!verifiedCtx.authenticated || !isValidUuid(verifiedCtx.verifiedFamilyId)) {
       return { records: [], error: verifiedCtx.error || 'A verified family account is required.' };
     }
-    const { start, end } = getLocalDayBoundsIso(date);
+    const { start, end } = getLocalDayBoundsIso(date, timeZone);
     const { data, error } = await withSupabaseTimeout(
       activeClient
         .from('child_life_records')

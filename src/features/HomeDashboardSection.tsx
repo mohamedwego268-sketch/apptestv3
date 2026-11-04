@@ -6,6 +6,7 @@ import {
   LanguageCode,
   calculateChildAge,
   getDefaultCityForCountry,
+  getCountryTimezone,
   locText,
   sanitizeUserText,
 } from '../domain/familySpaceCore';
@@ -324,7 +325,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       }
       setRecentRecordsByKid(grouped);
     });
-    void fetchDailyChildLifeRecords(childRemoteIds).then(({ records }) => {
+    void fetchDailyChildLifeRecords(childRemoteIds, new Date(), undefined, getCountryTimezone(state.country)).then(({ records }) => {
       if (!active) return;
       const remoteToLocal = new Map(savedChildren.map((kid) => [String(kid.remoteId), kid.id]));
       const next: typeof quickPulseByKid = {};
