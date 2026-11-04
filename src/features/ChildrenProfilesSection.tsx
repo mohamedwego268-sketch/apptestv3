@@ -40,10 +40,8 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
 
   // Helper to assign standardized color tone per child profile (Hamza 6m boy = sky, Laila 4y girl = rose, Youssef 8y boy = amber)
   const getChildStandardTone = (kid: ChildProfile, idx: number): 'sky' | 'rose' | 'amber' | 'teal' => {
-    if (kid.gender === 'girl' || kid.name.includes('ليلى')) return 'rose';
-    if (kid.name.includes('حمزة') || idx === 0) return 'sky';
-    if (kid.name.includes('يوسف') || idx === 2) return 'amber';
-    return 'teal';
+    if (kid.gender === 'girl') return 'rose';
+    return (['sky', 'teal', 'amber'] as const)[idx % 3];
   };
 
   return (
@@ -215,7 +213,7 @@ export const ChildrenProfilesSection: React.FC<ChildrenProfilesSectionProps> = (
                       </div>
                       {locText(kid.interests || 'لم تحدد الاهتمامات بعد', lang)} ·{' '}
                       {isEn ? 'Vaccinations:' : 'التطعيمات:'}{' '}
-                      {locText(kid.vaccinationsNote || 'محدثة', lang)}
+                      {(kid.vaccinationsNote ? locText(kid.vaccinationsNote, lang) : (isEn ? 'Not recorded' : 'غير مسجل'))}
                     </div>
                   </div>
                 }
