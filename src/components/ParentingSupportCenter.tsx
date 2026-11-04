@@ -536,8 +536,8 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         <div className="flex items-start gap-3">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-sky-500/12 text-2xl">🧒</span>
           <div className="min-w-0">
-            <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Each child · Their own feelings' : 'كل طفل لوحده · مشاعره وسجله'}</h3>
-            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Choose one child and record how they seem right now. A feeling is a moment, not a label.' : 'اختاروا طفل واحد وسجلوا حالته الشعورية دلوقتي. الشعور لحظة بنلاحظها، مش صفة بنحكم بيها على الطفل.'}</p>
+            <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">{isEn ? 'Each child · Their own feelings' : 'مشاعر كل طفل لوحده'}</h3>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">{isEn ? 'Choose one child and record how they seem right now. A feeling is a moment, not a label.' : 'اختاروا طفلكم وشوفوا حاسس بإيه دلوقتي. الإحساس ممكن يتغير، ومش معناه إن دي صفة ثابتة فيه.'}</p>
           </div>
         </div>
         {kids.length > 0 ? (
@@ -555,8 +555,8 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
             {activeKid && (
               <>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">{locText(activeKid.name, language)} · {ageLabel || (isEn ? 'Age not recorded' : 'العمر غير مسجل')}</p>
-                  <span className="text-[10px] font-bold text-[var(--color-muted)]">{isEn ? 'Private child record' : 'سجل خاص بالطفل'}</span>
+                  <p className="text-xs font-bold text-[var(--color-muted)] dark:text-[#CBD5E1]">{locText(activeKid.name, language)} · {ageLabel || (isEn ? 'Age not recorded' : 'لسه مسجلتوش عمره')}</p>
+                  <span className="text-[10px] font-bold text-[var(--color-muted)]">{isEn ? 'Private child record' : 'بيتسجل في ملف الطفل'}</span>
                 </div>
 
                 <div
@@ -581,14 +581,14 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                       {childRegulationPlan.map((step,index) => <button key={step} type="button" aria-pressed={childSupportStep === index} onClick={() => setChildSupportStep(index)} className={`min-h-[54px] rounded-xl border px-2 py-2 text-start text-[9px] font-extrabold leading-relaxed ${childSupportStep === index ? 'border-cyan-600 bg-cyan-100 text-cyan-950 dark:bg-cyan-900/40 dark:text-cyan-100' : 'border-cyan-200/70 bg-white/80 text-[var(--color-text)] dark:border-cyan-900/60 dark:bg-[#0B131A]/60 dark:text-slate-200'}`}>{index+1}. {isEn ? ['Notice','Connect','Support'][index] : ['لاحظ','اتواصل','اسند'][index]}</button>)}
                     </div>
                     <p className="mt-2 rounded-xl bg-white/85 p-3 text-[11px] font-bold leading-relaxed text-[var(--color-text)] dark:bg-[#0B131A]/70 dark:text-[#E2E8F0]">{childRegulationPlan[childSupportStep]}</p>
-                    <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute calm connection and co-regulation with child' : '١٠ دقائق تواصل وتهدئة مشتركة مع الطفل', '05:30 م', activeKid?.id ?? null)} className="mt-2 min-h-[42px] rounded-xl bg-cyan-800 px-3 py-2 text-[10px] font-extrabold text-white hover:bg-cyan-900">+ {isEn ? 'Add a calm connection moment' : 'أضف لحظة تواصل وتهدئة للروتين'}</button>
-                    <p className="mt-2 text-[9px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Follow the child’s cues and safety needs. Never force touch, eye contact, breathing exercises or talking.' : 'اتبعوا إشارات الطفل واحتياجات الأمان. ما تجبروش الطفل على اللمس أو التواصل البصري أو تمارين التنفس أو الكلام.'}</p>
+                    <button type="button" onClick={() => onAddRoutineTask?.(isEn ? '10-minute calm connection and co-regulation with child' : '١٠ دقائق تواصل وتهدئة مشتركة مع الطفل', '05:30 م', activeKid?.id ?? null)} className="mt-2 min-h-[42px] rounded-xl bg-cyan-800 px-3 py-2 text-[10px] font-extrabold text-white hover:bg-cyan-900">+ {isEn ? 'Add a calm connection moment' : 'ضيفوا وقت هادي مع طفلكم للروتين'}</button>
+                    <p className="mt-2 text-[9px] leading-relaxed text-[var(--color-muted)]">{isEn ? 'Follow the child’s cues and safety needs. Never force touch, eye contact, breathing exercises or talking.' : 'خدوا بالكم من إشارات طفلكم وراحته. ما تجبروهوش على الحضن أو النظر في العين أو التنفس بطريقة معينة أو الكلام.'}</p>
                   </div>
                 )}
                 {activeMood && (
                   <div data-testid="child-emotion-path" className="rounded-2xl border border-sky-500/20 bg-gradient-to-r from-sky-50/90 via-white to-cyan-50/80 p-3 dark:from-[#172D3A] dark:via-[#101D26] dark:to-[#102B36]">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-black text-sky-950 dark:text-sky-100">{isEn ? 'From feeling to connection' : 'من الشعور للتواصل'}</p>
+                      <p className="text-xs font-black text-sky-950 dark:text-sky-100">{isEn ? 'From feeling to connection' : 'نفهم إحساسه ونقرب منه'}</p>
                       <span className="rounded-full bg-sky-600/10 px-2 py-1 text-[10px] font-black text-sky-800 dark:text-sky-200">{activeMood.emoji} {isEn ? activeMood.labelEn : activeMood.labelAr}</span>
                     </div>
                     <div className="mt-3 grid grid-cols-4 gap-1.5">
@@ -620,7 +620,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
                       <button type="button" disabled={savingMood} onClick={() => void handleSaveMood()} className="min-h-[44px] rounded-xl bg-sky-700 px-4 py-2 text-xs font-extrabold text-white disabled:opacity-50">
-                        {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظ في ملف الطفل')}
+                        {savingMood ? (isEn ? 'Saving…' : 'جاري الحفظ…') : (isEn ? 'Save to this child’s record' : 'احفظوا في ملف الطفل')}
                       </button>
                       <button
                         type="button"
@@ -633,10 +633,10 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
                         }
                         className="min-h-[44px] rounded-xl border border-sky-500/30 bg-sky-500/10 px-3.5 py-2 text-xs font-extrabold text-sky-800 dark:text-sky-200"
                       >
-                        + {isEn ? 'Add connection step to routine' : 'أضف خطوة تواصل لروتين الطفل'}
+                        + {isEn ? 'Add connection step to routine' : 'ضيفوا وقت هادي مع طفلكم للروتين'}
                       </button>
                     </div>
-                    {savedMood?.id === activeMood.id && <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">✓ {isEn ? 'Saved to the child record.' : 'تم حفظ الحالة في سجل الطفل.'}</p>}
+                    {savedMood?.id === activeMood.id && <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">✓ {isEn ? 'Saved to the child record.' : 'اتحفظت مشاعره في ملفه.'}</p>}
                     {moodSaveError && <p role="alert" className="text-[11px] font-bold leading-relaxed text-rose-700 dark:text-rose-300">{moodSaveError}</p>}
                   </div>
                 )}
@@ -646,7 +646,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
         ) : (
           <p className="rounded-xl bg-white/70 dark:bg-[#0B131A]/60 p-3 text-xs font-bold text-[var(--color-muted)]">{isEn ? 'Add a child profile to start an individual emotional check-in.' : 'أضيفوا ملف طفل لبدء تسجيل مشاعره بشكل مستقل.'}</p>
         )}
-        <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A mood log is not a diagnosis. If distress is persistent, severe or affects safety and daily functioning, speak with a qualified professional.' : 'تسجيل المزاج مش تشخيص. لو الضيق مستمر أو شديد أو مؤثر على الأمان والحياة اليومية، تواصلوا مع مختص مؤهل.'}</p>
+        <p className="text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{isEn ? 'A feelings log is not a diagnosis. If distress lasts, feels severe, or affects safety and daily life, seek help from a qualified professional.' : 'تسجيل المشاعر مش تشخيص. لو طفلك متضايق لفترة طويلة، أو الضيق مأثر على حياته أو أمانه، اطلبوا مساعدة من مختص.'}</p>
       </section>
 
       {/* =====================================================================
@@ -660,12 +660,12 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-500/12 text-2xl">🌱</span>
           <div className="min-w-0">
             <h3 className="text-sm font-black text-[var(--color-text)] dark:text-white">
-              {isEn ? 'Everyday parenting help' : 'مساعدة بسيطة لمواقف التربية كل يوم'}
+              {isEn ? 'Everyday parenting help' : 'أفكار تساعدكم في مواقف التربية كل يوم'}
             </h3>
             <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#CBD5E1]">
               {isEn
                 ? 'Four distinct, non-repetitive pillars tailored to your child’s stage and interests.'
-                : '٤ مسارات عملية متجددة تناسب عمر طفلك واهتماماته لبناء الثقة والهدوء بدون صدام.'}
+                : '٤ طرق بسيطة تساعدكم تفهموا طفلكم وتتعاملوا معاه بهدوء، حسب سنه والحاجات اللي بيحبها.'}
             </p>
           </div>
         </div>
@@ -699,7 +699,7 @@ export const ParentingSupportCenter: React.FC<ParentingSupportCenterProps> = ({
           </p>
           <div className="rounded-xl bg-teal-500/10 p-3">
             <p className="text-[10px] font-black text-teal-800 dark:text-teal-200">
-              {isEn ? 'Suggested phrase' : 'جملة عملية مقترحة'}
+              {isEn ? 'Suggested phrase' : 'ممكن تقولوا له'}
             </p>
             <p className="mt-1 text-xs font-bold leading-relaxed text-[var(--color-text)] dark:text-[#F8FAFC]">
               {isEn ? activePositiveAdvice.sayThisEn : activePositiveAdvice.sayThisAr}
