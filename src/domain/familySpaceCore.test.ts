@@ -3788,7 +3788,7 @@ describe('Home content journey accessibility and track integrity', () => {
     assert.ok(!homeSrc.includes('home-welcome-child-context'));
     assert.ok(homeSrc.includes('Support for the Whole Family'));
     assert.ok(homeSrc.includes('رسائل الأسرة'));
-    assert.ok(homeSrc.includes('initialKidId={null}'));
+    assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
     assert.ok(homeSrc.includes("dailyEssentials: 'command-domain-nutrition'"));
     assert.ok(!homeSrc.includes('<HomeDynamicContentSection'));
     assert.ok(!homeSrc.includes('<HomeVisualDiscovery'));
