@@ -1998,7 +1998,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
                 onClick={() => onAddSuggestedRoutineTask?.(
                   isEn ? currentSport.titleEn : currentSport.titleAr,
                   currentSport.time,
-                  activeKidId,
+                  activeKid ? activeKidId : null,
                   'الرياضة والحركة',
                   'daily',
                   'مشترك'
