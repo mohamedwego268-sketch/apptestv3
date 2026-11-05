@@ -922,26 +922,81 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   return (
     <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
-      {/* 1. Auto-Play Hero Carousel at the VERY TOP of the Store page */}
-      {storeFlowStep === 'catalog' && !activeCategorySpec && (allowDemoData ? (
-        <SwipeableBannerCarousel
-          slides={storeBanners}
-          language={language}
-          darkMode={darkMode}
-          autoPlayMs={4500}
-          ariaLabel={isEn ? 'Store Offers Carousel' : 'لافتات عروض المتجر المتحركة'}
-        />
-      ) : (
-        <div className="relative overflow-hidden rounded-[28px] border border-teal-700/10 bg-gradient-to-br from-white via-teal-50/70 to-sky-50/80 p-5 shadow-sm dark:border-white/10 dark:from-[#101d26] dark:via-[#123238] dark:to-[#102b3b] sm:p-7">
-          <div className="pointer-events-none absolute -end-12 -top-16 h-48 w-48 rounded-full bg-teal-300/15 blur-3xl" />
-          <div className="relative max-w-2xl space-y-2">
-            <span className="text-[10px] font-black tracking-[0.2em] text-teal-700 dark:text-teal-300">NEKBAAR MARKETPLACE</span>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white">{isEn ? 'A trusted marketplace for growing families' : 'سوق نكبر… اختيارات موثوقة لكل أسرة'}</h2>
-            <p className="text-sm leading-7 text-slate-600 dark:text-slate-300">{isEn ? 'Products and family services approved for the marketplace will appear here.' : 'ستظهر هنا المنتجات والخدمات المعتمدة بمجرد إتاحتها في سوق نكبر.'}</p>
-            {master.catalogSource === 'offline' && <p className="text-xs font-bold text-amber-700 dark:text-amber-300">{isEn ? 'Catalog is temporarily unavailable. Please try again.' : 'تعذر الاتصال بالمتجر مؤقتاً. حاول التحديث مرة أخرى.'}</p>}
+      {/* Marketplace storefront: discovery-first layout inspired by Noon and Talabat */}
+      {storeFlowStep === 'catalog' && (
+        <div data-testid="storefront-hero" className="relative isolate overflow-hidden rounded-[28px] border border-orange-200/70 dark:border-[#35404B] bg-gradient-to-br from-[#FFF7ED] via-white to-[#ECFEFF] dark:from-[#211D1A] dark:via-[#142430] dark:to-[#102D32] shadow-sm">
+          <div aria-hidden="true" className="pointer-events-none absolute -top-20 -end-12 h-56 w-56 rounded-full bg-orange-300/25 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -start-12 h-56 w-56 rounded-full bg-teal-300/20 blur-3xl" />
+          <div className="relative p-4 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/80 dark:border-orange-300/20 bg-white/75 dark:bg-white/5 px-3 py-1.5 text-[10px] font-black tracking-wide text-orange-700 dark:text-orange-200">
+                <span aria-hidden="true">✦</span> NEKBAAR MARKETPLACE
+              </span>
+              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">📍 {displayCity}</span>
+            </div>
+            <div className="max-w-xl space-y-1.5">
+              <h2 className="text-[25px] sm:text-3xl leading-tight font-black tracking-tight text-slate-950 dark:text-white">
+                {isEn ? 'Everything your family needs, in one place' : 'كل احتياجات أسرتك… في مكان واحد'}
+              </h2>
+              <p className="text-xs sm:text-sm leading-6 font-medium text-slate-600 dark:text-slate-300">
+                {isEn ? 'Discover trusted products, useful services and experiences for every stage of family life.' : 'اكتشف منتجات وخدمات وتجارب تساعد أسرتك في كل مرحلة من مراحل النمو.'}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/90 dark:border-white/10 bg-white dark:bg-[#0D1D27] p-1.5 shadow-md flex items-center gap-2">
+              <span className="ps-2 text-lg" aria-hidden="true">⌕</span>
+              <input data-testid="storefront-search-input" type="search" value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isEn ? 'Search products, services and brands' : 'بتدور على إيه؟ منتجات، خدمات، أو أنشطة...'}
+                aria-label={isEn ? 'Search products and services' : 'ابحث عن منتجات وخدمات'}
+                className="min-w-0 flex-1 h-11 bg-transparent outline-none text-xs sm:text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+              {searchQuery.trim() && <button type="button" onClick={() => setSearchQuery('')} className="min-w-10 min-h-10 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 font-black" aria-label={isEn ? 'Clear search' : 'مسح البحث'}>×</button>}
+              <button type="button" onClick={() => setShowCartPanel(true)} className="relative min-w-11 min-h-11 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white inline-flex items-center justify-center transition-colors" aria-label={isEn ? 'Open cart' : 'فتح السلة'}>
+                <span aria-hidden="true" className="text-lg">🛒</span>
+                {cartTotalCount > 0 && <span className="absolute -top-1 -end-1 min-w-5 h-5 px-1 rounded-full bg-[#F97316] text-white text-[10px] font-black inline-flex items-center justify-center">{cartTotalCount}</span>}
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {([
+                { id: 'all', ar: 'الكل', en: 'All', icon: '✦' },
+                { id: 'product', ar: 'المنتجات', en: 'Products', icon: '📦' },
+                { id: 'service', ar: 'الخدمات والحجوزات', en: 'Services & bookings', icon: '📅' },
+                { id: 'offer', ar: 'العروض', en: 'Offers', icon: '🏷️' },
+              ] as const).map((tab) => (
+                <button key={tab.id} type="button" onClick={() => { setSegment(tab.id); setActiveCategoryPageId(null); }} aria-pressed={segment === tab.id}
+                  className={'min-h-10 rounded-full border px-3.5 py-2 text-[11px] font-extrabold transition-all ' + (segment === tab.id ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-950 shadow-sm' : 'border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-700 dark:text-slate-200 hover:border-teal-500')}>
+                  <span aria-hidden="true">{tab.icon} </span>{isEn ? tab.en : tab.ar}
+                </button>
+              ))}
+              <span className="ms-auto text-[10px] font-bold text-slate-500 dark:text-slate-400">{filtered.length} {isEn ? 'items' : 'اختيار متاح'}</span>
+            </div>
           </div>
         </div>
-      ))}
+      )}
+
+      {storeFlowStep === 'catalog' && !activeCategorySpec && (
+        <div data-testid="storefront-category-shortcuts" className="space-y-2">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-[var(--color-text)]">{isEn ? 'Shop by category' : 'تسوق حسب القسم'}</h3>
+              <p className="text-[10px] sm:text-xs text-[var(--color-muted)] mt-0.5">{isEn ? 'Find what matters to your family faster' : 'وصل للي محتاجه بسرعة ومن غير لف كتير'}</p>
+            </div>
+            <button type="button" onClick={() => { setActiveCategoryPageId(null); setCategoryFilter('all'); setSegment('all'); }} className="text-[10px] font-extrabold text-teal-700 dark:text-teal-300">{isEn ? 'View all' : 'كل الأقسام'} ←</button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x" role="list" aria-label={isEn ? 'Shop categories' : 'أقسام التسوق'}>
+            {STORE_CATEGORY_SECTIONS.map((sec) => {
+              const count = filtered.filter((item) => (sec.matchCategories as readonly string[]).includes(item.category)).length;
+              return (
+                <button key={sec.id} type="button" role="listitem" data-testid={'storefront-category-' + sec.id} onClick={() => openCategoryFullPage(sec.id)}
+                  className="snap-start shrink-0 w-[112px] sm:w-[132px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-2.5 text-start hover:border-teal-500 hover:-translate-y-0.5 transition-all shadow-2xs">
+                  <span className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-400/10 inline-flex items-center justify-center text-xl">{sec.emoji}</span>
+                  <span className="mt-2 block text-[10px] sm:text-[11px] leading-snug font-extrabold text-[var(--color-text)] line-clamp-2">{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                  <span className="mt-1 block text-[9px] font-bold text-[var(--color-muted)] tabular-nums">{count} {isEn ? 'items' : 'اختيار'}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <SectionToolsDrawer
         language={language}
@@ -954,10 +1009,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           setShowCartPanel(true);
           setStoreFlowStep('checkout');
         }}
-        searchValue={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholderAr="🔍 ابحث في المتجر والخدمات..."
-        searchPlaceholderEn="🔍 Search store & services..."
         quickActions={[
           {
             id: 'filter-panel',
