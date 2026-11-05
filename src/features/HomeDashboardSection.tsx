@@ -209,15 +209,18 @@ const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
   description,
   step,
 }) => (
-  <div id={id} data-testid={id} className="relative flex items-center gap-3 overflow-hidden rounded-2xl border border-teal-500/15 bg-gradient-to-r from-teal-50/90 via-white to-sky-50/70 px-3.5 py-3 shadow-sm dark:from-[#122A30] dark:via-[#101D26] dark:to-[#142430] dark:border-[#24505A]">
-    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-teal-500/20 bg-teal-500/10 text-sm font-black text-teal-800 dark:text-teal-200">
+  <div id={id} data-testid={id} className="relative flex items-start gap-3 border-b border-teal-500/20 px-1 pb-3 pt-5 dark:border-[#24505A]">
+    <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-teal-700 text-xs font-black text-white shadow-sm dark:bg-teal-500 dark:text-[#062B2A]">
       {step}
     </span>
     <div className="min-w-0 flex-1">
-      <h2 className="text-sm font-black text-[var(--color-text)] dark:text-white">{title}</h2>
-      <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{description}</p>
+      <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-teal-700 dark:text-teal-300">
+        {isEn ? 'CHAPTER' : 'محطة من رحلتكم'}
+      </p>
+      <h2 className="mt-0.5 text-base font-black leading-snug text-[var(--color-text)] dark:text-white">{title}</h2>
+      <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{description}</p>
     </div>
-    <span aria-hidden="true" className="h-px min-w-5 flex-1 bg-gradient-to-l from-teal-500/35 to-transparent" />
+    <span aria-hidden="true" className="mt-5 h-px min-w-5 flex-1 bg-gradient-to-l from-teal-500/35 to-transparent" />
   </div>
 );
 
@@ -2657,8 +2660,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-growth"
         step="٢"
-        title={isEn ? 'Support for parents and family life' : 'مساندة الأهل والحياة الأسرية'}
-        description={isEn ? 'Short, practical guidance for everyday family situations — separate from each child’s personal record.' : 'إرشادات عملية وخفيفة لمواقف البيت اليومية، بعيدًا عن سجل كل طفل.'}
+        title={isEn ? 'Small steps that make family life smoother' : 'خطوة صغيرة تفرق في يوم البيت'}
+        description={isEn ? 'Practical guidance for everyday moments, leaving room for each family to choose what works.' : 'أفكار تساعدكم تفهموا المواقف اليومية وتختاروا تصرفًا مناسبًا من غير ضغط.'}
       />
       <HomeAccordionCard
         id="home-parenting-support-center"
@@ -2763,8 +2766,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-discovery"
         step="٣"
-        title={isEn ? 'Learn, explore and build good habits' : 'نتعلم ونكتشف ونبني عادات حلوة'}
-        description={isEn ? 'Age-aware activities, family values and everyday habits that grow with your child.' : 'أنشطة تناسب العمر، وقيم وعادات بسيطة تكبر مع طفلك يومًا بعد يوم.'}
+        title={isEn ? 'Turn everyday moments into growth' : 'كل يوم فرصة لتجربة جديدة'}
+        description={isEn ? 'Short experiences connect curiosity, character and age-appropriate practice.' : 'تجارب قصيرة تربط الفضول بالتعلّم، وتحول المعاني الجميلة لممارسات بسيطة.'}
       />
       <div hidden={!openAccordions.learningTrack}>
       <HomeAccordionCard
@@ -2826,8 +2829,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-stories"
         step="٤"
-        title={isEn ? 'Stories and shared family moments' : 'حواديت ووقت حلو مع بعض'}
-        description={isEn ? 'Create stories and save meaningful moments together.' : 'اصنعوا حواديت وعيشوا لحظات لطيفة تفضل في الذاكرة.'}
+        title={isEn ? 'Make room for imagination and memories' : 'مساحة للخيال والذكريات'}
+        description={isEn ? 'Shared moments that begin with an idea and become stories worth keeping.' : 'لحظات مشتركة تبدأ بفكرة، وتتحول لحكاية وذكرى حلوة تحتفظوا بيها.'}
       />
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
@@ -2914,8 +2917,8 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-store"
         step="٥"
-        title={isEn ? 'Services and supplies for your family' : 'خدمات واحتياجات تهم أسرتكم'}
-        description={isEn ? 'Explore useful products, activities and family services in one place.' : 'اكتشفوا منتجات وأنشطة وخدمات ممكن تسهّل عليكم حياة الأسرة.'}
+        title={isEn ? 'Useful finds for everyday family life' : 'اختيارات ذكية للحياة اليومية'}
+        description={isEn ? 'One place to browse practical items, experiences and services when you need them.' : 'مكان واحد تلاقوا فيه مستلزمات وتجارب وخدمات ممكن تحتاجوها في الوقت المناسب.'}
       />
       <HomeAccordionCard
         id="home-minimalist-gateways"
