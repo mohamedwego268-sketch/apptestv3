@@ -2528,6 +2528,7 @@ export default function App() {
                 completedTasksCount={completedTasksCount}
                 todayFormattedCombined={todayFormatted.combined}
                 navigateTo={navigateTo}
+                onOpenFamilyPlanner={() => setSmartPlannerModalOpen(true)}
                 onAddToCart={handleAddToCart}
                 onInspectCommercialItem={(item) => {
                   setSelectedModalVariant(item.variants?.[0] || '');
