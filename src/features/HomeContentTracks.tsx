@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   BookOpen,
   Dumbbell,
@@ -6,6 +6,9 @@ import {
   HeartPulse,
   Sparkles,
   Sun,
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
   type LucideIcon,
 } from 'lucide-react';
 import type { PageId } from '../context/FamilyAppContext';
@@ -28,78 +31,16 @@ interface ContentTrack {
   titleEn: string;
   descriptionAr: string;
   descriptionEn: string;
-  nextStepAr: string;
-  nextStepEn: string;
   destination: { kind: 'page'; page: PageId } | { kind: 'section'; section: HomeSectionKey };
 }
 
 const CONTENT_TRACKS: ContentTrack[] = [
-  {
-    id: 'health',
-    icon: HeartPulse,
-    titleAr: 'الصحة والرعاية',
-    titleEn: 'Health & care',
-    descriptionAr: 'السجل الصحي والنمو والمتابعة',
-    descriptionEn: 'Health, growth and care records',
-    nextStepAr: 'افتح السجل الصحي',
-    nextStepEn: 'Open health record',
-    destination: { kind: 'page', page: 'medical' },
-  },
-  {
-    id: 'learning',
-    icon: BookOpen,
-    titleAr: 'التعلم والنمو',
-    titleEn: 'Learning & development',
-    descriptionAr: 'اكتشف مهارات طفلك واهتماماته',
-    descriptionEn: 'Age-aware ideas that build curiosity and skills',
-    nextStepAr: 'جرّب نشاطًا مناسبًا',
-    nextStepEn: 'Try an age-fit activity',
-    destination: { kind: 'section', section: 'learningTrack' },
-  },
-  {
-    id: 'movement',
-    icon: Dumbbell,
-    titleAr: 'الحركة والرياضة',
-    titleEn: 'Movement & sports',
-    descriptionAr: 'أنشطة تناسب اهتمام طفلك',
-    descriptionEn: 'Activities shaped around their interests',
-    nextStepAr: 'اختر نشاطًا حركيًا',
-    nextStepEn: 'Choose an activity',
-    destination: { kind: 'section', section: 'sportsTrack' },
-  },
-  {
-    id: 'wellbeing',
-    icon: HeartHandshake,
-    titleAr: 'المشاعر والدعم',
-    titleEn: 'Feelings & support',
-    descriptionAr: 'مساعدة للأهل وفهم مشاعر الطفل',
-    descriptionEn: 'Parent support and each child’s feelings',
-    nextStepAr: 'تابع مشاعر طفلك',
-    nextStepEn: 'Check in on feelings',
-    destination: { kind: 'section', section: 'parentingSupport' },
-  },
-  {
-    id: 'values',
-    icon: Sparkles,
-    titleAr: 'القيم والعادات',
-    titleEn: 'Good habits & values',
-    descriptionAr: 'عادات بسيطة للرحمة والاحترام وتحمل المسؤولية',
-    descriptionEn: 'Simple ways to teach kindness, respect and responsibility',
-    nextStepAr: 'اختر عادة نبنيها',
-    nextStepEn: 'Choose a habit to build',
-    destination: { kind: 'section', section: 'valuesTrack' },
-  },
-  {
-    id: 'daily-life',
-    icon: Sun,
-    titleAr: 'الحياة اليومية',
-    titleEn: 'Everyday life',
-    descriptionAr: 'النوم والتغذية والعادات والروتين',
-    descriptionEn: 'Sleep, nutrition, habits and routines',
-    nextStepAr: 'راجع روتين اليوم',
-    nextStepEn: 'Review today’s routine',
-    destination: { kind: 'section', section: 'dailyEssentials' },
-  },
+  { id: 'health', icon: HeartPulse, titleAr: 'الصحة والرعاية', titleEn: 'Health & care', descriptionAr: 'النمو والسجل الصحي', descriptionEn: 'Growth and health records', destination: { kind: 'page', page: 'medical' } },
+  { id: 'learning', icon: BookOpen, titleAr: 'التعلم والنمو', titleEn: 'Learning & growth', descriptionAr: 'مهارات وأنشطة تناسب عمره', descriptionEn: 'Age-fit skills and activities', destination: { kind: 'section', section: 'learningTrack' } },
+  { id: 'movement', icon: Dumbbell, titleAr: 'الحركة والرياضة', titleEn: 'Movement & sports', descriptionAr: 'حركة ولعب حسب اهتمامه', descriptionEn: 'Play shaped around their interests', destination: { kind: 'section', section: 'sportsTrack' } },
+  { id: 'wellbeing', icon: HeartHandshake, titleAr: 'المشاعر والدعم', titleEn: 'Feelings & support', descriptionAr: 'نفهم مشاعره ونسانده', descriptionEn: 'Understand feelings and offer support', destination: { kind: 'section', section: 'parentingSupport' } },
+  { id: 'values', icon: Sparkles, titleAr: 'القيم والعادات', titleEn: 'Values & habits', descriptionAr: 'قيم نعيشها كل يوم', descriptionEn: 'Values we practice every day', destination: { kind: 'section', section: 'valuesTrack' } },
+  { id: 'daily-life', icon: Sun, titleAr: 'الحياة اليومية', titleEn: 'Everyday life', descriptionAr: 'النوم والأكل والروتين', descriptionEn: 'Sleep, meals and routines', destination: { kind: 'section', section: 'dailyEssentials' } },
 ];
 
 export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
@@ -110,63 +51,41 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
   onOpenPlanner,
 }) => {
   const isEn = language === 'en';
+  const tracksRef = useRef<HTMLDivElement>(null);
+  const scrollTracks = (direction: 'next' | 'previous') => {
+    const container = tracksRef.current;
+    if (!container) return;
+    const amount = Math.max(240, Math.round(container.clientWidth * 0.78));
+    container.scrollBy({ left: (isEn ? 1 : -1) * (direction === 'next' ? amount : -amount), behavior: 'smooth' });
+  };
 
   return (
     <section
       data-testid="home-content-tracks"
       aria-labelledby="home-content-tracks-heading"
       dir={isEn ? 'ltr' : 'rtl'}
-      className="relative overflow-hidden rounded-3xl border border-teal-500/15 bg-gradient-to-br from-white via-white to-slate-50/80 p-4 shadow-[0_8px_24px_-18px_rgba(15,23,42,0.28)] dark:border-[#1E3646] dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] sm:p-5"
+      className="relative rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-[0_6px_20px_-18px_rgba(15,23,42,0.3)] dark:border-[#263C49] dark:bg-[#101D26] sm:p-4"
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 id="home-content-tracks-heading" className="text-sm font-black text-[var(--color-text)] dark:text-white">
-            {isEn ? 'Everything that helps your child grow' : 'كل اللي يهم طفلك'}
+            {isEn ? 'Your child’s journey' : 'رحلة طفلك'}
           </h2>
-          <p className="mt-1 text-[10px] font-extrabold tracking-wide text-teal-700 dark:text-teal-300">
-            {isEn ? 'Notice → Save → Follow → Try a helpful step' : 'لاحظ ← سجّل ← تابع ← جرّب خطوة مفيدة'}
-          </p>
-          <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
-            {isEn
-              ? `One connected journey, starting with what ${childName} needs today.`
-              : `خطوات بسيطة تساعد ${childName}، ونبدأ باللي محتاجه النهارده.`}
+          <p className="mt-0.5 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">
+            {isEn ? `Choose what matters for ${childName} today` : `اختار المجال اللي يهم ${childName} النهارده`}
           </p>
         </div>
-        <span className="shrink-0 rounded-full border border-teal-500/15 bg-teal-500/10 px-3 py-1.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">
-          {isEn ? 'Explore' : 'اكتشف'}
-        </span>
-      </div>
-
-      <div data-testid="family-growth-map" className="mb-4 rounded-2xl border border-teal-500/15 bg-gradient-to-r from-teal-50 via-white to-sky-50/80 p-3 dark:from-[#102D32] dark:via-[#142430] dark:to-[#152C3C]">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[10px] font-black text-teal-950 dark:text-teal-100">{isEn ? 'How these parts help your family' : 'إزاي نكبر بيساعد أسرتك؟'}</p>
-          <span className="text-lg" aria-hidden="true">🧭</span>
-        </div>
-        <div className="mt-2.5 grid grid-cols-5 gap-1">
-          {(isEn ? [{icon:'👀',label:'Notice'},{icon:'📝',label:'Record'},{icon:'📈',label:'Follow'},{icon:'💡',label:'Understand'},{icon:'🤝',label:'Act'}] : [{icon:'👀',label:'لاحظ'},{icon:'📝',label:'سجّل'},{icon:'📈',label:'تابع'},{icon:'💡',label:'افهم'},{icon:'🤝',label:'اتصرف'}]).map((step,index)=>(
-            <div key={step.label} className="min-w-0 text-center">
-              <span className="mx-auto grid h-8 w-8 place-items-center rounded-xl border border-teal-500/10 bg-white/85 text-sm shadow-sm dark:border-white/10 dark:bg-white/5">{step.icon}</span>
-              <span className="mt-1 block text-[8px] font-black text-teal-950 dark:text-teal-100 sm:text-[9px]">{step.label}</span>
-              {index < 4 && <span className="sr-only">{isEn ? 'then' : 'ثم'}</span>}
-            </div>
-          ))}
+        <div className="flex shrink-0 items-center gap-1">
+          <button type="button" onClick={() => scrollTracks('previous')} aria-label={isEn ? 'Previous areas' : 'المجالات السابقة'} className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-teal-500 hover:text-teal-700 dark:border-[#304754] dark:text-slate-300">
+            {isEn ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+          </button>
+          <button type="button" onClick={() => scrollTracks('next')} aria-label={isEn ? 'Next areas' : 'المجالات التالية'} className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-600 transition hover:border-teal-500 hover:text-teal-700 dark:border-[#304754] dark:text-slate-300">
+            {isEn ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+          </button>
         </div>
       </div>
 
-      {onOpenPlanner && (
-        <div data-testid="home-family-ai-planner-entry" className="mb-4 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl border border-teal-500/20 bg-gradient-to-l from-[#087F73] via-[#159D8B] to-[#356C9A] p-3.5 text-white shadow-[0_12px_28px_-20px_rgba(8,127,115,0.7)]">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/15"><Sparkles size={20} aria-hidden="true" /></span>
-            <div className="min-w-0">
-              <h3 className="text-xs font-black">{isEn ? 'Plan the coming days with Nekbaar' : 'خطط الأيام الجاية مع نكبر'}</h3>
-              <p className="mt-1 text-[10px] leading-relaxed text-white/85">{isEn ? 'Personalized ideas that turn into family tasks.' : 'أفكار مناسبة لأطفالك تتحول لمهام ومواعيد تلقائياً.'}</p>
-            </div>
-          </div>
-          <button type="button" onClick={onOpenPlanner} className="min-h-10 rounded-xl bg-white px-3.5 py-2 text-[11px] font-black text-teal-900 shadow-sm transition hover:bg-teal-50">{isEn ? 'Build a plan' : 'جهّز خطة الأسرة'} ←</button>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+      <div ref={tracksRef} data-testid="family-growth-map" className="flex snap-x snap-mandatory gap-2.5 overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {CONTENT_TRACKS.map((track) => {
           const Icon = track.icon;
           return (
@@ -174,31 +93,38 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
               key={track.id}
               type="button"
               data-testid={`home-track-${track.id}`}
-              onClick={() => {
-                if (track.destination.kind === 'page') {
-                  onNavigate(track.destination.page);
-                } else {
-                  onOpenSection(track.destination.section);
-                }
-              }}
-              className="group flex min-h-[142px] min-w-0 flex-col items-start rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 p-3.5 text-start shadow-[0_5px_16px_-14px_rgba(15,23,42,0.35)] transition-all hover:-translate-y-0.5 hover:border-teal-500/45 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 active:scale-[.98] dark:border-[#29404D] dark:from-[#142430] dark:to-[#101D26] dark:hover:border-teal-500/40"
+              onClick={() => track.destination.kind === 'page' ? onNavigate(track.destination.page) : onOpenSection(track.destination.section)}
+              className="group flex min-h-[112px] w-[72%] max-w-[230px] shrink-0 snap-start flex-col items-start rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-start transition hover:border-teal-500/45 hover:bg-teal-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-[#29404D] dark:bg-[#142430] dark:hover:bg-teal-950/20 sm:w-[31%] sm:max-w-none"
             >
-              <span className="mb-3 grid h-11 w-11 place-items-center rounded-2xl border border-teal-500/15 bg-teal-500/10 text-teal-800 shadow-sm ring-1 ring-black/[0.02] dark:text-teal-200">
-                <Icon size={18} strokeWidth={2.1} aria-hidden="true" />
+              <span className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-200">
+                <Icon size={17} strokeWidth={2} aria-hidden="true" />
               </span>
-              <span className="text-xs font-black leading-snug text-[var(--color-text)] dark:text-white">
+              <span className="text-xs font-extrabold leading-snug text-[var(--color-text)] dark:text-white">
                 {isEn ? track.titleEn : track.titleAr}
               </span>
-              <span className="mt-1.5 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
+              <span className="mt-1 text-[10px] leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
                 {isEn ? track.descriptionEn : track.descriptionAr}
               </span>
-              <span className="mt-auto flex w-full items-center justify-between gap-1 border-t border-slate-100 pt-2.5 text-[10px] font-black text-teal-800 dark:border-[#29404D] dark:text-teal-200">
-                {isEn ? track.nextStepEn : track.nextStepAr} <span aria-hidden="true">{isEn ? '→' : '←'}</span>
+              <span className="mt-auto pt-2 text-[10px] font-bold text-teal-800 dark:text-teal-200">
+                {isEn ? 'Open area' : 'افتح المجال'} {isEn ? '→' : '←'}
               </span>
             </button>
           );
         })}
       </div>
+
+      {onOpenPlanner && (
+        <button type="button" onClick={onOpenPlanner} data-testid="home-family-ai-planner-entry" className="mt-3 flex min-h-10 w-full items-center justify-between gap-3 rounded-xl border border-teal-700/15 bg-teal-50/70 px-3 py-2.5 text-start transition hover:bg-teal-100/70 dark:border-teal-400/15 dark:bg-teal-950/20 dark:hover:bg-teal-950/35">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-white text-teal-800 shadow-sm dark:bg-white/10 dark:text-teal-200"><CalendarDays size={16} /></span>
+            <span className="min-w-0">
+              <span className="block text-xs font-extrabold text-teal-950 dark:text-teal-100">{isEn ? 'Plan the family’s coming days' : 'رتّب الأيام الجاية للأسرة'}</span>
+              <span className="mt-0.5 block truncate text-[10px] text-teal-800/80 dark:text-teal-200/75">{isEn ? 'Turn ideas into tasks and appointments' : 'حوّل الأفكار لمهام ومواعيد واضحة'}</span>
+            </span>
+          </span>
+          <span className="shrink-0 text-xs font-black text-teal-800 dark:text-teal-200">{isEn ? 'Plan' : 'خطط'} ←</span>
+        </button>
+      )}
     </section>
   );
 };
