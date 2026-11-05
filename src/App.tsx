@@ -3912,6 +3912,7 @@ export default function App() {
                           category: payload.category,
                           owner: payload.owner,
                           cadence: payload.cadence,
+                          scheduledDate: payload.scheduledDate ?? tItem.scheduledDate,
                         }
                       : tItem
                   ),
@@ -3929,6 +3930,8 @@ export default function App() {
                     category: payload.category,
                     owner: payload.owner,
                     cadence: payload.cadence,
+                    scheduledDate: payload.scheduledDate,
+                    completedDates: [],
                   },
                   ...prev.tasks,
                 ],
