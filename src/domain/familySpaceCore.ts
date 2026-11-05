@@ -614,6 +614,8 @@ export interface RoutineTask {
   category: string;
   owner: string;
   cadence: TaskCadence;
+  /** Optional one-off local YYYY-MM-DD date for AI-planned family activities. */
+  scheduledDate?: string;
   /** 0 = Sunday ... 6 = Saturday; used when cadence is weekly. */
   dayOfWeek?: number;
   /** Optional list of weekdays (0..6) when weekly task repeats on multiple days. */
@@ -4650,11 +4652,12 @@ export function getDaysInMonth(year: number, month1To12: number): number {
  * - Monthly tasks appear on their `dayOfMonth`, clamped safely for short months (28/29/30 days) and leap years.
  */
 export function isTaskScheduledForDate(
-  task: Pick<RoutineTask, 'cadence' | 'dayOfWeek' | 'daysOfWeek' | 'dayOfMonth'>,
+  task: Pick<RoutineTask, 'cadence' | 'dayOfWeek' | 'daysOfWeek' | 'dayOfMonth' | 'scheduledDate'>,
   targetDateISO: string = dateLocalISO(new Date())
 ): boolean {
   const parts = parseLocalISODateParts(targetDateISO);
   if (!parts) return true;
+  if (task.scheduledDate) return task.scheduledDate === targetDateISO;
 
   if (task.cadence === 'weekly') {
     if (Array.isArray(task.daysOfWeek) && task.daysOfWeek.length > 0) {
