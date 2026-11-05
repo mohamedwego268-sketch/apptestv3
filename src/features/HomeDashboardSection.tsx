@@ -1900,6 +1900,125 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         onOpenPlanner={onOpenFamilyPlanner}
       />
 
+      {/* Daily family action feed — intentionally starts AFTER the six protected family tracks. */}
+      <section
+        data-testid="home-daily-action-feed"
+        aria-labelledby="home-daily-action-feed-title"
+        dir={isEn ? 'ltr' : 'rtl'}
+        className="overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-white via-teal-50/35 to-sky-50/50 p-4 shadow-[0_10px_28px_-22px_rgba(13,148,136,.38)] dark:from-[#101D26] dark:via-[#10252C] dark:to-[#142430] dark:border-[#24505A] sm:p-5"
+      >
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <span className="text-[10px] font-extrabold tracking-wide text-teal-700 dark:text-teal-300">
+              {isEn ? 'SMALL STEPS, REAL IMPACT' : 'خطوات بسيطة.. أثرها كبير'}
+            </span>
+            <h2 id="home-daily-action-feed-title" className="mt-1 text-base font-black text-[var(--color-text)] dark:text-white">
+              {isEn ? 'A useful idea for your family today' : 'أفكار عملية لأسرتكم النهارده'}
+            </h2>
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#A8B6C4]">
+              {isEn ? 'Choose one idea. You can turn it into a plan or explore the related area.' : 'مش مطلوب تعملوا كل حاجة؛ اختاروا فكرة واحدة تناسب يومكم.'}
+            </p>
+          </div>
+          <span className="rounded-full border border-teal-500/20 bg-white/75 px-3 py-1 text-[10px] font-bold text-teal-800 dark:bg-white/5 dark:text-teal-200">
+            {isEn ? 'For the whole family' : 'للأسرة كلها'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+          <article className="flex min-w-0 flex-col rounded-2xl border border-rose-200/70 bg-white/85 p-3.5 dark:border-rose-300/15 dark:bg-[#14232D]">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-rose-500/10 text-lg">💗</span>
+              <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-200">{isEn ? 'PARENTING & CONNECTION' : 'التربية والتواصل'}</span>
+            </div>
+            <h3 className="mt-3 text-sm font-black leading-snug text-[var(--color-text)] dark:text-white">
+              {isEn ? dailyCompassWisdom.titleEn : dailyCompassWisdom.titleAr}
+            </h3>
+            <p className="mt-2 flex-1 text-xs leading-6 text-[var(--color-muted)] dark:text-[#B7C4CE]">
+              {isEn ? dailyCompassWisdom.bodyEn : dailyCompassWisdom.bodyAr}
+            </p>
+            <button
+              type="button"
+              data-testid="home-daily-action-parenting"
+              onClick={() => onAddSuggestedRoutineTask?.(
+                isEn ? dailyCompassWisdom.actionTaskEn : dailyCompassWisdom.actionTaskAr,
+                dailyCompassWisdom.actionTime,
+                null,
+                'تواصل أسري',
+                'daily',
+                'مشترك'
+              )}
+              className="mt-3 min-h-11 rounded-xl bg-rose-600 px-3 py-2 text-xs font-extrabold text-white transition hover:bg-rose-700"
+            >
+              {isEn ? '＋ Add a family moment' : '＋ أضف وقت تواصل للجدول'}
+            </button>
+          </article>
+
+          <article className="flex min-w-0 flex-col rounded-2xl border border-sky-200/70 bg-white/85 p-3.5 dark:border-sky-300/15 dark:bg-[#14232D]">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-sky-500/10 text-lg">📚</span>
+              <span className="text-[10px] font-extrabold text-sky-800 dark:text-sky-200">{isEn ? 'LEARNING & DISCOVERY' : 'التعلم والاكتشاف'}</span>
+            </div>
+            <h3 className="mt-3 text-sm font-black leading-snug text-[var(--color-text)] dark:text-white">
+              {isEn ? `Discover something new with ${activeKidName}` : `اكتشفوا حاجة جديدة مع ${activeKidName}`}
+            </h3>
+            <p className="mt-2 flex-1 text-xs leading-6 text-[var(--color-muted)] dark:text-[#B7C4CE]">
+              {activeKidSignals?.interests?.length
+                ? (isEn
+                  ? `Start from an interest already saved in the child profile: ${locText(activeKidSignals.interests[0], lang)}. Explore a short activity that matches ${activeKidStageLabel}.`
+                  : `ابدأوا من اهتمام مسجل في ملف الطفل: ${locText(activeKidSignals.interests[0], lang)}، واختاروا نشاطًا قصيرًا يناسب ${activeKidStageLabel}.`)
+                : (isEn
+                  ? `Explore short, age-aware activities for ${activeKidName}. Add interests to the child profile to make future ideas more relevant.`
+                  : `اختاروا نشاطًا قصيرًا يناسب ${activeKidStageLabel}. إضافة اهتمامات الطفل لملفه هتساعدنا نقترح أفكار أقرب له.`)}
+            </p>
+            <button
+              type="button"
+              data-testid="home-daily-action-learning"
+              onClick={() => openHomeSection('learningTrack')}
+              className="mt-3 min-h-11 rounded-xl border border-sky-600/25 bg-sky-50 px-3 py-2 text-xs font-extrabold text-sky-900 transition hover:bg-sky-100 dark:bg-sky-950/35 dark:text-sky-100 dark:hover:bg-sky-950/55"
+            >
+              {isEn ? 'Explore learning ideas →' : 'اكتشفوا أفكار التعلم ←'}
+            </button>
+          </article>
+
+          <article className="flex min-w-0 flex-col rounded-2xl border border-emerald-200/70 bg-white/85 p-3.5 dark:border-emerald-300/15 dark:bg-[#14232D]">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-500/10 text-lg">⚽</span>
+              <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-200">{isEn ? 'MOVEMENT & PLAY' : 'الحركة واللعب'}</span>
+            </div>
+            <h3 className="mt-3 text-sm font-black leading-snug text-[var(--color-text)] dark:text-white">
+              {isEn ? currentSport.titleEn : currentSport.titleAr}
+            </h3>
+            <p className="mt-2 flex-1 text-xs leading-6 text-[var(--color-muted)] dark:text-[#B7C4CE]">
+              {isEn ? currentSport.descEn : currentSport.descAr}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                data-testid="home-daily-action-sport-add"
+                onClick={() => onAddSuggestedRoutineTask?.(
+                  isEn ? currentSport.titleEn : currentSport.titleAr,
+                  currentSport.time,
+                  activeKidId,
+                  'الرياضة والحركة',
+                  'daily',
+                  'مشترك'
+                )}
+                className="min-h-11 rounded-xl bg-emerald-700 px-2 py-2 text-[11px] font-extrabold text-white transition hover:bg-emerald-800"
+              >
+                {isEn ? '＋ Add to plan' : '＋ أضف للجدول'}
+              </button>
+              <button
+                type="button"
+                onClick={() => openHomeSection('sportsTrack')}
+                className="min-h-11 rounded-xl border border-emerald-700/25 bg-emerald-50 px-2 py-2 text-[11px] font-extrabold text-emerald-900 transition hover:bg-emerald-100 dark:bg-emerald-950/35 dark:text-emerald-100 dark:hover:bg-emerald-950/55"
+              >
+                {isEn ? 'More ideas' : 'أفكار أكتر'}
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <div hidden={!openAccordions.quickTrack}>
       <HomeContentGroupHeading
         id="home-content-group-daily"
