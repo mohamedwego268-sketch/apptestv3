@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Film, Sparkles, Video } from 'lucide-react';
 import { calculateChildAge, ChildProfile, LanguageCode, locText } from '../domain/familySpaceCore';
 import {
   BedtimeStoryRecord,
@@ -227,6 +228,78 @@ export const StoriesLibraryView: React.FC<StoriesLibraryViewProps> = ({
           </span>
         </div>
       </div>
+
+      {/* Future visual-video story experience: visible but intentionally unavailable until launch. */}
+      <section
+        data-testid="story-visual-video-coming-soon"
+        aria-labelledby="story-visual-video-heading"
+        className="relative isolate overflow-hidden rounded-3xl border border-violet-300/50 bg-gradient-to-br from-[#211B45] via-[#34316B] to-[#176E78] p-4 text-white shadow-[0_16px_38px_-24px_rgba(49,46,129,0.7)] sm:p-5"
+      >
+        <div aria-hidden="true" className="pointer-events-none absolute -left-10 -top-12 h-36 w-36 rounded-full bg-fuchsia-300/20 blur-2xl" />
+        <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 right-8 h-40 w-40 rounded-full bg-cyan-300/20 blur-2xl" />
+        <div className="relative flex items-start gap-3">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/20 bg-white/10 shadow-inner">
+            <Film size={23} aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              <h3 id="story-visual-video-heading" className="text-sm font-black sm:text-base">
+                {isEn ? 'Create a Visual Story' : 'اصنع حدوتة بصرية'}
+              </h3>
+              <span className="rounded-full border border-amber-200/40 bg-amber-300/20 px-2.5 py-1 text-[10px] font-black text-amber-100">
+                {isEn ? 'Coming soon' : 'قريباً'}
+              </span>
+            </div>
+            <p className="max-w-xl text-xs leading-6 text-white/80">
+              {isEn
+                ? 'Your child will become the hero of a personalized animated video, featuring their name and photo.'
+                : 'خلّي طفلك بطل فيديو قصصي متحرك، يظهر فيه باسمه وصورته داخل مغامرة من خياله.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex items-center gap-3 rounded-2xl border border-white/15 bg-black/15 p-3">
+          <div className="relative grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/25 bg-white/10">
+            {kids.find((kid) => kid.id === generatorChildId)?.photoDataUrl ? (
+              <img
+                src={kids.find((kid) => kid.id === generatorChildId)?.photoDataUrl}
+                alt={isEn ? 'Selected child preview' : 'معاينة صورة الطفل المختار'}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-3xl" aria-hidden="true">
+                {kids.find((kid) => kid.id === generatorChildId)?.emoji || '🧒'}
+              </span>
+            )}
+            <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-items-center rounded-tl-lg bg-white text-violet-800">
+              <Sparkles size={13} aria-hidden="true" />
+            </span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-white/65">{isEn ? 'The future hero' : 'بطل الحكاية'}</p>
+            <p className="truncate text-sm font-black">
+              {kids.find((kid) => kid.id === generatorChildId)
+                ? locText(kids.find((kid) => kid.id === generatorChildId)!.name, lang)
+                : isEn ? 'Your child' : 'طفلك'}
+            </p>
+            <p className="mt-0.5 text-[10px] leading-5 text-white/65">
+              {isEn ? 'Personalized with their photo and name' : 'حدوتة مخصصة بصورته واسمه'}
+            </p>
+          </div>
+          <Video size={25} className="shrink-0 text-cyan-100/90" aria-hidden="true" />
+        </div>
+
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          data-testid="story-visual-video-disabled"
+          className="relative mt-3 flex min-h-[44px] w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-black text-white/65"
+        >
+          <Video size={15} aria-hidden="true" />
+          {isEn ? 'Visual story video · Coming soon' : 'اصنع فيديو الحكاية · قريباً'}
+        </button>
+      </section>
 
       {/* Story Generator Controls */}
       <div className="rounded-2xl border border-amber-500/30 bg-amber-50/40 dark:bg-[#142430]/80 p-4 space-y-3.5">
