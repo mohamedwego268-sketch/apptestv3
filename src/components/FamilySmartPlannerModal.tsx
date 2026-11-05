@@ -54,6 +54,7 @@ export interface FamilySmartPlannerModalProps {
       category: string;
       owner: string;
       cadence: TaskCadence;
+      scheduledDate?: string;
     }
   ) => void;
   onToggleTask: (id: number, done: boolean) => void;
@@ -215,6 +216,71 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const [editingTaskId, setEditingTaskId] = useState<number | undefined>(undefined);
   const [todoFilter, setTodoFilter] = useState<'all' | 'open' | 'done'>('all');
   const [taskOwnerFilter, setTaskOwnerFilter] = useState<'all' | 'dad' | 'mom' | 'shared'>('all');
+  const [planDuration, setPlanDuration] = useState<3 | 7>(3);
+  const [planChildId, setPlanChildId] = useState<number | null>(() => kids[0]?.id ?? null);
+  const [isPlanReady, setIsPlanReady] = useState(false);
+  const [isPlanAdded, setIsPlanAdded] = useState(false);
+
+  useEffect(() => {
+    if (kids.length === 0) {
+      setPlanChildId(null);
+      return;
+    }
+    if (planChildId === null || !kids.some((kid) => kid.id === planChildId)) setPlanChildId(kids[0].id);
+  }, [kids, planChildId]);
+
+  const suggestedPlan = useMemo(() => {
+    const child = kids.find((kid) => kid.id === planChildId);
+    const childName = child ? locText(child.name, lang) : (isEn ? 'your child' : 'طفلك');
+    const interests = child?.profileDetails?.hobbies || child?.profileDetails?.interests || [];
+    const interestText = interests.filter(Boolean).slice(0, 2).join(isEn ? ' and ' : ' و ');
+    const activitySets = [
+      [
+        { time: '10:00', emoji: '🎨', category: isEn ? 'Creative activity' : 'نشاط إبداعي', title: isEn ? 'Create an art project together' : 'اعملوا لوحة فنية مع بعض', note: isEn ? 'Use paper, colors and safe household materials.' : 'استخدموا الورق والألوان وخامات منزلية آمنة.' },
+        { time: '19:30', emoji: '📖', category: isEn ? 'Bedtime story' : 'حكاية قبل النوم', title: isEn ? 'Choose a bedtime story' : 'اختاروا حكاية قبل النوم', note: isEn ? 'Pick a story connected to the child’s interests.' : 'اختاروا حكاية مرتبطة باهتمامات الطفل.' },
+      ],
+      [
+        { time: '17:00', emoji: '⚽', category: isEn ? 'Movement & play' : 'حركة ولعب', title: isEn ? 'Try a movement challenge' : 'جربوا تحدي حركة', note: isEn ? 'A short, age-appropriate movement game.' : 'لعبة حركة قصيرة ومناسبة لعمر الطفل.' },
+        { time: '18:30', emoji: '🧩', category: isEn ? 'Thinking game' : 'لعبة تفكير', title: isEn ? 'Play a family puzzle game' : 'العبوا لعبة ألغاز عائلية', note: isEn ? 'Take turns solving a simple puzzle together.' : 'تناوبوا في حل لغز بسيط معاً.' },
+      ],
+      [
+        { time: '16:30', emoji: '🌱', category: isEn ? 'Discovery' : 'اكتشاف وتجربة', title: isEn ? 'Explore something new together' : 'اكتشفوا حاجة جديدة مع بعض', note: isEn ? 'A tiny experiment or nature observation.' : 'تجربة بسيطة أو ملاحظة شيء من الطبيعة.' },
+        { time: '20:00', emoji: '💬', category: isEn ? 'Family connection' : 'وقت عائلي', title: isEn ? 'Share the best moment of the day' : 'احكوا أحلى موقف حصل النهارده', note: isEn ? 'Give everyone a turn to share.' : 'كل فرد ياخد دوره ويحكي أجمل لحظة.' },
+      ],
+    ];
+    return Array.from({ length: planDuration }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() + index + 1);
+      const iso = toIsoDateString(date);
+      const activities = activitySets[index % activitySets.length].map((activity) => ({
+        ...activity,
+        title: interestText && index % 3 === 0
+          ? (isEn ? activity.title + ' · inspired by ' + interestText : activity.title + ' · من اهتمامات ' + interestText)
+          : activity.title,
+        date: iso,
+      }));
+      return { date: iso, label: new Intl.DateTimeFormat(isEn ? 'en-US' : 'ar-EG', { weekday: 'long', day: 'numeric', month: 'short' }).format(date), activities };
+    });
+  }, [kids, planChildId, planDuration, isEn, lang]);
+
+  const addSuggestedPlanToTasks = () => {
+    if (isPlanAdded) return;
+    suggestedPlan.forEach((day) => day.activities.forEach((activity) => {
+      onSaveTask({
+        name: activity.title,
+        time: activity.time,
+        kidId: planChildId,
+        category: activity.category,
+        owner: parentFullCalloutAr,
+        cadence: 'daily',
+        scheduledDate: day.date,
+      });
+    }));
+    setIsPlanAdded(true);
+    setMobileSectionTab('todo');
+    setSelectedDateIso(suggestedPlan[0]?.date || todayIso);
+    if (suggestedPlan[0]?.date) setCursorDate(new Date(suggestedPlan[0].date + 'T12:00:00'));
+  };
 
   const kidMap = useMemo(
     () => Object.fromEntries(kids.map((k) => [String(k.id), k])),
@@ -353,6 +419,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
       category: task.category || 'مهام الأسرة',
       owner: nextOwner,
       cadence: task.cadence || 'daily',
+      scheduledDate: task.scheduledDate,
     });
   };
 
@@ -600,6 +667,37 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
 
         {/* Main Scrollable Split Workspace */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <section data-testid="family-ai-planner" className="mb-6 overflow-hidden rounded-3xl border border-teal-500/20 bg-gradient-to-br from-[#E7F7F3] via-white to-[#EEF3FF] p-4 shadow-sm dark:from-[#102D32] dark:via-[#101D26] dark:to-[#18253A] sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex min-w-0 items-start gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-600 text-xl text-white shadow-md">✨</span>
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-[#0B3435] dark:text-teal-100">{isEn ? "Family AI Planner" : "مساعد التخطيط الذكي للأسرة"}</h3>
+                  <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600 dark:text-slate-300">{isEn ? "Prepare practical ideas for the coming days, then add the approved plan directly to family tasks." : "جهّز أفكاراً عملية للأيام الجاية، وراجعها قبل إضافتها مباشرة لقائمة مهام الأسرة."}</p>
+                </div>
+              </div>
+              <span className="rounded-full border border-teal-600/20 bg-white/80 px-3 py-1 text-[10px] font-black text-teal-800 dark:bg-white/10 dark:text-teal-200">AI · {isEn ? "Plan & do" : "خطط ونفّذ"}</span>
+            </div>
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+              <label className="flex min-w-0 flex-col gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">{isEn ? "Plan for" : "الخطة لمين؟"}
+                <select value={planChildId ?? ""} onChange={(event) => { setPlanChildId(event.target.value ? Number(event.target.value) : null); setIsPlanReady(false); setIsPlanAdded(false); }} className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-teal-500 dark:border-[#29404D] dark:bg-[#142430] dark:text-white">
+                  <option value="">{isEn ? "Whole family" : "الأسرة كلها"}</option>
+                  {kids.map((kid) => <option key={kid.id} value={kid.id}>{locText(kid.name, lang)}</option>)}
+                </select>
+              </label>
+              <div className="flex flex-col gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">{isEn ? "Plan length" : "مدة الخطة"}
+                <div className="flex h-11 rounded-xl border border-slate-200 bg-white p-1 dark:border-[#29404D] dark:bg-[#142430]">
+                  {[3, 7].map((days) => <button key={days} type="button" onClick={() => { setPlanDuration(days as 3 | 7); setIsPlanReady(false); setIsPlanAdded(false); }} className={"min-w-[76px] rounded-lg px-3 text-xs font-black transition " + (planDuration === days ? "bg-teal-600 text-white shadow-sm" : "text-slate-600 dark:text-slate-300")}>{isEn ? days + " days" : days + " أيام"}</button>)}
+                </div>
+              </div>
+              <div className="flex flex-col justify-end"><button type="button" onClick={() => { setIsPlanReady(true); setIsPlanAdded(false); }} className="h-11 rounded-xl bg-[#087F73] px-4 text-xs font-black text-white shadow-sm transition hover:bg-[#066D63]">{isEn ? "Prepare my plan" : "جهّز الخطة"}</button></div>
+            </div>
+            {isPlanReady && <div className="mt-4 space-y-3" data-testid="family-ai-plan-preview">
+              <div className="flex flex-wrap items-center justify-between gap-2"><div><h4 className="text-sm font-black text-slate-900 dark:text-white">{isEn ? "Your upcoming family plan" : "خطة الأيام القادمة"}</h4><p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{isEn ? "Review the activities before adding them." : "راجع الأنشطة قبل إضافتها لقائمة المهام."}</p></div><span className="rounded-full bg-white/80 px-3 py-1 text-[10px] font-black text-teal-800 dark:bg-white/10 dark:text-teal-200">{suggestedPlan.reduce((total, day) => total + day.activities.length, 0)} {isEn ? "activities" : "نشاط"}</span></div>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">{suggestedPlan.map((day) => <article key={day.date} className="rounded-2xl border border-white/80 bg-white/85 p-3 shadow-sm dark:border-white/10 dark:bg-[#142430]/90"><div className="mb-2 flex items-center justify-between gap-2"><h5 className="text-xs font-black text-slate-800 dark:text-white">{day.label}</h5><span className="text-[10px] font-bold text-teal-700 dark:text-teal-300">{day.date}</span></div><div className="space-y-2">{day.activities.map((activity) => <div key={activity.time + activity.category} className="flex items-start gap-2 rounded-xl bg-slate-50 p-2.5 dark:bg-white/5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-teal-500/10 text-lg">{activity.emoji}</span><div className="min-w-0 flex-1"><p className="text-[11px] font-black leading-5 text-slate-800 dark:text-white">{activity.title}</p><p className="text-[10px] leading-5 text-slate-500 dark:text-slate-400">{activity.note}</p><p className="mt-1 text-[10px] font-bold text-teal-700 dark:text-teal-300">{activity.time} · {activity.category}</p></div></div>)}</div></article>)}</div>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-t border-teal-900/10 pt-3 dark:border-white/10"><p className="text-[10px] leading-5 text-slate-600 dark:text-slate-300">{isEn ? "Tasks are scheduled on their actual dates and linked to the selected child." : "كل نشاط هيتسجل في تاريخه الفعلي ويرتبط بالطفل المختار."}</p><button type="button" disabled={isPlanAdded} onClick={addSuggestedPlanToTasks} className="min-h-11 rounded-xl bg-[#087F73] px-4 py-2 text-xs font-black text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50">{isPlanAdded ? (isEn ? "Added to family tasks ✓" : "اتضافت لمهام الأسرة ✓") : (isEn ? "Add plan to task list" : "أضف الخطة لقائمة المهام")}</button></div>
+            </div>}
+          </section>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* COLUMN 1: FAMILY CALENDAR & EVENTS VIEW (7 cols on desktop) */}
             <div
