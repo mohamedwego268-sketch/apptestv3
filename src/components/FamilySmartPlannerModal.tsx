@@ -1524,6 +1524,11 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                                     ⏰ {task.time}
                                   </span>
                                 )}
+                                {task.scheduledDate && (
+                                  <span className="px-2 py-0.5 rounded-md bg-teal-500/10 text-teal-800 dark:text-teal-200">
+                                    📅 {new Intl.DateTimeFormat(isEn ? 'en-US' : 'ar-EG', { day: 'numeric', month: 'short' }).format(new Date(task.scheduledDate + 'T12:00:00'))}
+                                  </span>
+                                )}
                                 <button
                                   type="button"
                                   onClick={() => handleCycleTaskDelegation(task)}
