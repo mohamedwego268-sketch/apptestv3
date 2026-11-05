@@ -201,6 +201,7 @@ interface HomeContentGroupHeadingProps {
   title: string;
   description: string;
   step: string;
+  isEn: boolean;
 }
 
 const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
@@ -208,6 +209,7 @@ const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
   title,
   description,
   step,
+  isEn,
 }) => (
   <div id={id} data-testid={id} className="relative flex items-start gap-3 border-b border-teal-500/20 px-1 pb-3 pt-5 dark:border-[#24505A]">
     <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-teal-700 text-xs font-black text-white shadow-sm dark:bg-teal-500 dark:text-[#062B2A]">
@@ -2028,6 +2030,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         step="١"
         title={isEn ? 'Follow your child’s day' : 'تفاصيل يوم طفلك'}
         description={isEn ? 'Small daily records, interests and routines — all connected to the selected child.' : 'سجّلوا نومه وأكله ومشاعره والحاجات اللي بيحب يعملها.'}
+        isEn={isEn}
       />
       <HomeAccordionCard
         id="home-one-handed-quick-pulse"
@@ -2662,6 +2665,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         step="٢"
         title={isEn ? 'Small steps that make family life smoother' : 'خطوة صغيرة تفرق في يوم البيت'}
         description={isEn ? 'Practical guidance for everyday moments, leaving room for each family to choose what works.' : 'أفكار تساعدكم تفهموا المواقف اليومية وتختاروا تصرفًا مناسبًا من غير ضغط.'}
+        isEn={isEn}
       />
       <HomeAccordionCard
         id="home-parenting-support-center"
@@ -2768,6 +2772,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         step="٣"
         title={isEn ? 'Turn everyday moments into growth' : 'كل يوم فرصة لتجربة جديدة'}
         description={isEn ? 'Short experiences connect curiosity, character and age-appropriate practice.' : 'تجارب قصيرة تربط الفضول بالتعلّم، وتحول المعاني الجميلة لممارسات بسيطة.'}
+        isEn={isEn}
       />
       <div hidden={!openAccordions.learningTrack}>
       <HomeAccordionCard
@@ -2831,6 +2836,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         step="٤"
         title={isEn ? 'Make room for imagination and memories' : 'مساحة للخيال والذكريات'}
         description={isEn ? 'Shared moments that begin with an idea and become stories worth keeping.' : 'لحظات مشتركة تبدأ بفكرة، وتتحول لحكاية وذكرى حلوة تحتفظوا بيها.'}
+        isEn={isEn}
       />
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
@@ -2919,6 +2925,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         step="٥"
         title={isEn ? 'Useful finds for everyday family life' : 'اختيارات ذكية للحياة اليومية'}
         description={isEn ? 'One place to browse practical items, experiences and services when you need them.' : 'مكان واحد تلاقوا فيه مستلزمات وتجارب وخدمات ممكن تحتاجوها في الوقت المناسب.'}
+        isEn={isEn}
       />
       <HomeAccordionCard
         id="home-minimalist-gateways"
