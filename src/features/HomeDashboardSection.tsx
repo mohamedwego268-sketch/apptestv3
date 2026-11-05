@@ -2563,6 +2563,9 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
             const selectedIndex = state.kids.findIndex((kid) => kid.id === kidId);
             if (selectedIndex >= 0) setSelectedKidIdx(selectedIndex);
           }}
+          onAddRoutineTask={(taskName, timeStr, kidId) =>
+            onAddSuggestedRoutineTask?.(taskName, timeStr, kidId, 'دعم ومساندة الأسرة', 'daily', 'مشترك')
+          }
           language={lang}
           activeParentRole={isMotherActive ? 'mother' : 'father'}
           motherName={motherShortAr}
