@@ -672,11 +672,11 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
               <div className="flex min-w-0 items-start gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal-600 text-xl text-white shadow-md">✨</span>
                 <div className="min-w-0">
-                  <h3 className="text-base font-black text-[#0B3435] dark:text-teal-100">{isEn ? "Family AI Planner" : "مساعد التخطيط الذكي للأسرة"}</h3>
+                  <h3 className="text-base font-black text-[#0B3435] dark:text-teal-100">{isEn ? "Smart Family Planner" : "مساعد التخطيط الذكي للأسرة"}</h3>
                   <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-600 dark:text-slate-300">{isEn ? "Prepare practical ideas for the coming days, then add the approved plan directly to family tasks." : "جهّز أفكاراً عملية للأيام الجاية، وراجعها قبل إضافتها مباشرة لقائمة مهام الأسرة."}</p>
                 </div>
               </div>
-              <span className="rounded-full border border-teal-600/20 bg-white/80 px-3 py-1 text-[10px] font-black text-teal-800 dark:bg-white/10 dark:text-teal-200">AI · {isEn ? "Plan & do" : "خطط ونفّذ"}</span>
+              <span className="rounded-full border border-teal-600/20 bg-white/80 px-3 py-1 text-[10px] font-black text-teal-800 dark:bg-white/10 dark:text-teal-200">{isEn ? "Plan & do" : "خطط ونفّذ"}</span>
             </div>
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
               <label className="flex min-w-0 flex-col gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">{isEn ? "Plan for" : "الخطة لمين؟"}
