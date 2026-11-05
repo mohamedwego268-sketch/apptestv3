@@ -18,6 +18,7 @@ interface HomeContentTracksProps {
   childName: string;
   onNavigate: (pageId: PageId) => void;
   onOpenSection: (section: HomeSectionKey) => void;
+  onOpenPlanner?: () => void;
 }
 
 interface ContentTrack {
@@ -106,6 +107,7 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
   childName,
   onNavigate,
   onOpenSection,
+  onOpenPlanner,
 }) => {
   const isEn = language === 'en';
 
@@ -150,6 +152,19 @@ export const HomeContentTracks: React.FC<HomeContentTracksProps> = ({
           ))}
         </div>
       </div>
+
+      {onOpenPlanner && (
+        <div data-testid="home-family-ai-planner-entry" className="mb-4 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl border border-teal-500/20 bg-gradient-to-l from-[#087F73] via-[#159D8B] to-[#356C9A] p-3.5 text-white shadow-[0_12px_28px_-20px_rgba(8,127,115,0.7)]">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/20 bg-white/15"><Sparkles size={20} aria-hidden="true" /></span>
+            <div className="min-w-0">
+              <h3 className="text-xs font-black">{isEn ? 'Plan the coming days with Nekbaar' : 'خطط الأيام الجاية مع نكبر'}</h3>
+              <p className="mt-1 text-[10px] leading-relaxed text-white/85">{isEn ? 'Personalized ideas that turn into family tasks.' : 'أفكار مناسبة لأطفالك تتحول لمهام ومواعيد تلقائياً.'}</p>
+            </div>
+          </div>
+          <button type="button" onClick={onOpenPlanner} className="min-h-10 rounded-xl bg-white px-3.5 py-2 text-[11px] font-black text-teal-900 shadow-sm transition hover:bg-teal-50">{isEn ? 'Build a plan' : 'جهّز خطة الأسرة'} ←</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {CONTENT_TRACKS.map((track) => {
