@@ -2652,14 +2652,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           8. ACCORDION: FAMILY WELLBEING & POSITIVE PARENTING SUPPORT
           Household support is separate from each child's emotional record.
           ===================================================================== */}
+      </div>
+
       <HomeContentGroupHeading
         id="home-content-group-growth"
         step="٢"
-        title={isEn ? 'Family support and useful guidance' : 'دعم الأسرة وإرشادات مفيدة'}
-        description={isEn ? 'Practical guidance for parents and everyday family life.' : 'إرشادات بسيطة تساعد الأب والأم في مواقف الحياة اليومية.'}
+        title={isEn ? 'Support for parents and family life' : 'مساندة الأهل والحياة الأسرية'}
+        description={isEn ? 'Short, practical guidance for everyday family situations — separate from each child’s personal record.' : 'إرشادات عملية وخفيفة لمواقف البيت اليومية، بعيدًا عن سجل كل طفل.'}
       />
-      </div>
-
       <HomeAccordionCard
         id="home-parenting-support-center"
         testId="home-parenting-support-center"
@@ -2760,6 +2760,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           9. ACCORDION: AGE-AWARE LEARNING & CURIOSITY
           ===================================================================== */}
+      <HomeContentGroupHeading
+        id="home-content-group-discovery"
+        step="٣"
+        title={isEn ? 'Learn, explore and build good habits' : 'نتعلم ونكتشف ونبني عادات حلوة'}
+        description={isEn ? 'Age-aware activities, family values and everyday habits that grow with your child.' : 'أنشطة تناسب العمر، وقيم وعادات بسيطة تكبر مع طفلك يومًا بعد يوم.'}
+      />
       <div hidden={!openAccordions.learningTrack}>
       <HomeAccordionCard
         id="home-learning-track-card"
@@ -2817,6 +2823,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           ===================================================================== */}
       </div>
 
+      <HomeContentGroupHeading
+        id="home-content-group-stories"
+        step="٤"
+        title={isEn ? 'Stories and shared family moments' : 'حواديت ووقت حلو مع بعض'}
+        description={isEn ? 'Create stories and save meaningful moments together.' : 'اصنعوا حواديت وعيشوا لحظات لطيفة تفضل في الذاكرة.'}
+      />
       <HomeAccordionCard
         id="home-ai-storyteller-accordion"
         testId="home-ai-storyteller-accordion"
@@ -2899,6 +2911,12 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       {/* =====================================================================
           14. ACCORDION: FEATURED FAMILY STORE & PRODUCTS SHOWCASE
           ===================================================================== */}
+      <HomeContentGroupHeading
+        id="home-content-group-store"
+        step="٥"
+        title={isEn ? 'Services and supplies for your family' : 'خدمات واحتياجات تهم أسرتكم'}
+        description={isEn ? 'Explore useful products, activities and family services in one place.' : 'اكتشفوا منتجات وأنشطة وخدمات ممكن تسهّل عليكم حياة الأسرة.'}
+      />
       <HomeAccordionCard
         id="home-minimalist-gateways"
         testId="home-minimalist-gateways"
