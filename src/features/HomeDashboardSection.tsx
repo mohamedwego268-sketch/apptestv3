@@ -89,6 +89,7 @@ export interface HomeDashboardSectionProps {
   onToggleBedtimeMode?: () => void;
   onOpenStoreCategory?: (catId: string) => void;
   onReplaySplash?: () => void;
+  onOpenFamilyPlanner?: () => void;
 }
 
 /**
@@ -244,6 +245,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
   onToggleBedtimeMode,
   onOpenStoreCategory,
   onReplaySplash,
+  onOpenFamilyPlanner,
 }) => {
   const isEn = lang === 'en';
   const [selectedKidIdx, setSelectedKidIdx] = useState<number>(0);
@@ -1895,6 +1897,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
         childName={activeKidName}
         onNavigate={navigateTo}
         onOpenSection={openHomeSection}
+        onOpenPlanner={onOpenFamilyPlanner}
       />
 
       <div hidden={!openAccordions.quickTrack}>
