@@ -171,6 +171,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   onClose,
   lang,
   role,
+  parentName,
   kids,
   events,
   tasks,
@@ -210,7 +211,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   // To-Do form state
   const [taskInputName, setTaskInputName] = useState('');
   const [taskInputTime, setTaskInputTime] = useState('18:00');
-  const [taskInputOwner, setTaskInputOwner] = useState<string>(isMom ? 'ماما مريم' : 'بابا أحمد');
+  const [taskInputOwner, setTaskInputOwner] = useState<string>(parentName.trim() || (isMom ? 'ماما' : 'بابا'));
   const [taskInputKidId, setTaskInputKidId] = useState<string>('');
   const [taskInputCategory, setTaskInputCategory] = useState<string>('مهام الأسرة');
   const [editingTaskId, setEditingTaskId] = useState<number | undefined>(undefined);
