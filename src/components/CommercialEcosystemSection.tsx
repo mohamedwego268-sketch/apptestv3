@@ -982,15 +982,38 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
             <button type="button" onClick={() => { setActiveCategoryPageId(null); setCategoryFilter('all'); setSegment('all'); }} className="text-[10px] font-extrabold text-teal-700 dark:text-teal-300">{isEn ? 'View all' : 'كل الأقسام'} ←</button>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar snap-x" role="list" aria-label={isEn ? 'Shop categories' : 'أقسام التسوق'}>
+          <div className="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar snap-x" role="list" aria-label={isEn ? 'Shop categories' : 'أقسام التسوق'}>
             {STORE_CATEGORY_SECTIONS.map((sec) => {
               const count = filtered.filter((item) => (sec.matchCategories as readonly string[]).includes(item.category)).length;
               return (
-                <button key={sec.id} type="button" role="listitem" data-testid={'storefront-category-' + sec.id} onClick={() => openCategoryFullPage(sec.id)}
-                  className="snap-start shrink-0 w-[112px] sm:w-[132px] rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-2.5 text-start hover:border-teal-500 hover:-translate-y-0.5 transition-all shadow-2xs">
-                  <span className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-400/10 inline-flex items-center justify-center text-xl">{sec.emoji}</span>
-                  <span className="mt-2 block text-[10px] sm:text-[11px] leading-snug font-extrabold text-[var(--color-text)] line-clamp-2">{isEn ? sec.badgeEn : sec.badgeAr}</span>
-                  <span className="mt-1 block text-[9px] font-bold text-[var(--color-muted)] tabular-nums">{count} {isEn ? 'items' : 'اختيار'}</span>
+                <button
+                  key={sec.id}
+                  type="button"
+                  role="listitem"
+                  data-testid={'storefront-category-' + sec.id}
+                  onClick={() => openCategoryFullPage(sec.id)}
+                  aria-label={isEn ? `Browse ${sec.badgeEn}` : `تصفح ${sec.badgeAr}`}
+                  className="snap-start relative isolate overflow-hidden shrink-0 w-[156px] sm:w-[184px] h-[132px] rounded-2xl border border-slate-200/80 dark:border-[#29404C] bg-[#142430] text-start shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:border-teal-400 active:scale-[0.985] transition-all"
+                >
+                  <img
+                    src={sec.imageUrl}
+                    alt=""
+                    aria-hidden="true"
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover opacity-90 transition-transform duration-500 hover:scale-105"
+                  />
+                  <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#07131B]/95 via-[#07131B]/45 to-[#07131B]/5" />
+                  <span className="relative z-10 h-full p-3 flex flex-col items-start justify-between">
+                    <span className="w-9 h-9 rounded-xl border border-white/25 bg-white/15 backdrop-blur-sm inline-flex items-center justify-center text-xl shadow-sm">{sec.emoji}</span>
+                    <span className="block w-full">
+                      <span className="block text-[11px] sm:text-xs leading-snug font-black text-white line-clamp-2">{isEn ? sec.badgeEn : sec.badgeAr}</span>
+                      <span className="mt-1 flex items-center justify-between gap-2 text-[9px] font-bold text-white/80">
+                        <span>{isEn ? sec.subtitleEn : sec.subtitleAr}</span>
+                        <span className="shrink-0 rounded-full bg-white/15 px-1.5 py-0.5 tabular-nums">{count > 0 ? count : (isEn ? 'Soon' : 'قريباً')}</span>
+                      </span>
+                    </span>
+                  </span>
                 </button>
               );
             })}
@@ -2482,18 +2505,62 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       )}
       {filtered.length === 0 ? (
-        <FriendlyEmptyState
-          id="empty-store-filter-state"
-          iconId="services"
-          tone="amber"
-          title={getEmptyStateCopy('search', language).title}
-          subtitle={getEmptyStateCopy('search', language).subtitle}
-          actionLabel={getEmptyStateCopy('search', language).actionLabel}
-          onAction={() => {
-            resetStoreFilters();
-            setActiveCategoryPageId(null);
-          }}
-        />
+        activeCatalogSource.length === 0 ? (
+          <div
+            id="empty-store-catalog-state"
+            data-testid="store-empty-catalog"
+            className="relative isolate overflow-hidden rounded-[26px] border border-teal-100 dark:border-[#29404C] bg-gradient-to-br from-[#F0FDFA] via-white to-[#FFF7ED] dark:from-[#102A2B] dark:via-[#101D26] dark:to-[#211D1A] p-5 sm:p-7 shadow-sm"
+          >
+            <div aria-hidden="true" className="pointer-events-none absolute -top-16 -end-12 h-44 w-44 rounded-full bg-teal-300/20 blur-3xl" />
+            <div className="relative max-w-2xl space-y-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-white/5 px-3 py-1 text-[10px] font-black text-teal-800 dark:text-teal-200">
+                <span aria-hidden="true">✦</span> {isEn ? 'NEKBAAR MARKETPLACE' : 'متجر نكبر'}
+              </span>
+              <div className="flex items-start gap-3">
+                <span className="w-12 h-12 rounded-2xl bg-white dark:bg-white/10 border border-teal-100 dark:border-teal-900 flex items-center justify-center text-2xl shrink-0">🛍️</span>
+                <div className="space-y-1">
+                  <h3 className="text-lg sm:text-xl font-black leading-tight text-slate-950 dark:text-white">
+                    {isEn ? 'We are preparing a better family marketplace' : 'بنجهّز لك تجربة تسوّق أذكى لأسرتك'}
+                  </h3>
+                  <p className="text-xs sm:text-sm leading-6 font-medium text-slate-600 dark:text-slate-300">
+                    {isEn
+                      ? 'Products and services will appear here as they are reviewed and published. You can explore the store categories while the catalog is being prepared.'
+                      : 'المنتجات والخدمات هتظهر هنا بعد مراجعتها ونشرها. تقدر تتعرّف على الأقسام وتختار اللي يهم أسرتك لحد ما يكتمل الكتالوج.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="rounded-full bg-white/85 dark:bg-white/5 border border-teal-100 dark:border-[#29404C] px-3 py-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-200">📦 {isEn ? 'Family products' : 'منتجات الأسرة'}</span>
+                <span className="rounded-full bg-white/85 dark:bg-white/5 border border-teal-100 dark:border-[#29404C] px-3 py-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-200">📅 {isEn ? 'Bookings & services' : 'خدمات وحجوزات'}</span>
+                <span className="rounded-full bg-white/85 dark:bg-white/5 border border-teal-100 dark:border-[#29404C] px-3 py-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-200">📍 {displayCity}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  resetStoreFilters();
+                  setActiveCategoryPageId(null);
+                  setCatalogDisplayMode('categories');
+                }}
+                className="min-h-11 rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2.5 text-xs font-black text-white shadow-sm transition-colors"
+              >
+                {isEn ? 'Explore store categories' : 'استكشف أقسام المتجر'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <FriendlyEmptyState
+            id="empty-store-filter-state"
+            iconId="services"
+            tone="amber"
+            title={getEmptyStateCopy('search', language).title}
+            subtitle={getEmptyStateCopy('search', language).subtitle}
+            actionLabel={getEmptyStateCopy('search', language).actionLabel}
+            onAction={() => {
+              resetStoreFilters();
+              setActiveCategoryPageId(null);
+            }}
+          />
+        )
       ) : activeCategorySpec ? (
         /* -------------------------------------------------------------------
            DEDICATED FULL-PAGE CATEGORY VIEW (Multi-Column Grid Layout)
