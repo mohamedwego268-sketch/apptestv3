@@ -3644,6 +3644,10 @@ describe('Homepage child emotional check-in linkage', () => {
     assert.ok(homeSrc.includes('onClick={() => openChildMoodCheckin()}'));
     assert.ok(homeSrc.includes("document.getElementById('child-emotional-checkin')"));
     assert.ok(homeSrc.includes('initialKidId={activeKid?.id ?? null}'));
+    assert.ok(homeSrc.includes('<HomeContentTracks'));
+    assert.ok(homeSrc.includes('onOpenSection={openHomeSection}'));
+    assert.ok(homeSrc.indexOf('id="child-life-command-center"') < homeSrc.indexOf('<HomeContentTracks'));
+    assert.ok(homeSrc.indexOf('<HomeContentTracks') < homeSrc.indexOf('<div hidden={!openAccordions.quickTrack}>'));
     assert.ok(homeSrc.includes('kids={state.kids}'));
     assert.ok(!homeSrc.includes('<HomeDailyExperience'));
     assert.equal(homeSrc.includes('const moodCycle ='), false);
