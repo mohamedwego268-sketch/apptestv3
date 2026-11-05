@@ -57,7 +57,7 @@ export interface FamilySmartPlannerModalProps {
       scheduledDate?: string;
     }
   ) => void;
-  onToggleTask: (id: number, done: boolean) => void;
+  onToggleTask: (id: number, done: boolean, targetDateISO?: string) => void;
   onDeleteTask: (id: number) => void;
 }
 
@@ -1503,13 +1503,13 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
                             <input
                               type="checkbox"
                               checked={task.done}
-                              onChange={(e) => onToggleTask(task.id, e.target.checked)}
+                              onChange={(e) => onToggleTask(task.id, e.target.checked, task.scheduledDate)}
                               aria-label={task.name}
                               className="mt-1 w-4 h-4 rounded-md accent-[#0d9488] cursor-pointer shrink-0"
                             />
                             <div className="min-w-0 flex-1 space-y-1">
                               <div
-                                onClick={() => onToggleTask(task.id, !task.done)}
+                                onClick={() => onToggleTask(task.id, !task.done, task.scheduledDate)}
                                 className={`text-xs sm:text-sm font-black transition-all cursor-pointer ${
                                   task.done
                                     ? 'line-through text-[#64748B] dark:text-[#94A3B8]'
