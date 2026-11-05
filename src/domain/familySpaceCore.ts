@@ -4330,6 +4330,10 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           Number.isInteger(rawDayOfMonth) && rawDayOfMonth >= 1 && rawDayOfMonth <= 31
             ? rawDayOfMonth
             : undefined;
+        const scheduledDate =
+          typeof t.scheduledDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(t.scheduledDate.trim())
+            ? t.scheduledDate.trim()
+            : undefined;
         const hasCompletedDatesArray = Array.isArray(t.completedDates);
         const completedDates = hasCompletedDatesArray
           ? Array.from(
@@ -4362,6 +4366,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
           category: typeof t.category === 'string' && t.category ? t.category : 'روتين عام',
           owner: typeof t.owner === 'string' && t.owner ? t.owner : 'مشترك',
           cadence,
+          ...(scheduledDate !== undefined ? { scheduledDate } : {}),
           ...(dayOfWeek !== undefined ? { dayOfWeek } : {}),
           ...(daysOfWeek && daysOfWeek.length > 0 ? { daysOfWeek } : {}),
           ...(dayOfMonth !== undefined ? { dayOfMonth } : {}),
