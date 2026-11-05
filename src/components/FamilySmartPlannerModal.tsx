@@ -183,7 +183,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
   const isEn = lang === 'en';
   const isMom = role === 'mom';
   const parentCalloutAr = isMom ? 'يا ماما' : 'يا بابا';
-  const parentFullCalloutAr = isMom ? 'ماما مريم' : 'بابا أحمد';
+  const parentFullCalloutAr = parentName.trim() || parentCalloutAr;
 
   const todayDate = useMemo(() => new Date(), []);
   const todayIso = useMemo(() => toIsoDateString(todayDate), [todayDate]);
