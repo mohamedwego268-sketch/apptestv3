@@ -4315,6 +4315,25 @@ describe('Child Life Command Center — Independent Visual Identity, Date-Aware 
       assert.ok(homeSrc.includes(`id: ${faithPath}`), `Missing balanced faith path option: ${faithPath}`);
     }
   });
+  
+  it('preserves one-off planned task dates and schedules them only on that date', () => {
+    const scheduledTask = {
+      id: 987654,
+      name: 'نشاط عائلي مخطط',
+      time: '17:00',
+      done: false,
+      kidId: 1,
+      category: 'نشاط عائلي',
+      owner: 'مشترك',
+      cadence: 'daily' as const,
+      scheduledDate: '2026-11-06',
+    };
+    const normalized = normalizeAppData({ ...DEFAULT_SEED, tasks: [scheduledTask] });
+    assert.equal(normalized.tasks[0].scheduledDate, '2026-11-06');
+    assert.equal(isTaskScheduledForDate(normalized.tasks[0], '2026-11-06'), true);
+    assert.equal(isTaskScheduledForDate(normalized.tasks[0], '2026-11-07'), false);
+  });
+
 });
 
 
