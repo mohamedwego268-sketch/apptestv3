@@ -37,6 +37,7 @@ const StoriesLibraryView = React.lazy(() => import('../components/StoriesLibrary
 const CatalogView = React.lazy(() => import('../components/CatalogView').then((module) => ({ default: module.CatalogView })));
 const HomeValuesTrackSection = React.lazy(() => import('./HomeValuesTrackSection').then((module) => ({ default: module.HomeValuesTrackSection })));
 const HomeLearningTrackSection = React.lazy(() => import('./HomeLearningTrackSection').then((module) => ({ default: module.HomeLearningTrackSection })));
+import { HomeContentTracks } from './HomeContentTracks';
 
 export interface HomeDashboardSectionProps {
   state: FamilySpaceState;
@@ -1887,6 +1888,14 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
           </section>
         );
       })()}
+
+      {/* Six primary family content tracks — restored directly below the follow-up/child command center. */}
+      <HomeContentTracks
+        language={lang}
+        childName={activeKidName}
+        onNavigate={navigateTo}
+        onOpenSection={openHomeSection}
+      />
 
       <div hidden={!openAccordions.quickTrack}>
       <HomeContentGroupHeading
