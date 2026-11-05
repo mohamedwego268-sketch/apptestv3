@@ -199,7 +199,6 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
 interface HomeContentGroupHeadingProps {
   id: string;
   title: string;
-  description: string;
   step: string;
   isEn: boolean;
 }
@@ -207,22 +206,22 @@ interface HomeContentGroupHeadingProps {
 const HomeContentGroupHeading: React.FC<HomeContentGroupHeadingProps> = ({
   id,
   title,
-  description,
   step,
   isEn,
 }) => (
-  <div id={id} data-testid={id} className="relative flex items-start gap-3 border-b border-teal-500/20 px-1 pb-3 pt-5 dark:border-[#24505A]">
-    <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-teal-700 text-xs font-black text-white shadow-sm dark:bg-teal-500 dark:text-[#062B2A]">
+  <div
+    id={id}
+    data-testid={id}
+    dir={isEn ? 'ltr' : 'rtl'}
+    className="relative mt-7 flex items-center gap-3 overflow-hidden rounded-2xl border border-teal-500/25 bg-gradient-to-r from-teal-50/95 via-white to-white px-3.5 py-3 shadow-[0_8px_22px_-18px_rgba(13,148,136,.45)] dark:border-[#24505A] dark:from-[#102B30] dark:via-[#101D26] dark:to-[#101D26] sm:px-4"
+  >
+    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-teal-700 text-sm font-black text-white shadow-sm dark:bg-teal-400 dark:text-[#062B2A]">
       {step}
     </span>
-    <div className="min-w-0 flex-1">
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.12em] text-teal-700 dark:text-teal-300">
-        {isEn ? 'CHAPTER' : 'محطة من رحلتكم'}
-      </p>
-      <h2 className="mt-0.5 text-base font-black leading-snug text-[var(--color-text)] dark:text-white">{title}</h2>
-      <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)] dark:text-[#94A3B8]">{description}</p>
-    </div>
-    <span aria-hidden="true" className="mt-5 h-px min-w-5 flex-1 bg-gradient-to-l from-teal-500/35 to-transparent" />
+    <h2 className="min-w-0 flex-1 text-lg font-black leading-tight tracking-tight text-slate-900 dark:text-white sm:text-xl">
+      {title}
+    </h2>
+    <span aria-hidden="true" className="h-7 w-1 shrink-0 rounded-full bg-teal-500/70" />
   </div>
 );
 
@@ -2028,8 +2027,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-daily"
         step="١"
-        title={isEn ? 'Follow your child’s day' : 'تفاصيل يوم طفلك'}
-        description={isEn ? 'Small daily records, interests and routines — all connected to the selected child.' : 'سجّلوا نومه وأكله ومشاعره والحاجات اللي بيحب يعملها.'}
+        title={isEn ? 'Your child’s day' : 'يوم طفلك'}
         isEn={isEn}
       />
       <HomeAccordionCard
@@ -2663,8 +2661,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-growth"
         step="٢"
-        title={isEn ? 'Small steps that make family life smoother' : 'خطوة صغيرة تفرق في يوم البيت'}
-        description={isEn ? 'Practical guidance for everyday moments, leaving room for each family to choose what works.' : 'أفكار تساعدكم تفهموا المواقف اليومية وتختاروا تصرفًا مناسبًا من غير ضغط.'}
+        title={isEn ? 'Family support' : 'دعم الأسرة'}
         isEn={isEn}
       />
       <HomeAccordionCard
@@ -2770,8 +2767,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-discovery"
         step="٣"
-        title={isEn ? 'Turn everyday moments into growth' : 'كل يوم فرصة لتجربة جديدة'}
-        description={isEn ? 'Short experiences connect curiosity, character and age-appropriate practice.' : 'تجارب قصيرة تربط الفضول بالتعلّم، وتحول المعاني الجميلة لممارسات بسيطة.'}
+        title={isEn ? 'Learning & values' : 'تعلم وقيم'}
         isEn={isEn}
       />
       <div hidden={!openAccordions.learningTrack}>
@@ -2834,8 +2830,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-stories"
         step="٤"
-        title={isEn ? 'Make room for imagination and memories' : 'مساحة للخيال والذكريات'}
-        description={isEn ? 'Shared moments that begin with an idea and become stories worth keeping.' : 'لحظات مشتركة تبدأ بفكرة، وتتحول لحكاية وذكرى حلوة تحتفظوا بيها.'}
+        title={isEn ? 'Stories & imagination' : 'حواديت وخيال'}
         isEn={isEn}
       />
       <HomeAccordionCard
@@ -2923,8 +2918,7 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
       <HomeContentGroupHeading
         id="home-content-group-store"
         step="٥"
-        title={isEn ? 'Useful finds for everyday family life' : 'اختيارات ذكية للحياة اليومية'}
-        description={isEn ? 'One place to browse practical items, experiences and services when you need them.' : 'مكان واحد تلاقوا فيه مستلزمات وتجارب وخدمات ممكن تحتاجوها في الوقت المناسب.'}
+        title={isEn ? 'Store & services' : 'المتجر والخدمات'}
         isEn={isEn}
       />
       <HomeAccordionCard
