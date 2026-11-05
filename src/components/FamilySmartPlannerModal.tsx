@@ -232,7 +232,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
 
   const suggestedPlan = useMemo(() => {
     const child = kids.find((kid) => kid.id === planChildId);
-    const childName = child ? locText(child.name, lang) : (isEn ? 'your child' : 'طفلك');
+    const childName = child ? child.name : (isEn ? 'your child' : 'طفلك');
     const interests = child?.profileDetails?.hobbies || child?.profileDetails?.interests || [];
     const interestText = interests.filter(Boolean).slice(0, 2).join(isEn ? ' and ' : ' و ');
     const activitySets = [
@@ -683,7 +683,7 @@ export const FamilySmartPlannerModal: React.FC<FamilySmartPlannerModalProps> = (
               <label className="flex min-w-0 flex-col gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">{isEn ? "Plan for" : "الخطة لمين؟"}
                 <select value={planChildId ?? ""} onChange={(event) => { setPlanChildId(event.target.value ? Number(event.target.value) : null); setIsPlanReady(false); setIsPlanAdded(false); }} className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-800 outline-none focus:border-teal-500 dark:border-[#29404D] dark:bg-[#142430] dark:text-white">
                   <option value="">{isEn ? "Whole family" : "الأسرة كلها"}</option>
-                  {kids.map((kid) => <option key={kid.id} value={kid.id}>{locText(kid.name, lang)}</option>)}
+                  {kids.map((kid) => <option key={kid.id} value={kid.id}>{kid.name}</option>)}
                 </select>
               </label>
               <div className="flex flex-col gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-300">{isEn ? "Plan length" : "مدة الخطة"}
