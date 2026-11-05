@@ -950,7 +950,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 aria-label={isEn ? 'Search products and services' : 'ابحث عن منتجات وخدمات'}
                 className="min-w-0 flex-1 h-11 bg-transparent outline-none text-xs sm:text-sm font-bold text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500" />
               {searchQuery.trim() && <button type="button" onClick={() => setSearchQuery('')} className="min-w-10 min-h-10 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 font-black" aria-label={isEn ? 'Clear search' : 'مسح البحث'}>×</button>}
-              <button type="button" onClick={() => setShowCartPanel(true)} className="relative min-w-11 min-h-11 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white inline-flex items-center justify-center transition-colors" aria-label={isEn ? 'Open cart' : 'فتح السلة'}>
+              <button type="button" onClick={() => { setShowCartPanel(true); setStoreFlowStep('checkout'); }} className="relative min-w-11 min-h-11 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white inline-flex items-center justify-center transition-colors" aria-label={isEn ? 'Open cart' : 'فتح السلة'}>
                 <span aria-hidden="true" className="text-lg">🛒</span>
                 {cartTotalCount > 0 && <span className="absolute -top-1 -end-1 min-w-5 h-5 px-1 rounded-full bg-[#F97316] text-white text-[10px] font-black inline-flex items-center justify-center">{cartTotalCount}</span>}
               </button>
