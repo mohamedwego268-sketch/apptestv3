@@ -214,6 +214,21 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [driverInstructionNote, setDriverInstructionNote] = useState(
     isEn ? 'Leave at door / Don’t ring bell (baby sleeping)' : 'يرجى الاتصال عند الوصول وعدم رن الجرس (الطفل نائم)'
   );
+  const [selectedServiceForBooking, setSelectedServiceForBooking] = useState<CommercialCatalogItem | null>(null);
+  const [serviceBookingDate, setServiceBookingDate] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
+  const [serviceBookingTime, setServiceBookingTime] = useState('10:00');
+  const [serviceBookingBeneficiary, setServiceBookingBeneficiary] = useState('');
+  const [serviceBookingNotes, setServiceBookingNotes] = useState('');
+  const [confirmedServiceBooking, setConfirmedServiceBooking] = useState<{
+    id: string;
+    serviceName: string;
+    providerName: string;
+    date: string;
+    time: string;
+    beneficiary: string;
+    price: number;
+    currency: CurrencyCode;
+  } | null>(null);
 
   // Smart Product Comparison State (up to 3 items side-by-side)
   const [compareIds, setCompareIds] = useState<number[]>([
@@ -459,6 +474,20 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     setShowCartPanel(false);
   };
 
+  const beginServiceBooking = (item: CommercialCatalogItem) => {
+    setSelectedServiceForBooking(item);
+    setConfirmedServiceBooking(null);
+    setServiceBookingDate(new Date(Date.now() + 86400000).toISOString().slice(0, 10));
+    setServiceBookingTime('10:00');
+    setServiceBookingBeneficiary('');
+    setServiceBookingNotes('');
+    setShowCartPanel(false);
+    setStoreFlowStep('catalog');
+    window.setTimeout(() => {
+      document.getElementById('service-booking-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  };
+
   const renderCompactProductCard = (
     item: CommercialCatalogItem,
     layoutMode: 'carousel' | 'grid'
@@ -680,32 +709,20 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </svg>
             </button>
 
-            {/* Minimalist Shopping Cart Icon (Teal #0d9488) */}
+            {/* Product purchase or direct service booking */}
             <button
               type="button"
-              onClick={() => onAddToCart(item, item.variants?.[0])}
-              title={isEn ? 'Add to Cart' : 'أضف للسلة'}
-              aria-label={isEn ? 'Add to Cart' : 'أضف للسلة'}
+              onClick={() => item.kind === 'service' ? beginServiceBooking(item) : onAddToCart(item, item.variants?.[0])}
+              title={item.kind === 'service' ? (isEn ? 'Book this service' : 'احجز الخدمة') : (isEn ? 'Add to Cart' : 'أضف للسلة')}
+              aria-label={item.kind === 'service' ? (isEn ? 'Book this service' : 'احجز الخدمة') : (isEn ? 'Add to Cart' : 'أضف للسلة')}
               className="min-w-10 min-h-10 rounded-xl bg-[#0d9488] hover:bg-[#0f766e] text-white flex items-center justify-center shadow-2xs active:scale-90 transition-all shrink-0 cursor-pointer"
             >
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z"
-                  fill="currentColor"
-                  fillOpacity="0.22"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 6h18M16 10a4 4 0 01-8 0"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {item.kind === 'service' ? <span className="text-base" aria-hidden="true">📅</span> : (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" fill="currentColor" fillOpacity="0.22" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 6h18M16 10a4 4 0 01-8 0" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
@@ -720,6 +737,28 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       : allowDemoData
         ? COMMERCIAL_CATALOG
         : [];
+
+  const startGuidedPurchase = () => {
+    const demoProduct = activeCatalogSource.find((item) => item.kind === 'product');
+    if (!demoProduct) {
+      onShowToast(isEn ? 'No sample products are available right now.' : 'لا توجد منتجات تجريبية متاحة حالياً.');
+      return;
+    }
+    setSelectedServiceForBooking(null);
+    setConfirmedServiceBooking(null);
+    onAddToCart(demoProduct, demoProduct.variants?.[0]);
+    setShowCartPanel(true);
+    setStoreFlowStep('checkout');
+  };
+
+  const startGuidedBooking = () => {
+    const demoService = activeCatalogSource.find((item) => item.kind === 'service');
+    if (!demoService) {
+      onShowToast(isEn ? 'No sample services are available right now.' : 'لا توجد خدمات تجريبية متاحة حالياً.');
+      return;
+    }
+    beginServiceBooking(demoService);
+  };
 
   const filtered = activeCatalogSource.filter((item) => {
     if (segment !== 'all' && item.kind !== segment) return false;
@@ -971,6 +1010,44 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
           </div>
         </div>
+      )}
+
+      {allowDemoData && storeFlowStep === 'catalog' && !activeCategorySpec && (
+        <section data-testid="store-guided-demo" className="rounded-[22px] border border-teal-200 dark:border-[#29404C] bg-gradient-to-br from-teal-50 via-white to-orange-50 dark:from-[#102A2B] dark:via-[#101D26] dark:to-[#211D1A] p-3.5 sm:p-4 shadow-sm space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span className="text-[9px] font-black tracking-wider text-teal-800 dark:text-teal-200">{isEn ? 'INTERACTIVE STORE DEMO' : 'تجربة عملية للمتجر'}</span>
+              <h3 className="mt-0.5 text-sm sm:text-base font-black text-slate-950 dark:text-white">{isEn ? 'Try a complete customer journey' : 'جرّب رحلة العميل من البداية للنهاية'}</h3>
+              <p className="mt-0.5 text-[10px] sm:text-xs text-slate-600 dark:text-slate-300">{isEn ? 'Sample data only · No real payment or provider booking' : 'بيانات تجريبية فقط · لا يوجد تحصيل أموال أو إرسال حجز فعلي'}</p>
+            </div>
+            <span className="rounded-full border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-white/5 px-2.5 py-1 text-[9px] font-extrabold text-teal-800 dark:text-teal-200">DEMO</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button type="button" data-testid="store-demo-start-purchase" onClick={startGuidedPurchase} className="min-h-[58px] rounded-2xl bg-teal-700 hover:bg-teal-800 text-white px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors">
+              <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl shrink-0">🛍️</span>
+              <span className="min-w-0"><span className="block text-xs font-black">{isEn ? 'Try buying a product' : 'جرّب شراء منتج'}</span><span className="block mt-0.5 text-[10px] text-white/80">{isEn ? 'Cart · Address · Payment · Order tracking' : 'السلة · العنوان · الدفع التجريبي · تتبع الطلب'}</span></span>
+              <span className="ms-auto text-lg" aria-hidden="true">{isEn ? '→' : '←'}</span>
+            </button>
+            <button type="button" data-testid="store-demo-start-booking" onClick={startGuidedBooking} className="min-h-[58px] rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-white/85 dark:bg-white/5 hover:border-orange-400 px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors">
+              <span className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-400/10 flex items-center justify-center text-xl shrink-0">📅</span>
+              <span className="min-w-0"><span className="block text-xs font-black text-slate-900 dark:text-white">{isEn ? 'Try booking a service' : 'جرّب حجز خدمة'}</span><span className="block mt-0.5 text-[10px] text-slate-600 dark:text-slate-300">{isEn ? 'Choose a service · Date · Time · Confirmation' : 'اختيار الخدمة · الموعد · بيانات الطفل · تأكيد الحجز'}</span></span>
+              <span className="ms-auto text-lg text-orange-700 dark:text-orange-200" aria-hidden="true">{isEn ? '→' : '←'}</span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {allowDemoData && storeFlowStep === 'catalog' && !activeCategorySpec && (
+        <section data-testid="store-guided-demo" className="rounded-[22px] border border-teal-200 dark:border-[#29404C] bg-gradient-to-br from-teal-50 via-white to-orange-50 dark:from-[#102A2B] dark:via-[#101D26] dark:to-[#211D1A] p-3.5 sm:p-4 shadow-sm space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><span className="text-[9px] font-black tracking-wider text-teal-800 dark:text-teal-200">{isEn ? 'INTERACTIVE STORE DEMO' : 'تجربة عملية للمتجر'}</span><h3 className="mt-0.5 text-sm sm:text-base font-black text-slate-950 dark:text-white">{isEn ? 'Try a complete customer journey' : 'جرّب رحلة العميل من البداية للنهاية'}</h3><p className="mt-0.5 text-[10px] sm:text-xs text-slate-600 dark:text-slate-300">{isEn ? 'Sample data only · No real payment or provider booking' : 'بيانات تجريبية فقط · لا يوجد تحصيل أموال أو إرسال حجز فعلي'}</p></div>
+            <span className="rounded-full border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-white/5 px-2.5 py-1 text-[9px] font-extrabold text-teal-800 dark:text-teal-200">DEMO</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button type="button" data-testid="store-demo-start-purchase" onClick={startGuidedPurchase} className="min-h-[58px] rounded-2xl bg-teal-700 hover:bg-teal-800 text-white px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors"><span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl shrink-0">🛍️</span><span className="min-w-0"><span className="block text-xs font-black">{isEn ? 'Try buying a product' : 'جرّب شراء منتج'}</span><span className="block mt-0.5 text-[10px] text-white/80">{isEn ? 'Cart · Address · Payment · Order tracking' : 'السلة · العنوان · الدفع التجريبي · تتبع الطلب'}</span></span><span className="ms-auto text-lg" aria-hidden="true">{isEn ? '→' : '←'}</span></button>
+            <button type="button" data-testid="store-demo-start-booking" onClick={startGuidedBooking} className="min-h-[58px] rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-white/85 dark:bg-white/5 hover:border-orange-400 px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors"><span className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-400/10 flex items-center justify-center text-xl shrink-0">📅</span><span className="min-w-0"><span className="block text-xs font-black text-slate-900 dark:text-white">{isEn ? 'Try booking a service' : 'جرّب حجز خدمة'}</span><span className="block mt-0.5 text-[10px] text-slate-600 dark:text-slate-300">{isEn ? 'Choose a service · Date · Time · Confirmation' : 'اختيار الخدمة · الموعد · بيانات الطفل · تأكيد الحجز'}</span></span><span className="ms-auto text-lg text-orange-700 dark:text-orange-200" aria-hidden="true">{isEn ? '→' : '←'}</span></button>
+          </div>
+        </section>
       )}
 
       {storeFlowStep === 'catalog' && !activeCategorySpec && (
@@ -1622,6 +1699,61 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             </div>
           </div>
         </CollapsibleSectionCard>
+      )}
+
+      {allowDemoData && (selectedServiceForBooking || confirmedServiceBooking) && (
+        <section id="service-booking-flow" data-testid="service-booking-flow" className="rounded-[24px] border-2 border-teal-200 dark:border-[#29404C] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-4 shadow-md">
+          <div className="flex items-start justify-between gap-3 border-b border-[var(--color-border)] dark:border-[#29404C] pb-3">
+            <div className="flex items-center gap-3">
+              <span className="w-11 h-11 rounded-2xl bg-teal-50 dark:bg-teal-400/10 flex items-center justify-center text-2xl">📅</span>
+              <div>
+                <span className="text-[9px] font-black tracking-wider text-teal-700 dark:text-teal-200">{isEn ? 'SAMPLE SERVICE BOOKING' : 'حجز خدمة تجريبي'}</span>
+                <h3 className="text-sm sm:text-base font-black text-[var(--color-text)]">{confirmedServiceBooking ? (isEn ? 'Booking request recorded' : 'تم تسجيل طلب الحجز التجريبي') : (isEn ? 'Book a family service' : 'احجز خدمة لأسرتك')}</h3>
+                <p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{isEn ? 'No provider is contacted and no payment is collected.' : 'لن يتم التواصل مع مقدم الخدمة أو تحصيل أي مبلغ.'}</p>
+              </div>
+            </div>
+            <button type="button" onClick={() => { setSelectedServiceForBooking(null); setConfirmedServiceBooking(null); }} className="w-9 h-9 rounded-xl border border-[var(--color-border)] text-[var(--color-muted)] font-black" aria-label={isEn ? 'Close booking' : 'إغلاق الحجز'}>×</button>
+          </div>
+
+          {confirmedServiceBooking ? (
+            <div data-testid="service-booking-confirmation" className="rounded-2xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/80 dark:bg-emerald-950/20 p-4 space-y-3">
+              <div className="flex items-center gap-2"><span className="text-2xl">✅</span><div><p className="text-sm font-black text-emerald-900 dark:text-emerald-200">{isEn ? 'Demo booking confirmed' : 'تم تأكيد الحجز التجريبي'}</p><p className="text-[10px] text-emerald-800 dark:text-emerald-300">{isEn ? 'Reference' : 'رقم مرجعي'}: <b dir="ltr">{confirmedServiceBooking.id}</b></p></div></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Service' : 'الخدمة'}</p><p className="mt-1 font-black text-[var(--color-text)]">{confirmedServiceBooking.serviceName}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{confirmedServiceBooking.providerName}</p></div>
+                <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Appointment' : 'الموعد'}</p><p className="mt-1 font-black text-[var(--color-text)]" dir="ltr">{confirmedServiceBooking.date} · {confirmedServiceBooking.time}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{isEn ? 'For' : 'المستفيد'}: {confirmedServiceBooking.beneficiary}</p></div>
+              </div>
+              <p className="text-[10px] leading-5 text-emerald-900 dark:text-emerald-200">{isEn ? 'This is a local demo only. The request has not been sent to the service provider.' : 'هذه محاكاة محلية داخل وضع المراجعة فقط؛ لم يُرسل طلب الحجز إلى مقدم الخدمة.'}</p>
+              <button type="button" onClick={() => { setConfirmedServiceBooking(null); setSelectedServiceForBooking(null); setStoreFlowStep('catalog'); }} className="min-h-10 rounded-xl bg-teal-700 px-4 text-xs font-black text-white">{isEn ? 'Back to store' : 'العودة للمتجر'}</button>
+            </div>
+          ) : selectedServiceForBooking ? (
+            <form data-testid="service-booking-form" onSubmit={(event) => {
+              event.preventDefault();
+              const booking = {
+                id: `NB-SV-${String(Date.now()).slice(-6)}`,
+                serviceName: isEn ? selectedServiceForBooking.nameEn : selectedServiceForBooking.name,
+                providerName: selectedServiceForBooking.providerName || selectedServiceForBooking.sellerName || (isEn ? 'Family Space Partner' : 'شريك نكبر'),
+                date: serviceBookingDate,
+                time: serviceBookingTime,
+                beneficiary: serviceBookingBeneficiary.trim(),
+                price: convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency),
+                currency,
+              };
+              setConfirmedServiceBooking(booking);
+            }} className="space-y-3">
+              <div className="rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-3 flex items-center justify-between gap-3">
+                <div className="min-w-0"><p className="text-xs font-black text-[var(--color-text)]">{isEn ? selectedServiceForBooking.nameEn : selectedServiceForBooking.name}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{selectedServiceForBooking.providerName || selectedServiceForBooking.sellerName || (isEn ? 'Nekbaar partner' : 'شريك نكبر')}</p></div>
+                <span className="shrink-0 text-sm font-black text-teal-700 dark:text-teal-200">{formatCurrency(convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency), currency)}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="space-y-1"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Appointment date' : 'تاريخ الموعد'}</span><input required type="date" min={new Date().toISOString().slice(0, 10)} value={serviceBookingDate} onChange={(event) => setServiceBookingDate(event.target.value)} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]" /></label>
+                <label className="space-y-1"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Sample available time' : 'موعد متاح (تجريبي)'}</span><select value={serviceBookingTime} onChange={(event) => setServiceBookingTime(event.target.value)} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]"><option value="10:00">10:00</option><option value="12:30">12:30</option><option value="16:00">16:00</option><option value="18:30">18:30</option></select></label>
+                <label className="space-y-1 sm:col-span-2"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Child / beneficiary name' : 'اسم الطفل أو المستفيد'}</span><input required maxLength={80} value={serviceBookingBeneficiary} onChange={(event) => setServiceBookingBeneficiary(event.target.value)} placeholder={isEn ? 'Enter beneficiary name' : 'اكتب اسم الطفل أو المستفيد'} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]" /></label>
+                <label className="space-y-1 sm:col-span-2"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Notes (optional)' : 'ملاحظات (اختياري)'}</span><textarea maxLength={400} rows={2} value={serviceBookingNotes} onChange={(event) => setServiceBookingNotes(event.target.value)} placeholder={isEn ? 'Anything the provider should know?' : 'هل هناك تفاصيل تحب إضافتها؟'} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-medium text-[var(--color-text)]" /></label>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Sample slot · No real reservation is created' : 'موعد افتراضي · لن يتم إنشاء حجز حقيقي'}</p><button type="submit" className="min-h-11 rounded-xl bg-teal-700 hover:bg-teal-800 px-5 text-xs font-black text-white shadow-sm">{isEn ? 'Confirm demo booking' : 'تأكيد الحجز التجريبي'}</button></div>
+            </form>
+          ) : null}
+        </section>
       )}
 
       {/* =====================================================================
@@ -2466,10 +2598,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     <div className="flex items-center gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={() => onAddToCart(cItem, cItem.variants?.[0])}
+                        onClick={() => cItem.kind === 'service' ? beginServiceBooking(cItem) : onAddToCart(cItem, cItem.variants?.[0])}
                         className="flex-1 min-h-[36px] px-3 py-1.5 rounded-xl text-xs font-extrabold bg-[#0d9488] hover:bg-[#0f766e] text-white transition-all cursor-pointer"
                       >
-                        🛒 {isEn ? 'Add to Cart' : 'أضف للسلة'}
+                        {cItem.kind === 'service' ? <>📅 {isEn ? 'Book now' : 'احجز الآن'}</> : <>🛒 {isEn ? 'Add to Cart' : 'أضف للسلة'}</>}
                       </button>
                       <button
                         type="button"
