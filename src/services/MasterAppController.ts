@@ -1091,6 +1091,14 @@ export class MasterBackendService implements MasterControllerAPI {
                   ? row.description
                   : 'منتج مختار بعناية لأطفال الأسرة.',
               emoji: typeof row.emoji === 'string' ? row.emoji : '🧸',
+              partnerBrand: typeof row.brand === 'string' && row.brand.trim() ? row.brand.trim() : undefined,
+              ageRange: typeof row.age_range === 'string' && row.age_range.trim() ? row.age_range.trim() : undefined,
+              galleryImages: Array.isArray(row.gallery_images)
+                ? row.gallery_images.filter((url): url is string => typeof url === 'string' && /^https:\/\//i.test(url)).slice(0, 8)
+                : [],
+              variants: Array.isArray(row.variants) ? row.variants.filter((value): value is string => typeof value === 'string').slice(0, 30) : [],
+              specificationsAr: Array.isArray(row.specifications_ar) ? row.specifications_ar.filter((value): value is string => typeof value === 'string').slice(0, 30) : [],
+              specificationsEn: Array.isArray(row.specifications_en) ? row.specifications_en.filter((value): value is string => typeof value === 'string').slice(0, 30) : [],
               serviceDurationMinutes: typeof row.service_duration_minutes === 'number' ? row.service_duration_minutes : undefined,
               bookingRequired: Boolean(row.booking_required),
               fulfillmentMode: row.fulfillment_mode === 'pickup' || row.fulfillment_mode === 'online' || row.fulfillment_mode === 'onsite' || row.fulfillment_mode === 'at_home' || row.fulfillment_mode === 'digital' ? row.fulfillment_mode : 'shipping',
