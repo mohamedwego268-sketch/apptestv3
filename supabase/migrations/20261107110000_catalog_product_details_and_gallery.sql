@@ -5,11 +5,9 @@ alter table public.catalog_items
   add column if not exists gallery_images text[] not null default '{}',
   add column if not exists variants text[] not null default '{}',
   add column if not exists specifications_ar text[] not null default '{}',
-  add column if not exists specifications_en text[];
+  add column if not exists specifications_en text[] not null default '{}';
 
 alter table public.catalog_items
-  alter column specifications_en set default '{}',
-  alter column specifications_en set not null,
   drop constraint if exists catalog_items_gallery_images_limit,
   add constraint catalog_items_gallery_images_limit check (cardinality(gallery_images) <= 8),
   drop constraint if exists catalog_items_variants_limit,
