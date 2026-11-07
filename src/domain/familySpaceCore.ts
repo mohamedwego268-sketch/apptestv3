@@ -985,6 +985,8 @@ export interface CommercialCatalogItem {
   variants?: string[];
   /** Exact seller-provided product gallery URLs; never populate with category stock images. */
   galleryImages?: string[];
+  /** Seller-provided brand and free-form suitable age range from the catalog. */
+  ageRange?: string;
   specificationsAr?: string[];
   specificationsEn?: string[];
   sellerName?: string;
