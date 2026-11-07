@@ -828,6 +828,21 @@ export interface DemoOrder {
   status: 'confirmed_demo';
 }
 
+export interface DemoServiceBooking {
+  id: string;
+  createdAt: string;
+  serviceId: number;
+  serviceName: string;
+  providerName: string;
+  date: string;
+  time: string;
+  beneficiary: string;
+  notes?: string;
+  price: number;
+  currency: CurrencyCode;
+  status: 'requested_demo';
+}
+
 export interface FamilySpaceState {
   role: ParentThemeRole;
   parentName: string;
@@ -858,6 +873,7 @@ export interface FamilySpaceState {
   recentlyViewedProductIds: number[];
   shippingAddress: DemoShippingAddress;
   orders: DemoOrder[];
+  serviceBookings: DemoServiceBooking[];
   darkMode?: boolean;
   /** Verified remote family UUID when resolved from an authenticated DB session */
   verifiedFamilyId?: string | null;
@@ -1196,6 +1212,7 @@ export const DEFAULT_SEED: FamilySpaceState = {
     phone: '+20 1012345678',
   },
   orders: [],
+  serviceBookings: [],
   events: [
     {
       id: 901,
@@ -4600,6 +4617,26 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
 
   if (Array.isArray(input.orders)) {
     base.orders = input.orders as DemoOrder[];
+  }
+
+  if (Array.isArray(input.serviceBookings)) {
+    base.serviceBookings = input.serviceBookings
+      .filter((entry): entry is Record<string, unknown> => Boolean(entry && typeof entry === 'object' && !Array.isArray(entry)))
+      .map((entry) => ({
+        id: typeof entry.id === 'string' ? entry.id.slice(0, 64) : '',
+        createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : dateLocalISO(new Date()),
+        serviceId: Number.isInteger(Number(entry.serviceId)) ? Number(entry.serviceId) : 0,
+        serviceName: typeof entry.serviceName === 'string' ? entry.serviceName.slice(0, 160) : '',
+        providerName: typeof entry.providerName === 'string' ? entry.providerName.slice(0, 120) : '',
+        date: typeof entry.date === 'string' ? entry.date.slice(0, 10) : '',
+        time: typeof entry.time === 'string' ? entry.time.slice(0, 5) : '',
+        beneficiary: typeof entry.beneficiary === 'string' ? entry.beneficiary.slice(0, 80) : '',
+        ...(typeof entry.notes === 'string' && entry.notes.trim() ? { notes: entry.notes.slice(0, 400) } : {}),
+        price: Number.isFinite(Number(entry.price)) ? Math.max(0, Number(entry.price)) : 0,
+        currency: typeof entry.currency === 'string' && isSupportedCurrencyCode(entry.currency) ? entry.currency : base.currency,
+        status: 'requested_demo' as const,
+      }))
+      .filter((entry) => Boolean(entry.id && entry.serviceId > 0 && entry.serviceName && entry.date && entry.time && entry.beneficiary));
   }
 
   return base;
