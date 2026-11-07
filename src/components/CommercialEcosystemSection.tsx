@@ -2443,11 +2443,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       : '⏳ جاري تأكيد الطلب...'
                     : paymentCategory === 'cod'
                     ? isEn
-                      ? '✅ Confirm Order (Cash on Delivery)'
-                      : '✅ تأكيد الطلب (الدفع عند الاستلام)'
+                      ? '✅ Confirm Demo Order (Cash on Delivery)'
+                      : '✅ تأكيد الطلب التجريبي (الدفع عند الاستلام)'
                     : isEn
-                    ? `🚀 Pay Now & Confirm Order (${getPaymentMethodLabels(paymentMethod).badgeIcon})`
-                    : `🚀 تأكيد الدفع الإلكتروني وإتمام الطلب (${getPaymentMethodLabels(paymentMethod).badgeIcon})`}
+                    ? `🧪 Simulate Payment & Confirm Demo Order (${getPaymentMethodLabels(paymentMethod).badgeIcon})`
+                    : `🧪 محاكاة الدفع وتأكيد الطلب التجريبي (${getPaymentMethodLabels(paymentMethod).badgeIcon})`}
                 </PrimaryCtaButton>
               </div>
             </div>
