@@ -182,11 +182,16 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   const drawerCity = activeParentProfile?.city || state.city || getDefaultCityForCountry(drawerCountry);
   const drawerCountryMeta = getCountryMetadata(drawerCountry);
   const commercialPhotos = activeCommercialModal
-    ? [activeCommercialModal.imageUrl || getProductUnsplashImageUrl(activeCommercialModal.category, activeCommercialModal.id), ...(activeCommercialModal.kind === 'service' ? [] : (CATEGORY_UNSPLASH_POOLS[activeCommercialModal.category] || []))]
+    ? [...(activeCommercialModal.galleryImages || []), activeCommercialModal.imageUrl || '']
         .filter((url, index, all) => Boolean(url) && all.indexOf(url) === index)
-        .slice(0, 5)
+        .slice(0, 8)
     : [];
-  const activeCommercialPhoto = commercialPhotos[Math.min(activeCommercialPhotoIndex, Math.max(0, commercialPhotos.length - 1))];
+  const hasExactCommercialPhotos = commercialPhotos.length > 0;
+  const activeCommercialPhoto = hasExactCommercialPhotos
+    ? commercialPhotos[Math.min(activeCommercialPhotoIndex, commercialPhotos.length - 1)]
+    : activeCommercialModal
+      ? getProductUnsplashImageUrl(activeCommercialModal.category, activeCommercialModal.id)
+      : '';
 
   return (
     <>
@@ -2261,12 +2266,12 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="commercialModalTitle"
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[20px] bg-[var(--color-surface)] dark:bg-[#101D26] p-6 space-y-4 border border-[var(--color-border)] dark:border-[#1E3646]"
+            className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-[24px] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-5 border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xl"
           >
             {activeCommercialPhoto && (
               <div className="space-y-2.5">
-                <div className="relative h-56 sm:h-64 w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-[#F4F7F7]">
-                  <img src={activeCommercialPhoto} alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
+                <div className="relative h-72 sm:h-[420px] w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-gradient-to-br from-[#F8FAFC] to-[#EEF4F4] dark:from-[#172B36] dark:to-[#101D26]">
+                  <img src={activeCommercialPhoto} alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name} loading="lazy" decoding="async" className="w-full h-full object-contain p-3 sm:p-5" />
                   <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">{activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}</span>
                     {Number(activeCommercialModal.rating) > 0 && (
@@ -2286,7 +2291,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     ))}
                   </div>
                 )}
-                <p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Additional category images are illustrative until the seller uploads exact product photos.' : 'الصور الإضافية توضيحية من نفس الفئة لحين رفع التاجر صور القطعة الفعلية.'}</p>
+                {!hasExactCommercialPhotos && <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/20 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">{isEn ? 'Illustrative category image — exact product photos have not been provided by the seller yet.' : 'صورة توضيحية للقسم — لم يرفع البائع صور المنتج الفعلية بعد.'}</div>}
               </div>
             )}
 
@@ -2353,8 +2358,18 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
               </div>
             )}
 
+            {/* Product information: show only attributes supplied by the catalog */}
+            {activeCommercialModal.kind !== 'service' && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {activeCommercialModal.partnerBrand && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Brand' : 'العلامة التجارية'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)] break-words">{activeCommercialModal.partnerBrand}</div></div>}
+                {activeCommercialModal.ageStage && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Suitable age' : 'العمر المناسب'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.ageStage === 'all' ? (lang === 'en' ? 'All ages' : 'كل الأعمار') : activeCommercialModal.ageStage.replace('-', '–') + (lang === 'en' ? ' years' : ' سنوات')}</div></div>}
+                {activeCommercialModal.deliveryEstimateAr && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Delivery estimate' : 'موعد التوصيل'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? activeCommercialModal.deliveryEstimateEn || activeCommercialModal.deliveryEstimateAr : activeCommercialModal.deliveryEstimateAr}</div></div>}
+                {activeCommercialModal.fulfillmentMode && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Fulfillment' : 'طريقة الاستلام'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : activeCommercialModal.fulfillmentMode === 'shipping' ? (lang === 'en' ? 'Shipping' : 'توصيل') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital' : 'رقمي') : activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة')}</div></div>}
+              </div>
+            )}
+
             {/* Specifications List */}
-            {activeCommercialModal.specificationsAr && (
+            {activeCommercialModal.specificationsAr && activeCommercialModal.specificationsAr.length > 0 && (
               <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 text-xs space-y-1">
                 <div className="font-bold text-[var(--color-text)]">
                   {lang === 'en' ? 'Specifications & Safety:' : 'المواصفات ومعايير الأمان:'}
