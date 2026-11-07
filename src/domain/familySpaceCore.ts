@@ -978,6 +978,8 @@ export interface CommercialCatalogItem {
   ageStage?: AgeStage;
   collectionTag?: 'bestseller' | 'new' | 'deal' | 'recommended';
   variants?: string[];
+  /** Exact seller-provided product gallery URLs; never populate with category stock images. */
+  galleryImages?: string[];
   specificationsAr?: string[];
   specificationsEn?: string[];
   sellerName?: string;
