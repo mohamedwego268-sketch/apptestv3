@@ -17,6 +17,7 @@ import {
   MediaContentItem,
   CommercialCatalogItem,
   DemoOrder,
+  DemoServiceBooking,
   MEDIA_CONTENT_CATALOG,
   COMMERCIAL_CATALOG,
   ParentThemeRole,
@@ -1707,6 +1708,21 @@ export default function App() {
     }));
   };
 
+  const handleCompleteDemoServiceBooking = (booking: DemoServiceBooking) => {
+    if (!isPreviewMode) {
+      showToast(lang === 'en' ? 'Demo service bookings are available only in preview mode.' : 'حجوزات الخدمات التجريبية متاحة في وضع المعاينة فقط.');
+      return;
+    }
+    if (!booking.id || !booking.serviceId || !booking.serviceName.trim() || !booking.beneficiary.trim() || !/^\\d{4}-\\d{2}-\\d{2}$/.test(booking.date) || !/^\\d{2}:\\d{2}$/.test(booking.time) || !Number.isFinite(booking.price) || booking.price < 0) {
+      showToast(lang === 'en' ? 'The booking details are incomplete. Please review the form.' : 'بيانات الحجز غير مكتملة. راجع النموذج وحاول مرة أخرى.');
+      return;
+    }
+    setState((prev) => ({
+      ...prev,
+      serviceBookings: [booking, ...prev.serviceBookings.filter((existing) => existing.id !== booking.id)],
+    }));
+  };
+
   // Family Members & Permissions
   const handleSavePerson = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -2900,6 +2916,8 @@ export default function App() {
                   cart={state.cart}
                   shippingAddress={state.shippingAddress}
                   orders={state.orders}
+                  serviceBookings={state.serviceBookings}
+                  onCompleteDemoServiceBooking={handleCompleteDemoServiceBooking}
                   initialCategoryId={storeInitialCategoryId}
                   initialOpenCheckout={storeInitialOpenCheckout}
                   allowDemoData={isPreviewMode}
