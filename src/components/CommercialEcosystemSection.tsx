@@ -493,7 +493,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     setShowCartPanel(false);
   };
 
-  const beginServiceBooking = (item: CommercialCatalogItem) => {
+  const beginServiceBooking = React.useCallback((item: CommercialCatalogItem) => {
     setSelectedServiceForBooking(item);
     setConfirmedServiceBooking(null);
     setServiceBookingDate(formatLocalDateInput(new Date(Date.now() + 86400000)));
@@ -507,13 +507,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     window.setTimeout(() => {
       document.getElementById('service-booking-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
-  };
+  }, []);
 
   useEffect(() => {
     if (!pendingServiceBooking) return;
     beginServiceBooking(pendingServiceBooking);
     onConsumePendingServiceBooking();
-  }, [pendingServiceBooking, onConsumePendingServiceBooking]);
+  }, [pendingServiceBooking, onConsumePendingServiceBooking, beginServiceBooking]);
 
   const renderCompactProductCard = (
     item: CommercialCatalogItem,
