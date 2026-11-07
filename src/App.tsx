@@ -2534,7 +2534,7 @@ export default function App() {
                 onAddToCart={handleAddToCart}
                 onInspectCommercialItem={(item) => {
                   setSelectedModalVariant(item.variants?.[0] || '');
-                  setActiveCommercialModal(item);
+                  setActiveCommercialModal({ ...item, isDemoData: isPreviewMode });
                 }}
                 onAddProductToWishes={(item) =>
                   handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
