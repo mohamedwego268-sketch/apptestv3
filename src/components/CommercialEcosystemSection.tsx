@@ -261,6 +261,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     date: string;
     time: string;
     beneficiary: string;
+    notes: string;
     price: number;
     currency: CurrencyCode;
   } | null>(null);
@@ -1773,8 +1774,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div className="flex items-center gap-2"><span className="text-2xl">✅</span><div><p className="text-sm font-black text-emerald-900 dark:text-emerald-200">{isEn ? 'Demo booking confirmed' : 'تم تأكيد الحجز التجريبي'}</p><p className="text-[10px] text-emerald-800 dark:text-emerald-300">{isEn ? 'Reference' : 'رقم مرجعي'}: <b dir="ltr">{confirmedServiceBooking.id}</b></p></div></div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Service' : 'الخدمة'}</p><p className="mt-1 font-black text-[var(--color-text)]">{confirmedServiceBooking.serviceName}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{confirmedServiceBooking.providerName}</p></div>
-                <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Appointment' : 'الموعد'}</p><p className="mt-1 font-black text-[var(--color-text)]" dir="ltr">{confirmedServiceBooking.date} · {confirmedServiceBooking.time}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{isEn ? 'For' : 'المستفيد'}: {confirmedServiceBooking.beneficiary}</p></div>
+                <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Appointment' : 'الموعد'}</p><p className="mt-1 font-black text-[var(--color-text)]" dir="ltr">{confirmedServiceBooking.date} · {confirmedServiceBooking.time}</p><p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{isEn ? 'For' : 'المستفيد'}: {confirmedServiceBooking.beneficiary}</p><p className="mt-1 text-[10px] font-bold text-teal-800 dark:text-teal-200">{isEn ? 'Sample price:' : 'السعر التوضيحي:'} {formatCurrency(confirmedServiceBooking.price, confirmedServiceBooking.currency)}</p></div>
               </div>
+              {confirmedServiceBooking.notes && <div className="rounded-xl bg-white/80 dark:bg-white/5 p-3"><p className="text-[10px] font-bold text-[var(--color-muted)]">{isEn ? 'Your notes' : 'ملاحظاتك'}</p><p className="mt-1 text-xs leading-5 text-[var(--color-text)]">{confirmedServiceBooking.notes}</p></div>}
               <p className="text-[10px] leading-5 text-emerald-900 dark:text-emerald-200">{isEn ? 'This is a local demo only. The request has not been sent to the service provider.' : 'هذه محاكاة محلية داخل وضع المراجعة فقط؛ لم يُرسل طلب الحجز إلى مقدم الخدمة.'}</p>
               <button type="button" onClick={() => { setConfirmedServiceBooking(null); setSelectedServiceForBooking(null); setStoreFlowStep('catalog'); }} className="min-h-10 rounded-xl bg-teal-700 px-4 text-xs font-black text-white">{isEn ? 'Back to store' : 'العودة للمتجر'}</button>
             </div>
@@ -1788,6 +1790,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 date: serviceBookingDate,
                 time: serviceBookingTime,
                 beneficiary: serviceBookingBeneficiary.trim(),
+                notes: serviceBookingNotes.trim(),
                 price: convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency),
                 currency,
               };
