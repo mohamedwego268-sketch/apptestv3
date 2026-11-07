@@ -140,6 +140,13 @@ const DELIVERY_TIMELINE_STAGES: DeliveryTimelineStage[] = [
   },
 ];
 
+const formatLocalDateInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProps> = ({
   country,
   city = country === 'SA' ? 'الرياض' : 'القاهرة',
@@ -163,6 +170,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
+  const master = useMaster();
+  const activeCatalogSource =
+    master.catalogSource === 'remote'
+      ? master.sequencedCatalog
+      : allowDemoData
+        ? COMMERCIAL_CATALOG
+        : [];
   const [segment, setSegment] = useState<'all' | 'product' | 'service' | 'offer'>('all');
   const [collectionFilter, setCollectionFilter] = useState<
     'all' | 'bestseller' | 'new' | 'deal' | 'recommended'
@@ -182,7 +196,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     (priceRangeFilter !== 'all' ? 1 : 0) +
     (minRatingFilter > 0 ? 1 : 0) +
     (availabilityFilter !== 'all' ? 1 : 0) +
-    (collectionFilter !== 'all' ? 1 : 0);
+    (collectionFilter !== 'all' ? 1 : 0) +
+    (cityScopeFilter !== 'all' ? 1 : 0) +
+    (segment !== 'all' ? 1 : 0) +
+    (categoryFilter !== 'all' ? 1 : 0) +
+    (searchQuery.trim() ? 1 : 0);
 
   const resetStoreFilters = () => {
     setPriceRangeFilter('all');
@@ -215,7 +233,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     isEn ? 'Leave at door / Don’t ring bell (baby sleeping)' : 'يرجى الاتصال عند الوصول وعدم رن الجرس (الطفل نائم)'
   );
   const [selectedServiceForBooking, setSelectedServiceForBooking] = useState<CommercialCatalogItem | null>(null);
-  const [serviceBookingDate, setServiceBookingDate] = useState(() => new Date(Date.now() + 86400000).toISOString().slice(0, 10));
+  const [serviceBookingDate, setServiceBookingDate] = useState(() => formatLocalDateInput(new Date(Date.now() + 86400000)));
   const [serviceBookingTime, setServiceBookingTime] = useState('10:00');
   const [serviceBookingBeneficiary, setServiceBookingBeneficiary] = useState('');
   const [serviceBookingNotes, setServiceBookingNotes] = useState('');
@@ -231,13 +249,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   } | null>(null);
 
   // Smart Product Comparison State (up to 3 items side-by-side)
-  const [compareIds, setCompareIds] = useState<number[]>([
-    COMMERCIAL_CATALOG[0]?.id ?? 1,
-    COMMERCIAL_CATALOG[1]?.id ?? 2,
-  ]);
+  const [compareIds, setCompareIds] = useState<number[]>([]);
   const [showComparePanel, setShowComparePanel] = useState<boolean>(false);
 
-  const comparedItems = COMMERCIAL_CATALOG.filter((item) => compareIds.includes(item.id));
+  const comparedItems = activeCatalogSource.filter((item) => compareIds.includes(item.id));
 
   const handleToggleCompareItem = (item: CommercialCatalogItem) => {
     setCompareIds((prev) => {
@@ -477,7 +492,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const beginServiceBooking = (item: CommercialCatalogItem) => {
     setSelectedServiceForBooking(item);
     setConfirmedServiceBooking(null);
-    setServiceBookingDate(new Date(Date.now() + 86400000).toISOString().slice(0, 10));
+    setServiceBookingDate(formatLocalDateInput(new Date(Date.now() + 86400000)));
     setServiceBookingTime('10:00');
     setServiceBookingBeneficiary('');
     setServiceBookingNotes('');
@@ -730,14 +745,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     );
   };
 
-  const master = useMaster();
-  const activeCatalogSource =
-    master.catalogSource === 'remote'
-      ? master.sequencedCatalog
-      : allowDemoData
-        ? COMMERCIAL_CATALOG
-        : [];
-
   const startGuidedPurchase = () => {
     const demoProduct = activeCatalogSource.find((item) => item.kind === 'product');
     if (!demoProduct) {
@@ -764,7 +771,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     if (segment !== 'all' && item.kind !== segment) return false;
     if (collectionFilter !== 'all' && item.collectionTag !== collectionFilter) return false;
     if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
-    if (cityScopeFilter === 'local' && item.kind === 'service') {
+    if (cityScopeFilter === 'local') {
       const matchesCountry = item.country === 'ALL' || item.country === country;
       const matchesCity = !item.city || item.city === city || item.city === 'ALL' || item.city === 'كل المدن' || item.city.includes(city);
       if (!matchesCountry || !matchesCity) return false;
@@ -782,14 +789,21 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     }
     if (availabilityFilter === 'offers' && item.kind !== 'offer' && item.collectionTag !== 'deal') return false;
     if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      const seqCode = formatProductSequenceCode(item.id).toLowerCase();
-      const match =
-        seqCode.includes(q) ||
-        item.name.toLowerCase().includes(q) ||
-        item.nameEn.toLowerCase().includes(q) ||
-        item.categoryLabel.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q);
+      const normalizeSearchText = (value: string) => value
+        .toLocaleLowerCase()
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const q = normalizeSearchText(searchQuery);
+      const searchableFields = [
+        formatProductSequenceCode(item.id), item.name, item.nameEn, item.categoryLabel,
+        item.description, item.descriptionEn || '', item.sellerName || '', item.providerName || '',
+        item.partnerBrand || '', ...(item.variants || []), ...(item.specificationsAr || []),
+        ...(item.specificationsEn || []),
+      ];
+      const match = searchableFields.some((field) => normalizeSearchText(field).includes(q));
       if (!match) return false;
     }
     return true;
@@ -799,7 +813,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     if (sortBy === 'price-asc') return priceA - priceB;
     if (sortBy === 'price-desc') return priceB - priceA;
     if (sortBy === 'rating') return Number(b.rating) - Number(a.rating);
-    return 0;
+    const featuredRank: Record<string, number> = { bestseller: 0, deal: 1, recommended: 2, new: 3 };
+    return (featuredRank[a.collectionTag || ''] ?? 4) - (featuredRank[b.collectionTag || ''] ?? 4);
   });
 
   const emptyCartCopy = getEmptyStateCopy('cart', language);
@@ -872,7 +887,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
     setPaymentProcessing(true);
     const pmInfo = getPaymentMethodLabels(chosenMethod);
-    const snapshotTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, chosenMethod);
+    const snapshotTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, chosenMethod, activeCatalogSource);
 
     const newConfirmedSnapshot: DemoOrder = {
       id: `FS-${String(Date.now()).slice(-5)}`,
@@ -1033,19 +1048,6 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <span className="min-w-0"><span className="block text-xs font-black text-slate-900 dark:text-white">{isEn ? 'Try booking a service' : 'جرّب حجز خدمة'}</span><span className="block mt-0.5 text-[10px] text-slate-600 dark:text-slate-300">{isEn ? 'Choose a service · Date · Time · Confirmation' : 'اختيار الخدمة · الموعد · بيانات الطفل · تأكيد الحجز'}</span></span>
               <span className="ms-auto text-lg text-orange-700 dark:text-orange-200" aria-hidden="true">{isEn ? '→' : '←'}</span>
             </button>
-          </div>
-        </section>
-      )}
-
-      {allowDemoData && storeFlowStep === 'catalog' && !activeCategorySpec && (
-        <section data-testid="store-guided-demo" className="rounded-[22px] border border-teal-200 dark:border-[#29404C] bg-gradient-to-br from-teal-50 via-white to-orange-50 dark:from-[#102A2B] dark:via-[#101D26] dark:to-[#211D1A] p-3.5 sm:p-4 shadow-sm space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div><span className="text-[9px] font-black tracking-wider text-teal-800 dark:text-teal-200">{isEn ? 'INTERACTIVE STORE DEMO' : 'تجربة عملية للمتجر'}</span><h3 className="mt-0.5 text-sm sm:text-base font-black text-slate-950 dark:text-white">{isEn ? 'Try a complete customer journey' : 'جرّب رحلة العميل من البداية للنهاية'}</h3><p className="mt-0.5 text-[10px] sm:text-xs text-slate-600 dark:text-slate-300">{isEn ? 'Sample data only · No real payment or provider booking' : 'بيانات تجريبية فقط · لا يوجد تحصيل أموال أو إرسال حجز فعلي'}</p></div>
-            <span className="rounded-full border border-teal-200 dark:border-teal-800 bg-white/80 dark:bg-white/5 px-2.5 py-1 text-[9px] font-extrabold text-teal-800 dark:text-teal-200">DEMO</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button type="button" data-testid="store-demo-start-purchase" onClick={startGuidedPurchase} className="min-h-[58px] rounded-2xl bg-teal-700 hover:bg-teal-800 text-white px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors"><span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl shrink-0">🛍️</span><span className="min-w-0"><span className="block text-xs font-black">{isEn ? 'Try buying a product' : 'جرّب شراء منتج'}</span><span className="block mt-0.5 text-[10px] text-white/80">{isEn ? 'Cart · Address · Payment · Order tracking' : 'السلة · العنوان · الدفع التجريبي · تتبع الطلب'}</span></span><span className="ms-auto text-lg" aria-hidden="true">{isEn ? '→' : '←'}</span></button>
-            <button type="button" data-testid="store-demo-start-booking" onClick={startGuidedBooking} className="min-h-[58px] rounded-2xl border border-orange-200 dark:border-orange-900/60 bg-white/85 dark:bg-white/5 hover:border-orange-400 px-3.5 py-2.5 flex items-center gap-3 text-start shadow-sm transition-colors"><span className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-400/10 flex items-center justify-center text-xl shrink-0">📅</span><span className="min-w-0"><span className="block text-xs font-black text-slate-900 dark:text-white">{isEn ? 'Try booking a service' : 'جرّب حجز خدمة'}</span><span className="block mt-0.5 text-[10px] text-slate-600 dark:text-slate-300">{isEn ? 'Choose a service · Date · Time · Confirmation' : 'اختيار الخدمة · الموعد · بيانات الطفل · تأكيد الحجز'}</span></span><span className="ms-auto text-lg text-orange-700 dark:text-orange-200" aria-hidden="true">{isEn ? '→' : '←'}</span></button>
           </div>
         </section>
       )}
@@ -1375,7 +1377,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <span>💳 {isEn ? 'Checkout' : 'الدفع'}</span><span>›</span>
             <span>✅ {isEn ? 'Confirmed' : 'التأكيد'}</span>
           </div>
-          <p className="mt-1 text-center text-[9px] text-[var(--color-muted)]">🔒 {isEn ? 'Secure checkout' : 'معاملات دفع آمنة'}</p>
+          <p className="mt-1 text-center text-[9px] text-[var(--color-muted)]">🔒 {isEn ? 'Demo checkout · No real payment is processed' : 'دفع تجريبي · لا يتم تحصيل أي أموال'}</p>
         </div>
       )}
 
@@ -1402,7 +1404,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           }
           badge={
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold border border-emerald-200/50 dark:border-[#1E3646]">
-              #{latestOrder ? latestOrder.id : 'FS-9042'} · {isEn ? 'LIVE GPS' : 'تتبع حي'}
+              #{latestOrder ? latestOrder.id : 'FS-9042'} · {isEn ? 'DEMO TRACKING' : 'تتبع حي'}
             </span>
           }
           bodyClassName="p-4 sm:p-5 space-y-4 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#101D26]"
@@ -1416,7 +1418,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
-                    {isEn ? 'LIVE GPS TRACKING' : 'تتبع مباشر لحالة الطلب'}
+                    {isEn ? 'DEMO ORDER STATUS' : 'تتبع مباشر لحالة الطلب'}
                   </span>
                   <span className="text-[11px] font-extrabold text-[var(--color-muted)] tabular-nums">
                     #{latestOrder ? latestOrder.id : 'FS-9042'}
@@ -1444,11 +1446,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <span>
                   {isAutoSimulatingDelivery
                     ? isEn
-                      ? 'Live Updates Active'
-                      : 'تحديث مباشر نشط'
+                      ? 'Demo Updates Active'
+                      : 'تحديث تجريبي نشط'
                     : isEn
-                    ? 'Auto-Update Status'
-                    : 'تحديث تلقائي للحالة'}
+                    ? 'Auto-play Demo'
+                    : 'تشغيل محاكاة الحالة'}
                 </span>
               </button>
 
@@ -1536,7 +1538,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <div className="rounded-2xl border border-emerald-200 dark:border-[#1E3646] bg-[#0B131A] text-white p-3 relative overflow-hidden min-h-[195px] flex flex-col justify-between">
               <div className="flex items-center justify-between gap-2 z-10 text-[11px] font-bold">
                 <span className="px-2.5 py-1 rounded-lg bg-[#142430] border border-[#1E3646] text-[#A5F3FC]">
-                  🛰️ {isEn ? `Live Route · ${displayCity}` : `خريطة التوصيل المباشرة · ${city}`}
+                  🛰️ {isEn ? `Sample Route · ${displayCity}` : `مسار توصيل توضيحي · ${city}`}
                 </span>
                 <span className="px-2.5 py-1 rounded-lg bg-[#142430] border border-[#1E3646] text-white tabular-nums">
                   📍 {locText(shippingAddress.streetDetails, language) || (isEn ? 'Family Home' : 'منزل الأسرة')}
@@ -1547,7 +1549,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 viewBox="0 0 400 165"
                 className="w-full h-36 my-1 rounded-xl"
                 role="img"
-                aria-label={isEn ? 'Live Delivery Route Map' : 'خريطة مسار المندوب المباشرة'}
+                aria-label={isEn ? 'Sample Delivery Route Map' : 'خريطة مسار توصيل توضيحية'}
               >
                 <defs>
                   <linearGradient id="mapBgGrad" x1="0" y1="0" x2="1" y2="1">
@@ -1672,28 +1674,28 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   onClick={() =>
                     onShowToast(
                       isEn
-                        ? '📞 Calling Captain Tarek (+966 55 019 2831)...'
-                        : '📞 جاري الاتصال بكابتن طارق مندوب التوصيل...'
+                        ? '📞 Demo only: no courier is connected, so no call was placed.'
+                        : '📞 هذه محاكاة فقط؛ لا يوجد مندوب متصل ولم يتم إجراء اتصال.'
                     )
                   }
                   className="min-h-[36px] px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5"
                 >
                   <span>📞</span>
-                  <span>{isEn ? 'Call Driver' : 'اتصال بالمندوب'}</span>
+                  <span>{isEn ? 'Simulate Call' : 'محاكاة الاتصال'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() =>
                     onShowToast(
                       isEn
-                        ? '💬 Sent delivery note to Captain Tarek!'
-                        : '💬 تم إرسال ملاحظة التوصيل للمندوب بنجاح!'
+                        ? '💬 Demo only: the note was not sent to a courier.'
+                        : '💬 هذه محاكاة فقط؛ لم يتم إرسال الملاحظة إلى مندوب.'
                     )
                   }
                   className="min-h-[36px] px-3 py-1.5 rounded-xl border border-emerald-200 dark:border-[#1E3646] bg-emerald-50 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] text-xs font-extrabold flex items-center justify-center gap-1.5"
                 >
                   <span>💬</span>
-                  <span>{isEn ? 'Message' : 'رسالة سريعة'}</span>
+                  <span>{isEn ? 'Simulate Message' : 'محاكاة رسالة'}</span>
                 </button>
               </div>
             </div>
@@ -1745,7 +1747,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <span className="shrink-0 text-sm font-black text-teal-700 dark:text-teal-200">{formatCurrency(convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency), currency)}</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="space-y-1"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Appointment date' : 'تاريخ الموعد'}</span><input required type="date" min={new Date().toISOString().slice(0, 10)} value={serviceBookingDate} onChange={(event) => setServiceBookingDate(event.target.value)} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]" /></label>
+                <label className="space-y-1"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Appointment date' : 'تاريخ الموعد'}</span><input required type="date" min={formatLocalDateInput(new Date())} value={serviceBookingDate} onChange={(event) => setServiceBookingDate(event.target.value)} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]" /></label>
                 <label className="space-y-1"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Sample available time' : 'موعد متاح (تجريبي)'}</span><select value={serviceBookingTime} onChange={(event) => setServiceBookingTime(event.target.value)} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]"><option value="10:00">10:00</option><option value="12:30">12:30</option><option value="16:00">16:00</option><option value="18:30">18:30</option></select></label>
                 <label className="space-y-1 sm:col-span-2"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Child / beneficiary name' : 'اسم الطفل أو المستفيد'}</span><input required maxLength={80} value={serviceBookingBeneficiary} onChange={(event) => setServiceBookingBeneficiary(event.target.value)} placeholder={isEn ? 'Enter beneficiary name' : 'اكتب اسم الطفل أو المستفيد'} className="w-full min-h-11 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 text-xs font-bold text-[var(--color-text)]" /></label>
                 <label className="space-y-1 sm:col-span-2"><span className="block text-[10px] font-extrabold text-[var(--color-muted)]">{isEn ? 'Notes (optional)' : 'ملاحظات (اختياري)'}</span><textarea maxLength={400} rows={2} value={serviceBookingNotes} onChange={(event) => setServiceBookingNotes(event.target.value)} placeholder={isEn ? 'Anything the provider should know?' : 'هل هناك تفاصيل تحب إضافتها؟'} className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] dark:bg-[#142430] px-3 py-2 text-xs font-medium text-[var(--color-text)]" /></label>
@@ -1758,7 +1760,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
       {/* =====================================================================
           COMPLETE MOCK CHECKOUT & PAYMENT FLOW (إتمام الطلب ومحاكاة الدفع)
-          + PAYMENT SUCCESSFUL / ORDER CONFIRMED SCREEN
+          + DEMO ORDER CONFIRMED / ORDER CONFIRMED SCREEN
           ===================================================================== */}
       {!allowDemoData && (showCartPanel || storeFlowStep === 'checkout' || storeFlowStep === 'confirmed') && (
         <div className="rounded-[24px] border border-amber-200 bg-amber-50/80 p-5 dark:border-amber-900/60 dark:bg-amber-950/20">
@@ -1850,7 +1852,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   <div>
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="px-2.5 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-950 dark:text-[#A5F3FC] text-[10px] font-extrabold">
-                        {isEn ? 'PAYMENT SUCCESSFUL' : 'عملية دفع وتأكيد ناجحة'}
+                        {isEn ? 'DEMO ORDER CONFIRMED' : 'تم تأكيد الطلب التجريبي'}
                       </span>
                       <span className="text-xs font-extrabold text-emerald-900 dark:text-[#2DD4BF] tabular-nums">
                         #{latestOrder ? latestOrder.id : 'FS-9042'}
@@ -1858,13 +1860,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
                     <h4 className="text-base sm:text-lg font-extrabold text-[var(--color-text)] mt-0.5">
                       {isEn
-                        ? 'Thank you! Your Family Order is Confirmed'
-                        : 'شكرًا لك! تم تأكيد طلب الأسرة وإرساله للمتجر'}
+                        ? 'Your demo order is confirmed'
+                        : 'تم تسجيل طلبك التجريبي بنجاح'}
                     </h4>
                     <p className="text-xs font-semibold text-[var(--color-muted)]">
                       {isEn
-                        ? 'Your courier is being assigned. Track your order live on the map below.'
-                        : 'تم تسجيل وسيلة الدفع وتعيين مندوب التوصيل. يمكنك متابعة مسار الطلب مباشرة الآن.'}
+                        ? 'Your courier is being assigned. View the simulated order status on the demo map below.'
+                        : 'هذا نموذج تجريبي فقط؛ لم يتم تحصيل أموال أو تعيين مندوب فعلي. يمكنك استعراض مراحل التوصيل المحاكية أدناه.'}
                     </p>
                   </div>
                 </div>
@@ -1887,8 +1889,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   <span>🛵</span>
                   <span>
                     {isEn
-                      ? 'Go to Live Order Tracking'
-                      : 'الانتقال إلى تتبع الطلب المباشر'}
+                      ? 'View Demo Tracking'
+                      : 'عرض نموذج تتبع الطلب'}
                   </span>
                 </PrimaryCtaButton>
               </div>
@@ -2486,7 +2488,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <button
                 type="button"
                 onClick={() =>
-                  setCompareIds(COMMERCIAL_CATALOG.slice(0, 3).map((item) => item.id))
+                  setCompareIds(activeCatalogSource.slice(0, 3).map((item) => item.id))
                 }
                 className="px-2.5 py-1 rounded-xl text-[11px] font-extrabold border border-[#0d9488]/40 bg-teal-50/80 dark:bg-[#142430] text-[#0d9488] dark:text-[#A5F3FC] cursor-pointer"
               >
@@ -2853,7 +2855,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* Compact Visual Payment Badges Strip */}
       <div className="rounded-2xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] font-bold text-[var(--color-muted)]">
         <span>
-          🛡️ {isEn ? 'Localized Catalog & Sample Delivery Tracking' : 'كتالوج محلي وتوصيل مباشر على الخريطة'}
+          🛡️ {isEn ? 'Demo catalog & simulated order tracking' : 'كتالوج تجريبي ومحاكاة لتتبع الطلب'}
         </span>
         <span className="text-[var(--color-text)]">
           💳 Visa · Mastercard · مدى mada · Apple Pay
