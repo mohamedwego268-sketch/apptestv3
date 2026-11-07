@@ -1838,6 +1838,36 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </section>
       )}
 
+      {allowDemoData && orders.length > 0 && (
+        <section data-testid="store-order-history" className="rounded-[22px] border border-orange-200 dark:border-[#35404B] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-black text-[var(--color-text)]">{isEn ? 'Your recent orders' : 'طلباتك الأخيرة'}</h3>
+              <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'Demo orders saved in this family preview workspace' : 'طلبات تجريبية محفوظة في مساحة الأسرة للمعاينة'}</p>
+            </div>
+            <span className="rounded-full bg-orange-50 dark:bg-orange-400/10 px-2.5 py-1 text-[10px] font-black text-orange-800 dark:text-orange-200">{orders.length}</span>
+          </div>
+          <div className="space-y-2">
+            {orders.slice(0, 3).map((order) => (
+              <div key={order.id} className="rounded-xl border border-[var(--color-border)] dark:border-[#35404B] bg-[var(--color-control-muted)]/50 p-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs font-black text-[var(--color-text)]" dir="ltr">#{order.id}</p>
+                    <span className="rounded-full bg-amber-100 dark:bg-amber-400/10 px-2 py-0.5 text-[9px] font-black text-amber-900 dark:text-amber-200">{isEn ? 'Demo order' : 'طلب تجريبي'}</span>
+                  </div>
+                  <p className="mt-1 text-[10px] text-[var(--color-muted)]">{order.items.map((item) => `${item.name} × ${item.quantity}`).join(' · ')}</p>
+                  <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'Placed:' : 'تاريخ الطلب:'} {Number.isNaN(new Date(order.createdAt).getTime()) ? order.createdAt : new Date(order.createdAt).toLocaleDateString(isEn ? 'en-US' : 'ar-SA')}</p>
+                </div>
+                <div className="text-end shrink-0">
+                  <p className="text-xs font-black text-[var(--color-text)]">{formatCurrency(order.totalAmount, order.currency)}</p>
+                  <button type="button" onClick={() => { setShowLiveTracking(true); setStoreFlowStep('catalog'); window.setTimeout(() => document.getElementById('talabat-live-order-tracker')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }} className="mt-1 min-h-8 rounded-lg border border-teal-300 dark:border-teal-700 px-2.5 text-[10px] font-extrabold text-teal-800 dark:text-teal-200">{isEn ? 'View demo tracking' : 'عرض التتبع التجريبي'}</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* =====================================================================
           COMPLETE MOCK CHECKOUT & PAYMENT FLOW (إتمام الطلب ومحاكاة الدفع)
           + DEMO ORDER CONFIRMED / ORDER CONFIRMED SCREEN
