@@ -19,7 +19,7 @@ import {
   resolveChildColorTheme,
 } from '../../domain/familySpaceCore';
 import { AVATAR_ACCESSORY_THEMES } from '../../domain/assetManifest3D';
-import { CATEGORY_UNSPLASH_POOLS, getProductUnsplashImageUrl } from '../../domain/cardBackgrounds';
+import { getProductUnsplashImageUrl } from '../../domain/cardBackgrounds';
 import { SoftFilledIcon, UnifiedBadge } from '../DesignSystem';
 import { PageId } from '../../context/FamilyAppContext';
 import { ThreeDIcon, ThreeDIconId } from '../ThreeDVisuals';
