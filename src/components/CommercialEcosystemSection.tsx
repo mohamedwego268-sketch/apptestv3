@@ -22,6 +22,7 @@ import { ThreeDIcon } from './ThreeDVisuals';
 import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   CARD_STOCK_PHOTO_URLS,
+  CATEGORY_UNSPLASH_POOLS,
   getCardBackgroundSpec,
   getProductUnsplashImageUrl,
 } from '../domain/cardBackgrounds';
@@ -185,13 +186,24 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const isEn = language === 'en';
   const displayCity = locText(city, language);
   const master = useMaster();
-  const activeCatalogSource =
-    master.catalogSource === 'remote'
-      ? master.sequencedCatalog
-      : allowDemoData
-        ? COMMERCIAL_CATALOG
-        : [];
-  const isDemoCatalog = allowDemoData && master.catalogSource !== 'remote';
+  // Preview must remain useful before the first merchant publishes real listings.
+  // A successfully synced but empty remote catalog is not a reason to show a blank store.
+  const hasPublishedRemoteListings = master.catalogSource === 'remote' && master.sequencedCatalog.length > 0;
+  const isDemoCatalog = allowDemoData && !hasPublishedRemoteListings;
+  const activeCatalogSource = hasPublishedRemoteListings
+    ? master.sequencedCatalog
+    : isDemoCatalog
+      ? COMMERCIAL_CATALOG
+      : [];
+  const getItemGallery = (item: CommercialCatalogItem): string[] => {
+    const sellerImages = (item.galleryImages || []).filter((url) => /^https:\/\//i.test(url)).slice(0, 8);
+    if (sellerImages.length > 0) return sellerImages;
+    if (!isDemoCatalog) return [];
+    const pool = CATEGORY_UNSPLASH_POOLS[item.category] || [];
+    if (pool.length === 0) return [getProductUnsplashImageUrl(item.category, item.id)];
+    const start = Math.abs(item.id) % pool.length;
+    return Array.from({ length: Math.min(3, pool.length) }, (_, index) => pool[(start + index) % pool.length]);
+  };
   const catalogPriceValues = activeCatalogSource
     .map((item) => convertCatalogPrice(item.priceEGP, item.priceSAR, currency))
     .filter((price) => Number.isFinite(price) && price >= 0)
@@ -600,8 +612,15 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     onConsumePendingServiceBooking();
   }, [pendingServiceBooking, onConsumePendingServiceBooking, beginServiceBooking]);
 
-  const inspectStoreItem = (item: CommercialCatalogItem) =>
-    onInspectCommercialItem({ ...item, isDemoData: isDemoCatalog });
+  const inspectStoreItem = (item: CommercialCatalogItem) => {
+    const galleryImages = getItemGallery(item);
+    onInspectCommercialItem({
+      ...item,
+      imageUrl: item.imageUrl || galleryImages[0],
+      galleryImages,
+      isDemoData: isDemoCatalog,
+    });
+  };
 
   const renderCompactProductCard = (
     item: CommercialCatalogItem,
@@ -615,7 +634,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const displayTitle = isEn ? item.nameEn : item.name;
     const toneKey = CATEGORY_TONE_MAP[item.category] || 'amber';
     const tone = PASTEL_CARD_TONES[toneKey];
-    const stockImageUrl = item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
+    const itemGallery = getItemGallery(item);
+    const stockImageUrl = itemGallery[0] || item.imageUrl || getProductUnsplashImageUrl(item.category, item.id);
     const itemBgSpec = getCardBackgroundSpec(item.category, darkMode, stockImageUrl);
 
     return (
@@ -693,8 +713,25 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 {displayTitle}
               </h4>
             </div>
+            {itemGallery.length > 1 && (
+              <span className="absolute bottom-2 end-2 z-10 rounded-full bg-[#0B131A]/80 text-white px-2 py-1 text-[9px] font-extrabold">
+                ▧ {itemGallery.length} {isEn ? 'photos' : 'صور'}
+              </span>
+            )}
           </div>
-          {item.kind === 'service' && <div className="flex flex-wrap items-center gap-1.5 px-0.5 text-[9.5px] font-extrabold text-[var(--color-muted)]"><span className="rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] px-1.5 py-0.5">⏱ {item.serviceDurationMinutes ? `${item.serviceDurationMinutes} ${isEn ? 'min' : 'دقيقة'}` : (isEn ? 'Duration on request' : 'المدة حسب الاتفاق')}</span>{item.bookingRequired && <span className="rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5">📅 {isEn ? 'Booking required' : 'يتطلب حجزاً'}</span>}{item.providerName && <span className="truncate">{item.providerName}</span>}</div>}
+          {item.kind === 'service' ? (
+            <div className="flex flex-wrap items-center gap-1.5 px-0.5 text-[9.5px] font-extrabold text-[var(--color-muted)]">
+              <span className="rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] px-1.5 py-0.5">⏱ {item.serviceDurationMinutes ? `${item.serviceDurationMinutes} ${isEn ? 'min' : 'دقيقة'}` : (isEn ? 'Duration on request' : 'المدة حسب الاتفاق')}</span>
+              {item.bookingRequired && <span className="rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5">📅 {isEn ? 'Booking required' : 'يتطلب حجزاً'}</span>}
+              {item.providerName && <span className="truncate">{item.providerName}</span>}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-1 px-0.5 text-[9.5px] font-bold text-[var(--color-muted)]">
+              {item.partnerBrand && <span className="rounded-md bg-[var(--color-control-muted)] px-1.5 py-0.5 truncate max-w-full">🏷 {item.partnerBrand}</span>}
+              {(item.ageRange || item.ageStage) && <span className="rounded-md bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5">👶 {item.ageRange || (item.ageStage === 'all' ? (isEn ? 'All ages' : 'كل الأعمار') : `${item.ageStage} ${isEn ? 'years' : 'سنوات'}`)}</span>}
+              {itemGallery.length > 0 && <span className="rounded-md bg-teal-500/10 text-teal-700 dark:text-[#2DD4BF] px-1.5 py-0.5">▧ {itemGallery.length} {isEn ? 'photos' : 'صور'}</span>}
+            </div>
+          )}
 
           {/* Layer 3 (Metadata & Tags Carousel): Hidden by default, revealed only on explicit user trigger */}
           {expandedProductMetaIds.includes(item.id) && (
