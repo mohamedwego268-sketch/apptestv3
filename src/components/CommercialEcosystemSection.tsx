@@ -181,6 +181,19 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       : allowDemoData
         ? COMMERCIAL_CATALOG
         : [];
+  const isDemoCatalog = allowDemoData && master.catalogSource !== 'remote';
+  const catalogPriceValues = activeCatalogSource
+    .map((item) => convertCatalogPrice(item.priceEGP, item.priceSAR, currency))
+    .filter((price) => Number.isFinite(price) && price >= 0)
+    .sort((a, b) => a - b);
+  const priceRoundTo = (value: number) => Math.pow(10, Math.max(0, Math.floor(Math.log10(Math.max(value, 1))) - 1));
+  const lowPriceRaw = catalogPriceValues[Math.max(0, Math.floor((catalogPriceValues.length - 1) / 3))] ?? 0;
+  const highPriceRaw = catalogPriceValues[Math.min(catalogPriceValues.length - 1, Math.floor(((catalogPriceValues.length - 1) * 2) / 3))] ?? 0;
+  const lowPriceStep = priceRoundTo(lowPriceRaw);
+  const highPriceStep = priceRoundTo(highPriceRaw);
+  const lowPriceThreshold = catalogPriceValues.length ? Math.round(lowPriceRaw / lowPriceStep) * lowPriceStep : 0;
+  const roundedHighPrice = catalogPriceValues.length ? Math.round(highPriceRaw / highPriceStep) * highPriceStep : 0;
+  const highPriceThreshold = catalogPriceValues.length ? Math.max(roundedHighPrice, lowPriceThreshold + priceRoundTo(Math.max(highPriceRaw, lowPriceRaw))) : 0;
   const [segment, setSegment] = useState<'all' | 'product' | 'service' | 'offer'>('all');
   const [collectionFilter, setCollectionFilter] = useState<
     'all' | 'bestseller' | 'new' | 'deal' | 'recommended'
@@ -192,13 +205,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [searchQuery, setSearchQuery] = useState('');
   const [showCartPanel, setShowCartPanel] = useState(initialOpenCheckout);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [priceRangeFilter, setPriceRangeFilter] = useState<'all' | 'under300' | '300to800' | 'above800'>('all');
+  const [priceRangeFilter, setPriceRangeFilter] = useState<'all' | 'underLow' | 'midRange' | 'aboveHigh'>('all');
   const [minRatingFilter, setMinRatingFilter] = useState<number>(0);
   const [availabilityFilter, setAvailabilityFilter] = useState<'all' | 'express' | 'local' | 'offers'>('all');
 
   const activeFiltersCount =
     (priceRangeFilter !== 'all' ? 1 : 0) +
-    (minRatingFilter > 0 ? 1 : 0) +
+    (!isDemoCatalog && minRatingFilter > 0 ? 1 : 0) +
     (availabilityFilter !== 'all' ? 1 : 0) +
     (collectionFilter !== 'all' ? 1 : 0) +
     (cityScopeFilter !== 'all' ? 1 : 0) +
@@ -289,6 +302,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       return next;
     });
   };
+
+  useEffect(() => {
+    if (!isDemoCatalog) return;
+    setMinRatingFilter(0);
+    setSortBy((current) => current === 'rating' ? 'featured' : current);
+  }, [isDemoCatalog]);
 
   useEffect(() => {
     if (!isAutoSimulatingDelivery) return;
@@ -515,6 +534,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     onConsumePendingServiceBooking();
   }, [pendingServiceBooking, onConsumePendingServiceBooking, beginServiceBooking]);
 
+  const inspectStoreItem = (item: CommercialCatalogItem) =>
+    onInspectCommercialItem({ ...item, isDemoData: isDemoCatalog });
+
   const renderCompactProductCard = (
     item: CommercialCatalogItem,
     layoutMode: 'carousel' | 'grid'
@@ -543,13 +565,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         <div className="space-y-1.5">
           {/* Premium Visual Thumbnail with Real Unsplash Stock Image + Directional Gradient + Glassmorphic Title Container */}
           <div
-            onClick={() => onInspectCommercialItem(item)}
+            onClick={() => inspectStoreItem(item)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                onInspectCommercialItem(item);
+                inspectStoreItem(item);
               }
             }}
             data-image-card="true"
@@ -588,12 +610,14 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 <span
                   data-keep-dark-text="true"
                   className="image-card-rating-pill px-1.5 py-0.5 rounded-full text-[8.5px] font-extrabold tabular-nums shrink-0 inline-flex items-center gap-0.5 shadow-2xs"
-                  aria-label={isEn ? 'Product rating' : 'تقييم المنتج'}
+                  aria-label={isDemoCatalog ? (isEn ? 'Illustrative sample rating' : 'تقييم توضيحي') : (isEn ? 'Verified product rating' : 'تقييم المنتج')}
                 >
-                  <span>⭐ {item.rating}</span>
-                  {typeof item.reviewCount === 'number' && item.reviewCount > 0 && (
-                    <span className="opacity-85">({item.reviewCount})</span>
-                  )}
+                  {isDemoCatalog ? (isEn ? 'Sample rating' : 'تقييم توضيحي') : <>
+                    <span>⭐ {item.rating}</span>
+                    {typeof item.reviewCount === 'number' && item.reviewCount > 0 && (
+                      <span className="opacity-85">({item.reviewCount})</span>
+                    )}
+                  </>}
                 </span>
               )}
             </div>
@@ -629,7 +653,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
               <button
                 type="button"
-                onClick={() => onInspectCommercialItem(item)}
+                onClick={() => inspectStoreItem(item)}
                 className="text-[9.5px] font-extrabold text-[#0d9488] dark:text-[#A5F3FC] hover:underline shrink-0 ms-auto cursor-pointer"
               >
                 {isEn ? 'Details' : 'تفاصيل'}
@@ -644,7 +668,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           className="pt-2 border-t border-[var(--color-border)]/70 dark:border-[#1E3646] flex items-center justify-between gap-1.5 min-w-0"
         >
           <div
-            onClick={() => onInspectCommercialItem(item)}
+            onClick={() => inspectStoreItem(item)}
             className="flex flex-col min-w-0 flex-1 cursor-pointer truncate"
           >
             <div className="flex items-baseline gap-x-1 tabular-nums truncate">
@@ -789,10 +813,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       if (!matchesCountry || !matchesCity) return false;
     }
     const itemPrice = convertCatalogPrice(item.priceEGP, item.priceSAR, currency);
-    if (priceRangeFilter === 'under300' && itemPrice >= 300) return false;
-    if (priceRangeFilter === '300to800' && (itemPrice < 300 || itemPrice > 800)) return false;
-    if (priceRangeFilter === 'above800' && itemPrice <= 800) return false;
-    if (minRatingFilter > 0 && Number(item.rating) < minRatingFilter) return false;
+    if (priceRangeFilter === 'underLow' && itemPrice >= lowPriceThreshold) return false;
+    if (priceRangeFilter === 'midRange' && (itemPrice < lowPriceThreshold || itemPrice > highPriceThreshold)) return false;
+    if (priceRangeFilter === 'aboveHigh' && itemPrice <= highPriceThreshold) return false;
+    if (!isDemoCatalog && minRatingFilter > 0 && Number(item.rating) < minRatingFilter) return false;
     if (availabilityFilter === 'express' && item.kind !== 'product') return false;
     if (availabilityFilter === 'local') {
       const matchesCountry = item.country === 'ALL' || item.country === country;
@@ -824,7 +848,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     const priceB = convertCatalogPrice(b.priceEGP, b.priceSAR, currency);
     if (sortBy === 'price-asc') return priceA - priceB;
     if (sortBy === 'price-desc') return priceB - priceA;
-    if (sortBy === 'rating') return Number(b.rating) - Number(a.rating);
+    if (sortBy === 'rating' && !isDemoCatalog) return Number(b.rating) - Number(a.rating);
     const featuredRank: Record<string, number> = { bestseller: 0, deal: 1, recommended: 2, new: 3 };
     return (featuredRank[a.collectionTag || ''] ?? 4) - (featuredRank[b.collectionTag || ''] ?? 4);
   });
@@ -835,7 +859,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
 
   const cartEnriched = effectiveCheckoutCart
     .map((ci) => {
-      const product = activeCatalogSource.find((p) => p.id === ci.productId) || COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
+      const product = activeCatalogSource.find((p) => p.id === ci.productId);
       if (!product) return null;
       const unitPrice = convertCatalogPrice(product.priceEGP, product.priceSAR, currency);
       return {
@@ -846,13 +870,16 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       };
     })
     .filter((x): x is NonNullable<typeof x> => Boolean(x));
+  const unavailableCartItems = effectiveCheckoutCart.filter(
+    (cartItem) => !activeCatalogSource.some((catalogItem) => catalogItem.id === cartItem.productId)
+  );
 
   const checkoutTotals = calculateCheckoutSummary(effectiveCheckoutCart, currency, paymentMethod, activeCatalogSource);
-  const cartTotalCount = cart.reduce((acc, c) => acc + c.quantity, 0);
+  const cartTotalCount = cartEnriched.reduce((acc, c) => acc + c.quantity, 0);
   const cartTotalAmount = checkoutTotals.subtotal;
-  const deliveryFee = cart.length > 0 ? checkoutTotals.deliveryFee : 0;
-  const codFee = cart.length > 0 ? checkoutTotals.codFee : 0;
-  const grandTotal = cart.length > 0 ? checkoutTotals.grandTotal : 0;
+  const deliveryFee = cartEnriched.length > 0 ? checkoutTotals.deliveryFee : 0;
+  const codFee = cartEnriched.length > 0 ? checkoutTotals.codFee : 0;
+  const grandTotal = cartEnriched.length > 0 ? checkoutTotals.grandTotal : 0;
 
   const handleClearCartForEmptyState = () => {
     cart.forEach((ci) => onRemoveFromCart(ci.productId));
@@ -878,6 +905,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const handleProcessTestPayment = (overrideMethod?: CheckoutPaymentMethodType) => {
     if (!allowDemoData) {
       onShowToast(isEn ? 'Checkout is not available yet. No payment has been taken.' : 'إتمام الطلب غير متاح حالياً، ولم يتم تحصيل أي مبلغ.');
+      return;
+    }
+    if (unavailableCartItems.length > 0 || cartEnriched.length === 0) {
+      onShowToast(isEn ? 'Some cart items are no longer in the current catalog. Remove them before continuing.' : 'بعض عناصر السلة لم تعد موجودة في الكتالوج الحالي. احذفها قبل المتابعة.');
       return;
     }
     const chosenMethod = overrideMethod || paymentMethod;
@@ -1221,7 +1252,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <option value="featured">{isEn ? 'Sort: Featured' : 'الترتيب: المختارات'}</option>
               <option value="price-asc">{isEn ? 'Price: Low to High' : 'السعر: الأقل أولًا'}</option>
               <option value="price-desc">{isEn ? 'Price: High to Low' : 'السعر: الأعلى أولًا'}</option>
-              <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>
+              {!isDemoCatalog && <option value="rating">{isEn ? 'Top Rated' : 'الأعلى تقييمًا'}</option>}
             </select>
           </div>
 
@@ -1302,9 +1333,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div className="grid grid-cols-2 gap-1.5">
                 {[
                   { id: 'all', labelAr: 'كل الأسعار', labelEn: 'All Prices' },
-                  { id: 'under300', labelAr: 'أقل من ٣٠٠', labelEn: 'Under 300' },
-                  { id: '300to800', labelAr: '٣٠٠ إلى ٨٠٠', labelEn: '300 – 800' },
-                  { id: 'above800', labelAr: 'أكثر من ٨٠٠', labelEn: 'Above 800' },
+                  ...(catalogPriceValues.length ? [
+                    { id: 'underLow', labelAr: `أقل من ${formatCurrency(lowPriceThreshold, currency, language)}`, labelEn: `Under ${formatCurrency(lowPriceThreshold, currency, language)}` },
+                    { id: 'midRange', labelAr: `${formatCurrency(lowPriceThreshold, currency, language)} إلى ${formatCurrency(highPriceThreshold, currency, language)}`, labelEn: `${formatCurrency(lowPriceThreshold, currency, language)} – ${formatCurrency(highPriceThreshold, currency, language)}` },
+                    { id: 'aboveHigh', labelAr: `أكثر من ${formatCurrency(highPriceThreshold, currency, language)}`, labelEn: `Above ${formatCurrency(highPriceThreshold, currency, language)}` },
+                  ] : []),
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -1322,6 +1355,11 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
             </div>
 
+            {isDemoCatalog ? (
+              <div className="rounded-xl border border-dashed border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-control-muted)]/50 p-3 text-[11px] font-semibold leading-relaxed text-[var(--color-muted)]">
+                ⭐ {isEn ? 'Ratings in this demo catalog are illustrative, not verified customer reviews. Rating filters appear when verified reviews are connected.' : 'التقييمات في الكتالوج التجريبي توضيحية وليست مراجعات عملاء موثقة. ستظهر فلترة التقييم عند ربط المراجعات الفعلية.'}
+              </div>
+            ) : (
             {/* 2. Rating Filter */}
             <div className="space-y-1.5">
               <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
@@ -1350,6 +1388,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
             </div>
 
+            )}
+
             {/* 3. Availability Filter */}
             <div className="space-y-1.5">
               <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
@@ -1357,10 +1397,10 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
-                  { id: 'all', labelAr: 'الكل متاح', labelEn: 'All Available' },
-                  { id: 'express', labelAr: 'شحن فوري (منتجات)', labelEn: 'Express In-Stock' },
+                  { id: 'all', labelAr: 'كل المعروض', labelEn: 'All Listings' },
+                  { id: 'express', labelAr: 'منتجات فقط', labelEn: 'Products Only' },
                   { id: 'local', labelAr: `متاح في ${displayCity}`, labelEn: `In ${displayCity}` },
-                  { id: 'offers', labelAr: 'عروض وخصومات', labelEn: 'Active Deals' },
+                  { id: 'offers', labelAr: 'عروض وخصومات', labelEn: 'Deals' },
                 ].map((opt) => (
                   <button
                     key={opt.id}
@@ -2076,6 +2116,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </span>
                   </div>
 
+                  {unavailableCartItems.length > 0 && (
+                    <div role="alert" className="rounded-xl border border-rose-300/80 bg-rose-50 dark:bg-[#2A1720] dark:border-rose-900/60 p-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[11px] font-bold text-rose-800 dark:text-rose-200">{isEn ? `${unavailableCartItems.length} item(s) are no longer available in the current catalog.` : `${unavailableCartItems.length} عنصر لم يعد متاحًا في الكتالوج الحالي.`}</p>
+                      <button type="button" onClick={() => unavailableCartItems.forEach((item) => onRemoveFromCart(item.productId))} className="min-h-9 px-3 rounded-lg bg-rose-700 text-white text-[10px] font-extrabold">{isEn ? 'Remove unavailable items' : 'حذف العناصر غير المتاحة'}</button>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     {cartEnriched.map((ci) => (
                       <div
@@ -2446,7 +2492,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   variant="orange"
                   size="lg"
                   onClick={() => handleProcessTestPayment()}
-                  disabled={paymentProcessing}
+                  disabled={paymentProcessing || unavailableCartItems.length > 0 || cartEnriched.length === 0}
                   className="w-full"
                 >
                   {paymentProcessing
@@ -2490,8 +2536,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 </h3>
                 <p className="text-[10.5px] font-semibold text-[var(--color-muted)] dark:text-[#94A3B8]">
                   {isEn
-                    ? 'Compare price, parent rating, and delivery speed side-by-side'
-                    : 'قارن السعر، تقييم الوالدين، وسرعة التوصيل جنبًا إلى جنب'}
+                    ? 'Compare price and fulfillment details; demo ratings are not verified.'
+                    : 'قارن السعر وتفاصيل التنفيذ؛ تقييمات النموذج غير موثقة.'}
                 </p>
               </div>
             </div>
@@ -2573,7 +2619,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                             {formatCurrency(cPrice, currency, language)}
                           </span>
                         </div>
-                        {Number(cItem.rating) > 0 && (
+                        {!isDemoCatalog && Number(cItem.rating) > 0 && (
                           <div className="flex items-center justify-between py-1 border-b border-[var(--color-border)]/60 dark:border-[#1E3646]">
                             <span className="font-bold text-[var(--color-muted)]">
                               {isEn ? 'Parent Rating:' : 'تقييم الوالدين:'}
