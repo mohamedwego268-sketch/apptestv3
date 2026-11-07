@@ -7,6 +7,7 @@ import {
   CountryCode,
   CurrencyCode,
   DemoOrder,
+  DemoServiceBooking,
   DemoShippingAddress,
   LanguageCode,
   calculateCheckoutSummary,
@@ -44,6 +45,8 @@ interface CommercialEcosystemSectionProps {
   cart: CartItem[];
   shippingAddress: DemoShippingAddress;
   orders: DemoOrder[];
+  serviceBookings: DemoServiceBooking[];
+  onCompleteDemoServiceBooking: (booking: DemoServiceBooking) => void;
   onAddProductToWishes: (item: CommercialCatalogItem) => void;
   onInspectCommercialItem: (item: CommercialCatalogItem) => void;
   onAddToCart: (item: CommercialCatalogItem, variant?: string) => void;
@@ -157,6 +160,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   cart,
   shippingAddress,
   orders,
+  serviceBookings,
+  onCompleteDemoServiceBooking,
   onAddProductToWishes,
   onInspectCommercialItem,
   onAddToCart,
@@ -254,17 +259,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   const [serviceBookingTime, setServiceBookingTime] = useState('10:00');
   const [serviceBookingBeneficiary, setServiceBookingBeneficiary] = useState('');
   const [serviceBookingNotes, setServiceBookingNotes] = useState('');
-  const [confirmedServiceBooking, setConfirmedServiceBooking] = useState<{
-    id: string;
-    serviceName: string;
-    providerName: string;
-    date: string;
-    time: string;
-    beneficiary: string;
-    notes: string;
-    price: number;
-    currency: CurrencyCode;
-  } | null>(null);
+  const [confirmedServiceBooking, setConfirmedServiceBooking] = useState<DemoServiceBooking | null>(null);
 
   // Smart Product Comparison State (up to 3 items side-by-side)
   const [compareIds, setCompareIds] = useState<number[]>([]);
@@ -1784,7 +1779,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             <form data-testid="service-booking-form" onSubmit={(event) => {
               event.preventDefault();
               const booking = {
-                id: `NB-SV-${String(Date.now()).slice(-6)}`,
+                id: `NB-SV-${Date.now()}`,
+                createdAt: new Date().toISOString(),
+                serviceId: selectedServiceForBooking.id,
                 serviceName: isEn ? selectedServiceForBooking.nameEn : selectedServiceForBooking.name,
                 providerName: selectedServiceForBooking.providerName || selectedServiceForBooking.sellerName || (isEn ? 'Family Space Partner' : 'شريك نكبر'),
                 date: serviceBookingDate,
@@ -1793,7 +1790,9 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 notes: serviceBookingNotes.trim(),
                 price: convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency),
                 currency,
+                status: 'requested_demo',
               };
+              onCompleteDemoServiceBooking(booking);
               setConfirmedServiceBooking(booking);
             }} className="space-y-3">
               <div className="rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] p-3 flex items-center justify-between gap-3">
@@ -1809,6 +1808,33 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1"><p className="text-[10px] text-[var(--color-muted)]">{isEn ? 'Sample slot · No real reservation is created' : 'موعد افتراضي · لن يتم إنشاء حجز حقيقي'}</p><button type="submit" className="min-h-11 rounded-xl bg-teal-700 hover:bg-teal-800 px-5 text-xs font-black text-white shadow-sm">{isEn ? 'Confirm demo booking' : 'تأكيد الحجز التجريبي'}</button></div>
             </form>
           ) : null}
+        </section>
+      )}
+
+      {allowDemoData && serviceBookings.length > 0 && (
+        <section data-testid="service-booking-history" className="rounded-[22px] border border-teal-200 dark:border-[#29404C] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-black text-[var(--color-text)]">{isEn ? 'Your service booking requests' : 'طلبات حجز الخدمات'}</h3>
+              <p className="mt-1 text-[10px] text-[var(--color-muted)]">{isEn ? 'Saved in this family preview workspace · demo only' : 'محفوظة في مساحة الأسرة التجريبية · ليست حجوزات فعلية'}</p>
+            </div>
+            <span className="rounded-full bg-teal-50 dark:bg-teal-400/10 px-2.5 py-1 text-[10px] font-black text-teal-800 dark:text-teal-200">{serviceBookings.length}</span>
+          </div>
+          <div className="space-y-2">
+            {serviceBookings.slice(0, 3).map((booking) => (
+              <div key={booking.id} className="rounded-xl border border-[var(--color-border)] dark:border-[#29404C] bg-[var(--color-control-muted)]/50 p-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-black text-[var(--color-text)]">{booking.serviceName}</p>
+                  <p className="mt-0.5 text-[10px] text-[var(--color-muted)]">{booking.providerName} · {booking.beneficiary}</p>
+                  <p className="mt-1 text-[10px] font-bold text-teal-800 dark:text-teal-200" dir="ltr">{booking.date} · {booking.time} · {booking.id}</p>
+                </div>
+                <div className="text-end shrink-0">
+                  <span className="inline-flex rounded-full bg-amber-100 dark:bg-amber-400/10 px-2 py-1 text-[9px] font-black text-amber-900 dark:text-amber-200">{isEn ? 'Demo request' : 'طلب تجريبي'}</span>
+                  <p className="mt-1 text-[10px] font-bold text-[var(--color-text)]">{formatCurrency(booking.price, booking.currency)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
