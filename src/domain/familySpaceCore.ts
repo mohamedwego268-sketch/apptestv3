@@ -972,6 +972,7 @@ export interface CommercialCatalogItem {
   fulfillmentMode?: 'shipping' | 'pickup' | 'online' | 'onsite' | 'at_home' | 'digital';
   providerName?: string;
   listingValidUntil?: string;
+  isDemoData?: boolean;
 }
 
 export type CommercialItem = CommercialCatalogItem;
