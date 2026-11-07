@@ -16,6 +16,7 @@ import {
   FamilyMember,
   MediaContentItem,
   CommercialCatalogItem,
+  DemoOrder,
   MEDIA_CONTENT_CATALOG,
   COMMERCIAL_CATALOG,
   ParentThemeRole,
@@ -1692,53 +1693,20 @@ export default function App() {
     }));
   };
 
-  const handleCompleteDemoCheckout = (
-    paymentMethod: CheckoutPaymentMethodType = 'electronic_card'
-  ) => {
+  const handleCompleteDemoCheckout = (order: DemoOrder) => {
     if (!isPreviewMode) {
       showToast(lang === 'en' ? 'Demo checkout is available only in preview mode.' : 'إتمام الطلب التجريبي متاح في وضع المعاينة فقط.');
       return;
     }
-    const sourceCart =
-      state.cart.length > 0
-        ? state.cart
-        : [{ productId: 201, quantity: 1, selectedVariant: 'مجموعة 60 قطعة (2–6 سنوات)' }];
-
-    const orderItems = sourceCart
-      .map((ci) => {
-        const prod = COMMERCIAL_CATALOG.find((p) => p.id === ci.productId);
-        if (!prod) return null;
-        const unitPrice = convertCatalogPrice(prod.priceEGP, prod.priceSAR, state.currency);
-        return {
-          productId: ci.productId,
-          name: state.language === 'en' ? prod.nameEn : prod.name,
-          quantity: ci.quantity,
-          unitPrice,
-          variant: ci.selectedVariant,
-        };
-      })
-      .filter((x): x is NonNullable<typeof x> => Boolean(x));
-
-    const summary = calculateCheckoutSummary(sourceCart, state.currency, paymentMethod);
-    const pmInfo = getPaymentMethodLabels(paymentMethod);
-    const newOrder = {
-      id: `FS-${String(Date.now()).slice(-5)}`,
-      createdAt: new Date().toISOString(),
-      items: orderItems,
-      totalAmount: summary.grandTotal,
-      deliveryFee: summary.deliveryFee + summary.codFee,
-      currency: state.currency,
-      shippingAddress: state.shippingAddress,
-      paymentMethod,
-      paymentMethodLabelAr: pmInfo.labelAr,
-      paymentMethodLabelEn: pmInfo.labelEn,
-      status: 'confirmed_demo' as const,
-    };
+    if (!order.items.length || order.items.some((item) => !Number.isFinite(item.unitPrice) || item.unitPrice < 0 || !Number.isInteger(item.quantity) || item.quantity < 1)) {
+      showToast(lang === 'en' ? 'The order details are invalid. Please review your cart.' : 'بيانات الطلب غير مكتملة أو غير صحيحة. راجع السلة وحاول مرة أخرى.');
+      return;
+    }
 
     setState((prev) => ({
       ...prev,
       cart: [],
-      orders: [newOrder, ...prev.orders],
+      orders: [order, ...prev.orders],
     }));
   };
 
