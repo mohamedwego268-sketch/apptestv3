@@ -50,7 +50,7 @@ interface CommercialEcosystemSectionProps {
   onUpdateCartQuantity: (productId: number, delta: number) => void;
   onRemoveFromCart: (productId: number) => void;
   onUpdateShippingAddress: (patch: Partial<DemoShippingAddress>) => void;
-  onCompleteDemoCheckout: (paymentMethod?: CheckoutPaymentMethodType) => void;
+  onCompleteDemoCheckout: (order: DemoOrder) => void;
   onShowToast?: (msg: string) => void;
   darkMode?: boolean;
   initialCategoryId?: string | null;
@@ -955,7 +955,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     window.setTimeout(() => {
       setPaymentProcessing(false);
       setConfirmedOrderSnapshot(newConfirmedSnapshot);
-      onCompleteDemoCheckout(chosenMethod);
+      onCompleteDemoCheckout(newConfirmedSnapshot);
       setShowCartPanel(true);
       setStoreFlowStep('confirmed');
       setTrackingStageIdx(0);
