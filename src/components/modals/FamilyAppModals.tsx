@@ -2271,7 +2271,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">{activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}</span>
                     {Number(activeCommercialModal.rating) > 0 && (
                       <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#FBBF24] border border-[#1E3646] tabular-nums">
-                        ⭐ {activeCommercialModal.rating}{typeof activeCommercialModal.reviewCount === 'number' && activeCommercialModal.reviewCount > 0 ? ' (' + activeCommercialModal.reviewCount + ')' : ''}
+                        {activeCommercialModal.isDemoData ? (lang === 'en' ? 'Illustrative rating' : 'تقييم توضيحي') : `⭐ ${activeCommercialModal.rating}${typeof activeCommercialModal.reviewCount === 'number' && activeCommercialModal.reviewCount > 0 ? ' (' + activeCommercialModal.reviewCount + ')' : ''}`}
                       </span>
                     )}
                   </div>
@@ -2298,6 +2298,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 <h2 id="commercialModalTitle" className="text-xl font-bold text-[var(--color-text)] mt-1">
                   {lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}
                 </h2>
+                {activeCommercialModal.isDemoData && <span className="inline-flex mt-1 px-2 py-1 rounded-full bg-amber-100 dark:bg-[#3A2A17] text-amber-900 dark:text-amber-200 text-[10px] font-extrabold">{lang === 'en' ? 'Illustrative demo listing' : 'عرض تجريبي توضيحي'}</span>}
               </div>
               <button
                 type="button"
