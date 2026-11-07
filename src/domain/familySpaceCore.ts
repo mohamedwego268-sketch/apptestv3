@@ -952,7 +952,12 @@ export type StoreCategoryId =
   | 'nutrition'
   | 'furniture'
   | 'consultation'
-  | 'delivery';
+  | 'delivery'
+  | 'school'
+  | 'safety'
+  | 'travel'
+  | 'family_home'
+  | 'parent_care';
 
 export interface CommercialCatalogItem {
   id: number;
