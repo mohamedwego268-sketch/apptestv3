@@ -56,6 +56,8 @@ interface CommercialEcosystemSectionProps {
   initialCategoryId?: string | null;
   initialOpenCheckout?: boolean;
   allowDemoData?: boolean;
+  pendingServiceBooking?: CommercialCatalogItem | null;
+  onConsumePendingServiceBooking?: () => void;
 }
 
 const CATEGORY_TONE_MAP: Record<string, PastelTone> = {
@@ -167,6 +169,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   initialCategoryId = null,
   initialOpenCheckout = false,
   allowDemoData = false,
+  pendingServiceBooking = null,
+  onConsumePendingServiceBooking = () => {},
 }) => {
   const isEn = language === 'en';
   const displayCity = locText(city, language);
@@ -497,11 +501,19 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     setServiceBookingBeneficiary('');
     setServiceBookingNotes('');
     setShowCartPanel(false);
+    setShowLiveTracking(false);
+    setActiveCategoryPageId(null);
     setStoreFlowStep('catalog');
     window.setTimeout(() => {
       document.getElementById('service-booking-flow')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 80);
   };
+
+  useEffect(() => {
+    if (!pendingServiceBooking) return;
+    beginServiceBooking(pendingServiceBooking);
+    onConsumePendingServiceBooking();
+  }, [pendingServiceBooking, onConsumePendingServiceBooking]);
 
   const renderCompactProductCard = (
     item: CommercialCatalogItem,
