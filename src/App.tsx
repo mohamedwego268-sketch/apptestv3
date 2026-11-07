@@ -376,6 +376,8 @@ export default function App() {
     null
   );
   const [selectedModalVariant, setSelectedModalVariant] = useState<string>('');
+  const [pendingServiceBooking, setPendingServiceBooking] = useState<CommercialCatalogItem | null>(null);
+  const clearPendingServiceBooking = React.useCallback(() => setPendingServiceBooking(null), []);
   const [confirmResetModal, setConfirmResetModal] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
@@ -2936,6 +2938,8 @@ export default function App() {
                   initialCategoryId={storeInitialCategoryId}
                   initialOpenCheckout={storeInitialOpenCheckout}
                   allowDemoData={isPreviewMode}
+                  pendingServiceBooking={pendingServiceBooking}
+                  onConsumePendingServiceBooking={clearPendingServiceBooking}
                   onAddProductToWishes={(item) =>
                     handleQuickAddWish(item.name, item.priceEGP, item.priceSAR, item.emoji)
                   }
@@ -3831,6 +3835,11 @@ export default function App() {
           onSelectModalVariant={setSelectedModalVariant}
           onCloseCommercialModal={() => setActiveCommercialModal(null)}
           onAddToCart={handleAddToCart}
+          onBookService={(item) => {
+            setActiveCommercialModal(null);
+            setPendingServiceBooking(item);
+            navigateTo('services');
+          }}
           onQuickAddWish={handleQuickAddWish}
           confirmResetModal={confirmResetModal}
           onCloseConfirmResetModal={() => setConfirmResetModal(false)}
