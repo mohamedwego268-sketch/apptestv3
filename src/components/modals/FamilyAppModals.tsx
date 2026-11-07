@@ -2291,7 +2291,15 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                     ))}
                   </div>
                 )}
-                {!hasExactCommercialPhotos && <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/20 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">{isEn ? 'Illustrative category image — exact product photos have not been provided by the seller yet.' : 'صورة توضيحية للقسم — لم يرفع البائع صور المنتج الفعلية بعد.'}</div>}
+                {activeCommercialModal.isDemoData ? (
+                  <div className="rounded-xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/80 dark:bg-sky-950/20 px-3 py-2 text-[11px] font-semibold text-sky-900 dark:text-sky-200">
+                    {isEn ? 'Preview gallery: illustrative category photos to test the layout. These are not seller product photos.' : 'معرض تجريبي: صور توضيحية للقسم لمعاينة طريقة العرض، وليست صور المنتج الفعلية من البائع.'}
+                  </div>
+                ) : !hasExactCommercialPhotos ? (
+                  <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/20 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">
+                    {isEn ? 'The seller has not uploaded exact product photos yet.' : 'البائع لم يرفع صور المنتج الفعلية بعد.'}
+                  </div>
+                ) : null}
               </div>
             )}
 
