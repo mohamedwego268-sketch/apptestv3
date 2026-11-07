@@ -585,7 +585,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                   target.src = itemBgSpec.imagePath;
                 }
               }}
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-85 dark:opacity-80 group-hover:scale-105 transition-transform duration-500"
+              className={`absolute inset-0 w-full h-full ${item.kind === 'product' ? 'object-contain p-3 bg-white' : 'object-cover'} pointer-events-none opacity-90 dark:opacity-85 group-hover:scale-105 transition-transform duration-500`}
             />
             {/* Directional Gradient Scrim (WCAG AAA Contrast for Bottom Text, Vibrant Image Top) */}
             <div
