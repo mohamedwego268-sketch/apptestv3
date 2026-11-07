@@ -1392,7 +1392,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           isOpen={showLiveTracking}
           onToggle={setShowLiveTracking}
           defaultOpen={false}
-          title={isEn ? 'Sample Delivery Tracking & Route Map' : 'تتبع الطلب المباشر وخريطة التوصيل'}
+          title={isEn ? 'Sample Delivery Tracking & Route Map' : 'نموذج تتبع الطلب وخريطة التوصيل'}
           subtitle={
             isEn
               ? `Status: ${activeStage.titleEn} · ETA: ${
@@ -1404,7 +1404,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           }
           badge={
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold border border-emerald-200/50 dark:border-[#1E3646]">
-              #{latestOrder ? latestOrder.id : 'FS-9042'} · {isEn ? 'DEMO TRACKING' : 'تتبع حي'}
+              #{latestOrder ? latestOrder.id : 'FS-9042'} · {isEn ? 'DEMO TRACKING' : 'تتبع تجريبي'}
             </span>
           }
           bodyClassName="p-4 sm:p-5 space-y-4 bg-gradient-to-br from-emerald-50/70 via-white to-teal-50/50 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#101D26]"
@@ -1418,7 +1418,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               <div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-[#142430] text-emerald-900 dark:text-[#A5F3FC] text-[10px] font-extrabold">
-                    {isEn ? 'DEMO ORDER STATUS' : 'تتبع مباشر لحالة الطلب'}
+                    {isEn ? 'DEMO ORDER STATUS' : 'حالة الطلب التجريبية'}
                   </span>
                   <span className="text-[11px] font-extrabold text-[var(--color-muted)] tabular-nums">
                     #{latestOrder ? latestOrder.id : 'FS-9042'}
@@ -1865,7 +1865,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </h4>
                     <p className="text-xs font-semibold text-[var(--color-muted)]">
                       {isEn
-                        ? 'Your courier is being assigned. View the simulated order status on the demo map below.'
+                        ? 'No courier is assigned in this demo. The map below simulates delivery progress.'
                         : 'هذا نموذج تجريبي فقط؛ لم يتم تحصيل أموال أو تعيين مندوب فعلي. يمكنك استعراض مراحل التوصيل المحاكية أدناه.'}
                     </p>
                   </div>
@@ -2013,7 +2013,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       className="min-h-[40px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-2xs"
                     >
                       <span>🛵</span>
-                      <span>{isEn ? 'Live Delivery Map' : 'تتبع الطلب المباشر'}</span>
+                      <span>{isEn ? 'Demo Delivery Map' : 'نموذج تتبع التوصيل'}</span>
                     </button>
                     <button
                       type="button"
@@ -2204,8 +2204,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </div>
                       <div className="text-[10px] font-bold text-[var(--color-muted)] mt-0.5">
                         {isEn
-                          ? 'Credit/Debit Cards · Apple Pay · Google Pay'
-                          : 'بطاقات ائتمانية / مدى · Apple Pay · Google Pay'}
+                          ? 'Demo options only · No payment is processed'
+                          : 'خيارات تجريبية فقط · لا يتم تحصيل أي أموال'}
                       </div>
                     </div>
                   </button>
@@ -2230,8 +2230,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                       </div>
                       <div className="text-[10px] font-bold text-[var(--color-muted)] mt-0.5">
                         {isEn
-                          ? 'Pay cash or POS when courier arrives'
-                          : 'ادفع نقدًا أو عبر جهاز الشبكة عند وصول المندوب'}
+                          ? 'Demo option only · No courier or payment is involved'
+                          : 'خيار تجريبي فقط · لا يوجد مندوب أو تحصيل أموال'}
                       </div>
                     </div>
                   </button>
@@ -2401,8 +2401,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                     </div>
                     <p className="text-xs font-semibold text-[var(--color-text)] leading-relaxed">
                       {isEn
-                        ? 'You will pay the courier directly upon receiving your order at your doorstep (Cash or portable POS terminal available).'
-                        : 'سيتم تحصيل قيمة الطلب مباشرة عند وصول مندوب التوصيل لباب المنزل (متاح الدفع نقدًا أو عبر جهاز الشبكة المحمول مع المندوب).'}
+                        ? 'This demo does not collect money or assign a courier. It only illustrates how cash on delivery will appear in checkout.'
+                        : 'هذا نموذج توضيحي فقط؛ لا يتم تحصيل أموال أو تعيين مندوب. يعرض شكل خيار الدفع عند الاستلام في صفحة إتمام الطلب.'}
                     </p>
                   </div>
                 )}
@@ -2858,7 +2858,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
           🛡️ {isEn ? 'Demo catalog & simulated order tracking' : 'كتالوج تجريبي ومحاكاة لتتبع الطلب'}
         </span>
         <span className="text-[var(--color-text)]">
-          💳 Visa · Mastercard · مدى mada · Apple Pay
+          🧪 {isEn ? 'Demo payment options: Visa · Mastercard · mada · Apple Pay' : 'وسائل دفع معروضة للتجربة فقط: Visa · Mastercard · مدى · Apple Pay'}
         </span>
       </div>
     </section>
