@@ -1393,7 +1393,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
             {/* 3. Availability Filter */}
             <div className="space-y-1.5">
               <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
-                🚚 {isEn ? 'Availability & Delivery' : 'التوفر والشحن السريع'}
+                🧭 {isEn ? 'Listing Type & Location' : 'نوع العرض والموقع'}
               </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
@@ -2639,7 +2639,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                         </div>
                         <div className="flex items-center justify-between py-1">
                           <span className="font-bold text-[var(--color-muted)]">
-                            {isEn ? 'Delivery Speed:' : 'سرعة التوصيل:'}
+                            {isEn ? 'Fulfillment:' : 'التنفيذ والتوصيل:'}
                           </span>
                           <span className="font-extrabold text-emerald-700 dark:text-[#A5F3FC]">
                             🚚{' '}
@@ -2648,8 +2648,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                                 ? cItem.deliveryEstimateEn
                                 : cItem.deliveryEstimateAr
                               : isEn
-                              ? 'Same-Day Booking'
-                              : 'طلب خدمة أو حجز'}
+                              ? (cItem.kind === 'service' ? 'Booking with provider' : 'Delivery details not provided')
+                              : (cItem.kind === 'service' ? 'حجز حسب جدول مقدم الخدمة' : 'تفاصيل التوصيل غير محددة')}
                           </span>
                         </div>
                       </div>
