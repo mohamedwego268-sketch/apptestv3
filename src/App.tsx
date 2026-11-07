@@ -2945,7 +2945,7 @@ export default function App() {
                   }
                   onInspectCommercialItem={(item) => {
                     setSelectedModalVariant(item.variants?.[0] || '');
-                    setActiveCommercialModal(item);
+                    setActiveCommercialModal({ ...item, isDemoData: isPreviewMode });
                   }}
                   onAddToCart={handleAddToCart}
                   onUpdateCartQuantity={handleUpdateCartQuantity}
