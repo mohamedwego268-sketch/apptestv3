@@ -1713,7 +1713,7 @@ export default function App() {
       showToast(lang === 'en' ? 'Demo service bookings are available only in preview mode.' : 'حجوزات الخدمات التجريبية متاحة في وضع المعاينة فقط.');
       return;
     }
-    if (!booking.id || !booking.serviceId || !booking.serviceName.trim() || !booking.beneficiary.trim() || !/^\\d{4}-\\d{2}-\\d{2}$/.test(booking.date) || !/^\\d{2}:\\d{2}$/.test(booking.time) || !Number.isFinite(booking.price) || booking.price < 0) {
+    if (!booking.id || !booking.serviceId || !booking.serviceName.trim() || !booking.beneficiary.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(booking.date) || !/^\d{2}:\d{2}$/.test(booking.time) || !Number.isFinite(booking.price) || booking.price < 0) {
       showToast(lang === 'en' ? 'The booking details are incomplete. Please review the form.' : 'بيانات الحجز غير مكتملة. راجع النموذج وحاول مرة أخرى.');
       return;
     }
