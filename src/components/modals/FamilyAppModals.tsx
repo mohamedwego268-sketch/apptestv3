@@ -97,6 +97,7 @@ export interface FamilyAppModalsProps {
   onSelectModalVariant: (variant: string) => void;
   onCloseCommercialModal: () => void;
   onAddToCart: (item: CommercialCatalogItem, variant?: string) => void;
+  onBookService: (item: CommercialCatalogItem) => void;
   onQuickAddWish: (name: string, priceEGP: number, priceSAR: number, emoji: string) => void;
   // 11. Confirm Reset Modal
   confirmResetModal: boolean;
@@ -161,6 +162,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
   onSelectModalVariant,
   onCloseCommercialModal,
   onAddToCart,
+  onBookService,
   onQuickAddWish,
   confirmResetModal,
   onCloseConfirmResetModal,
@@ -2313,6 +2315,18 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                 : activeCommercialModal.description}
             </p>
 
+            {activeCommercialModal.kind === 'service' && (
+              <div className="rounded-xl border border-teal-200/80 dark:border-[#1E3646] bg-teal-50/70 dark:bg-[#142430] p-3 text-xs space-y-2">
+                <div className="font-extrabold text-teal-900 dark:text-[#A5F3FC]">{lang === 'en' ? 'Service details' : 'تفاصيل الخدمة'}</div>
+                <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-[var(--color-muted)]">
+                  <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">⏱ {activeCommercialModal.serviceDurationMinutes ? `${activeCommercialModal.serviceDurationMinutes} ${lang === 'en' ? 'minutes' : 'دقيقة'}` : (lang === 'en' ? 'Duration by agreement' : 'المدة حسب الاتفاق')}</span>
+                  {activeCommercialModal.bookingRequired && <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">📅 {lang === 'en' ? 'Appointment required' : 'يتطلب تحديد موعد'}</span>}
+                  {activeCommercialModal.fulfillmentMode && <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">{activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : activeCommercialModal.fulfillmentMode === 'onsite' ? (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital service' : 'خدمة رقمية') : activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : (lang === 'en' ? 'Delivery' : 'توصيل')}</span>}
+                </div>
+                {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && <p className="text-[11px] text-[var(--color-muted)]"><strong>{lang === 'en' ? 'Provider: ' : 'مقدم الخدمة: '}</strong>{locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}</p>}
+              </div>
+            )}
+
             {/* Variant Selector */}
             {activeCommercialModal.variants && activeCommercialModal.variants.length > 0 && (
               <div className="space-y-1.5">
@@ -2372,25 +2386,38 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
                   state.language
                 )}
               </div>
-              {activeCommercialModal.sellerName && (
+              {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && (
                 <div>
-                  <strong>{lang === 'en' ? 'Provider / Seller: ' : 'مقدم الخدمة / البائع: '}</strong>
-                  {locText(activeCommercialModal.sellerName, lang)}
+                  <strong>{activeCommercialModal.kind === 'service' ? (lang === 'en' ? 'Provider: ' : 'مقدم الخدمة: ') : (lang === 'en' ? 'Seller: ' : 'البائع: ')}</strong>
+                  {locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}
                 </div>
               )}
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  onAddToCart(activeCommercialModal, selectedModalVariant);
-                  onCloseCommercialModal();
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
-              >
-                {lang === 'en' ? 'Add to Shopping Cart' : 'أضف إلى سلة التسوق'}
-              </button>
+              {activeCommercialModal.kind === 'service' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onBookService(activeCommercialModal);
+                    onCloseCommercialModal();
+                  }}
+                  className="min-h-11 px-5 py-2 rounded-xl text-xs font-extrabold bg-teal-700 hover:bg-teal-800 text-white"
+                >
+                  {lang === 'en' ? 'Book this service' : 'احجز الخدمة'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddToCart(activeCommercialModal, selectedModalVariant);
+                    onCloseCommercialModal();
+                  }}
+                  className="min-h-11 px-5 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
+                >
+                  {lang === 'en' ? 'Add to Shopping Cart' : 'أضف إلى سلة التسوق'}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {
