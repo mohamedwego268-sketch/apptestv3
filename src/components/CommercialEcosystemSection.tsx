@@ -1360,8 +1360,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 ⭐ {isEn ? 'Ratings in this demo catalog are illustrative, not verified customer reviews. Rating filters appear when verified reviews are connected.' : 'التقييمات في الكتالوج التجريبي توضيحية وليست مراجعات عملاء موثقة. ستظهر فلترة التقييم عند ربط المراجعات الفعلية.'}
               </div>
             ) : (
-            {/* 2. Rating Filter */}
-            <div className="space-y-1.5">
+              <div className="space-y-1.5">
               <div className="text-[11px] font-extrabold text-[var(--color-text)] dark:text-[#A5F3FC]">
                 ⭐ {isEn ? 'Minimum Parent Rating' : 'تقييم الأمهات والآباء'}
               </div>
