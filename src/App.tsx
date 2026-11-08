@@ -115,7 +115,7 @@ import {
   SectionSkeletonLoader,
   TaskFestivalCelebrationOverlay,
 } from './components/DesignSystem';
-import { FamilySmartPlannerModal } from './components/FamilySmartPlannerModal';
+const FamilySmartPlannerModal = React.lazy(() => import('./components/FamilySmartPlannerModal').then((module) => ({ default: module.FamilySmartPlannerModal })));
 const MedicalHealthSection = React.lazy(() => import('./components/MedicalHealthSection').then((module) => ({ default: module.MedicalHealthSection })));
 const MediaPlatformSection = React.lazy(() => import('./components/MediaPlatformSection').then((module) => ({ default: module.MediaPlatformSection })));
 const ParentsCommunitySection = React.lazy(() => import('./components/ParentsCommunitySection').then((module) => ({ default: module.ParentsCommunitySection })));
@@ -3832,7 +3832,8 @@ export default function App() {
         /></React.Suspense>
 
         {/* Dedicated Smart Family Calendar & To-Do List Modal ("مفكرة العيلة الذكية") */}
-        <FamilySmartPlannerModal
+        <React.Suspense fallback={null}>
+          <FamilySmartPlannerModal
           open={smartPlannerModalOpen}
           onClose={() => setSmartPlannerModalOpen(false)}
           lang={lang}
@@ -4030,7 +4031,8 @@ export default function App() {
           message={toastMsg}
           onClose={() => setToastMsg(null)}
           language={state.language}
-        />
+          />
+        </React.Suspense>
       </div>
     </FamilyAppProvider>
   );
