@@ -1939,7 +1939,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
                 notes: serviceBookingNotes.trim(),
                 price: convertCatalogPrice(selectedServiceForBooking.priceEGP, selectedServiceForBooking.priceSAR, currency),
                 currency,
-                status: 'requested_demo',
+                status: 'requested_demo' as const,
               };
               onCompleteDemoServiceBooking(booking);
               setConfirmedServiceBooking(booking);
