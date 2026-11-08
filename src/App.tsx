@@ -763,6 +763,8 @@ export default function App() {
   ]);
 
   const lang = state.language;
+  // The shared Vercel review URL must expose clearly labelled sample store listings when the live catalog is empty.
+  const isMarketplacePreview = isPreviewMode || (typeof window !== 'undefined' && window.location.hostname === 'apptestv3.vercel.app');
   const todayISO = currentLocalDateISO;
   const todayFormatted = useMemo(
     () => formatGregorianAndHijri(todayISO, state.country, state.language, state.calendarMode),
@@ -2920,7 +2922,7 @@ export default function App() {
                   onCompleteDemoServiceBooking={handleCompleteDemoServiceBooking}
                   initialCategoryId={storeInitialCategoryId}
                   initialOpenCheckout={storeInitialOpenCheckout}
-                  allowDemoData={isPreviewMode}
+                  allowDemoData={isMarketplacePreview}
                   pendingServiceBooking={pendingServiceBooking}
                   onConsumePendingServiceBooking={clearPendingServiceBooking}
                   onAddProductToWishes={(item) =>
@@ -2928,7 +2930,7 @@ export default function App() {
                   }
                   onInspectCommercialItem={(item) => {
                     setSelectedModalVariant(item.variants?.[0] || '');
-                    setActiveCommercialModal({ ...item, isDemoData: isPreviewMode });
+                    setActiveCommercialModal({ ...item, isDemoData: isMarketplacePreview });
                   }}
                   onAddToCart={handleAddToCart}
                   onUpdateCartQuantity={handleUpdateCartQuantity}
