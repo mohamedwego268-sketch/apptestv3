@@ -1162,10 +1162,13 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
     );
   }
 
+  // The new catalog returns above; keep a widened token for legacy checkout-only markup below.
+  const fallbackFlowStep: string = storeFlowStep;
+
   return (
     <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
       {/* Marketplace storefront: discovery-first layout inspired by Noon and Talabat */}
-      {storeFlowStep === 'catalog' && (
+      {fallbackFlowStep === 'catalog' && (
         <div data-testid="storefront-hero" className="relative isolate overflow-hidden rounded-[28px] border border-orange-200/70 dark:border-[#35404B] bg-gradient-to-br from-[#FFF7ED] via-white to-[#ECFEFF] dark:from-[#211D1A] dark:via-[#142430] dark:to-[#102D32] shadow-sm">
           <div aria-hidden="true" className="pointer-events-none absolute -top-20 -end-12 h-56 w-56 rounded-full bg-orange-300/25 blur-3xl" />
           <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -start-12 h-56 w-56 rounded-full bg-teal-300/20 blur-3xl" />
@@ -1215,7 +1218,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </div>
       )}
 
-      {allowDemoData && storeFlowStep === 'catalog' && !activeCategorySpec && (
+      {allowDemoData && fallbackFlowStep === 'catalog' && !activeCategorySpec && (
         <section data-testid="store-guided-demo" className="rounded-[22px] border border-teal-200 dark:border-[#29404C] bg-gradient-to-br from-teal-50 via-white to-orange-50 dark:from-[#102A2B] dark:via-[#101D26] dark:to-[#211D1A] p-3.5 sm:p-4 shadow-sm space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -1240,7 +1243,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         </section>
       )}
 
-      {storeFlowStep === 'catalog' && !activeCategorySpec && (
+      {fallbackFlowStep === 'catalog' && !activeCategorySpec && (
         <div data-testid="storefront-category-shortcuts" className="space-y-2">
           <div className="flex items-end justify-between gap-2">
             <div>
@@ -1334,7 +1337,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
               onClick: () => {
                 setStoreFlowStep('catalog');
                 setShowCartPanel(false);
-                setShowLiveTracking((prev) => (storeFlowStep !== 'catalog' ? true : !prev));
+                setShowLiveTracking((prev) => (fallbackFlowStep !== 'catalog' ? true : !prev));
               },
             },
           ] : []),
@@ -1566,7 +1569,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       </SectionToolsDrawer>
 
       {/* Checkout progress appears only while completing an order, not while browsing the store. */}
-      {storeFlowStep !== 'catalog' && (
+      {fallbackFlowStep !== 'catalog' && (
         <div className="rounded-xl border border-[var(--color-border)] dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-2 shadow-2xs">
           <div className="flex items-center justify-between gap-1.5 text-[10px] font-bold text-[var(--color-muted)]">
             <span>🛍️ {isEn ? 'Store' : 'المتجر'}</span><span>›</span>
@@ -1580,7 +1583,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* =====================================================================
           LIVE ORDER TRACKING & ROUTE MAP (Hidden by default; shown only via explicit trigger)
           ===================================================================== */}
-      {storeFlowStep === 'catalog' && showLiveTracking && (
+      {fallbackFlowStep === 'catalog' && showLiveTracking && (
         <CollapsibleSectionCard
           id="talabat-live-order-tracker"
           icon="🛵"
@@ -2725,7 +2728,7 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
       {/* =====================================================================
           SMART PRODUCT COMPARISON MATRIX (Side-by-Side Specs, Price & Rating)
           ===================================================================== */}
-      {storeFlowStep === 'catalog' && showComparePanel && (
+      {fallbackFlowStep === 'catalog' && showComparePanel && (
         <div
           id="store-smart-comparison-panel"
           className="rounded-2xl sm:rounded-3xl border border-[#0d9488]/40 dark:border-[#1E3646] bg-[var(--color-surface)] dark:bg-[#101D26] p-3.5 sm:p-4 space-y-3 soft-card-surface shadow-md animate-page-enter"
