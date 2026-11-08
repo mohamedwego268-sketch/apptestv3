@@ -2257,7 +2257,7 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
       {/* 10. Rich 3D Product / Service Detail Modal */}
       {activeCommercialModal && (
         <div
-          className="fixed inset-0 z-50 bg-[var(--color-overlay)] flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay)] p-2.5 sm:p-5"
           onClick={(e) => {
             if (e.target === e.currentTarget) onCloseCommercialModal();
           }}
@@ -2266,197 +2266,121 @@ export const FamilyAppModals: React.FC<FamilyAppModalsProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="commercialModalTitle"
-            className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-[24px] bg-[var(--color-surface)] dark:bg-[#101D26] p-4 sm:p-6 space-y-5 border border-[var(--color-border)] dark:border-[#1E3646] shadow-2xl"
+            className="w-full max-w-5xl max-h-[94vh] overflow-y-auto rounded-[26px] border border-[var(--color-border)] bg-[var(--color-surface)] shadow-2xl dark:border-[#1E3646] dark:bg-[#101D26]"
           >
-            {activeCommercialPhoto && (
-              <div className="space-y-2.5">
-                <div className="relative h-72 sm:h-[420px] w-full rounded-2xl overflow-hidden border border-[var(--color-border)] dark:border-[#1E3646] bg-gradient-to-br from-[#F8FAFC] to-[#EEF4F4] dark:from-[#172B36] dark:to-[#101D26]">
-                  <img src={activeCommercialPhoto} alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name} loading="lazy" decoding="async" className="w-full h-full object-contain p-3 sm:p-5" />
-                  <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
-                    <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#F8FAFC] border border-[#1E3646]">{activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}</span>
+            <div className="grid lg:grid-cols-[1.04fr_.96fr]">
+              <div className="space-y-3 bg-[#F4F7F7] p-3 sm:p-5 dark:bg-[#0B1820]">
+                <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[20px] border border-slate-200/80 bg-white dark:border-[#1E3646] dark:bg-[#142430]">
+                  {activeCommercialPhoto ? (
+                    <img src={activeCommercialPhoto} alt={lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name} loading="lazy" decoding="async" className="h-full w-full object-contain p-3 sm:p-5" />
+                  ) : (
+                    <div className="text-7xl">{activeCommercialModal.emoji || '🧸'}</div>
+                  )}
+                  <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
+                    <span className="rounded-full border border-white/15 bg-slate-950/80 px-3 py-1.5 text-[10px] font-extrabold text-white">{activeCommercialModal.emoji} {locText(activeCommercialModal.categoryLabel, lang)}</span>
                     {Number(activeCommercialModal.rating) > 0 && (
-                      <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-[#0B131A]/85 text-[#FBBF24] border border-[#1E3646] tabular-nums">
-                        {activeCommercialModal.isDemoData ? (lang === 'en' ? 'Illustrative rating' : 'تقييم توضيحي') : `⭐ ${activeCommercialModal.rating}${typeof activeCommercialModal.reviewCount === 'number' && activeCommercialModal.reviewCount > 0 ? ' (' + activeCommercialModal.reviewCount + ')' : ''}`}
+                      <span className="rounded-full border border-white/15 bg-slate-950/80 px-3 py-1.5 text-[10px] font-extrabold text-amber-300">
+                        {activeCommercialModal.isDemoData ? (lang === 'en' ? 'Illustrative rating' : 'تقييم توضيحي') : `★ ${activeCommercialModal.rating}${typeof activeCommercialModal.reviewCount === 'number' && activeCommercialModal.reviewCount > 0 ? ' (' + activeCommercialModal.reviewCount + ')' : ''}`}
                       </span>
                     )}
                   </div>
-                  {commercialPhotos.length > 1 && <span className="absolute bottom-3 end-3 rounded-full bg-[#0B131A]/80 px-2.5 py-1 text-[10px] font-bold text-white">{activeCommercialPhotoIndex + 1} / {commercialPhotos.length}</span>}
+                  {commercialPhotos.length > 1 && (
+                    <>
+                      <button type="button" onClick={() => setActiveCommercialPhotoIndex((index) => (index - 1 + commercialPhotos.length) % commercialPhotos.length)} aria-label={lang === 'en' ? 'Previous photo' : 'الصورة السابقة'} className="absolute start-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 text-lg font-black text-slate-800 shadow-md">‹</button>
+                      <button type="button" onClick={() => setActiveCommercialPhotoIndex((index) => (index + 1) % commercialPhotos.length)} aria-label={lang === 'en' ? 'Next photo' : 'الصورة التالية'} className="absolute end-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/60 bg-white/90 text-lg font-black text-slate-800 shadow-md">›</button>
+                      <span className="absolute bottom-3 end-3 rounded-full bg-slate-950/80 px-2.5 py-1 text-[10px] font-bold text-white">{activeCommercialPhotoIndex + 1} / {commercialPhotos.length}</span>
+                    </>
+                  )}
                 </div>
                 {commercialPhotos.length > 1 && (
                   <div className="flex items-center gap-2 overflow-x-auto pb-1" aria-label={isEn ? 'Product photos' : 'صور المنتج'}>
                     {commercialPhotos.map((photo, index) => (
-                      <button key={photo} type="button" onClick={() => setActiveCommercialPhotoIndex(index)} aria-label={isEn ? 'Show photo ' + (index + 1) : 'عرض الصورة ' + (index + 1)} aria-pressed={activeCommercialPhotoIndex === index} className={'h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition-all ' + (activeCommercialPhotoIndex === index ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-[var(--color-border)] dark:border-[#1E3646]')}>
+                      <button key={photo} type="button" onClick={() => setActiveCommercialPhotoIndex(index)} aria-label={isEn ? 'Show photo ' + (index + 1) : 'عرض الصورة ' + (index + 1)} aria-pressed={activeCommercialPhotoIndex === index} className={'h-[62px] w-[62px] shrink-0 overflow-hidden rounded-xl border-2 bg-white transition-all dark:bg-[#142430] ' + (activeCommercialPhotoIndex === index ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-slate-200 dark:border-slate-700')}>
                         <img src={photo} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                       </button>
                     ))}
                   </div>
                 )}
                 {activeCommercialModal.isDemoData ? (
-                  <div className="rounded-xl border border-sky-200 dark:border-sky-900/60 bg-sky-50/80 dark:bg-sky-950/20 px-3 py-2 text-[11px] font-semibold text-sky-900 dark:text-sky-200">
-                    {isEn ? 'Preview gallery: illustrative category photos to test the layout. These are not seller product photos.' : 'معرض تجريبي: صور توضيحية للقسم لمعاينة طريقة العرض، وليست صور المنتج الفعلية من البائع.'}
+                  <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5 text-[10px] font-semibold leading-5 text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/20 dark:text-sky-200">
+                    {isEn ? 'Preview gallery: illustrative category photos, not actual seller product photos.' : 'معرض معاينة: الصور توضيحية للقسم وليست صور المنتج الفعلية من البائع.'}
                   </div>
                 ) : !hasExactCommercialPhotos ? (
-                  <div className="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/20 px-3 py-2 text-[11px] font-semibold text-amber-900 dark:text-amber-200">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[10px] font-semibold leading-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
                     {isEn ? 'The seller has not uploaded exact product photos yet.' : 'البائع لم يرفع صور المنتج الفعلية بعد.'}
                   </div>
                 ) : null}
               </div>
-            )}
 
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-xs text-[var(--color-muted)]">
-                  {locText(activeCommercialModal.categoryLabel, lang)} · {locText(activeCommercialModal.city, lang)}
+              <div className="flex min-w-0 flex-col p-4 sm:p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold text-teal-700 dark:text-teal-300">{locText(activeCommercialModal.categoryLabel, lang)} <span className="px-1 text-slate-300">/</span> {locText(activeCommercialModal.city, lang)}</div>
+                    <h2 id="commercialModalTitle" className="mt-2 text-xl font-black leading-snug text-[var(--color-text)] sm:text-2xl">{lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}</h2>
+                    {activeCommercialModal.isDemoData && <span className="mt-2 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[9px] font-extrabold text-amber-900 dark:bg-[#3A2A17] dark:text-amber-200">{lang === 'en' ? 'Illustrative demo listing' : 'عرض تجريبي توضيحي'}</span>}
+                  </div>
+                  <button type="button" onClick={onCloseCommercialModal} aria-label={lang === 'en' ? 'Close' : 'إغلاق'} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-control-muted)] text-xl font-bold text-[var(--color-text)] transition hover:bg-slate-200 dark:hover:bg-slate-700">×</button>
                 </div>
-                <h2 id="commercialModalTitle" className="text-xl font-bold text-[var(--color-text)] mt-1">
-                  {lang === 'en' ? activeCommercialModal.nameEn : activeCommercialModal.name}
-                </h2>
-                {activeCommercialModal.isDemoData && <span className="inline-flex mt-1 px-2 py-1 rounded-full bg-amber-100 dark:bg-[#3A2A17] text-amber-900 dark:text-amber-200 text-[10px] font-extrabold">{lang === 'en' ? 'Illustrative demo listing' : 'عرض تجريبي توضيحي'}</span>}
-              </div>
-              <button
-                type="button"
-                onClick={onCloseCommercialModal}
-                aria-label={lang === 'en' ? 'Close' : 'إغلاق'}
-                className="w-8 h-8 rounded-xl bg-[var(--color-control-muted)] dark:bg-[#142430] border border-[var(--color-border)] dark:border-[#1E3646] text-lg font-black leading-none text-[var(--color-text)] flex items-center justify-center shrink-0 cursor-pointer"
-              >
-                ×
-              </button>
-            </div>
 
-            <p className="text-sm text-[var(--color-muted)] leading-relaxed">
-              {lang === 'en' && activeCommercialModal.descriptionEn
-                ? activeCommercialModal.descriptionEn
-                : activeCommercialModal.description}
-            </p>
+                <p className="mt-4 text-[13px] leading-7 text-[var(--color-muted)]">{lang === 'en' && activeCommercialModal.descriptionEn ? activeCommercialModal.descriptionEn : activeCommercialModal.description}</p>
 
-            {activeCommercialModal.kind === 'service' && (
-              <div className="rounded-xl border border-teal-200/80 dark:border-[#1E3646] bg-teal-50/70 dark:bg-[#142430] p-3 text-xs space-y-2">
-                <div className="font-extrabold text-teal-900 dark:text-[#A5F3FC]">{lang === 'en' ? 'Service details' : 'تفاصيل الخدمة'}</div>
-                <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-[var(--color-muted)]">
-                  <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">⏱ {activeCommercialModal.serviceDurationMinutes ? `${activeCommercialModal.serviceDurationMinutes} ${lang === 'en' ? 'minutes' : 'دقيقة'}` : (lang === 'en' ? 'Duration by agreement' : 'المدة حسب الاتفاق')}</span>
-                  {activeCommercialModal.bookingRequired && <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">📅 {lang === 'en' ? 'Appointment required' : 'يتطلب تحديد موعد'}</span>}
-                  {activeCommercialModal.fulfillmentMode && <span className="rounded-lg bg-white/80 dark:bg-[#101D26] px-2 py-1">{activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : activeCommercialModal.fulfillmentMode === 'onsite' ? (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital service' : 'خدمة رقمية') : activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : (lang === 'en' ? 'Delivery' : 'توصيل')}</span>}
-                </div>
-                {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && <p className="text-[11px] text-[var(--color-muted)]"><strong>{lang === 'en' ? 'Provider: ' : 'مقدم الخدمة: '}</strong>{locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}</p>}
-              </div>
-            )}
-
-            {/* Variant Selector */}
-            {activeCommercialModal.variants && activeCommercialModal.variants.length > 0 && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[var(--color-text)]">
-                  {lang === 'en' ? 'Select Option / Variant:' : 'اختر المقاس أو الباقة:'}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {activeCommercialModal.variants.map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => onSelectModalVariant(v)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                        selectedModalVariant === v
-                          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent)] font-bold'
-                          : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)]'
-                      }`}
-                    >
-                      {locText(v, lang)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Product information: show only attributes supplied by the catalog */}
-            {activeCommercialModal.kind !== 'service' && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {activeCommercialModal.partnerBrand && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Brand' : 'العلامة التجارية'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)] break-words">{activeCommercialModal.partnerBrand}</div></div>}
-                {(activeCommercialModal.ageRange || activeCommercialModal.ageStage) && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Suitable age' : 'العمر المناسب'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.ageRange || (activeCommercialModal.ageStage === 'all' ? (lang === 'en' ? 'All ages' : 'كل الأعمار') : activeCommercialModal.ageStage?.replace('-', '–') + (lang === 'en' ? ' years' : ' سنوات'))}</div></div>}
-                {activeCommercialModal.deliveryEstimateAr && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Delivery estimate' : 'موعد التوصيل'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? activeCommercialModal.deliveryEstimateEn || activeCommercialModal.deliveryEstimateAr : activeCommercialModal.deliveryEstimateAr}</div></div>}
-                {activeCommercialModal.fulfillmentMode && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3 min-w-0"><div className="text-[10px] text-[var(--color-muted)]">{lang === 'en' ? 'Fulfillment' : 'طريقة الاستلام'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : activeCommercialModal.fulfillmentMode === 'shipping' ? (lang === 'en' ? 'Shipping' : 'توصيل') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital' : 'رقمي') : activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة')}</div></div>}
-              </div>
-            )}
-
-            {/* Specifications List */}
-            {activeCommercialModal.specificationsAr && activeCommercialModal.specificationsAr.length > 0 && (
-              <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 text-xs space-y-1">
-                <div className="font-bold text-[var(--color-text)]">
-                  {lang === 'en' ? 'Specifications & Safety:' : 'المواصفات ومعايير الأمان:'}
-                </div>
-                <ul className="list-disc list-inside text-[var(--color-muted)] space-y-0.5">
-                  {(lang === 'en'
-                    ? activeCommercialModal.specificationsEn || activeCommercialModal.specificationsAr
-                    : activeCommercialModal.specificationsAr
-                  ).map((spec, i) => (
-                    <li key={i}>{spec}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="rounded-xl bg-[var(--color-control-muted)] p-3.5 text-xs space-y-1 tabular-nums text-[var(--color-text)]">
-              <div>
-                <strong>
-                  {lang === 'en'
-                    ? `Price (${state.currency}): `
-                    : `السعر (${state.currency}): `}
-                </strong>
-                {formatCurrency(
-                  convertCatalogPrice(
-                    activeCommercialModal.priceEGP,
-                    activeCommercialModal.priceSAR,
-                    state.currency
-                  ),
-                  state.currency,
-                  state.language
+                {activeCommercialModal.kind === 'service' && (
+                  <div className="mt-4 rounded-2xl border border-teal-200/80 bg-teal-50/70 p-3.5 dark:border-[#1E3646] dark:bg-[#142430]">
+                    <div className="mb-2 text-xs font-black text-teal-900 dark:text-[#A5F3FC]">{lang === 'en' ? 'Service details' : 'تفاصيل الخدمة'}</div>
+                    <div className="flex flex-wrap gap-2 text-[10px] font-bold text-[var(--color-muted)]">
+                      <span className="rounded-lg bg-white px-2.5 py-2 dark:bg-[#101D26]">⏱ {activeCommercialModal.serviceDurationMinutes ? `${activeCommercialModal.serviceDurationMinutes} ${lang === 'en' ? 'minutes' : 'دقيقة'}` : (lang === 'en' ? 'Duration by agreement' : 'المدة حسب الاتفاق')}</span>
+                      {activeCommercialModal.bookingRequired && <span className="rounded-lg bg-white px-2.5 py-2 dark:bg-[#101D26]">📅 {lang === 'en' ? 'Appointment required' : 'يتطلب تحديد موعد'}</span>}
+                      {activeCommercialModal.fulfillmentMode && <span className="rounded-lg bg-white px-2.5 py-2 dark:bg-[#101D26]">{activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : activeCommercialModal.fulfillmentMode === 'onsite' ? (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital service' : 'خدمة رقمية') : activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : (lang === 'en' ? 'Delivery' : 'توصيل')}</span>}
+                    </div>
+                    {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && <p className="mt-2 text-[11px] text-[var(--color-muted)]"><strong>{lang === 'en' ? 'Provider: ' : 'مقدم الخدمة: '}</strong>{locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}</p>}
+                  </div>
                 )}
-              </div>
-              {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && (
-                <div>
-                  <strong>{activeCommercialModal.kind === 'service' ? (lang === 'en' ? 'Provider: ' : 'مقدم الخدمة: ') : (lang === 'en' ? 'Seller: ' : 'البائع: ')}</strong>
-                  {locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}
-                </div>
-              )}
-            </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-              {activeCommercialModal.kind === 'service' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onBookService(activeCommercialModal);
-                    onCloseCommercialModal();
-                  }}
-                  className="min-h-11 px-5 py-2 rounded-xl text-xs font-extrabold bg-teal-700 hover:bg-teal-800 text-white"
-                >
-                  {lang === 'en' ? 'Book this service' : 'احجز الخدمة'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onAddToCart(activeCommercialModal, selectedModalVariant);
-                    onCloseCommercialModal();
-                  }}
-                  className="min-h-11 px-5 py-2 rounded-xl text-xs font-bold bg-[var(--color-accent)] text-[var(--color-accent-contrast)]"
-                >
-                  {lang === 'en' ? 'Add to Shopping Cart' : 'أضف إلى سلة التسوق'}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  onQuickAddWish(
-                    activeCommercialModal.name,
-                    activeCommercialModal.priceEGP,
-                    activeCommercialModal.priceSAR,
-                    activeCommercialModal.emoji
-                  );
-                  onCloseCommercialModal();
-                }}
-                className="px-4 py-2 rounded-xl text-xs font-semibold border border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)]"
-              >
-                {lang === 'en' ? '+ Add to Wishes' : '+ أضف للأمنيات'}
-              </button>
+                {activeCommercialModal.kind !== 'service' && (
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    {activeCommercialModal.partnerBrand && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3"><div className="text-[9px] text-[var(--color-muted)]">{lang === 'en' ? 'Brand' : 'العلامة التجارية'}</div><div className="mt-1 break-words text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.partnerBrand}</div></div>}
+                    {(activeCommercialModal.ageRange || activeCommercialModal.ageStage) && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3"><div className="text-[9px] text-[var(--color-muted)]">{lang === 'en' ? 'Suitable age' : 'العمر المناسب'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.ageRange || (activeCommercialModal.ageStage === 'all' ? (lang === 'en' ? 'All ages' : 'كل الأعمار') : activeCommercialModal.ageStage?.replace('-', '–') + (lang === 'en' ? ' years' : ' سنوات'))}</div></div>}
+                    {activeCommercialModal.deliveryEstimateAr && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3"><div className="text-[9px] text-[var(--color-muted)]">{lang === 'en' ? 'Delivery estimate' : 'موعد التوصيل'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? activeCommercialModal.deliveryEstimateEn || activeCommercialModal.deliveryEstimateAr : activeCommercialModal.deliveryEstimateAr}</div></div>}
+                    {activeCommercialModal.fulfillmentMode && <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3"><div className="text-[9px] text-[var(--color-muted)]">{lang === 'en' ? 'Fulfillment' : 'طريقة الاستلام'}</div><div className="mt-1 text-xs font-extrabold text-[var(--color-text)]">{activeCommercialModal.fulfillmentMode === 'pickup' ? (lang === 'en' ? 'Pickup' : 'استلام') : activeCommercialModal.fulfillmentMode === 'shipping' ? (lang === 'en' ? 'Shipping' : 'توصيل') : activeCommercialModal.fulfillmentMode === 'digital' ? (lang === 'en' ? 'Digital' : 'رقمي') : activeCommercialModal.fulfillmentMode === 'online' ? (lang === 'en' ? 'Online' : 'عن بُعد') : activeCommercialModal.fulfillmentMode === 'at_home' ? (lang === 'en' ? 'At home' : 'في المنزل') : (lang === 'en' ? 'At provider location' : 'في مقر مقدم الخدمة')}</div></div>}
+                  </div>
+                )}
+
+                {activeCommercialModal.variants && activeCommercialModal.variants.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <label className="block text-xs font-extrabold text-[var(--color-text)]">{lang === 'en' ? 'Choose size or option' : 'اختر المقاس أو الباقة'}</label>
+                    <div className="flex flex-wrap gap-2">
+                      {activeCommercialModal.variants.map((variant) => (
+                        <button key={variant} type="button" onClick={() => onSelectModalVariant(variant)} aria-pressed={selectedModalVariant === variant} className={'min-h-10 rounded-xl border px-3.5 py-2 text-[11px] font-bold transition ' + (selectedModalVariant === variant ? 'border-teal-600 bg-teal-50 text-teal-800 ring-2 ring-teal-500/15 dark:bg-teal-950/30 dark:text-teal-200' : 'border-[var(--color-border)] bg-[var(--color-control-bg)] text-[var(--color-text)] hover:border-teal-500')}>{locText(variant, lang)}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeCommercialModal.specificationsAr && activeCommercialModal.specificationsAr.length > 0 && (
+                  <div className="mt-4 rounded-2xl border border-[var(--color-border)] bg-[var(--color-control-muted)] p-3.5">
+                    <div className="mb-2 text-xs font-black text-[var(--color-text)]">{lang === 'en' ? 'Specifications & safety' : 'المواصفات ومعايير الأمان'}</div>
+                    <ul className="space-y-1.5 text-[11px] leading-5 text-[var(--color-muted)]">
+                      {(lang === 'en' ? activeCommercialModal.specificationsEn || activeCommercialModal.specificationsAr : activeCommercialModal.specificationsAr).map((spec, index) => <li key={index} className="flex gap-2"><span className="text-teal-600">✓</span><span>{spec}</span></li>)}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-auto pt-5">
+                  <div className="flex items-end justify-between gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-[#0B1820]">
+                    <div><div className="text-[10px] font-semibold text-[var(--color-muted)]">{lang === 'en' ? 'Price' : 'السعر'}</div><div className="mt-1 text-2xl font-black tabular-nums text-[var(--color-text)]">{formatCurrency(convertCatalogPrice(activeCommercialModal.priceEGP, activeCommercialModal.priceSAR, state.currency), state.currency, state.language)}</div></div>
+                    {(activeCommercialModal.providerName || activeCommercialModal.sellerName) && <div className="max-w-[48%] text-end text-[10px] leading-5 text-[var(--color-muted)]"><strong className="block text-[var(--color-text)]">{activeCommercialModal.kind === 'service' ? (lang === 'en' ? 'Provider' : 'مقدم الخدمة') : (lang === 'en' ? 'Seller' : 'البائع')}</strong>{locText(activeCommercialModal.providerName || activeCommercialModal.sellerName || '', lang)}</div>}
+                  </div>
+                  <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
+                    {activeCommercialModal.kind === 'service' ? (
+                      <button type="button" onClick={() => { onBookService(activeCommercialModal); onCloseCommercialModal(); }} className="min-h-12 rounded-xl bg-teal-700 px-5 py-3 text-xs font-extrabold text-white transition hover:bg-teal-800">{lang === 'en' ? 'Book this service' : 'احجز الخدمة'}</button>
+                    ) : (
+                      <button type="button" onClick={() => { onAddToCart(activeCommercialModal, selectedModalVariant); onCloseCommercialModal(); }} className="min-h-12 rounded-xl bg-teal-700 px-5 py-3 text-xs font-extrabold text-white transition hover:bg-teal-800">{lang === 'en' ? 'Add to cart' : 'أضف إلى السلة'}</button>
+                    )}
+                    <button type="button" onClick={() => { onQuickAddWish(activeCommercialModal.name, activeCommercialModal.priceEGP, activeCommercialModal.priceSAR, activeCommercialModal.emoji); onCloseCommercialModal(); }} className="min-h-12 rounded-xl border border-[var(--color-border)] bg-[var(--color-control-bg)] px-4 py-3 text-xs font-bold text-[var(--color-text)] transition hover:border-teal-500">{lang === 'en' ? '♡ Save' : '♡ أضف للأمنيات'}</button>
+                  </div>
+                  <p className="mt-2 text-center text-[9px] leading-4 text-[var(--color-muted)]">{activeCommercialModal.isDemoData ? (lang === 'en' ? 'Demo listing · no real payment or booking is processed' : 'عرض تجريبي · لا يتم تحصيل أموال أو إرسال حجز فعلي') : (lang === 'en' ? 'Product information supplied by the seller' : 'بيانات المنتج مقدمة من البائع')}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
