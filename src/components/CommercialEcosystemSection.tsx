@@ -19,6 +19,7 @@ import {
   locText,
 } from '../domain/familySpaceCore';
 import { ThreeDIcon } from './ThreeDVisuals';
+import { NekbaarMarketplaceExperience } from './NekbaarMarketplaceExperience';
 import { SectionToolsDrawer } from './SectionToolsDrawer';
 import {
   CARD_STOCK_PHOTO_URLS,
@@ -1119,6 +1120,39 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
   ];
 
   const activeCategorySpec = STORE_CATEGORY_SECTIONS.find((s) => s.id === activeCategoryPageId) || null;
+
+  if (storeFlowStep === 'catalog') {
+    return (
+      <NekbaarMarketplaceExperience
+        language={language}
+        currency={currency}
+        city={city}
+        categories={STORE_CATEGORY_SECTIONS}
+        activeCategory={activeCategorySpec}
+        items={filtered}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        segment={segment}
+        onSegmentChange={setSegment}
+        cartCount={cartTotalCount}
+        onOpenCart={() => {
+          setShowCartPanel(true);
+          setStoreFlowStep('checkout');
+        }}
+        onOpenCategory={openCategoryFullPage}
+        onBackToAll={() => {
+          setActiveCategoryPageId(null);
+          setCategoryFilter('all');
+          setSegment('all');
+        }}
+        onInspect={inspectStoreItem}
+        onAddToCart={(item) => onAddToCart(item, item.variants?.[0])}
+        onBookService={beginServiceBooking}
+        getItemGallery={getItemGallery}
+        isDemoCatalog={isDemoCatalog}
+      />
+    );
+  }
 
   return (
     <section className="space-y-4" aria-label={isEn ? 'Family Store & Services' : 'المتجر والخدمات'}>
