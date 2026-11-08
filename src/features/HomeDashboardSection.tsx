@@ -135,7 +135,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
       data-testid={testId}
       data-collapsible-section="true"
       dir={isEn ? 'ltr' : 'rtl'}
-      className={`relative overflow-hidden bg-gradient-to-br from-white via-white to-slate-50/80 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] shadow-[0_8px_24px_-18px_rgba(15,23,42,0.28)] rounded-3xl p-4 sm:p-5 border ${borderClass} space-y-4 transition-all duration-300 ease-in-out hover:shadow-[0_14px_30px_-20px_rgba(13,148,136,0.34)] ${isOpen ? 'ring-1 ring-teal-500/15' : ''}`}
+      className={`relative isolate overflow-hidden bg-gradient-to-br from-white via-white to-slate-50/80 dark:from-[#101D26] dark:via-[#101D26] dark:to-[#142430] shadow-[0_8px_24px_-18px_rgba(15,23,42,0.28)] rounded-[1.65rem] p-4 sm:p-5 border ${borderClass} space-y-4 transition-[box-shadow,border-color,transform] duration-300 ease-out hover:border-teal-500/35 hover:shadow-[0_16px_34px_-20px_rgba(13,148,136,0.38)] ${isOpen ? 'ring-1 ring-teal-500/20 border-teal-500/35 shadow-[0_14px_30px_-20px_rgba(13,148,136,0.3)]' : ''}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <button
@@ -153,7 +153,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
             </span>
             <div className="min-w-0 flex-1 space-y-0.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-base font-semibold text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
+                <h2 className="text-[15px] sm:text-base font-black tracking-tight text-[var(--color-text)] dark:text-[#F8FAFC] leading-snug">
                   {title}
                 </h2>
                 {badgeText && (
@@ -162,7 +162,7 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500 dark:text-[#94A3B8] leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-gray-500 dark:text-[#A7B5C4] leading-relaxed line-clamp-2">
                 {subtitle}
               </p>
             </div>
@@ -172,8 +172,8 @@ const HomeAccordionCard: React.FC<HomeAccordionCardProps> = ({
           <span
             data-testid={`${testId}-arrow`}
             aria-hidden="true"
-            className={`w-10 h-10 rounded-xl border border-gray-100 dark:border-[#1E3646] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black transition-transform duration-300 shrink-0 ${
-              isOpen ? 'rotate-180 bg-teal-500/15 border-[#0d9488]/40 text-[#0d9488] dark:text-[#2DD4BF]' : ''
+            className={`w-10 h-10 rounded-[0.9rem] border border-gray-100 dark:border-[#294352] bg-slate-50 dark:bg-[#142430] text-[var(--color-text)] dark:text-[#F8FAFC] flex items-center justify-center text-xs font-black shadow-sm transition-all duration-300 shrink-0 ${
+              isOpen ? 'rotate-180 bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-900/15 dark:bg-teal-400 dark:text-[#062B2A] dark:border-teal-400' : 'group-hover:border-teal-500/40 group-hover:bg-teal-500/10'
             }`}
           >
             ▼
