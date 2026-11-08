@@ -1150,6 +1150,12 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         onInspect={inspectStoreItem}
         onAddToCart={(item) => onAddToCart(item, item.variants?.[0])}
         onBookService={beginServiceBooking}
+        onSaveWish={onAddProductToWishes}
+        compareIds={compareIds}
+        onToggleCompare={handleToggleCompareItem}
+        comparedItems={comparedItems}
+        showComparePanel={showComparePanel}
+        onToggleComparePanel={() => setShowComparePanel((prev) => !prev)}
         getItemGallery={getItemGallery}
         isDemoCatalog={isDemoCatalog}
       />
