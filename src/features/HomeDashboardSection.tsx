@@ -2757,7 +2757,6 @@ export const HomeDashboardSection: React.FC<HomeDashboardSectionProps> = ({
               savingDashboardActionKeysRef.current.delete(actionKey);
             }
           }}
-          onAddRoutineTask={onAddSuggestedRoutineTask}
         /></React.Suspense>
       </HomeAccordionCard>
 
