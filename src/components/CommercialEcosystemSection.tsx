@@ -1134,6 +1134,8 @@ export const CommercialEcosystemSection: React.FC<CommercialEcosystemSectionProp
         onSearchChange={setSearchQuery}
         segment={segment}
         onSegmentChange={setSegment}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
         cartCount={cartTotalCount}
         onOpenCart={() => {
           setShowCartPanel(true);
