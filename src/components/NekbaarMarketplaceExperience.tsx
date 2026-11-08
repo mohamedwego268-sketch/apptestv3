@@ -31,6 +31,8 @@ interface NekbaarMarketplaceExperienceProps {
   onSearchChange: (value: string) => void;
   segment: 'all' | 'product' | 'service' | 'offer';
   onSegmentChange: (value: 'all' | 'product' | 'service' | 'offer') => void;
+  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'rating';
+  onSortChange: (value: 'featured' | 'price-asc' | 'price-desc' | 'rating') => void;
   cartCount: number;
   onOpenCart: () => void;
   onOpenCategory: (id: string) => void;
@@ -99,7 +101,7 @@ const MarketplaceProductCard: React.FC<{
 
 export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperienceProps> = ({
   language, currency, city, categories, activeCategory, items, searchQuery, onSearchChange,
-  segment, onSegmentChange, cartCount, onOpenCart, onOpenCategory, onBackToAll,
+  segment, onSegmentChange, sortBy, onSortChange, cartCount, onOpenCart, onOpenCategory, onBackToAll,
   onInspect, onAddToCart, onBookService, getItemGallery, isDemoCatalog,
 }) => {
   const isEn = language === 'en';
@@ -189,10 +191,21 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
       )}
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <div><p className="text-[9px] font-black tracking-[.15em] text-teal-700 dark:text-teal-300">{isEn ? 'FIND YOUR MATCH' : 'اختار بسهولة'}</p><h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">{isEn ? 'Browse the marketplace' : 'كل المنتجات والخدمات'}</h2></div>
-          <div className="flex items-center gap-1.5 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
-            {segments.map((tab) => <button key={tab.id} type="button" onClick={() => onSegmentChange(tab.id)} aria-pressed={segment === tab.id} className={'min-h-9 rounded-full px-3 text-[10px] font-extrabold transition-colors ' + (segment === tab.id ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white')}>{tab.icon} {isEn ? tab.en : tab.ar}</button>)}
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-[10px] font-bold text-slate-500 shadow-sm dark:border-slate-700 dark:bg-[#142430] dark:text-slate-300">
+              <span>{isEn ? 'Sort' : 'ترتيب'}</span>
+              <select data-testid="marketplace-sort" value={sortBy} onChange={(event) => onSortChange(event.target.value as 'featured' | 'price-asc' | 'price-desc' | 'rating')} className="max-w-[145px] bg-transparent text-[10px] font-extrabold text-slate-900 outline-none dark:text-white" aria-label={isEn ? 'Sort products' : 'ترتيب المنتجات'}>
+                <option value="featured">{isEn ? 'Recommended' : 'الأكثر صلة'}</option>
+                <option value="price-asc">{isEn ? 'Price: low to high' : 'السعر: الأقل أولاً'}</option>
+                <option value="price-desc">{isEn ? 'Price: high to low' : 'السعر: الأعلى أولاً'}</option>
+                {!isDemoCatalog && <option value="rating">{isEn ? 'Top rated' : 'الأعلى تقييماً'}</option>}
+              </select>
+            </label>
+            <div className="flex items-center gap-1.5 rounded-full bg-slate-100 p-1 dark:bg-slate-800">
+              {segments.map((tab) => <button key={tab.id} type="button" onClick={() => onSegmentChange(tab.id)} aria-pressed={segment === tab.id} className={'min-h-9 rounded-full px-3 text-[10px] font-extrabold transition-colors ' + (segment === tab.id ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white')}>{tab.icon} {isEn ? tab.en : tab.ar}</button>)}
+            </div>
           </div>
         </div>
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2 dark:border-slate-700"><span className="text-[10px] text-slate-500 dark:text-slate-400">{gridItems.length + featuredItems.length} {isEn ? 'results' : 'نتيجة'}</span>{activeCategory && <button type="button" onClick={onBackToAll} className="text-[10px] font-bold text-teal-700 dark:text-teal-300">← {isEn ? 'All departments' : 'كل الأقسام'}</button>}</div>
