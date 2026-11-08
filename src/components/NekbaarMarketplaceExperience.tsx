@@ -40,6 +40,12 @@ interface NekbaarMarketplaceExperienceProps {
   onInspect: (item: CommercialCatalogItem) => void;
   onAddToCart: (item: CommercialCatalogItem) => void;
   onBookService: (item: CommercialCatalogItem) => void;
+  onSaveWish: (item: CommercialCatalogItem) => void;
+  compareIds: number[];
+  onToggleCompare: (item: CommercialCatalogItem) => void;
+  comparedItems: CommercialCatalogItem[];
+  showComparePanel: boolean;
+  onToggleComparePanel: () => void;
   getItemGallery: (item: CommercialCatalogItem) => string[];
   isDemoCatalog: boolean;
 }
@@ -50,9 +56,12 @@ const MarketplaceProductCard: React.FC<{
   language: LanguageCode;
   image: string;
   isDemoCatalog: boolean;
+  isCompared: boolean;
   onInspect: () => void;
   onAction: () => void;
-}> = ({ item, currency, language, image, isDemoCatalog, onInspect, onAction }) => {
+  onSaveWish: () => void;
+  onToggleCompare: () => void;
+}> = ({ item, currency, language, image, isDemoCatalog, isCompared, onInspect, onAction, onSaveWish, onToggleCompare }) => {
   const isEn = language === 'en';
   const price = convertCatalogPrice(item.priceEGP, item.priceSAR, currency);
   const original = item.originalPriceEGP && item.originalPriceSAR
@@ -91,9 +100,15 @@ const MarketplaceProductCard: React.FC<{
           {!isDemoCatalog && item.sellerName && <p className="truncate text-[9px] text-slate-400">{isEn ? 'By' : 'بواسطة'} {item.sellerName}</p>}
         </div>
       </button>
-      <div className="mt-auto flex items-center gap-2 border-t border-slate-100 px-3 py-2.5 dark:border-slate-700/70">
-        <button type="button" onClick={onInspect} className="min-h-10 flex-1 rounded-xl border border-slate-200 text-[10px] font-extrabold text-slate-700 transition-colors hover:border-teal-500 hover:text-teal-700 dark:border-slate-600 dark:text-slate-200">{isEn ? 'Details' : 'التفاصيل'}</button>
-        <button type="button" onClick={onAction} className="min-h-10 flex-[1.2] rounded-xl bg-[#0D9488] px-2 text-[10px] font-extrabold text-white transition-colors hover:bg-[#0F766E]">{isService ? (isEn ? 'Book' : 'احجز') : (isEn ? 'Add to cart' : 'أضف للسلة')}</button>
+      <div className="mt-auto border-t border-slate-100 px-3 py-2.5 dark:border-slate-700/70">
+        <div className="mb-2 flex items-center gap-2">
+          <button type="button" onClick={onSaveWish} aria-label={isEn ? 'Save to wishlist' : 'أضف للأمنيات'} title={isEn ? 'Save to wishlist' : 'أضف للأمنيات'} className="flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50 text-[10px] font-extrabold text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-300">♡ <span>{isEn ? 'Wishlist' : 'الأمنيات'}</span></button>
+          <button type="button" onClick={onToggleCompare} aria-pressed={isCompared} className={'flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border px-2 text-[10px] font-extrabold transition-colors ' + (isCompared ? 'border-teal-600 bg-teal-50 text-teal-800 dark:bg-teal-950/30 dark:text-teal-200' : 'border-slate-200 text-slate-600 hover:border-teal-500 dark:border-slate-600 dark:text-slate-300')}>⇄ <span>{isCompared ? (isEn ? 'Selected' : 'تمت المقارنة') : (isEn ? 'Compare' : 'قارن')}</span></button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={onInspect} className="min-h-10 flex-1 rounded-xl border border-slate-200 text-[10px] font-extrabold text-slate-700 transition-colors hover:border-teal-500 hover:text-teal-700 dark:border-slate-600 dark:text-slate-200">{isEn ? 'Details' : 'التفاصيل'}</button>
+          <button type="button" onClick={onAction} className="min-h-10 flex-[1.2] rounded-xl bg-[#0D9488] px-2 text-[10px] font-extrabold text-white transition-colors hover:bg-[#0F766E]">{isService ? (isEn ? 'Book' : 'احجز') : (isEn ? 'Add to cart' : 'أضف للسلة')}</button>
+        </div>
       </div>
     </article>
   );
@@ -102,7 +117,8 @@ const MarketplaceProductCard: React.FC<{
 export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperienceProps> = ({
   language, currency, city, categories, activeCategory, items, searchQuery, onSearchChange,
   segment, onSegmentChange, sortBy, onSortChange, cartCount, onOpenCart, onOpenCategory, onBackToAll,
-  onInspect, onAddToCart, onBookService, getItemGallery, isDemoCatalog,
+  onInspect, onAddToCart, onBookService, onSaveWish, compareIds, onToggleCompare, comparedItems,
+  showComparePanel, onToggleComparePanel, getItemGallery, isDemoCatalog,
 }) => {
   const isEn = language === 'en';
   const visibleItems = activeCategory
@@ -134,8 +150,11 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
       language={language}
       image={image}
       isDemoCatalog={isDemoCatalog}
+      isCompared={compareIds.includes(item.id)}
       onInspect={() => onInspect(item)}
       onAction={() => item.kind === 'service' ? onBookService(item) : onAddToCart(item)}
+      onSaveWish={() => onSaveWish(item)}
+      onToggleCompare={() => onToggleCompare(item)}
     />;
   };
 
@@ -216,6 +235,16 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
         <section className="space-y-3" aria-label={isEn ? 'Featured family picks' : 'اختيارات نكبر المميزة'}>
           <div className="flex items-end justify-between gap-3"><div><p className="text-[9px] font-black tracking-[.15em] text-orange-600 dark:text-orange-300">{isEn ? 'CURATED FOR YOU' : 'اختيارات نكبر'}</p><h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">{isEn ? 'Family favourites' : 'اختيارات تستاهل التجربة'}</h2></div><span className="text-[10px] font-semibold text-slate-400">{isEn ? 'Handpicked' : 'مختارة بعناية'}</span></div>
           <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">{featuredItems.map((item) => <div key={item.id} className="w-[min(76vw,250px)] shrink-0 snap-start sm:w-[250px]">{renderCard(item)}</div>)}</div>
+        </section>
+      )}
+
+      {showComparePanel && (
+        <section data-testid="marketplace-compare-tray" className="rounded-2xl border border-teal-200 bg-teal-50/70 p-3 dark:border-teal-900/60 dark:bg-teal-950/20">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><h3 className="text-sm font-black text-slate-900 dark:text-white">{isEn ? 'Compare selected items' : 'مقارنة اختياراتك'}</h3><p className="text-[10px] text-slate-500 dark:text-slate-400">{isEn ? 'Choose up to three items' : 'اختار لحد ٣ منتجات للمقارنة'}</p></div>
+            <button type="button" onClick={onToggleComparePanel} className="min-h-9 rounded-lg border border-teal-200 px-3 text-[10px] font-bold text-teal-800 dark:border-teal-800 dark:text-teal-200">{isEn ? 'Hide' : 'إخفاء'}</button>
+          </div>
+          {comparedItems.length ? <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">{comparedItems.map((item) => <div key={item.id} className="flex min-w-0 items-center gap-2 rounded-xl bg-white p-2 dark:bg-[#142430]"><span className="min-w-0 flex-1 truncate text-[10px] font-bold text-slate-800 dark:text-slate-100">{isEn ? item.nameEn : item.name}</span><span className="shrink-0 text-[10px] font-black text-teal-700 dark:text-teal-300">{formatCurrency(convertCatalogPrice(item.priceEGP, item.priceSAR, currency), currency, language)}</span><button type="button" onClick={() => onToggleCompare(item)} aria-label={isEn ? 'Remove from comparison' : 'إزالة من المقارنة'} className="min-h-8 min-w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">×</button></div>)}</div> : <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">{isEn ? 'Select Compare on a product card to add it here.' : 'اضغط «قارن» على أي منتج لإضافته هنا.'}</p>}
         </section>
       )}
 
