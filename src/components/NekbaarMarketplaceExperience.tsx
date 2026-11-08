@@ -124,25 +124,13 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
   const visibleItems = activeCategory
     ? items.filter((item) => activeCategory.matchCategories.includes(item.category))
     : items;
-  // Lead with everyday family needs before promotional merchandising.
-  // These are illustrative demo listings, never presented as verified inventory.
-  const dailyNeedCategories = ['essentials', 'nutrition', 'clothing', 'school', 'books', 'safety', 'toys'];
-  const showDailyNeeds = !activeCategory && segment === 'all' && !searchQuery.trim();
-  const dailyNeedItems = showDailyNeeds
-    ? visibleItems.filter((item) => item.kind === 'product' && dailyNeedCategories.includes(item.category)).slice(0, 6)
-    : [];
-  const dailyNeedIds = new Set(dailyNeedItems.map((item) => item.id));
-  const featured = visibleItems.filter((item) =>
-    ['bestseller', 'deal', 'recommended'].includes(item.collectionTag || '') && !dailyNeedIds.has(item.id)
-  ).slice(0, 8);
-  // Keep featured and everyday essentials out of the main grid to avoid duplicate cards.
+  const featured = visibleItems.filter((item) => ['bestseller', 'deal', 'recommended'].includes(item.collectionTag || '')).slice(0, 8);
+  // Marketplace merchandising: show a curated rail only on the unfiltered storefront,
+  // then keep those same listings out of the main grid to avoid repetitive cards.
   const showFeatured = !activeCategory && segment === 'all' && !searchQuery.trim() && featured.length > 0;
   const featuredItems = showFeatured ? featured.slice(0, 4) : [];
   const featuredIds = new Set(featuredItems.map((item) => item.id));
-  const excludedIds = new Set([...dailyNeedIds, ...featuredIds]);
-  const gridItems = showDailyNeeds || showFeatured
-    ? visibleItems.filter((item) => !excludedIds.has(item.id))
-    : visibleItems;
+  const gridItems = showFeatured ? visibleItems.filter((item) => !featuredIds.has(item.id)) : visibleItems;
   const categoryCount = (category: MarketplaceCategory) => items.filter((item) => category.matchCategories.includes(item.category)).length;
   const segments = [
     { id: 'all' as const, ar: 'الكل', en: 'All', icon: '✦' },
@@ -217,26 +205,6 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
                 <span className="relative flex h-full min-h-[138px] flex-col justify-between p-3 sm:min-h-[158px]"><span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/20 bg-white/15 text-lg backdrop-blur-sm">{category.emoji}</span><span><span className="block text-[11px] font-black text-white">{isEn ? category.badgeEn : category.badgeAr}</span><span className="mt-1 block text-[9px] font-medium text-white/70">{count} {isEn ? 'items' : 'اختيار'}</span></span></span>
               </button>;
             })}
-          </div>
-        </section>
-      )}
-
-      {dailyNeedItems.length > 0 && (
-        <section className="space-y-3" aria-label={isEn ? 'Everyday family essentials' : 'احتياجات الأسرة اليومية'}>
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[9px] font-black tracking-[.15em] text-teal-700 dark:text-teal-300">{isEn ? 'THE EVERYDAY EDIT' : 'اختيارات للاحتياج اليومي'}</p>
-              <h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">{isEn ? 'Everyday essentials' : 'أساسيات محتاجينها كل يوم'}</h2>
-              <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">{isEn ? 'Practical picks for care, meals, school and play.' : 'عناية ونظافة، أكل وشرب، مدرسة، ووقت لعب.'}</p>
-            </div>
-            <span className="shrink-0 rounded-full bg-teal-50 px-3 py-1.5 text-[9px] font-extrabold text-teal-800 dark:bg-teal-950/40 dark:text-teal-200">{dailyNeedItems.length} {isEn ? 'essentials' : 'احتياجات'}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-            {dailyNeedItems.map((item) => (
-              <div key={item.id} className="min-w-0">
-                {renderCard(item)}
-              </div>
-            ))}
           </div>
         </section>
       )}
