@@ -4037,9 +4037,10 @@ function buildCompleteCommercialCatalog(): CommercialCatalogItem[] {
     { name: 'مقعد سيارة للأطفال', nameEn: 'Child Car Seat', category: 'safety', categoryLabel: 'السلامة والتنقل', emoji: '🚗', priceEGP: 2850, priceSAR: 390, ageStage: 'all', description: 'مقعد سيارة للأطفال. يجب اختيار المقعد حسب طول ووزن الطفل والتأكد من توافقه مع السيارة ومعايير السلامة المحلية.', descriptionEn: 'Child car seat. Select by the child’s height and weight and verify vehicle fit and applicable safety standards.', variants: ['مرحلة الرضع', 'مرحلة الأطفال الصغار'] },
   ];
 
+  const curatedEssentials: CommercialCatalogItem[] = [];
   for (const item of everydayEssentials) {
     const id = nextId++;
-    result.push({
+    curatedEssentials.push({
       id,
       name: item.name,
       nameEn: item.nameEn,
@@ -4060,6 +4061,7 @@ function buildCompleteCommercialCatalog(): CommercialCatalogItem[] {
     });
   }
 
+  result.unshift(...curatedEssentials);
   for (const group of CATEGORY_CATALOG_BLUEPRINTS) {
     let itemIdx = 1;
     for (const entry of group.items) {
