@@ -107,6 +107,12 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
     ? items.filter((item) => activeCategory.matchCategories.includes(item.category))
     : items;
   const featured = visibleItems.filter((item) => ['bestseller', 'deal', 'recommended'].includes(item.collectionTag || '')).slice(0, 8);
+  // Marketplace merchandising: show a curated rail only on the unfiltered storefront,
+  // then keep those same listings out of the main grid to avoid repetitive cards.
+  const showFeatured = !activeCategory && segment === 'all' && !searchQuery.trim() && featured.length > 0;
+  const featuredItems = showFeatured ? featured.slice(0, 4) : [];
+  const featuredIds = new Set(featuredItems.map((item) => item.id));
+  const gridItems = showFeatured ? visibleItems.filter((item) => !featuredIds.has(item.id)) : visibleItems;
   const categoryCount = (category: MarketplaceCategory) => items.filter((item) => category.matchCategories.includes(item.category)).length;
   const segments = [
     { id: 'all' as const, ar: 'الكل', en: 'All', icon: '✦' },
@@ -189,14 +195,14 @@ export const NekbaarMarketplaceExperience: React.FC<NekbaarMarketplaceExperience
             {segments.map((tab) => <button key={tab.id} type="button" onClick={() => onSegmentChange(tab.id)} aria-pressed={segment === tab.id} className={'min-h-9 rounded-full px-3 text-[10px] font-extrabold transition-colors ' + (segment === tab.id ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white')}>{tab.icon} {isEn ? tab.en : tab.ar}</button>)}
           </div>
         </div>
-        <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2 dark:border-slate-700"><span className="text-[10px] text-slate-500 dark:text-slate-400">{visibleItems.length} {isEn ? 'results' : 'نتيجة'}</span>{activeCategory && <button type="button" onClick={onBackToAll} className="text-[10px] font-bold text-teal-700 dark:text-teal-300">← {isEn ? 'All departments' : 'كل الأقسام'}</button>}</div>
-        {visibleItems.length > 0 ? <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">{visibleItems.slice(0, 32).map(renderCard)}</div> : <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-[#142430]"><span className="text-4xl">⌕</span><h3 className="mt-3 text-sm font-black text-slate-900 dark:text-white">{isEn ? 'No matching listings yet' : 'مفيش نتائج مطابقة حالياً'}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{isEn ? 'Try another search or department.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p><button type="button" onClick={onBackToAll} className="mt-4 rounded-xl bg-teal-700 px-4 py-2.5 text-xs font-extrabold text-white">{isEn ? 'Back to all departments' : 'العودة لكل الأقسام'}</button></div>}
+        <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-2 dark:border-slate-700"><span className="text-[10px] text-slate-500 dark:text-slate-400">{gridItems.length + featuredItems.length} {isEn ? 'results' : 'نتيجة'}</span>{activeCategory && <button type="button" onClick={onBackToAll} className="text-[10px] font-bold text-teal-700 dark:text-teal-300">← {isEn ? 'All departments' : 'كل الأقسام'}</button>}</div>
+        {gridItems.length + featuredItems.length > 0 ? (gridItems.length > 0 ? <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">{gridItems.slice(0, 32).map(renderCard)}</div> : null) : <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-[#142430]"><span className="text-4xl">⌕</span><h3 className="mt-3 text-sm font-black text-slate-900 dark:text-white">{isEn ? 'No matching listings yet' : 'مفيش نتائج مطابقة حالياً'}</h3><p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{isEn ? 'Try another search or department.' : 'جرّب كلمة بحث تانية أو اختار قسم مختلف.'}</p><button type="button" onClick={onBackToAll} className="mt-4 rounded-xl bg-teal-700 px-4 py-2.5 text-xs font-extrabold text-white">{isEn ? 'Back to all departments' : 'العودة لكل الأقسام'}</button></div>}
       </section>
 
-      {!activeCategory && segment === 'all' && featured.length > 0 && (
-        <section className="space-y-3">
-          <div><p className="text-[9px] font-black tracking-[.15em] text-orange-600 dark:text-orange-300">{isEn ? 'CURATED FOR YOU' : 'اختيارات نكبر'}</p><h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">{isEn ? 'Family favourites' : 'اختيارات تستاهل التجربة'}</h2></div>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">{featured.slice(0, 4).map(renderCard)}</div>
+      {showFeatured && (
+        <section className="space-y-3" aria-label={isEn ? 'Featured family picks' : 'اختيارات نكبر المميزة'}>
+          <div className="flex items-end justify-between gap-3"><div><p className="text-[9px] font-black tracking-[.15em] text-orange-600 dark:text-orange-300">{isEn ? 'CURATED FOR YOU' : 'اختيارات نكبر'}</p><h2 className="mt-1 text-lg font-black text-slate-900 dark:text-white">{isEn ? 'Family favourites' : 'اختيارات تستاهل التجربة'}</h2></div><span className="text-[10px] font-semibold text-slate-400">{isEn ? 'Handpicked' : 'مختارة بعناية'}</span></div>
+          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">{featuredItems.map((item) => <div key={item.id} className="w-[min(76vw,250px)] shrink-0 snap-start sm:w-[250px]">{renderCard(item)}</div>)}</div>
         </section>
       )}
 
