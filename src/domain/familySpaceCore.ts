@@ -4358,7 +4358,7 @@ export function normalizeAppData(raw: unknown): FamilySpaceState {
             ? rawDayOfMonth
             : undefined;
         const scheduledDate =
-          typeof t.scheduledDate === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(t.scheduledDate.trim())
+          typeof t.scheduledDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(t.scheduledDate.trim())
             ? t.scheduledDate.trim()
             : undefined;
         const hasCompletedDatesArray = Array.isArray(t.completedDates);
