@@ -4016,52 +4016,6 @@ function buildCompleteCommercialCatalog(): CommercialCatalogItem[] {
   }));
   let nextId = 208;
 
-  // Practical, recognizable starter assortment for the preview storefront.
-  // These are clearly marked demo listings, not real stock, sellers or delivery promises.
-  const everydayEssentials: Array<{
-    name: string; nameEn: string; category: string; categoryLabel: string; emoji: string;
-    priceEGP: number; priceSAR: number; ageStage: AgeStage; description: string;
-    descriptionEn: string; variants: string[];
-  }> = [
-    { name: 'حفاضات أطفال – عبوة اقتصادية', nameEn: 'Baby Diapers – Value Pack', category: 'essentials', categoryLabel: 'العناية اليومية', emoji: '🧷', priceEGP: 420, priceSAR: 55, ageStage: '0-2', description: 'عبوة حفاضات للاستخدام اليومي، اختاري المقاس المناسب لعمر ووزن الطفل.', descriptionEn: 'Everyday diaper pack. Choose the size that fits your child.', variants: ['مقاس 2', 'مقاس 3', 'مقاس 4', 'مقاس 5'] },
-    { name: 'مناديل مبللة للأطفال – عبوة متعددة', nameEn: 'Baby Wipes – Multipack', category: 'essentials', categoryLabel: 'العناية اليومية', emoji: '🧻', priceEGP: 165, priceSAR: 22, ageStage: '0-2', description: 'مناديل مبللة للاستخدام اليومي في البيت وخلال الخروج.', descriptionEn: 'Everyday baby wipes for home and on-the-go use.', variants: ['عبوة واحدة', 'عبوة 3 قطع'] },
-    { name: 'زجاجة رضاعة للأطفال', nameEn: 'Baby Feeding Bottle', category: 'essentials', categoryLabel: 'الرضاعة والتغذية', emoji: '🍼', priceEGP: 190, priceSAR: 28, ageStage: '0-2', description: 'زجاجة رضاعة عملية بسعة مناسبة للاستخدام اليومي. راجعي تعليمات العمر والتنظيف قبل الاستخدام.', descriptionEn: 'Practical feeding bottle for daily use. Check age guidance and cleaning instructions.', variants: ['150 مل', '240 مل'] },
-    { name: 'كوب تدريب بغطاء مانع للانسكاب', nameEn: 'Spill-Resistant Training Cup', category: 'essentials', categoryLabel: 'الرضاعة والتغذية', emoji: '🥤', priceEGP: 145, priceSAR: 19, ageStage: '0-2', description: 'كوب تدريب بمقبضين لمساعدة الطفل على تعلم الشرب بشكل مستقل.', descriptionEn: 'Handled training cup to support independent drinking.', variants: ['لون أزرق', 'لون وردي', 'لون أخضر'] },
-    { name: 'علبة طعام مقسمة للأطفال', nameEn: 'Kids Divided Lunch Box', category: 'nutrition', categoryLabel: 'الأكل واللانش بوكس', emoji: '🍱', priceEGP: 230, priceSAR: 32, ageStage: '2-5', description: 'علبة طعام بأقسام منفصلة لتنظيم وجبة الحضانة أو المدرسة.', descriptionEn: 'Divided lunch box for nursery and school meals.', variants: ['علبة صغيرة', 'علبة كبيرة'] },
-    { name: 'زجاجة مياه للأطفال', nameEn: 'Kids Water Bottle', category: 'nutrition', categoryLabel: 'الأكل واللانش بوكس', emoji: '🚰', priceEGP: 180, priceSAR: 25, ageStage: '2-5', description: 'زجاجة مياه خفيفة بغطاء محكم تناسب الحقيبة والخروج.', descriptionEn: 'Lightweight water bottle with a secure lid for school bags and outings.', variants: ['350 مل', '500 مل'] },
-    { name: 'طقم تيشيرت وشورت قطني للأطفال', nameEn: 'Kids Cotton T-Shirt & Shorts Set', category: 'clothing', categoryLabel: 'ملابس الأطفال', emoji: '👕', priceEGP: 340, priceSAR: 45, ageStage: '2-5', description: 'طقم قطني مريح للاستخدام اليومي واللعب.', descriptionEn: 'Comfortable cotton set for everyday wear and play.', variants: ['2–3 سنوات', '3–4 سنوات', '5–6 سنوات'] },
-    { name: 'حقيبة ظهر خفيفة للحضانة', nameEn: 'Lightweight Nursery Backpack', category: 'school', categoryLabel: 'المدرسة والحضانة', emoji: '🎒', priceEGP: 390, priceSAR: 52, ageStage: '2-5', description: 'حقيبة خفيفة بمساحة للأغراض الأساسية ووجبة الطفل.', descriptionEn: 'Lightweight backpack for daily nursery essentials and snacks.', variants: ['لون أزرق', 'لون وردي', 'لون أخضر'] },
-    { name: 'كراسة تلوين وأقلام شمع آمنة', nameEn: 'Coloring Book & Wax Crayons Set', category: 'school', categoryLabel: 'التعلم والأنشطة', emoji: '🖍️', priceEGP: 125, priceSAR: 17, ageStage: '2-5', description: 'مجموعة بسيطة للرسم والتلوين في البيت أو أثناء السفر.', descriptionEn: 'A simple drawing and coloring set for home or travel.', variants: ['12 لون', '24 لون'] },
-    { name: 'مجموعة قصص مصورة قبل النوم', nameEn: 'Bedtime Picture Books Set', category: 'books', categoryLabel: 'القصص والكتب', emoji: '📚', priceEGP: 260, priceSAR: 35, ageStage: '2-5', description: 'مجموعة قصص مصورة قصيرة لوقت القراءة مع الأسرة قبل النوم.', descriptionEn: 'Short illustrated stories for shared family reading before bedtime.', variants: ['3 قصص', '5 قصص'] },
-    { name: 'مكعبات تركيب كبيرة للأطفال', nameEn: 'Large Building Blocks Set', category: 'toys', categoryLabel: 'الألعاب', emoji: '🧱', priceEGP: 310, priceSAR: 42, ageStage: '2-5', description: 'مكعبات تركيب كبيرة لتشجيع البناء واللعب المفتوح. راجعي العمر الموصى به وتحذيرات القطع الصغيرة.', descriptionEn: 'Large building blocks for open-ended construction play. Check age guidance and small-parts warnings.', variants: ['40 قطعة', '80 قطعة'] },
-    { name: 'مقعد سيارة للأطفال', nameEn: 'Child Car Seat', category: 'safety', categoryLabel: 'السلامة والتنقل', emoji: '🚗', priceEGP: 2850, priceSAR: 390, ageStage: 'all', description: 'مقعد سيارة للأطفال. يجب اختيار المقعد حسب طول ووزن الطفل والتأكد من توافقه مع السيارة ومعايير السلامة المحلية.', descriptionEn: 'Child car seat. Select by the child’s height and weight and verify vehicle fit and applicable safety standards.', variants: ['مرحلة الرضع', 'مرحلة الأطفال الصغار'] },
-  ];
-
-  const curatedEssentials: CommercialCatalogItem[] = [];
-  for (const item of everydayEssentials) {
-    const id = nextId++;
-    curatedEssentials.push({
-      id,
-      name: item.name,
-      nameEn: item.nameEn,
-      kind: 'product',
-      category: item.category,
-      categoryLabel: item.categoryLabel,
-      country: 'ALL',
-      city: 'ALL',
-      priceEGP: item.priceEGP,
-      priceSAR: item.priceSAR,
-      description: item.description,
-      descriptionEn: item.descriptionEn,
-      emoji: item.emoji,
-      imageUrl: getProductUnsplashImageUrl(item.category, id),
-      ageStage: item.ageStage,
-      collectionTag: 'recommended',
-      variants: item.variants,
-    });
-  }
-
-  result.unshift(...curatedEssentials);
   for (const group of CATEGORY_CATALOG_BLUEPRINTS) {
     let itemIdx = 1;
     for (const entry of group.items) {
