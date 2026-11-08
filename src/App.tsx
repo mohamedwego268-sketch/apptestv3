@@ -3832,8 +3832,9 @@ export default function App() {
         /></React.Suspense>
 
         {/* Dedicated Smart Family Calendar & To-Do List Modal ("مفكرة العيلة الذكية") */}
-        <React.Suspense fallback={null}>
-          <FamilySmartPlannerModal
+        {smartPlannerModalOpen && (
+          <React.Suspense fallback={null}>
+            <FamilySmartPlannerModal
           open={smartPlannerModalOpen}
           onClose={() => setSmartPlannerModalOpen(false)}
           lang={lang}
@@ -3944,8 +3945,10 @@ export default function App() {
             );
           }}
           onToggleTask={handleToggleTask}
-          onDeleteTask={handleDeleteTask}
-        />
+            onDeleteTask={handleDeleteTask}
+            />
+          </React.Suspense>
+        )}
 
         {/* Warm Bedtime / Night Reading Comfort Dimming Overlay */}
         {bedtimeMode && (
@@ -4031,8 +4034,7 @@ export default function App() {
           message={toastMsg}
           onClose={() => setToastMsg(null)}
           language={state.language}
-          />
-        </React.Suspense>
+        />
       </div>
     </FamilyAppProvider>
   );
